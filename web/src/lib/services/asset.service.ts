@@ -8,6 +8,7 @@ import {
   removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
+  updateAssets,
   type AlbumResponseDto,
   type AssetJobsDto,
   type AssetResponseDto,
@@ -16,6 +17,8 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountCircleOutline,
   mdiAlertOutline,
+  mdiArchiveArrowDownOutline,
+  mdiArchiveArrowUpOutline,
   mdiCogRefreshOutline,
   mdiCompare,
   mdiContentCopy,
@@ -49,6 +52,7 @@ import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
@@ -77,6 +81,19 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds }),
   };
 
+  const Archive: ActionItem = {
+    title: $t('to_archive'),
+    icon: mdiArchiveArrowDownOutline,
+    shortcuts: [{ key: 'a', shift: true }],
+    $if: () => assetMultiSelectManager.isAllUserOwned && !assetMultiSelectManager.isAllArchived,
+    onAction: async () => {
+      const assets = ownedAssets.filter((asset) => asset.visibility !== AssetVisibility.Archive);
+      if (await handleSetVisibility(assets, AssetVisibility.Archive)) {
+        assetMultiSelectManager.clear();
+      }
+    },
+  };
+
   const CreateSharedLink: ActionItem = {
     title: $t('share'),
     icon: mdiShareVariantOutline,
@@ -101,6 +118,18 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
       }
     },
     shortcuts: { key: 't' },
+  };
+
+  const Unarchive: ActionItem = {
+    title: $t('unarchive'),
+    icon: mdiArchiveArrowUpOutline,
+    shortcuts: [{ key: 'a', shift: true }],
+    $if: () => assetMultiSelectManager.isAllUserOwned && assetMultiSelectManager.isAllArchived,
+    onAction: async () => {
+      if (await handleSetVisibility(ownedAssets, AssetVisibility.Timeline)) {
+        assetMultiSelectManager.clear();
+      }
+    },
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -130,9 +159,11 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
 
   return {
     AddToAlbum,
+    Archive,
     CreateSharedLink,
     RemoveFromAlbum,
     Tag,
+    Unarchive,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
@@ -496,6 +527,60 @@ export const handleTagAssets = async (assetIds: string[], tagIds: string[]) => {
   } catch (error) {
     handleError(error, $t('errors.failed_to_tag_assets'));
     return false;
+  }
+};
+
+const handleSetVisibility = async (assets: TimelineAsset[], visibility: AssetVisibility) => {
+  const $t = await getFormatter();
+  const ids = assets.map((asset) => asset.id);
+
+  try {
+    await updateAssets({ assetBulkUpdateDto: { ids, visibility } });
+
+    if (visibility === AssetVisibility.Archive) {
+      toastManager.primary({
+        description: $t('archived_count', { values: { count: assets.length } }),
+        button: (close) => ({
+          label: $t('undo'),
+          onclick: () => {
+            close();
+            void undoArchiveAssets(assets);
+          },
+        }),
+      });
+      eventManager.emit('AssetsArchive', ids);
+    } else {
+      // Timeline
+      toastManager.primary($t('unarchived_count', { values: { count: assets.length } }));
+      eventManager.emit('AssetsUnarchive', assets);
+    }
+  } catch (error) {
+    handleError(
+      error,
+      $t('errors.unable_to_archive_unarchive', { values: { archived: visibility === AssetVisibility.Archive } }),
+    );
+    return false;
+  }
+
+  return true;
+};
+
+const undoArchiveAssets = async (assets: TimelineAsset[]) => {
+  const $t = await getFormatter();
+  try {
+    const ids = assets.map((a) => a.id);
+    await updateAssets({
+      assetBulkUpdateDto: { ids, visibility: AssetVisibility.Timeline },
+    });
+
+    for (const asset of assets) {
+      asset.visibility = AssetVisibility.Timeline;
+    }
+    toastManager.success($t('unarchived_count', { values: { count: assets.length } }));
+    eventManager.emit('AssetsUnarchive', assets);
+    eventManager.emit('AssetsUndoArchive', assets);
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
   }
 };
 
