@@ -1,6 +1,11 @@
 name: Report an issue with Immich
 description: Report an issue with Immich
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read our [contributing guidelines](https://github.com/immich-app/immich/blob/main/CONTRIBUTING.md) before opening an issue.
+
   - type: checkboxes
     attributes:
       label: I have searched the existing issues, both open and closed, to make sure this is not a duplicate report.
