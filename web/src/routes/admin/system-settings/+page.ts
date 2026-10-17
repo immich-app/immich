@@ -1,12 +1,12 @@
 import { queryClient } from '$lib/queries/client';
-import { getConfigDefaultsQuery, getConfigQuery } from '$lib/queries/system-config.query';
+import { getAdminConfigDefaultsQuery, getAdminConfigQuery } from '$lib/queries/config-admin.query';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
-  await Promise.all([queryClient.query(getConfigQuery()), queryClient.query(getConfigDefaultsQuery())]);
+  await Promise.all([queryClient.query(getAdminConfigQuery()), queryClient.query(getAdminConfigDefaultsQuery())]);
   const $t = await getFormatter();
 
   return {

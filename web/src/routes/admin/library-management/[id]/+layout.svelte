@@ -23,11 +23,13 @@
 
   const { children, params }: LayoutProps = $props();
 
-  const libraryQuery = createPreloadedQuery(() => getLibraryQuery(params.id));
-  const library = $derived(libraryQuery.data);
+  const queries = {
+    library: createPreloadedQuery(() => getLibraryQuery(params.id)),
+    statistics: createQuery(() => getLibraryStatisticsQuery(params.id)),
+  };
 
-  const statisticsQuery = createQuery(() => getLibraryStatisticsQuery(library.id));
-  const stats = $derived(statisticsQuery.data);
+  const library = $derived(queries.library.data);
+  const stats = $derived(queries.statistics.data);
 
   const [usage, usageUnit] = $derived(stats ? getBytesWithUnit(stats.usage) : [undefined, undefined]);
 

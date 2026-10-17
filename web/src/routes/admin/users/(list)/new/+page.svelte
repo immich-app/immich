@@ -1,17 +1,22 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
-  import { executeMutation } from '$lib/queries/client';
+  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
   import { getStorageQuery } from '$lib/queries/server.query';
   import { createUserAdminMutation } from '$lib/queries/user-admin.query';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, HelperText, Input, PasswordInput, Stack, Switch } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
 
-  const query = createQuery(getStorageQuery);
-  const serverInfo = $derived(query.data);
+  const queries = {
+    config: createPreloadedQuery(getUserConfigQuery),
+    storage: createQuery(getStorageQuery),
+  };
+
+  const config = $derived(queries.config.data);
+  const serverInfo = $derived(queries.storage.data);
 
   let success = $state(false);
 
@@ -66,17 +71,17 @@
       <Input bind:value={email} type="email" />
     </Field>
 
-    {#if featureFlagsManager.value.email}
+    {#if config.notifications.smtp.enabled}
       <Field label={$t('admin.send_welcome_email')}>
         <Switch id="send-welcome-email" bind:checked={notify} class="text-sm" />
       </Field>
     {/if}
 
-    <Field label={$t('password')} required={!featureFlagsManager.value.oauth}>
+    <Field label={$t('password')} required={!config.oauth.enabled}>
       <PasswordInput id="password" bind:value={password} autocomplete="new-password" />
     </Field>
 
-    <Field label={$t('confirm_password')} required={!featureFlagsManager.value.oauth}>
+    <Field label={$t('confirm_password')} required={!config.oauth.enabled}>
       <PasswordInput id="confirmPassword" bind:value={passwordConfirm} autocomplete="new-password" />
       <HelperText color="danger">{passwordMismatchMessage}</HelperText>
     </Field>

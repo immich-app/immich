@@ -14,11 +14,13 @@
 
   const { params }: PageProps = $props();
 
-  const query = createQuery(getStorageQuery);
-  const serverInfo = $derived(query.data);
+  const queries = {
+    user: createPreloadedQuery(() => getUserAdminQuery(params.id)),
+    storage: createQuery(getStorageQuery),
+  };
 
-  const userQuery = createPreloadedQuery(() => getUserAdminQuery(params.id));
-  const user = $derived(userQuery.data);
+  const user = $derived(queries.user.data);
+  const serverInfo = $derived(queries.storage.data);
   let { isAdmin, name, email } = $derived(user);
   let storageLabel = $derived(user.storageLabel || '');
   const previousQuota = $derived(user.quotaSizeInBytes);

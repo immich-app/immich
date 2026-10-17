@@ -1,7 +1,8 @@
-import { getPublicConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import { queryClient } from '$lib/queries/client';
+import { getPublicConfigQuery } from '$lib/queries/config-public.query';
 import { Route } from '$lib/route';
 import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
@@ -20,7 +21,7 @@ export const load = (async ({ parent, url }) => {
     redirect(307, Route.register());
   }
 
-  const publicConfig = await getPublicConfig();
+  await queryClient.query(getPublicConfigQuery());
 
   const $t = await getFormatter();
   return {
@@ -28,6 +29,5 @@ export const load = (async ({ parent, url }) => {
       title: $t('login'),
     },
     continueUrl,
-    publicConfig,
   };
 }) satisfies PageLoad;
