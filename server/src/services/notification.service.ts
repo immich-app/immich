@@ -450,22 +450,28 @@ export class NotificationService extends BaseService {
       [IntegrityReport.ChecksumFail]: integrityChecks.checksumFiles,
     };
 
+    const checkConfig = checkConfigs[type];
+    if (!checkConfig) {
+      this.logger.warn(`Skipping integrity error notification for unknown check type: ${type}`);
+      return JobStatus.Skipped;
+    }
+
+    if (!checkConfig.notifyOnError) {
+      return JobStatus.Success;
+    }
+
     const summary = await this.integrityRepository.getIntegrityReportSummary();
     const count = summary[type] ?? 0;
-    if (count === 0 || !checkConfigs[type].notifyOnError) {
+    if (count === 0) {
       return JobStatus.Success;
     }
 
     const checkName = checkNames[type];
     this.logger.log(`Integrity check found ${count} ${checkName}, notifying admins.`);
 
-    const users = await this.userRepository.getList();
+    const users = await this.userRepository.getAdmins();
     const recipients = [];
     for (const user of users) {
-      if (!user.isAdmin) {
-        continue;
-      }
-
       const { emailNotifications } = getPreferences(user.metadata);
       if (!emailNotifications.enabled || !emailNotifications.integrity) {
         continue;
@@ -479,27 +485,34 @@ export class NotificationService extends BaseService {
     }
 
     for (const recipient of recipients) {
-      const { html, text } = await this.emailRepository.renderEmail({
-        template: EmailTemplate.INTEGRITY_ERRORS,
-        data: {
-          baseUrl: getExternalDomain(server),
-          recipientName: recipient.name,
-          checkType: type,
-          checkName,
-          count,
-        },
-        customTemplate: templates.email.integrityTemplate,
-      });
+      try {
+        const { html, text } = await this.emailRepository.renderEmail({
+          template: EmailTemplate.INTEGRITY_ERRORS,
+          data: {
+            baseUrl: getExternalDomain(server),
+            recipientName: recipient.name,
+            checkType: type,
+            checkName,
+            count,
+          },
+          customTemplate: templates.email.integrityTemplate,
+        });
 
-      await this.jobRepository.queue({
-        name: JobName.SendMail,
-        data: {
-          to: recipient.email,
-          subject: `Immich integrity check found ${count} issue${count === 1 ? '' : 's'} (${checkName})`,
-          html,
-          text,
-        },
-      });
+        await this.jobRepository.queue({
+          name: JobName.SendMail,
+          data: {
+            to: recipient.email,
+            subject: `Immich integrity check found ${count} issue${count === 1 ? '' : 's'} (${checkName})`,
+            html,
+            text,
+          },
+        });
+      } catch (error) {
+        this.logger.error(
+          `Failed to queue integrity error email for admin ${recipient.id}: ${error}`,
+          error instanceof Error ? error.stack : undefined,
+        );
+      }
     }
 
     return JobStatus.Success;

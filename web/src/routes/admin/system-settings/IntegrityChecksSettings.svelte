@@ -39,7 +39,7 @@
             <SettingSwitch
               title={$t('admin.integrity_checks_notify_on_error')}
               subtitle={$t('admin.integrity_checks_notify_on_error_description')}
-              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              {disabled}
               bind:checked={configToEdit.integrityChecks.missingFiles.notifyOnError}
             />
 
@@ -85,7 +85,7 @@
             <SettingSwitch
               title={$t('admin.integrity_checks_notify_on_error')}
               subtitle={$t('admin.integrity_checks_notify_on_error_description')}
-              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              {disabled}
               bind:checked={configToEdit.integrityChecks.untrackedFiles.notifyOnError}
             />
 
@@ -131,7 +131,7 @@
             <SettingSwitch
               title={$t('admin.integrity_checks_notify_on_error')}
               subtitle={$t('admin.integrity_checks_notify_on_error_description')}
-              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              {disabled}
               bind:checked={configToEdit.integrityChecks.checksumFiles.notifyOnError}
             />
 

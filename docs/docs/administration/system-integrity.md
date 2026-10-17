@@ -15,7 +15,7 @@ You can see the results of these checks on the [maintenance](https://my.immich.a
 
 ### Email notifications
 
-When a full check finishes with errors remaining, Immich sends one email per check to admins. Each check notifies independently after its own jobs complete, so a long-running scan cannot produce a partial report. No email is sent for a check with no errors, and refreshing reports never sends emails. Notifications can be enabled or disabled per check in the integrity checks settings, and the email content can be customized with a custom template in the notification settings. Each admin can opt out of these emails from their account notification settings; they are enabled by default when email notifications are configured.
+When a full check finishes with errors remaining, Immich sends one email per check to each subscribed admin. Each check notifies independently after its own jobs complete, so a long-running scan cannot produce a partial report. No email is sent for a check with no errors, and refreshing reports never sends emails. Notifications can be enabled or disabled per check in the integrity checks settings, and the email content can be customized with a custom template in the notification settings. Each admin can opt out of these emails from their account notification settings; they are enabled by default when email notifications are configured.
 
 ### Common causes
 

@@ -625,7 +625,7 @@ describe(NotificationService.name, () => {
     it('should send an email to admins when the check found errors', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
       mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
-      mocks.user.getList.mockResolvedValue([userStub.admin]);
+      mocks.user.getAdmins.mockResolvedValue([userStub.admin]);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
 
       await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Success);
@@ -655,7 +655,7 @@ describe(NotificationService.name, () => {
         templates: { email: { integrityTemplate: '<p>custom template</p>' } },
       });
       mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
-      mocks.user.getList.mockResolvedValue([userStub.admin]);
+      mocks.user.getAdmins.mockResolvedValue([userStub.admin]);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
 
       await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Success);
@@ -665,10 +665,10 @@ describe(NotificationService.name, () => {
       expect(mocks.job.queue).toHaveBeenCalled();
     });
 
-    it('should skip admins that opted out of integrity emails and non-admins', async () => {
+    it('should skip when no admins are subscribed to integrity emails', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
       mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
-      mocks.user.getList.mockResolvedValue([
+      mocks.user.getAdmins.mockResolvedValue([
         {
           ...userStub.admin,
           metadata: [
@@ -678,7 +678,6 @@ describe(NotificationService.name, () => {
             },
           ],
         },
-        userStub.user1,
       ]);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
 
@@ -690,7 +689,7 @@ describe(NotificationService.name, () => {
     it('should only email admins that did not opt out', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
       mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
-      mocks.user.getList.mockResolvedValue([
+      mocks.user.getAdmins.mockResolvedValue([
         {
           ...userStub.admin,
           metadata: [
@@ -700,7 +699,6 @@ describe(NotificationService.name, () => {
             },
           ],
         },
-        userStub.user1,
         { ...userStub.admin, id: 'admin_id_2', email: 'admin2@test.com' },
       ]);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
@@ -710,6 +708,33 @@ describe(NotificationService.name, () => {
         name: JobName.SendMail,
         data: expect.objectContaining({ to: 'admin2@test.com' }),
       });
+    });
+
+    it('should continue emailing remaining admins when one recipient fails', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
+      mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
+      mocks.user.getAdmins.mockResolvedValue([
+        userStub.admin,
+        { ...userStub.admin, id: 'admin_id_2', email: 'admin2@test.com' },
+      ]);
+      mocks.email.renderEmail.mockRejectedValueOnce(new Error('render failed'));
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+
+      await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Success);
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.SendMail,
+        data: expect.objectContaining({ to: 'admin2@test.com' }),
+      });
+    });
+
+    it('should skip unknown check types', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
+
+      await expect(sut.handleIntegrityErrors({ type: 'unknown' as unknown as IntegrityReport })).resolves.toBe(
+        JobStatus.Skipped,
+      );
+      expect(mocks.integrityReport.getIntegrityReportSummary).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
   });
 });

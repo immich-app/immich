@@ -6,6 +6,9 @@ import { IntegrityReport } from 'src/enum.js';
 import { IntegrityErrorsReportEmailProps } from 'src/repositories/email.repository.js';
 import { replaceTemplateTags } from 'src/utils/replace-template-tags.js';
 
+const escapeHtml = (value: string) =>
+  value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+
 export const IntegrityErrorsReportEmail = ({
   baseUrl,
   recipientName,
@@ -15,10 +18,10 @@ export const IntegrityErrorsReportEmail = ({
   customTemplate,
 }: IntegrityErrorsReportEmailProps) => {
   const usableTemplateVariables = {
-    recipientName,
-    baseUrl,
-    checkType,
-    checkName,
+    recipientName: escapeHtml(recipientName),
+    baseUrl: escapeHtml(baseUrl),
+    checkType: escapeHtml(checkType),
+    checkName: escapeHtml(checkName),
     count: String(count),
   };
 

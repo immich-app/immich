@@ -1,5 +1,7 @@
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
+import { IntegrityReport } from 'src/enum.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
+import { NotificationAdminService } from 'src/services/notification-admin.service.js';
 import { NotificationService } from 'src/services/notification.service.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
@@ -107,6 +109,35 @@ describe(NotificationService.name, () => {
           replyTo: 'demo@immich.app',
         }),
       );
+    });
+  });
+});
+
+describe(NotificationAdminService.name, () => {
+  let sut: NotificationAdminService;
+  let mocks: ServiceMocks;
+
+  beforeEach(() => {
+    ({ sut, mocks } = newTestService(NotificationAdminService));
+  });
+
+  it('should work', () => {
+    expect(sut).toBeDefined();
+  });
+
+  describe('getTemplate', () => {
+    it('should render the integrity errors template', async () => {
+      mocks.email.renderEmail.mockResolvedValue({ html: '<p>preview</p>', text: '' });
+
+      await expect(sut.getTemplate(EmailTemplate.INTEGRITY_ERRORS, '')).resolves.toEqual({
+        name: EmailTemplate.INTEGRITY_ERRORS,
+        html: '<p>preview</p>',
+      });
+      expect(mocks.email.renderEmail).toHaveBeenCalledWith({
+        template: EmailTemplate.INTEGRITY_ERRORS,
+        data: expect.objectContaining({ checkType: IntegrityReport.MissingFile }),
+        customTemplate: '',
+      });
     });
   });
 });

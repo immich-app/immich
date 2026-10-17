@@ -58,7 +58,7 @@
 
         {#if isAdmin}
           <Field
-            label={$t('integrity_checks')}
+            label={$t('integrity_check_errors')}
             description={$t('integrity_errors_notification_setting_description')}
             {disabled}
           >

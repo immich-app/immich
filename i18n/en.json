@@ -1254,6 +1254,7 @@
   "individual_share": "Individual share",
   "individual_shares": "Individual shares",
   "info": "Info",
+  "integrity_check_errors": "Integrity check errors",
   "integrity_checks": "Integrity Checks",
   "integrity_errors_notification_setting_description": "Receive an email notification when an integrity check finds errors (admins only)",
   "interval": {

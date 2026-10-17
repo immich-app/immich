@@ -128,6 +128,26 @@ describe(IntegrityService.name, () => {
     });
   });
 
+  describe('handleChecksumFiles', () => {
+    it('should queue refresh jobs without a notification when refreshOnly is set', async () => {
+      mocks.integrityReport.streamIntegrityReportsWithAssetChecksum.mockReturnValue(
+        (async function* () {
+          yield { reportId: 'report-id', path: '/a', checksum: Buffer.from('aa') };
+        })() as never,
+      );
+
+      await sut.handleChecksumFiles({ refreshOnly: true });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityChecksumFilesRefresh,
+        data: { items: [{ path: '/a', reportId: 'report-id', checksum: '6161' }] },
+      });
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.NotifyIntegrityErrors }),
+      );
+    });
+  });
+
   describe('handleUntrackedRefresh', () => {
     beforeEach(() => {
       mocks.integrityReport.getTrackedPaths.mockResolvedValue([]);

@@ -235,6 +235,11 @@ describe(IntegrityService.name, () => {
           paths: expect.arrayContaining(['/path/to/file3']),
         },
       });
+
+      expect(job.queue).toHaveBeenLastCalledWith({
+        name: JobName.NotifyIntegrityErrors,
+        data: { type: IntegrityReport.UntrackedFile },
+      });
     });
 
     it('queues jobs to refresh reports', async () => {
@@ -423,6 +428,11 @@ describe(IntegrityService.name, () => {
             { path: '/path/to/file2', assetId: assetId2, fileAssetId: null, reportId },
           ]),
         },
+      });
+
+      expect(job.queue).toHaveBeenLastCalledWith({
+        name: JobName.NotifyIntegrityErrors,
+        data: { type: IntegrityReport.MissingFile },
       });
 
       expect(job.queue).not.toHaveBeenCalledWith(
