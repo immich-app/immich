@@ -940,10 +940,11 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
   getBaseInputOptions() {
     return ['-init_hw_device', `vaapi=accel:${this.device}`, '-filter_hw_device', 'accel'];
   }
-
+  
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = this.getToneMapping(videoStream);
-    options.push('hwupload=extra_hw_frames=64');
+    // some drivers (e.g. Mesa radeonsi on AMD) reject yuv420p surfaces, so upload as nv12
+    options.push('format=nv12', 'hwupload=extra_hw_frames=64');
     if (this.shouldScale(videoStream)) {
       options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`);
     }
