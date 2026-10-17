@@ -99,13 +99,44 @@ void main() {
       });
 
       testWidgets('trashes a merged asset and removes its device copy', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
         final asset = owned(localId: 'local');
 
         await pumpDelete(tester, {asset});
-        await tester.pumpAndSettle();
+        await respondToDialog(tester, confirm: true);
 
         verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
         verify(() => assetService.trash([asset.id])).called(1);
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('does not trash a merged asset when the device deletion prompt is cancelled', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+        final asset = owned(localId: 'local');
+
+        await pumpDelete(tester, {asset});
+        await respondToDialog(tester, confirm: false);
+
+        verifyNever(() => cleanupService.deleteLocalAssets(any()));
+        verifyNever(() => assetService.trash(any()));
+        verifyNever(() => assetService.delete(any()));
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('does not trash a merged asset when the MANAGE_MEDIA prompt is cancelled', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        await StoreService.I.put(StoreKey.manageLocalMediaAndroid, true);
+        final asset = owned(localId: 'local');
+
+        await pumpDelete(tester, {asset});
+        await respondToDialog(tester, confirm: false);
+
+        verifyNever(() => cleanupService.deleteLocalAssets(any()));
+        verifyNever(() => assetService.trash(any()));
+        verifyNever(() => assetService.delete(any()));
+        debugDefaultTargetPlatformOverride = null;
       });
 
       testWidgets('finishes trashing when the action context is disposed during local cleanup', (tester) async {
@@ -323,6 +354,21 @@ void main() {
 
         verify(() => assetService.trash([backedUp.id])).called(1);
         verify(() => cleanupService.deleteLocalAssets(['local', localOnly.id])).called(1);
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('mixed selection below API 30 deletes nothing when the prompt is cancelled', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+        final backedUp = owned(localId: 'local');
+        final localOnly = LocalAssetFactory.create();
+
+        await pumpDelete(tester, {backedUp, localOnly});
+        await respondToDialog(tester, confirm: false);
+
+        verifyNever(() => cleanupService.deleteLocalAssets(any()));
+        verifyNever(() => assetService.trash(any()));
+        verifyNever(() => assetService.delete(any()));
         debugDefaultTargetPlatformOverride = null;
       });
     });

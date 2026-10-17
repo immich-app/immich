@@ -17,6 +17,7 @@ import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
 typedef _State = ({List<String> localIds, List<String> remoteIds, bool trash, bool isLocalOnly});
+typedef _CleanupResult = ({bool cancelled, int deletedCount});
 
 final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, source) {
   final assets = ref.watch(assetsActionProvider(source));
@@ -106,11 +107,11 @@ class DeleteAction extends AssetActionBuilder {
     required bool isLocalOnly,
   }) async {
     final count = await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
-    if (count <= 0 || !context.mounted) {
+    if (count.deletedCount <= 0 || !context.mounted) {
       return null;
     }
 
-    return context.t.cleanup_deleted_assets(count: count);
+    return context.t.cleanup_deleted_assets(count: count.deletedCount);
   }
 
   Future<String?> _moveToTrash(
@@ -123,7 +124,10 @@ class DeleteAction extends AssetActionBuilder {
     final assetService = ref.read(assetServiceProvider);
     final message = context.t.trash_action_prompt(count: remoteIds.length);
     if (localIds.isNotEmpty) {
-      await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
+      final result = await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
+      if (result.cancelled) {
+        return null;
+      }
     }
 
     await assetService.trash(remoteIds);
@@ -193,12 +197,12 @@ class CleanupLocalAction extends AssetActionBuilder {
     final clearSelection = ref.read(clearSelectionProvider(source));
 
     try {
-      final count = await _cleanupLocalAssets(context, ref, assetIds);
-      if (count <= 0 || !context.mounted) {
+      final result = await _cleanupLocalAssets(context, ref, assetIds);
+      if (result.deletedCount <= 0 || !context.mounted) {
         return;
       }
 
-      toastService.success(context.t.cleanup_deleted_assets(count: count));
+      toastService.success(context.t.cleanup_deleted_assets(count: result.deletedCount));
       clearSelection();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to remove the device copies");
@@ -206,8 +210,8 @@ class CleanupLocalAction extends AssetActionBuilder {
   }
 }
 
-/// Removes the device copies of [assetIds], returning how many were deleted.
-Future<int> _cleanupLocalAssets(
+/// Removes the device copies of [assetIds], returning the deletion result.
+Future<_CleanupResult> _cleanupLocalAssets(
   BuildContext context,
   WidgetRef ref,
   List<String> assetIds, {
@@ -215,15 +219,15 @@ Future<int> _cleanupLocalAssets(
   bool isLocalOnly = false,
 }) async {
   if (assetIds.isEmpty) {
-    return 0;
+    return (cancelled: false, deletedCount: 0);
   }
 
   final cleanupService = ref.read(cleanupServiceProvider);
   if (!await _allowsDeletion(context, ref, requestCustomPrompt: requestCustomPrompt, isLocalOnly: isLocalOnly)) {
-    return 0;
+    return (cancelled: true, deletedCount: 0);
   }
 
-  return cleanupService.deleteLocalAssets(assetIds);
+  return (cancelled: false, deletedCount: await cleanupService.deleteLocalAssets(assetIds));
 }
 
 /// iOS always shows a prompt and adds to on device trash
