@@ -47,13 +47,16 @@ export const AlbumUpdateEmail = ({
 
       {cid && (
         <Section className="flex justify-center my-0">
-          <Img
-            className="max-w-[300px] w-full rounded-lg"
-            src={`cid:${cid}`}
-            style={{
-              boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px',
-            }}
-          />
+          <Link href={`${baseUrl}/albums/${albumId}`}>
+            <Img
+              className="max-w-[300px] w-full rounded-lg"
+              src={`cid:${cid}`}
+              alt={albumName}
+              style={{
+                boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px',
+              }}
+            />
+          </Link>
         </Section>
       )}
 
