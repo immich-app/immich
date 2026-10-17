@@ -28,6 +28,7 @@
   const { data }: Props = $props();
 
   const queue = $derived(queueManager.queues.find((q) => q.name === data.queue.name) ?? data.queue);
+  const failedJobs = $derived(data.failedJobs ?? []);
 
   const { Pause, Resume, Empty, RemoveFailedJobs } = $derived(getQueueActions($t, queue));
   const item = $derived(asQueueItem($t, queue));
@@ -72,6 +73,52 @@
           </CardBody>
         </Card>
       </div>
+
+      {#if failedJobs.length > 0}
+        <div class="mt-8">
+          <Card color="secondary">
+            <CardHeader>
+              <CardTitle>{$t('admin.jobs_failed_details')}</CardTitle>
+            </CardHeader>
+
+            <CardBody>
+              <div class="flex flex-col gap-3">
+                {#each failedJobs as job (job.id ?? `${job.name}-${job.timestamp}`)}
+                  <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                    <div class="flex flex-col gap-1">
+                      <div class="font-medium text-primary">{job.name}</div>
+
+                      {#if job.id}
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{$t('id')}: {job.id}</div>
+                      {/if}
+                    </div>
+
+                    {#if job.failedReason}
+                      <div class="mt-3 text-sm wrap-break-word text-red-600 dark:text-red-400">
+                        {$t('admin.job_failed_reason')}: {job.failedReason}
+                      </div>
+                    {/if}
+
+                    <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                      <span>{$t('admin.job_attempts')}: {job.attemptsMade}</span>
+
+                      <span>{$t('created')}: {new Date(job.timestamp).toLocaleString()}</span>
+
+                      {#if job.processedOn}
+                        <span>{$t('admin.job_processed')}: {new Date(job.processedOn).toLocaleString()}</span>
+                      {/if}
+
+                      {#if job.finishedOn}
+                        <span>{$t('admin.job_finished')}: {new Date(job.finishedOn).toLocaleString()}</span>
+                      {/if}
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </CardBody>
+          </Card>
+        </div>
+      {/if}
     </Container>
   </div>
 </AdminPageLayout>
