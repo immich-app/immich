@@ -1,12 +1,16 @@
 import 'dart:async';
 
+import 'package:http/http.dart' show ClientException;
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart' show ApiException;
 
 /// Service responsible for handling application logging.
 ///
@@ -14,8 +18,12 @@ import 'package:logging/logging.dart';
 /// writes them to a persistent [LogRepository], and manages log levels via
 /// [SettingsRepository].
 class LogService {
+  static final _urlAddress = RegExp(r'''https?://[^\s/?#'"<>(),]*''');
+  static final _ipAddress = RegExp(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b');
+
   final LogRepository _logRepository;
   final SettingsRepository _settingsRepository;
+  final StoreService _storeService;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -39,11 +47,13 @@ class LogService {
   static Future<LogService> init({
     required LogRepository logRepository,
     required SettingsRepository settingsRepository,
+    required StoreService storeService,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
       logRepository: logRepository,
       settingsRepository: settingsRepository,
+      storeService: storeService,
       shouldBuffer: shouldBuffer,
     );
     return _instance!;
@@ -52,16 +62,17 @@ class LogService {
   static Future<LogService> create({
     required LogRepository logRepository,
     required SettingsRepository settingsRepository,
+    required StoreService storeService,
     bool shouldBuffer = true,
   }) async {
-    final instance = LogService._(logRepository, settingsRepository, shouldBuffer);
+    final instance = LogService._(logRepository, settingsRepository, storeService, shouldBuffer);
     await logRepository.truncate(limit: kLogTruncateLimit);
     final level = instance._settingsRepository.appConfig.logLevel;
     Logger.root.level = Level.LEVELS.elementAtOrNull(level.index) ?? Level.INFO;
     return instance;
   }
 
-  LogService._(this._logRepository, this._settingsRepository, this._shouldBuffer) {
+  LogService._(this._logRepository, this._settingsRepository, this._storeService, this._shouldBuffer) {
     _logSubscription = Logger.root.onRecord.listen(_handleLogRecord);
   }
 
@@ -74,12 +85,12 @@ class LogService {
     );
 
     final record = LogMessage(
-      message: r.message,
+      message: _redact(r.message),
       level: r.level.toLogLevel(),
       createdAt: r.time,
       logger: r.loggerName,
-      error: r.error?.toString(),
-      stack: r.stackTrace?.toString(),
+      error: r.error == null ? null : _redactError(r.error!),
+      stack: r.stackTrace == null ? null : _redact(r.stackTrace.toString()),
     );
 
     if (_shouldBuffer) {
@@ -98,6 +109,61 @@ class LogService {
   Future<List<LogMessage>> getMessages() async {
     final logsFromDb = await _logRepository.getAll();
     return [..._msgBuffer.reversed, ...logsFromDb];
+  }
+
+  String _redact(String text) {
+    var redacted = text.replaceAllMapped(_urlAddress, (match) => _urlLabel(Uri.tryParse(match[0]!)));
+    final accessToken = _storeService.tryGet(StoreKey.accessToken);
+    if (accessToken != null) {
+      redacted = redacted.replaceAll(accessToken, '[ACCESS TOKEN]');
+    }
+    // as a header map prints it, so a short value like "1" can't match other text
+    for (final header in _settingsRepository.appConfig.network.customHeaders.entries) {
+      redacted = redacted.replaceAll('${header.key}: ${header.value}', '${header.key}: [HEADER VALUE]');
+    }
+    return redacted;
+  }
+
+  String _redactError(Object error) {
+    final redacted = _redact(error.toString());
+    final httpError = error is ApiException ? error.innerException : error;
+    if (httpError is! ClientException) {
+      return redacted;
+    }
+
+    // ok_http also prints the host and its ip on their own: "Failed to connect to host/203.0.113.9:443"
+    final url = httpError.uri;
+    final withoutHost = url == null || url.host.isEmpty
+        ? redacted
+        : redacted.replaceAll(RegExp('\\b${RegExp.escape(url.host)}\\b'), _urlLabel(url));
+    return withoutHost.replaceAll(_ipAddress, '[IP ADDRESS]');
+  }
+
+  String _urlLabel(Uri? url) {
+    if (url == null) {
+      return '[OTHER URL]';
+    }
+
+    // a server url that is also a switching entry gets the entry's label
+    final network = _settingsRepository.appConfig.network;
+    for (var i = 0; i < network.externalEndpointList.length; i++) {
+      if (_isSameAddress(url, network.externalEndpointList[i])) {
+        return '[EXTERNAL URL ${i + 1}]';
+      }
+    }
+    if (_isSameAddress(url, network.localEndpoint)) {
+      return '[LOCAL URL]';
+    }
+    if (_isSameAddress(url, _storeService.tryGet(StoreKey.serverUrl)) ||
+        _isSameAddress(url, _storeService.tryGet(StoreKey.serverEndpoint))) {
+      return '[SERVER URL]';
+    }
+    return '[OTHER URL]';
+  }
+
+  bool _isSameAddress(Uri url, String? savedUrl) {
+    final saved = savedUrl == null ? null : Uri.tryParse(savedUrl);
+    return saved != null && saved.scheme == url.scheme && saved.host == url.host && saved.port == url.port;
   }
 
   Future<void> clearLogs() async {
