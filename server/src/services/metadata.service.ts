@@ -789,9 +789,12 @@ export class MetadataService extends BaseService {
         // (if it did, getByChecksum() would've returned a motionAsset with the same ID as livePhotoVideoId)
         // note asset.livePhotoVideoId is not motionAsset.id yet
         if (asset.livePhotoVideoId) {
+          // the old motion may be the user's own file (linked by livePhotoCID or manually), only remove ones Immich extracted
+          const oldMotion = await this.assetRepository.getById(asset.livePhotoVideoId);
+          const deleteOnDisk = !!oldMotion && StorageCore.isAndroidMotionPath(oldMotion.originalPath);
           await this.jobRepository.queue({
             name: JobName.AssetDelete,
-            data: { id: asset.livePhotoVideoId, deleteOnDisk: true },
+            data: { id: asset.livePhotoVideoId, deleteOnDisk },
           });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
         }
