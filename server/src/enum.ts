@@ -920,6 +920,7 @@ export enum JobName {
   NotifyUserSignup = 'NotifyUserSignup',
   NotifyAlbumInvite = 'NotifyAlbumInvite',
   NotifyAlbumUpdate = 'NotifyAlbumUpdate',
+  NotifyIntegrityErrors = 'NotifyIntegrityErrors',
 
   UserDelete = 'UserDelete',
   UserDeleteCheck = 'UserDeleteCheck',

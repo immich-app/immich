@@ -73,6 +73,10 @@ const EmailNotificationsUpdateSchema = z
     enabled: z.boolean().optional().describe('Whether email notifications are enabled'),
     albumInvite: z.boolean().optional().describe('Whether to receive email notifications for album invites'),
     albumUpdate: z.boolean().optional().describe('Whether to receive email notifications for album updates'),
+    integrity: z
+      .boolean()
+      .optional()
+      .describe('Whether to receive email notifications for integrity check errors (admins only)'),
   })
   .optional()
   .meta({ id: 'EmailNotificationsUpdate' });
@@ -180,6 +184,7 @@ const EmailNotificationsResponseSchema = z
     enabled: z.boolean().describe('Whether email notifications are enabled'),
     albumInvite: z.boolean().describe('Whether to receive email notifications for album invites'),
     albumUpdate: z.boolean().describe('Whether to receive email notifications for album updates'),
+    integrity: z.boolean().describe('Whether to receive email notifications for integrity check errors'),
   })
   .meta({ id: 'EmailNotificationsResponse' });
 

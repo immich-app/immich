@@ -53,6 +53,12 @@
       descriptionTags: '{recipientName}, {albumId}, {albumName}, {baseUrl}',
       templateName: 'album-update',
     },
+    {
+      label: $t('admin.template_email_integrity'),
+      templateKey: 'integrityTemplate' as const,
+      descriptionTags: '{recipientName}, {baseUrl}, {checkType}, {checkName}, {count}',
+      templateName: 'integrity-errors',
+    },
   ];
 
   const isEdited = (templateKey: keyof AdminConfigTemplateEmailsDto) =>
