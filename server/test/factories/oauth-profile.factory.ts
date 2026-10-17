@@ -1,9 +1,9 @@
-import { OAuthProfile } from 'src/repositories/oauth.repository.js';
+import { OAuthRawProfile } from 'src/repositories/oauth.repository.js';
 import { OAuthProfileLike } from 'test/factories/types.js';
 import { newUuid } from 'test/small.factory.js';
 
 export class OAuthProfileFactory {
-  private constructor(private value: OAuthProfile) {}
+  private constructor(private value: OAuthRawProfile) {}
 
   static create(dto: OAuthProfileLike = {}) {
     return OAuthProfileFactory.from(dto).build();

@@ -1,8 +1,10 @@
 import { createZodDto } from 'nestjs-zod';
+import sanitize from 'sanitize-filename';
 import z from 'zod';
 import type { UserMetadataItem } from 'src/types.js';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
 import { ImmichCookie, UserMetadataKey } from 'src/enum.js';
+import { HumanReadableSize } from 'src/utils/bytes.js';
 import { toEmail } from 'src/validation.js';
 
 export type CookieResponse = {
@@ -18,6 +20,47 @@ export type AuthDto = {
   sharedLink?: AuthSharedLink;
   session?: AuthSession;
 };
+
+const storageLabelClaimSchema = z.string().transform((label) => sanitize(label));
+const quotaSizeInBytesSchema = z
+  .int()
+  .min(-1)
+  .nullable()
+  .transform((quota) => (quota === null || quota === -1 ? null : quota * HumanReadableSize.GiB));
+const userRoleSchema = z.union([z.literal('user'), z.literal('admin')]);
+
+export const OAuthProfileSchema = z.object({
+  defaults: z.object({
+    immich_quota_bytes: quotaSizeInBytesSchema,
+  }),
+  sub: z.string(),
+  email: z.string().trim().toLowerCase().optional().catch(undefined),
+  email_verified: z.coerce.boolean().optional().catch(undefined),
+  name: z.string().trim().optional().catch(undefined),
+  given_name: z.string().trim().optional().catch(undefined),
+  family_name: z.string().trim().optional().catch(undefined),
+  preferred_username: z.string().trim().optional().catch(undefined),
+  picture: z.string().optional().catch(undefined),
+  immich_storage_label: storageLabelClaimSchema.optional().catch(undefined),
+  immich_quota_bytes: quotaSizeInBytesSchema.optional().catch(undefined),
+  immich_role: z
+    .union([userRoleSchema, z.array(userRoleSchema)])
+    .transform((value) => {
+      if (!value) {
+        return;
+      }
+
+      const roles = Array.isArray(value) ? value : [value];
+      if (roles.includes('admin')) {
+        return 'admin';
+      }
+
+      return 'user';
+    })
+    .optional()
+    .catch(undefined),
+});
+export type OAuthProfile = z.infer<typeof OAuthProfileSchema>;
 
 const LoginCredentialSchema = z
   .object({
