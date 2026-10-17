@@ -61,6 +61,7 @@ abstract class AppConfig with _$AppConfig {
             .networkAutoEndpointSwitching => network.autoEndpointSwitching,
             .networkPreferredWifiName => network.preferredWifiName,
             .networkLocalEndpoint => network.localEndpoint,
+            .networkLocalWifiNetworks => network.localWifiNetworks,
             .networkExternalEndpointList => network.externalEndpointList,
             .networkCustomHeaders => network.customHeaders,
             .albumSortMode => album.sortMode,
@@ -117,6 +118,9 @@ abstract class AppConfig with _$AppConfig {
         network: network.copyWith(preferredWifiName: .fromNullable(value as String?)),
       ),
       .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: .fromNullable(value as String?))),
+      .networkLocalWifiNetworks => copyWith(
+        network: network.copyWith(localWifiNetworks: value as Map<String, String>),
+      ),
       .networkExternalEndpointList => copyWith(network: network.copyWith(externalEndpointList: value as List<String>)),
       .networkCustomHeaders => copyWith(network: network.copyWith(customHeaders: value as Map<String, String>)),
       .albumSortMode => copyWith(album: album.copyWith(sortMode: value as AlbumSortMode)),

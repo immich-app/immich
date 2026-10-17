@@ -180,6 +180,11 @@ class ApiService {
     if (localEndpoint != null && localEndpoint.isNotEmpty) {
       urls.add(localEndpoint);
     }
+    for (final url in network.wifiNetworks.values) {
+      if (url.isNotEmpty) {
+        urls.add(url);
+      }
+    }
     for (final url in network.externalEndpointList) {
       if (url.isNotEmpty) {
         urls.add(url);
