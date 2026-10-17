@@ -1,6 +1,7 @@
 <script lang="ts">
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { handleRestoreUserAdmin } from '$lib/services/user-admin.service';
+  import { executeMutation } from '$lib/queries/client';
+  import { restoreUserAdminMutation } from '$lib/queries/user-admin.query';
   import { type UserAdminResponseDto } from '@immich/sdk';
   import { ConfirmModal } from '@immich/ui';
   import { mdiDeleteRestore } from '@mdi/js';
@@ -18,10 +19,7 @@
       return;
     }
 
-    const success = await handleRestoreUserAdmin(user);
-    if (success) {
-      onClose();
-    }
+    await executeMutation(restoreUserAdminMutation, [{ id: user.id }], { onSuccess: onClose });
   };
 </script>
 

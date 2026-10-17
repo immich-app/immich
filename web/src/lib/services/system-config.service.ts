@@ -1,12 +1,10 @@
-import { getConfig, updateConfig, type ServerFeaturesDto, type AdminConfigDto } from '@immich/sdk';
-import { toastManager, type ActionItem } from '@immich/ui';
+import type { AdminConfigDto, ServerFeaturesDto } from '@immich/sdk';
+import type { ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
-import { isEqual } from 'lodash-es';
 import type { MessageFormatter } from 'svelte-i18n';
-import { eventManager } from '$lib/managers/event-manager.svelte';
+import { executeMutation } from '$lib/queries/client';
+import { updateConfigMutation } from '$lib/queries/system-config.query';
 import { copyToClipboard, downloadJson } from '$lib/utils';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getSystemConfigActions = (
   $t: MessageFormatter,
@@ -44,26 +42,7 @@ export const getSystemConfigActions = (
   return { CopyToClipboard, Download, Upload };
 };
 
-export const handleSystemConfigSave = async (update: Partial<AdminConfigDto>) => {
-  const $t = await getFormatter();
-  const config = await getConfig();
-  const adminConfigDto = { ...config, ...update };
-
-  if (isEqual(config, adminConfigDto)) {
-    return;
-  }
-
-  try {
-    const newConfig = await updateConfig({ adminConfigDto });
-
-    eventManager.emit('SystemConfigUpdate', newConfig);
-    toastManager.primary($t('settings_saved'));
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_save_settings'));
-  }
-};
-
-export const handleUploadConfig = () => {
+const handleUploadConfig = () => {
   const input = document.createElement('input');
   input.setAttribute('type', 'file');
   input.setAttribute('accept', '.json');
@@ -76,8 +55,7 @@ export const handleUploadConfig = () => {
     }
     const reader = async () => {
       const text = await file.text();
-      const newConfig = JSON.parse(text);
-      await handleSystemConfigSave(newConfig);
+      await executeMutation(updateConfigMutation, JSON.parse(text));
     };
     reader()
       .catch((error) => console.error('Error handling JSON config upload', error))

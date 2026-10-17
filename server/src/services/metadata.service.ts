@@ -298,7 +298,7 @@ export class MetadataService extends BaseService {
         exifTags.Author ??
         null,
       fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
-      iso: validate(exifTags.ISO) as number,
+      iso: validate(exifTags.RecommendedExposureIndex ?? exifTags.StandardOutputSensitivity ?? exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: getLensModel(exifTags),
       fNumber: validate(exifTags.FNumber),
@@ -448,7 +448,7 @@ export class MetadataService extends BaseService {
 
     const { sidecarFile } = getAssetFiles(asset.files);
 
-    const isChanged = sidecarPath !== sidecarFile?.path;
+    const isChanged = sidecarPath !== (sidecarFile?.path ?? null);
 
     if (sidecarFile?.path || sidecarPath) {
       this.logger.debug(

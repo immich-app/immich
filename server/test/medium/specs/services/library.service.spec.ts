@@ -1,11 +1,11 @@
 import { Kysely } from 'kysely';
 import { existsSync } from 'node:fs';
-import { copyFile, mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import type { SystemConfig } from 'src/dtos/config.dto.js';
 import { StorageCore } from 'src/cores/storage.core.js';
-import { AssetStatus, JobName, JobStatus } from 'src/enum.js';
+import { AssetFileType, AssetStatus, JobName, JobStatus } from 'src/enum.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
@@ -18,8 +18,9 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryService } from 'src/services/library.service.js';
+import { MetadataService } from 'src/services/metadata.service.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
-import { MediumTestContext, testAssetsDir } from 'test/medium.factory.js';
+import { MediumTestContext, newMediumService } from 'test/medium.factory.js';
 import { newUuid } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
@@ -37,14 +38,9 @@ const createFile = async (filePath: string, modifiedAt: Date = fileModifiedAt) =
   return filePath;
 };
 
-const copyTestAsset = async (source: string, filePath: string, modifiedAt: Date = fileModifiedAt) => {
-  await mkdir(dirname(filePath), { recursive: true });
-  await copyFile(join(testAssetsDir, source), filePath);
-  await utimes(filePath, modifiedAt, modifiedAt);
-  return filePath;
-};
-
 class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
+  private metadataService: MetadataService;
+
   constructor(database: Kysely<DB>) {
     super(LibraryService, {
       database,
@@ -57,6 +53,12 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     jobs.queueAll.mockResolvedValue();
 
     this.getMock(EventRepository).emit.mockResolvedValue();
+
+    this.metadataService = newMediumService(MetadataService, {
+      database,
+      real: [AssetRepository, AssetJobRepository, StorageRepository],
+      mock: [LoggingRepository],
+    }).sut;
   }
 
   async createLibrary(options: { importPaths?: string[]; exclusionPatterns?: string[] } = {}) {
@@ -74,20 +76,45 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     const jobs = this.getMock(JobRepository);
 
     jobs.queue.mockClear();
+    jobs.queueAll.mockClear();
     await this.sut.handleQueueSyncFiles({ id: libraryId });
     for (const [job] of jobs.queue.mock.calls) {
       if (job.name === JobName.LibrarySyncFiles) {
         await this.sut.handleSyncFiles(job.data);
       }
     }
+    await this.discoverSidecars();
 
     jobs.queue.mockClear();
+    jobs.queueAll.mockClear();
     await this.sut.handleQueueSyncAssets({ id: libraryId });
     for (const [job] of jobs.queue.mock.calls) {
       if (job.name === JobName.LibrarySyncAssets) {
         await this.sut.handleSyncAssets(job.data);
       }
     }
+    await this.discoverSidecars();
+  }
+
+  private async discoverSidecars() {
+    for (const [jobs] of this.getMock(JobRepository).queueAll.mock.calls) {
+      for (const job of jobs) {
+        if (job.name === JobName.SidecarCheck) {
+          await this.metadataService.handleSidecarCheck(job.data);
+        }
+      }
+    }
+  }
+
+  getSidecarPaths(libraryId: string) {
+    return this.database
+      .selectFrom('asset')
+      .innerJoin('asset_file', 'asset_file.assetId', 'asset.id')
+      .where('libraryId', '=', libraryId)
+      .where('asset_file.type', '=', AssetFileType.Sidecar)
+      .select(['originalPath', 'asset_file.path as sidecarPath'])
+      .orderBy('originalPath')
+      .execute();
   }
 
   /** The paths a library scan left visible, i.e. neither offline nor trashed */
@@ -476,6 +503,50 @@ describe(LibraryService.name, () => {
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([]);
     });
 
+    // https://github.com/immich-app/immich/issues/23619
+    it.each([
+      { pattern: '**/*.{arw,ARW,dng,DNG}', extensions: ['arw', 'ARW', 'dng', 'DNG'] },
+      { pattern: '**/*.{arw,dng}', extensions: ['arw', 'ARW', 'ArW', 'dng', 'DNG', 'DnG'] },
+      { pattern: '**/*.ARW', extensions: ['arw', 'ARW', 'ArW'] },
+      { pattern: '**/*.{tif,jpg}', extensions: ['tif', 'TIF', 'TiF', 'jpg', 'JPG', 'JpG'] },
+    ])(
+      'should offline existing assets covered by $pattern regardless of extension case',
+      async ({ pattern, extensions }) => {
+        const { sut, ctx } = setup();
+
+        const excludedAssets = await Promise.all(
+          extensions.map((extension, index) => createFile(join(importRoot, 'nested', `asset${index}.${extension}`))),
+        );
+        const includedAsset = await createFile(join(importRoot, 'included.png'));
+        const library = await ctx.createLibrary({ importPaths: [importRoot] });
+
+        await ctx.scan(library.id);
+        await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([...excludedAssets, includedAsset].sort());
+
+        await sut.update(library.id, { exclusionPatterns: [pattern] });
+        await ctx.scan(library.id);
+
+        await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([includedAsset]);
+        const excluded = await ctx.database
+          .selectFrom('asset')
+          .select(['originalPath', 'isOffline', 'deletedAt'])
+          .where('libraryId', '=', library.id)
+          .where('originalPath', 'in', excludedAssets)
+          .orderBy('originalPath')
+          .execute();
+        expect(excluded).toEqual(
+          excludedAssets.sort().map((originalPath) => ({
+            originalPath,
+            isOffline: true,
+            deletedAt: expect.any(Date),
+          })),
+        );
+
+        await ctx.scan(library.id);
+        await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([includedAsset]);
+      },
+    );
+
     // https://github.com/immich-app/immich/issues/17121
     it('should respect exclusion patterns when using multiple import paths', async () => {
       const { sut, ctx } = setup();
@@ -813,95 +884,38 @@ describe(LibraryService.name, () => {
       expect(updated).toEqual(expect.objectContaining({ isOffline: false }));
       expect(updated?.deletedAt).toBeInstanceOf(Date);
     });
-
-    it('should queue sidecar checks for assets whose file changed', async () => {
-      const { sut, ctx } = setup();
-      const jobs = ctx.getMock(JobRepository);
-      const library = await ctx.createLibrary({ importPaths: [importPath] });
-      const rawPath = await copyTestAsset('formats/raw/Nikon/D80/glarus.nef', join(importPath, 'glarus.nef'));
-
-      const { asset } = await ctx.newAsset({
-        ownerId: library.ownerId,
-        libraryId: library.id,
-        originalPath: rawPath,
-        // the file on disk has a newer modified time
-        fileModifiedAt: new Date(fileModifiedAt.valueOf() - 1000),
-        isExternal: true,
-        isOffline: false,
-        status: AssetStatus.Active,
-      });
-
-      await expect(
-        sut.handleSyncAssets({
-          libraryId: library.id,
-          importPaths: library.importPaths,
-          exclusionPatterns: library.exclusionPatterns,
-          assetIds: [asset.id],
-          progressCounter: 1,
-          totalAssets: 1,
-        }),
-      ).resolves.toBe(JobStatus.Success);
-
-      expect(jobs.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.SidecarCheck,
-          data: { id: asset.id, source: 'upload' },
-        },
-      ]);
-    });
-
-    it('should not queue sidecar checks for unchanged assets', async () => {
-      const { sut, ctx } = setup();
-      const jobs = ctx.getMock(JobRepository);
-      const library = await ctx.createLibrary({ importPaths: [importPath] });
-      const rawPath = await copyTestAsset('formats/raw/Nikon/D80/glarus.nef', join(importPath, 'glarus.nef'));
-
-      const { asset } = await ctx.newAsset({
-        ownerId: library.ownerId,
-        libraryId: library.id,
-        originalPath: rawPath,
-        fileModifiedAt,
-        isExternal: true,
-        isOffline: false,
-        status: AssetStatus.Active,
-      });
-
-      await expect(
-        sut.handleSyncAssets({
-          libraryId: library.id,
-          importPaths: library.importPaths,
-          exclusionPatterns: library.exclusionPatterns,
-          assetIds: [asset.id],
-          progressCounter: 1,
-          totalAssets: 1,
-        }),
-      ).resolves.toBe(JobStatus.Success);
-
-      expect(jobs.queueAll).not.toHaveBeenCalled();
-    });
   });
 
-  describe('handleSyncFiles', () => {
-    it('should queue sidecar checks for newly imported assets', async () => {
-      const { sut, ctx } = setup();
-      const jobs = ctx.getMock(JobRepository);
-      const library = await ctx.createLibrary({ importPaths: [importPath] });
-      const rawPath = await copyTestAsset('formats/raw/Nikon/D80/glarus.nef', join(importPath, 'glarus.nef'));
+  describe('sidecar discovery during library scans', () => {
+    it('should only associate with sidecars in the same directory across multiple scan batches and import paths', async () => {
+      const { ctx } = setup();
+      const secondImportPath = join(importRoot, 'second');
+      const library = await ctx.createLibrary({
+        importPaths: [importPath, secondImportPath],
+      });
+      const expected = [];
+      for (const directory of [importPath, secondImportPath]) {
+        for (const name of ['a', 'b', 'c']) {
+          const originalPath = await createFile(join(directory, name, 'photo.jpg'));
+          const sidecarPath = await createFile(join(directory, name, 'photo.xmp'));
+          expected.push({ originalPath, sidecarPath });
+        }
+      }
+      const storage = ctx.get(StorageRepository);
+      const walk = storage.walk.bind(storage);
+      const walker = vi.spyOn(storage, 'walk').mockImplementation((options) => walk({ ...options, take: 2 }));
+      const syncFiles = vi.spyOn(ctx.sut, 'handleSyncFiles');
 
-      await expect(
-        sut.handleSyncFiles({
-          libraryId: library.id,
-          paths: [rawPath],
-          progressCounter: 1,
-        }),
-      ).resolves.toBe(JobStatus.Success);
-
-      expect(jobs.queueAll).toHaveBeenCalledWith([
-        expect.objectContaining({
-          name: JobName.SidecarCheck,
-          data: expect.objectContaining({ id: expect.any(String) }),
-        }),
-      ]);
+      try {
+        await ctx.scan(library.id);
+        expect(syncFiles).toHaveBeenCalledTimes(3);
+      } finally {
+        walker.mockRestore();
+        syncFiles.mockRestore();
+      }
+      await expect(ctx.getSidecarPaths(library.id)).resolves.toEqual(
+        expected.toSorted((a, b) => a.originalPath.localeCompare(b.originalPath)),
+      );
     });
   });
 });

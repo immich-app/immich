@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { handleAddLibraryFolder } from '$lib/services/library.service';
+  import { executeMutation } from '$lib/queries/client';
+  import { updateLibraryMutation } from '$lib/queries/library.query';
   import type { LibraryResponseDto } from '@immich/sdk';
-  import { Field, FormModal, Input, Text } from '@immich/ui';
+  import { Field, FormModal, HelperText, Input, Text } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -12,12 +13,13 @@
 
   const { library, onClose }: Props = $props();
   let value = $state('');
+  const exists = $derived(library.importPaths.includes(value));
 
   const onSubmit = async () => {
-    const success = await handleAddLibraryFolder(library, value);
-    if (success) {
-      onClose();
-    }
+    const importPaths = [...library.importPaths, value];
+    await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { importPaths } }], {
+      onSuccess: onClose,
+    });
   };
 </script>
 
@@ -28,9 +30,13 @@
   {onSubmit}
   size="small"
   submitText={$t('add')}
+  disabled={!value || exists}
 >
   <Text size="small" class="mb-4">{$t('admin.library_folder_description')}</Text>
   <Field label={$t('path')}>
     <Input bind:value />
+    {#if exists}
+      <HelperText color="danger">{$t('errors.library_folder_already_exists')}</HelperText>
+    {/if}
   </Field>
 </FormModal>

@@ -1,6 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
-import { PersonUserRole, mapFaces, mapPerson } from 'src/dtos/person.dto.js';
+import { PeopleUsersUpsertType, PersonUserRole, mapFaces, mapPerson } from 'src/dtos/person.dto.js';
 import { AssetFileType, CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum.js';
 import { PersonService } from 'src/services/person.service.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
@@ -51,6 +51,7 @@ describe(PersonService.name, () => {
         hasNextPage: false,
       });
       mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
+      mocks.partner.getAll.mockResolvedValue([]);
       await expect(sut.getAll(auth, { withHidden: true, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
         total: 2,
@@ -65,6 +66,7 @@ describe(PersonService.name, () => {
       });
       expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, auth.user.id, {
         withHidden: true,
+        partnerIds: [],
       });
     });
 
@@ -77,6 +79,7 @@ describe(PersonService.name, () => {
         hasNextPage: false,
       });
       mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
+      mocks.partner.getAll.mockResolvedValue([]);
       await expect(sut.getAll(auth, { withHidden: false, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
         total: 2,
@@ -91,6 +94,7 @@ describe(PersonService.name, () => {
       });
       expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, auth.user.id, {
         withHidden: false,
+        partnerIds: [],
       });
     });
   });
@@ -122,8 +126,8 @@ describe(PersonService.name, () => {
       const person = PersonFactory.create();
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
-      mocks.person.getForUser.mockResolvedValue(getDehydrated(person));
       mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      mocks.person.getForUser.mockResolvedValue(getDehydrated(person));
       await expect(sut.getById(auth, person.personGroupId)).resolves.toEqual(
         expect.objectContaining({ id: person.personGroupId }),
       );
@@ -221,7 +225,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create({ ownerId: auth.user.id });
 
-      await expect(sut.update(auth, person.personGroupId, { name: 'Person 1' })).rejects.toBeInstanceOf(
+      await expect(sut.update(auth, person.personGroupId, { isHidden: true })).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(mocks.person.update).not.toHaveBeenCalled();
@@ -237,28 +241,46 @@ describe(PersonService.name, () => {
 
       mocks.access.person.checkAccess.mockResolvedValue(new Set());
       await expect(sut.update(auth, 'person-1', { name: 'Person 1' })).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         auth.user.id,
         new Set([{ personGroupId: 'person-1', ownerId: auth.user.id }]),
         PERSON_WRITE_ROLES,
       );
+      expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
     });
 
-    it("should update a person's name", async () => {
+    it('should throw an error when personal properties are updated for another user', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+
+      await expect(
+        sut.update(auth, person.personGroupId, { userId: person.ownerId, name: 'Person 1', isFavorite: true }),
+      ).rejects.toThrow('Only name and birthDate can be updated for other users');
+      expect(mocks.access.person.checkAccess).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
+    });
+
+    it("should update a person's name for every user with write access", async () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create({ ownerId: auth.user.id, name: 'Person 1' });
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
-      mocks.person.update.mockResolvedValue(person);
       mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      mocks.person.update.mockResolvedValue(person);
 
       await expect(sut.update(auth, person.personGroupId, { name: 'Person 1' })).resolves.toEqual(
         expect.objectContaining({ id: person.personGroupId, name: 'Person 1' }),
       );
 
+      expect(mocks.person.updateForWritableOwners).toHaveBeenCalledWith(
+        { userId: auth.user.id, personGroupId: person.personGroupId },
+        {
+          name: 'Person 1',
+        },
+      );
       expect(mocks.person.update).toHaveBeenCalledWith({
-        ownerId: person.ownerId,
+        ownerId: auth.user.id,
         personGroupId: person.personGroupId,
         name: 'Person 1',
       });
@@ -282,16 +304,40 @@ describe(PersonService.name, () => {
         personGroupId: person.personGroupId,
         name: 'Person 1',
       });
+      expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
     });
 
-    it("should update a person's date of birth", async () => {
+    it("should only update the user's own person when userId is the current user", async () => {
       const auth = AuthFactory.create();
-      const person = PersonFactory.create({ ownerId: auth.user.id, birthDate: new Date('1976-06-30') });
+      const person = PersonFactory.create({ ownerId: auth.user.id, name: 'Person 1' });
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
       mocks.person.update.mockResolvedValue(person);
       mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+
+      await expect(
+        sut.update(auth, person.personGroupId, { name: 'Person 1', isFavorite: true, userId: auth.user.id }),
+      ).resolves.toEqual(expect.objectContaining({ id: person.personGroupId, name: 'Person 1' }));
+
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: auth.user.id,
+        personGroupId: person.personGroupId,
+        name: 'Person 1',
+        isFavorite: true,
+      });
+      expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+    });
+
+    it("should update a person's date of birth for every user with write access", async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id, birthDate: new Date('1976-06-30') });
+
+      mocks.access.person.checkAccess.mockResolvedValue(
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+      );
+      mocks.person.update.mockResolvedValue(person);
 
       await expect(sut.update(auth, person.personGroupId, { birthDate: '1976-06-30' })).resolves.toEqual({
         id: person.personGroupId,
@@ -305,14 +351,19 @@ describe(PersonService.name, () => {
         sharedWith: [],
         updatedAt: expect.any(String),
       });
+      expect(mocks.person.updateForWritableOwners).toHaveBeenCalledWith(
+        { userId: auth.user.id, personGroupId: person.personGroupId },
+        {
+          birthDate: '1976-06-30',
+        },
+      );
       expect(mocks.person.update).toHaveBeenCalledWith({
-        ownerId: person.ownerId,
+        ownerId: auth.user.id,
         personGroupId: person.personGroupId,
         birthDate: '1976-06-30',
       });
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
     });
 
     it('should update a person visibility', async () => {
@@ -332,6 +383,7 @@ describe(PersonService.name, () => {
         personGroupId: person.personGroupId,
         isHidden: true,
       });
+      expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
     });
 
@@ -352,7 +404,40 @@ describe(PersonService.name, () => {
         personGroupId: person.personGroupId,
         isFavorite: true,
       });
+      expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+    });
+
+    it('should update shared and personal properties together', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id, name: 'Person 1', isFavorite: true });
+
+      mocks.access.person.checkAccess.mockResolvedValue(
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+      );
+      mocks.person.update.mockResolvedValue(person);
+
+      await expect(sut.update(auth, person.personGroupId, { name: 'Person 1', isFavorite: true })).resolves.toEqual(
+        expect.objectContaining({ name: 'Person 1', isFavorite: true }),
+      );
+
+      expect(mocks.person.updateForWritableOwners).toHaveBeenCalledWith(
+        { userId: auth.user.id, personGroupId: person.personGroupId },
+        {
+          name: 'Person 1',
+        },
+      );
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: auth.user.id,
+        personGroupId: person.personGroupId,
+        name: 'Person 1',
+        isFavorite: true,
+      });
+      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
+        auth.user.id,
+        new Set([{ personGroupId: person.personGroupId, ownerId: auth.user.id }]),
+        PERSON_WRITE_ROLES,
+      );
     });
 
     it("should update a person's thumbnailPath", async () => {
@@ -389,9 +474,7 @@ describe(PersonService.name, () => {
     it('should throw an error when the face feature assetId is invalid', async () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create({ ownerId: auth.user.id });
-      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
-      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['-1']));
       mocks.person.getForFeatureFaceUpdate.mockResolvedValue(undefined);
 
@@ -399,7 +482,7 @@ describe(PersonService.name, () => {
         BadRequestException,
       );
       expect(mocks.person.update).not.toHaveBeenCalled();
-      expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_WRITE_ROLES);
+      expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
     });
   });
 
@@ -411,6 +494,7 @@ describe(PersonService.name, () => {
         { error: BulkIdErrorReason.UNKNOWN, id: 'person-1', success: false },
       ]);
       expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.person.updateForWritableOwners).not.toHaveBeenCalled();
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set([{ personGroupId: 'person-1', ownerId: authStub.admin.user.id }]),
@@ -479,7 +563,7 @@ describe(PersonService.name, () => {
       mocks.person.getFaces.mockResolvedValue([getForAssetFace(face)]);
       mocks.asset.getForFaces.mockResolvedValue({ edits: [], ...asset.exifInfo });
       await expect(sut.getFacesById(auth, { id: face.assetId })).resolves.toStrictEqual([
-        mapFaces(getForAssetFace(face), auth),
+        mapFaces(getForAssetFace(face)),
       ]);
     });
 
@@ -1407,7 +1491,7 @@ describe(PersonService.name, () => {
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
     });
 
-    it('should only include partners that are shown in the timeline', async () => {
+    it('should include all partners that are shown in the timeline', async () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
@@ -1423,7 +1507,7 @@ describe(PersonService.name, () => {
       await expect(sut.getStatistics(auth, person.personGroupId)).resolves.toEqual({ assets: 3 });
       expect(mocks.person.getStatistics).toHaveBeenCalledWith(person.personGroupId, {
         ownerId: auth.user.id,
-        partnerIds: [inTimeline.id],
+        partnerIds: [inTimeline.id, notInTimeline.id],
       });
     });
 
@@ -1441,14 +1525,91 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('upsertPeopleUsers', () => {
+    it('should reject sharing a person with yourself', async () => {
+      const auth = AuthFactory.create();
+
+      await expect(
+        sut.upsertPeopleUsers(auth, {
+          personIds: [newUuid()],
+          sharedWithIds: [auth.user.id],
+          role: PersonUserRole.Read,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.personUser.createAll).not.toHaveBeenCalled();
+    });
+
+    it('should share the given people', async () => {
+      const auth = AuthFactory.create();
+      const user = UserFactory.create({ id: auth.user.id });
+      const sharedWith = UserFactory.create({ clusterGroupId: user.clusterGroupId });
+      const personId = newUuid();
+
+      mocks.access.person.checkAccess.mockResolvedValue(new Set([{ personGroupId: personId, ownerId: auth.user.id }]));
+      mocks.user.get.mockResolvedValue(user);
+      mocks.clusterGroup.getUsers.mockResolvedValue([user, sharedWith]);
+
+      await sut.upsertPeopleUsers(auth, {
+        personIds: [personId],
+        sharedWithIds: [sharedWith.id],
+        role: PersonUserRole.Read,
+      });
+
+      expect(mocks.personUser.createAllForOwner).not.toHaveBeenCalled();
+      expect(mocks.personUser.createAll).toHaveBeenCalledWith([
+        { personGroupId: personId, sharedById: auth.user.id, sharedWithId: sharedWith.id, role: PersonUserRole.Read },
+      ]);
+    });
+
+    it('should share every person owned by the user when type is everyone', async () => {
+      const auth = AuthFactory.create();
+      const user = UserFactory.create({ id: auth.user.id });
+      const sharedWith = UserFactory.create({ clusterGroupId: user.clusterGroupId });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.clusterGroup.getUsers.mockResolvedValue([user, sharedWith]);
+
+      await sut.upsertPeopleUsers(auth, {
+        type: PeopleUsersUpsertType.Everyone,
+        sharedWithIds: [sharedWith.id],
+        role: PersonUserRole.Write,
+      });
+
+      expect(mocks.access.person.checkAccess).not.toHaveBeenCalled();
+      expect(mocks.personUser.createAll).not.toHaveBeenCalled();
+      expect(mocks.personUser.createAllForOwner).toHaveBeenCalledWith({
+        ownerId: auth.user.id,
+        sharedWithIds: [sharedWith.id],
+        role: PersonUserRole.Write,
+      });
+    });
+
+    it('should reject users outside the cluster group', async () => {
+      const auth = AuthFactory.create();
+      const user = UserFactory.create({ id: auth.user.id });
+      const outsider = UserFactory.create();
+      const personId = newUuid();
+
+      mocks.access.person.checkAccess.mockResolvedValue(new Set([{ personGroupId: personId, ownerId: auth.user.id }]));
+      mocks.user.get.mockResolvedValue(user);
+      mocks.clusterGroup.getUsers.mockResolvedValue([user]);
+
+      await expect(
+        sut.upsertPeopleUsers(auth, { personIds: [personId], sharedWithIds: [outsider.id], role: PersonUserRole.Read }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.personUser.createAll).not.toHaveBeenCalled();
+    });
+  });
+
   describe('mapFace', () => {
     it('should map a face', () => {
       const user = UserFactory.create();
-      const auth = AuthFactory.create({ id: user.id });
       const person = PersonFactory.create({ ownerId: user.id });
       const face = AssetFaceFactory.from().person(person).build();
 
-      expect(mapFaces(getForAssetFace(face), auth)).toEqual({
+      expect(mapFaces(getForAssetFace(face))).toEqual({
         boundingBoxX1: 100,
         boundingBoxX2: 200,
         boundingBoxY1: 100,
@@ -1462,7 +1623,7 @@ describe(PersonService.name, () => {
     });
 
     it('should not map person if person is null', () => {
-      expect(mapFaces(getForAssetFace(AssetFaceFactory.create()), AuthFactory.create()).person).toBeNull();
+      expect(mapFaces(getForAssetFace(AssetFaceFactory.create())).person).toBeNull();
     });
   });
 });

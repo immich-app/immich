@@ -692,6 +692,7 @@ export type PeopleResponse = {
     minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb: boolean;
+    updateStrategy: PersonUpdateStrategy;
 };
 export type PurchaseResponse = {
     /** Date until which to hide buy button */
@@ -778,6 +779,7 @@ export type PeopleUpdate = {
     minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb?: boolean;
+    updateStrategy?: PersonUpdateStrategy;
 };
 export type PurchaseUpdate = {
     /** Date until which to hide buy button */
@@ -1601,6 +1603,13 @@ export type UserConfigMapDto = {
     /** Light map style URL */
     lightStyle: string;
 };
+export type UserConfigSmtpDto = {
+    /** Whether SMTP email notifications are enabled */
+    enabled: boolean;
+};
+export type UserConfigNotificationsDto = {
+    smtp: UserConfigSmtpDto;
+};
 export type UserConfigOAuthDto = {
     /** Auto launch */
     autoLaunch: boolean;
@@ -1625,10 +1634,6 @@ export type UserConfigServerDto = {
     /** Public users */
     publicUsers: boolean;
 };
-export type UserConfigThemeDto = {
-    /** Custom CSS for theming */
-    customCss: string;
-};
 export type UserConfigTrashDto = {
     /** Days */
     days: number;
@@ -1644,11 +1649,11 @@ export type UserConfigDto = {
     image: UserConfigImageDto;
     machineLearning: UserConfigMachineLearningDto;
     map: UserConfigMapDto;
+    notifications: UserConfigNotificationsDto;
     oauth: UserConfigOAuthDto;
     passwordLogin: UserConfigPasswordLoginDto;
     reverseGeocoding: UserConfigReverseGeocodingDto;
     server: UserConfigServerDto;
-    theme: UserConfigThemeDto;
     trash: UserConfigTrashDto;
     user: UserConfigUserDto;
 };
@@ -2037,7 +2042,7 @@ export type PeopleUpdateItem = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
-    /** User ID */
+    /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
 export type PeopleUpdateDto = {
@@ -2070,13 +2075,14 @@ export type PersonUsersResponseDto = {
     /** User ID of the user that was given access to this person */
     sharedWithId: string;
 }[];
-export type PersonUsersCreateDto = {
-    /** Person IDs */
-    personIds: string[];
+export type PeopleUsersUpsertDto = {
+    /** Person IDs, required when type is omitted */
+    personIds?: string[];
     /** Role that should be applied */
     role: PersonUserRole;
     /** User IDs that should be given access to the person */
     sharedWithIds: string[];
+    "type"?: PeopleUsersUpsertType;
 };
 export type PersonDeleteDto = {
     userId?: string;
@@ -2094,7 +2100,7 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
-    /** User ID */
+    /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
 export type AssetFaceUpdateItem = {
@@ -2173,6 +2179,21 @@ export type PluginTemplateResponseDto = {
     /** Ui hints, for example "smart-album" */
     uiHints: string[];
 };
+export type PublicConfigFFmpegRealtimeDto = {
+    /** Enable real-time HLS transcoding (alpha) */
+    enabled: boolean;
+};
+export type PublicConfigFFmpegDto = {
+    realtime: PublicConfigFFmpegRealtimeDto;
+};
+export type PublicConfigMapDto = {
+    /** Dark map style URL */
+    darkStyle: string;
+    /** Enabled */
+    enabled: boolean;
+    /** Light map style URL */
+    lightStyle: string;
+};
 export type PublicConfigOAuthDto = {
     /** Auto launch */
     autoLaunch: boolean;
@@ -2189,15 +2210,12 @@ export type PublicConfigServerDto = {
     /** Login page message */
     loginPageMessage: string;
 };
-export type PublicConfigThemeDto = {
-    /** Custom CSS for theming */
-    customCss: string;
-};
 export type PublicConfigDto = {
+    ffmpeg: PublicConfigFFmpegDto;
+    map: PublicConfigMapDto;
     oauth: PublicConfigOAuthDto;
     passwordLogin: PublicConfigPasswordLoginDto;
     server: PublicConfigServerDto;
-    theme: PublicConfigThemeDto;
 };
 export type QueueResponseDto = {
     /** Whether the queue is paused */
@@ -2908,6 +2926,8 @@ export type ServerStorageResponseDto = {
     diskUseRaw: number;
 };
 export type ServerVersionResponseDto = {
+    /** Highest feature level supported by the server, which increments independently of the release version */
+    featureLevel: number;
     /** Major version number */
     major: number;
     /** Minor version number */
@@ -3719,6 +3739,33 @@ export type SyncMemoryDeleteV1 = {
     memoryId: string;
 };
 export type SyncMemoryV1 = {
+    /** Created at */
+    createdAt: string;
+    /** Data */
+    data: {
+        [key: string]: any;
+    };
+    /** Deleted at */
+    deletedAt: string | null;
+    /** Hide at */
+    hideAt: string | null;
+    /** Memory ID */
+    id: string;
+    /** Is saved */
+    isSaved: boolean;
+    /** Memory at */
+    memoryAt: string;
+    /** Owner ID */
+    ownerId: string;
+    /** Seen at */
+    seenAt: string | null;
+    /** Show at */
+    showAt: string | null;
+    "type": MemoryTypeV1;
+    /** Updated at */
+    updatedAt: string;
+};
+export type SyncMemoryV2 = {
     /** Created at */
     createdAt: string;
     /** Data */
@@ -6100,11 +6147,12 @@ export function deletePeople({ peopleDeleteDto }: {
 /**
  * Get all people
  */
-export function getAllPeople({ closestAssetId, closestPersonId, isFavorite, isHidden, page, sharedById, sharedWithId, size, withHidden }: {
+export function getAllPeople({ closestAssetId, closestPersonId, isFavorite, isHidden, name, page, sharedById, sharedWithId, size, withHidden }: {
     closestAssetId?: string;
     closestPersonId?: string;
     isFavorite?: boolean;
     isHidden?: boolean;
+    name?: string;
     page?: number;
     sharedById?: string;
     sharedWithId?: string;
@@ -6119,6 +6167,7 @@ export function getAllPeople({ closestAssetId, closestPersonId, isFavorite, isHi
         closestPersonId,
         isFavorite,
         isHidden,
+        name,
         page,
         sharedById,
         sharedWithId,
@@ -6209,15 +6258,15 @@ export function getUsersForPeople({ direction, personId, role, sharedById, share
     }));
 }
 /**
- * Give users access to people
+ * Upsert user access
  */
-export function addUsersToPeople({ personUsersCreateDto }: {
-    personUsersCreateDto: PersonUsersCreateDto;
+export function upsertPeopleUsers({ peopleUsersUpsertDto }: {
+    peopleUsersUpsertDto: PeopleUsersUpsertDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/people/users", oazapfts.json({
         ...opts,
         method: "PUT",
-        body: personUsersCreateDto
+        body: peopleUsersUpsertDto
     })));
 }
 /**
@@ -8074,6 +8123,10 @@ export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
 }
+export enum PersonUpdateStrategy {
+    Self = "self",
+    Everyone = "everyone"
+}
 export enum AssetVisibility {
     Archive = "archive",
     Timeline = "timeline",
@@ -8374,6 +8427,9 @@ export enum SharingDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
 }
+export enum PeopleUsersUpsertType {
+    Everyone = "everyone"
+}
 export enum WorkflowType {
     AssetV1 = "AssetV1"
 }
@@ -8527,8 +8583,10 @@ export enum SyncEntityType {
     AlbumToAssetDeleteV1 = "AlbumToAssetDeleteV1",
     AlbumToAssetBackfillV1 = "AlbumToAssetBackfillV1",
     MemoryV1 = "MemoryV1",
+    MemoryV2 = "MemoryV2",
     MemoryDeleteV1 = "MemoryDeleteV1",
     MemoryToAssetV1 = "MemoryToAssetV1",
+    MemoryToAssetV2 = "MemoryToAssetV2",
     MemoryToAssetDeleteV1 = "MemoryToAssetDeleteV1",
     StackV1 = "StackV1",
     StackDeleteV1 = "StackDeleteV1",
@@ -8561,7 +8619,9 @@ export enum SyncRequestType {
     AuthUsersV1 = "AuthUsersV1",
     AuthUsersV2 = "AuthUsersV2",
     MemoriesV1 = "MemoriesV1",
+    MemoriesV2 = "MemoriesV2",
     MemoryToAssetsV1 = "MemoryToAssetsV1",
+    MemoryToAssetsV2 = "MemoryToAssetsV2",
     PartnersV1 = "PartnersV1",
     PartnerAssetsV1 = "PartnerAssetsV1",
     PartnerAssetsV2 = "PartnerAssetsV2",
@@ -8584,6 +8644,9 @@ export enum WorkflowResult {
     Halted = "halted",
     Error = "error"
 }
+export enum MemoryTypeV1 {
+    OnThisDay = "on_this_day"
+}
 export enum ReleaseType {
     Major = "major",
     Premajor = "premajor",
@@ -8592,6 +8655,9 @@ export enum ReleaseType {
     Patch = "patch",
     Prepatch = "prepatch",
     Prerelease = "prerelease"
+}
+export enum ServerFeatureLevel {
+    FeatureLevel = 1
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

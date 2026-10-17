@@ -1644,7 +1644,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update an existing user.",
         "operationId": "updateUserAdmin",
         "parameters": [
@@ -1694,8 +1693,7 @@
         ],
         "summary": "Update a user",
         "tags": [
-          "Users (admin)",
-          "Deprecated"
+          "Users (admin)"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1712,13 +1710,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateUserAdmin"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "adminUser.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/admin/users/{id}/calendar-heatmap": {
@@ -1874,7 +1872,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update the preferences of a specific user.",
         "operationId": "updateUserPreferencesAdmin",
         "parameters": [
@@ -1924,8 +1921,7 @@
         ],
         "summary": "Update user preferences",
         "tags": [
-          "Users (admin)",
-          "Deprecated"
+          "Users (admin)"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1942,13 +1938,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateUserPreferencesAdmin"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "adminUser.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/admin/users/{id}/restore": {
@@ -3346,7 +3342,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Updates the name and permissions of an API key by its ID. The current user must own this API key.",
         "operationId": "updateApiKey",
         "parameters": [
@@ -3396,8 +3391,7 @@
         ],
         "summary": "Update an API key",
         "tags": [
-          "API keys",
-          "Deprecated"
+          "API keys"
         ],
         "x-immich-history": [
           {
@@ -3413,13 +3407,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateApiKey"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "apiKey.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/api-keys/{id}/rotate": {
@@ -3882,7 +3876,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Updates multiple assets at the same time.",
         "operationId": "updateAssets",
         "parameters": [],
@@ -3914,8 +3907,7 @@
         ],
         "summary": "Update assets",
         "tags": [
-          "Assets",
-          "Deprecated"
+          "Assets"
         ],
         "x-immich-history": [
           {
@@ -3931,13 +3923,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateAssets"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/assets/bulk-upload-check": {
@@ -4366,7 +4358,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update information of a specific asset.",
         "operationId": "updateAsset",
         "parameters": [
@@ -4416,8 +4407,7 @@
         ],
         "summary": "Update an asset",
         "tags": [
-          "Assets",
-          "Deprecated"
+          "Assets"
         ],
         "x-immich-history": [
           {
@@ -4433,13 +4423,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateAsset"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/assets/{id}/edits": {
@@ -7648,7 +7638,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update an existing external library.",
         "operationId": "updateLibrary",
         "parameters": [
@@ -7698,8 +7687,7 @@
         ],
         "summary": "Update a library",
         "tags": [
-          "Libraries",
-          "Deprecated"
+          "Libraries"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -7716,13 +7704,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateLibrary"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "library.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/libraries/{id}/scan": {
@@ -8553,7 +8541,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update an existing memory by its ID.",
         "operationId": "updateMemory",
         "parameters": [
@@ -8603,8 +8590,7 @@
         ],
         "summary": "Update a memory",
         "tags": [
-          "Memories",
-          "Deprecated"
+          "Memories"
         ],
         "x-immich-history": [
           {
@@ -8620,13 +8606,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateMemory"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "memory.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/memories/{id}/assets": {
@@ -9814,6 +9800,15 @@
             }
           },
           {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "Filter by person name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -10129,16 +10124,16 @@
         ],
         "x-immich-history": [
           {
-            "version": "v3.3",
+            "version": "v3.3.0",
             "state": "Added"
           },
           {
-            "version": "v3.3",
-            "state": "Stable"
+            "version": "v3.3.0",
+            "state": "Beta"
           }
         ],
-        "x-immich-permission": "person.delete",
-        "x-immich-state": "Stable"
+        "x-immich-permission": "person.update",
+        "x-immich-state": "Beta"
       },
       "get": {
         "description": "Retrieve a list of users and the people to which they have been given access",
@@ -10224,26 +10219,26 @@
         ],
         "x-immich-history": [
           {
-            "version": "v3.3",
+            "version": "v3.3.0",
             "state": "Added"
           },
           {
-            "version": "v3.3",
-            "state": "Stable"
+            "version": "v3.3.0",
+            "state": "Beta"
           }
         ],
         "x-immich-permission": "person.read",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Beta"
       },
       "put": {
         "description": "Give users access to people",
-        "operationId": "addUsersToPeople",
+        "operationId": "upsertPeopleUsers",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PersonUsersCreateDto"
+                "$ref": "#/components/schemas/PeopleUsersUpsertDto"
               }
             }
           },
@@ -10265,22 +10260,22 @@
             "api_key": []
           }
         ],
-        "summary": "Give users access to people",
+        "summary": "Upsert user access",
         "tags": [
           "People"
         ],
         "x-immich-history": [
           {
-            "version": "v3.3",
+            "version": "v3.3.0",
             "state": "Added"
           },
           {
-            "version": "v3.3",
-            "state": "Stable"
+            "version": "v3.3.0",
+            "state": "Beta"
           }
         ],
         "x-immich-permission": "person.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Beta"
       }
     },
     "/people/{id}": {
@@ -10406,7 +10401,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update an individual person.",
         "operationId": "updatePerson",
         "parameters": [
@@ -10456,8 +10450,7 @@
         ],
         "summary": "Update person",
         "tags": [
-          "People",
-          "Deprecated"
+          "People"
         ],
         "x-immich-history": [
           {
@@ -10473,13 +10466,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updatePerson"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "person.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/people/{id}/merge": {
@@ -13782,7 +13775,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update a specific session identified by id.",
         "operationId": "updateSession",
         "parameters": [
@@ -13832,8 +13824,7 @@
         ],
         "summary": "Update a session",
         "tags": [
-          "Sessions",
-          "Deprecated"
+          "Sessions"
         ],
         "x-immich-history": [
           {
@@ -13849,13 +13840,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateSession"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "session.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/sessions/{id}/lock": {
@@ -14805,7 +14796,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update an existing stack by its ID.",
         "operationId": "updateStack",
         "parameters": [
@@ -14855,8 +14845,7 @@
         ],
         "summary": "Update a stack",
         "tags": [
-          "Stacks",
-          "Deprecated"
+          "Stacks"
         ],
         "x-immich-history": [
           {
@@ -14872,13 +14861,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateStack"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "stack.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/stacks/{id}/assets/{assetId}": {
@@ -15936,7 +15925,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update an existing tag identified by its ID.",
         "operationId": "updateTag",
         "parameters": [
@@ -15986,8 +15974,7 @@
         ],
         "summary": "Update a tag",
         "tags": [
-          "Tags",
-          "Deprecated"
+          "Tags"
         ],
         "x-immich-history": [
           {
@@ -16003,13 +15990,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateTag"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "tag.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/tags/{id}/assets": {
@@ -16812,7 +16799,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update the current user making the API request.",
         "operationId": "updateMyUser",
         "parameters": [],
@@ -16851,8 +16837,7 @@
         ],
         "summary": "Update current user",
         "tags": [
-          "Users",
-          "Deprecated"
+          "Users"
         ],
         "x-immich-history": [
           {
@@ -16868,13 +16853,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateMyUser"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "user.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/users/me/calendar-heatmap": {
@@ -17305,7 +17290,6 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "deprecated": true,
         "description": "Update the preferences of the current user.",
         "operationId": "updateMyPreferences",
         "parameters": [],
@@ -17344,8 +17328,7 @@
         ],
         "summary": "Update my preferences",
         "tags": [
-          "Users",
-          "Deprecated"
+          "Users"
         ],
         "x-immich-history": [
           {
@@ -17361,13 +17344,13 @@
             "state": "Stable"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateMyPreferences"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
         "x-immich-permission": "userPreference.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-state": "Stable"
       }
     },
     "/users/profile-image": {
@@ -17998,7 +17981,6 @@
         "x-immich-permission": "workflow.read"
       },
       "put": {
-        "deprecated": true,
         "description": "Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.",
         "operationId": "updateWorkflow",
         "parameters": [
@@ -18048,8 +18030,7 @@
         ],
         "summary": "Update a workflow",
         "tags": [
-          "Workflows",
-          "Deprecated"
+          "Workflows"
         ],
         "x-immich-history": [
           {
@@ -18057,13 +18038,12 @@
             "state": "Added"
           },
           {
-            "version": "v3",
-            "state": "Deprecated",
-            "replacementId": "updateWorkflow"
+            "version": "v3.0.0",
+            "state": "Updated",
+            "description": "This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly."
           }
         ],
-        "x-immich-permission": "workflow.update",
-        "x-immich-state": "Deprecated"
+        "x-immich-permission": "workflow.update"
       }
     },
     "/workflows/{id}/logs": {
@@ -23545,6 +23525,12 @@
         ],
         "type": "string"
       },
+      "MemoryTypeV1": {
+        "enum": [
+          "on_this_day"
+        ],
+        "type": "string"
+      },
       "MemoryUpdateDto": {
         "properties": {
           "isSaved": {
@@ -24965,11 +24951,15 @@
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
             "type": "boolean"
+          },
+          "updateStrategy": {
+            "$ref": "#/components/schemas/PersonUpdateStrategy"
           }
         },
         "required": [
           "enabled",
-          "sidebarWeb"
+          "sidebarWeb",
+          "updateStrategy"
         ],
         "type": "object"
       },
@@ -25032,6 +25022,9 @@
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
             "type": "boolean"
+          },
+          "updateStrategy": {
+            "$ref": "#/components/schemas/PersonUpdateStrategy"
           }
         },
         "type": "object"
@@ -25090,7 +25083,7 @@
             "type": "string"
           },
           "userId": {
-            "description": "User ID",
+            "description": "Restrict the update to the person record of this User ID",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
@@ -25146,6 +25139,47 @@
           "role"
         ],
         "type": "object"
+      },
+      "PeopleUsersUpsertDto": {
+        "properties": {
+          "personIds": {
+            "description": "Person IDs, required when type is omitted",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "role": {
+            "$ref": "#/components/schemas/PersonUserRole",
+            "description": "Role that should be applied"
+          },
+          "sharedWithIds": {
+            "description": "User IDs that should be given access to the person",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/components/schemas/PeopleUsersUpsertType"
+          }
+        },
+        "required": [
+          "role",
+          "sharedWithIds"
+        ],
+        "type": "object"
+      },
+      "PeopleUsersUpsertType": {
+        "description": "Which people to update when personIds is omitted",
+        "enum": [
+          "everyone"
+        ],
+        "type": "string"
       },
       "Permission": {
         "description": "List of permissions",
@@ -25548,13 +25582,21 @@
             "type": "string"
           },
           "userId": {
-            "description": "User ID",
+            "description": "Restrict the update to the person record of this User ID",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
           }
         },
         "type": "object"
+      },
+      "PersonUpdateStrategy": {
+        "description": "Which person records to update when editing a person",
+        "enum": [
+          "self",
+          "everyone"
+        ],
+        "type": "string"
       },
       "PersonUserRole": {
         "description": "Levels of access for managing people resources on behalf of another user.",
@@ -25564,38 +25606,6 @@
           "admin"
         ],
         "type": "string"
-      },
-      "PersonUsersCreateDto": {
-        "properties": {
-          "personIds": {
-            "description": "Person IDs",
-            "items": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "role": {
-            "$ref": "#/components/schemas/PersonUserRole",
-            "description": "Role that should be applied"
-          },
-          "sharedWithIds": {
-            "description": "User IDs that should be given access to the person",
-            "items": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "personIds",
-          "role",
-          "sharedWithIds"
-        ],
-        "type": "object"
       },
       "PersonUsersDeleteDto": {
         "items": {
@@ -25936,6 +25946,12 @@
       "PublicConfigDto": {
         "description": "Configuration properties that are visible to everyone",
         "properties": {
+          "ffmpeg": {
+            "$ref": "#/components/schemas/PublicConfigFFmpegDto"
+          },
+          "map": {
+            "$ref": "#/components/schemas/PublicConfigMapDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/PublicConfigOAuthDto"
           },
@@ -25944,16 +25960,61 @@
           },
           "server": {
             "$ref": "#/components/schemas/PublicConfigServerDto"
-          },
-          "theme": {
-            "$ref": "#/components/schemas/PublicConfigThemeDto"
           }
         },
         "required": [
+          "ffmpeg",
+          "map",
           "oauth",
           "passwordLogin",
-          "server",
-          "theme"
+          "server"
+        ],
+        "type": "object"
+      },
+      "PublicConfigFFmpegDto": {
+        "properties": {
+          "realtime": {
+            "$ref": "#/components/schemas/PublicConfigFFmpegRealtimeDto"
+          }
+        },
+        "required": [
+          "realtime"
+        ],
+        "type": "object"
+      },
+      "PublicConfigFFmpegRealtimeDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enable real-time HLS transcoding (alpha)",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "PublicConfigMapDto": {
+        "properties": {
+          "darkStyle": {
+            "description": "Dark map style URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "lightStyle": {
+            "description": "Light map style URL",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "darkStyle",
+          "enabled",
+          "lightStyle"
         ],
         "type": "object"
       },
@@ -26000,18 +26061,6 @@
         },
         "required": [
           "loginPageMessage"
-        ],
-        "type": "object"
-      },
-      "PublicConfigThemeDto": {
-        "properties": {
-          "customCss": {
-            "description": "Custom CSS for theming",
-            "type": "string"
-          }
-        },
-        "required": [
-          "customCss"
         ],
         "type": "object"
       },
@@ -27802,6 +27851,16 @@
         ],
         "type": "object"
       },
+      "ServerFeatureLevel": {
+        "description": "Server feature level",
+        "enum": [
+          1
+        ],
+        "type": "integer",
+        "x-enum-varnames": [
+          "FeatureLevel"
+        ]
+      },
       "ServerFeaturesDto": {
         "properties": {
           "configFile": {
@@ -28060,6 +28119,18 @@
       },
       "ServerVersionResponseDto": {
         "properties": {
+          "featureLevel": {
+            "description": "Highest feature level supported by the server, which increments independently of the release version",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              }
+            ]
+          },
           "major": {
             "description": "Major version number",
             "maximum": 9007199254740991,
@@ -28093,6 +28164,7 @@
           }
         },
         "required": [
+          "featureLevel",
           "major",
           "minor",
           "patch",
@@ -31418,8 +31490,10 @@
           "AlbumToAssetDeleteV1",
           "AlbumToAssetBackfillV1",
           "MemoryV1",
+          "MemoryV2",
           "MemoryDeleteV1",
           "MemoryToAssetV1",
+          "MemoryToAssetV2",
           "MemoryToAssetDeleteV1",
           "StackV1",
           "StackDeleteV1",
@@ -31494,6 +31568,102 @@
         "type": "object"
       },
       "SyncMemoryV1": {
+        "properties": {
+          "createdAt": {
+            "description": "Created at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "data": {
+            "additionalProperties": {},
+            "description": "Data",
+            "type": "object"
+          },
+          "deletedAt": {
+            "description": "Deleted at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "hideAt": {
+            "description": "Hide at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Memory ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "isSaved": {
+            "description": "Is saved",
+            "type": "boolean"
+          },
+          "memoryAt": {
+            "description": "Memory at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "ownerId": {
+            "description": "Owner ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "seenAt": {
+            "description": "Seen at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "showAt": {
+            "description": "Show at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/MemoryTypeV1"
+          },
+          "updatedAt": {
+            "description": "Updated at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "data",
+          "deletedAt",
+          "hideAt",
+          "id",
+          "isSaved",
+          "memoryAt",
+          "ownerId",
+          "seenAt",
+          "showAt",
+          "type",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SyncMemoryV2": {
         "properties": {
           "createdAt": {
             "description": "Created at",
@@ -31742,7 +31912,9 @@
           "AuthUsersV1",
           "AuthUsersV2",
           "MemoriesV1",
+          "MemoriesV2",
           "MemoryToAssetsV1",
+          "MemoryToAssetsV2",
           "PartnersV1",
           "PartnerAssetsV1",
           "PartnerAssetsV2",
@@ -32973,6 +33145,9 @@
           "map": {
             "$ref": "#/components/schemas/UserConfigMapDto"
           },
+          "notifications": {
+            "$ref": "#/components/schemas/UserConfigNotificationsDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/UserConfigOAuthDto"
           },
@@ -32984,9 +33159,6 @@
           },
           "server": {
             "$ref": "#/components/schemas/UserConfigServerDto"
-          },
-          "theme": {
-            "$ref": "#/components/schemas/UserConfigThemeDto"
           },
           "trash": {
             "$ref": "#/components/schemas/UserConfigTrashDto"
@@ -33000,11 +33172,11 @@
           "image",
           "machineLearning",
           "map",
+          "notifications",
           "oauth",
           "passwordLogin",
           "reverseGeocoding",
           "server",
-          "theme",
           "trash",
           "user"
         ],
@@ -33177,6 +33349,17 @@
         ],
         "type": "object"
       },
+      "UserConfigNotificationsDto": {
+        "properties": {
+          "smtp": {
+            "$ref": "#/components/schemas/UserConfigSmtpDto"
+          }
+        },
+        "required": [
+          "smtp"
+        ],
+        "type": "object"
+      },
       "UserConfigOAuthDto": {
         "properties": {
           "autoLaunch": {
@@ -33257,15 +33440,15 @@
         ],
         "type": "object"
       },
-      "UserConfigThemeDto": {
+      "UserConfigSmtpDto": {
         "properties": {
-          "customCss": {
-            "description": "Custom CSS for theming",
-            "type": "string"
+          "enabled": {
+            "description": "Whether SMTP email notifications are enabled",
+            "type": "boolean"
           }
         },
         "required": [
-          "customCss"
+          "enabled"
         ],
         "type": "object"
       },

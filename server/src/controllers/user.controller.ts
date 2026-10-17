@@ -79,11 +79,7 @@ export class UserController {
   @Endpoint({
     summary: 'Update current user',
     description: 'Update the current user making the API request.',
-    history: new HistoryBuilder()
-      .added('v1')
-      .beta('v1')
-      .stable('v2')
-      .deprecated('v3', { replacementId: 'updateMyUser' }),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
   })
   updateMyUser(@Auth() auth: AuthDto, @Body() dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
     return this.service.updateMe(auth, dto);
@@ -112,11 +108,7 @@ export class UserController {
   @Endpoint({
     summary: 'Update my preferences',
     description: 'Update the preferences of the current user.',
-    history: new HistoryBuilder()
-      .added('v1')
-      .beta('v1')
-      .stable('v2')
-      .deprecated('v3', { replacementId: 'updateMyPreferences' }),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
   })
   updateMyPreferences(
     @Auth() auth: AuthDto,

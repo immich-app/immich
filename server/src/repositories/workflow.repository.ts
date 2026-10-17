@@ -76,6 +76,7 @@ export class WorkflowRepository {
             .innerJoin('plugin_method', 'plugin_method.id', 'workflow_step.pluginMethodId')
             .whereRef('workflow_step.workflowId', '=', 'workflow.id')
             .where('workflow_step.enabled', '=', true)
+            .orderBy('workflow_step.order', 'asc')
             .select([
               'workflow_step.id',
               'workflow_step.config',

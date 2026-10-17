@@ -93,6 +93,7 @@
 
   const {
     restartProgress: restartSlideshowProgress,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     stopProgress: stopSlideshowProgress,
     slideshowNavigation,
     slideshowState,

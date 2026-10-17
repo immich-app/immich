@@ -1102,7 +1102,7 @@ export class AssetRepository {
       .where((eb) =>
         eb.or([
           eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
-          eb.or(exclusions.map((pattern) => eb('originalPath', '~', pattern))),
+          eb.or(exclusions.map((pattern) => eb('originalPath', '~*', pattern))),
         ]),
       )
       .executeTakeFirstOrThrow();

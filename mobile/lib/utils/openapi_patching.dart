@@ -21,12 +21,20 @@ final Map<String, Map<String, Object?>> openApiPatches = {
     'folders': FoldersResponse(enabled: false, sidebarWeb: false).toJson(),
     'memories': MemoriesResponse(enabled: true, duration: 5, sidebarWeb: false).toJson(),
     'ratings': RatingsResponse(enabled: false).toJson(),
-    'people': PeopleResponse(enabled: true, sidebarWeb: false).toJson(),
+    'people': PeopleResponse(enabled: true, sidebarWeb: false, updateStrategy: PersonUpdateStrategy.everyone).toJson(),
     'tags': TagsResponse(enabled: false, sidebarWeb: false).toJson(),
     'sharedLinks': SharedLinksResponse(enabled: true, sidebarWeb: false).toJson(),
     'cast': CastResponse(gCastEnabled: false).toJson(),
     'albums': {'defaultAssetOrder': 'desc'},
     'recentlyAdded': RecentlyAddedResponse(sidebarWeb: false).toJson(),
+  },
+  'PublicConfigDto': {
+    'map': PublicConfigMapDto(
+      enabled: true,
+      lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+      darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+    ).toJson(),
+    'ffmpeg': PublicConfigFFmpegDto(realtime: PublicConfigFFmpegRealtimeDto(enabled: false)).toJson(),
   },
   'ServerConfigDto': {
     'mapLightStyleUrl': 'https://tiles.immich.cloud/v1/style/light.json',
@@ -42,7 +50,10 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
   'SearchAssetResponseDto': {'nextCursor': null},
   'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
+  'PeopleResponse': {'updateStrategy': 'everyone'},
   'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
+  'ServerVersionResponseDto': {'featureLevel': 0},
+  'UserConfigDto': {'notifications': UserConfigNotificationsDto(smtp: UserConfigSmtpDto(enabled: false)).toJson()},
   'WorkflowResponseDto': {'logging': false},
 };
 

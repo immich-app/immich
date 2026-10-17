@@ -1,12 +1,13 @@
 <script lang="ts">
+  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import PersonIndicator from '$lib/components/faces-page/PersonIndicator.svelte';
   import { Route } from '$lib/route';
   import { getPersonActions } from '$lib/services/person.service';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
-  import { ContextMenuButton, Icon } from '@immich/ui';
-  import { mdiAccountMultipleCheckOutline, mdiHeart } from '@mdi/js';
+  import { ContextMenuButton } from '@immich/ui';
+  import { mdiAccountMultipleCheckOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
 
   type Props = {
     person: PersonResponseDto;
@@ -33,7 +34,7 @@
 
 <div id="people-card" class="relative" role="group">
   <a href={Route.viewPerson(person, { previousRoute: Route.people() })} draggable="false" class="group">
-    <div class="size-full rounded-xl brightness-95 filter">
+    <div class="@container relative size-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
         url={getPeopleThumbnailUrl(person)}
@@ -43,11 +44,7 @@
         circle
         preload={false}
       />
-      {#if person.isFavorite}
-        <div class="absolute inset-s-4 top-4">
-          <Icon icon={mdiHeart} size="24" class="text-white" />
-        </div>
-      {/if}
+      <PersonIndicator {person} />
     </div>
 
     <div class="absolute inset-e-2 top-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
