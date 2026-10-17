@@ -761,6 +761,10 @@ jobs:
             device: cuda
             group: cuda-libs
             provider: CUDAExecutionProvider
+          - runner: pokedex-dgpu-nvidia-turing
+            device: cuda
+            group: cuda-libs
+            provider: CUDAExecutionProvider
           - runner: pokedex-dgpu-nvidia-ampere
             device: cuda
             group: cuda-libs
@@ -820,6 +824,13 @@ jobs:
           GROUP: ${{ matrix.group }}
         run: mise run install --extra "$DEVICE" ${GROUP:+--group "$GROUP"}
 
+      - name: Build the cuDNN fix for Turing
+        if: ${{ matrix.device == 'cuda' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc libc6-dev
+          gcc -shared -fPIC -O2 -o immich_ml/sessions/libcudnn_turing.so immich_ml/sessions/cudnn_turing.c
+
       - name: Run the full tests
         env:
           DEVICE: ${{ matrix.device }}
@@ -836,6 +847,18 @@ jobs:
             export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]/#/$PWD/}")
           fi
           mise run test-full
+
+      - name: Compare against the CPU
+        if: ${{ !cancelled() && matrix.provider != 'nv_tensorrt_rtx' }}
+        env:
+          DEVICE: ${{ matrix.device }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ "$DEVICE" = cuda ]; then
+            libs=(.venv/lib/python*/site-packages/nvidia/*/lib)
+            export LD_LIBRARY_PATH=$(IFS=:; echo "${libs[*]/#/$PWD/}")
+          fi
+          mise exec -- uv run --no-sync python scripts/diag.py ../e2e/test-assets
 
   github-files-formatting:
     name: .github Files Formatting

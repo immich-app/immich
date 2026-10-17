@@ -27,7 +27,7 @@ def pil_image() -> Image.Image:
     return Image.new("RGB", (600, 800))
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def deployed_app() -> Iterator[TestClient]:
     with TestClient(app) as client:
         yield client
@@ -138,6 +138,7 @@ def ort_session() -> Iterator[mock.Mock]:
     with (
         mock.patch("immich_ml.sessions.ort.ort.InferenceSession") as mocked,
         mock.patch("immich_ml.sessions.ort.prepared", side_effect=lambda spec: spec.model_path),
+        mock.patch("immich_ml.sessions.ort._turing_cudnn"),
     ):
         yield mocked
 
