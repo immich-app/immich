@@ -22656,7 +22656,8 @@
         "description": "Image format",
         "enum": [
           "jpeg",
-          "webp"
+          "webp",
+          "avif"
         ],
         "type": "string"
       },
