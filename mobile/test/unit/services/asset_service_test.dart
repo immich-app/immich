@@ -126,6 +126,7 @@ void main() {
 
     setUp(() {
       when(() => mocks.localAsset.repo.updatePreviousChecksum(any(), any())).thenAnswer((_) async {});
+      when(() => mocks.localAsset.repo.updateHashes(any())).thenAnswer((_) async {});
     });
 
     test('stacks over the previous version, then records the uploaded checksum', () async {
@@ -177,6 +178,7 @@ void main() {
 
       verify(() => apiRepository.stack(['remote', 'previous'])).called(1);
       verify(() => mocks.localAsset.repo.updatePreviousChecksum('local', 'srv')).called(1);
+      expect(verify(() => mocks.localAsset.repo.updateHashes(captureAny())).captured.single, {'local': 'srv'});
     });
   });
 }
