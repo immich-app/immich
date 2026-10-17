@@ -18,6 +18,7 @@ import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
 typedef _State = ({List<String> localIds, List<String> remoteIds, bool trash, bool isLocalOnly});
 typedef _CleanupResult = ({bool cancelled, int deletedCount});
+typedef _DeletionPermission = ({bool allowed, bool cancelled, bool usesSystemPrompt});
 
 final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, source) {
   final assets = ref.watch(assetsActionProvider(source));
@@ -223,11 +224,19 @@ Future<_CleanupResult> _cleanupLocalAssets(
   }
 
   final cleanupService = ref.read(cleanupServiceProvider);
-  if (!await _allowsDeletion(context, ref, requestCustomPrompt: requestCustomPrompt, isLocalOnly: isLocalOnly)) {
-    return (cancelled: true, deletedCount: 0);
+  final permission = await _allowsDeletion(
+    context,
+    ref,
+    requestCustomPrompt: requestCustomPrompt,
+    isLocalOnly: isLocalOnly,
+  );
+  if (!permission.allowed) {
+    return (cancelled: permission.cancelled, deletedCount: 0);
   }
 
-  return (cancelled: false, deletedCount: await cleanupService.deleteLocalAssets(assetIds));
+  final deletedCount = await cleanupService.deleteLocalAssets(assetIds);
+  // Android's system deletion sheet returns no IDs when it is cancelled.
+  return (cancelled: permission.usesSystemPrompt && deletedCount == 0, deletedCount: deletedCount);
 }
 
 /// iOS always shows a prompt and adds to on device trash
@@ -236,20 +245,20 @@ Future<_CleanupResult> _cleanupLocalAssets(
 ///   30: Prompts by default. Immediately deletes
 ///   > 30: When `MANAGE_MEDIA` is present, does not prompt by default. When `MANAGE_MEDIA` is not present, does prompt
 ///         by default. Either way adds to trash. We provide a prompt to notify the user in the `MANAGE_MEDIA` case
-Future<bool> _allowsDeletion(
+Future<_DeletionPermission> _allowsDeletion(
   BuildContext context,
   WidgetRef ref, {
   required bool requestCustomPrompt,
   required bool isLocalOnly,
 }) async {
   if (!requestCustomPrompt || !CurrentPlatform.isAndroid) {
-    return true;
+    return (allowed: true, cancelled: false, usesSystemPrompt: false);
   }
 
   final manageMedia = ref.read(storeServiceProvider).get(.manageLocalMediaAndroid, false);
   final versionRequiresPrompt = await ref.read(permissionRepositoryProvider).getAndroidSdkVersion() < 30;
   if (!context.mounted) {
-    return false;
+    return (allowed: false, cancelled: false, usesSystemPrompt: false);
   }
 
   final ConfirmDialog dialog;
@@ -266,9 +275,12 @@ Future<bool> _allowsDeletion(
       ok: context.t.ok,
     );
   } else {
-    return true;
+    return (allowed: true, cancelled: false, usesSystemPrompt: true);
   }
 
   final confirmed = await showDialog<bool>(context: context, builder: (_) => dialog);
-  return confirmed == true;
+  if (!context.mounted) {
+    return (allowed: false, cancelled: false, usesSystemPrompt: false);
+  }
+  return (allowed: confirmed == true, cancelled: confirmed != true, usesSystemPrompt: false);
 }

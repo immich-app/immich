@@ -139,6 +139,21 @@ void main() {
         debugDefaultTargetPlatformOverride = null;
       });
 
+      testWidgets('does not trash a merged asset when the Android system prompt is cancelled', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 30);
+        when(() => cleanupService.deleteLocalAssets(['local'])).thenAnswer((_) async => 0);
+        final asset = owned(localId: 'local');
+
+        await pumpDelete(tester, {asset});
+        await tester.pumpAndSettle();
+
+        verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
+        verifyNever(() => assetService.trash(any()));
+        verifyNever(() => assetService.delete(any()));
+        debugDefaultTargetPlatformOverride = null;
+      });
+
       testWidgets('finishes trashing when the action context is disposed during local cleanup', (tester) async {
         final asset = owned(localId: 'local');
         final cleanupResult = Completer<int>();
@@ -167,6 +182,39 @@ void main() {
         await tester.pumpAndSettle();
 
         verify(() => assetService.trash([asset.id])).called(1);
+      });
+
+      testWidgets('finishes trashing when the action context is disposed while checking Android permissions', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        final sdkVersion = Completer<int>();
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) => sdkVersion.future);
+        final asset = owned(localId: 'local');
+        var showAction = true;
+        late StateSetter updateHost;
+
+        await tester.pumpTestWidget(
+          context,
+          StatefulBuilder(
+            builder: (_, setState) {
+              updateHost = setState;
+              return showAction
+                  ? const ActionIconButton(action: DeleteAction(source: .timeline))
+                  : const SizedBox.shrink();
+            },
+          ),
+          overrides: context.selected({asset}),
+        );
+
+        await tester.tap(find.byType(ImmichIconButton));
+        await tester.pump();
+        updateHost(() => showAction = false);
+        await tester.pump();
+        sdkVersion.complete(28);
+        await tester.pumpAndSettle();
+
+        verify(() => assetService.trash([asset.id])).called(1);
+        verifyNever(() => cleanupService.deleteLocalAssets(any()));
+        debugDefaultTargetPlatformOverride = null;
       });
 
       testWidgets('offers an undo that restores the trashed assets', (tester) async {
