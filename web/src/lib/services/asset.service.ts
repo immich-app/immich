@@ -5,6 +5,7 @@ import {
   AssetVisibility,
   bulkTagAssets,
   getAssetInfo,
+  getStack,
   removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
@@ -49,6 +50,7 @@ import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
@@ -59,6 +61,21 @@ import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
+
+export const expandStackAssetIds = async (assets: TimelineAsset[]): Promise<string[]> => {
+  const results: string[] = [];
+  for (const asset of assets) {
+    if (asset.stack) {
+      const stack = await getStack({ id: asset.stack.id });
+      for (const member of stack.assets) {
+        results.push(member.id);
+      }
+    } else {
+      results.push(asset.id);
+    }
+  }
+  return results;
+};
 
 export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
   const assetIds = assetMultiSelectManager.assets.map((asset) => asset.id);
@@ -74,7 +91,10 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds }),
+    onAction: async () => {
+      const assetIds = await expandStackAssetIds(assetMultiSelectManager.assets);
+      return modalManager.show(AssetAddToAlbumModal, { assetIds });
+    },
   };
 
   const CreateSharedLink: ActionItem = {
@@ -88,7 +108,10 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     icon: mdiImageRemoveOutline,
     shortcuts: [{ key: 'l', shift: true }],
     $if: () => !!album && (isAlbumOwner || assetMultiSelectManager.isAllUserOwned),
-    onAction: () => handleBulkRemoveAssetsFromAlbum(assetIds, album!),
+    onAction: async () => {
+      const assetIds = await expandStackAssetIds(assetMultiSelectManager.assets);
+      return handleBulkRemoveAssetsFromAlbum(assetIds, album!);
+    },
   };
 
   const Tag: ActionItem = {
@@ -232,7 +255,16 @@ export const getAssetActions = (
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
     $if: () => asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
-    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds: [asset.id] }),
+    onAction: async () => {
+      let assetIds: string[];
+      if (asset.stack) {
+        const stack = await getStack({ id: asset.stack.id });
+        assetIds = stack.assets.map((a) => a.id);
+      } else {
+        assetIds = [asset.id];
+      }
+      return modalManager.show(AssetAddToAlbumModal, { assetIds });
+    },
   };
 
   const RemoveFromAlbum: ActionItem = {
