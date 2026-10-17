@@ -66,7 +66,7 @@ dependencies:
   scroll_date_picker: ^3.8.0
   scrollable_positioned_list: ^0.3.8
   share_handler: ^0.0.25
-  share_plus: ^10.1.4
+  share_plus: ^13.0.0
   sliver_tools: ^0.2.12
   stream_transform: ^2.1.1
   sqlite3: ^3.4.0
