@@ -55,13 +55,13 @@ class AssetService {
   }
 
   Future<List<RemoteAsset>> getStack(RemoteAsset asset) async {
-    if (asset.stackId == null) {
+    final stackId = asset.stackId;
+    if (stackId == null) {
       return const [];
     }
 
-    final stack = await _remoteRepository.getStackChildren(asset);
-    // Include the primary asset in the stack as the first item
-    return [asset, ...stack];
+    final stack = await _remoteRepository.getStack(stackId);
+    return stack.map((stackAsset) => stackAsset.id == asset.id ? asset : stackAsset).toList(growable: false);
   }
 
   Stream<ExifInfo?> watchExif(BaseAsset asset) {
