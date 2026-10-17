@@ -13,7 +13,7 @@ dependencies:
   native_toolchain_rust: ^1.0.6
 
 dev_dependencies:
-  ffigen: ^21.0.0
+  ffigen: ^23.0.0
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
