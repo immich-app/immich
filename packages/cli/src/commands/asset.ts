@@ -67,8 +67,10 @@ class UploadFile extends File {
 }
 
 const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
-  const { newFiles, duplicates } = await checkForDuplicates(files, options);
-  const newAssets = await uploadFiles(newFiles, options);
+  const { newFiles, duplicates: existingDuplicates } = await checkForDuplicates(files, options);
+  const { newAssets, duplicateAssets } = await uploadFiles(newFiles, options);
+  // the server can still reject an upload as a duplicate, e.g. when the same file is present twice in the batch
+  const duplicates = [...existingDuplicates, ...duplicateAssets];
   if (options.jsonOutput) {
     console.log(JSON.stringify({ newFiles, duplicates, newAssets }, undefined, 4));
   }
@@ -306,11 +308,14 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   return { newFiles, duplicates };
 };
 
-export const uploadFiles = async (files: string[], options: UploadOptionsDto): Promise<Asset[]> => {
+export const uploadFiles = async (
+  files: string[],
+  options: UploadOptionsDto,
+): Promise<{ newAssets: Asset[]; duplicateAssets: Asset[] }> => {
   const { dryRun, concurrency, progress } = options;
   if (files.length === 0) {
     console.log('All assets were already uploaded, nothing to do.');
-    return [];
+    return { newAssets: [], duplicateAssets: [] };
   }
 
   // Compute total size first
@@ -324,7 +329,7 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
 
   if (dryRun) {
     console.log(`Would have uploaded ${files.length} asset${s(files.length)} (${byteSize(totalSize)})`);
-    return files.map((filepath) => ({ id: '', filepath }));
+    return { newAssets: files.map((filepath) => ({ id: '', filepath })), duplicateAssets: [] };
   }
 
   let uploadProgress: SingleBar | undefined;
@@ -348,6 +353,7 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
   let successSize = 0;
 
   const newAssets: Asset[] = [];
+  const duplicateAssets: Asset[] = [];
 
   const queue = new Queue<string, AssetMediaResponseDto>(
     async (filepath: string) => {
@@ -357,11 +363,12 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
       }
 
       const response = await uploadFile(filepath, stats, options);
-      newAssets.push({ id: response.id, filepath });
       if (response.status === AssetMediaStatus.Duplicate) {
+        duplicateAssets.push({ id: response.id, filepath });
         duplicateCount++;
         duplicateSize += stats.size ?? 0;
       } else {
+        newAssets.push({ id: response.id, filepath });
         successCount++;
         successSize += stats.size ?? 0;
       }
@@ -395,7 +402,7 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
     }
   }
 
-  return newAssets;
+  return { newAssets, duplicateAssets };
 };
 
 const uploadFile = async (
