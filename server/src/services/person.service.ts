@@ -425,16 +425,10 @@ export class PersonService extends BaseService {
       }
     }
 
-    const heightScale = imageHeight / (asset.faces[0]?.imageHeight || 1);
-    const widthScale = imageWidth / (asset.faces[0]?.imageWidth || 1);
     for (const { boundingBox, embedding } of faces) {
-      const scaledBox = {
-        x1: boundingBox.x1 * widthScale,
-        y1: boundingBox.y1 * heightScale,
-        x2: boundingBox.x2 * widthScale,
-        y2: boundingBox.y2 * heightScale,
-      };
-      const match = asset.faces.find((face) => this.iou(face, scaledBox) > 0.5);
+      const matches = asset.faces.filter((face) => this.iou(face, boundingBox, imageWidth, imageHeight) > 0.5);
+      // prefer metadata faces over machine learning duplicates
+      const match = matches.find((face) => face.sourceType !== SourceType.MachineLearning) ?? matches[0];
 
       if (match && !mlFaceIds.delete(match.id)) {
         embeddings.push({ faceId: match.id, embedding });
@@ -477,17 +471,39 @@ export class PersonService extends BaseService {
   }
 
   private iou(
-    face: { boundingBoxX1: number; boundingBoxY1: number; boundingBoxX2: number; boundingBoxY2: number },
+    face: {
+      boundingBoxX1: number;
+      boundingBoxY1: number;
+      boundingBoxX2: number;
+      boundingBoxY2: number;
+      imageWidth: number;
+      imageHeight: number;
+    },
     newBox: BoundingBox,
+    imageWidth: number,
+    imageHeight: number,
   ): number {
-    const x1 = Math.max(face.boundingBoxX1, newBox.x1);
-    const y1 = Math.max(face.boundingBoxY1, newBox.y1);
-    const x2 = Math.min(face.boundingBoxX2, newBox.x2);
-    const y2 = Math.min(face.boundingBoxY2, newBox.y2);
+    const box1 = {
+      x1: face.boundingBoxX1 / face.imageWidth,
+      y1: face.boundingBoxY1 / face.imageHeight,
+      x2: face.boundingBoxX2 / face.imageWidth,
+      y2: face.boundingBoxY2 / face.imageHeight,
+    };
+    const box2 = {
+      x1: newBox.x1 / imageWidth,
+      y1: newBox.y1 / imageHeight,
+      x2: newBox.x2 / imageWidth,
+      y2: newBox.y2 / imageHeight,
+    };
+
+    const x1 = Math.max(box1.x1, box2.x1);
+    const y1 = Math.max(box1.y1, box2.y1);
+    const x2 = Math.min(box1.x2, box2.x2);
+    const y2 = Math.min(box1.y2, box2.y2);
 
     const intersection = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
-    const area1 = (face.boundingBoxX2 - face.boundingBoxX1) * (face.boundingBoxY2 - face.boundingBoxY1);
-    const area2 = (newBox.x2 - newBox.x1) * (newBox.y2 - newBox.y1);
+    const area1 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
+    const area2 = (box2.x2 - box2.x1) * (box2.y2 - box2.y1);
     const union = area1 + area2 - intersection;
 
     return intersection / union;
