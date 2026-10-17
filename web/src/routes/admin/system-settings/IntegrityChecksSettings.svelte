@@ -36,6 +36,13 @@
               bind:checked={configToEdit.integrityChecks.missingFiles.enabled}
             />
 
+            <SettingSwitch
+              title={$t('admin.integrity_checks_notify_on_error')}
+              subtitle={$t('admin.integrity_checks_notify_on_error_description')}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:checked={configToEdit.integrityChecks.missingFiles.notifyOnError}
+            />
+
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.cron_expression')}
@@ -75,6 +82,13 @@
               bind:checked={configToEdit.integrityChecks.untrackedFiles.enabled}
             />
 
+            <SettingSwitch
+              title={$t('admin.integrity_checks_notify_on_error')}
+              subtitle={$t('admin.integrity_checks_notify_on_error_description')}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:checked={configToEdit.integrityChecks.untrackedFiles.notifyOnError}
+            />
+
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.cron_expression')}
@@ -112,6 +126,13 @@
               title={$t('admin.integrity_checks_checksum_files_enable_description')}
               {disabled}
               bind:checked={configToEdit.integrityChecks.checksumFiles.enabled}
+            />
+
+            <SettingSwitch
+              title={$t('admin.integrity_checks_notify_on_error')}
+              subtitle={$t('admin.integrity_checks_notify_on_error_description')}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:checked={configToEdit.integrityChecks.checksumFiles.notifyOnError}
             />
 
             <SettingInputField

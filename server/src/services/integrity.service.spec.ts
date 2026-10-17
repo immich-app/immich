@@ -1,3 +1,4 @@
+import { IntegrityReport, JobName } from 'src/enum.js';
 import { IntegrityService } from 'src/services/integrity.service.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
@@ -40,6 +41,91 @@ describe(IntegrityService.name, () => {
         expect(mocks.integrityReport.create).not.toHaveBeenCalled();
       },
     );
+
+    it('should not queue a notification from a batch (notification is queued when the scan finishes)', async () => {
+      await sut.handleUntrackedFiles({ type: 'asset', paths: ['/data/upload/orphan.mov'] });
+
+      expect(mocks.integrityReport.create).toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('handleUntrackedFilesQueueAll', () => {
+    it('should queue an integrity error notification after all scan jobs', async () => {
+      mocks.integrityReport.streamIntegrityReportsWithAssetChecksum.mockReturnValue(
+        (async function* () {})() as never,
+      );
+      mocks.storage.walk
+        .mockReturnValueOnce((async function* () { yield ['/a']; })() as never)
+        .mockReturnValueOnce((async function* () { yield ['/b']; })() as never);
+
+      await sut.handleUntrackedFilesQueueAll({});
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityUntrackedFiles,
+        data: { type: 'asset', paths: ['/a'] },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityUntrackedFiles,
+        data: { type: 'asset_file', paths: ['/b'] },
+      });
+      expect(mocks.job.queue).toHaveBeenLastCalledWith({
+        name: JobName.NotifyIntegrityErrors,
+        data: { type: IntegrityReport.UntrackedFile },
+      });
+    });
+
+    it('should not queue a notification for refresh-only runs', async () => {
+      mocks.integrityReport.streamIntegrityReportsWithAssetChecksum.mockReturnValue(
+        (async function* () { yield { reportId: 'report-id', path: '/a' }; })() as never,
+      );
+
+      await sut.handleUntrackedFilesQueueAll({ refreshOnly: true });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityUntrackedFilesRefresh,
+        data: { items: [{ reportId: 'report-id', path: '/a' }] },
+      });
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.NotifyIntegrityErrors }),
+      );
+    });
+  });
+
+  describe('handleMissingFilesQueueAll', () => {
+    it('should queue an integrity error notification after all scan jobs', async () => {
+      mocks.integrityReport.streamAssetPathsForMissingFiles.mockReturnValue(
+        (async function* () {
+          yield { path: '/a', assetId: 'asset-id', fileAssetId: null, reportId: null };
+        })() as never,
+      );
+
+      await sut.handleMissingFilesQueueAll({});
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityMissingFiles,
+        data: {
+          items: [{ path: '/a', assetId: 'asset-id', fileAssetId: null, reportId: null }],
+        },
+      });
+      expect(mocks.job.queue).toHaveBeenLastCalledWith({
+        name: JobName.NotifyIntegrityErrors,
+        data: { type: IntegrityReport.MissingFile },
+      });
+    });
+  });
+
+  describe('handleMissingFiles', () => {
+    it('should not queue a notification from a batch (notification is queued when the scan finishes)', async () => {
+      mocks.storage.stat.mockRejectedValueOnce(new Error('missing'));
+
+      await sut.handleMissingFiles({
+        items: [{ path: '/data/upload/missing.mov', assetId: 'asset-id', fileAssetId: null, reportId: null }],
+      });
+
+      expect(mocks.integrityReport.create).toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
   });
 
   describe('handleUntrackedRefresh', () => {

@@ -18985,6 +18985,10 @@
             "description": "Enabled",
             "type": "boolean"
           },
+          "notifyOnError": {
+            "description": "Send an email notification to admins when the check finds errors",
+            "type": "boolean"
+          },
           "percentageLimit": {
             "description": "Percentage limit of the integrity checksum job",
             "format": "double",
@@ -19002,6 +19006,7 @@
         "required": [
           "cronExpression",
           "enabled",
+          "notifyOnError",
           "percentageLimit",
           "timeLimit"
         ],
@@ -19017,11 +19022,16 @@
           "enabled": {
             "description": "Enabled",
             "type": "boolean"
+          },
+          "notifyOnError": {
+            "description": "Send an email notification to admins when the check finds errors",
+            "type": "boolean"
           }
         },
         "required": [
           "cronExpression",
-          "enabled"
+          "enabled",
+          "notifyOnError"
         ],
         "type": "object"
       },
@@ -19635,6 +19645,10 @@
             "description": "Album update template",
             "type": "string"
           },
+          "integrityTemplate": {
+            "description": "Integrity errors template",
+            "type": "string"
+          },
           "welcomeTemplate": {
             "description": "Welcome template",
             "type": "string"
@@ -19643,6 +19657,7 @@
         "required": [
           "albumInviteTemplate",
           "albumUpdateTemplate",
+          "integrityTemplate",
           "welcomeTemplate"
         ],
         "type": "object"
@@ -22303,12 +22318,17 @@
           "enabled": {
             "description": "Whether email notifications are enabled",
             "type": "boolean"
+          },
+          "integrity": {
+            "description": "Whether to receive email notifications for integrity check errors",
+            "type": "boolean"
           }
         },
         "required": [
           "albumInvite",
           "albumUpdate",
-          "enabled"
+          "enabled",
+          "integrity"
         ],
         "type": "object"
       },
@@ -22324,6 +22344,10 @@
           },
           "enabled": {
             "description": "Whether email notifications are enabled",
+            "type": "boolean"
+          },
+          "integrity": {
+            "description": "Whether to receive email notifications for integrity check errors (admins only)",
             "type": "boolean"
           }
         },
@@ -22781,6 +22805,7 @@
           "NotifyUserSignup",
           "NotifyAlbumInvite",
           "NotifyAlbumUpdate",
+          "NotifyIntegrityErrors",
           "UserDelete",
           "UserDeleteCheck",
           "UserSyncUsage",

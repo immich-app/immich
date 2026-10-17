@@ -1,5 +1,6 @@
 import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto.js';
-import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum.js';
+import { AssetFileType, IntegrityReport, JobName, JobStatus, UserMetadataKey } from 'src/enum.js';
+import { EmailTemplate } from 'src/repositories/email.repository.js';
 import { NotificationService } from 'src/services/notification.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
@@ -565,6 +566,150 @@ describe(NotificationService.name, () => {
 
       await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.Success);
       expect(mocks.email.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ replyTo: 'demo@immich.app' }));
+    });
+  });
+
+  describe('handleIntegrityErrors', () => {
+    const summaryWithMissingErrors = {
+      [IntegrityReport.MissingFile]: 3,
+      [IntegrityReport.UntrackedFile]: 0,
+      [IntegrityReport.ChecksumFail]: 0,
+    };
+
+    it('should skip if smtp notifications are disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: false } } });
+
+      await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.integrityReport.getIntegrityReportSummary).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should not send an email when the check found no errors', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
+      mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue({
+        [IntegrityReport.MissingFile]: 0,
+        [IntegrityReport.UntrackedFile]: 0,
+        [IntegrityReport.ChecksumFail]: 0,
+      });
+
+      await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Success);
+      expect(mocks.email.renderEmail).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should not send an email for a check without errors even if other checks have errors', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
+      mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
+
+      await expect(sut.handleIntegrityErrors({ type: IntegrityReport.UntrackedFile })).resolves.toBe(
+        JobStatus.Success,
+      );
+      expect(mocks.email.renderEmail).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should not send an email when notifications are disabled for the check', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        notifications: { smtp: { enabled: true } },
+        integrityChecks: {
+          missingFiles: { notifyOnError: false },
+        },
+      });
+      mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
+
+      await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Success);
+      expect(mocks.email.renderEmail).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should send an email to admins when the check found errors', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
+      mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
+      mocks.user.getList.mockResolvedValue([userStub.admin]);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+
+      await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Success);
+      expect(mocks.email.renderEmail).toHaveBeenCalledWith({
+        template: EmailTemplate.INTEGRITY_ERRORS,
+        data: {
+          baseUrl: 'https://my.immich.app',
+          recipientName: userStub.admin.name,
+          checkType: IntegrityReport.MissingFile,
+          checkName: 'Missing files',
+          count: 3,
+        },
+        customTemplate: '',
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SendMail,
+        data: expect.objectContaining({
+          to: userStub.admin.email,
+          subject: 'Immich integrity check found 3 issues (Missing files)',
+        }),
+      });
+    });
+
+    it('should use the custom integrity template when configured', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        notifications: { smtp: { enabled: true } },
+        templates: { email: { integrityTemplate: '<p>custom template</p>' } },
+      });
+      mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
+      mocks.user.getList.mockResolvedValue([userStub.admin]);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+
+      await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Success);
+      expect(mocks.email.renderEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ customTemplate: '<p>custom template</p>' }),
+      );
+      expect(mocks.job.queue).toHaveBeenCalled();
+    });
+
+    it('should skip admins that opted out of integrity emails and non-admins', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
+      mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
+      mocks.user.getList.mockResolvedValue([
+        {
+          ...userStub.admin,
+          metadata: [
+            {
+              key: UserMetadataKey.Preferences,
+              value: { emailNotifications: { enabled: true, integrity: false } },
+            },
+          ],
+        },
+        userStub.user1,
+      ]);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+
+      await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.email.renderEmail).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should only email admins that did not opt out', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
+      mocks.integrityReport.getIntegrityReportSummary.mockResolvedValue(summaryWithMissingErrors);
+      mocks.user.getList.mockResolvedValue([
+        {
+          ...userStub.admin,
+          metadata: [
+            {
+              key: UserMetadataKey.Preferences,
+              value: { emailNotifications: { enabled: true, integrity: false } },
+            },
+          ],
+        },
+        userStub.user1,
+        { ...userStub.admin, id: 'admin_id_2', email: 'admin2@test.com' },
+      ]);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+
+      await expect(sut.handleIntegrityErrors({ type: IntegrityReport.MissingFile })).resolves.toBe(JobStatus.Success);
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.SendMail,
+        data: expect.objectContaining({ to: 'admin2@test.com' }),
+      });
     });
   });
 });

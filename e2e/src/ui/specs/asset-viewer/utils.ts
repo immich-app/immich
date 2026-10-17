@@ -106,7 +106,7 @@ export async function enableTagsPreference(context: BrowserContext) {
         sharedLinks: { enabled: true, sidebarWeb: false },
         ratings: { enabled: false },
         tags: { enabled: true, sidebarWeb: false },
-        emailNotifications: { enabled: true, albumInvite: true, albumUpdate: true },
+        emailNotifications: { enabled: true, albumInvite: true, albumUpdate: true, integrity: true },
         download: { archiveSize: 4_294_967_296, includeEmbeddedVideos: false },
         purchase: { showSupportBadge: true, hideBuyButtonUntil: '2100-02-12T00:00:00.000Z' },
         cast: { gCastEnabled: false },

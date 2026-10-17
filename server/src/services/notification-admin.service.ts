@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
 import { NotificationCreateDto, mapNotification } from 'src/dtos/notification.dto.js';
-import { NotificationLevel, NotificationType } from 'src/enum.js';
+import { NotificationLevel, NotificationType, IntegrityReport } from 'src/enum.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getExternalDomain } from 'src/utils/misc.js';
@@ -105,6 +105,22 @@ export class NotificationAdminService extends BaseService {
             cid: undefined,
           },
           customTemplate: customTemplate || templates.email.albumInviteTemplate,
+        });
+        templateResponse = html;
+        break;
+      }
+
+      case EmailTemplate.INTEGRITY_ERRORS: {
+        const { html } = await this.emailRepository.renderEmail({
+          template: EmailTemplate.INTEGRITY_ERRORS,
+          data: {
+            baseUrl: getExternalDomain(server),
+            recipientName: 'Jane Doe',
+            checkType: IntegrityReport.MissingFile,
+            checkName: 'Missing files',
+            count: 3,
+          },
+          customTemplate: customTemplate || templates.email.integrityTemplate,
         });
         templateResponse = html;
         break;

@@ -13,6 +13,10 @@ All three run nightly at 3am by default. For the "Checksum files" check, there a
 
 You can see the results of these checks on the [maintenance](https://my.immich.app/admin/maintenance) page. Here, you can also trigger a full scan (a _check_) for specific jobs, or all of them. In addition, you can also _refresh_ checks. This will only look at items that have currently been reported on, and check if those have been fixed.
 
+### Email notifications
+
+When a full check finishes with errors remaining, Immich sends one email per check to admins. Each check notifies independently after its own jobs complete, so a long-running scan cannot produce a partial report. No email is sent for a check with no errors, and refreshing reports never sends emails. Notifications can be enabled or disabled per check in the integrity checks settings, and the email content can be customized with a custom template in the notification settings. Each admin can opt out of these emails from their account notification settings; they are enabled by default when email notifications are configured.
+
 ### Common causes
 
 Most common are untracked files. In many cases those are corrupted thumbnails or encoded videos that have been partially generated at some point and never got cleaned up properly. These are usually fine to delete, as both can always be regenerated at a later point. Other files will need to be investigated on a case-by-case basis by checking they already exist in Immich and thinking about how they might have gotten untracked.

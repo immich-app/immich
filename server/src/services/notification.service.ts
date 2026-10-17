@@ -16,6 +16,7 @@ import {
 } from 'src/dtos/notification.dto.js';
 import {
   AssetFileType,
+  IntegrityReport,
   JobName,
   JobStatus,
   NotificationLevel,
@@ -424,6 +425,82 @@ export class NotificationService extends BaseService {
         imageAttachments: attachment ? [attachment] : undefined,
       },
     });
+
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.NotifyIntegrityErrors, queue: QueueName.IntegrityCheck })
+  async handleIntegrityErrors({ type }: JobOf<JobName.NotifyIntegrityErrors>) {
+    // This job runs on the same single-concurrency queue after all of the check's jobs,
+    // so the summary below covers the finished check.
+    const checkNames = {
+      [IntegrityReport.MissingFile]: 'Missing files',
+      [IntegrityReport.UntrackedFile]: 'Untracked files',
+      [IntegrityReport.ChecksumFail]: 'Checksum mismatches',
+    };
+
+    const { server, notifications, templates, integrityChecks } = await this.getConfig({ withCache: false });
+    if (!notifications.smtp.enabled) {
+      return JobStatus.Skipped;
+    }
+
+    const checkConfigs = {
+      [IntegrityReport.MissingFile]: integrityChecks.missingFiles,
+      [IntegrityReport.UntrackedFile]: integrityChecks.untrackedFiles,
+      [IntegrityReport.ChecksumFail]: integrityChecks.checksumFiles,
+    };
+
+    const summary = await this.integrityRepository.getIntegrityReportSummary();
+    const count = summary[type] ?? 0;
+    if (count === 0 || !checkConfigs[type].notifyOnError) {
+      return JobStatus.Success;
+    }
+
+    const checkName = checkNames[type];
+    this.logger.log(`Integrity check found ${count} ${checkName}, notifying admins.`);
+
+    const users = await this.userRepository.getList();
+    const recipients = [];
+    for (const user of users) {
+      if (!user.isAdmin) {
+        continue;
+      }
+
+      const { emailNotifications } = getPreferences(user.metadata);
+      if (!emailNotifications.enabled || !emailNotifications.integrity) {
+        continue;
+      }
+
+      recipients.push(user);
+    }
+
+    if (recipients.length === 0) {
+      return JobStatus.Skipped;
+    }
+
+    for (const recipient of recipients) {
+      const { html, text } = await this.emailRepository.renderEmail({
+        template: EmailTemplate.INTEGRITY_ERRORS,
+        data: {
+          baseUrl: getExternalDomain(server),
+          recipientName: recipient.name,
+          checkType: type,
+          checkName,
+          count,
+        },
+        customTemplate: templates.email.integrityTemplate,
+      });
+
+      await this.jobRepository.queue({
+        name: JobName.SendMail,
+        data: {
+          to: recipient.email,
+          subject: `Immich integrity check found ${count} issue${count === 1 ? '' : 's'} (${checkName})`,
+          html,
+          text,
+        },
+      });
+    }
 
     return JobStatus.Success;
   }

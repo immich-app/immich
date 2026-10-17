@@ -85,16 +85,19 @@ const updatedConfig = Object.freeze<SystemConfig>({
     untrackedFiles: {
       enabled: true,
       cronExpression: '0 03 * * *',
+      notifyOnError: true,
     },
     missingFiles: {
       enabled: true,
       cronExpression: '0 03 * * *',
+      notifyOnError: true,
     },
     checksumFiles: {
       enabled: true,
       cronExpression: '0 03 * * *',
       timeLimit: 60 * 60 * 1000,
       percentageLimit: 1,
+      notifyOnError: true,
     },
   },
   logging: {
@@ -250,6 +253,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       albumInviteTemplate: '',
       welcomeTemplate: '',
       albumUpdateTemplate: '',
+      integrityTemplate: '',
     },
   },
 });

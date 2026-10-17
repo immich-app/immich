@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { createTransport } from 'nodemailer';
 import React, { createElement } from 'react';
 import { render } from 'react-email';
+import type { IntegrityReport } from 'src/enum.js';
 import type { EmailImageAttachment } from 'src/types.js';
 import { AlbumInviteEmail } from 'src/emails/album-invite.email.js';
 import { AlbumUpdateEmail } from 'src/emails/album-update.email.js';
+import { IntegrityErrorsReportEmail } from 'src/emails/integrity-report.email.js';
 import { TestEmail } from 'src/emails/test.email.js';
 import { WelcomeEmail } from 'src/emails/welcome.email.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -39,6 +41,9 @@ export enum EmailTemplate {
   // ALBUM
   ALBUM_INVITE = 'album-invite',
   ALBUM_UPDATE = 'album-update',
+
+  // INTEGRITY
+  INTEGRITY_ERRORS = 'integrity-errors',
 }
 
 interface BaseEmailProps {
@@ -71,6 +76,13 @@ export interface AlbumUpdateEmailProps extends BaseEmailProps {
   cid?: string;
 }
 
+export interface IntegrityErrorsReportEmailProps extends BaseEmailProps {
+  recipientName: string;
+  checkType: IntegrityReport;
+  checkName: string;
+  count: number;
+}
+
 export type EmailRenderRequest =
   | {
       template: EmailTemplate.TEST_EMAIL;
@@ -90,6 +102,11 @@ export type EmailRenderRequest =
   | {
       template: EmailTemplate.ALBUM_UPDATE;
       data: AlbumUpdateEmailProps;
+      customTemplate: string;
+    }
+  | {
+      template: EmailTemplate.INTEGRITY_ERRORS;
+      data: IntegrityErrorsReportEmailProps;
       customTemplate: string;
     };
 
@@ -153,6 +170,10 @@ export class EmailRepository {
 
       case EmailTemplate.ALBUM_UPDATE: {
         return createElement(AlbumUpdateEmail, { ...data, customTemplate });
+      }
+
+      case EmailTemplate.INTEGRITY_ERRORS: {
+        return createElement(IntegrityErrorsReportEmail, { ...data, customTemplate });
       }
     }
   }

@@ -1,4 +1,5 @@
 import { EmailRenderRequest, EmailRepository, EmailTemplate } from 'src/repositories/email.repository.js';
+import { IntegrityReport } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { automock } from 'test/utils.js';
 
@@ -67,6 +68,46 @@ describe(EmailRepository.name, () => {
 
       expect(result.html).toContain('<!DOCTYPE html PUBLIC');
       expect(result.text).toContain('Holiday');
+    });
+
+    it('should render the email correctly for INTEGRITY_ERRORS template', async () => {
+      const request: EmailRenderRequest = {
+        template: EmailTemplate.INTEGRITY_ERRORS,
+        data: {
+          recipientName: 'Jane',
+          baseUrl: 'http://localhost',
+          checkType: IntegrityReport.MissingFile,
+          checkName: 'Missing files',
+          count: 3,
+        },
+        customTemplate: '',
+      };
+
+      const result = await sut.renderEmail(request);
+
+      expect(result.html).toContain('<!DOCTYPE html PUBLIC');
+      expect(result.html).toContain('Review Integrity Report');
+      expect(result.html).toContain('/admin/maintenance/integrity-report/missing_file');
+      expect(result.text).toContain('integrity check found');
+    });
+
+    it('should render the INTEGRITY_ERRORS template with a custom template', async () => {
+      const request: EmailRenderRequest = {
+        template: EmailTemplate.INTEGRITY_ERRORS,
+        data: {
+          recipientName: 'Jane',
+          baseUrl: 'http://localhost',
+          checkType: IntegrityReport.MissingFile,
+          checkName: 'Missing files',
+          count: 3,
+        },
+        customTemplate: '<p>Hello {recipientName}, {count} {checkName} found.</p>',
+      };
+
+      const result = await sut.renderEmail(request);
+
+      expect(result.html).toContain('<!DOCTYPE html PUBLIC');
+      expect(result.html).toContain('Hello Jane, 3 Missing files found.');
     });
   });
 });
