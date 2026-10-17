@@ -470,10 +470,10 @@ class _QuickAccessButtonList extends ConsumerWidget {
                 onTap: () => context.pushRoute(const LockedFolderRoute()),
               ),
               ListTile(
-                shape: const RoundedRectangleBorder(
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(tileRadius),
-                    bottomRight: Radius.circular(tileRadius),
+                    bottomLeft: Radius.circular(partners.isEmpty ? tileRadius : 0),
+                    bottomRight: Radius.circular(partners.isEmpty ? tileRadius : 0),
                   ),
                 ),
                 leading: const Icon(Icons.group_outlined, size: 26),
