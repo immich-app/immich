@@ -4932,6 +4932,15 @@
         "operationId": "downloadAsset",
         "parameters": [
           {
+            "name": "download",
+            "required": false,
+            "in": "query",
+            "description": "Count as a download of the shared link",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "edited",
             "required": false,
             "in": "query",
@@ -28470,6 +28479,12 @@
             "nullable": true,
             "type": "string"
           },
+          "downloadCount": {
+            "description": "Number of downloads through the link",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
           "expiresAt": {
             "description": "Expiration date",
             "example": "2024-01-01T00:00:00.000Z",
@@ -28510,6 +28525,12 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
+          },
+          "viewCount": {
+            "description": "Number of times the link was opened",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
           }
         },
         "required": [
@@ -28518,6 +28539,7 @@
           "assets",
           "createdAt",
           "description",
+          "downloadCount",
           "expiresAt",
           "id",
           "key",
@@ -28525,7 +28547,8 @@
           "showMetadata",
           "slug",
           "type",
-          "userId"
+          "userId",
+          "viewCount"
         ],
         "type": "object"
       },

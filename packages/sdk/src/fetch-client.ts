@@ -2992,6 +2992,8 @@ export type SharedLinkResponseDto = {
     createdAt: string;
     /** Link description */
     description: string | null;
+    /** Number of downloads through the link */
+    downloadCount: number;
     /** Expiration date */
     expiresAt: string | null;
     /** Shared link ID */
@@ -3007,6 +3009,8 @@ export type SharedLinkResponseDto = {
     "type": SharedLinkType;
     /** Owner user ID */
     userId: string;
+    /** Number of times the link was opened */
+    viewCount: number;
 };
 export type SharedLinkCreateDto = {
     /** Album ID (for album sharing) */
@@ -5015,7 +5019,8 @@ export function getAssetOcr({ id }: {
 /**
  * Download original asset
  */
-export function downloadAsset({ edited, id, key, slug }: {
+export function downloadAsset({ download, edited, id, key, slug }: {
+    download?: boolean;
     edited?: boolean;
     id: string;
     key?: string;
@@ -5025,6 +5030,7 @@ export function downloadAsset({ edited, id, key, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
+        download,
         edited,
         key,
         slug

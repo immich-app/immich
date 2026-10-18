@@ -4,7 +4,8 @@
   import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { ActionButton, ContextMenuButton, MenuItemType, Text } from '@immich/ui';
+  import { ActionButton, ContextMenuButton, Icon, MenuItemType, Text } from '@immich/ui';
+  import { mdiDownload, mdiEyeOutline } from '@mdi/js';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -31,6 +32,9 @@
   };
 
   const { Edit, Copy, Delete } = $derived(getSharedLinkActions($t, sharedLink));
+
+  const viewsLabel = $derived($t('shared_link_views_count', { values: { count: sharedLink.viewCount } }));
+  const downloadsLabel = $derived($t('shared_link_downloads_count', { values: { count: sharedLink.downloadCount } }));
 
   const capabilities = $derived.by(() => {
     const items = [];
@@ -88,6 +92,19 @@
         {#if sharedLink.description}
           <Text size="small" class="line-clamp-1">{sharedLink.description}</Text>
         {/if}
+
+        <div class="flex items-center gap-3">
+          <Text size="tiny" color="muted" inline class="flex items-center gap-1" title={viewsLabel}>
+            <Icon icon={mdiEyeOutline} aria-hidden="true" />
+            <span aria-hidden="true">{sharedLink.viewCount}</span>
+            <span class="sr-only">{viewsLabel}</span>
+          </Text>
+          <Text size="tiny" color="muted" inline class="flex items-center gap-1" title={downloadsLabel}>
+            <Icon icon={mdiDownload} aria-hidden="true" />
+            <span aria-hidden="true">{sharedLink.downloadCount}</span>
+            <span class="sr-only">{downloadsLabel}</span>
+          </Text>
+        </div>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">

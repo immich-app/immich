@@ -630,4 +630,32 @@ describe(SharedLinkService.name, () => {
 
     await expect(sut.getMine({ user, sharedLink }, [])).resolves.toHaveProperty('assets', []);
   });
+
+  it('should not overwrite the counters with a stale shared link', async () => {
+    const { ctx } = setup();
+
+    const { user } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+    const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+    const sharedLink = await sharedLinkRepo.create({
+      key: randomBytes(16),
+      id: factory.uuid(),
+      userId: user.id,
+      allowUpload: false,
+      type: SharedLinkType.Individual,
+      assetIds: [asset.id],
+    });
+
+    const staleSharedLink = await sharedLinkRepo.get(user.id, sharedLink.id);
+    await sharedLinkRepo.incrementCount(sharedLink.id, 'viewCount');
+    await sharedLinkRepo.incrementCount(sharedLink.id, 'downloadCount');
+    await sharedLinkRepo.update(staleSharedLink!);
+
+    await expect(sharedLinkRepo.get(user.id, sharedLink.id)).resolves.toMatchObject({
+      viewCount: 1,
+      downloadCount: 1,
+    });
+  });
 });

@@ -37,7 +37,34 @@ describe(SharedLinkService.name, () => {
     });
   });
 
+  describe('login', () => {
+    beforeEach(() => {
+      mocks.sharedLink.incrementCount.mockResolvedValue();
+    });
+
+    it('should count a view after a valid password', async () => {
+      const sharedLink = SharedLinkFactory.create({ password: '123' });
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+      mocks.crypto.hashSha256.mockReturnValue(Buffer.from('auth-token-123'));
+      await expect(sut.login(authStub.adminSharedLink, { password: '123' })).resolves.toBeDefined();
+      expect(mocks.sharedLink.incrementCount).toHaveBeenCalledWith(sharedLink.id, 'viewCount');
+    });
+
+    it('should not count a view for an invalid password', async () => {
+      const sharedLink = SharedLinkFactory.create({ password: '123' });
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+      await expect(sut.login(authStub.adminSharedLink, { password: 'wrong' })).rejects.toBeInstanceOf(
+        UnauthorizedException,
+      );
+      expect(mocks.sharedLink.incrementCount).not.toHaveBeenCalled();
+    });
+  });
+
   describe('getMine', () => {
+    beforeEach(() => {
+      mocks.sharedLink.incrementCount.mockResolvedValue();
+    });
+
     it('should only work for a public user', async () => {
       await expect(sut.getMine(authStub.admin, [])).rejects.toBeInstanceOf(ForbiddenException);
       expect(mocks.sharedLink.get).not.toHaveBeenCalled();
@@ -51,6 +78,7 @@ describe(SharedLinkService.name, () => {
         mapSharedLink(getForSharedLink(sharedLink), { stripAssetMetadata: false }),
       );
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
+      expect(mocks.sharedLink.incrementCount).toHaveBeenCalledWith(sharedLink.id, 'viewCount');
     });
 
     it('should not return metadata', async () => {
