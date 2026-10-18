@@ -64,6 +64,7 @@ class Timeline extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
+    final smoothScrubbing = ref.watch(appConfigProvider.select((config) => config.timeline.smoothScrubbing));
     return LayoutBuilder(
       builder: (_, constraints) {
         return ProviderScope(
@@ -90,7 +91,7 @@ class Timeline extends ConsumerWidget {
             bottomSheet: bottomSheet,
             withScrubber: withScrubber,
             persistentBottomBar: persistentBottomBar,
-            snapToMonth: snapToMonth,
+            snapToMonth: snapToMonth && !smoothScrubbing,
             maxWidth: constraints.maxWidth,
             loadingWidget: loadingWidget,
           ),
