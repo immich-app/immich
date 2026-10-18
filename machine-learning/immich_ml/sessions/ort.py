@@ -332,6 +332,27 @@ class OrtSession:
                 graph = self.graphs[shape] = OrtGraph(spec)
             return graph
 
+    @cached_property
+    def releasing(self) -> ort.RunOptions | None:
+        """Options for a run that hands its activations back to the device when it ends, where each graph's arena
+        would otherwise keep its largest run for as long as the model is loaded: for a model with many shapes, of
+        which only some run at a time. None where the provider keeps no device arena."""
+        if self.providers[0] != "CUDAExecutionProvider":
+            return None
+        options = ort.RunOptions()
+        options.add_run_config_entry("memory.enable_memory_arena_shrinkage", f"gpu:{settings.device_id}")
+        return options
+
+    def free_memory(self) -> int | None:
+        """Bytes free on the device the graphs run on, or None where that is not a device that can be asked."""
+        if self.providers[0] != "CUDAExecutionProvider" or (memory := device_memory()) is None:
+            return None
+        return memory[0]
+
+    def drop(self, shape: Shape) -> None:
+        """Closes the graph for `shape`, and with it what its arena holds."""
+        self.graphs.pop(shape, None)
+
     def warm(self) -> None:
         """Opens a graph for every shape and runs it once before opening the next: OpenVINO defers work to the first
         run of a graph it imports from its cache, which importing another graph first can corrupt."""
@@ -437,6 +458,24 @@ def flush_denormals() -> None:
     libm.fegetenv(env)
     env[7] |= 0x8040  # denormals are zero, flush to zero
     libm.fesetenv(env)
+
+
+@cache
+def _cudart() -> ctypes.CDLL | None:
+    try:
+        return ctypes.CDLL("libcudart.so.12")  # the runtime the CUDA provider loads, so no second one is mapped
+    except OSError:
+        return None
+
+
+def device_memory() -> tuple[int, int] | None:
+    """The free and total bytes of the CUDA device the models run on, or None without a CUDA runtime to ask."""
+    if (cudart := _cudart()) is None:
+        return None
+    free, total = ctypes.c_size_t(), ctypes.c_size_t()
+    if cudart.cudaSetDevice(int(settings.device_id)) or cudart.cudaMemGetInfo(ctypes.byref(free), ctypes.byref(total)):
+        return None
+    return free.value, total.value
 
 
 def _providers_default() -> list[str]:

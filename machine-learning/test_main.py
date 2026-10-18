@@ -1758,6 +1758,134 @@ class TestOcr:
         assert graph[0] == graph[1]
         assert graph[1] != graph[2]  # the next band compiles canvases of its own
 
+    def test_det_reads_an_image_no_canvas_holds_in_tiles_and_finds_a_line_across_the_seams_once(
+        self, path: mock.Mock, stub_session: Callable[..., mock.Mock]
+    ) -> None:
+        text_detector = TextDetector("PP-OCRv5_mobile", max_resolution=64, cache_dir=path)
+        canvases = (Shape(batch=1, height=64, width=64), Shape(batch=1, height=64, width=128))
+        session = stub_session((1, 64, 128, 3), name="image", normalizes_input=True, shapes=canvases)
+        # a stand-in for the graph that reads every bright pixel as text, whatever it is fed
+        session.run.side_effect = lambda _, feed: [
+            (feed["image"][..., :1] > 128).astype(np.float32).transpose(0, 3, 1, 2)
+        ]
+        text_detector.session = session
+        image = Image.new("RGB", (320, 64))
+        image.paste((255, 255, 255), (40, 24, 280, 40))  # crossing both seams of the three tiles it takes
+
+        boxes = text_detector._predict(image, TextDetectionOptions(max_resolution=64, min_score=0.5))["boxes"]
+
+        fed = [call.args[1]["image"].shape for call in session.run.call_args_list]
+        assert fed == [(1, 64, 128, 3)] * 4  # three tiles at full resolution, then the whole image shrunk onto one
+        assert len(boxes) == 1  # neither cut at a seam nor found again by the tile beside it or the shrunk pass
+        assert boxes[0, :, 0].min() <= 40 and boxes[0, :, 0].max() >= 279
+        assert boxes[0, :, 1].min() <= 24 and boxes[0, :, 1].max() >= 39
+
+    @pytest.mark.parametrize("width", [100, 200, 320])  # one overlap per seam, then tiles three deep
+    def test_det_blends_the_tiles_into_one_map_with_no_seams(
+        self, path: mock.Mock, stub_session: Callable[..., mock.Mock], width: int
+    ) -> None:
+        text_detector = TextDetector("PP-OCRv5_mobile", max_resolution=64, cache_dir=path)
+        session = stub_session((1, 64, 64, 3), name="image", normalizes_input=True)
+        session.run.side_effect = lambda _, feed: [np.full((1, 1, 64, 64), 0.6, dtype=np.float32)]
+        text_detector.session = session
+
+        probs, tiles = text_detector._stitch(np.zeros((64, width, 3), dtype=np.uint8), [(64, 64)], 64)
+
+        assert tiles == session.run.call_count > 1
+        assert probs.shape == (64, width)
+        assert np.allclose(probs, 0.6)  # every pixel weighed in full, however many tiles saw it
+
+    def test_det_keeps_the_whole_image_boxes_only_where_the_tiles_missed_the_text(self, path: mock.Mock) -> None:
+        text_detector = TextDetector("PP-OCRv5_mobile", max_resolution=64, cache_dir=path)
+
+        def box(x0: float, y0: float, x1: float, y1: float) -> list[list[float]]:
+            return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+
+        line, stroke = box(10, 10, 200, 30), box(420, 120, 460, 160)
+        fine = np.array([line, stroke], dtype=np.float32)
+        # the same line found by the shrunk pass, and a word too large for any tile, of which they saw one stroke
+        coarse = np.array([box(8, 8, 204, 32), box(300, 100, 900, 400)], dtype=np.float32)
+
+        boxes, scores = text_detector._fuse(
+            fine,
+            np.array([0.9, 0.8], dtype=np.float32),
+            coarse,
+            np.array([0.7, 0.6], dtype=np.float32),
+            (500, 1000),
+        )
+
+        assert boxes.tolist() == [line, coarse[1].tolist()]
+        assert scores.tolist() == pytest.approx([0.9, 0.6])
+
+    def test_det_resolutions_past_the_largest_canvas_share_its_graphs(self, path: mock.Mock) -> None:
+        assert TextDetector.graph(TextDetectionOptions(max_resolution=99999)) == 1440
+        assert TextDetector.graph(TextDetectionOptions(max_resolution=736)) == 736
+        text_detector = TextDetector("PP-OCRv5_mobile", max_resolution=99999, cache_dir=path)
+        assert text_detector.shape_policy.label == "res1440"
+        assert max(height for height, _ in text_detector._sizes(text_detector.shape_policy.dims)) == 2880
+
+    def test_det_tiles_as_large_as_the_free_device_memory_runs(self, path: mock.Mock) -> None:
+        text_detector = TextDetector("PP-OCRv5_mobile", max_resolution=99999, cache_dir=path)
+        assert {min(canvas) for canvas in text_detector._sizes(text_detector.shape_policy.dims)} == {736, 1088, 1440}
+        session = mock.create_autospec(OrtSession, instance=True)
+        session.shapes = text_detector.shape_policy.dims
+        text_detector.session = session
+
+        picks = []
+        for free in (8 << 30, 5 << 30, 2 << 30, 1 << 20):
+            session.free_memory.return_value = free
+            picks.append(text_detector._tile_for_run())
+        session.free_memory.return_value = None  # a device that cannot be asked runs the largest
+        picks.append(text_detector._tile_for_run())
+
+        assert picks == [1440, 1440, 1088, 736, 1440]
+
+    def test_det_steps_down_a_tile_size_when_the_device_runs_out_of_memory(self, path: mock.Mock) -> None:
+        text_detector = TextDetector("PP-OCRv5_mobile", max_resolution=99999, cache_dir=path)
+        session = mock.create_autospec(OrtSession, instance=True)
+        session.shapes = text_detector.shape_policy.dims
+        session.policy = text_detector.shape_policy
+        session.free_memory.return_value = None
+        fed = []
+
+        def for_shape(shape: Shape) -> mock.Mock:
+            graph = mock.Mock(normalizes_input=True)
+            graph.get_inputs.return_value = [SimpleNamespace(name="image")]
+
+            def run(_: Any, feed: dict[str, Any], *__: Any) -> list[Any]:
+                image = feed["image"]
+                fed.append(image.shape[1:3])
+                if min(image.shape[1:3]) > 1088:
+                    raise RuntimeError("Failed to allocate memory for requested buffer of size 176947200")
+                return [np.zeros((1, 1, *image.shape[1:3]), dtype=np.float32)]
+
+            graph.run.side_effect = run
+            return graph
+
+        session.for_shape.side_effect = for_shape
+        text_detector.session = session
+
+        text_detector._predict(Image.new("RGB", (4000, 3000)), TextDetectionOptions(max_resolution=99999))
+        text_detector._predict(Image.new("RGB", (4000, 3000)), TextDetectionOptions(max_resolution=99999))
+
+        assert text_detector.ceiling == 1088
+        assert min(fed[0]) == 1440 and all(min(shape) <= 1088 for shape in fed[1:])  # one failed run, then no more
+        dropped = {min(call.args[0].height, call.args[0].width) for call in session.drop.call_args_list}
+        assert dropped == {1440}
+
+    def test_det_does_not_step_down_for_errors_other_than_memory(self, path: mock.Mock) -> None:
+        text_detector = TextDetector("PP-OCRv5_mobile", max_resolution=99999, cache_dir=path)
+        session = mock.create_autospec(OrtSession, instance=True)
+        session.shapes = text_detector.shape_policy.dims
+        session.free_memory.return_value = None
+        session.for_shape.return_value.get_inputs.return_value = [SimpleNamespace(name="image")]
+        session.for_shape.return_value.run.side_effect = RuntimeError("Invalid input shape")
+        text_detector.session = session
+
+        with pytest.raises(RuntimeError, match="Invalid input shape"):
+            text_detector._predict(Image.new("RGB", (4000, 3000)), TextDetectionOptions(max_resolution=99999))
+        assert text_detector.ceiling == 1440
+
     def test_rec_runs_the_batch_at_a_compiled_width(
         self, path: mock.Mock, mocker: MockerFixture, stub_session: Callable[..., mock.Mock]
     ) -> None:
