@@ -96,6 +96,7 @@ describe('mimeTypes', () => {
     { mimetype: 'video/webm', extension: '.webm' },
     { mimetype: 'video/x-flv', extension: '.flv' },
     { mimetype: 'video/x-matroska', extension: '.mkv' },
+    { mimetype: 'video/x-ms-dvr', extension: '.dvr-ms' },
     { mimetype: 'video/x-ms-wmv', extension: '.wmv' },
     { mimetype: 'video/x-msvideo', extension: '.avi' },
     { mimetype: 'video/mpeg', extension: '.vob' },
@@ -204,6 +205,13 @@ describe('mimeTypes', () => {
   });
 
   describe('video', () => {
+    it('should classify DVR-MS as a video asset', () => {
+      expect(mimeTypes.isVideo('recording.dvr-ms')).toBe(true);
+      expect(mimeTypes.isAsset('recording.DVR-MS')).toBe(true);
+      expect(mimeTypes.lookup('recording.dvr-ms')).toBe('video/x-ms-dvr');
+      expect(mimeTypes.assetType('recording.dvr-ms')).toBe('VIDEO');
+    });
+
     it('should contain only lowercase mime types', () => {
       const keys = Object.keys(mimeTypes.video);
       expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));

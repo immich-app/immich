@@ -119,6 +119,7 @@ const video: Record<string, string[]> = {
   '.3gp': ['video/3gpp'],
   '.3gpp': ['video/3gpp'],
   '.avi': ['video/avi', 'video/msvideo', 'video/vnd.avi', 'video/x-msvideo'],
+  '.dvr-ms': ['video/x-ms-dvr'],
   '.flv': ['video/x-flv'],
   '.insv': ['video/mp4'],
   '.m2t': ['video/mp2t'],
