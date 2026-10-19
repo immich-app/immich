@@ -23,10 +23,7 @@ describe(UserController.name, () => {
   });
 
   describe('PUT /users/me', () => {
-    for (const [key, message] of [
-      ['email', 'Invalid input: expected email, received object'],
-      ['name', 'Invalid input: expected string, received null'],
-    ] as const) {
+    for (const [key, message] of [['email', 'Invalid input: expected email, received object']] as const) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(ctx.getHttpServer())
           .put(`/users/me`)
@@ -43,6 +40,11 @@ describe(UserController.name, () => {
         .set('Authorization', `Bearer token`)
         .send({ avatarColor: null });
       expect(service.updateMe).toHaveBeenCalledWith(undefined, expect.objectContaining({ avatarColor: null }));
+    });
+
+    it('should allow a null name', async () => {
+      await request(ctx.getHttpServer()).put(`/users/me`).set('Authorization', `Bearer token`).send({ name: null });
+      expect(service.updateMe).toHaveBeenCalledWith(undefined, expect.objectContaining({ name: null }));
     });
   });
 

@@ -273,7 +273,7 @@ export class NotificationService extends BaseService {
       template: EmailTemplate.TEST_EMAIL,
       data: {
         baseUrl: getExternalDomain(server),
-        displayName: user.name,
+        displayName: user.name ?? '',
       },
       customTemplate: tempTemplate!,
     });
@@ -302,7 +302,7 @@ export class NotificationService extends BaseService {
       template: EmailTemplate.WELCOME,
       data: {
         baseUrl: getExternalDomain(server),
-        displayName: user.name,
+        displayName: user.name ?? '',
         username: user.email,
         password,
       },
@@ -352,7 +352,7 @@ export class NotificationService extends BaseService {
         albumId: album.id,
         albumName: album.albumName,
         senderName,
-        recipientName: recipient.name,
+        recipientName: recipient.name ?? '',
         cid: attachment ? attachment.cid : undefined,
       },
       customTemplate: templates.email.albumInviteTemplate,
@@ -408,7 +408,7 @@ export class NotificationService extends BaseService {
         baseUrl: getExternalDomain(server),
         albumId: album.id,
         albumName: album.albumName,
-        recipientName: user.name,
+        recipientName: user.name ?? '',
         cid: attachment ? attachment.cid : undefined,
       },
       customTemplate: templates.email.albumUpdateTemplate,

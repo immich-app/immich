@@ -872,7 +872,7 @@ const loginResponse = (): LoginResponseDto => {
     accessToken: 'access-token',
     userId: user.id,
     userEmail: user.email,
-    name: user.name,
+    name: user.name ?? '',
     profileImagePath: user.profileImagePath,
     isAdmin: user.isAdmin,
     shouldChangePassword: user.shouldChangePassword,
