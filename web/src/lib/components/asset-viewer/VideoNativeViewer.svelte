@@ -494,7 +494,12 @@
       {/if}
 
       {#if assetViewerManager.isFaceEditMode && videoPlayer && hasLoadedMetadata}
-        <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
+        <FaceEditor
+          htmlElement={isHlsElement(videoPlayer) ? videoPlayer.nativeEl : videoPlayer}
+          {containerWidth}
+          {containerHeight}
+          {assetId}
+        />
       {/if}
     {/if}
   </div>
