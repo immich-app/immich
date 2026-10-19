@@ -21,13 +21,13 @@ import 'package:share_plus/share_plus.dart';
 abstract final class ImmichLogger {
   // the startup error screen can show before the log service starts, maybe before the store and settings too, so
   // without it the logs come straight from their file and are cleaned without the values this install holds
-  static Future<(List<LogMessage>, Map<String, String>)> _read() async {
+  static Future<List<LogMessage>> _read() async {
     try {
-      return (await LogService.I.getMessages(), LogService.I.held());
+      return await LogService.I.getMessages();
     } on LoggerUnInitializedException {
       final logs = DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
       try {
-        return (LogService.redact(await LogRepository(logs).getAll()), const <String, String>{});
+        return await LogRepository(logs).getAll();
       } finally {
         await logs.close();
       }
@@ -35,7 +35,7 @@ abstract final class ImmichLogger {
   }
 
   static Future<void> shareLogs(BuildContext context, {String? startupError}) async {
-    final (messages, held) = await _read();
+    final messages = await _read();
     final tempDir = await getTemporaryDirectory();
     final dateTime = DateTime.now().toIso8601String();
     final filePath = '${tempDir.path}/Immich_log_$dateTime.log';
@@ -43,8 +43,7 @@ abstract final class ImmichLogger {
     final io = logFile.openWrite();
     try {
       if (startupError != null) {
-        final error = LogMessage(message: startupError, level: LogLevel.severe, createdAt: DateTime.now());
-        io.write('${LogService.redact([error], held).single.message}\n\n');
+        io.write('$startupError\n\n');
       }
       // Write messages
       for (final m in messages) {
