@@ -13,7 +13,6 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
-import '../factories/remote_asset_factory.dart';
 import '../mocks.dart';
 
 void main() {
@@ -55,23 +54,6 @@ void main() {
 
   tearDown(() async {
     await Store.delete(StoreKey.manageLocalMediaAndroid);
-  });
-
-  group('AssetService.getStack', () {
-    test('preserves the primary asset without changing repository order', () async {
-      final primary = RemoteAssetFactory.create(id: 'primary', stackId: 'stack', localId: 'local-primary');
-      final beforePrimary = RemoteAssetFactory.create(id: 'before-primary', stackId: 'stack');
-      final repositoryPrimary = RemoteAssetFactory.create(id: 'primary', stackId: 'stack');
-      final afterPrimary = RemoteAssetFactory.create(id: 'after-primary', stackId: 'stack');
-      when(
-        () => remoteRepository.getStack('stack'),
-      ).thenAnswer((_) async => [beforePrimary, repositoryPrimary, afterPrimary]);
-
-      final stack = await sut.getStack(primary);
-
-      expect(stack.map((asset) => asset.id), [beforePrimary.id, primary.id, afterPrimary.id]);
-      expect(stack[1].localId, 'local-primary');
-    });
   });
 
   group('AssetService.updateDateTime', () {

@@ -18,8 +18,8 @@ void main() {
     await ctx.dispose();
   });
 
-  group('getStack', () {
-    test('returns all stack assets from oldest to newest', () async {
+  group('getStackChildren', () {
+    test('returns stack children from oldest to newest', () async {
       final user = await ctx.newUser();
       const stackId = 'stack';
       final primary = await ctx.newRemoteAsset(
@@ -42,9 +42,10 @@ void main() {
       );
       await ctx.newRemoteAsset(ownerId: user.id, stackId: 'other-stack');
 
-      final stack = await sut.getStack(stackId);
+      final primaryAsset = await sut.get(primary.id);
+      final stack = await sut.getStackChildren(primaryAsset!);
 
-      expect(stack.map((asset) => asset.id), [beforePrimary.id, primary.id, afterPrimary.id]);
+      expect(stack.map((asset) => asset.id), [beforePrimary.id, afterPrimary.id]);
     });
   });
 

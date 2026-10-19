@@ -51,9 +51,14 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
     return query.map((row) => row.toDto()).get();
   }
 
-  Future<List<RemoteAsset>> getStack(String stackId) {
+  Future<List<RemoteAsset>> getStackChildren(RemoteAsset asset) {
+    final stackId = asset.stackId;
+    if (stackId == null) {
+      return Future.value(const []);
+    }
+
     final query = _db.remoteAssetEntity.select()
-      ..where((row) => row.stackId.equals(stackId))
+      ..where((row) => row.stackId.equals(stackId) & row.id.equals(asset.id).not())
       ..orderBy([(row) => OrderingTerm.asc(row.createdAt)]);
 
     return query.map((row) => row.toDto()).get();

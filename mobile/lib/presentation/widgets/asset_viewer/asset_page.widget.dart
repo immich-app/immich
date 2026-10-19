@@ -448,9 +448,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final showAssetStack = ref.watch(timelineServiceProvider.select((s) => s.origin != TimelineOrigin.trash));
     final stackChildren = showAssetStack ? ref.watch(stackChildrenNotifier(asset)).valueOrNull : null;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      final currentAssetIndex = stackChildren.indexWhere((asset) => currentAsset?.refersToSameAsset(asset) ?? false);
-      final displayAssetIndex = currentAssetIndex < 0 ? stackIndex : currentAssetIndex;
-      displayAsset = stackChildren.elementAt(displayAssetIndex.clamp(0, stackChildren.length - 1));
+      final safeStackIndex = stackIndex.clamp(0, stackChildren.length - 1);
+      displayAsset = stackChildren.elementAt(safeStackIndex);
     }
 
     final isCurrent = currentAsset != null && currentAsset.refersToSameAsset(displayAsset);
