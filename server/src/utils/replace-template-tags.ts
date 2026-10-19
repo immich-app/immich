@@ -15,5 +15,11 @@ export const replaceTemplateTags = (
 };
 
 export const templatePreview = (template: string, variables: Record<string, string | undefined>) => {
-  return replaceTemplateTags(template, variables, { escapeHtml: false }).replaceAll(/<[^>]*>/g, '');
+  let text = replaceTemplateTags(template, variables, { escapeHtml: false });
+  let previous: string;
+  do {
+    previous = text;
+    text = text.replaceAll(/<[^>]*>/g, '');
+  } while (text !== previous);
+  return text;
 };
