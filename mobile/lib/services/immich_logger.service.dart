@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
+import 'package:immich_mobile/data/db/logger/database.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -15,7 +19,26 @@ import 'package:share_plus/share_plus.dart';
 /// Logs can be shared by calling the `shareLogs` method, which will open a share dialog
 /// and generate a csv file.
 abstract final class ImmichLogger {
-  static Future<void> shareLogs(BuildContext context) async {
+  // the startup error screen can show before the log service starts, and then the startup error was not logged
+  static Future<List<LogMessage>> _read(String? startupError) async {
+    try {
+      return await LogService.I.getMessages();
+    } on LoggerUnInitializedException {
+      final logs = DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
+      try {
+        return [
+          // if the log service had started, main would have logged this already
+          if (startupError != null)
+            LogMessage(message: startupError, level: LogLevel.severe, createdAt: DateTime.now()),
+          ...await LogRepository(logs).getAll(),
+        ];
+      } finally {
+        await logs.close();
+      }
+    }
+  }
+
+  static Future<void> shareLogs(BuildContext context, {String? startupError}) async {
     final tempDir = await getTemporaryDirectory();
     final dateTime = DateTime.now().toIso8601String();
     final filePath = '${tempDir.path}/Immich_log_$dateTime.log';
@@ -23,7 +46,7 @@ abstract final class ImmichLogger {
     final io = logFile.openWrite();
     try {
       // Write messages
-      for (final m in await LogService.I.getMessages()) {
+      for (final m in await _read(startupError)) {
         final created = m.createdAt;
         final level = m.level.name.padRight(8);
         final logger = (m.logger ?? "<UNKNOWN_LOGGER>").padRight(20);
