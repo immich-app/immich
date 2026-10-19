@@ -223,9 +223,9 @@ void main() {
         ),
       );
       const rows = {
-        'Resuming session at https://immich.example.com/api': 'Resuming session at [EXTERNAL URL 1]/api',
-        'GET http://nas.lan:2283/api/server/ping': 'GET [EXTERNAL URL 2]/api/server/ping',
-        'GET http://192.168.1.5:2283/api/server/ping': 'GET [LOCAL URL]/api/server/ping',
+        'Resuming session at https://immich.example.com/api': 'Resuming session at [EXTERNAL ENDPOINT 1]/api',
+        'GET http://nas.lan:2283/api/server/ping': 'GET [EXTERNAL ENDPOINT 2]/api/server/ping',
+        'GET http://192.168.1.5:2283/api/server/ping': 'GET [LOCAL ENDPOINT]/api/server/ping',
         'Using server URL: https://api.example.com/api': 'Using server URL: [SERVER URL]/api',
         'Received Authorization URL: https://auth.example.org/authorize':
             'Received Authorization URL: [OTHER URL]/authorize',
@@ -233,6 +233,7 @@ void main() {
             'Causing statement: INSERT INTO "store_entity", parameters: 11, [ACCESS TOKEN]',
         'Could not enqueue task DownloadTask{headers: {X-Proxy-Key: cf-secret-abcdef0123, X-Debug: 1}, retries: 1}':
             'Could not enqueue task DownloadTask{headers: {X-Proxy-Key: [HEADER VALUE], X-Debug: [HEADER VALUE]}, retries: 1}',
+        'X-Proxy-Key:\tcf-secret-abcdef0123': 'X-Proxy-Key: [HEADER VALUE]',
         'Uploaded 1 assets in 1.2s': 'Uploaded 1 assets in 1.2s',
       };
       for (final row in rows.keys) {
@@ -273,8 +274,8 @@ void main() {
       expect(
         stored.first.error,
         'ApiException 400: HTTP connection failed: GET /server/ping (Inner exception: ClientException: '
-        'java.net.ConnectException: Failed to connect to [EXTERNAL URL 1]/[IP ADDRESS]:2283, '
-        'uri=[EXTERNAL URL 1]/api/server/ping)\n\n'
+        'java.net.ConnectException: Failed to connect to [EXTERNAL ENDPOINT 1]/[IP ADDRESS]:2283, '
+        'uri=[EXTERNAL ENDPOINT 1]/api/server/ping)\n\n'
         '#0 ApiService._isEndpointAvailable (package:immich_mobile/services/api.service.dart)',
       );
       expect(
@@ -282,6 +283,35 @@ void main() {
         'ClientException: java.net.UnknownHostException: Unable to resolve host "[OTHER URL]": '
         'No address associated with hostname, uri=[OTHER URL]/api/users/me',
       );
+    });
+
+    test('Hides ipv6 addresses in http client errors', () async {
+      const rows = {
+        'java.net.ConnectException: Failed to connect to immich.example.com/[2001:db8::5]:443':
+            'java.net.ConnectException: Failed to connect to [OTHER URL]/[IP ADDRESS]:443',
+        'java.net.ConnectException: Failed to connect to immich.example.com/2001:db8::5:443':
+            'java.net.ConnectException: Failed to connect to [OTHER URL]/[IP ADDRESS]',
+        'java.net.SocketTimeoutException: failed to connect to immich.example.com/2001:db8::5 (port 443) '
+                'from /2001:db8:1234:5678:9abc:def0:1234:5678 (port 41234) after 30000ms':
+            'java.net.SocketTimeoutException: failed to connect to [OTHER URL]/[IP ADDRESS] (port 443) '
+            'from /[IP ADDRESS] (port 41234) after 30000ms',
+        'java.net.ConnectException: Failed to connect to /[fe80::5%wlan0]:2283':
+            'java.net.ConnectException: Failed to connect to /[IP ADDRESS]:2283',
+        'at 12:34:56': 'at 12:34:56',
+        '0:00:01.500000': '0:00:01.500000',
+        'deadbeef': 'deadbeef',
+        '#0      ApiClient.invokeAPI (package:openapi/api_client.dart:131:7)':
+            '#0      ApiClient.invokeAPI (package:openapi/api_client.dart:131:7)',
+      };
+      for (final row in rows.keys) {
+        Logger('Test').severe('Upload error', ClientException(row, Uri.parse('https://immich.example.com/api/assets')));
+      }
+      await sut.flush();
+
+      final stored = verify(() => mockLogRepo.insertAll(captureAny())).captured.single as List<LogMessage>;
+      expect(stored.map((m) => m.error), [
+        for (final row in rows.values) 'ClientException: $row, uri=[OTHER URL]/api/assets',
+      ]);
     });
 
     test('Keeps the labels of a line logged before a logout', () async {
@@ -310,7 +340,7 @@ void main() {
 
       final stored = verify(() => mockLogRepo.insertAll(captureAny())).captured.single as List<LogMessage>;
       expect(stored.map((m) => m.message), [
-        'Resuming session at [EXTERNAL URL 1]/api with [ACCESS TOKEN]',
+        'Resuming session at [EXTERNAL ENDPOINT 1]/api with [ACCESS TOKEN]',
         'Resuming session at [OTHER URL]/api',
       ]);
     });
