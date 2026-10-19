@@ -232,8 +232,14 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
       const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets } });
 
       const results = response.results as AssetBulkUploadCheckResults;
+      const requested = new Set(assets.map(({ id }) => id));
 
       for (const { id: filepath, assetId, action } of results) {
+        if (!requested.has(filepath)) {
+          console.warn(`Ignoring unexpected file in bulk upload check response: ${filepath}`);
+          continue;
+        }
+
         if (action === AssetUploadAction.Accept) {
           newFiles.push(filepath);
         } else {
