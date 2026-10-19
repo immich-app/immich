@@ -27,6 +27,7 @@ abstract final class ImmichLogger {
       final logs = DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
       try {
         return [
+          // if the log service had started, main would have logged this already
           if (startupError != null)
             LogMessage(message: startupError, level: LogLevel.severe, createdAt: DateTime.now()),
           ...await LogRepository(logs).getAll(),
