@@ -50,6 +50,49 @@ describe(DownloadService.name, () => {
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, asset.originalPath, asset.originalFileName);
     });
 
+    it('should return the original file when the unedited version is requested', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create();
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([asset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset.id], edited: false })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(mocks.asset.getForOriginals).toHaveBeenCalledWith([asset.id], false);
+      expect(archiveMock.addFile).toHaveBeenCalledWith(asset.originalPath, asset.originalFileName);
+    });
+
+    it('should not return the unedited version when requested using a shared link', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create();
+      const editedPath = '/data/edited.jpg';
+
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([{ ...asset, editedPath }]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(
+        sut.downloadArchive(authStub.adminSharedLink, { assetIds: [asset.id], edited: false }),
+      ).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(mocks.asset.getForOriginals).toHaveBeenCalledWith([asset.id], true);
+      expect(archiveMock.addFile).toHaveBeenCalledWith(editedPath, asset.originalFileName);
+    });
+
     it('should log a warning if the original path could not be resolved', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
