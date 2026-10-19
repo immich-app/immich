@@ -27,7 +27,7 @@ test.describe('Registration', () => {
     await expect(page).toHaveTitle(/Login/);
     await page.goto('/auth/login?autoLaunch=0');
     await page.getByLabel('Email').fill('admin@immich.app');
-    await page.getByLabel('Password').fill('password');
+    await page.getByLabel('Password', { exact: true }).fill('password');
     await page.getByRole('button', { name: 'Login' }).click();
 
     // onboarding
