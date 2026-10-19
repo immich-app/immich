@@ -16,7 +16,7 @@ class _FallbackLocalizationsDelegate<T> extends LocalizationsDelegate<T> {
   bool isSupported(Locale locale) => true;
 
   @override
-  Future<T> load(Locale locale) => delegate.load(locale);
+  Future<T> load(Locale locale) => delegate.load(const Locale('en'));
 
   @override
   bool shouldReload(_FallbackLocalizationsDelegate<T> old) => false;
