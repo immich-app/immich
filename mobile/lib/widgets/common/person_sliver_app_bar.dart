@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/sliver_app_bar/item_count_text.widget.dart';
@@ -290,7 +291,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
 
                             if (widget.person.birthDate != null)
                               Text(
-                                "${DateFormat.yMMMd(context.locale.toString()).format(widget.person.birthDate!)} (${formatAge(widget.person.birthDate!, DateTime.now())})",
+                                "${DateFormat.yMMMd(resolvedDateTimeLocale()).format(widget.person.birthDate!)} (${formatAge(widget.person.birthDate!, DateTime.now())})",
                                 style: context.textTheme.labelLarge?.copyWith(
                                   color: Colors.white,
                                   height: 1.2,

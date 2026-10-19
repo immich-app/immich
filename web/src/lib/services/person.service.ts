@@ -60,7 +60,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
   };
 
   const Access: ActionItem = {
-    title: 'Manage access',
+    title: $t('manage_person_access'),
     icon: mdiAccountMultipleOutline,
     onAction: () => modalManager.show(PersonEditAccessModal, { person }),
   };

@@ -187,7 +187,6 @@ export class JobRepository {
       'failed',
       'delayed',
       'waiting',
-      'paused',
     ) as unknown as Promise<JobCounts>;
   }
 

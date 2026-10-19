@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import AdminCard from '$lib/components/AdminCard.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
@@ -7,12 +7,19 @@
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import DeviceCard from '$lib/components/user-settings-page/DeviceCard.svelte';
   import FeatureSetting from './FeatureSetting.svelte';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import {
+    getUserAdminQuery,
+    getUserCalendarHeatmapAdminQuery,
+    getUserPreferencesAdminQuery,
+    getUserSessionsAdminQuery,
+    getUserStatisticsAdminQuery,
+  } from '$lib/queries/user-admin.query';
   import { Route } from '$lib/route';
   import { getUserAdminActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { CalendarHeatmapType, getUserCalendarHeatmapAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import {
     Alert,
     Badge,
@@ -40,21 +47,27 @@
     mdiPlayCircle,
     mdiTrashCanOutline,
   } from '@mdi/js';
-  import type { Snippet } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
-  import type { LayoutData } from './$types';
-  import { getHeatmapRange } from '$lib';
+  import type { LayoutProps } from './$types';
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import CalendarHeatmap from '$lib/components/CalendarHeatmap.svelte';
 
-  type Props = {
-    children?: Snippet;
-    data: LayoutData;
+  const { children, params }: LayoutProps = $props();
+
+  const queries = {
+    user: createPreloadedQuery(() => getUserAdminQuery(params.id)),
+    preferences: createQuery(() => getUserPreferencesAdminQuery(params.id)),
+    statistics: createQuery(() => getUserStatisticsAdminQuery(params.id)),
+    sessions: createQuery(() => getUserSessionsAdminQuery(params.id)),
+    heatmap: createQuery(() => getUserCalendarHeatmapAdminQuery(params.id)),
   };
 
-  const { children, data }: Props = $props();
-
-  const { user, userPreferences, userStatistics, userSessions } = $derived(data);
+  const user = $derived(queries.user.data);
+  const userPreferences = $derived(queries.preferences.data);
+  const userStatistics = $derived(queries.statistics.data);
+  const userSessions = $derived(queries.sessions.data ?? []);
+  const heatmap = $derived(queries.heatmap.data);
   const usedBytes = $derived(user.quotaUsageInBytes ?? 0);
   const availableBytes = $derived(user.quotaSizeInBytes ?? 0);
   const TiB = 1024 ** 4;
@@ -73,15 +86,6 @@
 
   const { ResetPassword, ResetPinCode, Update, Delete, Restore } = $derived(getUserAdminActions($t, user));
 
-  const onUpdate = async (update: UserAdminResponseDto) => {
-    if (update.id !== user.id) {
-      return;
-    }
-
-    data.user = update;
-    await invalidateAll();
-  };
-
   const onUserAdminDeleted = async ({ id }: { id: string }) => {
     if (id === user.id) {
       await goto(Route.users());
@@ -89,12 +93,7 @@
   };
 </script>
 
-<OnEvents
-  onUserAdminUpdate={onUpdate}
-  onUserAdminDelete={onUpdate}
-  onUserAdminRestore={onUpdate}
-  {onUserAdminDeleted}
-/>
+<OnEvents {onUserAdminDeleted} />
 
 <CommandPaletteDefaultProvider name={$t('user')} actions={[ResetPassword, ResetPinCode, Update, Delete, Restore]} />
 
@@ -122,21 +121,9 @@
         </div>
         <div class="col-span-full">
           <div class="flex w-full flex-col gap-4 lg:flex-row">
-            <ServerStatisticsCard
-              icon={mdiCameraIris}
-              title={$t('photos')}
-              valuePromise={Promise.resolve({ value: userStatistics.images })}
-            />
-            <ServerStatisticsCard
-              icon={mdiPlayCircle}
-              title={$t('videos')}
-              valuePromise={Promise.resolve({ value: userStatistics.videos })}
-            />
-            <ServerStatisticsCard
-              icon={mdiChartPie}
-              title={$t('storage')}
-              valuePromise={Promise.resolve({ value: statsUsage, unit: statsUsageUnit })}
-            />
+            <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={userStatistics?.images} />
+            <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={userStatistics?.videos} />
+            <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
           </div>
         </div>
 
@@ -167,15 +154,17 @@
 
         <AdminCard icon={mdiFeatureSearchOutline} title={$t('features')}>
           <Stack gap={3}>
-            <FeatureSetting title={$t('email_notifications')} state={userPreferences.emailNotifications.enabled} />
-            <FeatureSetting title={$t('folders')} state={userPreferences.folders.enabled} />
-            <FeatureSetting title={$t('memories')} state={userPreferences.memories.enabled} />
-            <FeatureSetting title={$t('people')} state={userPreferences.people.enabled} />
-            <FeatureSetting title={$t('rating')} state={userPreferences.ratings.enabled} />
-            <FeatureSetting title={$t('shared_links')} state={userPreferences.sharedLinks.enabled} />
-            <FeatureSetting title={$t('show_supporter_badge')} state={userPreferences.purchase.showSupportBadge} />
-            <FeatureSetting title={$t('tags')} state={userPreferences.tags.enabled} />
-            <FeatureSetting title={$t('gcast_enabled')} state={userPreferences.cast.gCastEnabled} />
+            {#if userPreferences}
+              <FeatureSetting title={$t('email_notifications')} state={userPreferences.emailNotifications.enabled} />
+              <FeatureSetting title={$t('folders')} state={userPreferences.folders.enabled} />
+              <FeatureSetting title={$t('memories')} state={userPreferences.memories.enabled} />
+              <FeatureSetting title={$t('people')} state={userPreferences.people.enabled} />
+              <FeatureSetting title={$t('rating')} state={userPreferences.ratings.enabled} />
+              <FeatureSetting title={$t('shared_links')} state={userPreferences.sharedLinks.enabled} />
+              <FeatureSetting title={$t('show_supporter_badge')} state={userPreferences.purchase.showSupportBadge} />
+              <FeatureSetting title={$t('tags')} state={userPreferences.tags.enabled} />
+              <FeatureSetting title={$t('gcast_enabled')} state={userPreferences.cast.gCastEnabled} />
+            {/if}
           </Stack>
         </AdminCard>
 
@@ -218,15 +207,15 @@
             <Icon icon={mdiCloudUploadOutline} size="1.5rem" />
             <CardTitle>{$t('uploads')}</CardTitle>
           </div>
-          {#await getUserCalendarHeatmapAdmin({ ...getHeatmapRange(), id: user.id, $type: CalendarHeatmapType.Upload })}
-            <Skeleton height={80} class="mt-2 rounded-lg" />
-          {:then data}
+          {#if heatmap}
             <CalendarHeatmap
-              {data}
+              data={heatmap}
               itemLabel={(item) => $t('upload_day_count', { values: item })}
               totalLabel={(count) => $t('uploads_count', { values: { count } })}
             />
-          {/await}
+          {:else}
+            <Skeleton height={80} class="mt-2 rounded-lg" />
+          {/if}
         </div>
         <!-- </AdminCard> -->
       </div>

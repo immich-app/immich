@@ -40,6 +40,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:immich_mobile/utils/fallback_localizations.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/wm_executor.dart';
@@ -284,7 +285,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         title: 'Immich',
         debugShowCheckedModeBanner: true,
         scaffoldMessengerKey: scaffoldMessengerKey,
-        localizationsDelegates: context.localizationDelegates,
+        localizationsDelegates: [...context.localizationDelegates, ...fallbackLocalizationDelegates],
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         themeMode: ref.watch(appConfigProvider.select((config) => config.theme.mode)),

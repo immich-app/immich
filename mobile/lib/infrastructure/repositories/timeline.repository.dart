@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
@@ -13,6 +12,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.drift.dart';
+import 'package:intl/intl.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 @DriftAccessor()
