@@ -64,7 +64,6 @@ class Timeline extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
-    final smoothScrubbing = ref.watch(appConfigProvider.select((config) => config.timeline.smoothScrubbing));
     return LayoutBuilder(
       builder: (_, constraints) {
         return ProviderScope(
@@ -91,7 +90,7 @@ class Timeline extends ConsumerWidget {
             bottomSheet: bottomSheet,
             withScrubber: withScrubber,
             persistentBottomBar: persistentBottomBar,
-            snapToMonth: snapToMonth && !smoothScrubbing,
+            snapToMonth: snapToMonth,
             maxWidth: constraints.maxWidth,
             loadingWidget: loadingWidget,
           ),
@@ -329,6 +328,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     final isMultiSelectStatusVisible = !isSelectionMode && isMultiSelectEnabled;
     final isBottomWidgetVisible =
         widget.bottomSheet != null && (isMultiSelectStatusVisible || widget.persistentBottomBar);
+    final smoothScrubbing = ref.watch(appConfigProvider.select((config) => config.timeline.smoothScrubbing));
+    final snapToMonth = widget.snapToMonth && !smoothScrubbing;
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
@@ -410,7 +411,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                       final Widget timeline;
                       if (widget.withScrubber) {
                         timeline = Scrubber(
-                          snapToMonth: widget.snapToMonth,
+                          snapToMonth: snapToMonth,
                           layoutSegments: segments,
                           timelineHeight: maxHeight,
                           topPadding: topPadding,
