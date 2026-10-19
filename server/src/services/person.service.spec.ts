@@ -898,7 +898,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -915,7 +914,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 1,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -931,7 +929,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -962,7 +959,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -994,7 +990,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -1049,7 +1044,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,

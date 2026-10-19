@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/dtos/time-bucket.dto.js';
 import { AssetVisibility, Permission } from 'src/enum.js';
 import { TimeBucketOptions } from 'src/repositories/asset.repository.js';
@@ -69,7 +69,7 @@ export class TimelineService extends BaseService {
       await this.requireAccess({ auth, permission: Permission.TagRead, ids: [dto.tagId] });
     }
 
-    if (auth.sharedLink && !auth.sharedLink.showExif) {
+    if (isMetadataHidden(auth)) {
       dto.withCoordinates = false;
     }
 
