@@ -10,7 +10,7 @@ import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/services/immich_logger.service.dart';
 
 void main() {
-  testWidgets('Shares the startup error and the stored logs cleaned before the log service starts', (tester) async {
+  testWidgets('Shares the startup error and the stored logs before the log service starts', (tester) async {
     final dir = Directory.systemTemp.createTempSync('immich-logs');
     addTearDown(() => dir.delete(recursive: true));
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -44,7 +44,13 @@ void main() {
       );
     });
 
-    expect(shared, startsWith('SqliteException(2067): UNIQUE constraint failed, parameters: <parameters>\n\n'));
-    expect(shared, contains('| Failed to connect to <host>/<ip>:443, uri=https://<host>/api |'));
+    expect(
+      shared.split('\n').first,
+      endsWith('| SqliteException(2067): UNIQUE constraint failed, parameters: 14, someone@example.com |'),
+    );
+    expect(
+      shared,
+      contains('| Failed to connect to old.example.net/203.0.113.9:443, uri=https://old.example.net/api |'),
+    );
   });
 }

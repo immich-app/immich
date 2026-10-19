@@ -73,6 +73,7 @@ void main() async {
       ),
     );
   } catch (error, stack) {
+    Logger('main').severe('Failed to start', error, stack);
     runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
   }
 }
