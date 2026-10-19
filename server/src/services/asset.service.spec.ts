@@ -102,8 +102,7 @@ describe(AssetService.name, () => {
 
       const result = await sut.get(authStub.adminSharedLink, asset.id);
 
-      expect(result).toEqual(expect.objectContaining({ id: asset.id, hasMetadata: true, people: [] }));
-      expect(result.owner).toBeUndefined();
+      expect(result).toMatchObject({ id: asset.id, hasMetadata: true, people: [], owner: undefined });
       expect(mocks.access.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLink?.id,
         new Set([asset.id]),
