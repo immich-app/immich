@@ -873,7 +873,7 @@ const loginResponse = (): LoginResponseDto => {
     userId: user.id,
     userEmail: user.email,
     name: user.name,
-    profileImagePath: user.profileImagePath,
+    profileImagePath: user.profileImagePath ?? '',
     isAdmin: user.isAdmin,
     shouldChangePassword: user.shouldChangePassword,
     isOnboarded: false,

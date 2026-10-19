@@ -42,8 +42,8 @@ export class UserTable {
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
-  @Column({ default: '' })
-  profileImagePath!: Generated<string>;
+  @Column({ nullable: true, default: null })
+  profileImagePath!: string | null;
 
   @Column({ type: 'boolean', default: false })
   isAdmin!: Generated<boolean>;

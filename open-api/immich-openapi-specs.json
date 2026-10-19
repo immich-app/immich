@@ -22997,7 +22997,18 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           },
           "shouldChangePassword": {
             "description": "Should change password",
@@ -33640,7 +33651,18 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           }
         },
         "required": [

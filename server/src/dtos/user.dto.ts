@@ -28,7 +28,18 @@ export const UserResponseSchema = z
     id: z.uuidv4().describe('User ID'),
     name: z.string().describe('User name'),
     email: toEmail.describe('User email'),
-    profileImagePath: z.string().describe('Profile image path'),
+    profileImagePath: z
+      .string()
+      .describe('Profile image path')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'An empty string is returned instead of null for backwards compatibility; null will be returned in v4.',
+          )
+          .getExtensions(),
+      }),
     avatarColor: UserAvatarColorSchema,
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     profileChangedAt: z.string().meta({ format: 'date-time' }).describe('Profile change date'),
@@ -60,7 +71,8 @@ export const mapUser = (entity: MaybeDehydrated<User | UserAdmin>): UserResponse
     id: entity.id,
     email: entity.email,
     name: entity.name,
-    profileImagePath: entity.profileImagePath,
+    // TODO: return null instead of '' in v4
+    profileImagePath: entity.profileImagePath ?? '',
     avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
     profileChangedAt: asDateTimeString(entity.profileChangedAt),
   };

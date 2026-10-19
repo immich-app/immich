@@ -129,7 +129,7 @@ export type User = {
   name: string;
   email: string;
   avatarColor: UserAvatarColor | null;
-  profileImagePath: string;
+  profileImagePath: string | null;
   profileChangedAt: Date;
 };
 

@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import type { UserMetadataItem } from 'src/types.js';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
 import { ImmichCookie, UserMetadataKey } from 'src/enum.js';
 import { toEmail } from 'src/validation.js';
 
@@ -34,7 +35,18 @@ const LoginResponseSchema = z
     userId: z.uuidv4().describe('User ID'),
     userEmail: toEmail.describe('User email'),
     name: z.string().describe('User name'),
-    profileImagePath: z.string().describe('Profile image path'),
+    profileImagePath: z
+      .string()
+      .describe('Profile image path')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'An empty string is returned instead of null for backwards compatibility; null will be returned in v4.',
+          )
+          .getExtensions(),
+      }),
     isAdmin: z.boolean().describe('Is admin user'),
     shouldChangePassword: z.boolean().describe('Should change password'),
     isOnboarded: z.boolean().describe('Is onboarded'),
@@ -52,7 +64,8 @@ export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginR
     userEmail: entity.email,
     name: entity.name,
     isAdmin: entity.isAdmin,
-    profileImagePath: entity.profileImagePath,
+    // TODO: return null instead of '' in v4
+    profileImagePath: entity.profileImagePath ?? '',
     shouldChangePassword: entity.shouldChangePassword,
     isOnboarded: onboardingMetadata?.isOnboarded ?? false,
   };
