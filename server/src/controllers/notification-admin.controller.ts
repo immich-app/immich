@@ -10,7 +10,7 @@ import {
   TemplateResponseDto,
   TestEmailResponseDto,
 } from 'src/dtos/notification.dto.js';
-import { ApiTag } from 'src/enum.js';
+import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import { NotificationAdminService } from 'src/services/notification-admin.service.js';
@@ -21,7 +21,7 @@ export class NotificationAdminController {
   constructor(private service: NotificationAdminService) {}
 
   @Post()
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.NotificationCreate, admin: true })
   @Endpoint({
     summary: 'Create a notification',
     description: 'Create a new notification for a specific user.',
@@ -32,7 +32,7 @@ export class NotificationAdminController {
   }
 
   @Post('test-email')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.NotificationCreate, admin: true })
   @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Send test email',
@@ -44,7 +44,7 @@ export class NotificationAdminController {
   }
 
   @Post('templates/:name')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.NotificationCreate, admin: true })
   @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Render email template',
