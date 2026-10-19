@@ -53,6 +53,10 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
   @override
   Widget build(BuildContext context) {
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    Widget hideWhenSelecting(Widget child) => IgnorePointer(
+      ignoring: isMultiSelectEnabled,
+      child: AnimatedOpacity(duration: Durations.medium1, opacity: isMultiSelectEnabled ? 0 : 1, child: child),
+    );
     final Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
     final List<Shadow> actionIconShadows = [
       if (_scrollProgress < 0.95)
@@ -67,26 +71,28 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
       pinned: true,
       snap: false,
       elevation: 0,
-      leading: isMultiSelectEnabled
-          ? const SizedBox.shrink()
-          : IconButton(
-              icon: Icon(
-                Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
-                color: Color.lerp(Colors.white, context.primaryColor, _scrollProgress),
-                shadows: [
-                  _scrollProgress < 0.95
-                      ? Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
-                      : const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
-                ],
-              ),
-              onPressed: () {
-                context.pop();
-              },
-            ),
-      actions: [
+      leading: hideWhenSelecting(
         IconButton(
-          icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
-          onPressed: widget.onShowOptions,
+          icon: Icon(
+            Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
+            color: Color.lerp(Colors.white, context.primaryColor, _scrollProgress),
+            shadows: [
+              _scrollProgress < 0.95
+                  ? Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
+                  : const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
+            ],
+          ),
+          onPressed: () {
+            context.pop();
+          },
+        ),
+      ),
+      actions: [
+        hideWhenSelecting(
+          IconButton(
+            icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
+            onPressed: widget.onShowOptions,
+          ),
         ),
       ],
       flexibleSpace: Builder(
@@ -114,11 +120,14 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
                     )
                   : null,
             ),
-            background: _ExpandedBackground(
-              scrollProgress: scrollProgress,
-              person: widget.person,
-              onNameTap: widget.onNameTap,
-              onBirthdayTap: widget.onBirthdayTap,
+            background: IgnorePointer(
+              ignoring: isMultiSelectEnabled,
+              child: _ExpandedBackground(
+                scrollProgress: scrollProgress,
+                person: widget.person,
+                onNameTap: widget.onNameTap,
+                onBirthdayTap: widget.onBirthdayTap,
+              ),
             ),
           );
         },
