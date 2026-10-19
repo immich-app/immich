@@ -3,7 +3,7 @@ import * as React from 'react';
 import { ImmichButton } from 'src/emails/components/button.component.js';
 import ImmichLayout from 'src/emails/components/immich.layout.js';
 import { AlbumInviteEmailProps } from 'src/repositories/email.repository.js';
-import { replaceTemplateTags } from 'src/utils/replace-template-tags.js';
+import { replaceTemplateTags, templatePreview } from 'src/utils/replace-template-tags.js';
 
 export const AlbumInviteEmail = ({
   baseUrl,
@@ -37,7 +37,9 @@ export const AlbumInviteEmail = ({
   );
 
   return (
-    <ImmichLayout preview={customTemplate ? emailContent.toString() : 'You have been added to a shared album.'}>
+    <ImmichLayout
+      preview={customTemplate ? templatePreview(customTemplate, variables) : 'You have been added to a shared album.'}
+    >
       {customTemplate && (
         <Text className="m-0">
           <div dangerouslySetInnerHTML={{ __html: emailContent }}></div>
