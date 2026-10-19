@@ -36,7 +36,7 @@
 
   const { icon, title, subtitle } = $derived(asQueueItem($t, queue));
   const { statistics } = $derived(queue);
-  let waitingCount = $derived(statistics.waiting + statistics.paused + statistics.delayed);
+  let waitingCount = $derived(statistics.waiting + statistics.delayed);
   let isIdle = $derived(statistics.active + statistics.waiting === 0 && !queue.isPaused);
   let multipleButtons = $derived(allText || refreshText);
 

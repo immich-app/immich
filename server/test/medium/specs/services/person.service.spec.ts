@@ -518,7 +518,7 @@ describe(PersonService.name, () => {
       const jobRepo = ctx.getMock(JobRepository);
       ctx.getMock(StorageRepository).unlink.mockResolvedValue();
       jobRepo.waitForQueueCompletion.mockResolvedValue();
-      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0, paused: 0 });
+      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0 });
       jobRepo.queueAll.mockResolvedValue();
 
       const { user } = await ctx.newUser();
@@ -549,7 +549,7 @@ describe(PersonService.name, () => {
       const jobRepo = ctx.getMock(JobRepository);
       ctx.getMock(StorageRepository).unlink.mockResolvedValue();
       jobRepo.waitForQueueCompletion.mockResolvedValue();
-      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0, paused: 0 });
+      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0 });
       jobRepo.queueAll.mockResolvedValue();
 
       const { user } = await ctx.newUser();

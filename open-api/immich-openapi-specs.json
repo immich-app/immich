@@ -26154,8 +26154,7 @@
           "failed",
           "completed",
           "delayed",
-          "waiting",
-          "paused"
+          "waiting"
         ],
         "type": "string"
       },
@@ -26249,7 +26248,23 @@
             "description": "Number of paused jobs",
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
-            "type": "integer"
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v2.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
+                "state": "Updated",
+                "description": "A paused queue will now also shows its job as `waiting`"
+              },
+              {
+                "version": "v4.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "waiting": {
             "description": "Number of waiting jobs",
