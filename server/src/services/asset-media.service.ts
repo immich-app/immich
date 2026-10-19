@@ -231,6 +231,9 @@ export class AssetMediaService extends BaseService {
 
     if (auth.sharedLink) {
       dto.edited = true;
+      if (dto.download) {
+        await this.sharedLinkRepository.incrementCount(auth.sharedLink.id, 'downloadCount');
+      }
     }
 
     const { originalPath, originalFileName, editedPath } = await this.assetRepository.getForOriginal(

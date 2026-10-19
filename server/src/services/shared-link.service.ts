@@ -42,6 +42,8 @@ export class SharedLinkService extends BaseService {
       throw new UnauthorizedException('Invalid password');
     }
 
+    await this.sharedLinkRepository.incrementCount(id, 'viewCount');
+
     return {
       sharedLink: await this.mapWithAlbumMetadata(sharedLink, { stripAssetMetadata: !sharedLink.showExif }),
       token: this.asToken({ id, password }),
@@ -59,6 +61,8 @@ export class SharedLinkService extends BaseService {
     if (password && !authTokens.includes(this.asToken({ id, password }))) {
       throw new UnauthorizedException('Password required');
     }
+
+    await this.sharedLinkRepository.incrementCount(id, 'viewCount');
 
     return this.mapWithAlbumMetadata(sharedLink, { stripAssetMetadata: !sharedLink.showExif });
   }

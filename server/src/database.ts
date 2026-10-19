@@ -190,6 +190,8 @@ export type SharedLink = {
   type: SharedLinkType;
   userId: string;
   slug: string | null;
+  viewCount: number;
+  downloadCount: number;
 };
 
 export type Album = Selectable<AlbumTable> & {

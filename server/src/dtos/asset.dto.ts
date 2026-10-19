@@ -166,6 +166,7 @@ const AssetCopySchema = z
 const AssetDownloadOriginalSchema = z
   .object({
     edited: stringToBool.default(false).optional().describe('Return edited asset if available'),
+    download: stringToBool.default(false).optional().describe('Count as a download of the shared link'),
   })
   .meta({ id: 'AssetDownloadOriginalDto' });
 

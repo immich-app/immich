@@ -552,6 +552,19 @@ describe(AssetMediaService.name, () => {
           cacheControl: CacheControl.PrivateWithCache,
         }),
       );
+      expect(mocks.sharedLink.incrementCount).not.toHaveBeenCalled();
+    });
+
+    it('should count a download through a shared link when requested', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+      mocks.sharedLink.incrementCount.mockResolvedValue();
+
+      const auth = AuthFactory.from().sharedLink().build();
+
+      await expect(sut.downloadOriginal(auth, asset.id, { download: true })).resolves.toBeDefined();
+      expect(mocks.sharedLink.incrementCount).toHaveBeenCalledWith(auth.sharedLink!.id, 'downloadCount');
     });
 
     it('should download original file when edited=false', async () => {

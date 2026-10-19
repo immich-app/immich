@@ -163,7 +163,7 @@ export class SharedLinkRepository {
   async update(entity: Updateable<SharedLinkTable> & { id: string; assetIds?: string[] }) {
     const { id } = await this.db
       .updateTable('shared_link')
-      .set(omit(entity, 'assets', 'album', 'assetIds'))
+      .set(omit(entity, 'assets', 'album', 'assetIds', 'viewCount', 'downloadCount'))
       .where('shared_link.id', '=', entity.id)
       .returningAll()
       .executeTakeFirstOrThrow();
@@ -176,6 +176,14 @@ export class SharedLinkRepository {
     }
 
     return this.getSharedLinks(id);
+  }
+
+  async incrementCount(id: string, column: 'viewCount' | 'downloadCount') {
+    await this.db
+      .updateTable('shared_link')
+      .set((eb) => ({ [column]: eb(column, '+', 1) }))
+      .where('shared_link.id', '=', id)
+      .execute();
   }
 
   async remove(id: string): Promise<void> {

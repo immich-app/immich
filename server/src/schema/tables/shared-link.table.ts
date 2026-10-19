@@ -51,4 +51,10 @@ export class SharedLinkTable {
 
   @Column({ type: 'character varying', nullable: true, unique: true })
   slug!: string | null;
+
+  @Column({ type: 'integer', default: 0 })
+  viewCount!: Generated<number>;
+
+  @Column({ type: 'integer', default: 0 })
+  downloadCount!: Generated<number>;
 }
