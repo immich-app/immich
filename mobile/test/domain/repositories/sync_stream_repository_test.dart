@@ -409,4 +409,67 @@ void main() {
       expect(freshV2.groupDate, timelineGroupDate(freshV2.createdAt.toLocal()));
     });
   });
+
+  group('SyncStreamRepository - deleteAssetOcrV1 (#32337)', () {
+    test('removes OCR rows for deleted assets', () async {
+      await sut.updateUsersV1([_createUser()]);
+      final known1 = _createAsset(
+        id: 'known1',
+        checksum: 'AAA',
+        fileName: 'a.jpg',
+        localDateTime: DateTime(2024, 1, 5),
+      );
+      final known2 = _createAsset(
+        id: 'known2',
+        checksum: 'BBB',
+        fileName: 'b.jpg',
+        localDateTime: DateTime(2024, 1, 6),
+      );
+      await sut.updateAssetsV1([known1, known2]);
+
+      await sut.updateAssetOcrV1([
+        SyncAssetOcrV1(
+          assetId: known1.id,
+          boxScore: 0.9,
+          id: 'ocr-1',
+          isVisible: true,
+          text: 'this text',
+          textScore: 0.9,
+          x1: 1,
+          x2: 2,
+          x3: 3,
+          x4: 4,
+          y1: 1,
+          y2: 2,
+          y3: 3,
+          y4: 4,
+        ),
+        SyncAssetOcrV1(
+          assetId: known2.id,
+          boxScore: 0.8,
+          id: 'ocr-2',
+          isVisible: false,
+          text: 'this text again',
+          textScore: 0.8,
+          x1: 1,
+          x2: 2,
+          x3: 3,
+          x4: 4,
+          y1: 1,
+          y2: 2,
+          y3: 3,
+          y4: 4,
+        ),
+      ]);
+
+      await sut.deleteAssetOcrV1([
+        SyncAssetOcrDeleteV1(id: 'log-id', assetId: known1.id, deletedAt: DateTime(2024, 1, 5)),
+      ]);
+
+      final removedRows = await (db.assetOcrEntity.select()..where((t) => t.assetId.equals(known1.id))).get();
+      expect(removedRows, isEmpty);
+      final keepRows = await (db.assetOcrEntity.select()..where((t) => t.assetId.equals(known2.id))).get();
+      expect(keepRows, hasLength(1));
+    });
+  });
 }

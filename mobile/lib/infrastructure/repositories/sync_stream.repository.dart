@@ -941,7 +941,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     try {
       await _db.batch((batch) {
         for (final assetOcr in data) {
-          batch.deleteWhere(_db.assetOcrEntity, (row) => row.id.equals(assetOcr.id));
+          batch.deleteWhere(_db.assetOcrEntity, (row) => row.assetId.equals(assetOcr.assetId));
         }
       });
     } catch (error, stack) {
