@@ -1,10 +1,14 @@
-import { Kysely } from 'kysely';
+import { Insertable, Kysely } from 'kysely';
+import { chunk } from 'lodash-es';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { AssetFileType, AssetOrder, AssetOrderBy, AssetVisibility } from 'src/enum.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { LibraryRepository } from 'src/repositories/library.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { DB } from 'src/schema/index.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
-import { newMediumService } from 'test/medium.factory.js';
+import { mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
@@ -22,6 +26,13 @@ const setup = (db?: Kysely<DB>) => {
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
+
+const newExternalLibrary = async (ctx: ReturnType<typeof setup>['ctx']) => {
+  const { user } = await ctx.newUser();
+  return ctx
+    .get(LibraryRepository)
+    .create({ ownerId: user.id, name: 'library', importPaths: [], exclusionPatterns: [] });
+};
 
 // Metadata extraction is repeatable: probing improves, files get repaired,
 // and a re-run has to be able to correct what an earlier run stored.
@@ -532,5 +543,57 @@ describe(AssetRepository.name, () => {
       const { sut } = setup();
       await expect(sut.createAll([])).resolves.toStrictEqual([]);
     });
+  });
+
+  describe('detectOfflineExternalAssets', () => {
+    it('should offline the assets the matcher rejects and return how many it offlined', async () => {
+      const { ctx, sut } = setup();
+      const [library, otherLibrary] = await Promise.all([newExternalLibrary(ctx), newExternalLibrary(ctx)]);
+      const deletedAt = new Date('2020-01-01T00:00:00.000Z');
+      const newExternalAsset = (originalPath: string, dto: Partial<Insertable<AssetTable>> = {}) =>
+        ctx.newAsset({ ownerId: library.ownerId, libraryId: library.id, isExternal: true, originalPath, ...dto });
+      const [{ asset: kept }, { asset: rejected }, { asset: alreadyOffline }, { asset: otherLibraryAsset }] =
+        await Promise.all([
+          newExternalAsset('/keep/a.jpg'),
+          newExternalAsset('/reject/b.jpg'),
+          newExternalAsset('/reject/c.jpg', { isOffline: true, deletedAt }),
+          ctx.newAsset({
+            ownerId: otherLibrary.ownerId,
+            libraryId: otherLibrary.id,
+            isExternal: true,
+            originalPath: '/reject/d.jpg',
+          }),
+        ]);
+
+      await expect(sut.detectOfflineExternalAssets(library.id, (path) => path.startsWith('/keep/'))).resolves.toBe(1);
+
+      await expect(sut.getById(kept.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
+      await expect(sut.getById(rejected.id)).resolves.toMatchObject({ isOffline: true, deletedAt: expect.any(Date) });
+      await expect(sut.getById(alreadyOffline.id)).resolves.toMatchObject({ isOffline: true, deletedAt });
+      await expect(sut.getById(otherLibraryAsset.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
+    });
+
+    it('should offline each asset once when the same library is checked concurrently', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const assets = Array.from({ length: JOBS_LIBRARY_PAGINATION_SIZE * 2 }, (_, index) =>
+        mediumFactory.assetInsert({
+          ownerId: library.ownerId,
+          libraryId: library.id,
+          isExternal: true,
+          originalPath: `/reject/${index}.jpg`,
+        }),
+      );
+      for (const batch of chunk(assets, 1000)) {
+        await sut.createAll(batch);
+      }
+
+      const counts = await Promise.all([
+        sut.detectOfflineExternalAssets(library.id, () => false),
+        sut.detectOfflineExternalAssets(library.id, () => false),
+      ]);
+
+      expect(counts[0] + counts[1]).toBe(assets.length);
+    }, 60_000);
   });
 });

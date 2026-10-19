@@ -34,7 +34,7 @@ import { AssetSyncResult } from 'src/repositories/library.repository.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { batched, findOrFail, handlePromiseError } from 'src/utils/misc.js';
+import { batched, createLibraryMatcher, findOrFail, handlePromiseError } from 'src/utils/misc.js';
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -478,6 +478,7 @@ export class LibraryService extends BaseService {
   @OnJob({ name: JobName.LibrarySyncAssets, queue: QueueName.Library })
   async handleSyncAssets(job: JobOf<JobName.LibrarySyncAssets>): Promise<JobStatus> {
     const assets = await this.assetJobRepository.getForSyncAssets(job.assetIds);
+    const isInLibrary = createLibraryMatcher(job);
 
     const assetIdsToOffline: string[] = [];
     const trashedAssetIdsToOffline: string[] = [];
@@ -512,33 +513,19 @@ export class LibraryService extends BaseService {
           break;
         }
         case AssetSyncResult.CHECK_OFFLINE: {
-          const isInImportPath = job.importPaths.some((path) => asset.originalPath.startsWith(path));
-
-          if (!isInImportPath) {
+          if (!isInLibrary(asset.originalPath)) {
             this.logger.verbose(
-              `Offline asset ${asset.originalPath} is still not in any import path, keeping offline in library ${job.libraryId}`,
+              `Offline asset ${asset.originalPath} is still not in any import path or covered by an exclusion pattern, keeping offline in library ${job.libraryId}`,
             );
             break;
           }
 
-          const isExcluded = job.exclusionPatterns.some((pattern) =>
-            picomatch.isMatch(asset.originalPath, pattern, { nocase: true }),
-          );
-
-          if (!isExcluded) {
-            this.logger.debug(`Offline asset ${asset.originalPath} is now online in library ${job.libraryId}`);
-            if (asset.status === AssetStatus.Trashed) {
-              trashedAssetIdsToOnline.push(asset.id);
-            } else {
-              assetIdsToOnline.push(asset.id);
-            }
-            break;
+          this.logger.debug(`Offline asset ${asset.originalPath} is now online in library ${job.libraryId}`);
+          if (asset.status === AssetStatus.Trashed) {
+            trashedAssetIdsToOnline.push(asset.id);
+          } else {
+            assetIdsToOnline.push(asset.id);
           }
-
-          this.logger.verbose(
-            `Offline asset ${asset.originalPath} is in an import path but still covered by exclusion pattern, keeping offline in library ${job.libraryId}`,
-          );
-
           break;
         }
       }
@@ -716,13 +703,10 @@ export class LibraryService extends BaseService {
       `Checking ${assetCount} asset(s) against import paths and exclusion patterns in library ${library.id}...`,
     );
 
-    const offlineResult = await this.assetRepository.detectOfflineExternalAssets(
+    const affectedAssetCount = await this.assetRepository.detectOfflineExternalAssets(
       library.id,
-      library.importPaths,
-      library.exclusionPatterns,
+      createLibraryMatcher(library),
     );
-
-    const affectedAssetCount = Number(offlineResult.numUpdatedRows);
 
     this.logger.log(
       `${affectedAssetCount} asset(s) out of ${assetCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,

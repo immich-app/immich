@@ -374,10 +374,17 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   writeFileSync(outputPath, JSON.stringify(patchOpenAPI(openApiDoc), null, 2), { encoding: 'utf8' });
 };
 
-// Compiles a glob to the equivalent Postgres regex (Postgres's Advanced Regular Expression
-// dialect is a superset of what picomatch emits, so the two stay in sync with `picomatch.isMatch`,
-// including which paths a lone `*` may cross vs `/`).
-export const globToPostgresRegex = (glob: string) => picomatch.makeRe(glob).source;
+// Offline detection and the re-online check must share one matcher, or an asset flips state on every scan
+export const createLibraryMatcher = ({
+  importPaths,
+  exclusionPatterns,
+}: {
+  importPaths: string[];
+  exclusionPatterns: string[];
+}) => {
+  const isExcluded = picomatch(exclusionPatterns, { nocase: true });
+  return (path: string) => importPaths.some((importPath) => path.startsWith(importPath)) && !isExcluded(path);
+};
 
 export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
