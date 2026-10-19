@@ -116,16 +116,6 @@ Truy cập bản demo [tại đây](https://demo.immich.app). Đối với ứng
 
 ![Hoạt động](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Hình ảnh phân tích Repobeats")
 
-## Lịch sử Đánh dấu sao
-
-<a href="https://star-history.com/#immich-app/immich&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
-   <img alt="Biểu đồ Lịch sử Đánh dấu" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
- </picture>
-</a>
-
 ## Người đóng góp
 
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
