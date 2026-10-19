@@ -276,7 +276,7 @@ export class MediaRepository {
             level: this.parseOptionalInt(stream.level),
             frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
             frameRate: this.parseFrameRate(stream.avg_frame_rate ?? stream.r_frame_rate),
-            timeBase: this.parseRational(stream.time_base)?.den ?? null,
+            timeBase: this.parseTimeBase(stream.time_base),
             rotation: this.parseInt(stream.rotation),
             bitrate: this.parseInt(stream.bit_rate),
             pixelFormat: stream.pix_fmt || 'yuv420p',
@@ -497,6 +497,19 @@ export class MediaRepository {
       }
     }
     return null;
+  }
+
+  /**
+   * Parse a time_base like "1/90000" into ticks per second.
+   * The numerator is not always 1 (e.g. MJPEG in AVI), so using the
+   * denominator alone produces a bogus frame rate.
+   */
+  private parseTimeBase(value: string | undefined): number | null {
+    const rational = this.parseRational(value);
+    if (!rational) {
+      return null;
+    }
+    return Math.round(rational.den / rational.num);
   }
 
   private parseFrameRate(value: string | undefined): number | null {
