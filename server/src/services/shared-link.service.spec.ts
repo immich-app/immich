@@ -30,7 +30,7 @@ describe(SharedLinkService.name, () => {
       mocks.sharedLink.getAll.mockResolvedValue([getForSharedLink(sharedLink1), getForSharedLink(sharedLink2)]);
       await expect(sut.getAll(authStub.user1, {})).resolves.toEqual(
         [getForSharedLink(sharedLink1), getForSharedLink(sharedLink2)].map((link) =>
-          mapSharedLink(link, { stripAssetMetadata: false }),
+          mapSharedLink(link, { auth: authStub.user1 }),
         ),
       );
       expect(mocks.sharedLink.getAll).toHaveBeenCalledWith({ userId: authStub.user1.user.id });
@@ -48,7 +48,7 @@ describe(SharedLinkService.name, () => {
       const sharedLink = SharedLinkFactory.create();
       mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
       await expect(sut.getMine(authDto, [])).resolves.toEqual(
-        mapSharedLink(getForSharedLink(sharedLink), { stripAssetMetadata: false }),
+        mapSharedLink(getForSharedLink(sharedLink), { auth: authDto }),
       );
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
@@ -107,7 +107,7 @@ describe(SharedLinkService.name, () => {
       const sharedLink = SharedLinkFactory.create();
       mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
       await expect(sut.get(authStub.user1, sharedLink.id)).resolves.toEqual(
-        mapSharedLink(getForSharedLink(sharedLink), { stripAssetMetadata: true }),
+        mapSharedLink(getForSharedLink(sharedLink), { auth: authStub.user1 }),
       );
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, sharedLink.id);
     });

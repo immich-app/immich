@@ -13,7 +13,7 @@ import {
   mapAlbum,
 } from 'src/dtos/album.dto.js';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
 import { AlbumUserRole, Permission } from 'src/enum.js';
 import { AlbumAssetCount } from 'src/repositories/album.repository.js';
@@ -91,7 +91,7 @@ export class AlbumService extends BaseService {
   async getMapMarkers(auth: AuthDto, id: string): Promise<MapMarkerResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
 
-    if (auth.sharedLink && !auth.sharedLink.showExif) {
+    if (isMetadataHidden(auth)) {
       return [];
     }
 
