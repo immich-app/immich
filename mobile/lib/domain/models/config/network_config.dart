@@ -11,6 +11,7 @@ abstract class NetworkConfig with _$NetworkConfig {
     @Default(false) bool autoEndpointSwitching,
     String? preferredWifiName,
     String? localEndpoint,
+    @Default({}) Map<String, String> localWifiNetworks,
     @Default([]) List<String> externalEndpointList,
     @Default({}) Map<String, String> customHeaders,
   }) = _NetworkConfig;
@@ -20,13 +21,41 @@ abstract class NetworkConfig with _$NetworkConfig {
     bool? autoEndpointSwitching,
     Option<String>? preferredWifiName,
     Option<String>? localEndpoint,
+    Map<String, String>? localWifiNetworks,
     List<String>? externalEndpointList,
     Map<String, String>? customHeaders,
   }) => NetworkConfig(
     autoEndpointSwitching: autoEndpointSwitching ?? this.autoEndpointSwitching,
     preferredWifiName: preferredWifiName.patch(this.preferredWifiName),
     localEndpoint: localEndpoint.patch(this.localEndpoint),
+    localWifiNetworks: localWifiNetworks ?? this.localWifiNetworks,
     externalEndpointList: externalEndpointList ?? this.externalEndpointList,
     customHeaders: customHeaders ?? this.customHeaders,
   );
+
+  //provides custom local endpoint for a given SSID, empty endpoint means [localEndpoint] is used
+  //falls back to the legacy single [preferredWifiName].
+  Map<String, String> get wifiNetworks {
+    if (localWifiNetworks.isNotEmpty) {
+      return localWifiNetworks;
+    }
+
+    final wifiName = preferredWifiName;
+    if (wifiName != null && wifiName.isNotEmpty) {
+      return {wifiName: ''};
+    }
+
+    return const {};
+  }
+
+  //returns the local endpoint to use when connected to a [wifiName], or null if the network is not configured
+  String? endpointForWifi(String wifiName) {
+    final custom = wifiNetworks[wifiName];
+    if (custom == null) {
+      return null;
+    }
+
+    final url = custom.isNotEmpty ? custom : localEndpoint;
+    return (url == null || url.isEmpty) ? null : url;
+  }
 }
