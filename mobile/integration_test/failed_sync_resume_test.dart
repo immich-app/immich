@@ -38,7 +38,8 @@ void main() {
 
   setUpAll(() async {
     await app.initApp();
-    (drift, _) = await Bootstrap.initDomain();
+    final (dataController, _) = await Bootstrap.initDomain();
+    drift = dataController.db;
     // A background-worker schedule persisted by real app use on this device can
     // launch a second engine mid-file (own isolate pool + full sync) and starve
     // these tests on a small device. Unregister it for the whole run.

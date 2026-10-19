@@ -1,8 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 import { BBoxSchema } from 'src/dtos/bbox.dto.js';
 import { AssetOrderBySchema, AssetOrderSchema, AssetVisibilitySchema } from 'src/enum.js';
 import { stringToBool } from 'src/validation.js';
-import z from 'zod';
 
 const TimeBucketQueryBaseSchema = z
   .object({

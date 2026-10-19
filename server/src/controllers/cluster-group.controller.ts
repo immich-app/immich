@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import { ClusterGroupRequestCreateDto, ClusterGroupRequestResponseDto } from 'src/dtos/cluster-group.dto.js';
 import { UserResponseDto } from 'src/dtos/user.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';

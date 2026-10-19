@@ -5,8 +5,8 @@ import {
   type Kysely,
   type Selectable,
   type ShallowDehydrateObject,
-  sql,
   type Updateable,
+  sql,
 } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { omit } from 'lodash-es';
@@ -18,6 +18,7 @@ import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table.js';
+import { dummy } from 'src/utils/database.js';
 
 export type SharedLinkSearchOptions = {
   userId: string;
@@ -43,22 +44,18 @@ export const withExifInfo = (eb: ExpressionBuilder<DB, 'asset'>) => {
     .as('exifInfo');
 };
 
-const withAlbumOwner = (eb: ExpressionBuilder<DB, 'album'>) => {
-  return eb
-    .selectFrom('user')
-    .select(columns.user)
-    .where((eb) =>
-      eb.exists(
-        eb
-          .selectFrom('album_user')
-          .where('album_user.role', '=', sql.lit(AlbumUserRole.Owner))
-          .whereRef('album_user.albumId', '=', 'album.id')
-          .whereRef('album_user.userId', '=', 'user.id'),
-      ),
-    )
-    .where('user.deletedAt', 'is', null)
-    .as('owner');
-};
+const withAlbumOwner = (eb: ExpressionBuilder<DB, 'album'>) =>
+  jsonArrayFrom(
+    eb
+      .selectFrom('album_user')
+      .innerJoin('user', 'user.id', 'album_user.userId')
+      .where('album_user.role', '=', sql.lit(AlbumUserRole.Owner))
+      .whereRef('album_user.albumId', '=', 'album.id')
+      .select('album_user.role')
+      .select((eb) => jsonObjectFrom(eb.selectFrom(dummy).select(columns.user)).$notNull().as('user')),
+  )
+    .$notNull()
+    .as('albumUsers');
 
 const withSharedLinkAlbum = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
   return eb
@@ -85,38 +82,7 @@ export class SharedLinkRepository {
         ).as('assets'),
       )
       .leftJoinLateral(
-        (eb) =>
-          withSharedLinkAlbum(eb)
-            .leftJoin('album_asset', 'album_asset.albumId', 'album.id')
-            .leftJoinLateral(
-              (eb) =>
-                eb
-                  .selectFrom('asset')
-                  .selectAll('asset')
-                  .whereRef('album_asset.assetId', '=', 'asset.id')
-                  .where('asset.deletedAt', 'is', null)
-                  .innerJoinLateral(withExifInfo, (join) => join.onTrue())
-                  .select((eb) => eb.fn.toJson(eb.table('exifInfo')).as('exifInfo'))
-                  .orderBy('asset.fileCreatedAt', 'asc')
-                  .as('assets'),
-              (join) => join.onTrue(),
-            )
-            .innerJoinLateral(withAlbumOwner, (join) => join.onTrue())
-            .select((eb) =>
-              eb.fn
-                .coalesce(
-                  eb.fn
-                    .jsonAgg('assets')
-                    .orderBy('assets.fileCreatedAt', 'asc')
-                    .filterWhere('assets.id', 'is not', null),
-
-                  sql`'[]'`,
-                )
-                .as('assets'),
-            )
-            .select((eb) => eb.fn.toJson('owner').as('owner'))
-            .groupBy(['album.id', sql`"owner".*`])
-            .as('album'),
+        (eb) => withSharedLinkAlbum(eb).select(withAlbumOwner).as('album'),
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson(eb.table('album')).$castTo<ShallowDehydrateObject<Album> | null>().as('album'))
@@ -135,11 +101,7 @@ export class SharedLinkRepository {
       .select((eb) => jsonArrayFrom(withSharedAssets(eb).limit(1)).as('assets'))
       .where('shared_link.userId', '=', userId)
       .leftJoinLateral(
-        (eb) =>
-          withSharedLinkAlbum(eb)
-            .innerJoinLateral(withAlbumOwner, (join) => join.onTrue())
-            .select((eb) => eb.fn.toJson('owner').as('owner'))
-            .as('album'),
+        (eb) => withSharedLinkAlbum(eb).select(withAlbumOwner).as('album'),
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('album').$castTo<ShallowDehydrateObject<Album> | null>().as('album'))

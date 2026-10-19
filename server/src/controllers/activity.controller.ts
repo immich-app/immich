@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   ActivityCreateDto,
@@ -9,7 +10,6 @@ import {
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
 } from 'src/dtos/activity.dto.js';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
 import { ActivityService } from 'src/services/activity.service.js';

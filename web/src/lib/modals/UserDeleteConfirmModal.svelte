@@ -1,7 +1,8 @@
 <script lang="ts">
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { handleDeleteUserAdmin } from '$lib/services/user-admin.service';
+  import { executeMutation } from '$lib/queries/client';
+  import { deleteUserAdminMutation } from '$lib/queries/user-admin.query';
   import { type UserAdminResponseDto } from '@immich/sdk';
   import { Alert, Checkbox, ConfirmModal, Field, Input, Label, Text } from '@immich/ui';
   import { mdiTrashCanOutline } from '@mdi/js';
@@ -24,10 +25,9 @@
       return;
     }
 
-    const success = await handleDeleteUserAdmin(user, { force });
-    if (success) {
-      onClose();
-    }
+    await executeMutation(deleteUserAdminMutation, [{ id: user.id, userAdminDeleteDto: { force } }], {
+      onSuccess: onClose,
+    });
   };
 </script>
 

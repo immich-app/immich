@@ -18,9 +18,3 @@ abstract class Activity with _$Activity {
     required UserDto user,
   }) = _Activity;
 }
-
-class ActivityStats {
-  final int comments;
-
-  const ActivityStats({required this.comments});
-}

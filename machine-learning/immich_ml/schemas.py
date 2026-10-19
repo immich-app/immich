@@ -1,17 +1,12 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Literal, Protocol, TypeGuard, TypeVar
+from typing import Annotated, Any, Protocol, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
-import orjson
-from fastapi.responses import JSONResponse
+from pydantic import ConfigDict, Field
 from typing_extensions import TypedDict
-
-
-class ORJSONResponse(JSONResponse):
-    def render(self, content: Any) -> bytes:
-        return orjson.dumps(content, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
 class StrEnum(str, Enum):
@@ -51,9 +46,9 @@ class ModelSource(StrEnum):
     PADDLE = "paddle"
 
 
-class ModelPrecision(StrEnum):
-    FP16 = "FP16"
-    FP32 = "FP32"
+class ModelOrganization(StrEnum):
+    APP = "immich-app"
+    TESTING = "immich-testing"
 
 
 ModelIdentity = tuple[ModelType, ModelTask]
@@ -64,16 +59,29 @@ class SessionNode(Protocol):
     def name(self) -> str: ...
 
     @property
-    def shape(self) -> tuple[int, ...]: ...
+    def shape(self) -> tuple[int | str, ...]: ...  # ORT names a symbolic dim rather than sizing it
 
 
-class ModelSession(Protocol):
+ModelTensor: TypeAlias = npt.NDArray[np.float32] | npt.NDArray[np.int32] | npt.NDArray[np.uint8]
+ModelInput = Mapping[str, ModelTensor]
+
+
+@dataclass(frozen=True)
+class Shape:
+    batch: int
+    height: int | None = None
+    width: int | None = None
+
+    @property
+    def pins(self) -> dict[str, int]:
+        return {name: size for name, size in asdict(self).items() if size is not None}
+
+
+class ModelGraph(Protocol):
     def run(
         self,
         output_names: list[str] | None,
-        input_feed: dict[str, npt.NDArray[np.float32]]
-        | dict[str, npt.NDArray[np.int32]]
-        | dict[str, npt.NDArray[np.uint8]],
+        input_feed: ModelInput,
         run_options: Any = None,
     ) -> list[npt.NDArray[np.float32]]: ...
 
@@ -83,9 +91,20 @@ class ModelSession(Protocol):
 
     def get_metadata(self) -> dict[str, str]: ...
 
+    @property
+    def normalizes_input(self) -> bool: ...
 
-class HasProfiling(Protocol):
-    profiling: dict[str, float]
+
+class ModelSession(Protocol):
+    @property
+    def shapes(self) -> tuple[Shape, ...]: ...
+
+    @property
+    def batches(self) -> tuple[int, ...]: ...
+
+    def for_shape(self, shape: Shape) -> ModelGraph: ...
+
+    def warm(self) -> None: ...
 
 
 class FaceDetectionOutput(TypedDict):
@@ -103,29 +122,39 @@ class DetectedFace(TypedDict):
 FacialRecognitionOutput = list[DetectedFace]
 
 
-class PipelineEntry(TypedDict):
-    modelName: str
-    options: dict[str, Any]
+class Options:
+    __pydantic_config__ = ConfigDict(extra="ignore")  # so that an older service ignores an option a newer server adds
 
 
-PipelineRequest = dict[ModelTask, dict[ModelType, PipelineEntry]]
+@dataclass(frozen=True)
+class VisualOptions(Options):
+    pass
 
 
-class InferenceEntry(TypedDict):
-    name: str
-    task: ModelTask
-    type: ModelType
-    options: dict[str, Any]
+@dataclass(frozen=True)
+class TextualOptions(Options):
+    language: str | None = None
 
 
-InferenceEntries = tuple[list[InferenceEntry], list[InferenceEntry]]
+@dataclass(frozen=True)
+class FaceDetectionOptions(Options):
+    min_score: Annotated[float, Field(alias="minScore")] = 0.7
 
 
-InferenceResponse = dict[ModelTask | Literal["imageHeight"] | Literal["imageWidth"], Any]
+@dataclass(frozen=True)
+class FaceRecognitionOptions(Options):
+    pass
 
 
-def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
-    return hasattr(obj, "profiling") and isinstance(obj.profiling, dict)
+@dataclass(frozen=True)
+class TextDetectionOptions(Options):
+    max_resolution: Annotated[int, Field(alias="maxResolution")] = 736
+    min_score: Annotated[float, Field(alias="minScore")] = 0.5
 
 
-T = TypeVar("T")
+@dataclass(frozen=True)
+class TextRecognitionOptions(Options):
+    min_score: Annotated[float, Field(alias="minScore")] = 0.9
+
+
+InferenceResponse = dict[str, Any]

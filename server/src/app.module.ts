@@ -29,7 +29,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
-import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository.js';
+import { TelemetryRepository, teardownTelemetry } from 'src/repositories/telemetry.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { AuthService } from 'src/services/auth.service.js';

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/album/pending_uploads_banner.widget.dart';
@@ -16,6 +17,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -187,6 +189,9 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
+    final editorCanUpdate = ref.watch(
+      serverInfoProvider.select((state) => state.serverVersion.supports(.albumEditorUpdate)),
+    );
 
     return ProviderScope(
       overrides: [
@@ -199,20 +204,30 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       ],
       child: Timeline(
         topSliverWidget: PendingUploadsBanner(albumId: _album.id),
-        appBar: RemoteAlbumSliverAppBar(
-          icon: Icons.photo_album_outlined,
-          kebabMenu: _AlbumKebabMenu(
-            album: _album,
-            onDeleteAlbum: () => deleteAlbum(context),
-            onAddUsers: () => addUsers(context),
-            onAddPhotos: () => addAssets(context),
-            onToggleAlbumOrder: () => toggleAlbumOrder(),
-            onEditAlbum: () => showEditTitleAndDescription(context),
-            onCreateSharedLink: () => unawaited(context.pushRoute(SharedLinkEditRoute(albumId: _album.id))),
-            onShowOptions: () => context.pushRoute(AlbumOptionsRoute(album: _album)),
-          ),
-          onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
-          onActivity: () => showActivity(context),
+        appBar: FutureBuilder<bool>(
+          future: ref
+              .watch(remoteAlbumServiceProvider)
+              .getUserRole(_album.id, user?.id ?? '')
+              .then((role) => role == AlbumUserRole.editor),
+          builder: (_, snapshot) {
+            final isEditor = snapshot.data ?? false;
+            final canEdit = isOwner || (isEditor && editorCanUpdate);
+
+            return RemoteAlbumSliverAppBar(
+              kebabMenu: _AlbumKebabMenu(
+                album: _album,
+                onDeleteAlbum: () => deleteAlbum(context),
+                onAddUsers: () => addUsers(context),
+                onAddPhotos: isOwner || isEditor ? () => addAssets(context) : null,
+                onToggleAlbumOrder: () => toggleAlbumOrder(),
+                onEditAlbum: canEdit ? () => showEditTitleAndDescription(context) : null,
+                onCreateSharedLink: () => unawaited(context.pushRoute(SharedLinkEditRoute(albumId: _album.id))),
+                onShowOptions: () => context.pushRoute(AlbumOptionsRoute(album: _album)),
+              ),
+              onEditTitle: canEdit ? () => showEditTitleAndDescription(context) : null,
+              onActivity: () => showActivity(context),
+            );
+          },
         ),
         bottomSheet: RemoteAlbumBottomSheet(album: _album),
       ),
@@ -420,26 +435,16 @@ class _AlbumKebabMenu extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null && user.id == album.ownerId;
 
-    return FutureBuilder<bool>(
-      future: ref
-          .watch(remoteAlbumServiceProvider)
-          .getUserRole(album.id, user?.id ?? '')
-          .then((role) => role == AlbumUserRole.editor),
-      builder: (context, snapshot) {
-        final canAddPhotos = snapshot.data ?? false;
-
-        return RemoteAlbumOption(
-          iconColor: iconColor,
-          iconShadows: iconShadows,
-          onDeleteAlbum: isOwner ? onDeleteAlbum : null,
-          onAddUsers: isOwner ? onAddUsers : null,
-          onAddPhotos: isOwner || canAddPhotos ? onAddPhotos : null,
-          onToggleAlbumOrder: isOwner ? onToggleAlbumOrder : null,
-          onEditAlbum: isOwner ? onEditAlbum : null,
-          onCreateSharedLink: isOwner ? onCreateSharedLink : null,
-          onShowOptions: onShowOptions,
-        );
-      },
+    return RemoteAlbumOption(
+      iconColor: iconColor,
+      iconShadows: iconShadows,
+      onDeleteAlbum: isOwner ? onDeleteAlbum : null,
+      onAddUsers: isOwner ? onAddUsers : null,
+      onAddPhotos: onAddPhotos,
+      onToggleAlbumOrder: isOwner ? onToggleAlbumOrder : null,
+      onEditAlbum: onEditAlbum,
+      onCreateSharedLink: isOwner ? onCreateSharedLink : null,
+      onShowOptions: onShowOptions,
     );
   }
 }

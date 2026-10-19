@@ -19,6 +19,7 @@ describe('StarRating component', () => {
     const labelText = component.getAllByText('rating_count') as HTMLSpanElement[];
     expect(labelText.length).toBe(3);
     const clearButton = component.getByRole('button') as HTMLButtonElement;
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(clearButton).toBeInTheDocument();
 
     // Check the clear button content

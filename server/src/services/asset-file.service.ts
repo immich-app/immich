@@ -3,7 +3,7 @@ import { AssetFileResponseDto, AssetFileSearchDto, mapAssetFile } from 'src/dtos
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AssetFileType, CacheControl, JobName, Permission } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
-import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file.js';
+import { ImmichFileResponse, getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { findOrFail } from 'src/utils/misc.js';
 

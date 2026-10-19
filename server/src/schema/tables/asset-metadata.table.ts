@@ -8,7 +8,7 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { AssetMetadataKey } from 'src/enum.js';
 import { asset_metadata_audit } from 'src/schema/functions.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';

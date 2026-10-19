@@ -1,8 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 import { Stack } from 'src/database.js';
 import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
-import z from 'zod';
 
 const StackSearchSchema = z
   .object({

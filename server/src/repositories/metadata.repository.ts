@@ -78,6 +78,10 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   AndroidModel?: string;
   DeviceManufacturer?: string;
   DeviceModelName?: string;
+
+  // Samsung specific tags
+  Author?: string;
+  SamsungModel?: string;
 }
 
 @Injectable()
@@ -90,6 +94,7 @@ export class MetadataRepository {
     useMWG: true,
     numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
+    // eslint-disable-next-line import-x/no-named-as-default-member
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     geolocation: true,
     readArgs: [
@@ -103,6 +108,7 @@ export class MetadataRepository {
       '--MWG:Orientation',
       '--IFD1:ImageWidth',
       '--IFD1:ImageHeight',
+      '--Samsung:Rotation',
     ],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
     taskTimeoutMillis: 2 * 60 * 1000,

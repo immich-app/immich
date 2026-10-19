@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { AssetVisibility } from 'src/enum.js';
 import { TimelineService } from 'src/services/timeline.service.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(TimelineService.name, () => {
   let sut: TimelineService;

@@ -119,6 +119,7 @@ export class ServerInfoRepository {
         exiftool.version(),
       ]);
 
+      // eslint-disable-next-line import-x/no-named-as-default-member
       const libvipsVersion = getLockfileVersion('libvips', lockfile) || sharp.versions.vips;
 
       this.buildVersions = {

@@ -9,7 +9,6 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_ui/immich_ui.dart';
@@ -30,7 +29,6 @@ class ViewerKebabMenu extends ConsumerWidget {
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final timelineOrigin = ref.watch(timelineServiceProvider).origin;
-    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final isInLockedView = ref.watch(inLockedViewProvider);
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
@@ -40,7 +38,6 @@ class ViewerKebabMenu extends ConsumerWidget {
       asset: asset,
       isOwner: isOwner,
       isArchived: isArchived,
-      isTrashEnabled: isTrashEnable,
       isStacked: asset is RemoteAsset && asset.stackId != null,
       isInLockedView: isInLockedView,
       currentAlbum: currentAlbum,

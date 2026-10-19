@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import type { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import type { Insertable, Kysely, Updateable } from 'kysely';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { WorkflowGetLogsDto, WorkflowSearchDto } from 'src/dtos/workflow.dto.js';
@@ -76,6 +76,7 @@ export class WorkflowRepository {
             .innerJoin('plugin_method', 'plugin_method.id', 'workflow_step.pluginMethodId')
             .whereRef('workflow_step.workflowId', '=', 'workflow.id')
             .where('workflow_step.enabled', '=', true)
+            .orderBy('workflow_step.order', 'asc')
             .select([
               'workflow_step.id',
               'workflow_step.config',

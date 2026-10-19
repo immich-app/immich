@@ -36,10 +36,7 @@ class ImmichLoadingIndicator extends HookWidget {
         },
         child: Padding(
           padding: const EdgeInsets.all(15),
-          child: RotationTransition(
-            turns: logoAnimationController,
-            child: const ImmichLogo(heroTag: 'logo'),
-          ),
+          child: RotationTransition(turns: logoAnimationController, child: const ImmichLogo()),
         ),
       ),
     );

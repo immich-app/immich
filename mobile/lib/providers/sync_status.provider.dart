@@ -21,6 +21,7 @@ abstract class SyncStatusState with _$SyncStatusState {
   bool get isRemoteSyncing => remoteSyncStatus == SyncStatus.syncing;
   bool get isLocalSyncing => localSyncStatus == SyncStatus.syncing;
   bool get isHashing => hashJobStatus == SyncStatus.syncing;
+  // ignore: unused-code
   bool get isCloudIdSyncing => cloudIdSyncStatus == SyncStatus.syncing;
 }
 

@@ -1,21 +1,24 @@
+import z from 'zod';
 import {
   AdminConfigDto,
+  PublicConfigDto,
+  UserConfigDto,
   defaults,
   mapPublicConfig,
   mapUserConfig,
-  PublicConfigDto,
-  UserConfigDto,
 } from 'src/dtos/config.dto.js';
 import { getKeysDeep } from 'src/utils/misc.js';
-import z from 'zod';
 
 const PUBLIC_PROPERTIES = [
+  'ffmpeg.realtime.enabled',
+  'map.darkStyle',
+  'map.enabled',
+  'map.lightStyle',
   'oauth.autoLaunch',
   'oauth.buttonText',
   'oauth.enabled',
   'passwordLogin.enabled',
   'server.loginPageMessage',
-  'theme.customCss',
 ];
 
 describe('config visibility', () => {
@@ -57,6 +60,12 @@ describe('config visibility', () => {
     expect(config.job).toBeUndefined();
     expect(config.image).toBeUndefined();
     expect(config.notifications).toBeUndefined();
+  });
+
+  it('should expose only whether smtp is enabled to users', () => {
+    const config = mapUserConfig(defaults) as Record<string, any>;
+
+    expect(config.notifications).toEqual({ smtp: { enabled: defaults.notifications.smtp.enabled } });
   });
 
   it('should keep the visibility metadata out of the schemas', () => {

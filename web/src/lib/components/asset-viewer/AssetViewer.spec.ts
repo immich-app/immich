@@ -66,6 +66,7 @@ describe('AssetViewer', () => {
       showNavigation: false,
     });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(getByLabelText('to_favorite')).toBeInTheDocument();
     expect(queryByLabelText('unfavorite')).toBeNull();
 
@@ -74,6 +75,7 @@ describe('AssetViewer', () => {
     await waitFor(() =>
       expect(updateAsset).toHaveBeenCalledWith({ id: asset.id, updateAssetDto: { isFavorite: true } }),
     );
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     await waitFor(() => expect(getByLabelText('unfavorite')).toBeInTheDocument());
   });
 });

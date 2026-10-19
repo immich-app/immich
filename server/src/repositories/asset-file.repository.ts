@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import type { Kysely } from 'kysely';
 import { AssetFileSearchDto } from 'src/dtos/asset-file.dto.js';
 import { DB } from 'src/schema/index.js';
 

@@ -1,10 +1,10 @@
 import { WorkflowTrigger } from '@immich/plugin-sdk';
+import request from 'supertest';
 import { WorkflowController } from 'src/controllers/workflow.controller.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { WorkflowService } from 'src/services/workflow.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
-import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
+import { ControllerContext, automock, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(WorkflowController.name, () => {
   let ctx: ControllerContext;

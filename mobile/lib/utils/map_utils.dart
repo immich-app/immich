@@ -1,3 +1,4 @@
+// TODO: Dedupe against lib/presentation/widgets/map/map_utils.dart
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -5,48 +6,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:logging/logging.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
 
 class MapUtils {
   const MapUtils._();
 
   static final Logger _log = Logger("MapUtils");
-  static const defaultSourceId = 'asset-map-markers';
-  static const defaultHeatMapLayerId = 'asset-heatmap-layer';
-
-  static const defaultHeatMapLayerProperties = HeatmapLayerProperties(
-    heatmapColor: [
-      Expressions.interpolate,
-      ["linear"],
-      ["heatmap-density"],
-      0.0,
-      "rgba(103,58,183,0.0)",
-      0.3,
-      "rgb(103,58,183)",
-      0.5,
-      "rgb(33,149,243)",
-      0.7,
-      "rgb(76,175,79)",
-      0.95,
-      "rgb(255,235,59)",
-      1.0,
-      "rgb(255,86,34)",
-    ],
-    heatmapIntensity: [
-      Expressions.interpolate, ["linear"], //
-      [Expressions.zoom],
-      0, 0.5,
-      9, 2,
-    ],
-    heatmapRadius: [
-      Expressions.interpolate, ["linear"], //
-      [Expressions.zoom],
-      0, 4,
-      4, 8,
-      9, 16,
-    ],
-    heatmapOpacity: 0.7,
-  );
 
   static Future<(Position?, LocationPermission?)> checkPermAndGetLocation({
     required BuildContext context,

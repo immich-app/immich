@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { OAuthController } from 'src/controllers/oauth.controller.js';
 import { AuthService } from 'src/services/auth.service.js';
-import request from 'supertest';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 

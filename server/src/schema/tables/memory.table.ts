@@ -10,7 +10,7 @@ import {
   type Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators.js';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { MemoryType } from 'src/enum.js';
 import { memory_delete_audit } from 'src/schema/functions.js';
 import { UserTable } from 'src/schema/tables/user.table.js';

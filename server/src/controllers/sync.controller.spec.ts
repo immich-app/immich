@@ -1,7 +1,7 @@
+import request from 'supertest';
 import { SyncController } from 'src/controllers/sync.controller.js';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter.js';
 import { SyncService } from 'src/services/sync.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 

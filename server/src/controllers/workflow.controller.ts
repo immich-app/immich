@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   WorkflowCreateDto,
   WorkflowGetLogsDto,
@@ -83,7 +83,7 @@ export class WorkflowController {
     summary: 'Update a workflow',
     description:
       'Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.',
-    history: new HistoryBuilder().added('v3.0.0').deprecated('v3', { replacementId: 'updateWorkflow' }),
+    history: new HistoryBuilder().added('v3.0.0').v3PatchMigration(),
   })
   updateWorkflow(
     @Auth() auth: AuthDto,

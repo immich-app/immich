@@ -24,8 +24,11 @@ describe('RecentAlbums component', () => {
 
     const links = screen.getAllByRole('link');
     expect(links).toHaveLength(3);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(links[0]).toHaveAttribute('href', `/albums/${albums[2].id}`);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(links[1]).toHaveAttribute('href', `/albums/${albums[1].id}`);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(links[2]).toHaveAttribute('href', `/albums/${albums[3].id}`);
   });
 });

@@ -1,6 +1,6 @@
+import request from 'supertest';
 import { NotificationController } from 'src/controllers/notification.controller.js';
 import { NotificationService } from 'src/services/notification.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';

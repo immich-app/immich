@@ -1,7 +1,7 @@
+import request from 'supertest';
 import { SharedLinkController } from 'src/controllers/shared-link.controller.js';
 import { Permission, SharedLinkType } from 'src/enum.js';
 import { SharedLinkService } from 'src/services/shared-link.service.js';
-import request from 'supertest';
 import { errorDto } from 'test/medium/responses.js';
 import { factory, newUuid } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';

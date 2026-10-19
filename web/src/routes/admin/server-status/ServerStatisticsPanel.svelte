@@ -1,8 +1,10 @@
 <script lang="ts">
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getServerStatisticsQuery } from '$lib/queries/server.query';
+  import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import type { ServerStatsResponseDto, UserAdminResponseDto } from '@immich/sdk';
   import {
     Code,
     FormatBytes,
@@ -15,32 +17,22 @@
     TableRow,
     Text,
   } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  type Props = {
-    statsPromise: Promise<ServerStatsResponseDto>;
-    users: UserAdminResponseDto[];
-  };
+  const usersQuery = createPreloadedQuery(searchUsersAdminQuery);
+  const users = $derived(usersQuery.data);
 
-  const { statsPromise, users }: Props = $props();
-
-  const photosPromise = $derived.by(() => statsPromise.then((data) => ({ value: data.photos })));
-
-  const videosPromise = $derived.by(() => statsPromise.then((data) => ({ value: data.videos })));
-
-  const storagePromise = $derived.by(() =>
-    statsPromise.then((data) => {
-      const TiB = 1024 ** 4;
-      const [value, unit] = getBytesWithUnit(data.usage, data.usage > TiB ? 2 : 0);
-      return { value, unit };
-    }),
-  );
+  const query = createQuery(() => ({ ...getServerStatisticsQuery(), refetchInterval: 5000 }));
+  const stats = $derived(query.data);
 
   const getStorageUsageWithUnit = (usage: number) => {
     const TiB = 1024 ** 4;
     return getBytesWithUnit(usage, usage > TiB ? 2 : 0);
   };
+
+  const [storage, storageUnit] = $derived(stats ? getStorageUsageWithUnit(stats.usage) : [undefined, undefined]);
 
   const zeros = (value: number, maxLength = 13) => {
     const valueLength = value.toString().length;
@@ -49,10 +41,7 @@
     return '0'.repeat(zeroLength);
   };
 
-  const getUserStatsPromise = async (userId: string) => {
-    const stats = await statsPromise;
-    return stats.usageByUser.find((userStats) => userStats.userId === userId);
-  };
+  const getUserStats = (userId: string) => stats?.usageByUser.find((userStats) => userStats.userId === userId);
 </script>
 
 {#snippet placeholder()}
@@ -66,9 +55,9 @@
     <Text class="mb-2" fontWeight="medium">{$t('total_usage')}</Text>
 
     <div class="hidden justify-between gap-4 lg:flex">
-      <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} valuePromise={photosPromise} />
-      <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} valuePromise={videosPromise} />
-      <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} valuePromise={storagePromise} />
+      <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={stats?.photos} />
+      <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={stats?.videos} />
+      <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={storage} unit={storageUnit} />
     </div>
 
     <div class="mt-5 flex lg:hidden">
@@ -80,13 +69,11 @@
           </div>
 
           <div class="relative text-center font-mono text-2xl font-medium">
-            {#await statsPromise}
-              <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros(0)}</span>
-            {:then stats}
+            {#if stats}
               <span class="text-light-300">{zeros(stats.photos)}</span><span class="text-primary">{stats.photos}</span>
-            {:catch}
-              <span class="text-gray-300 dark:text-gray-600">{zeros(0)}</span>
-            {/await}
+            {:else}
+              <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros(0)}</span>
+            {/if}
           </div>
         </div>
         <div class="flex flex-wrap gap-x-12">
@@ -96,13 +83,11 @@
           </div>
 
           <div class="relative text-center font-mono text-2xl font-medium">
-            {#await statsPromise}
-              <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros(0)}</span>
-            {:then stats}
+            {#if stats}
               <span class="text-light-300">{zeros(stats.videos)}</span><span class="text-primary">{stats.videos}</span>
-            {:catch}
-              <span class="text-gray-300 dark:text-gray-600">{zeros(0)}</span>
-            {/await}
+            {:else}
+              <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros(0)}</span>
+            {/if}
           </div>
         </div>
         <div class="flex flex-wrap gap-x-5">
@@ -112,9 +97,7 @@
           </div>
 
           <div class="relative flex text-center font-mono text-2xl font-medium">
-            {#await statsPromise}
-              <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros(0)}</span>
-            {:then stats}
+            {#if stats}
               {@const storageUsageWithUnit = getStorageUsageWithUnit(stats.usage)}
               <span class="text-light-300">{zeros(storageUsageWithUnit[0])}</span><span class="text-primary"
                 >{storageUsageWithUnit[0]}</span
@@ -123,9 +106,9 @@
               <div class="absolute -inset-e-1.5 -bottom-4">
                 <Code color="muted" class="font-mono text-xs font-light">{storageUsageWithUnit[1]}</Code>
               </div>
-            {:catch}
-              <span class="text-gray-300 dark:text-gray-600">{zeros(0)}</span>
-            {/await}
+            {:else}
+              <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros(0)}</span>
+            {/if}
           </div>
         </div>
       </div>
@@ -145,42 +128,39 @@
         {#each users as user (user.id)}
           <TableRow>
             <TableCell class="w-1/4">{user.name}</TableCell>
-            {#await getUserStatsPromise(user.id)}
-              {@render placeholder()}
-            {:then userStats}
-              {#if userStats}
-                <TableCell class="w-1/4">
-                  {userStats.photos.toLocaleString($locale)} (<FormatBytes bytes={userStats.usagePhotos} />)</TableCell
-                >
-                <TableCell class="w-1/4">
-                  {userStats.videos.toLocaleString($locale)} (<FormatBytes
-                    bytes={userStats.usageVideos}
-                    precision={0}
-                  />)</TableCell
-                >
-                <TableCell class="w-1/4">
-                  <FormatBytes bytes={userStats.usage} precision={0} />
-                  {#if userStats.quotaSizeInBytes !== null}
-                    / <FormatBytes bytes={userStats.quotaSizeInBytes} precision={0} />
+            {@const userStats = getUserStats(user.id)}
+            {#if userStats}
+              <TableCell class="w-1/4">
+                {userStats.photos.toLocaleString($locale)} (<FormatBytes bytes={userStats.usagePhotos} />)</TableCell
+              >
+              <TableCell class="w-1/4">
+                {userStats.videos.toLocaleString($locale)} (<FormatBytes
+                  bytes={userStats.usageVideos}
+                  precision={0}
+                />)</TableCell
+              >
+              <TableCell class="w-1/4">
+                <FormatBytes bytes={userStats.usage} precision={0} />
+                {#if userStats.quotaSizeInBytes !== null}
+                  / <FormatBytes bytes={userStats.quotaSizeInBytes} precision={0} />
+                {/if}
+                <span class="text-primary">
+                  {#if userStats.quotaSizeInBytes !== null && userStats.quotaSizeInBytes >= 0}
+                    ({(userStats.quotaSizeInBytes === 0
+                      ? 1
+                      : userStats.usage / userStats.quotaSizeInBytes
+                    ).toLocaleString($locale, {
+                      style: 'percent',
+                      maximumFractionDigits: 0,
+                    })})
+                  {:else}
+                    ({$t('unlimited')})
                   {/if}
-                  <span class="text-primary">
-                    {#if userStats.quotaSizeInBytes !== null && userStats.quotaSizeInBytes >= 0}
-                      ({(userStats.quotaSizeInBytes === 0
-                        ? 1
-                        : userStats.usage / userStats.quotaSizeInBytes
-                      ).toLocaleString($locale, {
-                        style: 'percent',
-                        maximumFractionDigits: 0,
-                      })})
-                    {:else}
-                      ({$t('unlimited')})
-                    {/if}
-                  </span>
-                </TableCell>
-              {:else}
-                {@render placeholder()}
-              {/if}
-            {/await}
+                </span>
+              </TableCell>
+            {:else}
+              {@render placeholder()}
+            {/if}
           </TableRow>
         {/each}
       </TableBody>

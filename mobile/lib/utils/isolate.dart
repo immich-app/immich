@@ -3,10 +3,11 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+// ignore: library_prefixes
+import 'package:immich_mobile/entities/store.entity.dart' as dbStore;
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/wm_executor.dart';
 import 'package:logging/logging.dart';
@@ -34,9 +35,15 @@ Cancelable<T?> runInIsolateGentle<T>({
     DartPluginRegistrant.ensureInitialized();
 
     final log = Logger("IsolateLogger");
-    final (drift, logDb) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
+    final (dataController, apiService) = await Bootstrap.initDomain(
+      shouldBufferLogs: false,
+      disableStoreWatching: true,
+    );
     final ref = ProviderContainer(
-      overrides: [cancellationProvider.overrideWithValue(onCancel), driftProvider.overrideWith(driftOverride(drift))],
+      overrides: [
+        cancellationProvider.overrideWithValue(onCancel),
+        ...Store.overrideWith(dataController: dataController, apiService: apiService),
+      ],
     );
 
     try {
@@ -46,10 +53,9 @@ Cancelable<T?> runInIsolateGentle<T>({
       return null;
     } finally {
       ref.dispose();
-      await Store.dispose();
+      await dbStore.Store.dispose();
       await LogService.I.dispose();
-      await logDb.close();
-      await drift.close();
+      await dataController.close();
     }
   });
 }

@@ -23,8 +23,9 @@ export const generateProfileImage = async (
   );
   storageCore.ensureFolders(outputPath);
 
+  const decoded = await media.decodeImage(input, { colorspace: image.colorspace, processInvalidImages: false });
   await media.generateThumbnail(
-    input,
+    decoded,
     {
       colorspace: image.colorspace,
       format: image.thumbnail.format,

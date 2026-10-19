@@ -68,7 +68,7 @@
           fullWidth
           title={$t('create_first_workflow')}
           text={$t('workflows_help_text')}
-          onClick={() => Create.onAction(Create)}
+          onClick={(event: MouseEvent) => Create.onAction({ event, action: Create })}
           src={emptyWorkflows}
           class="mx-auto mt-10"
         />

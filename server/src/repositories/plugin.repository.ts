@@ -1,9 +1,9 @@
 import { CallContext, Plugin as ExtismPlugin, newPlugin } from '@extism/extism';
 import { Injectable } from '@nestjs/common';
-import { createPool, Pool } from 'generic-pool';
-import type { Insertable, Kysely } from 'kysely';
+import { Pool, createPool } from 'generic-pool';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import type { Insertable, Kysely } from 'kysely';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { PluginMethodSearchDto, PluginSearchDto } from 'src/dtos/plugin.dto.js';

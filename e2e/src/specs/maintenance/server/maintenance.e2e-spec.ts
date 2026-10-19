@@ -45,7 +45,7 @@ describe('/admin/maintenance', () => {
 
   // => enter maintenance mode
 
-  describe.sequential('POST /', () => {
+  describe('POST /', { concurrent: false }, () => {
     it('should be a no-op if try to exit maintenance mode', async () => {
       const { status } = await request(app)
         .post('/admin/maintenance')
@@ -87,7 +87,7 @@ describe('/admin/maintenance', () => {
 
   // => in maintenance mode
 
-  describe.sequential('in maintenance mode', () => {
+  describe('in maintenance mode', { concurrent: false }, () => {
     describe('GET ~/server/config', async () => {
       it('should indicate we are in maintenance mode', async () => {
         const { status, body } = await request(app).get('/server/config');
@@ -152,7 +152,7 @@ describe('/admin/maintenance', () => {
 
   // => exit maintenance mode
 
-  describe.sequential('POST /', () => {
+  describe('POST /', { concurrent: false }, () => {
     it('should exit maintenance mode', async () => {
       const { status } = await request(app).post('/admin/maintenance').set('cookie', cookie!).send({
         action: 'end',

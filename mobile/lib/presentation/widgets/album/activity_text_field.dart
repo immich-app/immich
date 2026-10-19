@@ -8,14 +8,12 @@ import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 class ActivityTextField extends ConsumerStatefulWidget {
   final bool isEnabled;
   final bool isBottomSheet;
-  final String? likeId;
   final Function(String) onSubmit;
   final Function()? onKeyboardFocus;
 
   const ActivityTextField({
     required this.onSubmit,
     this.isEnabled = true,
-    this.likeId,
     this.onKeyboardFocus,
     this.isBottomSheet = false,
     super.key,

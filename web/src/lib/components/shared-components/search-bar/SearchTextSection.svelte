@@ -9,7 +9,7 @@
   let queryType = $derived(searchManager.filter.queryType);
 
   const setType = (type: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr') => {
-    searchManager.filter.queryType = type;
+    searchManager.setQueryType(type);
   };
 </script>
 

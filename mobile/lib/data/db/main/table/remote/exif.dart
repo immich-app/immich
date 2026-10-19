@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide Query;
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
 import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart' as domain;
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
@@ -21,7 +22,7 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get country => text().nullable()();
 
-  DateTimeColumn get dateTimeOriginal => dateTime().nullable()();
+  DateTimeColumn get dateTimeOriginal => customType(clampedDateTime).nullable()();
 
   TextColumn get description => text().nullable()();
 

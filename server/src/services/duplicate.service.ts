@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { JobOf } from 'src/types.js';
 import { OnJob } from 'src/decorators.js';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto.js';
@@ -7,7 +8,6 @@ import { DuplicateResolveDto, DuplicateResolveGroupDto, DuplicateResponseDto } f
 import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
 import { AssetDuplicateResult } from 'src/repositories/search.repository.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { JobOf } from 'src/types.js';
 import { suggestDuplicateKeepAssetIds } from 'src/utils/duplicate.js';
 import { batched, isDuplicateDetectionEnabled } from 'src/utils/misc.js';
 

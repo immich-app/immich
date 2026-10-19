@@ -172,10 +172,12 @@ export function findClosestTimelineMonthForDate(months: TimelineMonth[], targetY
     const monthDate = DateTime.fromObject({ year: month.yearMonth.year, month: month.yearMonth.month });
     const totalDiff = Math.abs(monthDate.diff(targetDate, 'months').months);
 
-    if (totalDiff < minDifference) {
-      minDifference = totalDiff;
-      closestMonth = month;
+    if (totalDiff >= minDifference) {
+      continue;
     }
+
+    minDifference = totalDiff;
+    closestMonth = month;
   }
 
   return closestMonth;

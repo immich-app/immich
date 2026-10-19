@@ -118,8 +118,8 @@ export function getTimeBucket(
     if (deletedAssetIds.has(asset.id) || archivedAssetIds.has(asset.id) || favoritedAssetIds.has(asset.id)) {
       return {
         ...asset,
-        isFavorite: favoritedAssetIds.has(asset.id) ? true : asset.isFavorite,
-        isTrashed: deletedAssetIds.has(asset.id) ? true : asset.isTrashed,
+        isFavorite: favoritedAssetIds.has(asset.id) || asset.isFavorite,
+        isTrashed: deletedAssetIds.has(asset.id) || asset.isTrashed,
         visibility: archivedAssetIds.has(asset.id) ? AssetVisibility.Archive : asset.visibility,
       };
     }

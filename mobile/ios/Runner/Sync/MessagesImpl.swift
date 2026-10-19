@@ -144,7 +144,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   
   private func getMediaChanges() throws -> SyncDelta {
     guard #available(iOS 16, *) else {
-      throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature requires iOS 16 or later.", details: nil)
+      throw PigeonError(code: kUnsupportedOSError, message: "This feature requires iOS 16 or later.", details: nil)
     }
     
     guard PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized else {
@@ -437,7 +437,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   }
   
   func getTrashedAssets() throws -> [String: [PlatformAsset]] {
-    throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
+    throw PigeonError(code: kUnsupportedOSError, message: "This feature not supported on iOS.", details: nil)
   }
 
   func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void) {
@@ -453,11 +453,33 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     }
   }
   
+
+  private func cloudIdError(for error: Error) -> (kind: CloudIdErrorKind, message: String) {
+    let nsError = error as NSError
+    var message = "Error getting Cloud Id: \(error.localizedDescription)"
+
+    guard nsError.domain == PHPhotosErrorDomain else {
+      return (.unknown, message)
+    }
+
+    switch nsError.code {
+    case PHPhotosError.identifierNotFound.rawValue:
+      return (.notFound, message)
+    case PHPhotosError.multipleIdentifiersFound.rawValue:
+      if let matches = nsError.userInfo[PHLocalIdentifiersErrorKey] as? [String] {
+        message += " (matched: \(matches.joined(separator: ", ")))"
+      }
+      return (.ambiguous, message)
+    default:
+      return (.unknown, message)
+    }
+  }
+
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult] {
     guard #available(iOS 16, *) else {
-      return assetIds.map { CloudIdResult(assetId: $0) }
+      throw PigeonError(code: kUnsupportedOSError, message: "This feature requires iOS 16 or later.", details: nil)
     }
-    
+
     var mappings: [CloudIdResult] = []
     let result = PHPhotoLibrary.shared().cloudIdentifierMappings(forLocalIdentifiers: assetIds)
     for (key, value) in result {
@@ -468,10 +490,12 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         if !cloudId.hasSuffix(":") {
           mappings.append(CloudIdResult(assetId: key, cloudId: cloudId))
         } else {
-          mappings.append(CloudIdResult(assetId: key, error: "Incomplete Cloud Id: \(cloudId)"))
+          mappings.append(
+            CloudIdResult(assetId: key, error: "Incomplete Cloud Id: \(cloudId)", errorKind: .incomplete))
         }
       case .failure(let error):
-        mappings.append(CloudIdResult(assetId: key, error: "Error getting Cloud Id: \(error.localizedDescription)"))
+        let (kind, message) = cloudIdError(for: error)
+        mappings.append(CloudIdResult(assetId: key, error: message, errorKind: kind))
       }
     }
     return mappings;

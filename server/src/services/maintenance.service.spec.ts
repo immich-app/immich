@@ -1,6 +1,6 @@
 import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
 import { MaintenanceService } from 'src/services/maintenance.service.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(MaintenanceService.name, () => {
   let sut: MaintenanceService;

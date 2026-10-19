@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { handleEditExclusionPattern } from '$lib/services/library.service';
+  import { executeMutation } from '$lib/queries/client';
+  import { updateLibraryMutation } from '$lib/queries/library.query';
   import type { LibraryResponseDto } from '@immich/sdk';
   import { Field, FormModal, Input, Text } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
@@ -15,14 +16,16 @@
   let newValue = $state(oldValue);
 
   const onSubmit = async () => {
-    const success = await handleEditExclusionPattern(library, oldValue, newValue);
-    if (success) {
-      onClose();
-    }
+    const exclusionPatterns = library.exclusionPatterns.map((pattern) => (pattern === oldValue ? newValue : pattern));
+    await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { exclusionPatterns } }], {
+      onSuccess: onClose,
+    });
   };
+
+  const disabled = $derived(!newValue || newValue === oldValue);
 </script>
 
-<FormModal title={$t('edit_exclusion_pattern')} icon={mdiFolderSync} {onClose} {onSubmit} size="small">
+<FormModal title={$t('edit_exclusion_pattern')} icon={mdiFolderSync} {onClose} {onSubmit} size="small" {disabled}>
   <Text size="small" class="mb-4">{$t('admin.exclusion_pattern_description')}</Text>
   <Field label={$t('pattern')}>
     <Input bind:value={newValue} />

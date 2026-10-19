@@ -159,7 +159,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
 
     properties.insertAll(4, additionalProps);
 
-    final exif = await ref.read(assetServiceProvider).getExif(asset);
+    final exif = await ref.read(assetServiceProvider).watchExif(asset).first;
     if (exif != null) {
       _addExifProperties(exif);
     } else {

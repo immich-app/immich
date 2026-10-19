@@ -28,22 +28,9 @@ class PeopleDetails extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final peopleFuture = ref.watch(Store.people.forAsset(asset.id));
+    final people = ref.watch(Store.people.forAsset(asset.id));
 
-    Future<void> showNameEditModal(Person person) async {
-      await showDialog(
-        context: context,
-        useRootNavigator: false,
-        builder: (BuildContext context) {
-          return PersonNameEditForm(person: person);
-        },
-      );
-
-      // TODO(agg23): Remove once state is properly reactive
-      ref.invalidate(Store.people.forAsset(asset.id));
-    }
-
-    return peopleFuture.when(
+    return people.when(
       data: (people) {
         return AnimatedCrossFade(
           firstChild: const SizedBox.shrink(),
@@ -79,7 +66,13 @@ class PeopleDetails extends ConsumerWidget {
                           ContextHelper(context).pop();
                           unawaited(context.pushRoute(PersonRoute(person: person)));
                         },
-                        onNameTap: () => showNameEditModal(person),
+                        onNameTap: () => showDialog(
+                          context: context,
+                          useRootNavigator: false,
+                          builder: (BuildContext context) {
+                            return PersonNameEditForm(person: person);
+                          },
+                        ),
                       ),
                   ],
                 ),

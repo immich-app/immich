@@ -199,10 +199,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
         format: '{message} | {bar} | {percentage}% | ETA: {eta_formatted} | {value}/{total}',
         formatValue: (v: number, options, type) => {
           // Don't format percentage
-          if (type === 'percentage') {
-            return v.toString();
-          }
-          return byteSize(v).toString();
+          return type === 'percentage' ? v.toString() : byteSize(v).toString();
         },
         etaBuffer: 100, // Increase samples for ETA calculation
       },
@@ -448,8 +445,8 @@ export const findSidecar = (filepath: string): string | undefined => {
   const assetPath = path.parse(filepath);
   const noExtension = path.join(assetPath.dir, assetPath.name);
 
-  // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
-  for (const sidecarPath of [`${noExtension}.xmp`, `${filepath}.xmp`]) {
+  // Prefer photo.ext.xmp over photo.xmp, matching the server's sidecar precedence.
+  for (const sidecarPath of [`${filepath}.xmp`, `${noExtension}.xmp`]) {
     if (existsSync(sidecarPath)) {
       return sidecarPath;
     }
@@ -563,12 +560,15 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
       continue;
     }
     const albumId = existingAlbums.get(albumName);
-    if (albumId) {
-      if (!albumToAssets.has(albumId)) {
-        albumToAssets.set(albumId, []);
-      }
-      albumToAssets.get(albumId)?.push(asset.id);
+
+    if (!albumId) {
+      continue;
     }
+
+    if (!albumToAssets.has(albumId)) {
+      albumToAssets.set(albumId, []);
+    }
+    albumToAssets.get(albumId)?.push(asset.id);
   }
 
   const albumUpdateProgress = new SingleBar(

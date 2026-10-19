@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -63,13 +64,13 @@ class AssetService {
     return [asset, ...stack];
   }
 
-  Future<ExifInfo?> getExif(BaseAsset asset) async {
+  Stream<ExifInfo?> watchExif(BaseAsset asset) {
     if (!asset.hasRemote) {
-      return null;
+      return Stream.value(null);
     }
 
     final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
-    return _remoteRepository.getExif(id);
+    return _remoteRepository.watchExif(id);
   }
 
   Future<List<(String, String)>> getPlaces(String userId) {
@@ -196,5 +197,24 @@ class AssetService {
 
   Future<LocalAsset?> getLocalAsset(String id) {
     return _localRepository.get(id);
+  }
+
+  Future<List<Tag>> getTags(String assetId) {
+    return _apiRepository.getAssetTags(assetId);
+  }
+
+  Future<void> stackEditedUpload(String localId, String remoteId, String? checksum) async {
+    // a manual upload of an asset that was never hashed has no checksum yet, so we need to fetch it from the server
+    final uploadedChecksum = checksum ?? await _apiRepository.getChecksum(remoteId);
+    try {
+      // previous_checksum still points at the version the server had before this upload
+      final previousId = await _localRepository.getPreviousRemoteId(localId);
+      if (previousId != null && previousId != remoteId) {
+        await _apiRepository.stack([remoteId, previousId]);
+      }
+    } finally {
+      // the upload went through even when the stack call did not, so this version is the new base
+      await _localRepository.updatePreviousChecksum(localId, uploadedChecksum);
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { type Kysely, type OrderByDirection, type Selectable, type ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import z from 'zod';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
@@ -20,8 +21,7 @@ import {
   withExifInner,
   withSearchOrder,
 } from 'src/utils/database.js';
-import { paginationHelper, type PaginationOptions } from 'src/utils/pagination.js';
-import z from 'zod';
+import { type PaginationOptions, paginationHelper } from 'src/utils/pagination.js';
 
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
@@ -294,6 +294,9 @@ export class SearchRepository {
     return searchAssetBuilderLegacy(this.db, options)
       .select(columns.searchAsset)
       .$call(withExifInner)
+      .$if(options.visibility !== AssetVisibility.Hidden, (qb) =>
+        qb.where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
+      )
       .where('asset_exif.fileSizeInByte', '>', options.minFileSize || 0)
       .orderBy('asset_exif.fileSizeInByte', orderDirection)
       .limit(size)

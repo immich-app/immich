@@ -11,6 +11,10 @@ class LocalAlbumService {
     return _repository.getAll(sortBy: sortBy);
   }
 
+  Stream<List<LocalAlbum>> watchAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
+    return _repository.watchAll(sortBy: sortBy);
+  }
+
   Future<LocalAsset?> getThumbnail(String albumId) {
     return _repository.getThumbnail(albumId);
   }
