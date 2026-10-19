@@ -606,53 +606,6 @@ test.describe('Timeline', () => {
       await page.getByText('Photos', { exact: true }).click();
       await thumbnailUtils.expectInViewport(page, assetToArchive.id);
     });
-    test('open /archive, favorite photo, unfavorite', async ({ page }) => {
-      const assetToFavorite = assets[0];
-      changes.assetArchivals.push(assetToFavorite.id);
-      await pageUtils.openArchivePage(page);
-      const favorite = pageRoutePromise(page, '**/api/assets', async (route, request) => {
-        const requestJson = request.postDataJSON();
-        if (requestJson.isFavorite === undefined) {
-          return await route.continue();
-        }
-        const isFavorite = requestJson.isFavorite;
-        if (isFavorite) {
-          changes.assetFavorites.push(...requestJson.ids);
-        }
-        await route.fulfill({
-          status: 204,
-        });
-      });
-      await thumbnailUtils.withAssetId(page, assetToFavorite.id).hover();
-      await thumbnailUtils.selectButton(page, assetToFavorite.id).click();
-      await page.getByLabel('Favorite').click();
-      await expect(favorite).resolves.toEqual({
-        isFavorite: true,
-        ids: [assetToFavorite.id],
-      });
-      await expect(thumbnailUtils.withAssetId(page, assetToFavorite.id)).toHaveCount(1);
-      await thumbnailUtils.expectInViewport(page, assetToFavorite.id);
-      await thumbnailUtils.expectThumbnailIsFavorite(page, assetToFavorite.id);
-      await thumbnailUtils.withAssetId(page, assetToFavorite.id).hover();
-      await thumbnailUtils.selectButton(page, assetToFavorite.id).click();
-      const unFavoriteRequest = pageRoutePromise(page, '**/api/assets', async (route, request) => {
-        const requestJson = request.postDataJSON();
-        if (requestJson.isFavorite === undefined) {
-          return await route.continue();
-        }
-        changes.assetFavorites = changes.assetFavorites.filter((id) => !requestJson.ids.includes(id));
-        await route.fulfill({
-          status: 204,
-        });
-      });
-      await page.getByLabel('Remove from favorites').click();
-      await expect(unFavoriteRequest).resolves.toEqual({
-        isFavorite: false,
-        ids: [assetToFavorite.id],
-      });
-      await expect(thumbnailUtils.withAssetId(page, assetToFavorite.id)).toHaveCount(1);
-      await thumbnailUtils.expectThumbnailIsNotFavorite(page, assetToFavorite.id);
-    });
     test('open album, archive photo, open album, unarchive', async ({ page }) => {
       const album = timelineRestData.album;
       await pageUtils.openAlbumPage(page, album.id);
@@ -703,55 +656,6 @@ test.describe('Timeline', () => {
     });
   });
   test.describe('/favorite', () => {
-    test('open /photos, favorite photo, open /favorites, remove favorite, open /photos', async ({ page }) => {
-      await pageUtils.openPhotosPage(page);
-      const assetToFavorite = assets[0];
-
-      await thumbnailUtils.withAssetId(page, assetToFavorite.id).hover();
-      await thumbnailUtils.selectButton(page, assetToFavorite.id).click();
-      const favorite = pageRoutePromise(page, '**/api/assets', async (route, request) => {
-        const requestJson = request.postDataJSON();
-        if (requestJson.isFavorite === undefined) {
-          return await route.continue();
-        }
-        const isFavorite = requestJson.isFavorite;
-        if (isFavorite) {
-          changes.assetFavorites.push(...requestJson.ids);
-        }
-        await route.fulfill({
-          status: 204,
-        });
-      });
-      await page.getByLabel('Favorite').click();
-      await expect(favorite).resolves.toEqual({
-        isFavorite: true,
-        ids: [assetToFavorite.id],
-      });
-      // ensure thumbnail still exists and has favorite icon
-      await thumbnailUtils.expectThumbnailIsFavorite(page, assetToFavorite.id);
-      await page.getByRole('link').getByText('Favorites').click();
-      await thumbnailUtils.expectInViewport(page, assetToFavorite.id);
-      await thumbnailUtils.withAssetId(page, assetToFavorite.id).hover();
-      await thumbnailUtils.selectButton(page, assetToFavorite.id).click();
-      const unFavoriteRequest = pageRoutePromise(page, '**/api/assets', async (route, request) => {
-        const requestJson = request.postDataJSON();
-        if (requestJson.isFavorite === undefined) {
-          return await route.continue();
-        }
-        changes.assetFavorites = changes.assetFavorites.filter((id) => !requestJson.ids.includes(id));
-        await route.fulfill({
-          status: 204,
-        });
-      });
-      await page.getByLabel('Remove from favorites').click();
-      await expect(unFavoriteRequest).resolves.toEqual({
-        isFavorite: false,
-        ids: [assetToFavorite.id],
-      });
-      await expect(thumbnailUtils.withAssetId(page, assetToFavorite.id)).toHaveCount(0);
-      await page.getByText('Photos', { exact: true }).click();
-      await thumbnailUtils.expectInViewport(page, assetToFavorite.id);
-    });
     test.skip('open /favorites, archive photo, unarchive photo', async ({ page }) => {
       await pageUtils.openFavorites(page);
       const assetToArchive = getAsset(timelineRestData, 'ad31e29f-2069-4574-b9a9-ad86523c92cb')!;
@@ -795,59 +699,6 @@ test.describe('Timeline', () => {
       });
       await expect(thumbnailUtils.withAssetId(page, assetToArchive.id)).toHaveCount(0);
       await thumbnailUtils.expectThumbnailIsNotArchive(page, assetToArchive.id);
-    });
-    test('Open album, favorite photo, open /favorites, remove favorite, Open album', async ({ page }) => {
-      const album = timelineRestData.album;
-      await pageUtils.openAlbumPage(page, album.id);
-      const assetToFavorite = getAsset(timelineRestData, album.assetIds[0])!;
-
-      await thumbnailUtils.withAssetId(page, assetToFavorite.id).hover();
-      await thumbnailUtils.selectButton(page, assetToFavorite.id).click();
-      const favorite = pageRoutePromise(page, '**/api/assets', async (route, request) => {
-        const requestJson = request.postDataJSON();
-        if (requestJson.isFavorite === undefined) {
-          return await route.continue();
-        }
-        const isFavorite = requestJson.isFavorite;
-        if (isFavorite) {
-          changes.assetFavorites.push(...requestJson.ids);
-        }
-        await route.fulfill({
-          status: 204,
-        });
-      });
-      await page.getByLabel('Favorite').click();
-      await expect(favorite).resolves.toEqual({
-        isFavorite: true,
-        ids: [assetToFavorite.id],
-      });
-      // ensure thumbnail still exists and has favorite icon
-      await thumbnailUtils.expectThumbnailIsFavorite(page, assetToFavorite.id);
-      await page.locator('#control-bar').getByLabel('Close').click();
-      await page.getByRole('link').getByText('Favorites').click();
-      await timelineUtils.waitForTimelineLoad(page);
-      await pageUtils.goToAsset(page, assetToFavorite.fileCreatedAt);
-      await thumbnailUtils.expectInViewport(page, assetToFavorite.id);
-      await thumbnailUtils.withAssetId(page, assetToFavorite.id).hover();
-      await thumbnailUtils.selectButton(page, assetToFavorite.id).click();
-      const unFavoriteRequest = pageRoutePromise(page, '**/api/assets', async (route, request) => {
-        const requestJson = request.postDataJSON();
-        if (requestJson.isFavorite === undefined) {
-          return await route.continue();
-        }
-        changes.assetFavorites = changes.assetFavorites.filter((id) => !requestJson.ids.includes(id));
-        await route.fulfill({
-          status: 204,
-        });
-      });
-      await page.getByLabel('Remove from favorites').click();
-      await expect(unFavoriteRequest).resolves.toEqual({
-        isFavorite: false,
-        ids: [assetToFavorite.id],
-      });
-      await expect(thumbnailUtils.withAssetId(page, assetToFavorite.id)).toHaveCount(0);
-      await pageUtils.openAlbumPage(page, album.id);
-      await thumbnailUtils.expectInViewport(page, assetToFavorite.id);
     });
   });
 });

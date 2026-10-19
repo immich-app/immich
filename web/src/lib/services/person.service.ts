@@ -84,7 +84,7 @@ const handleFavoritePerson = async (person: { id: string }) => {
   try {
     const response = await updatePerson({ id: person.id, personUpdateDto: { isFavorite: true } });
     eventManager.emit('PersonUpdate', response);
-    toastManager.primary($t('added_to_favorites'));
+    toastManager.primary($t('added_to_favorites', { values: { count: 1 } }));
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: false } }));
   }
@@ -96,7 +96,7 @@ const handleUnfavoritePerson = async (person: { id: string }) => {
   try {
     const response = await updatePerson({ id: person.id, personUpdateDto: { isFavorite: false } });
     eventManager.emit('PersonUpdate', response);
-    toastManager.primary($t('removed_from_favorites'));
+    toastManager.primary($t('removed_from_favorites', { values: { count: 1 } }));
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: false } }));
   }

@@ -4,6 +4,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import type { AssetCursor } from '$lib/components/asset-viewer/AssetViewer.svelte';
   import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
@@ -96,7 +97,7 @@
     };
   });
 
-  const updateCurrentAsset = (asset: AssetResponseDto) => {
+  const onAssetUpdate = (asset: AssetResponseDto) => {
     const index = assets.findIndex((oldAsset) => oldAsset.id === asset.id);
     assets[index] = asset;
   };
@@ -338,6 +339,8 @@
 
 <svelte:document onselectstart={onSelectStart} use:shortcuts={shortcutList} onscroll={() => updateSlidingWindow()} />
 
+<OnEvents {onAssetUpdate} />
+
 {#if assets.length > 0}
   <div
     style:position="relative"
@@ -387,7 +390,7 @@
         cursor={assetCursor}
         onAction={handleAction}
         onRandom={handleRandom}
-        onAssetChange={updateCurrentAsset}
+        onAssetChange={onAssetUpdate}
         onClose={() => {
           assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

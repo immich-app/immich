@@ -16,7 +16,6 @@
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import SkipLink from '$lib/elements/SkipLink.svelte';
@@ -141,19 +140,8 @@
         onclick={handleSelectAllAssets}
       />
       <ActionButton action={Actions.AddToAlbum} />
-      <FavoriteAction
-        removeFavorite={assetMultiSelectManager.isAllFavorite}
-        onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
-          if (data.pathAssets && data.pathAssets.length > 0) {
-            for (const id of ids) {
-              const asset = data.pathAssets.find((asset) => asset.id === id);
-              if (asset) {
-                asset.isFavorite = isFavorite;
-              }
-            }
-          }
-        }}
-      />
+      <ActionButton action={Actions.Favorite} />
+      <ActionButton action={Actions.Unfavorite} />
 
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
