@@ -18,8 +18,11 @@ import 'package:openapi/api.dart' show ApiException;
 /// writes them to a persistent [LogRepository], and manages log levels via
 /// [SettingsRepository].
 class LogService {
-  static final _urlAddress = RegExp(r'''https?://[^\s/?#'"<>(),]*''');
-  static final _ipAddress = RegExp(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b');
+  static final _schemeAndHost = RegExp(r'''https?://[^\s/?#'"<>(),]*''');
+  static final _ipAddress = RegExp(
+    r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|'
+    r'\[?\b(?:(?:[0-9a-f]{1,4}:){7}[0-9a-f]{1,4}|(?:[0-9a-f]{1,4}:)+(?::[0-9a-f]{1,4})+)(?:%\w+)?\]?',
+  );
 
   final LogRepository _logRepository;
   final SettingsRepository _settingsRepository;
@@ -112,14 +115,17 @@ class LogService {
   }
 
   String _redact(String text) {
-    var redacted = text.replaceAllMapped(_urlAddress, (match) => _urlLabel(Uri.tryParse(match[0]!)));
+    var redacted = text.replaceAllMapped(_schemeAndHost, (match) => _urlLabel(Uri.tryParse(match[0]!)));
     final accessToken = _storeService.tryGet(StoreKey.accessToken);
     if (accessToken != null) {
       redacted = redacted.replaceAll(accessToken, '[ACCESS TOKEN]');
     }
     // as a header map prints it, so a short value like "1" can't match other text
     for (final header in _settingsRepository.appConfig.network.customHeaders.entries) {
-      redacted = redacted.replaceAll('${header.key}: ${header.value}', '${header.key}: [HEADER VALUE]');
+      redacted = redacted.replaceAll(
+        RegExp('${RegExp.escape(header.key)}:\\s+${RegExp.escape(header.value)}'),
+        '${header.key}: [HEADER VALUE]',
+      );
     }
     return redacted;
   }
@@ -148,11 +154,11 @@ class LogService {
     final network = _settingsRepository.appConfig.network;
     for (var i = 0; i < network.externalEndpointList.length; i++) {
       if (_isSameAddress(url, network.externalEndpointList[i])) {
-        return '[EXTERNAL URL ${i + 1}]';
+        return '[EXTERNAL ENDPOINT ${i + 1}]';
       }
     }
     if (_isSameAddress(url, network.localEndpoint)) {
-      return '[LOCAL URL]';
+      return '[LOCAL ENDPOINT]';
     }
     if (_isSameAddress(url, _storeService.tryGet(StoreKey.serverUrl)) ||
         _isSameAddress(url, _storeService.tryGet(StoreKey.serverEndpoint))) {
