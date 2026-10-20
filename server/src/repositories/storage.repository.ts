@@ -237,6 +237,7 @@ export class StorageRepository {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
+      followSymbolicLinks: false,
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
@@ -256,6 +257,7 @@ export class StorageRepository {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
+      followSymbolicLinks: false,
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
@@ -284,7 +286,12 @@ export class StorageRepository {
       strictSlashes: false,
     });
 
-    const watcher = chokidarWatch(paths, { ...options, ignored: (path) => matchesIgnoredPath(path) });
+    const watcher = chokidarWatch(paths, {
+      ...options,
+      followSymlinks: false,
+      // Chokidar still emits events for symlinks when followSymlinks is false.
+      ignored: (path, stats) => !!stats?.isSymbolicLink() || matchesIgnoredPath(path),
+    });
 
     watcher.on('ready', () => events.onReady?.());
     watcher.on('add', (path) => events.onAdd?.(path));
