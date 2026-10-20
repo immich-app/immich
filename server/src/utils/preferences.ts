@@ -41,6 +41,12 @@ const getDefaultPreferences = (): UserPreferences => {
       albumInvite: true,
       albumUpdate: true,
     },
+    appriseNotifications: {
+      enabled: true,
+      albumInvite: true,
+      albumUpdate: true,
+      tag: '',
+    },
     download: {
       archiveSize: HumanReadableSize.GiB * 4,
       includeEmbeddedVideos: false,

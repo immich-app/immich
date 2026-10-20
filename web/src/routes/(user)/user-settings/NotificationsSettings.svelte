@@ -1,7 +1,7 @@
 <script lang="ts">
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { updateMyPreferencesMutation } from '#lib/queries/user.query.ts';
-  import { Button, Field, Switch } from '@immich/ui';
+  import { Button, Field, Heading, Input, Switch } from '@immich/ui';
   import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -9,6 +9,11 @@
   let emailNotificationsEnabled = $state(authManager.preferences.emailNotifications?.enabled ?? true);
   let albumInviteNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumInvite ?? true);
   let albumUpdateNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumUpdate ?? true);
+
+  let appriseEnabled = $state(authManager.preferences.appriseNotifications?.enabled ?? true);
+  let appriseAlbumInviteEnabled = $state(authManager.preferences.appriseNotifications?.albumInvite ?? true);
+  let appriseAlbumUpdateEnabled = $state(authManager.preferences.appriseNotifications?.albumUpdate ?? true);
+  let appriseTag = $state(authManager.preferences.appriseNotifications?.tag ?? '');
 
   const updatePreferences = createMutation(() => updateMyPreferencesMutation());
 
@@ -20,6 +25,12 @@
             enabled: emailNotificationsEnabled,
             albumInvite: emailNotificationsEnabled && albumInviteNotificationEnabled,
             albumUpdate: emailNotificationsEnabled && albumUpdateNotificationEnabled,
+          },
+          appriseNotifications: {
+            enabled: appriseEnabled,
+            albumInvite: appriseEnabled && appriseAlbumInviteEnabled,
+            albumUpdate: appriseEnabled && appriseAlbumUpdateEnabled,
+            tag: appriseTag,
           },
         },
       },
@@ -46,6 +57,28 @@
 
         <Field label={$t('album_updated')} description={$t('album_updated_setting_description')} {disabled}>
           <Switch bind:checked={albumUpdateNotificationEnabled} />
+        </Field>
+
+        <Heading size="tiny" class="mt-2">{$t('apprise_notifications')}</Heading>
+
+        <Field label={$t('enable')} description={$t('apprise_toggle_setting_description')}>
+          <Switch bind:checked={appriseEnabled} />
+        </Field>
+
+        <Field label={$t('album_added')} description={$t('apprise_album_added_description')} disabled={!appriseEnabled}>
+          <Switch bind:checked={appriseAlbumInviteEnabled} />
+        </Field>
+
+        <Field
+          label={$t('album_updated')}
+          description={$t('apprise_album_updated_description')}
+          disabled={!appriseEnabled}
+        >
+          <Switch bind:checked={appriseAlbumUpdateEnabled} />
+        </Field>
+
+        <Field label={$t('apprise_tag')} description={$t('apprise_tag_description')} disabled={!appriseEnabled}>
+          <Input bind:value={appriseTag} />
         </Field>
       </div>
 
