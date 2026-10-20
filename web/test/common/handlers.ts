@@ -55,7 +55,6 @@ export const createHandlers = (data: MockData): Handlers => {
       return { status: 204 };
     },
     finishOAuth: () => ({ status: 201, json: data.loginResponse() }),
-    linkOAuthAccount: () => ({ json: data.setOAuthId('oauth-user') }),
     unlinkOAuthAccount: () => ({ json: data.setOAuthId('') }),
     unlinkAllOAuthAccountsAdmin: () => ({ status: 204 }),
     searchUsers: () => ({ json: data.searchUsers() }),
