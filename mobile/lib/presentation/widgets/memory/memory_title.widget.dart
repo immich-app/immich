@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/object_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:intl/intl.dart';
@@ -10,7 +11,7 @@ String getMemoryTitle(Translations t, Memory memory, {RemoteAsset? asset, bool p
     switch (memory.type) {
       MemoryTypeEnum.onThisDay =>
         preferDate
-            ? DateFormat.yMMMMd().format(memory.memoryAt)
+            ? DateFormat.yMMMMd(resolvedDateTimeLocale()).format(memory.memoryAt)
             : t.years_ago(years: DateTime.now().year - memory.data.year),
       MemoryTypeEnum.birthday => _getBirthdayTitle(t, memory.data, asset),
     };

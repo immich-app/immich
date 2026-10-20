@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/presentation/pages/memory_list.page.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:intl/intl.dart';
 
 import '../factories/remote_asset_factory.dart';
 import 'presentation_context.dart';
@@ -42,6 +43,15 @@ void main() {
       expect(find.text('October 7, 2025'), findsOneWidget);
       expect(find.text('October 6, 2025'), findsOneWidget);
       expect(find.textContaining('ago'), findsNothing);
+    });
+
+    testWidgets('shows the date when intl has no date formats for the app language', (tester) async {
+      Intl.defaultLocale = 'kab';
+      addTearDown(() => Intl.defaultLocale = null);
+      await pumpPage(tester, [newMemory(type: MemoryTypeEnum.onThisDay, memoryAt: DateTime(2025, 10, 7))]);
+      await tester.pump();
+
+      expect(find.text('October 7, 2025'), findsOneWidget);
     });
 
     testWidgets('shows the person name for a birthday memory', (tester) async {
