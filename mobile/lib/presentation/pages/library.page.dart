@@ -478,30 +478,23 @@ class _QuickAccessButtonList extends ConsumerWidget {
               end: Alignment.bottomCenter,
             ),
           ),
-          child: ListView.builder(
-            shrinkWrap: true,
-            padding: EdgeInsets.zero,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final isFirst = index == 0;
-              final isLast = index == items.length - 1;
-              return ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(isFirst ? _tileRadius : 0),
-                    topRight: Radius.circular(isFirst ? _tileRadius : 0),
-                    bottomLeft: Radius.circular(isLast ? _tileRadius : 0),
-                    bottomRight: Radius.circular(isLast ? _tileRadius : 0),
-                  ),
-                ),
-                contentPadding: item.contentPadding,
-                leading: item.leading,
-                title: Text(item.title, style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
-                onTap: item.onTap,
-              );
-            },
+          child: ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(_tileRadius)),
+            child: ListView.builder(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return ListTile(
+                  contentPadding: item.contentPadding,
+                  leading: item.leading,
+                  title: Text(item.title, style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
+                  onTap: item.onTap,
+                );
+              },
+            ),
           ),
         ),
       ),
