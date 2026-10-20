@@ -160,6 +160,8 @@ Immich supports [Reverse Geocoding](/features/reverse-geocoding) using data from
 
 SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](/administration/email-notification)
 
+Notifications can also be sent through an optional [Apprise API](https://github.com/caronc/apprise-api) server. More information can be found [here](/administration/email-notification#apprise-notifications)
+
 ## Notification Templates
 
 Override the default notifications text with notification templates. More information can be found [here](/administration/email-notification)

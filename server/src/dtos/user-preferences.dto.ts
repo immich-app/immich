@@ -1,5 +1,6 @@
 import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
+import { appriseTagsSchema } from 'src/dtos/config.dto.js';
 import { AssetOrderSchema, PersonUpdateStrategySchema, UserAvatarColorSchema } from 'src/enum.js';
 import type { UserPreferences } from 'src/types.js';
 
@@ -76,6 +77,16 @@ const EmailNotificationsUpdateSchema = z
   })
   .optional()
   .meta({ id: 'EmailNotificationsUpdate' });
+
+const AppriseNotificationsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether Apprise notifications are enabled'),
+    albumInvite: z.boolean().optional().describe('Whether to receive Apprise notifications for album invites'),
+    albumUpdate: z.boolean().optional().describe('Whether to receive Apprise notifications for album updates'),
+    tag: appriseTagsSchema.optional().describe('Apprise tags that route notifications to this user (all must match)'),
+  })
+  .optional()
+  .meta({ id: 'AppriseNotificationsUpdate' });
 
 const DownloadUpdateSchema = z
   .object({
@@ -165,6 +176,15 @@ const EmailNotificationsResponseSchema = z
   })
   .meta({ id: 'EmailNotificationsResponse' });
 
+const AppriseNotificationsResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether Apprise notifications are enabled'),
+    albumInvite: z.boolean().describe('Whether to receive Apprise notifications for album invites'),
+    albumUpdate: z.boolean().describe('Whether to receive Apprise notifications for album updates'),
+    tag: z.string().describe('Apprise tags that route notifications to this user (all must match)'),
+  })
+  .meta({ id: 'AppriseNotificationsResponse' });
+
 const DownloadResponseSchema = z
   .object({
     archiveSize: z.int().describe('Maximum archive size in bytes'),
@@ -197,6 +217,7 @@ export class UserPreferencesUpdateDto extends createZodDto({
   cast: CastUpdateSchema,
   download: DownloadUpdateSchema,
   emailNotifications: EmailNotificationsUpdateSchema,
+  appriseNotifications: AppriseNotificationsUpdateSchema,
   folders: FoldersUpdateSchema,
   memories: MemoriesUpdateSchema,
   people: PeopleUpdateSchema,
@@ -216,6 +237,7 @@ export class UserPreferencesResponseDto extends createZodDto({
   sharedLinks: SharedLinksResponseSchema,
   tags: TagsResponseSchema,
   emailNotifications: EmailNotificationsResponseSchema,
+  appriseNotifications: AppriseNotificationsResponseSchema,
   download: DownloadResponseSchema,
   purchase: PurchaseResponseSchema,
   cast: CastResponseSchema,
