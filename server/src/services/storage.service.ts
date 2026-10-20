@@ -71,10 +71,12 @@ export class StorageService extends BaseService {
           await this.verifyReadAccess(folder);
           await this.verifyWriteAccess(folder);
 
-          if (!flags.mountChecks[folder]) {
-            flags.mountChecks[folder] = true;
-            isUpdated = true;
+          if (flags.mountChecks[folder]) {
+            continue;
           }
+
+          flags.mountChecks[folder] = true;
+          isUpdated = true;
         }
 
         if (isUpdated) {

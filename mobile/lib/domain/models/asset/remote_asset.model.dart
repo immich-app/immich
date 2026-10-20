@@ -73,6 +73,7 @@ class RemoteAsset extends BaseAsset {
 
   bool get isStacked => stackId != null;
 
+  // ignore: unused-code
   bool get isArchived => visibility == .archive;
 
   bool get isLocked => visibility == .locked;

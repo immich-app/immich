@@ -147,15 +147,17 @@ export class WorkflowExecutionService extends BaseService {
       }
 
       const isMethodWithFunction = methods.some(({ hostFunctions }) => hostFunctions);
-      if (isMethodWithFunction) {
-        const label = `${name}@${version}/worker`;
-        const key = this.getPluginKey({ id, hostFunctions: true });
-        try {
-          await this.pluginRepository.load({ key, label, wasmBytes }, { runInWorker: true, functions });
-          this.logger.log(`Loaded plugin with host functions: ${label}`);
-        } catch (error) {
-          this.logger.error(`Unable to load plugin with host functions ${label} (${id})`, error);
-        }
+      if (!isMethodWithFunction) {
+        continue;
+      }
+
+      const label = `${name}@${version}/worker`;
+      const key = this.getPluginKey({ id, hostFunctions: true });
+      try {
+        await this.pluginRepository.load({ key, label, wasmBytes }, { runInWorker: true, functions });
+        this.logger.log(`Loaded plugin with host functions: ${label}`);
+      } catch (error) {
+        this.logger.error(`Unable to load plugin with host functions ${label} (${id})`, error);
       }
     }
   }

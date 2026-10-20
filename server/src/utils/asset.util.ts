@@ -157,10 +157,12 @@ export const onBeforeLink = async (
     throw new BadRequestException('Live photo video does not belong to the user');
   }
 
-  if (motionAsset && motionAsset.visibility === AssetVisibility.Timeline) {
-    await assetRepository.update({ id: livePhotoVideoId, visibility: AssetVisibility.Hidden });
-    await eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId });
+  if (!motionAsset || motionAsset.visibility !== AssetVisibility.Timeline) {
+    return;
   }
+
+  await assetRepository.update({ id: livePhotoVideoId, visibility: AssetVisibility.Hidden });
+  await eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId });
 };
 
 export const onBeforeUnlink = async (

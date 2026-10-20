@@ -1,27 +1,26 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
+import 'package:immich_mobile/presentation/widgets/memory/memory_title.widget.dart';
 
 class MemoryCard extends StatelessWidget {
   final RemoteAsset asset;
-  final String title;
+  final Memory memory;
   final bool showTitle;
   final bool isCurrent;
-  final Function()? onVideoEnded;
 
   const MemoryCard({
     required this.asset,
-    required this.title,
+    required this.memory,
     required this.showTitle,
     this.isCurrent = false,
-    this.onVideoEnded,
     super.key,
   });
 
@@ -30,7 +29,7 @@ class MemoryCard extends StatelessWidget {
     return Card(
       color: Colors.black,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(25.0)),
+        borderRadius: BorderRadius.all(Radius.circular(24.0)),
         side: BorderSide(color: Colors.black, width: 1.0),
       ),
       clipBehavior: Clip.hardEdge,
@@ -65,7 +64,6 @@ class MemoryCard extends StatelessWidget {
                     key: ValueKey(asset.id),
                     asset: asset,
                     isCurrent: isCurrent,
-                    showControls: false,
                     image: FullImage(asset, size: context.sizeData, fit: BoxFit.contain),
                   ),
                 ),
@@ -75,9 +73,10 @@ class MemoryCard extends StatelessWidget {
           if (showTitle)
             Positioned(
               left: 18.0,
+              right: 18.0,
               bottom: 18.0,
-              child: Text(
-                title,
+              child: MemoryTitle(
+                memory: memory,
                 style: context.textTheme.headlineMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w500),
               ),
             ),
@@ -87,19 +86,21 @@ class MemoryCard extends StatelessWidget {
   }
 }
 
-class _BlurredBackdrop extends HookWidget {
+class _BlurredBackdrop extends StatelessWidget {
   final RemoteAsset asset;
 
   const _BlurredBackdrop({required this.asset});
 
   @override
   Widget build(BuildContext context) {
-    final blurhash = useDriftBlurHashRef(asset).value;
-    if (blurhash != null) {
+    if (asset.thumbHash != null) {
       // Use a nice cheap blur hash image decoration
       return DecoratedBox(
         decoration: BoxDecoration(
-          image: DecorationImage(image: MemoryImage(blurhash), fit: BoxFit.cover),
+          image: DecorationImage(
+            image: ThumbHashProvider(thumbHash: asset.thumbHash!),
+            fit: BoxFit.cover,
+          ),
         ),
         child: Container(color: Colors.black.withValues(alpha: 0.2)),
       );

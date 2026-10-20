@@ -44,12 +44,16 @@ export enum QueryParameter {
   ACTION = 'action',
   ASSET_ID = 'assetId',
   ID = 'id',
+  IS_FAVORITE = 'isFavorite',
+  IS_HIDDEN = 'isHidden',
   IS_OPEN = 'isOpen',
   IS_SAVED = 'isSaved',
   OPEN_SETTING = 'openSetting',
   PREVIOUS_ROUTE = 'previousRoute',
   QUERY = 'query',
   SEARCHED_PEOPLE = 'searchedPeople',
+  SHARED_BY_ID = 'sharedById',
+  SHARED_WITH_ID = 'sharedWithId',
   SMART_SEARCH = 'smartSearch',
   PAGE = 'page',
   PATH = 'path',
@@ -304,3 +308,12 @@ export enum BackupFileStatus {
 }
 
 export const assetViewerFadeDuration: number = 150;
+
+export const libraryTableClasses = {
+  column1: 'w-4/12',
+  column2: 'w-4/12',
+  column3: 'w-1/12',
+  column4: 'w-1/12',
+  column5: 'w-1/12',
+  column6: 'w-1/12 flex justify-end',
+};

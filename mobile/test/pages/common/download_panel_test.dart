@@ -1,7 +1,7 @@
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/pages/common/download_panel.dart';
+import 'package:immich_mobile/pages/common/download_task_tile.dart';
 
 import '../../widget_tester_extensions.dart';
 

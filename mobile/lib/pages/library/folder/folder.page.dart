@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
@@ -90,9 +91,9 @@ class FolderPage extends HookConsumerWidget {
       body: folderState.when(
         data: (rootFolder) {
           if (folder == null) {
-            return FolderContent(folder: rootFolder, root: rootFolder, sortOrder: sortOrder.value);
+            return FolderContent(folder: rootFolder, sortOrder: sortOrder.value);
           } else {
-            return FolderContent(folder: currentFolder.value, root: rootFolder, sortOrder: sortOrder.value);
+            return FolderContent(folder: currentFolder.value, sortOrder: sortOrder.value);
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -107,10 +108,9 @@ class FolderPage extends HookConsumerWidget {
 
 class FolderContent extends HookConsumerWidget {
   final RootFolder? folder;
-  final RootFolder root;
   final SortOrder sortOrder;
 
-  const FolderContent({super.key, this.folder, required this.root, this.sortOrder = SortOrder.asc});
+  const FolderContent({super.key, this.folder, this.sortOrder = SortOrder.asc});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -143,7 +143,7 @@ class FolderContent extends HookConsumerWidget {
 
     return Column(
       children: [
-        FolderPath(currentFolder: folder!, root: root),
+        FolderPath(currentFolder: folder!),
         Expanded(
           child: folderRenderlist.when(
             data: (folderAssets) {
@@ -202,7 +202,7 @@ class FolderContent extends HookConsumerWidget {
                           style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
-                          "${asset.exifInfo.fileSize != null ? "${formatBytes(asset.exifInfo.fileSize ?? 0)} • " : ""}${DateFormat.yMMMd().format(asset.createdAt.toLocal())}",
+                          "${asset.exifInfo.fileSize != null ? "${formatBytes(asset.exifInfo.fileSize ?? 0)} • " : ""}${DateFormat.yMMMd(resolvedDateTimeLocale()).format(asset.createdAt.toLocal())}",
                           style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                         ),
                       ),
@@ -224,9 +224,8 @@ class FolderContent extends HookConsumerWidget {
 
 class FolderPath extends StatelessWidget {
   final RootFolder currentFolder;
-  final RootFolder root;
 
-  const FolderPath({super.key, required this.currentFolder, required this.root});
+  const FolderPath({super.key, required this.currentFolder});
 
   @override
   Widget build(BuildContext context) {

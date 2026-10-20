@@ -74,8 +74,8 @@ class TimelineFactory {
 
   TimelineService place(String place) => TimelineService(_timelineRepository.place(place, groupBy));
 
-  TimelineService person(String userId, String personId) =>
-      TimelineService(_timelineRepository.person(userId, personId, groupBy));
+  TimelineService person(List<String> userIds, String personId) =>
+      TimelineService(_timelineRepository.person(userIds, personId, groupBy));
 
   TimelineService fromAssets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssets(assets, type));

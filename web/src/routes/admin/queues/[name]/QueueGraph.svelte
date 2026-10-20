@@ -35,7 +35,7 @@
       if (statistics) {
         items[1].push(statistics.failed);
         items[2].push(statistics.active);
-        items[3].push(statistics.waiting + statistics.paused);
+        items[3].push(statistics.waiting);
       } else {
         items[0].push(timestamp);
         items[1].push(null);

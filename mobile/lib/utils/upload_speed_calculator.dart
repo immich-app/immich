@@ -79,6 +79,7 @@ class UploadSpeedCalculator {
   }
 
   /// Returns the current speed in MB/s, or -1 if not available.
+  // ignore: unused-code
   double get speed => _currentSpeed;
 
   /// Returns a human-readable string representation of the current speed.
@@ -112,6 +113,7 @@ class UploadSpeedCalculator {
   /// Returns a human-readable string representation of time remaining.
   ///
   /// Returns '--:--' if N/A, otherwise HH:MM:SS or MM:SS format.
+  // ignore: unused-code
   String get timeRemainingAsString {
     final remaining = timeRemaining;
     return switch (remaining.inSeconds) {

@@ -125,29 +125,53 @@ where
   and "asset"."id" in ($2)
 
 -- AccessRepository.asset.checkSharedLinkAccess
+with
+  "target" as (
+    select
+      array[$1]::uuid[] as "ids"
+  ),
+  "link" as (
+    select
+      "shared_link"."id",
+      "shared_link"."albumId"
+    from
+      "shared_link"
+    where
+      "shared_link"."id" = $2
+  )
 select
-  "asset"."id" as "assetId",
-  "asset"."livePhotoVideoId" as "assetLivePhotoVideoId",
-  "albumAssets"."id" as "albumAssetId",
-  "albumAssets"."livePhotoVideoId" as "albumAssetLivePhotoVideoId"
+  "asset"."id",
+  "asset"."livePhotoVideoId"
 from
-  "shared_link"
-  left join "album" on "album"."id" = "shared_link"."albumId"
-  and "album"."deletedAt" is null
-  left join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
-  left join "asset" on "asset"."id" = "shared_link_asset"."assetId"
-  and "asset"."deletedAt" is null
-  left join "album_asset" on "album_asset"."albumId" = "album"."id"
-  left join "asset" as "albumAssets" on "albumAssets"."id" = "album_asset"."assetId"
-  and "albumAssets"."deletedAt" is null
+  "asset"
+  cross join "target"
+  inner join lateral (
+    select
+      1 as "match"
+    from
+      "link"
+      inner join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "link"."id"
+    where
+      "shared_link_asset"."assetId" = "asset"."id"
+    union all
+    select
+      1 as "match"
+    from
+      "link"
+      inner join "album" on "album"."id" = "link"."albumId"
+      and "album"."deletedAt" is null
+      inner join "album_asset" on "album_asset"."albumId" = "album"."id"
+    where
+      "album_asset"."assetId" = "asset"."id"
+    limit
+      $3
+  ) as "membership" on true
 where
-  "shared_link"."id" = $1
-  and array[
-    "asset"."id",
-    "asset"."livePhotoVideoId",
-    "albumAssets"."id",
-    "albumAssets"."livePhotoVideoId"
-  ] && array[$2]::uuid[]
+  "asset"."deletedAt" is null
+  and (
+    "asset"."id" = any ("target"."ids")
+    or "asset"."livePhotoVideoId" = any ("target"."ids")
+  )
 
 -- AccessRepository.assetFile.checkOwnerAccess
 select
@@ -241,14 +265,40 @@ where
       "user"."id" = $2
   )
 
--- AccessRepository.person.checkOwnerAccess
+-- AccessRepository.person.checkAccess
 select
-  "person"."personGroupId"
+  "personGroupId",
+  "ownerId"
 from
-  "person"
+  (
+    select
+      unnest($1::uuid[]) as "personGroupId",
+      unnest($2::uuid[]) as "ownerId"
+  ) as "people"
 where
-  "person"."personGroupId" in ($1)
-  and "person"."ownerId" = $2
+  (
+    exists (
+      select
+        *
+      from
+        "person"
+      where
+        "people"."personGroupId" = "person"."personGroupId"
+        and "people"."ownerId" = "person"."ownerId"
+        and "person"."ownerId" = $3
+    )
+    or exists (
+      select
+        *
+      from
+        "person_user"
+      where
+        "person_user"."sharedWithId" = $4
+        and "person_user"."role" in ($5)
+        and "people"."personGroupId" = "person_user"."personGroupId"
+        and "people"."ownerId" = "person_user"."sharedById"
+    )
+  )
 
 -- AccessRepository.person.checkFaceOwnerAccess
 select

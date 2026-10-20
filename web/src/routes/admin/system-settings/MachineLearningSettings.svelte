@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getConfigQuery } from '$lib/queries/system-config.query';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSelect from './SettingSelect.svelte';
@@ -7,16 +9,17 @@
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Button, IconButton } from '@immich/ui';
   import { mdiPlus, mdiTrashCanOutline } from '@mdi/js';
-  import { isEqual } from 'lodash-es';
+  import { isEqual, cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
+  const query = createPreloadedQuery(getConfigQuery);
+  const config = $derived(query.data);
+
   const disabled = $derived(featureFlagsManager.value.configFile);
-  const config = $derived(systemConfigManager.value);
-  let configToEdit = $state(systemConfigManager.cloneValue());
+  let configToEdit = $state(cloneDeep(config));
 </script>
 
 <div class="mt-2">
@@ -275,6 +278,15 @@
             name="ocr-model"
             bind:value={configToEdit.machineLearning.ocr.modelName}
             options={[
+              {
+                text: 'PP-OCRv6_medium (Chinese, Japanese, English and other Latin script languages)',
+                value: 'PP-OCRv6_medium',
+              },
+              {
+                text: 'PP-OCRv6_small (Chinese, Japanese, English and other Latin script languages)',
+                value: 'PP-OCRv6_small',
+              },
+              { text: 'PP-OCRv6_tiny (Chinese, English and other Latin script languages)', value: 'PP-OCRv6_tiny' },
               { text: 'PP-OCRv5_server (Chinese, Japanese and English)', value: 'PP-OCRv5_server' },
               { text: 'PP-OCRv5_mobile (Chinese, Japanese and English)', value: 'PP-OCRv5_mobile' },
               { text: 'PP-OCRv5_mobile (English-only)', value: 'EN__PP-OCRv5_mobile' },

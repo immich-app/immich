@@ -6,7 +6,7 @@
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  let gCastEnabled = $state(authManager.authenticated ? authManager.preferences.cast.gCastEnabled : false);
+  let gCastEnabled = $state(authManager.authenticated && authManager.preferences.cast.gCastEnabled);
 
   onDestroy(async () => {
     try {

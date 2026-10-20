@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
-import { JobStatus } from 'src/enum.js';
+import { JobName, JobStatus } from 'src/enum.js';
 import { TagService } from 'src/services/tag.service.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub.js';
@@ -122,10 +122,30 @@ describe(TagService.name, () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
       mocks.tag.update.mockResolvedValue(tagStub.colorCreate);
       mocks.tag.get.mockResolvedValue(tagStub.tag);
+      mocks.tag.getAssetIdsByTagId.mockResolvedValue(['asset-1']);
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'tag' }] });
       await expect(sut.update(authStub.admin, 'tag-1', { name: 'tag', color: '#000000' })).resolves.toEqual(
         tagResponseStub.color1,
       );
+      expect(mocks.tag.getAssetIdsByTagId).toHaveBeenCalledWith('tag-1');
       expect(mocks.tag.update).toHaveBeenCalledWith('tag-1', { value: 'tag', color: '#000000' });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({
+        exif: { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag'] },
+        lockedPropertiesBehavior: 'append',
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
+    });
+
+    it('should not sync assets when only the tag color changes', async () => {
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
+      mocks.tag.update.mockResolvedValue(tagStub.colorCreate);
+      mocks.tag.get.mockResolvedValue(tagStub.tag);
+
+      await sut.update(authStub.admin, 'tag-1', { color: '#000000' });
+
+      expect(mocks.tag.getAssetIdsByTagId).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertExif).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
   });
 
@@ -183,9 +203,17 @@ describe(TagService.name, () => {
     it('should remove a tag', async () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.delete.mockResolvedValue();
+      mocks.tag.getAssetIdsByTagId.mockResolvedValue(['asset-1']);
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [] });
 
       await sut.remove(authStub.admin, 'tag-1');
+      expect(mocks.tag.getAssetIdsByTagId).toHaveBeenCalledWith('tag-1');
       expect(mocks.tag.delete).toHaveBeenCalledWith('tag-1');
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({
+        exif: { assetId: 'asset-1', lockedProperties: ['tags'], tags: [] },
+        lockedPropertiesBehavior: 'append',
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
   });
 

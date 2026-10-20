@@ -1,11 +1,12 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
   import { Route } from '$lib/route';
   import { getUserAdminActions, getUserAdminsActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import type { UserAdminResponseDto } from '@immich/sdk';
   import {
     CommandPaletteDefaultProvider,
     Container,
@@ -32,26 +33,14 @@
 
   let { children, data }: Props = $props();
 
-  let users: UserAdminResponseDto[] = $state(data.users);
-
-  const onUpdate = async (user: UserAdminResponseDto) => {
-    const index = users.findIndex(({ id }) => id === user.id);
-    if (index === -1) {
-      users = await searchUsersAdmin({ withDeleted: true });
-    } else {
-      users[index] = user;
-    }
-  };
-
-  const onUserAdminDeleted = ({ id: userId }: { id: string }) => {
-    users = users.filter(({ id }) => id !== userId);
-  };
+  const query = createPreloadedQuery(() => searchUsersAdminQuery({ withDeleted: true }));
+  const users = $derived(query.data);
 
   const { Create } = $derived(getUserAdminsActions($t));
 
   const getActionsForUser = (user: UserAdminResponseDto) => {
-    const { Detail, Update, Delete, ResetPassword, ResetPinCode } = getUserAdminActions($t, user);
-    return [Detail, Update, ResetPassword, ResetPinCode, MenuItemType.Divider, Delete];
+    const { Detail, Update, Delete, Restore, ResetPassword, ResetPinCode } = getUserAdminActions($t, user);
+    return [Detail, Update, ResetPassword, ResetPinCode, MenuItemType.Divider, Restore, Delete];
   };
 
   const classes = {
@@ -61,14 +50,6 @@
     column4: 'w-4/12 md:w-2/12 flex justify-end',
   };
 </script>
-
-<OnEvents
-  onUserAdminCreate={onUpdate}
-  onUserAdminUpdate={onUpdate}
-  onUserAdminDelete={onUpdate}
-  onUserAdminRestore={onUpdate}
-  {onUserAdminDeleted}
-/>
 
 <CommandPaletteDefaultProvider name={$t('users')} actions={[Create]} />
 

@@ -63,14 +63,16 @@ export const requirePermissions = async (permissions: Permission[]) => {
     }
   }
 
-  if (missing.length > 0) {
-    const combined = missing.map((permission) => `"${permission}"`).join(', ');
-    console.log(
-      `Missing required permission${s(missing.length)}: ${combined}.
-Please make sure your API key has the correct permissions.`,
-    );
-    process.exit(1);
+  if (missing.length === 0) {
+    return;
   }
+
+  const combined = missing.map((permission) => `"${permission}"`).join(', ');
+  console.log(
+    `Missing required permission${s(missing.length)}: ${combined}.
+Please make sure your API key has the correct permissions.`,
+  );
+  process.exit(1);
 };
 
 export const connect = async (url: string, key: string) => {
@@ -120,10 +122,7 @@ export const readAuthFile = async (dir: string) => {
     // TODO add class-transform/validation
     const auth = yaml.parse(data.toString()) as AuthDto | OldAuthDto;
     const { instanceUrl, apiKey } = auth as OldAuthDto;
-    if (instanceUrl && apiKey) {
-      return { url: instanceUrl, key: apiKey };
-    }
-    return auth as AuthDto;
+    return instanceUrl && apiKey ? { url: instanceUrl, key: apiKey } : (auth as AuthDto);
   } catch (error: Error | any) {
     if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
       console.log('No auth file exists. Please login first.');

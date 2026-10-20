@@ -3,7 +3,7 @@
   import AlbumsTable from '$lib/components/album-page/AlbumsTable.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleDeleteAlbum } from '$lib/services/album.service';
+  import { handleDeleteAlbum, isAlbumOwner } from '$lib/services/album.service';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -15,7 +15,7 @@
   } from '$lib/stores/preferences.store';
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { AlbumUserRole, type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { groupBy } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -123,10 +123,7 @@
         return sharedAlbums;
       }
       default: {
-        const nonOwnedAlbums = sharedAlbums.filter(
-          (album) =>
-            album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role !== AlbumUserRole.Owner,
-        );
+        const nonOwnedAlbums = sharedAlbums.filter((album) => !isAlbumOwner(album));
         return nonOwnedAlbums.length > 0 ? ownedAlbums.concat(nonOwnedAlbums) : ownedAlbums;
       }
     }

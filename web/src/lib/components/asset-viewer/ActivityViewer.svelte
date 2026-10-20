@@ -54,6 +54,8 @@
   let previousAssetId: string | undefined = $state(assetId);
   let message = $state('');
   let isSendingMessage = $state(false);
+  let scrollContainer: HTMLElement | undefined = $state();
+  let hasScrolledToBottom = false;
   const isAlbumOwner = $derived(albumUsers[0].user.id === authManager.user.id);
 
   const timeOptions: Intl.DateTimeFormatOptions = {
@@ -65,9 +67,9 @@
     hour12: false,
   };
 
-  const handleDeleteReaction = async (reaction: ActivityResponseDto, index: number) => {
+  const handleDeleteReaction = async (reaction: ActivityResponseDto) => {
     try {
-      await activityManager.deleteActivity(reaction, index);
+      await activityManager.deleteActivity(reaction);
 
       const deleteMessages: Record<ReactionType, string> = {
         [ReactionType.Comment]: $t('comment_deleted'),
@@ -99,6 +101,14 @@
   $effect(() => {
     if (assetId && previousAssetId !== assetId) {
       previousAssetId = assetId;
+      hasScrolledToBottom = false;
+    }
+  });
+
+  $effect(() => {
+    if (scrollContainer && activityManager.activities.length > 0 && !hasScrolledToBottom) {
+      hasScrolledToBottom = true;
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
   });
 
@@ -108,7 +118,7 @@
   };
 </script>
 
-{#snippet reactionMenu(reaction: ActivityResponseDto, index: number, title: string)}
+{#snippet reactionMenu(reaction: ActivityResponseDto, title: string)}
   {#if reaction.user.id === authManager.user.id || isAlbumOwner}
     <ContextMenuButton
       translations={{ open_menu: title }}
@@ -120,7 +130,7 @@
           icon: mdiTrashCanOutline,
           title: $t('remove'),
           color: 'danger',
-          onAction: () => handleDeleteReaction(reaction, index),
+          onAction: () => handleDeleteReaction(reaction),
         },
       ]}
     />
@@ -145,6 +155,7 @@
     </div>
     {#if innerHeight}
       <div
+        bind:this={scrollContainer}
         class="relative w-full immich-scrollbar overflow-y-auto px-2"
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
@@ -165,7 +176,7 @@
                   />
                 </a>
               {/if}
-              {@render reactionMenu(reaction, index, $t('comment_options'))}
+              {@render reactionMenu(reaction, $t('comment_options'))}
             </div>
 
             {#if (index !== activityManager.activities.length - 1 && !shouldGroup(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
@@ -198,7 +209,7 @@
                     />
                   </a>
                 {/if}
-                {@render reactionMenu(reaction, index, $t('reaction_options'))}
+                {@render reactionMenu(reaction, $t('reaction_options'))}
               </div>
               {#if (index !== activityManager.activities.length - 1 && isTenMinutesApart(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
                 <div

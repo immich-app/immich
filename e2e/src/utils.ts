@@ -657,13 +657,13 @@ export const utils = {
   isQueueEmpty: async (accessToken: string, queue: keyof QueuesResponseLegacyDto) => {
     const queues = await getQueuesLegacy({ headers: asBearerAuth(accessToken) });
     const jobCounts = queues[queue].jobCounts;
-    return !jobCounts.active && !jobCounts.waiting;
+    return !jobCounts.active && (!jobCounts.waiting || queues[queue].queueStatus.isPaused);
   },
 
   waitForQueueFinish: (accessToken: string, queue: keyof QueuesResponseLegacyDto, ms?: number) => {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise<void>(async (resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 10_000);
+      const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 15_000);
 
       while (true) {
         const done = await utils.isQueueEmpty(accessToken, queue);

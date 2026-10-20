@@ -61,6 +61,7 @@
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  const faceLabelOffset = 32;
 
   const container = $derived({
     width: containerWidth,
@@ -173,9 +174,12 @@
 
   const faces = $derived(Array.from(faceToNameMap.keys()));
 
-  const boundingBoxes = $derived.by(() => {
+  // we want to bind to `boundingbox.labelWidth`, which requires deep reactivity
+  // $derived does not currently support that, only $state does.
+  let boundingBoxes = $state<Array<BoundingBox & { name?: string; face: Faces }>>([]);
+  $effect(() => {
     if (assetViewerManager.isFaceEditMode || ocrManager.showOverlay) {
-      return [];
+      return;
     }
 
     const knownBoxes = getBoundingBox(faces, overlaySize);
@@ -186,7 +190,7 @@
     }));
 
     if (assetViewerManager.highlightedFaces.length === 0) {
-      return result;
+      boundingBoxes = result;
     }
 
     const knownIds = new Set(faces.map((f) => f.id));
@@ -196,7 +200,7 @@
       result.push({ ...unassignedBoxes[i], face: unassignedFaces[i], name: undefined });
     }
 
-    return result;
+    boundingBoxes = result;
   });
 </script>
 
@@ -270,11 +274,15 @@
           onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
         >
           {#if isActive && boundingbox.name}
+            {@const labelAbove =
+              boundingbox.top + boundingbox.height + faceLabelOffset > overlaySize.height &&
+              boundingbox.top >= faceLabelOffset}
             <div
               aria-hidden="true"
               class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
-              style="top: {boundingbox.height + 4}px; {assetViewerManager.imgRef
-                ? boundingbox.left >= 0
+              bind:clientWidth={boundingbox.labelWidth}
+              style="{labelAbove ? 'bottom' : 'top'}: {boundingbox.height + 4}px; {assetViewerManager.imgRef
+                ? boundingbox.left >= boundingbox.labelWidth - boundingbox.width
                   ? `right: ${Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)}px;`
                   : `left: ${-boundingbox.left}px;`
                 : ''}"

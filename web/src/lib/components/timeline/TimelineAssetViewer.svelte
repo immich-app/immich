@@ -114,13 +114,7 @@
   };
 
   const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
-    if (!album || !albumIds.includes(album.id)) {
-      return;
-    }
-
-    timelineManager.removeAssets(assetIds);
-
-    if (assetIds.includes(assetCursor.current.id)) {
+    if (!!album && albumIds.includes(album.id) && assetIds.includes(assetCursor.current.id)) {
       await navigateOrCloseViewer(assetCursor.current.id);
     }
   };

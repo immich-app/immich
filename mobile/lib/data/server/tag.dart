@@ -17,6 +17,12 @@ class TagApiRepository extends ApiRepository {
     return response?.count ?? 0;
   }
 
+  /// Remove the tag [tagId] from every asset in [assetIds], returning the number of assets successfully untagged
+  Future<int> untagAssets(String tagId, List<String> assetIds) async {
+    final response = await _api.untagAssets(tagId, BulkIdsDto(ids: assetIds));
+    return response?.where((result) => result.success).length ?? 0;
+  }
+
   /// Retrieves all known tags
   Future<List<Tag>> getAll() async {
     final response = await checkNull(_api.getAllTags());

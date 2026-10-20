@@ -59,11 +59,7 @@ export class AssetController {
   @Endpoint({
     summary: 'Update assets',
     description: 'Updates multiple assets at the same time.',
-    history: new HistoryBuilder()
-      .added('v1')
-      .beta('v1')
-      .stable('v2')
-      .deprecated('v3', { replacementId: 'updateAssets' }),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
   })
   updateAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(auth, dto);
@@ -143,11 +139,7 @@ export class AssetController {
   @Endpoint({
     summary: 'Update an asset',
     description: 'Update information of a specific asset.',
-    history: new HistoryBuilder()
-      .added('v1')
-      .beta('v1')
-      .stable('v2')
-      .deprecated('v3', { replacementId: 'updateAsset' }),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
   })
   updateAsset(
     @Auth() auth: AuthDto,

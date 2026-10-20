@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter_hooks/flutter_hooks.dart';
-
 /// Used to debounce function calls with the [interval] provided.
 /// If [maxWaitTime] is provided, the first [run] call as well as the next call since [maxWaitTime] has passed will be immediately executed, even if [interval] is not satisfied.
 class Debouncer {
@@ -49,36 +47,6 @@ class Debouncer {
     _actionFuture = null;
   }
 
+  // ignore: unused-code
   bool get isActive => _actionFuture != null || (_timer != null && _timer!.isActive);
-}
-
-/// Creates a [Debouncer] that will be disposed automatically. If no [interval] is provided, a
-/// default interval of 300ms is used to debounce the function calls
-Debouncer useDebouncer({
-  Duration interval = const Duration(milliseconds: 300),
-  Duration? maxWaitTime,
-  List<Object?>? keys,
-}) => use(_DebouncerHook(interval: interval, maxWaitTime: maxWaitTime, keys: keys));
-
-class _DebouncerHook extends Hook<Debouncer> {
-  const _DebouncerHook({required this.interval, this.maxWaitTime, super.keys});
-
-  final Duration interval;
-  final Duration? maxWaitTime;
-
-  @override
-  HookState<Debouncer, Hook<Debouncer>> createState() => _DebouncerHookState();
-}
-
-class _DebouncerHookState extends HookState<Debouncer, _DebouncerHook> {
-  late final debouncer = Debouncer(interval: hook.interval, maxWaitTime: hook.maxWaitTime);
-
-  @override
-  Debouncer build(_) => debouncer;
-
-  @override
-  void dispose() => debouncer.dispose();
-
-  @override
-  String get debugLabel => 'useDebouncer';
 }

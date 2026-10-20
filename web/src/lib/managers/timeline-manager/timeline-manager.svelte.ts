@@ -150,6 +150,11 @@ export class TimelineManager extends VirtualScrollManager {
         // For now, AssetsRestore is only emitted locally (per-client), so we can reasonably
         // assume that the restored assets belong to this (album/person) timeline.
         AssetsRestore: (assets) => this.upsertAssets(assets.map((a) => toTimelineAsset(a))),
+        AlbumRemoveAssets: ({ assetIds, albumIds }) => {
+          if (this.#options.albumId && albumIds.includes(this.#options.albumId)) {
+            this.removeAssets(assetIds);
+          }
+        },
         ...stackEvents,
       }),
     );

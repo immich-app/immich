@@ -113,11 +113,13 @@ export class DatabaseRepository {
   async createExtension(extension: DatabaseExtension): Promise<void> {
     this.logger.log(`Creating ${EXTENSION_NAMES[extension]} extension`);
     await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
-    if (extension === DatabaseExtension.VectorChord) {
-      const dbName = sql.id(await this.getDatabaseName());
-      await sql`ALTER DATABASE ${dbName} SET vchordrq.probes = 1`.execute(this.db);
-      await sql`SET vchordrq.probes = 1`.execute(this.db);
+    if (extension !== DatabaseExtension.VectorChord) {
+      return;
     }
+
+    const dbName = sql.id(await this.getDatabaseName());
+    await sql`ALTER DATABASE ${dbName} SET vchordrq.probes = 1`.execute(this.db);
+    await sql`SET vchordrq.probes = 1`.execute(this.db);
   }
 
   async dropExtension(extension: DatabaseExtension): Promise<void> {
@@ -362,7 +364,7 @@ export class DatabaseRepository {
     if (count < 128_000) {
       return 1;
     }
-    // eslint-disable-next-line unicorn/prefer-minimal-ternary
+
     return count < 2_048_000 ? 1 << (32 - Math.clz32(count / 1000)) : 1 << (33 - Math.clz32(Math.sqrt(count)));
   }
 

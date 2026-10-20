@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 import { Stats } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
+import { mkdtempDisposable, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
@@ -30,7 +30,7 @@ type TimeZoneTest = {
 
 let defaultDatabase: Kysely<DB>;
 
-const setup = (db?: Kysely<DB>) => {
+const setup = (db?: Kysely<DB>, { realStorage = false } = {}) => {
   const { sut, ctx } = newMediumService(MetadataService, {
     database: db || defaultDatabase,
     real: [
@@ -40,16 +40,19 @@ const setup = (db?: Kysely<DB>) => {
       MetadataRepository,
       SystemMetadataRepository,
       TagRepository,
+      ...(realStorage ? [StorageRepository] : []),
     ],
-    mock: [EventRepository, StorageRepository, LoggingRepository],
+    mock: [EventRepository, LoggingRepository, ...(realStorage ? [] : [StorageRepository])],
   });
 
-  ctx.getMock(StorageRepository).stat.mockResolvedValue({
-    size: 123_456,
-    mtime: new Date(654_321),
-    mtimeMs: 654_321,
-    birthtimeMs: 654_322,
-  } as Stats);
+  if (!realStorage) {
+    ctx.getMock(StorageRepository).stat.mockResolvedValue({
+      size: 123_456,
+      mtime: new Date(654_321),
+      mtimeMs: 654_321,
+      birthtimeMs: 654_322,
+    } as Stats);
+  }
 
   return { sut, ctx };
 };
@@ -75,6 +78,33 @@ describe(MetadataService.name, () => {
   it('should be defined', () => {
     const { sut } = setup();
     expect(sut).toBeDefined();
+  });
+
+  describe('sidecar metadata extraction', () => {
+    it('should persist metadata read from a discovered XMP sidecar', async () => {
+      await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-sidecar-'));
+      const { sut, ctx } = setup(undefined, { realStorage: true });
+      const originalPath = join(tempDir.path, 'photo.png');
+      await writeFile(originalPath, newRandomImage());
+      const metadata = ctx.get(MetadataRepository);
+      await metadata.writeTags(originalPath, { Rating: 1 });
+      await metadata.writeTags(`${originalPath}.xmp`, { Rating: 5, DateTimeOriginal: '2024:07:11 10:32:52+00:00' });
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ originalPath, ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+
+      await sut.handleSidecarCheck({ id: asset.id });
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .where('assetId', '=', asset.id)
+          .select(['rating', 'dateTimeOriginal'])
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ rating: 5, dateTimeOriginal: new Date('2024-07-11T10:32:52.000Z') });
+    });
   });
 
   describe('handleMetadataExtraction', () => {

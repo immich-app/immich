@@ -1,3 +1,5 @@
+// ignore_for_file: unused-code
+
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';

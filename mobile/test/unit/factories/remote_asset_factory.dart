@@ -3,8 +3,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import '../../utils.dart';
 
 class RemoteAssetFactory {
-  const RemoteAssetFactory();
-
   static RemoteAsset create({
     String? id,
     String? name,

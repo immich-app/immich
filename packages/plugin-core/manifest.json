@@ -486,7 +486,7 @@
           "inverse": {
             "type": "boolean",
             "title": "Inverse",
-            "description": "Unfavorite by default, set to true to favorite instead",
+            "description": "Favorite by default, set to true to unfavorite instead",
             "default": false
           }
         }

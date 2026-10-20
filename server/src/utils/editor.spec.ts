@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AssetFace } from 'src/database.js';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
-import { SourceType } from 'src/enum.js';
+import { AssetVisibility, SourceType } from 'src/enum.js';
 import { boundingBoxOverlap, checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor.js';
 
 describe('boundingBoxOverlap', () => {
@@ -70,6 +70,9 @@ const createFace = (params: Partial<AssetFace> = {}): AssetFace => ({
   updatedAt: new Date(),
   updateId: 'update-id',
   isVisible: true,
+  ownerId: 'owner-id',
+  assetVisibility: AssetVisibility.Timeline,
+  assetDeletedAt: null,
   ...params,
 });
 

@@ -104,6 +104,19 @@ analyzer:
     deprecated_member_use_from_same_package: error
 
 dart_code_metrics:
+  exclude:
+    unused-code:
+      - '**/*.g.dart'
+      - '**/*.freezed.dart'
+      - '**/*.mapper.dart'
+      - '**/*.drift.dart'
+      - '**/*.gr.dart'
+      - 'lib/data/db/main/database.steps.dart'
+      # Ideally we wouldn't do this, as this allows for non-column used code, but not complaining
+      # about the columns is more important
+      - 'lib/data/db/**/table/**'
+      - 'lib/widgets/photo_view/**'
+      - 'test/drift/**/generated/**'
   rules:
     - banned-usage:
         entries:
@@ -114,6 +127,12 @@ dart_code_metrics:
             severity: perf
           - name: tr
             description: 'Use context.t.<key> or StaticTranslations.instance.<key> instead of tr().'
+          - type: Locale
+            entries:
+              - name: toLanguageTag
+                description: 'Pass resolvedDateTimeLocale() to DateFormat, not the raw locale. DateFormat throws for locales intl has no date data for (e.g. mi).'
+                exclude-paths:
+                  - 'lib/main.dart'
           - type: String
             entries:
               - name: tr

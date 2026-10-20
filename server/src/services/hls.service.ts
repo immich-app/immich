@@ -27,10 +27,12 @@ export class HlsService extends BaseService {
   @OnEvent({ name: 'HlsSessionResult', server: true, workers: [ImmichWorker.Api] })
   onSessionResult(event: ArgOf<'HlsSessionResult'>) {
     this.pendingSessions.complete(event.sessionId, event);
-    if (event.error) {
-      this.sessions.delete(event.sessionId);
-      this.pendingSegments.rejectByPrefix(`${event.sessionId}:`, event.error);
+    if (!event.error) {
+      return;
     }
+
+    this.sessions.delete(event.sessionId);
+    this.pendingSegments.rejectByPrefix(`${event.sessionId}:`, event.error);
   }
 
   @OnEvent({ name: 'HlsSessionEnd', server: true, workers: [ImmichWorker.Api] })

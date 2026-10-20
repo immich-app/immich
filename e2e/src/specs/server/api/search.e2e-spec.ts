@@ -384,6 +384,27 @@ describe('/search', () => {
       expect(status).toBe(200);
       expect(body.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
     });
+
+    it('should strip metadata for a shared link without metadata', async () => {
+      const asset = await utils.createAsset(admin.accessToken);
+      const album = await utils.createAlbum(admin.accessToken, { albumName: 'foo', assetIds: [asset.id] });
+      const sharedLink = await utils.createSharedLink(admin.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: album.id,
+        showMetadata: false,
+      });
+
+      const { status, body } = await request(app)
+        .post(`/search/metadata?key=${sharedLink.key}`)
+        .send({ albumIds: [album.id], withExif: true });
+      expect(status).toBe(200);
+      expect(body.assets.items).toHaveLength(1);
+      expect(body.assets.items[0]).toEqual(expect.objectContaining({ id: asset.id, hasMetadata: false }));
+      expect(body.assets.items[0]).not.toHaveProperty('exifInfo');
+      expect(body.assets.items[0]).not.toHaveProperty('originalPath');
+      expect(body.assets.items[0]).not.toHaveProperty('originalFileName');
+      expect(body.assets.items[0]).not.toHaveProperty('ownerId');
+    });
   });
 
   describe('POST /search/random', () => {
@@ -491,6 +512,7 @@ describe('/search', () => {
         .get('/search/suggestions?type=country&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
+        'China',
         'Cuba',
         'France',
         'Georgia',
@@ -498,12 +520,11 @@ describe('/search', () => {
         'Ghana',
         'Japan',
         'Morocco',
-        "People's Republic of China",
-        'Russian Federation',
+        'Russia',
         'Singapore',
         'Spain',
         'Switzerland',
-        'United States of America',
+        'United States',
         null,
       ]);
       expect(status).toBe(200);
@@ -514,6 +535,7 @@ describe('/search', () => {
         .get('/search/suggestions?type=country')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
+        'China',
         'Cuba',
         'France',
         'Georgia',
@@ -521,12 +543,11 @@ describe('/search', () => {
         'Ghana',
         'Japan',
         'Morocco',
-        "People's Republic of China",
-        'Russian Federation',
+        'Russia',
         'Singapore',
         'Spain',
         'Switzerland',
-        'United States of America',
+        'United States',
       ]);
       expect(status).toBe(200);
     });

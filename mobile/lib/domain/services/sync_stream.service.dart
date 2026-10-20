@@ -296,10 +296,12 @@ class SyncStreamService {
       case SyncEntityType.syncResetV1:
         return _syncStreamRepository.reset();
       case SyncEntityType.memoryV1:
-        return _syncStreamRepository.updateMemoriesV1(data.cast());
+      case SyncEntityType.memoryV2:
+        return _syncStreamRepository.updateMemoriesV2(data.cast());
       case SyncEntityType.memoryDeleteV1:
         return _syncStreamRepository.deleteMemoriesV1(data.cast());
       case SyncEntityType.memoryToAssetV1:
+      case SyncEntityType.memoryToAssetV2:
         return _syncStreamRepository.updateMemoryAssetsV1(data.cast());
       case SyncEntityType.memoryToAssetDeleteV1:
         return _syncStreamRepository.deleteMemoryAssetsV1(data.cast());

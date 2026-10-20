@@ -112,6 +112,7 @@ import 'package:sqlite_async/sqlite_async.dart';
 class Drift extends $Drift {
   final SqliteConnectionPool? _updatePool;
 
+  @visibleForTesting
   Drift(super.executor) : _updatePool = null;
 
   Drift.sqlite(SqliteConnection db, SqliteConnectionPool updatePool)
@@ -159,7 +160,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 34;
+  int get schemaVersion => 35;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -372,6 +373,12 @@ class Drift extends $Drift {
               },
               from33To34: (m, v34) async {
                 await _healV33DateTimes(this);
+              },
+              from34To35: (m, v35) async {
+                await m.addColumn(v35.remoteAssetEntity, v35.remoteAssetEntity.groupDate);
+                await m.addColumn(v35.localAssetEntity, v35.localAssetEntity.groupDate);
+                await m.createIndex(v35.idxRemoteAssetGroup);
+                await m.createIndex(v35.idxLocalAssetGroup);
               },
             ),
           );
