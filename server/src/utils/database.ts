@@ -13,6 +13,7 @@ import {
   Selectable,
   ShallowDehydrateObject,
   SqlBool,
+  expressionBuilder,
   sql,
 } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
@@ -287,7 +288,8 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personGroup
   );
 }
 
-export function inSharedAlbum(eb: ExpressionBuilder<DB, 'asset'>, userId: string) {
+export function inSharedAlbum(userId: string, assetId: 'asset.id' | 'asset_face.assetId') {
+  const eb = expressionBuilder<DB, 'asset' | 'asset_face'>();
   return eb.exists(
     eb
       .selectFrom('album_asset')
@@ -296,9 +298,9 @@ export function inSharedAlbum(eb: ExpressionBuilder<DB, 'asset'>, userId: string
         join.onRef('album.id', '=', 'album_asset.albumId').on('album.deletedAt', 'is', null),
       )
       .innerJoin('album_user', (join) =>
-        join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', asUuid(userId)),
+        join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', userId),
       )
-      .whereRef('album_asset.assetId', '=', 'asset.id'),
+      .whereRef('album_asset.assetId', '=', assetId),
   );
 }
 
