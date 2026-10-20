@@ -1,8 +1,10 @@
+import { controllers as yuccaControllers } from '@futo-org/backups-orchestrator-api';
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
   SetMetadata,
+  Type,
   applyDecorators,
   createParamDecorator,
 } from '@nestjs/common';
@@ -99,7 +101,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
-    const options = request.path.startsWith('/api/yucca')
+    const options = (yuccaControllers as Type[]).includes(context.getClass())
       ? { sharedLink: false, admin: true, public: false, setup: false, permission: undefined }
       : getAuthenticatedOptions(this.reflector, context.getHandler());
 
