@@ -9,7 +9,6 @@ import {
   getBaseUrl,
   getPeopleThumbnailPath,
   getUserProfileImagePath,
-  linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
   type AssetResponseDto,
@@ -345,7 +344,7 @@ export const oauth = {
     const value = 'autoLaunch=1';
     return location.search.includes(value);
   },
-  authorize: async (location: Location) => {
+  authorize: async (location: { href: string }) => {
     const $t = get(t);
     try {
       const redirectUri = location.href.split('?', 1)[0];
@@ -359,9 +358,6 @@ export const oauth = {
   },
   login: (location: Location) => {
     return finishOAuth({ oAuthCallbackDto: { url: location.href } });
-  },
-  link: (location: Location) => {
-    return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
   },
   unlink: () => {
     return unlinkOAuthAccount();
