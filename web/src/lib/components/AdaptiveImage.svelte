@@ -81,7 +81,7 @@
 
   let {
     ref = $bindable(),
-    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line no-useless-assignment
     imgRef = $bindable(),
     asset,
     sharedLink,

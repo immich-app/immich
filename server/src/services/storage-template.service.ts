@@ -344,8 +344,14 @@ export class StorageTemplateService extends BaseService {
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${extension}`;
 
-      if (!fullPath.startsWith(rootPath)) {
-        this.logger.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
+      const relativePath = path.relative(rootPath, fullPath);
+      if (
+        !relativePath ||
+        relativePath === '..' ||
+        relativePath.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relativePath)
+      ) {
+        this.logger.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should be inside ${rootPath}`);
         return source;
       }
 
@@ -414,9 +420,9 @@ export class StorageTemplateService extends BaseService {
       assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album
       album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '',
-      make: make ?? '',
-      model: model ?? '',
-      lensModel: lensModel ?? '',
+      make: sanitize(make ?? ''),
+      model: sanitize(model ?? ''),
+      lensModel: sanitize(lensModel ?? ''),
     };
 
     const dt = DateTime.fromJSDate(asset.fileCreatedAt);
