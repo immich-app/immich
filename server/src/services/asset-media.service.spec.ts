@@ -186,7 +186,7 @@ describe(AssetMediaService.name, () => {
     it('should reject a shared link without upload permission', async () => {
       const auth = AuthFactory.from().sharedLink({ allowUpload: false }).build();
       await expect(sut.getUploadAssetIdByChecksum(auth, file1.toString('hex'))).rejects.toBeInstanceOf(
-        UnauthorizedException,
+        BadRequestException,
       );
       expect(mocks.asset.getUploadAssetIdByChecksum).not.toHaveBeenCalled();
     });
