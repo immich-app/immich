@@ -88,8 +88,8 @@
       return;
     }
 
-    if (oauth.isCallback(globalThis.location)) {
-      const params = new URLSearchParams(globalThis.location.search);
+    if (oauth.isCallback(location)) {
+      const params = new URLSearchParams(location.search);
       if (params.has('error')) {
         if (authManager.authenticated) {
           const message = params.get('error_description') || $t('errors.unable_to_link_oauth_account');
