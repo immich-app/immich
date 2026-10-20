@@ -183,6 +183,14 @@ describe(AssetMediaService.name, () => {
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin)).resolves.toBe(undefined);
     });
 
+    it('should reject a shared link without upload permission', async () => {
+      const auth = AuthFactory.from().sharedLink({ allowUpload: false }).build();
+      await expect(sut.getUploadAssetIdByChecksum(auth, file1.toString('hex'))).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(mocks.asset.getUploadAssetIdByChecksum).not.toHaveBeenCalled();
+    });
+
     it('should handle a non-existent asset', async () => {
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toBeUndefined();
       expect(mocks.asset.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);

@@ -69,3 +69,15 @@ export const parseMethodString = (method: string) => {
   const methodName = matches.groups?.method;
   return { pluginName, version, methodName };
 };
+
+export const isAllowedHost = (hostname: string, allowedHosts: string[]) => {
+  const target = hostname.toLowerCase();
+  return allowedHosts.some((pattern) => {
+    const source = pattern
+      .toLowerCase()
+      .split('*')
+      .map((part) => part.replaceAll(/[$()+.?[\\\]^{|}]/g, String.raw`\$&`))
+      .join('.*');
+    return new RegExp(`^${source}$`).test(target);
+  });
+};
