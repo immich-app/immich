@@ -244,6 +244,18 @@ const updatedConfig = Object.freeze<SystemConfig>({
         ignoreCert: false,
       },
     },
+    apprise: {
+      enabled: false,
+      host: '',
+      port: null,
+      secure: false,
+      basePath: '',
+      configId: '',
+      tags: '',
+      username: '',
+      password: '',
+      timeout: 20,
+    },
   },
   templates: {
     email: {

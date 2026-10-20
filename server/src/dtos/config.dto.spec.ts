@@ -65,7 +65,10 @@ describe('config visibility', () => {
   it('should expose only whether smtp is enabled to users', () => {
     const config = mapUserConfig(defaults) as Record<string, any>;
 
-    expect(config.notifications).toEqual({ smtp: { enabled: defaults.notifications.smtp.enabled } });
+    expect(config.notifications).toEqual({
+      smtp: { enabled: defaults.notifications.smtp.enabled },
+      apprise: { enabled: defaults.notifications.apprise.enabled },
+    });
   });
 
   it('should keep the visibility metadata out of the schemas', () => {

@@ -286,6 +286,28 @@ export type AdminConfigNightlyTasksDto = {
     /** Sync quota usage */
     syncQuotaUsage: boolean;
 };
+export type AdminConfigAppriseDto = {
+    /** Path prefix the Apprise API is served under */
+    basePath: string;
+    /** Apprise configuration ID (key) to notify */
+    configId: string;
+    /** Whether Apprise notifications are enabled */
+    enabled: boolean;
+    /** Apprise API server hostname */
+    host: string;
+    /** Apprise API password */
+    password: string;
+    /** Apprise API server port (defaults to 80, or 443 when secure) */
+    port: number | null;
+    /** Whether to use a secure connection (HTTPS) */
+    secure: boolean;
+    /** Tags to notify, separated by commas or spaces (all must match) */
+    tags: string;
+    /** Request timeout in seconds */
+    timeout: number;
+    /** Apprise API username */
+    username: string;
+};
 export type AdminConfigSmtpTransportDto = {
     /** SMTP server hostname */
     host: string;
@@ -310,6 +332,7 @@ export type AdminConfigSmtpDto = {
     transport: AdminConfigSmtpTransportDto;
 };
 export type AdminConfigNotificationsDto = {
+    apprise: AdminConfigAppriseDto;
     smtp: AdminConfigSmtpDto;
 };
 export type AdminConfigOAuthDto = {
@@ -649,6 +672,16 @@ export type CalendarHeatmapResponseDto = {
 export type AlbumsResponse = {
     defaultAssetOrder: AssetOrder;
 };
+export type AppriseNotificationsResponse = {
+    /** Whether to receive Apprise notifications for album invites */
+    albumInvite: boolean;
+    /** Whether to receive Apprise notifications for album updates */
+    albumUpdate: boolean;
+    /** Whether Apprise notifications are enabled */
+    enabled: boolean;
+    /** Apprise tags that route notifications to this user (all must match) */
+    tag: string;
+};
 export type CastResponse = {
     /** Whether Google Cast is enabled */
     gCastEnabled: boolean;
@@ -718,6 +751,7 @@ export type TagsResponse = {
 };
 export type UserPreferencesResponseDto = {
     albums: AlbumsResponse;
+    appriseNotifications: AppriseNotificationsResponse;
     cast: CastResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
@@ -732,6 +766,16 @@ export type UserPreferencesResponseDto = {
 };
 export type AlbumsUpdate = {
     defaultAssetOrder?: AssetOrder;
+};
+export type AppriseNotificationsUpdate = {
+    /** Whether to receive Apprise notifications for album invites */
+    albumInvite?: boolean;
+    /** Whether to receive Apprise notifications for album updates */
+    albumUpdate?: boolean;
+    /** Whether Apprise notifications are enabled */
+    enabled?: boolean;
+    /** Apprise tags that route notifications to this user (all must match) */
+    tag?: string;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
@@ -805,6 +849,7 @@ export type TagsUpdate = {
 };
 export type UserPreferencesUpdateDto = {
     albums?: AlbumsUpdate;
+    appriseNotifications?: AppriseNotificationsUpdate;
     avatar?: AvatarUpdate;
     cast?: CastUpdate;
     download?: DownloadUpdate;
@@ -1599,11 +1644,16 @@ export type UserConfigMapDto = {
     /** Light map style URL */
     lightStyle: string;
 };
+export type UserConfigAppriseDto = {
+    /** Whether Apprise notifications are enabled */
+    enabled: boolean;
+};
 export type UserConfigSmtpDto = {
     /** Whether SMTP email notifications are enabled */
     enabled: boolean;
 };
 export type UserConfigNotificationsDto = {
+    apprise: UserConfigAppriseDto;
     smtp: UserConfigSmtpDto;
 };
 export type UserConfigOAuthDto = {
@@ -4192,6 +4242,18 @@ export function getNotificationTemplateAdmin({ name, templateDto }: {
         ...opts,
         method: "POST",
         body: templateDto
+    })));
+}
+/**
+ * Send test Apprise notification
+ */
+export function sendTestAppriseAdmin({ adminConfigAppriseDto }: {
+    adminConfigAppriseDto: AdminConfigAppriseDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/notifications/test-apprise", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: adminConfigAppriseDto
     })));
 }
 /**
@@ -8483,6 +8545,7 @@ export enum JobName {
     PersonGenerateThumbnail = "PersonGenerateThumbnail",
     SessionCleanup = "SessionCleanup",
     SendMail = "SendMail",
+    SendApprise = "SendApprise",
     SidecarQueueAll = "SidecarQueueAll",
     SidecarCheck = "SidecarCheck",
     SidecarWrite = "SidecarWrite",
