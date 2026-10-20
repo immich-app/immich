@@ -30,9 +30,7 @@ describe(NotificationAdminController.name, () => {
     });
 
     it('should require notification create permission', async () => {
-      await request(ctx.getHttpServer())
-        .post(`/admin/notifications`)
-        .send({ title: 'Test', userId: factory.uuid() });
+      await request(ctx.getHttpServer()).post(`/admin/notifications`).send({ title: 'Test', userId: factory.uuid() });
 
       expect(ctx.authenticate).toHaveBeenCalledWith(
         expect.objectContaining({
