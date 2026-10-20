@@ -411,8 +411,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/plugin-sdk
       '@immich/sql-tools':
-        specifier: ^0.6.3
-        version: 0.6.4
+        specifier: ^0.6.6
+        version: 0.6.6
       '@nestjs/bullmq':
         specifier: ^12.0.0
         version: 12.0.0(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(bullmq@5.81.5(supports-color@8.1.1))
@@ -3140,8 +3140,8 @@ packages:
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
 
-  '@immich/sql-tools@0.6.4':
-    resolution: {integrity: sha512-l+PUu/Uku7OjMZsWNI50b8cZyOhdxfdezJZvkDLHu9iAv1qlnI7KAQcg8ZdPGQmDfvNWuTm7vS7+Ms5pCTz/aQ==}
+  '@immich/sql-tools@0.6.6':
+    resolution: {integrity: sha512-NXxDO0jIzXmNvJAR+somSmN81zOP+11DboGaXRMxxpcZVRBIrWpwGPLZ3dG7SZfpyccKlgZGRBWqQGRm9U5A4w==}
     hasBin: true
 
   '@immich/ui@0.90.0':
@@ -9279,8 +9279,8 @@ packages:
       postgres:
         optional: true
 
-  kysely-postgres-js@4.0.0:
-    resolution: {integrity: sha512-zIGYZ1TMduPZJAyeRMo9OodZYPxK4RI8OIKO8XShHiv5gzaY+KxmZnKcnYRvbfdmUH0kv+ZTlYrBZ5Uk+lI1QA==}
+  kysely-postgres-js@5.0.1:
+    resolution: {integrity: sha512-3qY2qzXJszS35CMuknpon79CE5G7MfcTMoIQHuFmGsaQQ2rau3rwx7eNaRJkO9nhli8yQedQroBZ/VehzNJy4w==}
     engines: {bun: '>=1.2', node: '>=22'}
     peerDependencies:
       kysely: '>= 0.29.0 < 1'
@@ -16292,13 +16292,18 @@ snapshots:
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
-  '@immich/sql-tools@0.6.4':
+  '@immich/sql-tools@0.6.6':
     dependencies:
       commander: 15.0.0
       graph-data-structure: 4.5.0
       kysely: 0.29.6
+<<<<<<< HEAD
       kysely-postgres-js: 4.0.0(kysely@0.29.6)(postgres@3.4.9)
       pg-connection-string: 2.14.0
+=======
+      kysely-postgres-js: 5.0.1(kysely@0.29.6)(postgres@3.4.9)
+      pg-connection-string: 2.14.1
+>>>>>>> 38a2ce4 (perf(server): more efficient person queries (#32523))
       postgres: 3.4.9
 
   '@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.70.1))(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.1(@typescript-eslint/types@8.70.1))(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.1(@typescript-eslint/types@8.70.1))':
@@ -23024,7 +23029,7 @@ snapshots:
     optionalDependencies:
       postgres: 3.4.9
 
-  kysely-postgres-js@4.0.0(kysely@0.29.6)(postgres@3.4.9):
+  kysely-postgres-js@5.0.1(kysely@0.29.6)(postgres@3.4.9):
     dependencies:
       kysely: 0.29.6
     optionalDependencies:

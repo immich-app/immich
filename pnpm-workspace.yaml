@@ -70,5 +70,5 @@ shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
   - '@immich/ui'
-  - '@immich/sql-tools@0.6.3'
+  - '@immich/sql-tools@0.6.3 || 0.6.6'
   - '@nestjs/cli@12.0.1'
