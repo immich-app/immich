@@ -1311,6 +1311,55 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/notifications/test-apprise": {
+      "post": {
+        "description": "Send a test notification using the provided Apprise API configuration.",
+        "operationId": "sendTestAppriseAdmin",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminConfigAppriseDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Send test Apprise notification",
+        "tags": [
+          "Notifications (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.3.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
     "/admin/notifications/test-email": {
       "post": {
         "description": "Send a test email using the provided SMTP configuration.",
@@ -18909,6 +18958,69 @@
         ],
         "type": "object"
       },
+      "AdminConfigAppriseDto": {
+        "properties": {
+          "basePath": {
+            "description": "Path prefix the Apprise API is served under",
+            "type": "string"
+          },
+          "configId": {
+            "description": "Apprise configuration ID (key) to notify",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Whether Apprise notifications are enabled",
+            "type": "boolean"
+          },
+          "host": {
+            "description": "Apprise API server hostname",
+            "type": "string"
+          },
+          "password": {
+            "description": "Apprise API password",
+            "type": "string"
+          },
+          "port": {
+            "description": "Apprise API server port (defaults to 80, or 443 when secure)",
+            "maximum": 65535,
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
+          },
+          "secure": {
+            "description": "Whether to use a secure connection (HTTPS)",
+            "type": "boolean"
+          },
+          "tags": {
+            "description": "Tags to notify, separated by commas or spaces (all must match)",
+            "pattern": "^[\\w\\s,:+-]*$",
+            "type": "string"
+          },
+          "timeout": {
+            "description": "Request timeout in seconds",
+            "maximum": 300,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "username": {
+            "description": "Apprise API username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basePath",
+          "configId",
+          "enabled",
+          "host",
+          "password",
+          "port",
+          "secure",
+          "tags",
+          "timeout",
+          "username"
+        ],
+        "type": "object"
+      },
       "AdminConfigBackupsDto": {
         "properties": {
           "database": {
@@ -19742,11 +19854,15 @@
       },
       "AdminConfigNotificationsDto": {
         "properties": {
+          "apprise": {
+            "$ref": "#/components/schemas/AdminConfigAppriseDto"
+          },
           "smtp": {
             "$ref": "#/components/schemas/AdminConfigSmtpDto"
           }
         },
         "required": [
+          "apprise",
           "smtp"
         ],
         "type": "object"
@@ -20563,6 +20679,55 @@
             },
             "minItems": 1,
             "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AppriseNotificationsResponse": {
+        "properties": {
+          "albumInvite": {
+            "description": "Whether to receive Apprise notifications for album invites",
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "description": "Whether to receive Apprise notifications for album updates",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "Whether Apprise notifications are enabled",
+            "type": "boolean"
+          },
+          "tag": {
+            "description": "Apprise tags that route notifications to this user (all must match)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumInvite",
+          "albumUpdate",
+          "enabled",
+          "tag"
+        ],
+        "type": "object"
+      },
+      "AppriseNotificationsUpdate": {
+        "properties": {
+          "albumInvite": {
+            "description": "Whether to receive Apprise notifications for album invites",
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "description": "Whether to receive Apprise notifications for album updates",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "Whether Apprise notifications are enabled",
+            "type": "boolean"
+          },
+          "tag": {
+            "description": "Apprise tags that route notifications to this user (all must match)",
+            "pattern": "^[\\w\\s,:+-]*$",
+            "type": "string"
           }
         },
         "type": "object"
@@ -23239,6 +23404,7 @@
           "PersonGenerateThumbnail",
           "SessionCleanup",
           "SendMail",
+          "SendApprise",
           "SidecarQueueAll",
           "SidecarCheck",
           "SidecarWrite",
@@ -33704,6 +33870,18 @@
         ],
         "type": "string"
       },
+      "UserConfigAppriseDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether Apprise notifications are enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
       "UserConfigClipDto": {
         "properties": {
           "enabled": {
@@ -33941,11 +34119,15 @@
       },
       "UserConfigNotificationsDto": {
         "properties": {
+          "apprise": {
+            "$ref": "#/components/schemas/UserConfigAppriseDto"
+          },
           "smtp": {
             "$ref": "#/components/schemas/UserConfigSmtpDto"
           }
         },
         "required": [
+          "apprise",
           "smtp"
         ],
         "type": "object"
@@ -34132,6 +34314,9 @@
           "albums": {
             "$ref": "#/components/schemas/AlbumsResponse"
           },
+          "appriseNotifications": {
+            "$ref": "#/components/schemas/AppriseNotificationsResponse"
+          },
           "cast": {
             "$ref": "#/components/schemas/CastResponse"
           },
@@ -34168,6 +34353,7 @@
         },
         "required": [
           "albums",
+          "appriseNotifications",
           "cast",
           "download",
           "emailNotifications",
@@ -34186,6 +34372,9 @@
         "properties": {
           "albums": {
             "$ref": "#/components/schemas/AlbumsUpdate"
+          },
+          "appriseNotifications": {
+            "$ref": "#/components/schemas/AppriseNotificationsUpdate"
           },
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"

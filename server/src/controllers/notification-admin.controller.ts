@@ -2,7 +2,7 @@ import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/com
 import { ApiTags } from '@nestjs/swagger';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
-import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
+import { SystemConfigAppriseDto, SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
 import {
   NotificationCreateDto,
   NotificationDto,
@@ -41,6 +41,18 @@ export class NotificationAdminController {
   })
   sendTestEmailAdmin(@Auth() auth: AuthDto, @Body() dto: SystemConfigSmtpDto): Promise<TestEmailResponseDto> {
     return this.service.sendTestEmail(auth.user.id, dto);
+  }
+
+  @Post('test-apprise')
+  @Authenticated({ permission: Permission.NotificationCreate, admin: true })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Send test Apprise notification',
+    description: 'Send a test notification using the provided Apprise API configuration.',
+    history: new HistoryBuilder().added('v3.3.0').beta('v3.3.0'),
+  })
+  sendTestAppriseAdmin(@Body() dto: SystemConfigAppriseDto): Promise<void> {
+    return this.service.sendTestApprise(dto);
   }
 
   @Post('templates/:name')

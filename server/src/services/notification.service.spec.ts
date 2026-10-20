@@ -1,5 +1,6 @@
 import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum.js';
+import { AppriseError } from 'src/repositories/apprise.repository.js';
 import { NotificationService } from 'src/services/notification.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
@@ -15,6 +16,7 @@ const configs = {
   smtpDisabled: Object.freeze<SystemConfig>({
     ...defaults,
     notifications: {
+      ...defaults.notifications,
       smtp: {
         ...defaults.notifications.smtp,
         enabled: false,
@@ -24,6 +26,7 @@ const configs = {
   smtpEnabled: Object.freeze<SystemConfig>({
     ...defaults,
     notifications: {
+      ...defaults.notifications,
       smtp: {
         ...defaults.notifications.smtp,
         enabled: true,
@@ -33,6 +36,7 @@ const configs = {
   smtpTransport: Object.freeze<SystemConfig>({
     ...defaults,
     notifications: {
+      ...defaults.notifications,
       smtp: {
         ...defaults.notifications.smtp,
         enabled: true,
@@ -47,7 +51,23 @@ const configs = {
       },
     },
   }),
+  appriseEnabled: Object.freeze<SystemConfig>({
+    ...defaults,
+    notifications: {
+      ...defaults.notifications,
+      apprise: { ...defaults.notifications.apprise, enabled: true, host: 'apprise', configId: 'immich' },
+    },
+  }),
 };
+
+const appriseConfig = (apprise: Partial<SystemConfig['notifications']['apprise']> = {}) => ({
+  notifications: { apprise: { enabled: true, host: 'apprise', configId: 'immich', ...apprise } },
+});
+
+const withPreferences = (value: object) => ({
+  ...userStub.user1,
+  metadata: [{ key: UserMetadataKey.Preferences, value }],
+});
 
 describe(NotificationService.name, () => {
   let sut: NotificationService;
@@ -119,6 +139,36 @@ describe(NotificationService.name, () => {
 
       mocks.email.verifySmtp.mockRejectedValue(new Error('Failed validating smtp'));
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).rejects.toBeInstanceOf(Error);
+    });
+
+    it('verifies the apprise config when it is enabled', async () => {
+      const newConfig = configs.appriseEnabled;
+      mocks.apprise.verify.mockResolvedValue();
+
+      await expect(sut.onConfigValidate({ oldConfig: defaults, newConfig })).resolves.not.toThrow();
+      expect(mocks.apprise.verify).toHaveBeenCalledWith(newConfig.notifications.apprise);
+    });
+
+    it('skips apprise verification when nothing changed', async () => {
+      const config = configs.appriseEnabled;
+
+      await expect(sut.onConfigValidate({ oldConfig: config, newConfig: { ...config } })).resolves.not.toThrow();
+      expect(mocks.apprise.verify).not.toHaveBeenCalled();
+    });
+
+    it('skips apprise verification when apprise is disabled', async () => {
+      await expect(
+        sut.onConfigValidate({ oldConfig: configs.appriseEnabled, newConfig: defaults }),
+      ).resolves.not.toThrow();
+      expect(mocks.apprise.verify).not.toHaveBeenCalled();
+    });
+
+    it('rejects an apprise config that fails verification', async () => {
+      mocks.apprise.verify.mockRejectedValue(new AppriseError('Authentication failed', 401));
+
+      await expect(sut.onConfigValidate({ oldConfig: defaults, newConfig: configs.appriseEnabled })).rejects.toThrow(
+        'Apprise check failed: Authentication failed',
+      );
     });
   });
 
@@ -449,6 +499,74 @@ describe(NotificationService.name, () => {
     });
   });
 
+  describe('apprise album notifications', () => {
+    beforeEach(() => {
+      mocks.album.getById.mockResolvedValue(getForAlbum(AlbumFactory.create()));
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+    });
+
+    it('queues an invite with the admin and user tags combined', async () => {
+      mocks.user.get.mockResolvedValue(withPreferences({ appriseNotifications: { tag: 'alice' } }));
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ tags: 'immich, family' }));
+
+      await sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SendApprise,
+        data: {
+          title: 'Shared Album Invitation',
+          body: expect.stringContaining('foo shared an album'),
+          tag: 'immich family alice',
+        },
+      });
+    });
+
+    it('queues an update with an empty tag when no tags are set', async () => {
+      mocks.user.get.mockResolvedValue(withPreferences({}));
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
+
+      await sut.handleAlbumUpdate({ id: '', recipientId: '' });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SendApprise,
+        data: expect.objectContaining({ title: 'Shared Album Update', tag: '' }),
+      });
+    });
+
+    it('still queues apprise when email notifications are off', async () => {
+      mocks.user.get.mockResolvedValue(withPreferences({ emailNotifications: { enabled: false } }));
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
+
+      await expect(sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' })).resolves.toBe(
+        JobStatus.Skipped,
+      );
+      expect(mocks.job.queue).toHaveBeenCalledWith(expect.objectContaining({ name: JobName.SendApprise }));
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.SendMail }));
+    });
+
+    it('does not queue apprise when the user turned it off', async () => {
+      mocks.user.get.mockResolvedValue(withPreferences({ appriseNotifications: { albumInvite: false } }));
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
+
+      await sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' });
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.SendApprise }));
+      expect(mocks.job.queue).toHaveBeenCalledWith(expect.objectContaining({ name: JobName.SendMail }));
+    });
+
+    it('does not queue apprise when it is disabled', async () => {
+      mocks.user.get.mockResolvedValue(withPreferences({}));
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ enabled: false }));
+
+      await sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' });
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.SendApprise }));
+      expect(mocks.job.queue).toHaveBeenCalledWith(expect.objectContaining({ name: JobName.SendMail }));
+    });
+  });
+
   describe('handleAlbumUpdate', () => {
     it('should skip if album could not be found', async () => {
       await expect(sut.handleAlbumUpdate({ id: '', recipientId: '1' })).resolves.toBe(JobStatus.Skipped);
@@ -565,6 +683,46 @@ describe(NotificationService.name, () => {
 
       await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.Success);
       expect(mocks.email.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ replyTo: 'demo@immich.app' }));
+    });
+  });
+
+  describe('handleSendApprise', () => {
+    const job = { title: 'title', body: 'body', tag: 'family' };
+
+    it('skips when apprise is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ enabled: false }));
+
+      await expect(sut.handleSendApprise(job)).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.apprise.notify).not.toHaveBeenCalled();
+    });
+
+    it('skips when the config ID is missing', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ configId: '' }));
+
+      await expect(sut.handleSendApprise(job)).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.apprise.notify).not.toHaveBeenCalled();
+    });
+
+    it('sends the notification', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
+      mocks.apprise.notify.mockResolvedValue();
+
+      await expect(sut.handleSendApprise(job)).resolves.toBe(JobStatus.Success);
+      expect(mocks.apprise.notify).toHaveBeenCalledWith(expect.objectContaining({ host: 'apprise' }), job);
+    });
+
+    it('fails quietly when apprise reports an error', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
+      mocks.apprise.notify.mockRejectedValue(new AppriseError('One or more notifications could not be sent', 424));
+
+      await expect(sut.handleSendApprise(job)).resolves.toBe(JobStatus.Failed);
+    });
+
+    it('rethrows unexpected errors', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
+      mocks.apprise.notify.mockRejectedValue(new Error('boom'));
+
+      await expect(sut.handleSendApprise(job)).rejects.toThrow('boom');
     });
   });
 });

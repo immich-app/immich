@@ -11,7 +11,7 @@
   import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getAdminConfigQuery, updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import { sendTestEmailAdmin } from '@immich/sdk';
+  import { sendTestAppriseAdmin, sendTestEmailAdmin } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -59,6 +59,31 @@
       handleError(error, $t('admin.notification_email_test_email_failed'));
     } finally {
       isSending = false;
+    }
+  };
+
+  let isSendingApprise = $state(false);
+  const appriseDisabled = $derived(disabled || !configToEdit.notifications.apprise.enabled);
+
+  const handleSendTestApprise = async () => {
+    if (isSendingApprise) {
+      return;
+    }
+
+    isSendingApprise = true;
+
+    try {
+      await sendTestAppriseAdmin({ adminConfigAppriseDto: configToEdit.notifications.apprise });
+
+      toastManager.primary($t('admin.notification_apprise_test_sent'));
+
+      if (!disabled) {
+        await executeMutation(updateAdminConfigMutation, { notifications: configToEdit.notifications });
+      }
+    } catch (error) {
+      handleError(error, $t('admin.notification_apprise_test_failed'));
+    } finally {
+      isSendingApprise = false;
     }
   };
 </script>
@@ -155,6 +180,124 @@
                   {$t('admin.notification_email_test_email')}
                 {:else}
                   {$t('admin.notification_email_sent_test_email_button')}
+                {/if}
+              </Button>
+            </div>
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion
+          key="apprise"
+          title={$t('apprise')}
+          subtitle={$t('admin.notification_apprise_setting_description')}
+        >
+          <div class="ms-4 mt-4 flex flex-col gap-4">
+            <SettingSwitch
+              title={$t('admin.notification_enable_apprise_notifications')}
+              {disabled}
+              bind:checked={configToEdit.notifications.apprise.enabled}
+            />
+
+            <hr />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              required
+              label={$t('host')}
+              description={$t('admin.notification_apprise_host_description')}
+              disabled={appriseDisabled}
+              bind:value={configToEdit.notifications.apprise.host}
+              isEdited={configToEdit.notifications.apprise.host !== config.notifications.apprise.host}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              min={1}
+              max={65_535}
+              label={$t('port')}
+              description={$t('admin.notification_apprise_port_description')}
+              disabled={appriseDisabled}
+              bind:value={configToEdit.notifications.apprise.port}
+              isEdited={configToEdit.notifications.apprise.port !== config.notifications.apprise.port}
+            />
+
+            <SettingSwitch
+              title={$t('admin.notification_apprise_secure')}
+              subtitle={$t('admin.notification_apprise_secure_description')}
+              disabled={appriseDisabled}
+              bind:checked={configToEdit.notifications.apprise.secure}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={$t('admin.notification_apprise_base_path')}
+              description={$t('admin.notification_apprise_base_path_description')}
+              disabled={appriseDisabled}
+              bind:value={configToEdit.notifications.apprise.basePath}
+              isEdited={configToEdit.notifications.apprise.basePath !== config.notifications.apprise.basePath}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              required
+              label={$t('admin.notification_apprise_config_id')}
+              description={$t('admin.notification_apprise_config_id_description')}
+              disabled={appriseDisabled}
+              bind:value={configToEdit.notifications.apprise.configId}
+              isEdited={configToEdit.notifications.apprise.configId !== config.notifications.apprise.configId}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={$t('username')}
+              description={$t('admin.notification_apprise_username_description')}
+              disabled={appriseDisabled}
+              bind:value={configToEdit.notifications.apprise.username}
+              isEdited={configToEdit.notifications.apprise.username !== config.notifications.apprise.username}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.PASSWORD}
+              label={$t('password')}
+              description={$t('admin.notification_apprise_password_description')}
+              disabled={appriseDisabled}
+              bind:value={configToEdit.notifications.apprise.password}
+              isEdited={configToEdit.notifications.apprise.password !== config.notifications.apprise.password}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={$t('tags')}
+              description={$t('admin.notification_apprise_tags_description')}
+              disabled={appriseDisabled}
+              bind:value={configToEdit.notifications.apprise.tags}
+              isEdited={configToEdit.notifications.apprise.tags !== config.notifications.apprise.tags}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              required
+              min={1}
+              max={300}
+              label={$t('admin.notification_apprise_timeout')}
+              description={$t('admin.notification_apprise_timeout_description')}
+              disabled={appriseDisabled}
+              bind:value={configToEdit.notifications.apprise.timeout}
+              isEdited={configToEdit.notifications.apprise.timeout !== config.notifications.apprise.timeout}
+            />
+
+            <div class="flex place-items-center gap-2">
+              <Button
+                size="small"
+                shape="round"
+                loading={isSendingApprise}
+                disabled={!configToEdit.notifications.apprise.enabled}
+                onclick={handleSendTestApprise}
+              >
+                {#if disabled}
+                  {$t('admin.notification_apprise_test')}
+                {:else}
+                  {$t('admin.notification_apprise_sent_test_button')}
                 {/if}
               </Button>
             </div>

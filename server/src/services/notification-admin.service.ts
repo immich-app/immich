@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto.js';
-import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
+import { SystemConfigAppriseDto, SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
 import { NotificationCreateDto, mapNotification } from 'src/dtos/notification.dto.js';
 import { NotificationLevel, NotificationType } from 'src/enum.js';
+import { normalizeAppriseTags } from 'src/repositories/apprise.repository.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getExternalDomain } from 'src/utils/misc.js';
@@ -54,6 +55,28 @@ export class NotificationAdminService extends BaseService {
     });
 
     return { messageId };
+  }
+
+  async sendTestApprise(dto: SystemConfigAppriseDto) {
+    try {
+      await this.appriseRepository.verify(dto);
+    } catch (error: Error | any) {
+      throw new BadRequestException(`Apprise check failed: ${error?.message ?? error}`, {
+        cause: error,
+      });
+    }
+
+    try {
+      await this.appriseRepository.notify(dto, {
+        title: 'Test notification from Immich',
+        body: 'Apprise notifications from Immich are working.',
+        tag: normalizeAppriseTags(dto.tags),
+      });
+    } catch (error: Error | any) {
+      throw new BadRequestException(`Apprise send failed: ${error?.message ?? error}`, {
+        cause: error,
+      });
+    }
   }
 
   async getTemplate(name: EmailTemplate, customTemplate: string) {

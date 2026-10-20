@@ -14,6 +14,7 @@ import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
 import { AlbumRepository } from 'src/repositories/album.repository.js';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
+import { AppriseRepository } from 'src/repositories/apprise.repository.js';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
 import { AssetFileRepository } from 'src/repositories/asset-file.repository.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
@@ -86,6 +87,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   AlbumUserRepository,
   ApiKeyRepository,
   AppRepository,
+  AppriseRepository,
   AssetRepository,
   AssetEditRepository,
   AssetFileRepository,
@@ -152,6 +154,7 @@ export class BaseService {
     protected albumUserRepository: AlbumUserRepository,
     protected apiKeyRepository: ApiKeyRepository,
     protected appRepository: AppRepository,
+    protected appriseRepository: AppriseRepository,
     protected assetRepository: AssetRepository,
     protected assetEditRepository: AssetEditRepository,
     protected assetFileRepository: AssetFileRepository,
@@ -227,6 +230,7 @@ export class BaseService {
       ctx.albumUserRepository,
       ctx.apiKeyRepository,
       ctx.appRepository,
+      ctx.appriseRepository,
       ctx.assetRepository,
       ctx.assetEditRepository,
       ctx.assetFileRepository,
