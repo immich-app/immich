@@ -26,7 +26,7 @@ class OAuthService {
     );
 
     final authUrl = dto?.url;
-    log.info('Received Authorization URL: $authUrl');
+    log.info('Received Authorization URL');
 
     return authUrl;
   }
@@ -34,7 +34,7 @@ class OAuthService {
   Future<LoginResponseDto?> oAuthLogin(String oauthUrl, String state, String codeVerifier) async {
     String result = await FlutterWebAuth2.authenticate(url: oauthUrl, callbackUrlScheme: callbackUrlScheme);
 
-    log.info('Received OAuth callback: $result');
+    log.info('Received OAuth callback');
 
     if (result.startsWith('app.immich:/oauth-callback')) {
       result = result.replaceAll('app.immich:/oauth-callback', 'app.immich:///oauth-callback');

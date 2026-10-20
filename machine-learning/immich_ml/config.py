@@ -1,9 +1,11 @@
 import concurrent.futures
 import logging
+import logging.config
 import os
 import sys
 from pathlib import Path
 from socket import socket
+from typing import Any
 
 from gunicorn.arbiter import Arbiter
 from pydantic import BaseModel, Field
@@ -143,6 +145,15 @@ class CustomRichHandler(RichHandler):
 
         return super().emit(record)
 
+
+LOG_CONFIG: dict[str, Any] = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"()": CustomRichHandler}},
+    "loggers": {"gunicorn.error": {"handlers": ["console"]}},
+    "root": {"handlers": ["console"]},
+}
+logging.config.dictConfig(LOG_CONFIG)
 
 log = logging.getLogger("ml.log")
 log.setLevel(LOG_LEVEL)

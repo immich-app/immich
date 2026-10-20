@@ -48,8 +48,6 @@ try:
             str(settings.workers),
             "-t",
             str(settings.worker_timeout),
-            "--log-config-json",
-            module_dir / "log_conf.json",
             "--keep-alive",
             str(settings.http_keepalive_timeout_s),
             "--graceful-timeout",

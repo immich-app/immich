@@ -5,7 +5,6 @@ import type {
   AssetResponseDto,
   IntegrityReport,
   JobCreateDto,
-  LibraryResponseDto,
   LoginResponseDto,
   PersonResponseDto,
   QueueResponseDto,
@@ -80,12 +79,6 @@ export type Events = {
 
   UserPinCodeReset: [];
 
-  UserAdminCreate: [UserAdminResponseDto];
-  UserAdminUpdate: [UserAdminResponseDto];
-  UserAdminRestore: [UserAdminResponseDto];
-  // soft deleted
-  UserAdminDelete: [UserAdminResponseDto];
-  // confirmed permanently deleted from server
   UserAdminDeleted: [{ id: string }];
 
   SessionLocked: [];
@@ -97,10 +90,6 @@ export type Events = {
   IntegrityReportDeleted: [{ type?: IntegrityReport; id?: string }];
 
   JobCreate: [{ dto: JobCreateDto }];
-
-  LibraryCreate: [LibraryResponseDto];
-  LibraryUpdate: [LibraryResponseDto];
-  LibraryDelete: [{ id: string }];
 
   WorkflowCreate: [WorkflowResponseDto];
   WorkflowUpdate: [WorkflowResponseDto];

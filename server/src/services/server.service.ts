@@ -36,7 +36,7 @@ export class ServerService extends BaseService {
         isOnboarded: true,
       });
     }
-    this.logger.log(`Feature Flags: ${JSON.stringify(await this.getFeatures(), null, 2)}`);
+    this.logger.log(`Feature Flags: ${JSON.stringify(await this.getFeatures())}`);
   }
 
   async getAboutInfo(): Promise<ServerAboutResponseDto> {

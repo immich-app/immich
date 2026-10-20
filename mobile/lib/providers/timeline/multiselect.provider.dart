@@ -102,14 +102,3 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     state = state.copyWith(selectedAssets: selectedAssets);
   }
 }
-
-final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>((ref, bucketAssets) {
-  final selectedAssets = ref.watch(multiSelectProvider.select((s) => s.selectedAssets));
-
-  if (bucketAssets.isEmpty) {
-    return false;
-  }
-
-  // Check if all assets in the bucket are selected
-  return bucketAssets.every((asset) => selectedAssets.contains(asset));
-}, dependencies: [multiSelectProvider, timelineServiceProvider]);

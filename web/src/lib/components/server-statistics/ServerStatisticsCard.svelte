@@ -1,31 +1,19 @@
 <script lang="ts">
   import { ByteUnit } from '$lib/utils/byte-units';
-  import { Icon, Text, type MaybePromise } from '@immich/ui';
+  import { Icon, Text } from '@immich/ui';
   import type { Snippet } from 'svelte';
-
-  type ValueData = {
-    value: number;
-    unit?: ByteUnit | undefined;
-  };
 
   interface Props {
     icon?: string;
     title: string;
-    valuePromise: MaybePromise<ValueData>;
+    value?: number;
+    unit?: ByteUnit;
     tooltip?: string;
     footer?: Snippet;
   }
 
-  let { icon, title, valuePromise, tooltip, footer }: Props = $props();
-  const zeros = (data?: ValueData) => {
-    let length = 13;
-    if (data) {
-      const valueLength = data.value.toString().length;
-      length -= valueLength;
-    }
-
-    return '0'.repeat(length);
-  };
+  let { icon, title, value, unit, tooltip, footer }: Props = $props();
+  const zeros = (value?: number) => '0'.repeat(13 - (value?.toString().length ?? 0));
 </script>
 
 <div class="flex h-35 w-full flex-col justify-between rounded-3xl bg-subtle p-5 text-primary">
@@ -36,22 +24,18 @@
     <Text size="giant" fontWeight="medium" title={tooltip}>{title}</Text>
   </div>
 
-  {#await valuePromise}
+  {#if value !== undefined}
+    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="{value} {unit ?? ''}">
+      <span class="text-gray-300 dark:text-gray-600">{zeros(value)}</span><span>{value}</span>
+      {#if unit}
+        <code class="font-mono text-base font-normal">{unit}</code>
+      {/if}
+    </div>
+  {:else}
     <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="0">
       <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros()}</span>
     </div>
-  {:then data}
-    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="{data.value} {data.unit ?? ''}">
-      <span class="text-gray-300 dark:text-gray-600">{zeros(data)}</span><span>{data.value}</span>
-      {#if data.unit}
-        <code class="font-mono text-base font-normal">{data.unit}</code>
-      {/if}
-    </div>
-  {:catch _}
-    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="0">
-      <span class="text-gray-300 dark:text-gray-600">{zeros()}</span>
-    </div>
-  {/await}
+  {/if}
 
   {@render footer?.()}
 </div>

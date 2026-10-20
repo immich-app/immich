@@ -115,7 +115,7 @@ const AdminConfigFFmpegSchema = z
     tonemap: ToneMappingSchema,
     realtime: z
       .object({
-        enabled: configBool.describe('Enable real-time HLS transcoding (alpha)').meta({ visibility: User }),
+        enabled: configBool.describe('Enable real-time HLS transcoding (alpha)').meta({ visibility: Public }),
         videoCodecs: z
           .array(VideoCodecSchema)
           .describe('Video codecs to use for real-time HLS transcoding')
@@ -131,7 +131,7 @@ const AdminConfigFFmpegSchema = z
 
 const AdminConfigSmtpSchema = z
   .object({
-    enabled: configBool.describe('Whether SMTP email notifications are enabled'),
+    enabled: configBool.describe('Whether SMTP email notifications are enabled').meta({ visibility: User }),
     from: z.string().describe('Email address to send from'),
     replyTo: z.string().describe('Email address for replies'),
     transport: z
@@ -263,9 +263,9 @@ const AdminConfigSchemaWithVisibility = z
       .meta({ id: 'AdminConfigMachineLearningDto' }),
     map: z
       .object({
-        enabled: configBool.describe('Enabled').meta({ visibility: User }),
-        lightStyle: z.url().describe('Light map style URL').meta({ visibility: User }),
-        darkStyle: z.url().describe('Dark map style URL').meta({ visibility: User }),
+        enabled: configBool.describe('Enabled').meta({ visibility: Public }),
+        lightStyle: z.url().describe('Light map style URL').meta({ visibility: Public }),
+        darkStyle: z.url().describe('Dark map style URL').meta({ visibility: Public }),
       })
       .meta({ id: 'AdminConfigMapDto' }),
     reverseGeocoding: z
@@ -373,9 +373,7 @@ const AdminConfigSchemaWithVisibility = z
         days: z.int().min(0).describe('Days').meta({ visibility: User }),
       })
       .meta({ id: 'AdminConfigTrashDto' }),
-    theme: z
-      .object({ customCss: z.string().describe('Custom CSS for theming').meta({ visibility: Public }) })
-      .meta({ id: 'AdminConfigThemeDto' }),
+    theme: z.object({ customCss: z.string().describe('Custom CSS for theming') }).meta({ id: 'AdminConfigThemeDto' }),
     library: z
       .object({
         scan: z

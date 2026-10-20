@@ -102,6 +102,35 @@ jobs:
                 }
               }'
 
+  close_translations:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'auto-closed:translations' }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment and close
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NODE_ID: ${{ github.event.pull_request.node_id }}
+        run: |
+          gh api graphql \
+            -f prId="$NODE_ID" \
+            -f body="Thanks for your contribution! All translations are done through [Weblate](https://hosted.weblate.org/projects/immich/immich/), as editing the translation files directly causes merge conflicts. Please make your changes there instead." \
+            -f query='
+              mutation CommentAndClosePR($prId: ID!, $body: String!) {
+                addComment(input: {
+                  subjectId: $prId,
+                  body: $body
+                }) {
+                  __typename
+                }
+                closePullRequest(input: {
+                  pullRequestId: $prId
+                }) {
+                  __typename
+                }
+              }'
+
   reopen:
     runs-on: ubuntu-latest
     needs: parse_template

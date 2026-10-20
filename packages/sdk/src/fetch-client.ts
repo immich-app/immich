@@ -1607,6 +1607,13 @@ export type UserConfigMapDto = {
     /** Light map style URL */
     lightStyle: string;
 };
+export type UserConfigSmtpDto = {
+    /** Whether SMTP email notifications are enabled */
+    enabled: boolean;
+};
+export type UserConfigNotificationsDto = {
+    smtp: UserConfigSmtpDto;
+};
 export type UserConfigOAuthDto = {
     /** Auto launch */
     autoLaunch: boolean;
@@ -1631,10 +1638,6 @@ export type UserConfigServerDto = {
     /** Public users */
     publicUsers: boolean;
 };
-export type UserConfigThemeDto = {
-    /** Custom CSS for theming */
-    customCss: string;
-};
 export type UserConfigTrashDto = {
     /** Days */
     days: number;
@@ -1650,11 +1653,11 @@ export type UserConfigDto = {
     image: UserConfigImageDto;
     machineLearning: UserConfigMachineLearningDto;
     map: UserConfigMapDto;
+    notifications: UserConfigNotificationsDto;
     oauth: UserConfigOAuthDto;
     passwordLogin: UserConfigPasswordLoginDto;
     reverseGeocoding: UserConfigReverseGeocodingDto;
     server: UserConfigServerDto;
-    theme: UserConfigThemeDto;
     trash: UserConfigTrashDto;
     user: UserConfigUserDto;
 };
@@ -2180,6 +2183,21 @@ export type PluginTemplateResponseDto = {
     /** Ui hints, for example "smart-album" */
     uiHints: string[];
 };
+export type PublicConfigFFmpegRealtimeDto = {
+    /** Enable real-time HLS transcoding (alpha) */
+    enabled: boolean;
+};
+export type PublicConfigFFmpegDto = {
+    realtime: PublicConfigFFmpegRealtimeDto;
+};
+export type PublicConfigMapDto = {
+    /** Dark map style URL */
+    darkStyle: string;
+    /** Enabled */
+    enabled: boolean;
+    /** Light map style URL */
+    lightStyle: string;
+};
 export type PublicConfigOAuthDto = {
     /** Auto launch */
     autoLaunch: boolean;
@@ -2196,15 +2214,12 @@ export type PublicConfigServerDto = {
     /** Login page message */
     loginPageMessage: string;
 };
-export type PublicConfigThemeDto = {
-    /** Custom CSS for theming */
-    customCss: string;
-};
 export type PublicConfigDto = {
+    ffmpeg: PublicConfigFFmpegDto;
+    map: PublicConfigMapDto;
     oauth: PublicConfigOAuthDto;
     passwordLogin: PublicConfigPasswordLoginDto;
     server: PublicConfigServerDto;
-    theme: PublicConfigThemeDto;
 };
 export type QueueResponseDto = {
     /** Whether the queue is paused */
@@ -2917,6 +2932,8 @@ export type ServerStorageResponseDto = {
     diskUseRaw: number;
 };
 export type ServerVersionResponseDto = {
+    /** Highest feature level supported by the server, which increments independently of the release version */
+    featureLevel: number;
     /** Major version number */
     major: number;
     /** Minor version number */
@@ -9364,8 +9381,7 @@ export enum QueueJobStatus {
     Failed = "failed",
     Completed = "completed",
     Delayed = "delayed",
-    Waiting = "waiting",
-    Paused = "paused"
+    Waiting = "waiting"
 }
 export enum JobName {
     AssetDelete = "AssetDelete",
@@ -9638,6 +9654,9 @@ export enum ReleaseType {
     Patch = "patch",
     Prepatch = "prepatch",
     Prerelease = "prerelease"
+}
+export enum ServerFeatureLevel {
+    FeatureLevel = 1
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

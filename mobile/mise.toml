@@ -85,9 +85,9 @@ run = "dart run build_runner watch"
 
 [tasks."codegen:native"]
 description = "Generate the C header and the ffigen bindings for the native core"
-dir = "../native/immich_native_core"
+dir = "../native/native_core"
 run = [
-  "cargo build -p immich_core_ffi",
+  "cargo build -p native_core_ffi",
   "flutter pub get",
   "dart run ffigen --config ffigen.yaml",
 ]
