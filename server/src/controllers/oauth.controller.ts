@@ -56,7 +56,7 @@ export class OAuthController {
       {
         isSecure: loginDetails.isSecure,
         values: [
-          { key: ImmichCookie.OAuthState, value: state },
+          { key: ImmichCookie.OAuthState, value: dto.state ? null : state },
           { key: ImmichCookie.OAuthCodeVerifier, value: codeVerifier },
         ],
       },
