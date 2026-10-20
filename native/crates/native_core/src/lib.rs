@@ -1,4 +1,5 @@
 pub mod convert;
+pub mod jxl;
 pub mod rotate;
 pub mod thumbhash;
 
