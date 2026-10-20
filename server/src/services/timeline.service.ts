@@ -57,11 +57,15 @@ export class TimelineService extends BaseService {
 
     if (dto.userId) {
       await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: [dto.userId] });
-      if (dto.visibility === AssetVisibility.Archive) {
-        await this.requireAccess({ auth, permission: Permission.ArchiveRead, ids: [dto.userId] });
-      }
-      if (dto.visibility === AssetVisibility.Locked && dto.userId !== auth.user.id) {
-        throw new BadRequestException("You may not access another user's locked timeline");
+    }
+
+    const includesOtherUsers = dto.withPartners || (dto.userId && dto.userId !== auth.user.id);
+    if (includesOtherUsers) {
+      dto.visibility ??= AssetVisibility.Timeline;
+      if (dto.visibility !== AssetVisibility.Timeline || dto.isTrashed || dto.isFavorite !== undefined) {
+        throw new BadRequestException(
+          'Only non-archived, non-trashed, non-favorited, non-locked assets can be requested for other users',
+        );
       }
     }
 
@@ -71,20 +75,6 @@ export class TimelineService extends BaseService {
 
     if (isMetadataHidden(auth)) {
       dto.withCoordinates = false;
-    }
-
-    // eslint-disable-next-line unicorn/prefer-early-return
-    if (dto.withPartners) {
-      const isRequestedLocked = dto.visibility === AssetVisibility.Locked;
-      const isRequestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
-      const isRequestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
-      const isRequestedTrash = dto.isTrashed === true;
-
-      if (isRequestedLocked || isRequestedArchived || isRequestedFavorite || isRequestedTrash) {
-        throw new BadRequestException(
-          'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
-        );
-      }
     }
   }
 }
