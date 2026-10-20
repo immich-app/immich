@@ -19,6 +19,10 @@ export type AuthDto = {
   session?: AuthSession;
 };
 
+export const isMetadataHidden = (auth?: AuthDto) => !!auth?.sharedLink && !auth.sharedLink.showExif;
+
+export const isEditedOnly = (auth: AuthDto, edited = false) => !!auth.sharedLink || edited;
+
 const LoginCredentialSchema = z
   .object({
     email: toEmail.describe('User email').meta({ example: 'testuser@email.com' }),

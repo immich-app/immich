@@ -344,13 +344,13 @@ describe(PersonService.name, () => {
         sut.update(factory.auth({ user }), personGroupId, { name: 'New name', birthDate: '2000-01-01' }),
       ).resolves.toEqual(expect.objectContaining({ name: 'New name', birthDate: '2000-01-01' }));
 
-      await expect(personRepo.getForUser({ userId: user.id, personGroupId })).resolves.toEqual(
-        expect.objectContaining({ name: 'New name', birthDate: '2000-01-01' }),
+      await expect(personRepo.getByGroupId({ ownerId: user.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'New name', birthDate: new Date('2000-01-01') }),
       );
-      await expect(personRepo.getForUser({ userId: writer.id, personGroupId })).resolves.toEqual(
-        expect.objectContaining({ name: 'New name', birthDate: '2000-01-01' }),
+      await expect(personRepo.getByGroupId({ ownerId: writer.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'New name', birthDate: new Date('2000-01-01') }),
       );
-      await expect(personRepo.getForUser({ userId: reader.id, personGroupId })).resolves.toEqual(
+      await expect(personRepo.getByGroupId({ ownerId: reader.id, personGroupId })).resolves.toEqual(
         expect.objectContaining({ name: 'Old name', birthDate: null }),
       );
     });
@@ -373,10 +373,10 @@ describe(PersonService.name, () => {
         sut.update(factory.auth({ user }), personGroupId, { name: 'New name', userId: writer.id }),
       ).resolves.toEqual(expect.objectContaining({ name: 'New name' }));
 
-      await expect(personRepo.getForUser({ userId: writer.id, personGroupId })).resolves.toEqual(
+      await expect(personRepo.getByGroupId({ ownerId: writer.id, personGroupId })).resolves.toEqual(
         expect.objectContaining({ name: 'New name' }),
       );
-      await expect(personRepo.getForUser({ userId: user.id, personGroupId })).resolves.toEqual(
+      await expect(personRepo.getByGroupId({ ownerId: user.id, personGroupId })).resolves.toEqual(
         expect.objectContaining({ name: 'Old name' }),
       );
     });
@@ -399,7 +399,7 @@ describe(PersonService.name, () => {
         sut.update(factory.auth({ user }), personGroupId, { name: 'New name', isFavorite: true, isHidden: true }),
       ).resolves.toEqual(expect.objectContaining({ name: 'New name', isFavorite: true, isHidden: true }));
 
-      await expect(personRepo.getForUser({ userId: writer.id, personGroupId })).resolves.toEqual(
+      await expect(personRepo.getByGroupId({ ownerId: writer.id, personGroupId })).resolves.toEqual(
         expect.objectContaining({ name: 'New name', isFavorite: false, isHidden: false }),
       );
     });

@@ -23,7 +23,7 @@ export class SharedLinkService extends BaseService {
     return this.sharedLinkRepository
       .getAll({ userId: auth.user.id, id, albumId })
 
-      .then((links) => links.map((link) => mapSharedLink(link, { stripAssetMetadata: false })));
+      .then((links) => links.map((link) => mapSharedLink(link, { auth })));
   }
 
   async login(auth: AuthDto, dto: SharedLinkLoginDto) {
@@ -43,7 +43,7 @@ export class SharedLinkService extends BaseService {
     }
 
     return {
-      sharedLink: await this.mapWithAlbumMetadata(sharedLink, { stripAssetMetadata: !sharedLink.showExif }),
+      sharedLink: await this.mapWithAlbumMetadata(sharedLink, { auth }),
       token: this.asToken({ id, password }),
     };
   }
@@ -60,12 +60,12 @@ export class SharedLinkService extends BaseService {
       throw new UnauthorizedException('Password required');
     }
 
-    return this.mapWithAlbumMetadata(sharedLink, { stripAssetMetadata: !sharedLink.showExif });
+    return this.mapWithAlbumMetadata(sharedLink, { auth });
   }
 
   async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
-    return this.mapWithAlbumMetadata(sharedLink, { stripAssetMetadata: false });
+    return this.mapWithAlbumMetadata(sharedLink, { auth });
   }
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
@@ -105,7 +105,7 @@ export class SharedLinkService extends BaseService {
         slug: dto.slug || null,
       });
 
-      return mapSharedLink(sharedLink, { stripAssetMetadata: false });
+      return mapSharedLink(sharedLink, { auth });
     } catch (error) {
       this.handleError(error);
     }
@@ -133,7 +133,7 @@ export class SharedLinkService extends BaseService {
         showExif: dto.showMetadata,
         slug: dto.slug || null,
       });
-      return mapSharedLink(sharedLink, { stripAssetMetadata: false });
+      return mapSharedLink(sharedLink, { auth });
     } catch (error) {
       this.handleError(error);
     }
@@ -235,8 +235,8 @@ export class SharedLinkService extends BaseService {
     };
   }
 
-  private async mapWithAlbumMetadata(sharedLink: SharedLink, options: { stripAssetMetadata: boolean }) {
-    const response = mapSharedLink(sharedLink, options);
+  private async mapWithAlbumMetadata(sharedLink: SharedLink, { auth }: { auth: AuthDto }) {
+    const response = mapSharedLink(sharedLink, { auth });
     if (response.album) {
       const [metadata] = await this.albumRepository.getMetadataForIds([response.album.id]);
       response.album.startDate = asDateTimeString(metadata?.startDate ?? undefined);

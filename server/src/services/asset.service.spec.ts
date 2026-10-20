@@ -93,12 +93,16 @@ describe(AssetService.name, () => {
     });
 
     it('should allow shared link access', async () => {
-      const asset = AssetFactory.create();
+      const asset = AssetFactory.from()
+        .owner()
+        .face({}, (face) => face.person())
+        .build();
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
       mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
-      await sut.get(authStub.adminSharedLink, asset.id);
+      const result = await sut.get(authStub.adminSharedLink, asset.id);
 
+      expect(result).toMatchObject({ id: asset.id, hasMetadata: true, people: [], owner: undefined });
       expect(mocks.access.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLink?.id,
         new Set([asset.id]),
