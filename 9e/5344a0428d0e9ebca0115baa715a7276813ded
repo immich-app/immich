@@ -1,0 +1,31 @@
+server/src/repositories/storage.repository.spec.ts
+  s_bcfe705e3214e0::t_c2b9c08ce79a38 1,223-241,312-315
+server/src/repositories/storage.repository.ts
+  s_bcfe705e3214e0::t_bbc650f53871ec 240,260,289-294
+server/test/medium/specs/repositories/storage.repository.spec.ts
+  s_0e4343029d2031::t_2be5fde1d0bb1f 1,4-5,37-38,46-51,55,82-167
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9e5344a0428d0e9ebca0115baa715a7276813ded",
+  "prompts": {},
+  "sessions": {
+    "s_0e4343029d2031": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15b0b-e014-7741-9328-7f4e66fe6760",
+        "model": "unknown"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    },
+    "s_bcfe705e3214e0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15b0a-7d8c-7bc3-a69d-479a1a227b2f",
+        "model": "unknown"
+      },
+      "human_author": "Jonathan Jogenfors <jonathan@jogenfors.se>"
+    }
+  }
+}
