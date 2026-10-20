@@ -21,22 +21,7 @@ class RemoteImageRequest extends ImageRequest {
       width: decodeSize?.width.ceil(),
       height: decodeSize?.height.ceil(),
     );
-    // Android falls back to encoded data if native decoding fails, so check for both shapes of the response.
-    final frame = switch (info) {
-      {'pointer': final int pointer, 'length': final int length} => await _fromEncodedPlatformImage(
-        pointer,
-        length,
-        decodeSize: decodeSize,
-      ),
-      {
-        'pointer': final int pointer,
-        'width': final int width,
-        'height': final int height,
-        'rowBytes': final int rowBytes,
-      } =>
-        await _fromDecodedPlatformImage(pointer, width, height, rowBytes),
-      _ => null,
-    };
+    final frame = await _firstFrame(await _codecFromResponse(info, decodeSize: decodeSize));
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
 
@@ -53,13 +38,28 @@ class RemoteImageRequest extends ImageRequest {
       width: null,
       height: null,
     );
-    if (info == null) {
-      return null;
-    }
-
-    final (codec, _) = await _codecFromEncodedPlatformImage(info['pointer']!, info['length']!) ?? (null, null);
-    return codec;
+    final result = await _codecFromResponse(info);
+    return result?.$1;
   }
+
+  // Android falls back to encoded data if native decoding fails, and JPEG XL arrives decoded even when the encoded image
+  // is requested, so check for both shapes of the response.
+  Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromResponse(Map<String, int>? info, {ui.Size? decodeSize}) =>
+      switch (info) {
+        {'pointer': final int pointer, 'length': final int length} => _codecFromEncodedPlatformImage(
+          pointer,
+          length,
+          decodeSize: decodeSize,
+        ),
+        {
+          'pointer': final int pointer,
+          'width': final int width,
+          'height': final int height,
+          'rowBytes': final int rowBytes,
+        } =>
+          _codecFromDecodedPlatformImage(pointer, width, height, rowBytes),
+        _ => Future.value(),
+      };
 
   @override
   Future<void> _onCancelled() {
