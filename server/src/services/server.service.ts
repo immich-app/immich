@@ -102,6 +102,7 @@ export class ServerService extends BaseService {
       trash: trash.enabled,
       oauth: oauth.enabled,
       oauthAutoLaunch: oauth.autoLaunch,
+      oauthAutoRegister: oauth.autoRegister,
       ocr: isOcrEnabled(machineLearning),
       passwordLogin: passwordLogin.enabled,
       configFile: !!configFile,
