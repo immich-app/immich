@@ -23,20 +23,32 @@ export const areSetsEqual = <T>(setA: Set<T>, setB: Set<T>): boolean => {
   return setA.size === setB.size && setA.isSupersetOf(setB);
 };
 
-export type AccessRequest = {
+// object ids are compared by identity, so checks must return the request's own elements, not copies
+type PermissionIdOverrides = {
+  // TODO remove once first real override exists
+  [Permission.AssetRead]: string;
+};
+
+type PermissionIdType<T extends Permission> = T extends keyof PermissionIdOverrides ? PermissionIdOverrides[T] : string;
+
+export type AccessRequest<T extends Permission> = {
   auth: AuthDto;
-  permission: Permission;
-  ids: Set<string> | string[];
+  permission: T;
+  ids: Set<PermissionIdType<T>> | PermissionIdType<T>[];
 };
 
 export type AccessPersonRequest = {
   auth: AuthDto;
   permission: Permission;
-  ids: Set<PersonId> | PersonId[];
+  ids: PersonId[];
 };
 
-type SharedLinkAccessRequest = { sharedLink: AuthSharedLink; permission: Permission; ids: Set<string> };
-type OtherAccessRequest = { auth: AuthDto; permission: Permission; ids: Set<string> };
+type SharedLinkAccessRequest<T extends Permission = Permission> = T extends Permission
+  ? { sharedLink: AuthSharedLink; permission: T; ids: Set<PermissionIdType<T>> }
+  : never;
+type OtherAccessRequest<T extends Permission = Permission> = T extends Permission
+  ? { auth: AuthDto; permission: T; ids: Set<PermissionIdType<T>> }
+  : never;
 
 export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
   if (!auth || (auth.sharedLink && !auth.sharedLink.allowUpload)) {
@@ -45,9 +57,10 @@ export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
   return auth;
 };
 
-export const requireAccess = async (access: AccessRepository, request: AccessRequest) => {
-  const allowedIds = await checkAccess(access, request);
-  if (!areSetsEqual(new Set(request.ids), allowedIds)) {
+export const requireAccess = async <T extends Permission>(access: AccessRepository, request: AccessRequest<T>) => {
+  const ids = Array.isArray(request.ids) ? new Set(request.ids) : request.ids;
+  const allowedIds = await checkAccess(access, { auth: request.auth, permission: request.permission, ids });
+  if (!areSetsEqual(ids, allowedIds)) {
     throw new BadRequestException(`Not found or no ${request.permission} access`);
   }
 };
@@ -56,13 +69,12 @@ const PERSON_READ_ROLES = [PersonUserRole.Read, PersonUserRole.Write, PersonUser
 const PERSON_WRITE_ROLES = [PersonUserRole.Write, PersonUserRole.Admin];
 const PERSON_ADMIN_ROLES = [PersonUserRole.Admin];
 
-const asStringSet = (source: Set<PersonId>): Set<string> =>
-  new Set(source.values().map((item) => `${item.personGroupId}/$${item.ownerId}`));
-
 export const requirePersonAccess = async (access: AccessRepository, request: AccessPersonRequest) => {
   const allowedIds = await checkPersonAccess(access, request);
-  if (!areSetsEqual(asStringSet(new Set(request.ids)), asStringSet(allowedIds))) {
-    throw new BadRequestException(`Not found or no ${request.permission} access`);
+  for (const id of request.ids) {
+    if (!allowedIds.has(id)) {
+      throw new BadRequestException(`Not found or no ${request.permission} access`);
+    }
   }
 };
 
@@ -70,23 +82,22 @@ export const checkPersonAccess = async (
   access: AccessRepository,
   { ids, auth, permission }: AccessPersonRequest,
 ): Promise<Set<PersonId>> => {
-  const idSet = Array.isArray(ids) ? new Set(ids) : ids;
-  if (idSet.size === 0) {
+  if (ids.length === 0) {
     return new Set<PersonId>();
   }
 
   switch (permission) {
     case Permission.PersonRead: {
-      return access.person.checkAccess(auth.user.id, idSet, PERSON_READ_ROLES);
+      return access.person.checkAccess(auth.user.id, ids, PERSON_READ_ROLES);
     }
 
     case Permission.PersonUpdate: {
-      return access.person.checkAccess(auth.user.id, idSet, PERSON_WRITE_ROLES);
+      return access.person.checkAccess(auth.user.id, ids, PERSON_WRITE_ROLES);
     }
 
     case Permission.PersonDelete:
     case Permission.PersonMerge: {
-      return access.person.checkAccess(auth.user.id, idSet, PERSON_ADMIN_ROLES);
+      return access.person.checkAccess(auth.user.id, ids, PERSON_ADMIN_ROLES);
     }
 
     default: {
@@ -95,38 +106,38 @@ export const checkPersonAccess = async (
   }
 };
 
-export const checkAccess = async (
+export const checkAccess = <T extends Permission>(
   access: AccessRepository,
-  { ids, auth, permission }: AccessRequest,
-): Promise<Set<string>> => {
+  { ids, auth, permission }: AccessRequest<T>,
+): Promise<Set<PermissionIdType<T>>> => {
   const idSet = Array.isArray(ids) ? new Set(ids) : ids;
   if (idSet.size === 0) {
-    return new Set<string>();
+    return Promise.resolve(new Set());
   }
 
-  return auth.sharedLink
-    ? checkSharedLinkAccess(access, { sharedLink: auth.sharedLink, permission, ids: idSet })
-    : checkOtherAccess(access, { auth, permission, ids: idSet });
+  const allowed = auth.sharedLink
+    ? checkSharedLinkAccess(access, { sharedLink: auth.sharedLink, permission, ids: idSet } as SharedLinkAccessRequest)
+    : checkOtherAccess(access, { auth, permission, ids: idSet } as OtherAccessRequest);
+  return allowed as Promise<Set<PermissionIdType<T>>>;
 };
 
 const checkSharedLinkAccess = async (
   access: AccessRepository,
-  request: SharedLinkAccessRequest,
-): Promise<Set<string>> => {
-  const { sharedLink, permission, ids } = request;
+  { sharedLink, permission, ids }: SharedLinkAccessRequest,
+): Promise<Set<PermissionIdType<Permission>>> => {
   const sharedLinkId = sharedLink.id;
 
   switch (permission) {
     case Permission.AssetRead: {
-      return await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
+      return access.asset.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
     case Permission.AssetView: {
-      return await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
+      return access.asset.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
     case Permission.AssetDownload: {
-      return sharedLink.allowDownload ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
+      return sharedLink.allowDownload ? access.asset.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
     }
 
     case Permission.AssetUpload: {
@@ -134,30 +145,31 @@ const checkSharedLinkAccess = async (
     }
 
     case Permission.AlbumRead: {
-      return await access.album.checkSharedLinkAccess(sharedLinkId, ids);
+      return access.album.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
     case Permission.AlbumDownload: {
-      return sharedLink.allowDownload ? await access.album.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
+      return sharedLink.allowDownload ? access.album.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
     }
 
     case Permission.AlbumAssetCreate: {
-      return sharedLink.allowUpload ? await access.album.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
+      return sharedLink.allowUpload ? access.album.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
     }
 
     default: {
-      return new Set<string>();
+      return new Set();
     }
   }
 };
 
-const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRequest): Promise<Set<string>> => {
-  const { auth, permission, ids } = request;
-
+const checkOtherAccess = async (
+  access: AccessRepository,
+  { auth, permission, ids }: OtherAccessRequest,
+): Promise<Set<PermissionIdType<Permission>>> => {
   switch (permission) {
     // uses album id
     case Permission.ActivityCreate: {
-      return await access.activity.checkCreateAccess(auth.user.id, ids);
+      return access.activity.checkCreateAccess(auth.user.id, ids);
     }
 
     // uses activity id
@@ -416,7 +428,7 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     default: {
-      return new Set<string>();
+      return new Set();
     }
   }
 };
