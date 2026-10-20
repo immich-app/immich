@@ -41,7 +41,7 @@
   "dependencies": {
     "@extism/extism": "2.0.0-rc13",
     "@immich/plugin-sdk": "workspace:*",
-    "@immich/sql-tools": "github:immich-app/static-pages#fix/sql-tools-trigger-when-dist&path:packages/sql-tools",
+    "@immich/sql-tools": "^0.6.6",
     "@nestjs/bullmq": "^12.0.0",
     "@nestjs/common": "^12.0.0",
     "@nestjs/core": "^12.0.0",
