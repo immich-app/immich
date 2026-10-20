@@ -61,33 +61,21 @@ const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${person
 export class PersonService extends BaseService {
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const { withHidden = false, closestAssetId, closestPersonId, page, size, ...filters } = dto;
-    let closestFaceAssetId = closestAssetId;
     const pagination = {
       take: size,
       skip: (page - 1) * size,
     };
-
-    if (closestPersonId) {
-      const person = await this.personRepository.getByGroupId({
-        ownerId: auth.user.id,
-        personGroupId: closestPersonId,
-      });
-      if (!person?.faceAssetId) {
-        throw new NotFoundException('Person not found');
-      }
-      closestFaceAssetId = person.faceAssetId;
-    }
     const partnerIds = await getMyPartnerIds({
       userId: auth.user.id,
       repository: this.partnerRepository,
     });
-    const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
+    const { items, hasNextPage, total, hidden } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
       withHidden,
       partnerIds,
-      closestFaceAssetId,
+      closestFaceAssetId: closestAssetId,
+      closestPersonId,
       ...filters,
     });
-    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id, { partnerIds, ...filters });
 
     return {
       people: items.map((person) => mapPerson(person)),
@@ -198,7 +186,7 @@ export class PersonService extends BaseService {
       ids: [{ personGroupId, ownerId: auth.user.id }],
     });
     return mapPerson(
-      await findOrFail(() => this.personRepository.getForUser({ userId: auth.user.id, personGroupId }), 'Person'),
+      await findOrFail(() => this.personRepository.getByGroupId({ ownerId: auth.user.id, personGroupId }), 'Person'),
     );
   }
 
