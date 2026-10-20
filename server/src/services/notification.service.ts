@@ -21,10 +21,11 @@ import {
   Permission,
   QueueName,
 } from 'src/enum.js';
+import { AppriseError, normalizeAppriseTags } from 'src/repositories/apprise.repository.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { EmailImageAttachment, JobOf } from 'src/types.js';
+import type { EmailImageAttachment, JobOf, UserMetadataItem } from 'src/types.js';
 import { getFilenameExtension } from 'src/utils/file.js';
 import { getExternalDomain } from 'src/utils/misc.js';
 import { isEqualObject } from 'src/utils/object.js';
@@ -150,6 +151,16 @@ export class NotificationService extends BaseService {
     } catch (error: Error | any) {
       this.logger.error(`Failed to validate SMTP configuration: ${error}`, error?.stack);
       throw new Error('Invalid SMTP configuration', { cause: error });
+    }
+
+    try {
+      const { apprise } = newConfig.notifications;
+      if (apprise.enabled && !isEqualObject(oldConfig.notifications.apprise, apprise)) {
+        await this.appriseRepository.verify(apprise);
+      }
+    } catch (error: Error | any) {
+      this.logger.error(`Failed to validate Apprise configuration: ${error}`);
+      throw new Error(`Apprise check failed: ${error?.message ?? error}`, { cause: error });
     }
   }
 
@@ -350,6 +361,7 @@ export class NotificationService extends BaseService {
     }
 
     await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumInvite, senderName);
+    await this.queueAlbumApprise(album, recipient, NotificationType.AlbumInvite, senderName);
 
     const { emailNotifications } = getPreferences(recipient.metadata);
 
@@ -401,6 +413,7 @@ export class NotificationService extends BaseService {
     }
 
     await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumUpdate);
+    await this.queueAlbumApprise(album, recipient, NotificationType.AlbumUpdate);
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
@@ -467,6 +480,30 @@ export class NotificationService extends BaseService {
     return JobStatus.Success;
   }
 
+  @OnJob({ name: JobName.SendApprise, queue: QueueName.Notification })
+  async handleSendApprise(data: JobOf<JobName.SendApprise>): Promise<JobStatus> {
+    const { notifications } = await this.getConfig({ withCache: false });
+    const { apprise } = notifications;
+    if (!apprise.enabled || !apprise.host || !apprise.configId) {
+      return JobStatus.Skipped;
+    }
+
+    try {
+      await this.appriseRepository.notify(apprise, data);
+    } catch (error) {
+      if (error instanceof AppriseError) {
+        // A warning is enough here; Apprise problems must never affect other notifications
+        this.logger.warn(`Failed to send Apprise notification: ${error.message}`);
+        return JobStatus.Failed;
+      }
+      throw error;
+    }
+
+    this.logger.log('Sent Apprise notification');
+
+    return JobStatus.Success;
+  }
+
   private async getAlbumThumbnailAttachment(album: {
     albumThumbnailAssetId: string | null;
   }): Promise<EmailImageAttachment | undefined> {
@@ -509,5 +546,37 @@ export class NotificationService extends BaseService {
     });
 
     this.websocketRepository.clientSend('on_notification', userId, mapNotification(item));
+  }
+
+  /** Queues an Apprise notification with the same wording as the in-app one, if the recipient wants it. */
+  private async queueAlbumApprise(
+    album: MapAlbumDto,
+    recipient: { metadata: UserMetadataItem[] },
+    type: NotificationType.AlbumInvite | NotificationType.AlbumUpdate,
+    senderName?: string,
+  ) {
+    const { notifications, server } = await this.getConfig({ withCache: false });
+    const { appriseNotifications: preferences } = getPreferences(recipient.metadata);
+    const isInvite = type === NotificationType.AlbumInvite;
+    if (
+      !notifications.apprise.enabled ||
+      !preferences.enabled ||
+      !(isInvite ? preferences.albumInvite : preferences.albumUpdate)
+    ) {
+      return;
+    }
+
+    const description = isInvite
+      ? `${senderName} shared an album (${album.albumName}) with you`
+      : `New media has been added to the album (${album.albumName})`;
+
+    await this.jobRepository.queue({
+      name: JobName.SendApprise,
+      data: {
+        title: isInvite ? 'Shared Album Invitation' : 'Shared Album Update',
+        body: `${description}\n${getExternalDomain(server)}/albums/${album.id}`,
+        tag: normalizeAppriseTags(notifications.apprise.tags, preferences.tag),
+      },
+    });
   }
 }

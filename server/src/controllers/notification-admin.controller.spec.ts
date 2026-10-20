@@ -1,5 +1,6 @@
 import request from 'supertest';
 import { NotificationAdminController } from 'src/controllers/notification-admin.controller.js';
+import { defaults } from 'src/dtos/config.dto.js';
 import { Permission } from 'src/enum.js';
 import { NotificationAdminService } from 'src/services/notification-admin.service.js';
 import { factory } from 'test/small.factory.js';
@@ -61,6 +62,26 @@ describe(NotificationAdminController.name, () => {
           metadata: expect.objectContaining({ permission: Permission.NotificationCreate, adminRoute: true }),
         }),
       );
+    });
+  });
+
+  describe('POST /admin/notifications/test-apprise', () => {
+    const apprise = { ...defaults.notifications.apprise, enabled: true, host: 'apprise', configId: 'immich' };
+
+    it('sends a test notification', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/admin/notifications/test-apprise')
+        .send({ ...apprise, tags: 'family, alice' });
+      expect(status).toBe(204);
+      expect(service.sendTestApprise).toHaveBeenCalledWith(expect.objectContaining({ tags: 'family, alice' }));
+    });
+
+    it('rejects tags with unsupported characters', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/admin/notifications/test-apprise')
+        .send({ ...apprise, tags: 'family; rm' });
+      expect(status).toBe(400);
+      expect(service.sendTestApprise).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,5 +1,7 @@
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
+import { AppriseError } from 'src/repositories/apprise.repository.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
+import { NotificationAdminService } from 'src/services/notification-admin.service.js';
 import { NotificationService } from 'src/services/notification.service.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
@@ -7,6 +9,7 @@ import { ServiceMocks, newTestService } from 'test/utils.js';
 const smtpTransport = Object.freeze<SystemConfig>({
   ...defaults,
   notifications: {
+    ...defaults.notifications,
     smtp: {
       ...defaults.notifications.smtp,
       enabled: true,
@@ -106,6 +109,48 @@ describe(NotificationService.name, () => {
           smtp: smtpTransport.notifications.smtp.transport,
           replyTo: 'demo@immich.app',
         }),
+      );
+    });
+  });
+});
+
+describe(NotificationAdminService.name, () => {
+  let sut: NotificationAdminService;
+  let mocks: ServiceMocks;
+
+  const apprise = { ...defaults.notifications.apprise, enabled: true, host: 'apprise', configId: 'immich' };
+
+  beforeEach(() => {
+    ({ sut, mocks } = newTestService(NotificationAdminService));
+  });
+
+  describe('sendTestApprise', () => {
+    it('verifies the settings and sends a test notification', async () => {
+      mocks.apprise.verify.mockResolvedValue();
+      mocks.apprise.notify.mockResolvedValue();
+
+      await expect(sut.sendTestApprise({ ...apprise, tags: 'family, alice' })).resolves.toBeUndefined();
+
+      expect(mocks.apprise.verify).toHaveBeenCalledWith(expect.objectContaining({ host: 'apprise' }));
+      expect(mocks.apprise.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ host: 'apprise' }),
+        expect.objectContaining({ tag: 'family alice' }),
+      );
+    });
+
+    it('reports a failed verification as a bad request', async () => {
+      mocks.apprise.verify.mockRejectedValue(new AppriseError('Authentication failed', 401));
+
+      await expect(sut.sendTestApprise(apprise)).rejects.toThrow('Apprise check failed: Authentication failed');
+      expect(mocks.apprise.notify).not.toHaveBeenCalled();
+    });
+
+    it('reports a failed send as a bad request', async () => {
+      mocks.apprise.verify.mockResolvedValue();
+      mocks.apprise.notify.mockRejectedValue(new AppriseError('No configuration found for this config ID', 404));
+
+      await expect(sut.sendTestApprise(apprise)).rejects.toThrow(
+        'Apprise send failed: No configuration found for this config ID',
       );
     });
   });
