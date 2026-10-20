@@ -48,6 +48,8 @@ export class AssetMediaService extends BaseService {
       return;
     }
 
+    await this.requireAccess({ auth, permission: Permission.AssetUpload, ids: [auth.user.id] });
+
     const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
     if (!assetId) {
       return;
