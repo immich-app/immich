@@ -16297,13 +16297,8 @@ snapshots:
       commander: 15.0.0
       graph-data-structure: 4.5.0
       kysely: 0.29.6
-<<<<<<< HEAD
-      kysely-postgres-js: 4.0.0(kysely@0.29.6)(postgres@3.4.9)
-      pg-connection-string: 2.14.0
-=======
       kysely-postgres-js: 5.0.1(kysely@0.29.6)(postgres@3.4.9)
-      pg-connection-string: 2.14.1
->>>>>>> 38a2ce4 (perf(server): more efficient person queries (#32523))
+      pg-connection-string: 2.14.0
       postgres: 3.4.9
 
   '@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.70.1))(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.1(@typescript-eslint/types@8.70.1))(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.1(@typescript-eslint/types@8.70.1))':
