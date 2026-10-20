@@ -16,7 +16,7 @@
     parentPromise: Promise<TagResponseDto[]> | undefined;
   }
 
-  // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line no-useless-assignment
   let { title = $bindable(), parentPromise }: Props = $props();
 
   let container = $state<HTMLDivElement>();
