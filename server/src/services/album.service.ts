@@ -83,8 +83,9 @@ export class AlbumService extends BaseService {
     const isShared = hasSharedUsers || hasSharedLink;
 
     return {
-      ...(await this.mapWithMetadata(album)),
-      contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
+      ...(await this.mapWithMetadata(album, auth)),
+      contributorCounts:
+        isShared && !auth.sharedLink ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
   }
 
@@ -356,8 +357,8 @@ export class AlbumService extends BaseService {
     return findOrFail(() => this.albumRepository.getById(id, authUserId), 'Album');
   }
 
-  private async mapWithMetadata(album: MapAlbumDto): Promise<AlbumResponseDto> {
+  private async mapWithMetadata(album: MapAlbumDto, auth?: AuthDto): Promise<AlbumResponseDto> {
     const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
-    return { ...mapAlbum(album), ...mapAlbumMetadata(metadata) };
+    return { ...mapAlbum(album, { auth }), ...mapAlbumMetadata(metadata) };
   }
 }
