@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { parse } from 'cookie';
+import { parseCookie } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import sanitize from 'sanitize-filename';
@@ -483,17 +483,17 @@ export class AuthService extends BaseService {
   }
 
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
-    const cookies = parse(headers.cookie || '');
+    const cookies = parseCookie(headers.cookie || '');
     return cookies[ImmichCookie.AccessToken] || null;
   }
 
   private getCookieOauthState(headers: IncomingHttpHeaders): string | null {
-    const cookies = parse(headers.cookie || '');
+    const cookies = parseCookie(headers.cookie || '');
     return cookies[ImmichCookie.OAuthState] || null;
   }
 
   private getCookieCodeVerifier(headers: IncomingHttpHeaders): string | null {
-    const cookies = parse(headers.cookie || '');
+    const cookies = parseCookie(headers.cookie || '');
     return cookies[ImmichCookie.OAuthCodeVerifier] || null;
   }
 
