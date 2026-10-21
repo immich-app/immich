@@ -1,7 +1,7 @@
 import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
 
-const query = encodeURIComponent(JSON.stringify({ originalFileName: 'test' }));
+const query = encodeURIComponent(JSON.stringify({ filter: { originalFileName: { like: 'test' } } }));
 const searchAssetUrl = (asset: { id: string }) => `/search/photos/${asset.id}?query=${query}`;
 
 const setup = () =>
@@ -16,7 +16,7 @@ test.describe('search gallery viewer', () => {
     await page.goto(searchAssetUrl(assets[0]));
     await app.viewer.waitForAsset(assets[0]);
     expect(api.searchAssets).toHaveBeenCalledWith({
-      body: expect.objectContaining({ originalFileName: 'test' }),
+      body: expect.objectContaining({ filter: expect.objectContaining({ originalFileName: { like: 'test' } }) }),
     });
 
     await app.viewer.deleteButton.click();

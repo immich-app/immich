@@ -24,7 +24,7 @@ test.afterEach(() => {
 });
 
 test('removing a chip drops the tag and keeps focus in the panel', async ({ router, render, settle, app }) => {
-  await router.goto(Route.search({ tagIds: [holiday.id, family.id] }));
+  await router.goto(Route.search({ filter: { tagIds: { all: [holiday.id, family.id] } } }));
   await render(Page, load);
   await settle();
   await app.search.openFilter('tag_plus_more_tags');
@@ -38,7 +38,7 @@ test('removing a chip drops the tag and keeps focus in the panel', async ({ rout
 });
 
 test('untagged replaces the tags and toggling it off restores none', async ({ router, render, settle, app }) => {
-  await router.goto(Route.search({ tagIds: [holiday.id] }));
+  await router.goto(Route.search({ filter: { tagIds: { all: [holiday.id] } } }));
   await render(Page, load);
   await settle();
   await app.search.openFilter('holiday');
@@ -53,7 +53,7 @@ test('untagged replaces the tags and toggling it off restores none', async ({ ro
 
 test('removing a chip clears the asset selection', async ({ data, router, render, settle, app }) => {
   data.addAssets(factory.asset({ isFavorite: true }));
-  await router.goto(Route.search({ isFavorite: true, tagIds: [holiday.id] }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true }, tagIds: { all: [holiday.id] } } }));
   await render(Page, load);
   await settle();
   await app.gallery.selectAll();
@@ -66,7 +66,7 @@ test('removing a chip clears the asset selection', async ({ data, router, render
 
 test.for([
   { name: 'smart', terms: { query: 'beach' }, operation: 'searchSmart' as const },
-  { name: 'metadata', terms: { isFavorite: true }, operation: 'searchAssets' as const },
+  { name: 'metadata', terms: { filter: { isFavorite: { eq: true } } }, operation: 'searchAssets' as const },
 ])('$name search asks for timeline visibility', async ({ terms, operation }, { data, router, render, settle, api }) => {
   data.userConfig.machineLearning.enabled = true;
   await router.goto(Route.search(terms));
@@ -74,13 +74,18 @@ test.for([
   await render(Page, load);
   await settle();
 
-  expect(api[operation]).toHaveBeenCalledWith({ body: expect.objectContaining({ ...terms, visibility: 'timeline' }) });
+  expect(api[operation]).toHaveBeenCalledWith({
+    body: expect.objectContaining({
+      ...terms,
+      filter: expect.objectContaining({ ...terms.filter, visibility: { eq: 'timeline' } }),
+    }),
+  });
 });
 
 const submittedTerms = (router: MockRouter) => JSON.parse(router.url.searchParams.get(QueryParameter.QUERY) ?? '{}');
 
 test('unknown lens model searches for a missing lens', async ({ router, render, settle, app }) => {
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.open();
@@ -89,11 +94,11 @@ test('unknown lens model searches for a missing lens', async ({ router, render, 
 
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ lensModel: null });
+  expect(submittedTerms(router)).toMatchObject({ filter: { lensModel: { eq: null } } });
 });
 
 test('unknown country searches for a missing country', async ({ router, render, settle, app }) => {
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.openFilter('places');
@@ -101,11 +106,11 @@ test('unknown country searches for a missing country', async ({ router, render, 
 
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ country: null });
+  expect(submittedTerms(router)).toMatchObject({ filter: { country: { eq: null } } });
 });
 
 test('unknown camera make searches for a missing make', async ({ router, render, settle, app }) => {
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.open();
@@ -114,11 +119,11 @@ test('unknown camera make searches for a missing make', async ({ router, render,
 
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ make: null });
+  expect(submittedTerms(router)).toMatchObject({ filter: { make: { eq: null } } });
 });
 
 test('unknown camera model searches for a missing model', async ({ router, render, settle, app }) => {
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.open();
@@ -127,11 +132,11 @@ test('unknown camera model searches for a missing model', async ({ router, rende
 
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ model: null });
+  expect(submittedTerms(router)).toMatchObject({ filter: { model: { eq: null } } });
 });
 
 test('unknown state searches for a missing state', async ({ router, render, settle, app }) => {
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.openFilter('places');
@@ -139,11 +144,11 @@ test('unknown state searches for a missing state', async ({ router, render, sett
 
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ state: null });
+  expect(submittedTerms(router)).toMatchObject({ filter: { state: { eq: null } } });
 });
 
 test('unknown city searches for a missing city', async ({ router, render, settle, app }) => {
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.openFilter('places');
@@ -151,11 +156,11 @@ test('unknown city searches for a missing city', async ({ router, render, settle
 
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ city: null });
+  expect(submittedTerms(router)).toMatchObject({ filter: { city: { eq: null } } });
 });
 
 test('reopening a missing country search selects unknown', async ({ router, render, settle, app }) => {
-  await router.goto(Route.search({ isFavorite: true, country: null }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true }, country: { eq: null } } }));
   await render(Page, load);
   await settle();
 
@@ -171,7 +176,7 @@ const cameras = [
 
 test('picking a make only offers its models', async ({ data, router, render, settle, app }) => {
   data.addAssets(cameras);
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.open();
@@ -187,7 +192,7 @@ test('picking a make only offers its models', async ({ data, router, render, set
 
 test('changing the make clears the old model', async ({ data, router, render, settle, app }) => {
   data.addAssets(cameras);
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.open();
@@ -200,13 +205,13 @@ test('changing the make clears the old model', async ({ data, router, render, se
   await settle();
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ make: 'Sony' });
-  expect(submittedTerms(router)).not.toHaveProperty('model');
+  expect(submittedTerms(router)).toMatchObject({ filter: { make: { eq: 'Sony' } } });
+  expect(submittedTerms(router)).not.toHaveProperty('filter.model');
 });
 
 test('picking a model only offers its lenses', async ({ data, router, render, settle, app }) => {
   data.addAssets(cameras);
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.open();
@@ -222,7 +227,7 @@ test('picking a model only offers its lenses', async ({ data, router, render, se
 
 test('changing the model clears the old lens', async ({ data, router, render, settle, app }) => {
   data.addAssets(cameras);
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.open();
@@ -235,8 +240,8 @@ test('changing the model clears the old lens', async ({ data, router, render, se
   await settle();
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ model: 'A7 IV' });
-  expect(submittedTerms(router)).not.toHaveProperty('lensModel');
+  expect(submittedTerms(router)).toMatchObject({ filter: { model: { eq: 'A7 IV' } } });
+  expect(submittedTerms(router)).not.toHaveProperty('filter.lensModel');
 });
 
 const places = [
@@ -246,7 +251,7 @@ const places = [
 
 test('picking a country only offers its cities', async ({ data, router, render, settle, app }) => {
   data.addAssets(places);
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.openFilter('places');
@@ -261,7 +266,7 @@ test('picking a country only offers its cities', async ({ data, router, render, 
 
 test('changing the country clears the old city', async ({ data, router, render, settle, app }) => {
   data.addAssets(places);
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.openFilter('places');
@@ -273,13 +278,13 @@ test('changing the country clears the old city', async ({ data, router, render, 
   await settle();
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ country: 'Japan' });
-  expect(submittedTerms(router)).not.toHaveProperty('city');
+  expect(submittedTerms(router)).toMatchObject({ filter: { country: { eq: 'Japan' } } });
+  expect(submittedTerms(router)).not.toHaveProperty('filter.city');
 });
 
 test('picking a country only offers its states', async ({ data, router, render, settle, app }) => {
   data.addAssets(places);
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.openFilter('places');
@@ -294,7 +299,7 @@ test('picking a country only offers its states', async ({ data, router, render, 
 
 test('changing the country clears the old state', async ({ data, router, render, settle, app }) => {
   data.addAssets(places);
-  await router.goto(Route.search({ isFavorite: true }));
+  await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
   await render(Page, load);
   await settle();
   await app.search.openFilter('places');
@@ -306,8 +311,8 @@ test('changing the country clears the old state', async ({ data, router, render,
   await settle();
   await app.search.submit();
 
-  expect(submittedTerms(router)).toMatchObject({ country: 'Japan' });
-  expect(submittedTerms(router)).not.toHaveProperty('state');
+  expect(submittedTerms(router)).toMatchObject({ filter: { country: { eq: 'Japan' } } });
+  expect(submittedTerms(router)).not.toHaveProperty('filter.state');
 });
 
 describe('ahead of UTC', () => {
@@ -320,7 +325,7 @@ describe('ahead of UTC', () => {
   });
 
   test('custom start date keeps the local calendar day', async ({ router, render, settle, app }) => {
-    await router.goto(Route.search({ isFavorite: true }));
+    await router.goto(Route.search({ filter: { isFavorite: { eq: true } } }));
     await render(Page, load);
     await settle();
     await app.search.openFilter('date');
@@ -330,6 +335,6 @@ describe('ahead of UTC', () => {
 
     await app.search.submit();
 
-    expect(submittedTerms(router)).toMatchObject({ takenAfter: '2024-03-10T00:00:00.000Z' });
+    expect(submittedTerms(router)).toMatchObject({ filter: { takenAt: { gte: '2024-03-10T00:00:00.000Z' } } });
   });
 });

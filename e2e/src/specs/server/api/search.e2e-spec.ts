@@ -1,9 +1,14 @@
 import {
   AssetMediaResponseDto,
+  AssetOrder,
   AssetResponseDto,
+  AssetTypeEnum,
   AssetVisibility,
   deleteAssets,
   LoginResponseDto,
+  MetadataSearchDto,
+  SearchFilter,
+  SearchOrderField,
   SharedLinkType,
   updateAsset,
 } from '@immich/sdk';
@@ -147,52 +152,66 @@ describe('/search', () => {
   });
 
   describe('POST /search/metadata', () => {
-    const searchTests = [
+    const searchTests: { should: string; deferred: () => { dto: MetadataSearchDto; assets: { id: string }[] } }[] = [
       {
         should: 'should get my assets',
         deferred: () => ({ dto: { size: 1 }, assets: [assetLast] }),
       },
       {
         should: 'should sort my assets in reverse',
-        deferred: () => ({ dto: { order: 'asc', size: 2 }, assets: [assetCyclamen, assetNotocactus] }),
-      },
-      {
-        should: 'should support pagination',
-        deferred: () => ({ dto: { order: 'asc', size: 1, page: 2 }, assets: [assetNotocactus] }),
+        deferred: () => ({
+          dto: { orderBy: { field: SearchOrderField.FileCreatedAt, direction: AssetOrder.Asc }, size: 2 },
+          assets: [assetCyclamen, assetNotocactus],
+        }),
       },
       {
         should: 'should search by checksum (base64)',
-        deferred: () => ({ dto: { checksum: '9IXBDMjj9OrQb+1YMHprZJgZ/UQ=' }, assets: [assetCyclamen] }),
+        deferred: () => ({
+          dto: { filter: { checksum: { eq: '9IXBDMjj9OrQb+1YMHprZJgZ/UQ=' } } },
+          assets: [assetCyclamen],
+        }),
       },
       {
         should: 'should search by checksum (hex)',
-        deferred: () => ({ dto: { checksum: 'f485c10cc8e3f4ead06fed58307a6b649819fd44' }, assets: [assetCyclamen] }),
+        deferred: () => ({
+          dto: { filter: { checksum: { eq: 'f485c10cc8e3f4ead06fed58307a6b649819fd44' } } },
+          assets: [assetCyclamen],
+        }),
       },
-      { should: 'should search by id', deferred: () => ({ dto: { id: assetCyclamen.id }, assets: [assetCyclamen] }) },
+      {
+        should: 'should search by id',
+        deferred: () => ({ dto: { filter: { id: { eq: assetCyclamen.id } } }, assets: [assetCyclamen] }),
+      },
       {
         should: 'should search by isFavorite (true)',
-        deferred: () => ({ dto: { isFavorite: true }, assets: [assetCyclamen] }),
+        deferred: () => ({ dto: { filter: { isFavorite: { eq: true } } }, assets: [assetCyclamen] }),
       },
       {
         should: 'should search by isFavorite (false)',
-        deferred: () => ({ dto: { size: 1, isFavorite: false }, assets: [assetLast] }),
+        deferred: () => ({ dto: { size: 1, filter: { isFavorite: { eq: false } } }, assets: [assetLast] }),
       },
       {
         should: 'should search by visibility (AssetVisibility.Archive)',
-        deferred: () => ({ dto: { visibility: AssetVisibility.Archive }, assets: [assetSprings] }),
+        deferred: () => ({
+          dto: { filter: { visibility: { eq: AssetVisibility.Archive } } },
+          assets: [assetSprings],
+        }),
       },
       {
         should: 'should search by visibility (AssetVisibility.Timeline)',
-        deferred: () => ({ dto: { size: 1, visibility: AssetVisibility.Timeline }, assets: [assetLast] }),
+        deferred: () => ({
+          dto: { size: 1, filter: { visibility: { eq: AssetVisibility.Timeline } } },
+          assets: [assetLast],
+        }),
       },
       {
         should: 'should search by type (image)',
-        deferred: () => ({ dto: { size: 1, type: 'IMAGE' }, assets: [assetLast] }),
+        deferred: () => ({ dto: { size: 1, filter: { type: { eq: AssetTypeEnum.Image } } }, assets: [assetLast] }),
       },
       {
         should: 'should search by type (video)',
         deferred: () => ({
-          dto: { type: 'VIDEO', visibility: AssetVisibility.Hidden },
+          dto: { filter: { type: { eq: AssetTypeEnum.Video }, visibility: { eq: AssetVisibility.Hidden } } },
           assets: [
             // the three live motion photos
             { id: expect.any(String) },
@@ -203,151 +222,117 @@ describe('/search', () => {
       },
       {
         should: 'should search by trashedBefore',
-        deferred: () => ({ dto: { trashedBefore: today.plus({ hour: 1 }).toJSDate() }, assets: [assetSilver] }),
+        deferred: () => ({
+          dto: { filter: { trashedAt: { lte: today.plus({ hour: 1 }).toISO() } } },
+          assets: [assetSilver],
+        }),
       },
       {
         should: 'should search by trashedBefore (no results)',
-        deferred: () => ({ dto: { trashedBefore: today.minus({ days: 1 }).toJSDate() }, assets: [] }),
+        deferred: () => ({ dto: { filter: { trashedAt: { lte: today.minus({ days: 1 }).toISO() } } }, assets: [] }),
       },
       {
         should: 'should search by trashedAfter',
-        deferred: () => ({ dto: { trashedAfter: today.minus({ hour: 1 }).toJSDate() }, assets: [assetSilver] }),
+        deferred: () => ({
+          dto: { filter: { trashedAt: { gte: today.minus({ hour: 1 }).toISO() } } },
+          assets: [assetSilver],
+        }),
       },
       {
         should: 'should search by trashedAfter (no results)',
-        deferred: () => ({ dto: { trashedAfter: today.plus({ hour: 1 }).toJSDate() }, assets: [] }),
+        deferred: () => ({ dto: { filter: { trashedAt: { gte: today.plus({ hour: 1 }).toISO() } } }, assets: [] }),
       },
       {
         should: 'should search by takenBefore',
-        deferred: () => ({ dto: { size: 1, takenBefore: today.plus({ hour: 1 }).toJSDate() }, assets: [assetLast] }),
+        deferred: () => ({
+          dto: { size: 1, filter: { takenAt: { lte: today.plus({ hour: 1 }).toISO() } } },
+          assets: [assetLast],
+        }),
       },
       {
         should: 'should search by takenBefore (no results)',
-        deferred: () => ({ dto: { takenBefore: DateTime.fromObject({ year: 1234 }).toJSDate() }, assets: [] }),
+        deferred: () => ({
+          dto: { filter: { takenAt: { lte: DateTime.fromObject({ year: 1234 }).toJSDate().toISOString() } } },
+          assets: [],
+        }),
       },
       {
         should: 'should search by takenAfter',
         deferred: () => ({
-          dto: { size: 1, takenAfter: DateTime.fromObject({ year: 1234 }).toJSDate() },
+          dto: { size: 1, filter: { takenAt: { gte: DateTime.fromObject({ year: 1234 }).toJSDate().toISOString() } } },
           assets: [assetLast],
         }),
       },
       {
         should: 'should search by takenAfter (no results)',
-        deferred: () => ({ dto: { takenAfter: today.plus({ hour: 1 }).toJSDate() }, assets: [] }),
+        deferred: () => ({ dto: { filter: { takenAt: { gte: today.plus({ hour: 1 }).toISO() } } }, assets: [] }),
       },
       {
         should: 'should search by originalFilename',
-        deferred: () => ({
-          dto: { originalFileName: 'rocks' },
-          assets: [assetRocks],
-        }),
+        deferred: () => ({ dto: { filter: { originalFileName: { like: 'rocks' } } }, assets: [assetRocks] }),
       },
       {
         should: 'should search by originalFilename with spaces',
         deferred: () => ({
-          dto: { originalFileName: 'samsung-one', type: 'IMAGE' },
+          dto: { filter: { originalFileName: { like: 'samsung-one' }, type: { eq: AssetTypeEnum.Image } } },
           assets: [assetOneJpg5, assetOneJpg6, assetOneHeic6],
         }),
       },
       {
         should: 'should search by city',
-        deferred: () => ({
-          dto: {
-            city: 'Accra',
-            includeNull: true,
-          },
-          assets: [assetHeic],
-        }),
+        deferred: () => ({ dto: { filter: { city: { eq: 'Accra' } } }, assets: [assetHeic] }),
       },
       {
         should: 'should search city (null)',
         deferred: () => ({
-          dto: {
-            city: null,
-            visibility: AssetVisibility.Timeline,
-            includeNull: true,
-          },
+          dto: { filter: { city: { eq: null }, visibility: { eq: AssetVisibility.Timeline } } },
           assets: [assetLast],
         }),
       },
       {
         should: 'should search by state',
-        deferred: () => ({
-          dto: {
-            state: 'New York',
-            includeNull: true,
-          },
-          assets: [assetDensity],
-        }),
+        deferred: () => ({ dto: { filter: { state: { eq: 'New York' } } }, assets: [assetDensity] }),
       },
       {
         should: 'should search state (null)',
         deferred: () => ({
-          dto: {
-            state: null,
-            visibility: AssetVisibility.Timeline,
-            includeNull: true,
-          },
+          dto: { filter: { state: { eq: null }, visibility: { eq: AssetVisibility.Timeline } } },
           assets: [assetLast, assetNotocactus],
         }),
       },
       {
         should: 'should search by country',
-        deferred: () => ({
-          dto: {
-            country: 'France',
-            includeNull: true,
-          },
-          assets: [assetFalcon],
-        }),
+        deferred: () => ({ dto: { filter: { country: { eq: 'France' } } }, assets: [assetFalcon] }),
       },
       {
         should: 'should search country (null)',
         deferred: () => ({
-          dto: {
-            country: null,
-            visibility: AssetVisibility.Timeline,
-            includeNull: true,
-          },
+          dto: { filter: { country: { eq: null }, visibility: { eq: AssetVisibility.Timeline } } },
           assets: [assetLast],
         }),
       },
       {
         should: 'should search by make',
-        deferred: () => ({
-          dto: {
-            make: 'Canon',
-            includeNull: true,
-          },
-          assets: [assetFalcon, assetDenali],
-        }),
+        deferred: () => ({ dto: { filter: { make: { eq: 'Canon' } } }, assets: [assetFalcon, assetDenali] }),
       },
       {
         should: 'should search by model',
-        deferred: () => ({
-          dto: {
-            model: 'Canon EOS 7D',
-            includeNull: true,
-          },
-          assets: [assetDenali],
-        }),
+        deferred: () => ({ dto: { filter: { model: { eq: 'Canon EOS 7D' } } }, assets: [assetDenali] }),
       },
       {
         should: 'should allow searching the upload library (libraryId: null)',
-        deferred: () => ({
-          dto: { libraryId: null, size: 1 },
-          assets: [assetLast],
-        }),
+        deferred: () => ({ dto: { size: 1, filter: { libraryId: { eq: null } } }, assets: [assetLast] }),
       },
     ];
 
     for (const { should, deferred } of searchTests) {
       it(should, async () => {
         const { assets, dto } = deferred();
+        // the flat search excluded trashed assets by default, the structured filter has to ask for it
+        const filter: SearchFilter = { trashedAt: { eq: null }, ...dto.filter };
         const { status, body } = await request(app)
           .post('/search/metadata')
-          .send(dto)
+          .send({ ...dto, filter })
           .set('Authorization', `Bearer ${admin.accessToken}`);
         expect(status).toBe(200);
         expect(body.assets).toBeDefined();
@@ -359,13 +344,34 @@ describe('/search', () => {
       });
     }
 
+    it('should support pagination', async () => {
+      const dto = {
+        filter: { trashedAt: { eq: null } },
+        orderBy: { field: SearchOrderField.FileCreatedAt, direction: AssetOrder.Asc },
+        size: 1,
+      };
+      const firstPage = await request(app)
+        .post('/search/metadata')
+        .send(dto)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(firstPage.status).toBe(200);
+      expect(firstPage.body.assets.items).toEqual([expect.objectContaining({ id: assetCyclamen.id })]);
+
+      const { status, body } = await request(app)
+        .post('/search/metadata')
+        .send({ ...dto, cursor: firstPage.body.assets.nextCursor })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body.assets.items).toEqual([expect.objectContaining({ id: assetNotocactus.id })]);
+    });
+
     it('should reject shared link access without an album filter', async () => {
       const album = await utils.createAlbum(admin.accessToken, { albumName: 'foo' });
       const sharedLink = await utils.createSharedLink(admin.accessToken, {
         type: SharedLinkType.Album,
         albumId: album.id,
       });
-      const { status, body } = await request(app).post(`/search/metadata?key=${sharedLink.key}`).send({});
+      const { status, body } = await request(app).post(`/search/metadata?key=${sharedLink.key}`).send({ filter: {} });
       expect(status).toBe(400);
       expect(body).toEqual({ message: 'Shared link access is only allowed in combination with an albumIds filter' });
     });
@@ -380,7 +386,7 @@ describe('/search', () => {
 
       const { status, body } = await request(app)
         .post(`/search/metadata?key=${sharedLink.key}`)
-        .send({ albumIds: [album.id] });
+        .send({ filter: { albumIds: { any: [album.id] } } });
       expect(status).toBe(200);
       expect(body.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
     });
@@ -396,7 +402,7 @@ describe('/search', () => {
 
       const { status, body } = await request(app)
         .post(`/search/metadata?key=${sharedLink.key}`)
-        .send({ albumIds: [album.id], withExif: true });
+        .send({ filter: { albumIds: { any: [album.id] } }, withExif: true });
       expect(status).toBe(200);
       expect(body.assets.items).toHaveLength(1);
       expect(body.assets.items[0]).toEqual(expect.objectContaining({ id: asset.id, hasMetadata: false }));

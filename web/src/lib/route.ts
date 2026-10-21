@@ -1,5 +1,6 @@
 import { OpenQueryParam, type SharedLinkTab } from '#lib/constants.ts';
-import { IntegrityReport, QueueName, getBaseUrl, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+import type { SearchQuery } from '#lib/types.ts';
+import { IntegrityReport, QueueName, getBaseUrl } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
 
 const asQueueSlug = (name: QueueName) => {
@@ -98,7 +99,7 @@ export const Route = {
   recentlyAdded: () => '/recently-added',
 
   // search
-  search: (dto?: MetadataSearchDto | SmartSearchDto) => {
+  search: (dto?: SearchQuery) => {
     const metadata = omitBy(dto ?? {}, (value) => value === undefined);
     const query = Object.keys(metadata).length === 0 ? undefined : JSON.stringify(metadata);
     return `/search` + asQueryString({ query });
