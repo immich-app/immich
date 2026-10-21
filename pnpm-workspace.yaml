@@ -74,3 +74,4 @@ minimumReleaseAgeExclude:
   - '@immich/sql-tools@0.6.3 || 0.6.6'
   - '@nestjs/cli@12.0.1'
   - '@futo-org/*'
+  - '@material-symbols/svg-400@0.48.1'
