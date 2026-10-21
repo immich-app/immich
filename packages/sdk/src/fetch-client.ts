@@ -1616,6 +1616,8 @@ export type UserConfigNotificationsDto = {
     smtp: UserConfigSmtpDto;
 };
 export type UserConfigOAuthDto = {
+    /** Account management URL */
+    accountManagementUrl?: string;
     /** Auto launch */
     autoLaunch: boolean;
     /** Button text */
