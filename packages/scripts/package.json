@@ -28,10 +28,10 @@
     "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@types/node": "^24.13.6",
+    "@types/node": "^24.19.2",
     "@types/semver": "^7.7.1",
     "vite": "^8.0.16",
-    "vitest": "^4.1.8"
+    "vitest": "^5.0.0"
   },
-  "packageManager": "pnpm@11.27.1"
+  "packageManager": "pnpm@12.14.0"
 }

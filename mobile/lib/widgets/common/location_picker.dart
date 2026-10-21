@@ -1,9 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -21,14 +19,14 @@ class _LocationPicker extends HookWidget {
 
   const _LocationPicker({this.initialLatLng});
 
-  bool _validateLat(String value) {
-    final l = double.tryParse(value);
-    return l != null && l > -90 && l < 90;
+  double? _parseLat(String value) {
+    final l = double.tryParse(value.replaceAll(',', '.'));
+    return l != null && l > -90 && l < 90 ? l : null;
   }
 
-  bool _validateLong(String value) {
-    final l = double.tryParse(value);
-    return l != null && l > -180 && l < 180;
+  double? _parseLong(String value) {
+    final l = double.tryParse(value.replaceAll(',', '.'));
+    return l != null && l > -180 && l < 180 ? l : null;
   }
 
   @override
@@ -36,33 +34,37 @@ class _LocationPicker extends HookWidget {
     final latitude = useState(initialLatLng?.latitude ?? 0.0);
     final longitude = useState(initialLatLng?.longitude ?? 0.0);
     final latlng = LatLng(latitude.value, longitude.value);
+    final isLatitudeValid = useState(true);
+    final isLongitudeValid = useState(true);
     final latitiudeFocusNode = useFocusNode();
     final longitudeFocusNode = useFocusNode();
     final latitudeController = useTextEditingController(text: latitude.value.toStringAsFixed(4));
     final longitudeController = useTextEditingController(text: longitude.value.toStringAsFixed(4));
-
-    useEffect(() {
-      latitudeController.text = latitude.value.toStringAsFixed(4);
-      longitudeController.text = longitude.value.toStringAsFixed(4);
-      return null;
-    }, [latitude.value, longitude.value]);
 
     Future<void> onMapTap() async {
       final newLatLng = await context.pushRoute<LatLng?>(MapLocationPickerRoute(initialLatLng: latlng));
       if (newLatLng != null) {
         latitude.value = newLatLng.latitude;
         longitude.value = newLatLng.longitude;
+        latitudeController.text = newLatLng.latitude.toStringAsFixed(4);
+        longitudeController.text = newLatLng.longitude.toStringAsFixed(4);
       }
     }
 
-    void onLatitudeUpdated(double value) {
-      latitude.value = value;
+    void onLatitudeUpdated() {
       longitudeFocusNode.requestFocus();
     }
 
-    void onLongitudeEditingCompleted(double value) {
-      longitude.value = value;
+    void onLongitudeEditingCompleted() {
       longitudeFocusNode.unfocus();
+    }
+
+    Future<void> onUpdate() async {
+      isLatitudeValid.value = _parseLat(latitudeController.text) != null;
+      isLongitudeValid.value = _parseLong(longitudeController.text) != null;
+      if (isLatitudeValid.value && isLongitudeValid.value) {
+        await context.maybePop(LatLng(latitude.value, longitude.value));
+      }
     }
 
     return AlertDialog(
@@ -89,7 +91,9 @@ class _LocationPicker extends HookWidget {
               hintText: context.t.location_picker_latitude_hint,
               errorText: context.t.location_picker_latitude_error,
               focusNode: latitiudeFocusNode,
-              validator: _validateLat,
+              coordinate: latitude,
+              isValid: isLatitudeValid,
+              parse: _parseLat,
               onUpdated: onLatitudeUpdated,
             ),
             const SizedBox(height: 24),
@@ -99,7 +103,9 @@ class _LocationPicker extends HookWidget {
               hintText: context.t.location_picker_longitude_hint,
               errorText: context.t.location_picker_longitude_error,
               focusNode: longitudeFocusNode,
-              validator: _validateLong,
+              coordinate: longitude,
+              isValid: isLongitudeValid,
+              parse: _parseLong,
               onUpdated: onLongitudeEditingCompleted,
             ),
           ],
@@ -117,7 +123,7 @@ class _LocationPicker extends HookWidget {
           ),
         ),
         TextButton(
-          onPressed: () => context.maybePop(latlng),
+          onPressed: onUpdate,
           child: Text(
             context.t.action_common_update,
             style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
@@ -128,14 +134,16 @@ class _LocationPicker extends HookWidget {
   }
 }
 
-class _ManualPickerInput extends HookWidget {
+class _ManualPickerInput extends StatelessWidget {
   final TextEditingController controller;
   final String decorationText;
   final String hintText;
   final String errorText;
   final FocusNode focusNode;
-  final bool Function(String value) validator;
-  final Function(double value) onUpdated;
+  final ValueNotifier<double> coordinate;
+  final ValueNotifier<bool> isValid;
+  final double? Function(String value) parse;
+  final VoidCallback onUpdated;
 
   const _ManualPickerInput({
     required this.controller,
@@ -143,17 +151,17 @@ class _ManualPickerInput extends HookWidget {
     required this.hintText,
     required this.errorText,
     required this.focusNode,
-    required this.validator,
+    required this.coordinate,
+    required this.isValid,
+    required this.parse,
     required this.onUpdated,
   });
   @override
   Widget build(BuildContext context) {
-    final isValid = useState(true);
-
     void onEditingComplete() {
-      isValid.value = validator(controller.text);
+      isValid.value = parse(controller.text) != null;
       if (isValid.value) {
-        onUpdated(controller.text.toDouble());
+        onUpdated();
       }
     }
 
@@ -171,9 +179,9 @@ class _ManualPickerInput extends HookWidget {
         hintStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
         errorText: isValid.value ? null : errorText,
       ),
+      onChanged: (text) => coordinate.value = parse(text) ?? coordinate.value,
       onEditingComplete: onEditingComplete,
       keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-      inputFormatters: [LengthLimitingTextInputFormatter(8)],
       onTapOutside: (_) => focusNode.unfocus(),
     );
   }

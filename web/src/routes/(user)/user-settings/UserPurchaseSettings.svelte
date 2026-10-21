@@ -5,13 +5,14 @@
   import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import { dateFormats } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { getAboutInfoQuery } from '$lib/queries/server.query';
+  import { queryClient } from '$lib/queries/client';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
   import {
     deleteUserLicense as deleteIndividualProductKey,
     deleteServerLicense as deleteServerProductKey,
-    getAboutInfo,
     getMyUser,
     getServerLicense,
     isHttpError,
@@ -26,7 +27,7 @@
   let serverPurchaseInfo: LicenseResponseDto | null = $state(null);
 
   const checkPurchaseInfo = async () => {
-    const serverInfo = await getAboutInfo();
+    const serverInfo = await queryClient.query(getAboutInfoQuery());
     isServerProduct = serverInfo.licensed;
 
     const response = await getMyUser();
@@ -90,6 +91,8 @@
       }
 
       await deleteServerProductKey();
+      // contains license status
+      await queryClient.invalidateQueries({ queryKey: getAboutInfoQuery().queryKey });
       authManager.isPurchased = false;
     } catch (error) {
       handleError(error, $t('errors.failed_to_remove_product_key'));

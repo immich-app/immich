@@ -85,7 +85,7 @@ export const getPagesProvider = ($t: MessageFormatter) => {
       title: $t('explore'),
       icon: mdiMagnify,
       onAction: () => goto(Route.explore()),
-      $if: () => authManager.authenticated && featureFlagsManager.value.search,
+      $if: () => authManager.authenticated,
     },
 
     {

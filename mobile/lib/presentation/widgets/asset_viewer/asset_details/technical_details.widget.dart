@@ -99,7 +99,7 @@ class TechnicalDetails extends ConsumerWidget {
   static String _getFileInfo(BaseAsset asset, ExifInfo? exifInfo) {
     final height = asset.height;
     final width = asset.width;
-    final resolution = (width != null && height != null) ? "$width x $height" : null;
+    final resolution = (width != null && height != null) ? "$width × $height" : null;
     final fileSize = exifInfo?.fileSize != null ? formatBytes(exifInfo!.fileSize!) : null;
 
     return switch ((fileSize, resolution)) {

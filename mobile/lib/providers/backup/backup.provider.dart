@@ -228,8 +228,6 @@ class BackupNotifier extends StateNotifier<BackupState> {
   }
 
   void _handleForegroundBackupError(String localAssetId, String errorMessage) {
-    _logger.severe("Upload failed for $localAssetId: $errorMessage");
-
     final currentItem = state.uploadItems[localAssetId];
     if (currentItem != null) {
       state = state.copyWith(
