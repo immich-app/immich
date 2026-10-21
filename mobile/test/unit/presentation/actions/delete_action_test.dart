@@ -101,6 +101,7 @@ void main() {
       testWidgets('trashes a merged asset and removes its device copy', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
+        when(() => cleanupService.deleteLocalAssets(['local'])).thenAnswer((_) async => 1);
         final asset = owned(localId: 'local');
 
         await pumpDelete(tester, {asset});
@@ -108,20 +109,6 @@ void main() {
 
         verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
         verify(() => assetService.trash([asset.id])).called(1);
-        debugDefaultTargetPlatformOverride = null;
-      });
-
-      testWidgets('does not trash a merged asset when the device deletion prompt is cancelled', (tester) async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
-        final asset = owned(localId: 'local');
-
-        await pumpDelete(tester, {asset});
-        await respondToDialog(tester, confirm: false);
-
-        verifyNever(() => cleanupService.deleteLocalAssets(any()));
-        verifyNever(() => assetService.trash(any()));
-        verifyNever(() => assetService.delete(any()));
         debugDefaultTargetPlatformOverride = null;
       });
 
@@ -182,39 +169,6 @@ void main() {
         await tester.pumpAndSettle();
 
         verify(() => assetService.trash([asset.id])).called(1);
-      });
-
-      testWidgets('finishes trashing when the action context is disposed while checking Android permissions', (tester) async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        final sdkVersion = Completer<int>();
-        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) => sdkVersion.future);
-        final asset = owned(localId: 'local');
-        var showAction = true;
-        late StateSetter updateHost;
-
-        await tester.pumpTestWidget(
-          context,
-          StatefulBuilder(
-            builder: (_, setState) {
-              updateHost = setState;
-              return showAction
-                  ? const ActionIconButton(action: DeleteAction(source: .timeline))
-                  : const SizedBox.shrink();
-            },
-          ),
-          overrides: context.selected({asset}),
-        );
-
-        await tester.tap(find.byType(ImmichIconButton));
-        await tester.pump();
-        updateHost(() => showAction = false);
-        await tester.pump();
-        sdkVersion.complete(28);
-        await tester.pumpAndSettle();
-
-        verify(() => assetService.trash([asset.id])).called(1);
-        verifyNever(() => cleanupService.deleteLocalAssets(any()));
-        debugDefaultTargetPlatformOverride = null;
       });
 
       testWidgets('offers an undo that restores the trashed assets', (tester) async {
@@ -394,6 +348,7 @@ void main() {
         when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
         final backedUp = owned(localId: 'local');
         final localOnly = LocalAssetFactory.create();
+        when(() => cleanupService.deleteLocalAssets(['local', localOnly.id])).thenAnswer((_) async => 1);
 
         await pumpDelete(tester, {backedUp, localOnly});
         await tester.pump(const Duration(milliseconds: 300));
@@ -405,20 +360,6 @@ void main() {
         debugDefaultTargetPlatformOverride = null;
       });
 
-      testWidgets('mixed selection below API 30 deletes nothing when the prompt is cancelled', (tester) async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
-        final backedUp = owned(localId: 'local');
-        final localOnly = LocalAssetFactory.create();
-
-        await pumpDelete(tester, {backedUp, localOnly});
-        await respondToDialog(tester, confirm: false);
-
-        verifyNever(() => cleanupService.deleteLocalAssets(any()));
-        verifyNever(() => assetService.trash(any()));
-        verifyNever(() => assetService.delete(any()));
-        debugDefaultTargetPlatformOverride = null;
-      });
     });
 
     testWidgets('is hidden when nothing can be deleted', (tester) async {

@@ -17,8 +17,6 @@ import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
 typedef _State = ({List<String> localIds, List<String> remoteIds, bool trash, bool isLocalOnly});
-typedef _CleanupResult = ({bool cancelled, int deletedCount});
-typedef _DeletionPermission = ({bool allowed, bool cancelled, bool usesSystemPrompt});
 
 final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, source) {
   final assets = ref.watch(assetsActionProvider(source));
@@ -108,11 +106,11 @@ class DeleteAction extends AssetActionBuilder {
     required bool isLocalOnly,
   }) async {
     final count = await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
-    if (count.deletedCount <= 0 || !context.mounted) {
+    if (count <= 0 || !context.mounted) {
       return null;
     }
 
-    return context.t.cleanup_deleted_assets(count: count.deletedCount);
+    return context.t.cleanup_deleted_assets(count: count);
   }
 
   Future<String?> _moveToTrash(
@@ -125,8 +123,8 @@ class DeleteAction extends AssetActionBuilder {
     final assetService = ref.read(assetServiceProvider);
     final message = context.t.trash_action_prompt(count: remoteIds.length);
     if (localIds.isNotEmpty) {
-      final result = await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
-      if (result.cancelled) {
+      final count = await _cleanupLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
+      if (count <= 0) {
         return null;
       }
     }
@@ -198,12 +196,12 @@ class CleanupLocalAction extends AssetActionBuilder {
     final clearSelection = ref.read(clearSelectionProvider(source));
 
     try {
-      final result = await _cleanupLocalAssets(context, ref, assetIds);
-      if (result.deletedCount <= 0 || !context.mounted) {
+      final count = await _cleanupLocalAssets(context, ref, assetIds);
+      if (count <= 0 || !context.mounted) {
         return;
       }
 
-      toastService.success(context.t.cleanup_deleted_assets(count: result.deletedCount));
+      toastService.success(context.t.cleanup_deleted_assets(count: count));
       clearSelection();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to remove the device copies");
@@ -211,8 +209,8 @@ class CleanupLocalAction extends AssetActionBuilder {
   }
 }
 
-/// Removes the device copies of [assetIds], returning the deletion result.
-Future<_CleanupResult> _cleanupLocalAssets(
+/// Removes the device copies of [assetIds], returning how many were deleted.
+Future<int> _cleanupLocalAssets(
   BuildContext context,
   WidgetRef ref,
   List<String> assetIds, {
@@ -220,23 +218,15 @@ Future<_CleanupResult> _cleanupLocalAssets(
   bool isLocalOnly = false,
 }) async {
   if (assetIds.isEmpty) {
-    return (cancelled: false, deletedCount: 0);
+    return 0;
   }
 
   final cleanupService = ref.read(cleanupServiceProvider);
-  final permission = await _allowsDeletion(
-    context,
-    ref,
-    requestCustomPrompt: requestCustomPrompt,
-    isLocalOnly: isLocalOnly,
-  );
-  if (!permission.allowed) {
-    return (cancelled: permission.cancelled, deletedCount: 0);
+  if (!await _allowsDeletion(context, ref, requestCustomPrompt: requestCustomPrompt, isLocalOnly: isLocalOnly)) {
+    return 0;
   }
 
-  final deletedCount = await cleanupService.deleteLocalAssets(assetIds);
-  // Android's system deletion sheet returns no IDs when it is cancelled.
-  return (cancelled: permission.usesSystemPrompt && deletedCount == 0, deletedCount: deletedCount);
+  return cleanupService.deleteLocalAssets(assetIds);
 }
 
 /// iOS always shows a prompt and adds to on device trash
@@ -245,20 +235,20 @@ Future<_CleanupResult> _cleanupLocalAssets(
 ///   30: Prompts by default. Immediately deletes
 ///   > 30: When `MANAGE_MEDIA` is present, does not prompt by default. When `MANAGE_MEDIA` is not present, does prompt
 ///         by default. Either way adds to trash. We provide a prompt to notify the user in the `MANAGE_MEDIA` case
-Future<_DeletionPermission> _allowsDeletion(
+Future<bool> _allowsDeletion(
   BuildContext context,
   WidgetRef ref, {
   required bool requestCustomPrompt,
   required bool isLocalOnly,
 }) async {
   if (!requestCustomPrompt || !CurrentPlatform.isAndroid) {
-    return (allowed: true, cancelled: false, usesSystemPrompt: false);
+    return true;
   }
 
   final manageMedia = ref.read(storeServiceProvider).get(.manageLocalMediaAndroid, false);
   final versionRequiresPrompt = await ref.read(permissionRepositoryProvider).getAndroidSdkVersion() < 30;
   if (!context.mounted) {
-    return (allowed: false, cancelled: false, usesSystemPrompt: false);
+    return false;
   }
 
   final ConfirmDialog dialog;
@@ -275,12 +265,9 @@ Future<_DeletionPermission> _allowsDeletion(
       ok: context.t.ok,
     );
   } else {
-    return (allowed: true, cancelled: false, usesSystemPrompt: true);
+    return true;
   }
 
   final confirmed = await showDialog<bool>(context: context, builder: (_) => dialog);
-  if (!context.mounted) {
-    return (allowed: false, cancelled: false, usesSystemPrompt: false);
-  }
-  return (allowed: confirmed == true, cancelled: confirmed != true, usesSystemPrompt: false);
+  return confirmed == true;
 }
