@@ -39,7 +39,6 @@
     type SearchFilter,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
-  import { isEmpty } from 'lodash-es';
   import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { onMount, tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -68,24 +67,11 @@
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let terms = $derived<SearchQuery>(searchQuery ? JSON.parse(searchQuery) : {});
 
-  // takenAt is split into one chip per bound so each can be removed on its own
-  type SearchTermKey = 'query' | 'queryAssetId' | 'takenAfter' | 'takenBefore' | keyof SearchFilter;
+  type SearchTermKey = 'query' | 'queryAssetId' | keyof SearchFilter;
   let searchTermKeys = $derived<SearchTermKey[]>([
     ...(['query', 'queryAssetId'] as const).filter((key) => terms[key] !== undefined),
-    ...getObjectKeys(terms.filter ?? {}).flatMap((key) => (key === 'takenAt' ? getDateKeys() : [key])),
+    ...getObjectKeys(terms.filter ?? {}),
   ]);
-
-  function getDateKeys(): SearchTermKey[] {
-    const { gte, lte } = terms.filter?.takenAt ?? {};
-    const keys: SearchTermKey[] = [];
-    if (gte) {
-      keys.push('takenAfter');
-    }
-    if (lte) {
-      keys.push('takenBefore');
-    }
-    return keys.length > 0 ? keys : ['takenAt'];
-  }
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
@@ -191,9 +177,12 @@
   }
 
   function getHumanReadableSearchKey(key: SearchTermKey): string {
+    if (key === 'takenAt') {
+      const { gte, lte } = terms.filter?.takenAt ?? {};
+      return gte && lte ? $t('date_range') : gte ? $t('start_date') : $t('end_date');
+    }
+
     const keyMap: Partial<Record<SearchTermKey, string>> = {
-      takenAfter: $t('start_date'),
-      takenBefore: $t('end_date'),
       visibility: $t('in_archive'),
       isFavorite: $t('favorite'),
       hasAlbums: $t('not_in_any_album'),
@@ -280,11 +269,12 @@
       case 'queryAssetId': {
         return terms[key];
       }
-      case 'takenAfter': {
-        return filter.takenAt?.gte ? getHumanReadableDate(filter.takenAt.gte) : undefined;
-      }
-      case 'takenBefore': {
-        return filter.takenAt?.lte ? getHumanReadableDate(filter.takenAt.lte) : undefined;
+      case 'takenAt': {
+        const { gte, lte } = filter.takenAt ?? {};
+        return [gte, lte]
+          .filter((date) => date !== undefined)
+          .map((date) => getHumanReadableDate(date))
+          .join(' – ');
       }
       case 'personIds': {
         return getPersonName(filter.personIds?.all ?? []);
@@ -316,14 +306,11 @@
   function removeFilter(key: SearchTermKey) {
     if (key === 'query' || key === 'queryAssetId') {
       delete terms[key];
-    } else if (key === 'takenAfter' || key === 'takenBefore') {
-      const takenAt = terms.filter?.takenAt;
-      delete takenAt?.[key === 'takenAfter' ? 'gte' : 'lte'];
-      if (terms.filter && isEmpty(takenAt)) {
-        delete terms.filter.takenAt;
+    } else if (terms.filter) {
+      delete terms.filter[key];
+      if (Object.keys(terms.filter).length === 0) {
+        delete terms.filter;
       }
-    } else {
-      delete terms.filter?.[key];
     }
     assetMultiSelectManager.clear();
     void goto(Route.search(terms));
