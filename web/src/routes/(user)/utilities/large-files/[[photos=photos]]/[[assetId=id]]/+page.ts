@@ -5,7 +5,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-  const { isElevated } = await getAuthStatus();
+  const [{ isElevated }, $t] = await Promise.all([getAuthStatus(), getFormatter()]);
   const {
     assets: { items: assets },
   } = await searchAssets({
@@ -19,7 +19,6 @@ export const load = (async ({ url }) => {
       withExif: true,
     },
   });
-  const $t = await getFormatter();
 
   return {
     assets,

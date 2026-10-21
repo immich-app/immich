@@ -65,7 +65,6 @@ export type SearchQuery = Pick<SmartSearchDto, 'query' | 'queryAssetId' | 'filte
 
 export type SearchFilter = {
   query: string;
-  ocr?: string;
   queryType: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr';
   personIds: SvelteSet<string>;
   tagIds: SvelteSet<string> | null;
