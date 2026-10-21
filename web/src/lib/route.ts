@@ -1,7 +1,7 @@
 import { OpenQueryParam, type SharedLinkTab } from '#lib/constants.ts';
 import type { SearchQuery } from '#lib/types.ts';
 import { IntegrityReport, QueueName, getBaseUrl } from '@immich/sdk';
-import { omitBy } from 'lodash-es';
+import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 
 const asQueueSlug = (name: QueueName) => {
   return name.replaceAll(/[A-Z]/g, (m) => '-' + m.toLowerCase());
@@ -100,7 +100,8 @@ export const Route = {
 
   // search
   search: (dto?: SearchQuery) => {
-    const metadata = omitBy(dto ?? {}, (value) => value === undefined);
+    const filter = omitBy(dto?.filter ?? {}, isUndefined);
+    const metadata = omitBy({ ...dto, filter: isEmpty(filter) ? undefined : filter }, isUndefined);
     const query = Object.keys(metadata).length === 0 ? undefined : JSON.stringify(metadata);
     return `/search` + asQueryString({ query });
   },
