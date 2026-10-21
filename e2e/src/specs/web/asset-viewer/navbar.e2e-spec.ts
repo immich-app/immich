@@ -21,6 +21,7 @@ test.describe('Asset Viewer Navbar', () => {
       const sharedLink = await utils.createSharedLink(admin.accessToken, {
         type: SharedLinkType.Individual,
         assetIds: [asset.id],
+        allowUpload: true,
         showMetadata: false,
       });
       await page.goto(`/share/${sharedLink.key}/photos/${asset.id}`);
@@ -38,6 +39,7 @@ test.describe('Asset Viewer Navbar', () => {
       const sharedLink = await utils.createSharedLink(admin.accessToken, {
         type: SharedLinkType.Individual,
         assetIds: [asset.id],
+        allowUpload: true,
         showMetadata: false,
       });
       await utils.setAuthCookies(context, admin.accessToken);
