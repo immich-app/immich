@@ -1,6 +1,7 @@
-import { getBaseUrl, IntegrityReport, QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
-import { omitBy } from 'lodash-es';
+import { getBaseUrl, IntegrityReport, QueueName } from '@immich/sdk';
+import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
+import type { SearchQuery } from '$lib/types';
 
 const asQueueSlug = (name: QueueName) => {
   return name.replaceAll(/[A-Z]/g, (m) => '-' + m.toLowerCase());
@@ -102,9 +103,10 @@ export const Route = {
   recentlyAdded: () => '/recently-added',
 
   // search
-  search: (dto?: MetadataSearchDto | SmartSearchDto) => {
-    const metadata = omitBy(dto ?? {}, (value) => value === undefined);
-    const query = Object.keys(metadata).length === 0 ? undefined : JSON.stringify(metadata);
+  search: (dto?: SearchQuery) => {
+    const filter = omitBy(dto?.filter ?? {}, isUndefined);
+    const metadata = omitBy({ ...dto, filter: isEmpty(filter) ? undefined : filter }, isUndefined);
+    const query = isEmpty(metadata) ? undefined : JSON.stringify(metadata);
     return `/search` + asQueryString({ query });
   },
 

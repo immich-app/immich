@@ -13,7 +13,7 @@ import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-net
 import { assetViewerUtils } from '../timeline/utils';
 
 const buildSearchUrl = (assetId: string) => {
-  const searchQuery = encodeURIComponent(JSON.stringify({ originalFileName: 'test' }));
+  const searchQuery = encodeURIComponent(JSON.stringify({ filter: { originalFileName: { like: 'test' } } }));
   return `/search/photos/${assetId}?query=${searchQuery}`;
 };
 
@@ -63,7 +63,7 @@ test.describe('search gallery-viewer', () => {
               count: searchAssets.length,
               items: searchAssets,
               facets: [],
-              nextPage: null,
+              nextCursor: null,
             },
           },
         });

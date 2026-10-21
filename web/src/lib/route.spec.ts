@@ -16,7 +16,13 @@ describe('Route', () => {
     });
 
     it('should work', () => {
-      expect(Route.search({ make: undefined, model: 'Immich' })).toBe('/search?query=%7B%22model%22%3A%22Immich%22%7D');
+      expect(Route.search({ query: undefined, filter: { model: { eq: 'Immich' } } })).toBe(
+        '/search?query=%7B%22filter%22%3A%7B%22model%22%3A%7B%22eq%22%3A%22Immich%22%7D%7D%7D',
+      );
+    });
+
+    it('should omit an empty filter', () => {
+      expect(Route.search({ filter: { city: undefined } })).toBe('/search');
     });
 
     it('should support query parameters', () => {

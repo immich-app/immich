@@ -24,7 +24,7 @@ describe('SearchTagsSection component', () => {
     vi.stubGlobal('visualViewport', getVisualViewportMock());
     authManager.setUser(userAdminFactory.build());
     authManager.setPreferences(preferencesFactory.build({ tags: { enabled: true, sidebarWeb: true } }));
-    searchManager.setQuery({ tagIds: ['tag-1', 'tag-2'] });
+    searchManager.setQuery({ filter: { tagIds: { all: ['tag-1', 'tag-2'] } } });
   });
 
   afterEach(() => {
@@ -72,7 +72,7 @@ describe('SearchTagsSection component', () => {
 
   it('restores an empty tag selection when untagged is toggled off', async () => {
     const user = userEvent.setup();
-    searchManager.setQuery({ tagIds: null });
+    searchManager.setQuery({ filter: { hasTags: { eq: false } } });
     render(SearchTagsSection, {
       props: { title: undefined, parentPromise: Promise.resolve([tag('tag-1', 'holiday')]) },
     });
