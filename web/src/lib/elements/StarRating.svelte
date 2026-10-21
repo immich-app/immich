@@ -1,28 +1,27 @@
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
-  import { generateId } from '$lib/utils/generate-id';
   import { Icon } from '@immich/ui';
   import { mdiStar, mdiStarOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   export type Rating = -1 | 1 | 2 | 3 | 4 | 5 | null;
 
-  interface Props {
+  type Props = {
     count?: number;
     rating: Rating;
     readOnly?: boolean;
     onRating: (rating: Rating) => void | undefined;
-  }
+  };
 
-  let { count = 5, rating, readOnly = false, onRating }: Props = $props();
+  const { count = 5, rating, readOnly = false, onRating }: Props = $props();
 
   let ratingSelection = $derived(rating);
   let hoverRating: Rating = $state(null);
   let focusRating: Rating = $state(null);
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  const id = generateId();
+  const id = $props.id();
 
   const handleSelect = (newRating: Rating) => {
     if (readOnly) {

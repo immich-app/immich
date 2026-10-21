@@ -9,7 +9,6 @@
     getContextMenuPositionFromEvent,
     type Align,
   } from '$lib/utils/context-menu';
-  import { generateId } from '$lib/utils/generate-id';
   import { IconButton, type Color, type Size, type Variants } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
@@ -61,7 +60,7 @@
   let menuContainer: HTMLUListElement | undefined = $state();
   let buttonContainer: HTMLDivElement | undefined = $state();
 
-  const id = generateId();
+  const id = $props.id();
   const buttonId = `context-menu-button-${id}`;
   const menuId = `context-menu-${id}`;
 
