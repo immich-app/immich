@@ -1,5 +1,6 @@
-import { searchWorkflows } from '@immich/sdk';
 import { pluginManager } from '$lib/managers/plugin-manager.svelte';
+import { queryClient } from '$lib/queries/client';
+import { searchWorkflowsQuery } from '$lib/queries/workflow.query';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
@@ -7,11 +8,10 @@ import type { PageLoad } from './$types';
 export const load = (async ({ url }) => {
   await authenticate(url);
 
-  const [workflows] = await Promise.all([searchWorkflows({}), pluginManager.ready()]);
+  await Promise.all([queryClient.query(searchWorkflowsQuery()), pluginManager.ready()]);
   const $t = await getFormatter();
 
   return {
-    workflows,
     meta: {
       title: $t('workflows'),
     },
