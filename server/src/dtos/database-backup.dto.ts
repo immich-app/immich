@@ -27,6 +27,8 @@ const DatabaseBackupDeleteSchema = z
   })
   .meta({ id: 'DatabaseBackupDeleteDto' });
 
+export type DatabaseBackupDto = z.infer<typeof DatabaseBackupSchema>;
+
 export class DatabaseBackupListResponseDto extends createZodDto(DatabaseBackupListResponseSchema) {}
 export class DatabaseBackupUploadDto extends createZodDto(DatabaseBackupUploadSchema) {}
 export class DatabaseBackupDeleteDto extends createZodDto(DatabaseBackupDeleteSchema) {}
