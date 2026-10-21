@@ -106,7 +106,7 @@ export const Route = {
   search: (dto?: SearchQuery) => {
     const filter = omitBy(dto?.filter ?? {}, isUndefined);
     const metadata = omitBy({ ...dto, filter: isEmpty(filter) ? undefined : filter }, isUndefined);
-    const query = Object.keys(metadata).length === 0 ? undefined : JSON.stringify(metadata);
+    const query = isEmpty(metadata) ? undefined : JSON.stringify(metadata);
     return `/search` + asQueryString({ query });
   },
 

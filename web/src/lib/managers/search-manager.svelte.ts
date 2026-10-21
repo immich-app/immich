@@ -1,5 +1,4 @@
 import { AssetTypeEnum, AssetVisibility, type SearchFilter as SearchFilterDto } from '@immich/sdk';
-import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import type { DateTime } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
@@ -61,7 +60,6 @@ class SearchManager {
 
     return {
       query,
-      ocr: filter.ocr?.matches,
       queryType,
       queryAssetId: searchQuery.queryAssetId,
       personIds: new SvelteSet(filter.personIds?.all),
@@ -107,41 +105,38 @@ class SearchManager {
     const { takenAfter, takenBefore } = this.filter.date;
     const { tagIds } = this.filter;
 
-    const filter: SearchFilterDto = omitBy(
-      {
-        ocr: this.filter.queryType === 'ocr' && query ? { matches: query } : undefined,
-        originalFileName: this.filter.queryType === 'metadata' && query ? { like: query } : undefined,
-        description: this.filter.queryType === 'description' && query ? { like: query } : undefined,
-        originalPath: this.filter.queryType === 'fullPath' && query ? { like: query } : undefined,
-        country: this.#toEqFilter(this.filter.location.country),
-        state: this.#toEqFilter(this.filter.location.state),
-        city: this.#toEqFilter(this.filter.location.city),
-        make: this.#toEqFilter(this.filter.camera.make),
-        model: this.#toEqFilter(this.filter.camera.model),
-        lensModel: this.#toEqFilter(this.filter.camera.lensModel),
-        takenAt:
-          takenAfter || takenBefore
-            ? {
-                gte: takenAfter ? asLocalTimeISO(takenAfter.startOf('day') as DateTime<true>) : undefined,
-                lte: takenBefore ? asLocalTimeISO(takenBefore.endOf('day') as DateTime<true>) : undefined,
-              }
-            : undefined,
-        visibility: this.filter.display.isArchive ? { eq: AssetVisibility.Archive } : undefined,
-        isFavorite: this.filter.display.isFavorite ? { eq: true } : undefined,
-        hasAlbums: this.filter.display.isNotInAlbum ? { eq: false } : undefined,
-        personIds: this.filter.personIds.size > 0 ? { all: [...this.filter.personIds] } : undefined,
-        tagIds: tagIds && tagIds.size > 0 ? { all: [...tagIds] } : undefined,
-        hasTags: tagIds === null ? { eq: false } : undefined,
-        type: type ? { eq: type } : undefined,
-        rating: this.filter.rating === undefined ? undefined : { eq: this.filter.rating },
-      },
-      isUndefined,
-    );
+    const filter: SearchFilterDto = {
+      ocr: this.filter.queryType === 'ocr' && query ? { matches: query } : undefined,
+      originalFileName: this.filter.queryType === 'metadata' && query ? { like: query } : undefined,
+      description: this.filter.queryType === 'description' && query ? { like: query } : undefined,
+      originalPath: this.filter.queryType === 'fullPath' && query ? { like: query } : undefined,
+      country: this.#toEqFilter(this.filter.location.country),
+      state: this.#toEqFilter(this.filter.location.state),
+      city: this.#toEqFilter(this.filter.location.city),
+      make: this.#toEqFilter(this.filter.camera.make),
+      model: this.#toEqFilter(this.filter.camera.model),
+      lensModel: this.#toEqFilter(this.filter.camera.lensModel),
+      takenAt:
+        takenAfter || takenBefore
+          ? {
+              gte: takenAfter ? asLocalTimeISO(takenAfter.startOf('day') as DateTime<true>) : undefined,
+              lte: takenBefore ? asLocalTimeISO(takenBefore.endOf('day') as DateTime<true>) : undefined,
+            }
+          : undefined,
+      visibility: this.filter.display.isArchive ? { eq: AssetVisibility.Archive } : undefined,
+      isFavorite: this.filter.display.isFavorite ? { eq: true } : undefined,
+      hasAlbums: this.filter.display.isNotInAlbum ? { eq: false } : undefined,
+      personIds: this.filter.personIds.size > 0 ? { all: [...this.filter.personIds] } : undefined,
+      tagIds: tagIds && tagIds.size > 0 ? { all: [...tagIds] } : undefined,
+      hasTags: tagIds === null ? { eq: false } : undefined,
+      type: type ? { eq: type } : undefined,
+      rating: this.filter.rating === undefined ? undefined : { eq: this.filter.rating },
+    };
 
     return {
       query: this.filter.queryType === 'smart' ? query : undefined,
       queryAssetId: this.filter.queryAssetId || undefined,
-      filter: isEmpty(filter) ? undefined : filter,
+      filter,
     };
   }
 

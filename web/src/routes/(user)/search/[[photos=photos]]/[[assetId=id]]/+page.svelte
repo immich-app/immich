@@ -287,11 +287,8 @@
   function removeFilter(key: SearchTermKey) {
     if (key === 'query' || key === 'queryAssetId') {
       delete terms[key];
-    } else if (terms.filter) {
-      delete terms.filter[key];
-      if (Object.keys(terms.filter).length === 0) {
-        delete terms.filter;
-      }
+    } else {
+      delete terms.filter?.[key];
     }
     assetMultiSelectManager.clear();
     void goto(Route.search(terms));
