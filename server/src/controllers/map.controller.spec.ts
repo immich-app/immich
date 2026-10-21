@@ -63,4 +63,33 @@ describe(MapController.name, () => {
       expect(service.reverseGeocode).not.toHaveBeenCalled();
     });
   });
+
+  describe('POST /map/favorite-locations', () => {
+    it('should reject a blank favorite location name', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/map/favorite-locations')
+        .send({ name: '   ', latitude: 42, longitude: 69 });
+
+      expect(status).toBe(400);
+      expect(service.createFavoriteLocation).not.toHaveBeenCalled();
+    });
+
+    it('should reject a latitude outside the valid range', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/map/favorite-locations')
+        .send({ name: 'Home', latitude: 91, longitude: 69 });
+
+      expect(status).toBe(400);
+      expect(service.createFavoriteLocation).not.toHaveBeenCalled();
+    });
+
+    it('should reject a longitude outside the valid range', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/map/favorite-locations')
+        .send({ name: 'Home', latitude: 42, longitude: -181 });
+
+      expect(status).toBe(400);
+      expect(service.createFavoriteLocation).not.toHaveBeenCalled();
+    });
+  });
 });

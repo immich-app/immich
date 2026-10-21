@@ -106,4 +106,51 @@ describe(MapService.name, () => {
       expect(mocks.map.reverseGeocode).toHaveBeenCalledWith({ latitude: 42, longitude: 69 });
     });
   });
+
+  describe('favorite locations', () => {
+    it('should list favorite locations for the authenticated user only', async () => {
+      const auth = AuthFactory.create();
+      const otherAuth = AuthFactory.create();
+      const locations = [{ id: 'location-id', name: 'Home', latitude: 42, longitude: 69 }];
+      mocks.map.getFavoriteLocations.mockResolvedValue(locations);
+
+      await expect(sut.getFavoriteLocations(auth)).resolves.toEqual(locations);
+      await sut.getFavoriteLocations(otherAuth);
+
+      expect(mocks.map.getFavoriteLocations).toHaveBeenNthCalledWith(1, auth.user.id);
+      expect(mocks.map.getFavoriteLocations).toHaveBeenNthCalledWith(2, otherAuth.user.id);
+    });
+
+    it('should create a favorite location for the authenticated user', async () => {
+      const auth = AuthFactory.create();
+      const dto = { name: 'Home', latitude: 42, longitude: 69 };
+      const location = { id: 'location-id', ...dto };
+      mocks.map.createFavoriteLocation.mockResolvedValue(location);
+
+      await expect(sut.createFavoriteLocation(auth, dto)).resolves.toEqual(location);
+
+      expect(mocks.map.createFavoriteLocation).toHaveBeenCalledWith({ ...dto, userId: auth.user.id });
+    });
+
+    it('should delete a favorite location for the authenticated user', async () => {
+      const auth = AuthFactory.create();
+      const id = 'location-id';
+      mocks.map.deleteFavoriteLocation.mockResolvedValue(true);
+
+      await expect(sut.deleteFavoriteLocation(auth, id)).resolves.toBeUndefined();
+
+      expect(mocks.map.deleteFavoriteLocation).toHaveBeenCalledWith(id, auth.user.id);
+    });
+
+    it('should not delete a favorite location owned by another user', async () => {
+      const auth = AuthFactory.create();
+      mocks.map.deleteFavoriteLocation.mockResolvedValue(false);
+
+      await expect(sut.deleteFavoriteLocation(auth, 'another-users-location')).rejects.toThrow(
+        'Favorite location not found',
+      );
+
+      expect(mocks.map.deleteFavoriteLocation).toHaveBeenCalledWith('another-users-location', auth.user.id);
+    });
+  });
 });
