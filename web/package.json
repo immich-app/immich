@@ -39,7 +39,7 @@
     "@tanstack/svelte-query": "^6.3.2",
     "@simplewebauthn/browser": "14.0.0",
     "@types/geojson": "^7946.0.16",
-    "@zoom-image/core": "^0.42.0",
+    "@zoom-image/core": "^0.43.0",
     "@zoom-image/svelte": "^0.3.0",
     "dom-to-image": "^2.6.0",
     "fabric": "^7.0.0",
