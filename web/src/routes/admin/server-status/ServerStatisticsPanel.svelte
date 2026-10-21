@@ -98,7 +98,7 @@
 
           <div class="relative flex text-center font-mono text-2xl font-medium">
             {#if stats}
-              {@const storageUsageWithUnit = getStorageUsageWithUnit(stats.usage)}
+              {const storageUsageWithUnit = $derived(getStorageUsageWithUnit(stats.usage))}
               <span class="text-light-300">{zeros(storageUsageWithUnit[0])}</span><span class="text-primary"
                 >{storageUsageWithUnit[0]}</span
               >
@@ -128,7 +128,7 @@
         {#each users as user (user.id)}
           <TableRow>
             <TableCell class="w-1/4">{user.name}</TableCell>
-            {@const userStats = getUserStats(user.id)}
+            {const userStats = $derived(getUserStats(user.id))}
             {#if userStats}
               <TableCell class="w-1/4">
                 {userStats.photos.toLocaleString($locale)} (<FormatBytes bytes={userStats.usagePhotos} />)</TableCell

@@ -86,8 +86,8 @@
       {/if}
 
       {#if description}
-        {@const SvelteComponent = description}
         <div class="text-sm dark:text-white">
+          {const SvelteComponent = $derived(description)}
           <SvelteComponent />
         </div>
       {/if}
@@ -139,10 +139,8 @@
         </QueueCardButton>
       {/if}
       {#if queue.isPaused}
-        {@const size = waitingCount > 0 ? '24' : '48'}
         <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Resume, force: false })}>
-          <!-- size property is not reactive, so have to use width and height -->
-          <Icon icon={mdiFastForward} {size} />
+          <Icon icon={mdiFastForward} size={waitingCount > 0 ? '24' : '48'} />
           <span>{$t('resume')}</span>
         </QueueCardButton>
       {:else}

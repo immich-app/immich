@@ -265,7 +265,7 @@
         </svg>
       </div>
       {#each boundingBoxes as boundingbox (boundingbox.id)}
-        {@const isActive = assetViewerManager.highlightedFaces.some((f) => f.id === boundingbox.id)}
+        {const isActive = $derived(assetViewerManager.highlightedFaces.some((f) => f.id === boundingbox.id))}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
           class="pointer-events-auto absolute rounded-lg {isActive && 'border-3 border-solid border-white'}"
@@ -274,9 +274,10 @@
           onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
         >
           {#if isActive && boundingbox.name}
-            {@const labelAbove =
+            {const labelAbove = $derived(
               boundingbox.top + boundingbox.height + faceLabelOffset > overlaySize.height &&
-              boundingbox.top >= faceLabelOffset}
+                boundingbox.top >= faceLabelOffset,
+            )}
             <div
               aria-hidden="true"
               class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"

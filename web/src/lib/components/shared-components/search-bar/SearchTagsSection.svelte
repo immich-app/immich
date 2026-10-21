@@ -81,7 +81,7 @@
     {#if selectedTags?.size}
       <section class="flex flex-wrap gap-2 pt-5">
         {#each selectedTags as tagId (tagId)}
-          {@const tag = tagMap[tagId]}
+          {const tag = $derived(tagMap[tagId])}
           {#if tag}
             <Button
               size="small"

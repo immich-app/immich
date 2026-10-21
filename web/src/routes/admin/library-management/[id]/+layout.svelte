@@ -61,7 +61,7 @@
           <table class="w-full">
             <tbody>
               {#each library.importPaths as folder (folder)}
-                {@const { Edit, Delete } = getLibraryFolderActions($t, library, folder)}
+                {const { Edit, Delete } = $derived(getLibraryFolderActions($t, library, folder))}
                 <tr class="h-12">
                   <td>
                     <Code>{folder}</Code>
@@ -81,7 +81,7 @@
         <table class="w-full">
           <tbody>
             {#each library.exclusionPatterns as exclusionPattern (exclusionPattern)}
-              {@const { Edit, Delete } = getLibraryExclusionPatternActions($t, library, exclusionPattern)}
+              {const { Edit, Delete } = $derived(getLibraryExclusionPatternActions($t, library, exclusionPattern))}
               <tr class="h-12">
                 <td>
                   <Code>{exclusionPattern}</Code>

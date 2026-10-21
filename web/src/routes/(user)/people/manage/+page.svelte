@@ -148,7 +148,7 @@
   <div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8">
     <PeopleInfiniteScroll {people} hasNextPage={nextPage !== null} {loadNextPage}>
       {#snippet children({ person })}
-        {@const hidden = overrides.get(person.id) ?? person.isHidden}
+        {const hidden = $derived(overrides.get(person.id) ?? person.isHidden)}
         <button
           type="button"
           class="group relative size-full"

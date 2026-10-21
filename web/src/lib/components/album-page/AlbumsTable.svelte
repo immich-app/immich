@@ -39,8 +39,8 @@
     </tbody>
   {:else}
     {#each groupedAlbums as albumGroup (albumGroup.id)}
-      {@const isCollapsed = isAlbumGroupCollapsed($albumViewSettings, albumGroup.id)}
-      {@const iconRotation = isCollapsed ? 'rotate-0' : 'rotate-90'}
+      {const isCollapsed = $derived(isAlbumGroupCollapsed($albumViewSettings, albumGroup.id))}
+      {const iconRotation = $derived(isCollapsed ? 'rotate-0' : 'rotate-90')}
       <tbody
         class="mt-4 block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >

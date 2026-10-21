@@ -129,7 +129,7 @@
 {#if assetMultiSelectManager.selectionActive}
   <div class="fixed inset-s-0 top-0 w-full">
     <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t)}
+      {const Actions = $derived(getAssetBulkActions($t))}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <ActionButton action={Actions.CreateSharedLink} />
       <IconButton

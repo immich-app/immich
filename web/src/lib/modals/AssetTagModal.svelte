@@ -79,7 +79,7 @@
 
   <section class="flex flex-wrap gap-1 pt-2">
     {#each selectedIds as tagId (tagId)}
-      {@const tag = tagMap[tagId]}
+      {const tag = $derived(tagMap[tagId])}
       {#if tag}
         <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
       {/if}

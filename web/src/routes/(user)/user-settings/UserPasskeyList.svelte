@@ -59,7 +59,7 @@
 
         <TableBody>
           {#each passkeys as passkey (passkey.id)}
-            {@const { Update, Delete } = getPasskeyActions($t, passkey)}
+            {const { Update, Delete } = $derived(getPasskeyActions($t, passkey))}
             <TableRow>
               <TableCell>{passkey.name ?? $t('passkeys', { values: { count: 1 } })}</TableCell>
               <TableCell>{new Date(passkey.createdAt).toLocaleDateString($locale, dateFormats.settings)}</TableCell>

@@ -56,7 +56,7 @@
 
         <TableBody>
           {#each keys as key (key.id)}
-            {@const { Update, Rotate, Delete } = getApiKeyActions($t, key)}
+            {const { Update, Rotate, Delete } = $derived(getApiKeyActions($t, key))}
             <TableRow>
               <TableCell>{key.name}</TableCell>
               <TableCell>

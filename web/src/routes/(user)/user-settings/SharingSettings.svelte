@@ -251,10 +251,12 @@
       <Card class="mt-4">
         <CardBody>
           {#each users as user, index (user.id)}
-            {@const { ManageAccess } = getPeopleUserActions($t, [
-              user,
-              ...users.filter(({ id }) => id !== authManager.user.id && id !== user.id),
-            ])}
+            {const { ManageAccess } = $derived(
+              getPeopleUserActions($t, [
+                user,
+                ...users.filter(({ id }) => id !== authManager.user.id && id !== user.id),
+              ]),
+            )}
             <div class="flex items-center justify-between gap-4" class:mt-4={index > 0}>
               <div class="flex items-center gap-4">
                 <UserAvatar {user} size="md" />
@@ -300,7 +302,7 @@
             {/each}
 
             {#each sentRequests as request, index (request.id)}
-              {@const user = candidates[request.userId]}
+              {const user = $derived(candidates[request.userId])}
               <div
                 class="flex items-center justify-between gap-4"
                 class:mt-4={index > 0 || receivedRequests.length > 0}
