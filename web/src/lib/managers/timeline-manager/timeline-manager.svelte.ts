@@ -284,11 +284,17 @@ export class TimelineManager extends VirtualScrollManager {
     }
   }
 
-  async #initializeTimelineMonths() {
-    const timebuckets = await getTimeBuckets({
-      ...authManager.params,
-      ...this.#options,
-    });
+  async #initializeTimelineMonths(signal: AbortSignal) {
+    const timebuckets = await getTimeBuckets(
+      {
+        ...authManager.params,
+        ...this.#options,
+      },
+      { signal },
+    );
+    if (signal.aborted) {
+      return;
+    }
 
     this.months = timebuckets.map((timeBucket) => {
       const date = new SvelteDate(timeBucket.timeBucket);
@@ -326,11 +332,14 @@ export class TimelineManager extends VirtualScrollManager {
 
   async #init(options: TimelineManagerOptions) {
     this.isInitialized = false;
+    for (const month of this.months) {
+      month.cancel();
+    }
     this.months = [];
     this.albumAssets.clear();
-    await this.initTask.execute(async () => {
+    await this.initTask.execute(async (signal) => {
       this.#options = options;
-      await this.#initializeTimelineMonths();
+      await this.#initializeTimelineMonths(signal);
     }, true);
   }
 
@@ -402,7 +411,7 @@ export class TimelineManager extends VirtualScrollManager {
     const executionStatus = await timelineMonth.loader?.execute(async (signal: AbortSignal) => {
       await loadFromTimeBuckets(this, timelineMonth, this.#options, signal);
     }, cancelable);
-    if (executionStatus === 'LOADED') {
+    if (executionStatus === 'LOADED' && this.months.includes(timelineMonth)) {
       updateGeometry(this, timelineMonth, { invalidateHeight: false });
       this.updateViewportProximities();
     }
