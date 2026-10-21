@@ -22,7 +22,7 @@ import { handleError } from '$lib/utils/handle-error';
  * Albums General Management
  * -------------------------
  */
-export const createAlbum = async (name?: string, assetIds?: string[]) => {
+const createAlbum = async (name?: string, assetIds?: string[]) => {
   try {
     const newAlbum: AlbumResponseDto = await sdk.createAlbum({
       createAlbumDto: {
