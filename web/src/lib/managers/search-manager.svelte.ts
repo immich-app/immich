@@ -103,8 +103,7 @@ class SearchManager {
       type = AssetTypeEnum.Video;
     }
 
-    const query = this.filter.query || undefined;
-    const fullPath = this.filter.query.trim() || undefined;
+    const query = this.filter.query.trim() || undefined;
     const { takenAfter, takenBefore } = this.filter.date;
     const { tagIds } = this.filter;
 
@@ -113,7 +112,7 @@ class SearchManager {
         ocr: this.filter.queryType === 'ocr' && query ? { matches: query } : undefined,
         originalFileName: this.filter.queryType === 'metadata' && query ? { like: query } : undefined,
         description: this.filter.queryType === 'description' && query ? { like: query } : undefined,
-        originalPath: this.filter.queryType === 'fullPath' && fullPath ? { like: fullPath } : undefined,
+        originalPath: this.filter.queryType === 'fullPath' && query ? { like: query } : undefined,
         country: this.#toEqFilter(this.filter.location.country),
         state: this.#toEqFilter(this.filter.location.state),
         city: this.#toEqFilter(this.filter.location.city),
