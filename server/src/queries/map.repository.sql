@@ -20,6 +20,19 @@ where
 order by
   "fileCreatedAt" desc
 
+-- MapRepository.getFavoriteLocations
+select
+  "id",
+  "name",
+  "latitude",
+  "longitude"
+from
+  "favorite_location"
+where
+  "userId" = $1
+order by
+  "name" asc
+
 -- MapRepository.getMapMarkers
 select
   "id",

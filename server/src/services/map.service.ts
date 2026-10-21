@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto.js';
+import { FavoriteLocationCreateDto, FavoriteLocationResponseDto } from 'src/dtos/favorite-location.dto.js';
 import { MapMarkerDto, MapMarkerResponseDto, MapReverseGeocodeDto } from 'src/dtos/map.dto.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getMyPartnerIds } from 'src/utils/asset.util.js';
@@ -23,5 +24,20 @@ export class MapService extends BaseService {
     // eventually this should probably return an array of results
     const result = await this.mapRepository.reverseGeocode({ latitude, longitude });
     return result ? [result] : [];
+  }
+
+  getFavoriteLocations(auth: AuthDto): Promise<FavoriteLocationResponseDto[]> {
+    return this.mapRepository.getFavoriteLocations(auth.user.id);
+  }
+
+  createFavoriteLocation(auth: AuthDto, dto: FavoriteLocationCreateDto): Promise<FavoriteLocationResponseDto> {
+    return this.mapRepository.createFavoriteLocation({ ...dto, userId: auth.user.id });
+  }
+
+  async deleteFavoriteLocation(auth: AuthDto, id: string): Promise<void> {
+    const deleted = await this.mapRepository.deleteFavoriteLocation(id, auth.user.id);
+    if (!deleted) {
+      throw new NotFoundException('Favorite location not found');
+    }
   }
 }

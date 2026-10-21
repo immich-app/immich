@@ -11,6 +11,7 @@ import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
 import { DB } from 'src/schema/index.js';
+import { FavoriteLocationTable } from 'src/schema/tables/favorite-location.table.js';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table.js';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table.js';
 
@@ -127,6 +128,34 @@ export class MapRepository {
         return eb.or(expression);
       })
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getFavoriteLocations(userId: string) {
+    return this.db
+      .selectFrom('favorite_location')
+      .select(['id', 'name', 'latitude', 'longitude'])
+      .where('userId', '=', userId)
+      .orderBy('name', 'asc')
+      .execute();
+  }
+
+  createFavoriteLocation(entity: Insertable<FavoriteLocationTable>) {
+    return this.db
+      .insertInto('favorite_location')
+      .values(entity)
+      .returning(['id', 'name', 'latitude', 'longitude'])
+      .executeTakeFirstOrThrow();
+  }
+
+  async deleteFavoriteLocation(id: string, userId: string): Promise<boolean> {
+    const result = await this.db
+      .deleteFrom('favorite_location')
+      .where('id', '=', id)
+      .where('userId', '=', userId)
+      .executeTakeFirst();
+
+    return result.numDeletedRows > 0n;
   }
 
   private mapMarkersQuery() {

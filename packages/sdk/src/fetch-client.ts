@@ -1881,6 +1881,24 @@ export type ValidateLibraryResponseDto = {
     /** Validation results for import paths */
     importPaths?: ValidateLibraryImportPathResponseDto[];
 };
+export type FavoriteLocationResponseDto = {
+    /** Favorite location ID */
+    id: string;
+    /** Latitude (-90 to 90) */
+    latitude: number;
+    /** Longitude (-180 to 180) */
+    longitude: number;
+    /** Name of the favorite location */
+    name: string;
+};
+export type FavoriteLocationCreateDto = {
+    /** Latitude (-90 to 90) */
+    latitude: number;
+    /** Longitude (-180 to 180) */
+    longitude: number;
+    /** Name of the favorite location */
+    name: string;
+};
 export type MapReverseGeocodeResponseDto = {
     /** City name */
     city: string | null;
@@ -5759,6 +5777,43 @@ export function validate({ id, validateLibraryDto }: {
         method: "POST",
         body: validateLibraryDto
     })));
+}
+/**
+ * Get favorite locations
+ */
+export function getFavoriteLocations(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: FavoriteLocationResponseDto[];
+    }>("/map/favorite-locations", {
+        ...opts
+    }));
+}
+/**
+ * Create favorite location
+ */
+export function createFavoriteLocation({ favoriteLocationCreateDto }: {
+    favoriteLocationCreateDto: FavoriteLocationCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: FavoriteLocationResponseDto;
+    }>("/map/favorite-locations", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: favoriteLocationCreateDto
+    })));
+}
+/**
+ * Delete favorite location
+ */
+export function deleteFavoriteLocation({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/map/favorite-locations/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 /**
  * Retrieve map markers

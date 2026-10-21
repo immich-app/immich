@@ -1,10 +1,16 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:openapi/api.dart';
 
 Future<LatLng?> showLocationPicker({required BuildContext context, LatLng? initialLatLng}) {
   return showDialog<LatLng?>(
@@ -14,7 +20,7 @@ Future<LatLng?> showLocationPicker({required BuildContext context, LatLng? initi
   );
 }
 
-class _LocationPicker extends HookWidget {
+class _LocationPicker extends HookConsumerWidget {
   final LatLng? initialLatLng;
 
   const _LocationPicker({this.initialLatLng});
@@ -30,9 +36,14 @@ class _LocationPicker extends HookWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final latitude = useState(initialLatLng?.latitude ?? 0.0);
     final longitude = useState(initialLatLng?.longitude ?? 0.0);
+    final favoriteLocations = useState<List<FavoriteLocationResponseDto>>([]);
+    final favoriteNameController = useTextEditingController();
+    final favoriteName = useState('');
+    final isLoadingFavorites = useState(true);
+    final isSavingFavorite = useState(false);
     final latlng = LatLng(latitude.value, longitude.value);
     final isLatitudeValid = useState(true);
     final isLongitudeValid = useState(true);
@@ -40,6 +51,63 @@ class _LocationPicker extends HookWidget {
     final longitudeFocusNode = useFocusNode();
     final latitudeController = useTextEditingController(text: latitude.value.toStringAsFixed(4));
     final longitudeController = useTextEditingController(text: longitude.value.toStringAsFixed(4));
+
+    Future<void> loadFavoriteLocations() async {
+      try {
+        favoriteLocations.value = await ref.read(apiServiceProvider).mapApi.getFavoriteLocations() ?? [];
+      } catch (error, stack) {
+        handleError(error, stack: stack, description: 'Unable to load favorite locations');
+      } finally {
+        isLoadingFavorites.value = false;
+      }
+    }
+
+    useEffect(() {
+      unawaited(loadFavoriteLocations());
+      return null;
+    }, const []);
+
+    void selectFavorite(FavoriteLocationResponseDto favorite) {
+      latitude.value = favorite.latitude;
+      longitude.value = favorite.longitude;
+      latitudeController.text = favorite.latitude.toStringAsFixed(4);
+      longitudeController.text = favorite.longitude.toStringAsFixed(4);
+    }
+
+    Future<void> saveFavoriteLocation() async {
+      final name = favoriteNameController.text.trim();
+      if (name.isEmpty || isSavingFavorite.value) {
+        return;
+      }
+
+      isSavingFavorite.value = true;
+      try {
+        final favorite = await ref
+            .read(apiServiceProvider)
+            .mapApi
+            .createFavoriteLocation(
+              FavoriteLocationCreateDto(name: name, latitude: latitude.value, longitude: longitude.value),
+            );
+        if (favorite != null) {
+          favoriteLocations.value = [...favoriteLocations.value, favorite]..sort((a, b) => a.name.compareTo(b.name));
+          favoriteNameController.clear();
+          favoriteName.value = '';
+        }
+      } catch (error, stack) {
+        handleError(error, stack: stack, description: 'Unable to save favorite location');
+      } finally {
+        isSavingFavorite.value = false;
+      }
+    }
+
+    Future<void> deleteFavoriteLocation(String id) async {
+      try {
+        await ref.read(apiServiceProvider).mapApi.deleteFavoriteLocation(id);
+        favoriteLocations.value = favoriteLocations.value.where((favorite) => favorite.id != id).toList();
+      } catch (error, stack) {
+        handleError(error, stack: stack, description: 'Unable to delete favorite location');
+      }
+    }
 
     Future<void> onMapTap() async {
       final newLatLng = await context.pushRoute<LatLng?>(MapLocationPickerRoute(initialLatLng: latlng));
@@ -108,6 +176,62 @@ class _LocationPicker extends HookWidget {
               parse: _parseLong,
               onUpdated: onLongitudeEditingCompleted,
             ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: favoriteNameController,
+              onChanged: (value) => favoriteName.value = value,
+              decoration: InputDecoration(
+                labelText: context.t.favorite_location_name_placeholder,
+                border: const OutlineInputBorder(),
+              ),
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => saveFavoriteLocation(),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: isSavingFavorite.value || favoriteName.value.trim().isEmpty ? null : saveFavoriteLocation,
+                icon: isSavingFavorite.value
+                    ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.bookmark_add_outlined),
+                label: Text(context.t.save),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(context.t.favorite_locations, style: context.textTheme.titleSmall),
+            if (isLoadingFavorites.value)
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (favoriteLocations.value.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(context.t.favorite_locations_not_found),
+              )
+            else
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 180),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: favoriteLocations.value.length,
+                  itemBuilder: (context, index) {
+                    final favorite = favoriteLocations.value[index];
+                    return ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(favorite.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      onTap: () => selectFavorite(favorite),
+                      trailing: IconButton(
+                        tooltip: context.t.delete_favorite_location(name: favorite.name),
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => deleteFavoriteLocation(favorite.id),
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
