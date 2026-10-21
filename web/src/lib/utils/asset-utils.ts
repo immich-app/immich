@@ -19,7 +19,6 @@ import {
   updateAsset,
   updateAssets,
   type AssetResponseDto,
-  type AssetTypeEnum,
   type DownloadInfoDto,
   type ExifResponseDto,
   type UserResponseDto,
@@ -126,7 +125,7 @@ function isRotated270CW(orientation: number) {
   return [7, 8, -90].includes(orientation);
 }
 
-export function isFlipped(orientation?: string | null) {
+function isFlipped(orientation?: string | null) {
   const value = Number(orientation);
   return value && (isRotated270CW(value) || isRotated90CW(value));
 }
@@ -150,7 +149,7 @@ export function getAssetResolution(asset: AssetResponseDto): string {
     return 'Invalid Data';
   }
 
-  return `${asset.width} x ${asset.height}`;
+  return `${asset.width} × ${asset.height}`;
 }
 
 /**
@@ -233,20 +232,6 @@ export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
 
   return supportedImageMimeTypes.has(asset.originalMimeType);
 }
-
-export const getAssetType = (type: AssetTypeEnum) => {
-  switch (type) {
-    case 'IMAGE': {
-      return 'Photo';
-    }
-    case 'VIDEO': {
-      return 'Video';
-    }
-    default: {
-      return 'Asset';
-    }
-  }
-};
 
 export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
