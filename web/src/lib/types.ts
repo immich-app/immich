@@ -1,4 +1,4 @@
-import type { QueueResponseDto } from '@immich/sdk';
+import type { QueueResponseDto, SmartSearchDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
@@ -60,6 +60,8 @@ export type SearchLocationFilter = {
   state?: string;
   city?: string;
 };
+
+export type SearchQuery = Pick<SmartSearchDto, 'query' | 'queryAssetId' | 'filter'>;
 
 export type SearchFilter = {
   query: string;

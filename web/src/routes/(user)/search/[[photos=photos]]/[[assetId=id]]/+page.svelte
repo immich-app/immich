@@ -23,6 +23,7 @@
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
+  import type { SearchQuery } from '$lib/types';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
@@ -35,10 +36,9 @@
     AssetVisibility,
     getPerson,
     getTagById,
-    type MetadataSearchDto,
+    type SearchFilter,
     searchAssets,
     searchSmart,
-    type SmartSearchDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
@@ -53,18 +53,23 @@
   // manually and navigate back to that.
   let previousRoute = $state<string>(Route.explore());
 
-  let nextPage = $state(1);
+  // undefined before the first page, null once the results are exhausted
+  let nextCursor = $state<string | null>();
   let searchResultAlbums: AlbumResponseDto[] = $state([]);
   let searchResultAssets: AssetResponseDto[] = $state([]);
   let isLoading = $state(true);
   let scrollY = $state(0);
   let scrollYHistory = 0;
 
-  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
-  let terms = $derived<SearchTerms>(searchQuery ? JSON.parse(searchQuery) : {});
-  let searchTermKeys = $derived(getObjectKeys(terms));
+  let terms = $derived<SearchQuery>(searchQuery ? JSON.parse(searchQuery) : {});
+
+  type SearchTermKey = 'query' | 'queryAssetId' | keyof SearchFilter;
+  let searchTermKeys = $derived<SearchTermKey[]>([
+    ...(['query', 'queryAssetId'] as const).filter((key) => terms[key] !== undefined),
+    ...getObjectKeys(terms.filter ?? {}),
+  ]);
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
@@ -118,7 +123,7 @@
   };
 
   async function onSearchQueryUpdate() {
-    nextPage = 1;
+    nextCursor = undefined;
     searchResultAssets = [];
     searchResultAlbums = [];
     await loadNextPage(true);
@@ -126,29 +131,28 @@
 
   // eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
   export const loadNextPage = async (force?: boolean) => {
-    if (!nextPage || (isLoading && !force)) {
+    if (nextCursor === null || (isLoading && !force)) {
       return;
     }
     isLoading = true;
 
-    const searchDto: SearchTerms = {
-      page: nextPage,
+    const { query, queryAssetId, filter } = terms;
+    const searchDto = {
+      filter: { visibility: { eq: AssetVisibility.Timeline }, trashedAt: { eq: null }, ...filter },
+      cursor: nextCursor,
       withExif: true,
-      ...terms,
     };
 
     try {
       const { albums, assets } =
-        ('query' in searchDto || 'queryAssetId' in searchDto) && smartSearchEnabled
-          ? await searchSmart({
-              smartSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto, language: $lang },
-            })
-          : await searchAssets({ metadataSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto } });
+        (query || queryAssetId) && smartSearchEnabled
+          ? await searchSmart({ smartSearchDto: { ...searchDto, query, queryAssetId, language: $lang } })
+          : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
 
-      nextPage = Number(assets.nextPage) || 0;
+      nextCursor = assets.nextCursor;
     } catch (error) {
       handleError(error, $t('loading_search_results_failed'));
     } finally {
@@ -168,13 +172,16 @@
     );
   }
 
-  function getHumanReadableSearchKey(key: keyof SearchTerms): string {
-    const keyMap: Partial<Record<keyof SearchTerms, string>> = {
-      takenAfter: $t('start_date'),
-      takenBefore: $t('end_date'),
+  function getHumanReadableSearchKey(key: SearchTermKey): string {
+    if (key === 'takenAt') {
+      const { gte, lte } = terms.filter?.takenAt ?? {};
+      return gte && lte ? $t('date_range') : gte ? $t('start_date') : $t('end_date');
+    }
+
+    const keyMap: Partial<Record<SearchTermKey, string>> = {
       visibility: $t('in_archive'),
       isFavorite: $t('favorite'),
-      isNotInAlbum: $t('not_in_any_album'),
+      hasAlbums: $t('not_in_any_album'),
       type: $t('media_type'),
       query: $t('context'),
       city: $t('city'),
@@ -185,6 +192,7 @@
       lensModel: $t('lens_model'),
       personIds: $t('people'),
       tagIds: $t('tags'),
+      hasTags: $t('tags'),
       originalFileName: $t('file_name_text'),
       originalPath: $t('full_path_or_folder'),
       description: $t('description'),
@@ -210,10 +218,7 @@
     return personNames.join(', ');
   }
 
-  async function getTagNames(tagIds: string[] | null) {
-    if (tagIds === null) {
-      return $t('untagged');
-    }
+  async function getTagNames(tagIds: string[]) {
     const tagNames = await Promise.all(
       tagIds.map(async (tagId) => {
         const tag = await getTagById({ id: tagId });
@@ -228,7 +233,7 @@
   const onAlbumAddAssets = ({ assetIds }: { assetIds: string[] }) => {
     assetMultiSelectManager.clear();
 
-    if (terms.isNotInAlbum) {
+    if (terms.filter?.hasAlbums?.eq === false) {
       const assetIdSet = new Set(assetIds);
       searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
     }
@@ -238,8 +243,56 @@
     return Object.keys(obj) as (keyof T)[];
   }
 
-  function removeFilter(key: keyof SearchTerms) {
-    delete terms[key];
+  function getSearchTermValue(key: SearchTermKey): string | Promise<string> | undefined {
+    const filter = terms.filter ?? {};
+    switch (key) {
+      case 'query':
+      case 'queryAssetId': {
+        return terms[key];
+      }
+      case 'takenAt': {
+        const { gte, lte } = filter.takenAt ?? {};
+        return [gte, lte]
+          .filter((date) => date !== undefined)
+          .map((date) => getHumanReadableDate(date))
+          .join(' – ');
+      }
+      case 'personIds': {
+        return getPersonName(filter.personIds?.all ?? []);
+      }
+      case 'tagIds': {
+        return getTagNames(filter.tagIds?.all ?? []);
+      }
+      case 'hasTags': {
+        return $t('untagged');
+      }
+      case 'rating': {
+        return $t('rating_count', { values: { count: filter.rating?.eq ?? 0 } });
+      }
+      case 'isFavorite':
+      case 'hasAlbums': {
+        return;
+      }
+      default: {
+        const condition = filter[key] as { eq?: unknown; like?: string; matches?: string } | undefined;
+        if (condition?.eq === null) {
+          return $t('unknown');
+        }
+        const value = condition?.eq ?? condition?.like ?? condition?.matches;
+        return value === undefined ? undefined : String(value);
+      }
+    }
+  }
+
+  function removeFilter(key: SearchTermKey) {
+    if (key === 'query' || key === 'queryAssetId') {
+      delete terms[key];
+    } else if (terms.filter) {
+      delete terms.filter[key];
+      if (Object.keys(terms.filter).length === 0) {
+        delete terms.filter;
+      }
+    }
     assetMultiSelectManager.clear();
     void goto(Route.search(terms));
     searchManager.setQuery(terms);
@@ -256,35 +309,21 @@
   <section id="search-chips" class="mx-auto mt-24 w-full max-w-7xl px-4 sm:px-8 lg:px-12">
     <div class="flex w-full flex-wrap place-content-center place-items-center gap-2.5 sm:gap-3">
       {#each searchTermKeys as searchKey (searchKey)}
-        {@const value = terms[searchKey]}
+        {@const value = getSearchTermValue(searchKey)}
         <div
           class="inline-flex max-w-full items-center rounded-full bg-primary/10 py-1 ps-1 pe-1 text-xs text-primary ring-1 ring-primary/15 transition-shadow hover:ring-primary/25 dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary dark:ring-immich-dark-primary/20 dark:hover:ring-immich-dark-primary/30"
         >
           <span
             class="shrink-0 rounded-full bg-primary px-3 py-1.5 font-medium text-light dark:bg-immich-dark-primary dark:text-immich-dark-gray"
           >
-            {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
+            {getHumanReadableSearchKey(searchKey)}
           </span>
 
-          {#if value !== true}
+          {#if value !== undefined}
             <span class="max-w-[min(36rem,55vw)] min-w-0 truncate px-3 py-1.5 text-immich-fg dark:text-immich-dark-fg">
-              {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
-                {getHumanReadableDate(value)}
-              {:else if searchKey === 'personIds' && Array.isArray(value)}
-                {#await getPersonName(value) then personName}
-                  {personName}
-                {/await}
-              {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
-                {#await getTagNames(value) then tagNames}
-                  {tagNames}
-                {/await}
-              {:else if searchKey === 'rating'}
-                {$t('rating_count', { values: { count: value ?? 0 } })}
-              {:else if value === null || value === ''}
-                {$t('unknown')}
-              {:else}
-                {value}
-              {/if}
+              {#await value then text}
+                {text}
+              {/await}
             </span>
           {/if}
 

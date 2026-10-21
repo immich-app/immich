@@ -73,7 +73,7 @@ describe('/trash', () => {
 
       await utils.scan(admin.accessToken, library.id);
 
-      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { filter: { libraryId: { eq: library.id } } });
       expect(assets.items.length).toBe(1);
       const asset = assets.items[0];
 
@@ -106,7 +106,7 @@ describe('/trash', () => {
 
       await utils.scan(admin.accessToken, library.id);
 
-      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { filter: { libraryId: { eq: library.id } } });
       expect(assets.items.length).toBe(1);
       const asset = assets.items[0];
 
@@ -161,7 +161,7 @@ describe('/trash', () => {
 
       await utils.scan(admin.accessToken, library.id);
 
-      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { filter: { libraryId: { eq: library.id } } });
       expect(assets.count).toBe(1);
       const assetId = assets.items[0].id;
 
@@ -212,7 +212,7 @@ describe('/trash', () => {
       await utils.scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { filter: { libraryId: { eq: library.id } } });
       expect(assets.count).toBe(1);
       const assetId = assets.items[0].id;
 
