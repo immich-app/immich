@@ -26,6 +26,7 @@ test.describe('Detail Panel', () => {
     const sharedLink = await utils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Individual,
       assetIds: [asset.id],
+      allowUpload: true,
     });
     await page.goto(`/share/${sharedLink.key}/photos/${asset.id}`);
     await page.waitForSelector('#immich-asset-viewer');
@@ -41,6 +42,7 @@ test.describe('Detail Panel', () => {
     const sharedLink = await utils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Individual,
       assetIds: [asset.id],
+      allowUpload: true,
       showMetadata: false,
     });
     await page.goto(`/share/${sharedLink.key}/photos/${asset.id}`);
@@ -57,6 +59,7 @@ test.describe('Detail Panel', () => {
     const sharedLink = await utils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Individual,
       assetIds: [asset.id],
+      allowUpload: true,
     });
     await utils.setAuthCookies(context, admin.accessToken);
     await page.goto(`/share/${sharedLink.key}/photos/${asset.id}`);
