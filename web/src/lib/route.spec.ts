@@ -21,6 +21,10 @@ describe('Route', () => {
       );
     });
 
+    it('should omit an empty filter', () => {
+      expect(Route.search({ filter: { city: undefined } })).toBe('/search');
+    });
+
     it('should support query parameters', () => {
       expect(Route.systemSettings({ isOpen: OpenQueryParam.OAUTH })).toBe('/admin/system-settings?isOpen=oauth');
     });

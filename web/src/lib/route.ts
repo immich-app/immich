@@ -1,5 +1,5 @@
 import { getBaseUrl, IntegrityReport, QueueName } from '@immich/sdk';
-import { omitBy } from 'lodash-es';
+import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
 import type { SearchQuery } from '$lib/types';
 
@@ -104,7 +104,8 @@ export const Route = {
 
   // search
   search: (dto?: SearchQuery) => {
-    const metadata = omitBy(dto ?? {}, (value) => value === undefined);
+    const filter = omitBy(dto?.filter ?? {}, isUndefined);
+    const metadata = omitBy({ ...dto, filter: isEmpty(filter) ? undefined : filter }, isUndefined);
     const query = Object.keys(metadata).length === 0 ? undefined : JSON.stringify(metadata);
     return `/search` + asQueryString({ query });
   },
