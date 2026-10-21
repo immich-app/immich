@@ -300,10 +300,10 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   @override
   void initState() {
     super.initState();
-    unawaited(ref.read(authProvider.notifier).setOpenApiServiceEndpoint().whenComplete(() => resumeSession()));
+    unawaited(resumeSession(ref.read(authProvider.notifier).setOpenApiServiceEndpoint()));
   }
 
-  Future<void> resumeSession() async {
+  Future<void> resumeSession(Future<String?> endpointResolution) async {
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);
@@ -316,10 +316,12 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final lifeCycle = ref.read(appStateProvider.notifier);
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
 
+      final authNotifier = ref.read(authProvider.notifier);
+
       unawaited(
-        ref
-            .read(authProvider.notifier)
-            .saveAuthInfo(accessToken: accessToken)
+        endpointResolution
+            .catchError((_) => null)
+            .then((_) => authNotifier.saveAuthInfo(accessToken: accessToken))
             .then(
               (_) async {
                 try {
