@@ -148,6 +148,13 @@
         <data android:scheme="app.immich" android:pathPrefix="/oauth-callback" />
       </intent-filter>
     </activity>
+
+    <activity
+      android:name=".spherical.SphericalVideoActivity"
+      android:exported="false"
+      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+      android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+      android:hardwareAccelerated="true" />
     <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to
     generate GeneratedPluginRegistrant.java -->
