@@ -1,9 +1,10 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { handleRemoveSharedLinkAssets } from '$lib/services/shared-link.service';
+  import { executeMutation } from '$lib/queries/client';
+  import { removeSharedLinkAssetsMutation } from '$lib/queries/shared-link.query';
   import { type SharedLinkResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -13,22 +14,35 @@
 
   let { sharedLink = $bindable() }: Props = $props();
 
-  const handleSelect = async () => {
+  const onAction = async () => {
     const assetIds = assetMultiSelectManager.assets.map(({ id }) => id);
-    const success = await handleRemoveSharedLinkAssets(sharedLink, assetIds);
-    if (success) {
-      assetMultiSelectManager.clear();
+    const success = await modalManager.showDialog({
+      title: $t('remove_assets_title'),
+      prompt: $t('remove_assets_shared_link_confirmation', { values: { count: assetIds.length } }),
+      confirmText: $t('remove'),
+    });
+    if (!success) {
+      return;
     }
+
+    await executeMutation(removeSharedLinkAssetsMutation, [{ id: sharedLink.id, assetIdsDto: { assetIds } }], {
+      onSuccess: (results) => {
+        const removed = new Set(results.filter(({ success }) => success).map(({ assetId }) => assetId));
+        sharedLink.assets = sharedLink.assets.filter(({ id }) => !removed.has(id));
+        toastManager.primary($t('assets_removed_count', { values: { count: removed.size } }));
+        assetMultiSelectManager.clear();
+      },
+    });
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Delete' }, onShortcut: handleSelect }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'Delete' }, onShortcut: onAction }} />
 
 <IconButton
   shape="round"
   color="secondary"
   variant="ghost"
   aria-label={$t('remove_from_shared_link')}
-  onclick={handleSelect}
+  onclick={onAction}
   icon={mdiDeleteOutline}
 />
