@@ -9,15 +9,9 @@
   import { fade } from 'svelte/transition';
   import { createPreloadedQuery } from '$lib/queries/client';
   import { getUserConfigQuery } from '$lib/queries/config-user.query';
-  import { getServerConfigQuery } from '$lib/queries/server.query';
 
-  const queries = {
-    config: createPreloadedQuery(getUserConfigQuery),
-    serverConfig: createPreloadedQuery(getServerConfigQuery),
-  };
-
-  const config = $derived(queries.config.data);
-  const serverConfig = $derived(queries.serverConfig.data);
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   let loading = $state(true);
 
@@ -58,8 +52,8 @@
         </div>
       {:else if config.oauth.enabled}
         {#if authManager.user.oauthId}
-          {#if serverConfig.oauthAccountManagementUrl}
-            <Button shape="round" size="small" href={serverConfig.oauthAccountManagementUrl}
+          {#if config.oauth.accountManagementUrl}
+            <Button shape="round" size="small" href={config.oauth.accountManagementUrl}
               >{$t('manage_oauth_account')}</Button
             >
           {/if}
