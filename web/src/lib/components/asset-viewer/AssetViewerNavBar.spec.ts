@@ -50,6 +50,7 @@ describe('AssetViewerNavBar component', () => {
 
     const asset = assetFactory.build({ isTrashed: false });
     const { getByLabelText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(getByLabelText('go_back')).toBeInTheDocument();
   });
 
@@ -64,6 +65,7 @@ describe('AssetViewerNavBar component', () => {
       authManager.setPreferences(preferences);
 
       const { getByLabelText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
+      // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
       expect(getByLabelText('delete')).toBeInTheDocument();
     });
   });

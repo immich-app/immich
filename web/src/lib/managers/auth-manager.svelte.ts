@@ -1,5 +1,4 @@
 import {
-  getAboutInfo,
   getMyPreferences,
   getMyUser,
   logout,
@@ -10,6 +9,8 @@ import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { queryClient } from '$lib/queries/client';
+import { getAboutInfoQuery } from '$lib/queries/server.query';
 import { Route } from '$lib/route';
 import { isSharedLinkRoute } from '$lib/utils/navigation';
 
@@ -69,7 +70,7 @@ class AuthManager {
         this.isPurchased = true;
       } else {
         // check server status
-        const serverInfo = await getAboutInfo().catch(() => {});
+        const serverInfo = await queryClient.query(getAboutInfoQuery()).catch(() => {});
         if (serverInfo?.licensed) {
           this.isPurchased = true;
         }

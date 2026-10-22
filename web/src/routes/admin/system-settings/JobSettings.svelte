@@ -1,16 +1,20 @@
 <script lang="ts">
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getConfigQuery } from '$lib/queries/system-config.query';
+  import { cloneDeep } from 'lodash-es';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { QueueName, type AdminConfigJobDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
+  const query = createPreloadedQuery(getConfigQuery);
+  const config = $derived(query.data);
+
   const disabled = $derived(featureFlagsManager.value.configFile);
-  const config = $derived(systemConfigManager.value);
-  let configToEdit = $state(systemConfigManager.cloneValue());
+  let configToEdit = $state(cloneDeep(config));
 
   const queueNames = [
     QueueName.ThumbnailGeneration,

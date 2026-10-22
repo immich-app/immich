@@ -28,6 +28,15 @@ final Map<String, Map<String, Object?>> openApiPatches = {
     'albums': {'defaultAssetOrder': 'desc'},
     'recentlyAdded': RecentlyAddedResponse(sidebarWeb: false).toJson(),
   },
+  'PublicConfigDto': {
+    'map': PublicConfigMapDto(
+      enabled: true,
+      lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+      darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+    ).toJson(),
+    'ffmpeg': PublicConfigFFmpegDto(realtime: PublicConfigFFmpegRealtimeDto(enabled: false)).toJson(),
+    'passkey': {'enabled': false},
+  },
   'ServerConfigDto': {
     'mapLightStyleUrl': 'https://tiles.immich.cloud/v1/style/light.json',
     'mapDarkStyleUrl': 'https://tiles.immich.cloud/v1/style/dark.json',
@@ -46,6 +55,13 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
   'ServerVersionResponseDto': {'featureLevel': 0},
   'WorkflowResponseDto': {'logging': false},
+  'AdminConfigDto': {
+    'passkey': {'enabled': false, 'domain': null, 'additionalDomains': const []},
+  },
+  'UserConfigDto': {
+    'notifications': UserConfigNotificationsDto(smtp: UserConfigSmtpDto(enabled: false)).toJson(),
+    'passkey': {'enabled': false},
+  },
 };
 
 // ignore: unused-code

@@ -200,6 +200,39 @@ describe('checkForDuplicates', () => {
     });
   });
 
+  it('ignores accepted files that were not part of the request', async () => {
+    vi.mocked(checkBulkUpload).mockResolvedValue({
+      results: [
+        { action: AssetUploadAction.Accept, id: testFilePath },
+        { action: AssetUploadAction.Accept, id: '/etc/passwd' },
+      ],
+    });
+
+    await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      duplicates: [],
+      newFiles: [testFilePath],
+    });
+  });
+
+  it('ignores rejected files that were not part of the request', async () => {
+    vi.mocked(checkBulkUpload).mockResolvedValue({
+      results: [
+        { action: AssetUploadAction.Accept, id: testFilePath },
+        {
+          action: AssetUploadAction.Reject,
+          id: '/etc/passwd',
+          assetId: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
+          reason: AssetRejectReason.Duplicate,
+        },
+      ],
+    });
+
+    await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      duplicates: [],
+      newFiles: [testFilePath],
+    });
+  });
+
   it('returns results when check duplicates retry is successful', async () => {
     let mocked = vi.mocked(checkBulkUpload);
     for (let i = 1; i < retry; i++) {

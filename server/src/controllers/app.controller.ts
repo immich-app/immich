@@ -1,11 +1,15 @@
 import { Controller, Get, Header } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { Authenticated } from 'src/middleware/auth.guard.js';
+import { PasskeyService } from 'src/services/passkey.service.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
 
 @Controller()
 export class AppController {
-  constructor(private service: SystemConfigService) {}
+  constructor(
+    private service: SystemConfigService,
+    private passkeyService: PasskeyService,
+  ) {}
 
   @ApiExcludeEndpoint()
   @Get('.well-known/immich')
@@ -16,6 +20,13 @@ export class AppController {
         endpoint: '/api',
       },
     };
+  }
+
+  @ApiExcludeEndpoint()
+  @Get('.well-known/webauthn')
+  @Authenticated({ public: true })
+  getWebAuthnWellKnown() {
+    return this.passkeyService.getWellKnown();
   }
 
   @ApiExcludeEndpoint()

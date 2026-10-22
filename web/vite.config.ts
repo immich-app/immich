@@ -17,6 +17,7 @@ const upstream = {
 const proxy: Record<string, string | ProxyOptions> = {
   '/api': upstream,
   '/.well-known/immich': upstream,
+  '/.well-known/webauthn': upstream,
   '/custom.css': upstream,
 };
 

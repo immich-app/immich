@@ -2,38 +2,21 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { releaseManager } from '$lib/managers/release-manager.svelte';
   import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
-  import { userInteraction } from '$lib/stores/user.svelte';
+  import { getAboutInfoQuery, getVersionHistoryQuery } from '$lib/queries/server.query';
   import { websocketStore } from '$lib/stores/websocket';
   import { semverToName } from '$lib/utils';
-  import { requestServerInfo } from '$lib/utils/auth';
-  import {
-    getAboutInfo,
-    getVersionHistory,
-    type ReleaseEventV1,
-    type ServerAboutResponseDto,
-    type ServerVersionHistoryResponseDto,
-  } from '@immich/sdk';
+  import { type ReleaseEventV1 } from '@immich/sdk';
   import { Icon, modalManager, Text } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { mdiAlert, mdiNewBox } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   const { serverVersion, connected } = websocketStore;
 
-  let info: ServerAboutResponseDto | undefined = $state();
-  let versions: ServerVersionHistoryResponseDto[] = $state([]);
-
-  onMount(async () => {
-    if (userInteraction.aboutInfo && userInteraction.versions && $serverVersion) {
-      info = userInteraction.aboutInfo;
-      versions = userInteraction.versions;
-      return;
-    }
-    await requestServerInfo();
-    [info, versions] = await Promise.all([getAboutInfo(), getVersionHistory()]);
-    userInteraction.aboutInfo = info;
-    userInteraction.versions = versions;
-  });
+  const aboutQuery = createQuery(getAboutInfoQuery);
+  const info = $derived(aboutQuery.data);
+  const historyQuery = createQuery(getVersionHistoryQuery);
+  const versions = $derived(historyQuery.data ?? []);
   let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
   let version = $derived($serverVersion ? semverToName($serverVersion) : null);
 

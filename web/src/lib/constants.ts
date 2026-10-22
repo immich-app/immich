@@ -311,3 +311,12 @@ export enum BackupFileStatus {
 }
 
 export const assetViewerFadeDuration: number = 150;
+
+export const libraryTableClasses = {
+  column1: 'w-4/12',
+  column2: 'w-4/12',
+  column3: 'w-1/12',
+  column4: 'w-1/12',
+  column5: 'w-1/12',
+  column6: 'w-1/12 flex justify-end',
+};

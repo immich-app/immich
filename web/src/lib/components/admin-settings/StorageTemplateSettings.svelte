@@ -6,11 +6,12 @@
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
+  import { getConfigQuery, updateConfigMutation } from '$lib/queries/system-config.query';
   import StorageTemplateVariablesModal from '$lib/modals/StorageTemplateVariablesModal.svelte';
   import { Route } from '$lib/route';
-  import { handleSystemConfigSave } from '$lib/services/system-config.service';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
+  import { cloneDeep } from 'lodash-es';
   import { Code, Heading, IconButton, Link, modalManager, Text } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import handlebar from 'handlebars';
@@ -39,8 +40,9 @@
   type StorageTemplateOption = (typeof StorageTemplateOption)[keyof typeof StorageTemplateOption];
 
   const disabled = $derived(featureFlagsManager.value.configFile);
-  const config = $derived(systemConfigManager.value);
-  let configToEdit = $state(systemConfigManager.cloneValue());
+  const query = createPreloadedQuery(getConfigQuery);
+  const config = $derived(query.data);
+  let configToEdit = $state(cloneDeep(config));
 
   // TODO remove once we support partial overwriting with database values
   if (preselectDate && !featureFlagsManager.value.configFile && !configToEdit.storageTemplate.enabled) {
@@ -50,7 +52,7 @@
 
   let templateOptions: SystemConfigTemplateStorageOptionDto | undefined = $state();
   let selectedPreset = $state('');
-  let customTemplate = $state(systemConfigManager.value.storageTemplate.template);
+  let customTemplate = $state(config.storageTemplate.template);
 
   const getTemplateOptions = async () => {
     templateOptions = await getStorageTemplateOptions();
@@ -151,9 +153,9 @@
     }
   });
 
-  onDestroy(async () => {
+  onDestroy(() => {
     if (saveOnClose) {
-      await handleSystemConfigSave({ storageTemplate: configToEdit.storageTemplate });
+      void executeMutation(updateConfigMutation, { storageTemplate: configToEdit.storageTemplate });
     }
   });
 </script>

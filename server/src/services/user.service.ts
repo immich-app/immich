@@ -3,7 +3,6 @@ import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import type { JobOf, UserMetadataItem } from 'src/types.js';
-import { SALT_ROUNDS } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
@@ -67,12 +66,6 @@ export class UserService extends BaseService {
       name: dto.name,
       avatarColor: dto.avatarColor,
     };
-
-    if (dto.password) {
-      const hashedPassword = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
-      update.password = hashedPassword;
-      update.shouldChangePassword = false;
-    }
 
     const updatedUser = await this.userRepository.update(user.id, update);
 

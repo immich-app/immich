@@ -8,11 +8,15 @@ import {
   type SyncAssetEditV1,
   type SyncAssetV2,
 } from '@immich/sdk';
+import { isEqual } from 'lodash-es';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
 import { page } from '$app/state';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { queryClient } from '$lib/queries/client';
+import { getConfigQuery } from '$lib/queries/system-config.query';
+import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
 import { Route } from '$lib/route';
 import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
@@ -67,7 +71,17 @@ websocket
     websocketStore.connected.set(true);
   })
   .on('disconnect', () => websocketStore.connected.set(false))
-  .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
+  .on('on_server_version', (serverVersion) => {
+    const previous = get(websocketStore.serverVersion);
+    websocketStore.serverVersion.set(serverVersion);
+    if (previous && !isEqual(previous, serverVersion)) {
+      void queryClient.invalidateQueries({ queryKey: ['server'] });
+    }
+  })
+  .on(
+    'on_config_update',
+    () => void queryClient.invalidateQueries({ queryKey: getConfigQuery().queryKey, exact: true }),
+  )
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
   .on('MaintenanceStatusV1', (status) => {
     maintenanceStore.status.set(status);
@@ -80,7 +94,11 @@ websocket
   })
   .on('on_new_release', (event) => eventManager.emit('ReleaseEvent', event))
   .on('on_session_delete', () => eventManager.emit('SessionDelete'))
-  .on('on_user_delete', (id) => eventManager.emit('UserAdminDeleted', { id }))
+  .on('on_user_delete', (id) => {
+    queryClient.removeQueries({ queryKey: ['user-admin', id] });
+    void queryClient.invalidateQueries({ queryKey: searchUsersAdminQuery().queryKey, exact: true });
+    eventManager.emit('UserAdminDeleted', { id });
+  })
   .on('on_asset_delete', (asset) => eventManager.emit('AssetsDelete', [asset]))
   .on('on_asset_trash', (assets) => eventManager.emit('AssetsDelete', assets))
   .on('on_asset_update', (asset) => eventManager.emit('AssetUpdate', asset))

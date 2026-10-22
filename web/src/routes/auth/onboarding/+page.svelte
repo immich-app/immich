@@ -12,7 +12,8 @@
   import OnboardingUserPrivacy from './OnboardingUserPrivacy.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { queryClient } from '$lib/queries/client';
+  import { getConfigQuery } from '$lib/queries/system-config.query';
   import { Route } from '$lib/route';
   import { OnboardingRole } from '$lib/types';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
@@ -155,7 +156,7 @@
 
   onMount(async () => {
     if (userRole === OnboardingRole.SERVER) {
-      await systemConfigManager.init();
+      await queryClient.query(getConfigQuery());
     }
   });
 </script>
