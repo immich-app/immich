@@ -21,11 +21,13 @@
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  const usersQuery = createPreloadedQuery(searchUsersAdminQuery);
-  const users = $derived(usersQuery.data);
+  const queries = {
+    users: createPreloadedQuery(searchUsersAdminQuery),
+    statistics: createQuery(() => ({ ...getServerStatisticsQuery(), refetchInterval: 5000 })),
+  };
 
-  const query = createQuery(() => ({ ...getServerStatisticsQuery(), refetchInterval: 5000 }));
-  const stats = $derived(query.data);
+  const users = $derived(queries.users.data);
+  const stats = $derived(queries.statistics.data);
 
   const getStorageUsageWithUnit = (usage: number) => {
     const TiB = 1024 ** 4;

@@ -7,7 +7,6 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { handleDownloadAlbum } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
@@ -23,6 +22,11 @@
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import ThemeButton from '../shared-components/ThemeButton.svelte';
   import AlbumSummary from './AlbumSummary.svelte';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+
+  const query = createPreloadedQuery(getPublicConfigQuery);
+  const publicConfig = $derived(query.data);
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -144,7 +148,7 @@
             icon={mdiDownload}
           />
         {/if}
-        {#if sharedLink.showMetadata && featureFlagsManager.value.map}
+        {#if sharedLink.showMetadata && publicConfig.map.enabled}
           <AlbumMap {album} />
         {/if}
         <ThemeButton />

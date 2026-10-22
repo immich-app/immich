@@ -8,7 +8,6 @@
   import { timeToLoadTheMap } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
@@ -34,6 +33,11 @@
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
   import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+
+  const query = createPreloadedQuery(getPublicConfigQuery);
+  const publicConfig = $derived(query.data);
 
   interface Props {
     asset: AssetResponseDto;
@@ -278,7 +282,7 @@
     </div>
   </section>
 
-  {#if latlng && featureFlagsManager.value.map}
+  {#if latlng && publicConfig.map.enabled}
     <div class="h-90">
       {#await import('$lib/components/shared-components/map/Map.svelte')}
         {#await delay(timeToLoadTheMap) then}
