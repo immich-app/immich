@@ -558,7 +558,7 @@ export class AuthService extends BaseService {
   }
 
   private getCookieOAuthLinkToken(headers: IncomingHttpHeaders): string | null {
-    const cookies = parse(headers.cookie || '');
+    const cookies = parseCookie(headers.cookie || '');
     return cookies[ImmichCookie.OAuthLinkToken] || null;
   }
 
