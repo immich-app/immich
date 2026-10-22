@@ -164,6 +164,7 @@ export default defineConfig(
       '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
       'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
+      'svelte/no-at-const-tags': 'error',
       'svelte/no-navigation-without-resolve': 'off',
       'unicorn/prefer-early-return': 'off',
       'unicorn/prefer-ternary': 'off',
