@@ -230,9 +230,11 @@ describe('TimelineManager', () => {
 
       await timelineManager.updateOptions({ bbox: 'old' });
       expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
+      const oldSignal = sdkMock.getTimeBucket.mock.calls[0][1]?.signal;
       const oldMonth = timelineManager.months[0];
       const oldLoad = timelineManager.loadTimelineMonth(oldMonth.yearMonth, { cancelable });
       await timelineManager.updateOptions({ bbox: 'new' });
+      expect(oldSignal?.aborted).toBe(cancelable);
       resolveOldMonth!(januaryAssets);
       await oldLoad;
       await new Promise((resolve) => setTimeout(resolve, 0));
