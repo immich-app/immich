@@ -80,21 +80,7 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
-    if (auth.sharedLink && !auth.sharedLink.showExif) {
-      return mapAsset(asset, { stripMetadata: true, withStack: true, auth });
-    }
-
-    const data = mapAsset(asset, { withStack: true, auth });
-
-    if (auth.sharedLink) {
-      delete data.owner;
-    }
-
-    if (auth.sharedLink) {
-      data.people = [];
-    }
-
-    return data;
+    return mapAsset(asset, { withStack: true, auth });
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {

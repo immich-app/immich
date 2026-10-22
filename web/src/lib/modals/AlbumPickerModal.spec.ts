@@ -34,7 +34,9 @@ describe('AlbumPickerModal component', () => {
 
     render(AlbumPickerModal, { props: { onClose, selectedItemsCount: 1 } });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(await screen.findByText('Add 1 item to album')).toBeInTheDocument();
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('Select albums')).not.toBeInTheDocument();
   });
 
@@ -43,7 +45,9 @@ describe('AlbumPickerModal component', () => {
 
     render(AlbumPickerModal, { props: { onClose, selectedItemsCount: 3 } });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(await screen.findByText('Add 3 items to album')).toBeInTheDocument();
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('Select albums')).not.toBeInTheDocument();
   });
 
@@ -52,7 +56,9 @@ describe('AlbumPickerModal component', () => {
 
     render(AlbumPickerModal, { props: { onClose } });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(await screen.findByText('Select albums')).toBeInTheDocument();
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('Add 1 item to album')).not.toBeInTheDocument();
   });
 });

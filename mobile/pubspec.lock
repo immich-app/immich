@@ -1679,10 +1679,10 @@ packages:
     dependency: "direct main"
     description:
       name: sqlite3_connection_pool
-      sha256: ad51972d37bdf82929888e4c85e722bd9a0b5ff8ad389f89b1b00d19603c0d2d
+      sha256: ad8413d9100598ee9ef1a27628f5673b7d9212fb9d15b2742f7fde690f743832
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.7"
+    version: "0.2.13"
   sqlite3_web:
     dependency: transitive
     description:

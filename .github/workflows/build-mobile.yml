@@ -227,7 +227,7 @@ jobs:
       contents: read
     # Run on main branch or workflow_dispatch, or on PRs/other branches (build only, no upload)
     if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
-    runs-on: macos-26
+    runs-on: xcode-27
 
     steps:
       - id: token
@@ -237,8 +237,8 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
           permission-contents: read
 
-      - name: Select Xcode 26
-        run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+      - name: Select Xcode 27.1
+        run: sudo xcode-select -s /Applications/Xcode_27.1.app/Contents/Developer
 
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -267,7 +267,7 @@ jobs:
           working_directory: ./mobile
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        uses: ruby/setup-ruby@651ff0d62c5c79bed6d53ec518387aae20e72c1a # v1.329.0
         with:
           ruby-version: '3.4'
           bundler-cache: true # zizmor: ignore[cache-poisoning] release branches cannot read caches written by pull requests

@@ -23,12 +23,15 @@ describe('AlbumSummary component', () => {
       assetCount: 3,
     });
     const { rerender } = render(AlbumSummary, { album });
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByTestId('album-details')).toHaveTextContent('Jun 10');
 
     await rerender({ album: { ...album, startDate: '2026-06-15T12:00:00.000Z', assetCount: 2 } });
 
     const details = screen.getByTestId('album-details');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(details).toHaveTextContent('Jun 15');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(details).not.toHaveTextContent('Jun 10');
   });
 });

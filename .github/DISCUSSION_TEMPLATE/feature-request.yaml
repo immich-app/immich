@@ -9,6 +9,8 @@ body:
         Stick to only a single feature per request. If you list multiple different features at once, 
         your request will be closed.
 
+        Please read our [contributing guidelines](https://github.com/immich-app/immich/blob/main/CONTRIBUTING.md) before opening a feature request.
+
   - type: checkboxes
     attributes:
       label: I have searched the existing feature requests, both open and closed, to make sure this is not a duplicate request.

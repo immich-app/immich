@@ -6,6 +6,7 @@ import type {
   IntegrityReport,
   JobCreateDto,
   LoginResponseDto,
+  PasskeyResponseDto,
   PersonResponseDto,
   QueueResponseDto,
   ReleaseEventV1,
@@ -33,6 +34,10 @@ export type Events = {
   ApiKeyCreate: [ApiKeyResponseDto];
   ApiKeyUpdate: [ApiKeyResponseDto];
   ApiKeyDelete: [ApiKeyResponseDto];
+
+  PasskeyCreate: [PasskeyResponseDto];
+  PasskeyUpdate: [PasskeyResponseDto];
+  PasskeyDelete: [PasskeyResponseDto];
 
   AssetUpdate: [AssetResponseDto];
   AssetsArchive: [string[]];

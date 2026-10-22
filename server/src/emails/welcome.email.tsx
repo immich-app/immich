@@ -3,7 +3,7 @@ import * as React from 'react';
 import { ImmichButton } from 'src/emails/components/button.component.js';
 import ImmichLayout from 'src/emails/components/immich.layout.js';
 import { WelcomeEmailProps } from 'src/repositories/email.repository.js';
-import { replaceTemplateTags } from 'src/utils/replace-template-tags.js';
+import { replaceTemplateTags, templatePreview } from 'src/utils/replace-template-tags.js';
 
 export const WelcomeEmail = ({ baseUrl, displayName, username, password, customTemplate }: WelcomeEmailProps) => {
   const usableTemplateVariables = {
@@ -37,7 +37,11 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password, customT
 
   return (
     <ImmichLayout
-      preview={customTemplate ? emailContent.toString() : 'You have been invited to a new Immich instance.'}
+      preview={
+        customTemplate
+          ? templatePreview(customTemplate, usableTemplateVariables)
+          : 'You have been invited to a new Immich instance.'
+      }
     >
       {customTemplate && (
         <Text className="m-0">
