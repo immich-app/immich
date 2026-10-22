@@ -5,7 +5,6 @@ import {
   AssetVisibility,
   bulkTagAssets,
   getAssetInfo,
-  removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
   type AlbumResponseDto,
@@ -52,7 +51,8 @@ import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { readPreloadedQuery } from '$lib/queries/client';
+import { removeAssetFromAlbumMutation } from '$lib/queries/album.query';
+import { executeMutation, readPreloadedQuery } from '$lib/queries/client';
 import { getUserConfigQuery } from '$lib/queries/config-user.query';
 import { Route } from '$lib/route';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -518,19 +518,13 @@ const handleBulkRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumR
 const handleRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
   const $t = await getFormatter();
 
-  try {
-    const results = await removeAssetFromAlbum({
-      id: album.id,
-      bulkIdsDto: { ids: assetIds },
-    });
-
-    const count = results.filter(({ success }) => success).length;
-
-    toastManager.primary($t('assets_removed_count', { values: { count } }));
-    eventManager.emit('AlbumRemoveAssets', { assetIds, albumIds: [album.id] });
-  } catch (error) {
-    handleError(error, $t('errors.error_removing_assets_from_album'));
-  }
+  await executeMutation(removeAssetFromAlbumMutation, [{ id: album.id, bulkIdsDto: { ids: assetIds } }], {
+    onSuccess: (results) => {
+      const count = results.filter(({ success }) => success).length;
+      toastManager.primary($t('assets_removed_count', { values: { count } }));
+      eventManager.emit('AlbumRemoveAssets', { assetIds, albumIds: [album.id] });
+    },
+  });
 };
 
 const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {

@@ -1,13 +1,13 @@
 <script lang="ts">
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
   import MapModal from '$lib/modals/MapModal.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import { getAlbumMapMarkersQuery } from '$lib/queries/album.query';
   import { navigate } from '$lib/utils/navigation';
-  import { getAlbumMapMarkers, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -15,17 +15,12 @@
   }
 
   let { album }: Props = $props();
-  let cancelable: AbortController;
 
   let returnToMap = $state(false);
-  let mapMarkers: MapMarkerResponseDto[] = $state([]);
-
-  onMount(async () => {
-    mapMarkers = await loadMapMarkers();
-  });
+  const query = createQuery(() => getAlbumMapMarkersQuery(album.id));
+  const mapMarkers = $derived(query.data ?? []);
 
   onDestroy(() => {
-    cancelable?.abort();
     assetViewerManager.showAssetViewer(false);
   });
 
@@ -37,18 +32,6 @@
     returnToMap = false;
     void onClick();
   });
-
-  const loadMapMarkers = async () => {
-    cancelable?.abort();
-    cancelable = new AbortController();
-
-    try {
-      return await getAlbumMapMarkers({ ...authManager.params, id: album.id }, { signal: cancelable.signal });
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-      return [];
-    }
-  };
 
   const onClick = async () => {
     const assetIds = await modalManager.show(MapModal, { mapMarkers });

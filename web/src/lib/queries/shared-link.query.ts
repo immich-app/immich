@@ -7,7 +7,7 @@ import {
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
-import { getAlbumInfoQuery } from '$lib/queries/album.query';
+import { invalidateAlbum, invalidateAlbums } from '$lib/queries/album.query';
 import { asMutation, queryClient } from '$lib/queries/client';
 
 const findOrFail = (sharedLinks: SharedLinkResponseDto[], id: string) => {
@@ -31,15 +31,19 @@ export const getSharedLinkQuery = (id: string) =>
     select: (sharedLinks) => findOrFail(sharedLinks, id),
   });
 
-const invalidateAlbum = (albumId?: string | null) =>
-  albumId ? queryClient.invalidateQueries({ queryKey: getAlbumInfoQuery(albumId).queryKey }) : undefined;
+const onAlbumSharingChange = async (albumId?: string | null) => {
+  await invalidateAlbums();
+  if (albumId) {
+    await invalidateAlbum(albumId);
+  }
+};
 
 export const createSharedLinkMutation = () =>
   asMutation(createSharedLink, {
     onSuccess: async (_, [{ sharedLinkCreateDto }]) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: getAllSharedLinksQuery().queryKey, exact: true }),
-        invalidateAlbum(sharedLinkCreateDto.albumId),
+        onAlbumSharingChange(sharedLinkCreateDto.albumId),
       ]);
     },
     meta: { error: { toast: 'errors.failed_to_create_shared_link' } },
@@ -60,7 +64,7 @@ export const removeSharedLinkMutation = () =>
       queryClient.setQueryData(getAllSharedLinksQuery().queryKey, (sharedLinks) =>
         sharedLinks?.filter((sharedLink) => sharedLink.id !== id),
       );
-      await invalidateAlbum(albumId);
+      await onAlbumSharingChange(albumId);
     },
     meta: { success: { toast: 'deleted_shared_link' }, error: { toast: 'errors.unable_to_delete_shared_link' } },
   });
