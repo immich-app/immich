@@ -1,4 +1,5 @@
-import { CanActivate, ExecutionContext, Injectable, SetMetadata, applyDecorators } from '@nestjs/common';
+import { controllers as yuccaControllers } from '@futo-org/backups-orchestrator-api';
+import { CanActivate, ExecutionContext, Injectable, SetMetadata, Type, applyDecorators } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto.js';
@@ -34,7 +35,8 @@ export class MaintenanceAuthGuard implements CanActivate {
       targets,
     );
 
-    if (!options && !request.path.startsWith('/api/yucca')) {
+    const isYuccaRoute = (yuccaControllers as Type[]).includes(context.getClass());
+    if (!options && !isYuccaRoute) {
       return true;
     }
 
