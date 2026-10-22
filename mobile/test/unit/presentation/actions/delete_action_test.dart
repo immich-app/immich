@@ -99,17 +99,14 @@ void main() {
       });
 
       testWidgets('trashes a merged asset and removes its device copy', (tester) async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
         when(() => cleanupService.deleteLocalAssets(['local'])).thenAnswer((_) async => 1);
         final asset = owned(localId: 'local');
 
         await pumpDelete(tester, {asset});
-        await respondToDialog(tester, confirm: true);
+        await tester.pumpAndSettle();
 
         verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
         verify(() => assetService.trash([asset.id])).called(1);
-        debugDefaultTargetPlatformOverride = null;
       });
 
       testWidgets('does not trash a merged asset when the MANAGE_MEDIA prompt is cancelled', (tester) async {
@@ -359,7 +356,6 @@ void main() {
         verify(() => cleanupService.deleteLocalAssets(['local', localOnly.id])).called(1);
         debugDefaultTargetPlatformOverride = null;
       });
-
     });
 
     testWidgets('is hidden when nothing can be deleted', (tester) async {
