@@ -42,7 +42,7 @@ Make the following changes:
 #### 2. Run Reset Jobs
 
 Go to:  
-**Admin → Administration → Settings → Jobs**
+**Administration → Job Queues**
 
 Perform the following:
 

@@ -1,14 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { StorageCore } from 'src/cores/storage.core';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { DownloadArchiveDto, DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
-import { Permission } from 'src/enum';
-import { ImmichReadStream } from 'src/repositories/storage.repository';
-import { BaseService } from 'src/services/base.service';
-import { HumanReadableSize } from 'src/utils/bytes';
-import { getPreferences } from 'src/utils/preferences';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { AuthDto, isEditedOnly } from 'src/dtos/auth.dto.js';
+import {
+  DownloadArchiveDto,
+  DownloadArchiveInfo,
+  DownloadInfoDto,
+  DownloadResponseDto,
+} from 'src/dtos/download.dto.js';
+import { Permission } from 'src/enum.js';
+import { ImmichReadStream } from 'src/repositories/storage.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { HumanReadableSize } from 'src/utils/bytes.js';
+import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
 export class DownloadService extends BaseService {
@@ -42,10 +47,12 @@ export class DownloadService extends BaseService {
       archive.assetIds.push(id);
       archive.size += Number(size || 0);
 
-      if (archive.size > targetSize) {
-        archives.push(archive);
-        archive = { size: 0, assetIds: [] };
+      if (archive.size <= targetSize) {
+        return;
       }
+
+      archives.push(archive);
+      archive = { size: 0, assetIds: [] };
     };
 
     for await (const asset of assets) {
@@ -83,8 +90,9 @@ export class DownloadService extends BaseService {
   async downloadArchive(auth: AuthDto, dto: DownloadArchiveDto): Promise<ImmichReadStream> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
 
+    const edited = isEditedOnly(auth, dto.edited);
     const zip = this.storageRepository.createZipStream();
-    const assets = await this.assetRepository.getForOriginals(dto.assetIds, dto.edited ?? false);
+    const assets = await this.assetRepository.getForOriginals(dto.assetIds, edited);
     const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
@@ -104,7 +112,7 @@ export class DownloadService extends BaseService {
         filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
-      let realpath = dto.edited && editedPath ? editedPath : originalPath;
+      let realpath = edited && editedPath ? editedPath : originalPath;
 
       try {
         realpath = await this.storageRepository.realpath(realpath);

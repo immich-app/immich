@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 
@@ -12,9 +13,9 @@ class RemoteAlbumEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get description => text().withDefault(const Constant(''))();
 
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
 
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
 
   TextColumn get thumbnailAssetId =>
       text().references(RemoteAssetEntity, #id, onDelete: KeyAction.setNull).nullable()();

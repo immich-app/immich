@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/progressive_image.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -55,15 +56,18 @@ class SlideshowSlide extends StatelessWidget {
     final Widget content = asset.isImage || frozen
         ? ScaleTransition(
             scale: zoom.drive(Tween(begin: 1.0, end: 1.0 + _kenBurnsZoomMultiplier)),
-            child: PhotoView(
-              imageProvider: getFullImageProvider(asset, size: context.sizeData),
-              index: index,
-              disableScaleGestures: true,
-              gaplessPlayback: true,
-              filterQuality: FilterQuality.high,
-              initialScale: _scale,
-              controller: PhotoViewController(),
-              onTapUp: (_, _, _) => onTapUp(),
+            child: ProgressiveImage(
+              provider: getFullImageProvider(asset, size: context.sizeData),
+              builder: (context, provider) => PhotoView(
+                imageProvider: provider,
+                index: index,
+                disableScaleGestures: true,
+                gaplessPlayback: true,
+                filterQuality: FilterQuality.high,
+                initialScale: _scale,
+                controller: PhotoViewController(),
+                onTapUp: (_, _, _) => onTapUp(),
+              ),
             ),
           )
         : _SlideshowVideo(
@@ -147,7 +151,10 @@ class _SlideshowVideo extends ConsumerWidget {
         isCurrent: isCurrent,
         // Disable video looping
         loopOverride: false,
-        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
+        image: ProgressiveImage(
+          provider: imageProvider,
+          builder: (context, provider) => Image(image: provider, fit: BoxFit.contain, alignment: Alignment.center),
+        ),
       ),
     );
   }

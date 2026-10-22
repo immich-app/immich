@@ -1,19 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { getName } from 'i18n-iso-countries';
-import { Expression, Insertable, Kysely, NotNull, sql, SqlBool } from 'kysely';
+import { Expression, Insertable, Kysely, NotNull, SqlBool, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
-import { citiesFile, reverseGeocodeMaxDistance } from 'src/constants';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetVisibility, SystemMetadataKey } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { DB } from 'src/schema';
-import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
-import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
+import { citiesFile, reverseGeocodeMaxDistance } from 'src/constants.js';
+import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { AssetVisibility, SystemMetadataKey } from 'src/enum.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { DB } from 'src/schema/index.js';
+import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table.js';
+import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table.js';
 
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
@@ -38,8 +37,15 @@ interface MapDB extends DB {
   naturalearth_countries_tmp: NaturalEarthCountriesTable;
 }
 
+interface CountryNames {
+  byAlpha2: Map<string, string>;
+  byAlpha3: Map<string, string>;
+}
+
 @Injectable()
 export class MapRepository {
+  private countryNames?: Promise<CountryNames>;
+
   constructor(
     private configRepository: ConfigRepository,
     private metadataRepository: SystemMetadataRepository,
@@ -148,6 +154,8 @@ export class MapRepository {
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 
+    const countryNames = await this.loadCountryNames();
+
     const response = await this.db
       .selectFrom('geodata_places')
       .selectAll()
@@ -166,7 +174,7 @@ export class MapRepository {
       this.logger.verboseFn(() => `Raw: ${JSON.stringify(response, null, 2)}`);
 
       const { countryCode, name: city, admin1Name } = response;
-      const country = getName(countryCode, 'en') ?? null;
+      const country = countryNames.byAlpha2.get(countryCode) ?? null;
       const state = admin1Name;
 
       return { country, state, city };
@@ -194,11 +202,57 @@ export class MapRepository {
     this.logger.verboseFn(() => `Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
 
     const { admin_a3 } = ne_response;
-    const country = getName(admin_a3, 'en') ?? null;
+    const country = countryNames.byAlpha3.get(admin_a3) ?? null;
     const state = null;
     const city = null;
 
     return { country, state, city };
+  }
+
+  // init() skips the geodata import when it is up to date, so load the names on demand
+  private async loadCountryNames(): Promise<CountryNames> {
+    this.countryNames ??= this.readCountryNames();
+    try {
+      return await this.countryNames;
+    } catch (error) {
+      this.countryNames = undefined;
+      throw error;
+    }
+  }
+
+  private async readCountryNames(): Promise<CountryNames> {
+    const byAlpha2 = new Map<string, string>();
+    const byAlpha3 = new Map<string, string>();
+
+    const { resourcePaths } = this.configRepository.getEnv();
+    const filePath = resourcePaths.geodata.countryInfo;
+    if (!existsSync(filePath)) {
+      throw new Error(`Geodata file ${filePath} not found`);
+    }
+
+    const lineReader = readLine.createInterface({ input: createReadStream(filePath) });
+    for await (const line of lineReader) {
+      if (line.startsWith('#')) {
+        continue;
+      }
+      // Columns: ISO alpha-2, ISO alpha-3, ISO numeric, fips, Country, ...
+      const fields = line.split('\t', 5);
+      const alpha2 = fields[0];
+      const alpha3 = fields[1];
+      const name = fields[4]?.trim();
+      if (!name) {
+        continue;
+      }
+      if (alpha2) {
+        byAlpha2.set(alpha2, name);
+      }
+      if (alpha3) {
+        byAlpha3.set(alpha3, name);
+      }
+    }
+
+    this.logger.log(`Loaded ${byAlpha2.size} country names from ${filePath}`);
+    return { byAlpha2, byAlpha3 };
   }
 
   private async importNaturalEarthCountries() {
@@ -301,6 +355,7 @@ export class MapRepository {
         admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`) ?? null,
       };
       bufferGeodata.push(geoData);
+      // eslint-disable-next-line unicorn/prefer-continue
       if (bufferGeodata.length >= 5000) {
         const curLength = bufferGeodata.length;
         futures.push(

@@ -9,22 +9,24 @@ part 'memory.model.freezed.dart';
 enum MemoryTypeEnum {
   // do not change this order!
   onThisDay,
+  birthday,
 }
 
 @Freezed(fromJson: false, toJson: false)
 abstract class MemoryData with _$MemoryData {
   const MemoryData._();
 
-  const factory MemoryData({required int year}) = _MemoryData;
+  const factory MemoryData({required int year, String? personName}) = _MemoryData;
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{'year': year};
+    return <String, dynamic>{'year': year, 'personName': ?personName};
   }
 
   factory MemoryData.fromMap(Map<String, dynamic> map) {
-    return MemoryData(year: map['year'] as int);
+    return MemoryData(year: map['year'] as int, personName: map['personName'] as String?);
   }
 
+  @visibleForTesting
   String toJson() => json.encode(toMap());
 
   factory MemoryData.fromJson(String source) => MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);

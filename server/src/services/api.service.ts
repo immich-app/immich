@@ -1,12 +1,12 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-import { escape } from 'lodash';
+import { escape } from 'lodash-es';
 import { readFileSync } from 'node:fs';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { AuthService } from 'src/services/auth.service';
-import { SharedLinkService } from 'src/services/shared-link.service';
-import { OpenGraphTags } from 'src/utils/misc';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { AuthService } from 'src/services/auth.service.js';
+import { SharedLinkService } from 'src/services/shared-link.service.js';
+import { OpenGraphTags } from 'src/utils/misc.js';
 
 export const render = (index: string, meta: OpenGraphTags) => {
   const [title, description, imageUrl] = [meta.title, meta.description, meta.imageUrl].map((item) =>

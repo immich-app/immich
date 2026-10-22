@@ -1,5 +1,5 @@
-import { SyncRequestType } from 'src/enum';
-import { SYNC_TYPES_ORDER } from 'src/services/sync.service';
+import { SyncRequestType } from 'src/enum.js';
+import { SYNC_TYPES_ORDER } from 'src/services/sync.service.js';
 
 describe('types', () => {
   it('should have all the types in the ordering variable', () => {

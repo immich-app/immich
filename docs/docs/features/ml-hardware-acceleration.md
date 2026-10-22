@@ -1,5 +1,7 @@
 # Hardware-Accelerated Machine Learning
 
+import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
+
 This feature allows you to use a GPU to accelerate machine learning tasks, such as Smart Search and Facial Recognition, while reducing CPU load.
 As this is a new feature, it is still experimental and may not work on all systems.
 
@@ -86,6 +88,8 @@ You do not need to redo any machine learning jobs after enabling hardware accele
   - In particular, setting `MACHINE_LEARNING_RKNN_THREADS` to 2 or 3 can _dramatically_ improve performance for RK3576 and RK3588 compared to the default of 1, at the expense of multiplying the amount of RAM each model uses by that amount.
 
 ## Setup
+
+<ComposeBuilder />
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. In `immich-machine-learning`, add one of -[armnn, cuda, rocm, openvino, rknn] to the `image` section's tag at the end of the line.

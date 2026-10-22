@@ -20,16 +20,6 @@ class ViewerShowDetailsEvent extends Event {
   const ViewerShowDetailsEvent();
 }
 
-class ViewerReloadAssetEvent extends Event {
-  const ViewerReloadAssetEvent();
-}
-
-class ViewerStackAssetDeletedEvent extends Event {
-  final int stackIndex;
-
-  const ViewerStackAssetDeletedEvent({required this.stackIndex});
-}
-
 // Multi-Select Events
 class MultiSelectToggleEvent extends Event {
   final bool isEnabled;

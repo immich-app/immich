@@ -1,69 +1,82 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import sanitize from 'sanitize-filename';
-import { SALT_ROUNDS } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { UserAdmin } from 'src/database';
-import { SystemConfig } from 'src/dtos/config.dto';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { ActivityRepository } from 'src/repositories/activity.repository';
-import { AlbumUserRepository } from 'src/repositories/album-user.repository';
-import { AlbumRepository } from 'src/repositories/album.repository';
-import { ApiKeyRepository } from 'src/repositories/api-key.repository';
-import { AppRepository } from 'src/repositories/app.repository';
-import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
-import { AssetFileRepository } from 'src/repositories/asset-file.repository';
-import { AssetJobRepository } from 'src/repositories/asset-job.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { CronRepository } from 'src/repositories/cron.repository';
-import { CryptoRepository } from 'src/repositories/crypto.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { DownloadRepository } from 'src/repositories/download.repository';
-import { DuplicateRepository } from 'src/repositories/duplicate.repository';
-import { EmailRepository } from 'src/repositories/email.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { IntegrityRepository } from 'src/repositories/integrity.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LibraryRepository } from 'src/repositories/library.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
-import { MapRepository } from 'src/repositories/map.repository';
-import { MediaRepository } from 'src/repositories/media.repository';
-import { MemoryRepository } from 'src/repositories/memory.repository';
-import { MetadataRepository } from 'src/repositories/metadata.repository';
-import { MoveRepository } from 'src/repositories/move.repository';
-import { NotificationRepository } from 'src/repositories/notification.repository';
-import { OAuthRepository } from 'src/repositories/oauth.repository';
-import { OcrRepository } from 'src/repositories/ocr.repository';
-import { PartnerRepository } from 'src/repositories/partner.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { PluginRepository } from 'src/repositories/plugin.repository';
-import { ProcessRepository } from 'src/repositories/process.repository';
-import { SearchRepository } from 'src/repositories/search.repository';
-import { ServerInfoRepository } from 'src/repositories/server-info.repository';
-import { SessionRepository } from 'src/repositories/session.repository';
-import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
-import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
-import { StackRepository } from 'src/repositories/stack.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
-import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
-import { SyncRepository } from 'src/repositories/sync.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { TagRepository } from 'src/repositories/tag.repository';
-import { TelemetryRepository } from 'src/repositories/telemetry.repository';
-import { TrashRepository } from 'src/repositories/trash.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
-import { VideoStreamRepository } from 'src/repositories/video-stream.repository';
-import { ViewRepository } from 'src/repositories/view-repository';
-import { WebsocketRepository } from 'src/repositories/websocket.repository';
-import { WorkflowRepository } from 'src/repositories/workflow.repository';
-import { UserTable } from 'src/schema/tables/user.table';
-import { ClassConstructor } from 'src/types';
-import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
-import { getConfig, updateConfig } from 'src/utils/config';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import type { ClassConstructor } from 'src/types.js';
+import { SALT_ROUNDS } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { UserAdmin } from 'src/database.js';
+import { mapLoginResponse } from 'src/dtos/auth.dto.js';
+import { SystemConfig } from 'src/dtos/config.dto.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { ActivityRepository } from 'src/repositories/activity.repository.js';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
+import { AlbumRepository } from 'src/repositories/album.repository.js';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository.js';
+import { AppRepository } from 'src/repositories/app.repository.js';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
+import { AssetFileRepository } from 'src/repositories/asset-file.repository.js';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { AuthChallengeRepository } from 'src/repositories/auth-challenge.repository.js';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { CronRepository } from 'src/repositories/cron.repository.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { DownloadRepository } from 'src/repositories/download.repository.js';
+import { DuplicateRepository } from 'src/repositories/duplicate.repository.js';
+import { EmailRepository } from 'src/repositories/email.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { IntegrityRepository } from 'src/repositories/integrity.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
+import { LibraryRepository } from 'src/repositories/library.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
+import { MapRepository } from 'src/repositories/map.repository.js';
+import { MediaRepository } from 'src/repositories/media.repository.js';
+import { MemoryRepository } from 'src/repositories/memory.repository.js';
+import { MetadataRepository } from 'src/repositories/metadata.repository.js';
+import { MoveRepository } from 'src/repositories/move.repository.js';
+import { NotificationRepository } from 'src/repositories/notification.repository.js';
+import { OAuthRepository } from 'src/repositories/oauth.repository.js';
+import { OcrRepository } from 'src/repositories/ocr.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PasskeyRepository } from 'src/repositories/passkey.repository.js';
+import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { PluginRepository } from 'src/repositories/plugin.repository.js';
+import { ProcessRepository } from 'src/repositories/process.repository.js';
+import { SearchRepository } from 'src/repositories/search.repository.js';
+import { ServerInfoRepository } from 'src/repositories/server-info.repository.js';
+import { SessionRepository } from 'src/repositories/session.repository.js';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository.js';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
+import { StackRepository } from 'src/repositories/stack.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository.js';
+import { SyncRepository } from 'src/repositories/sync.repository.js';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository.js';
+import { TrashRepository } from 'src/repositories/trash.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
+import { VideoStreamRepository } from 'src/repositories/video-stream.repository.js';
+import { ViewRepository } from 'src/repositories/view-repository.js';
+import { WebAuthnRepository } from 'src/repositories/webauthn.repository.js';
+import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
+import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
+import { UserTable } from 'src/schema/tables/user.table.js';
+import {
+  AccessPersonRequest,
+  AccessRequest,
+  checkAccess,
+  checkPersonAccess,
+  requireAccess,
+  requirePersonAccess,
+} from 'src/utils/access.js';
+import { getConfig, updateConfig } from 'src/utils/config.js';
 
 export const BASE_SERVICE_DEPENDENCIES = [
   LoggingRepository,
@@ -77,6 +90,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   AssetEditRepository,
   AssetFileRepository,
   AssetJobRepository,
+  AuthChallengeRepository,
   ClusterGroupRepository,
   ConfigRepository,
   CronRepository,
@@ -99,7 +113,9 @@ export const BASE_SERVICE_DEPENDENCIES = [
   OAuthRepository,
   OcrRepository,
   PartnerRepository,
+  PasskeyRepository,
   PersonRepository,
+  PersonUserRepository,
   PluginRepository,
   ProcessRepository,
   SearchRepository,
@@ -119,6 +135,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   VersionHistoryRepository,
   VideoStreamRepository,
   ViewRepository,
+  WebAuthnRepository,
   WebsocketRepository,
   WorkflowRepository,
 ] as const;
@@ -139,6 +156,7 @@ export class BaseService {
     protected assetEditRepository: AssetEditRepository,
     protected assetFileRepository: AssetFileRepository,
     protected assetJobRepository: AssetJobRepository,
+    protected authChallengeRepository: AuthChallengeRepository,
     protected clusterGroupRepository: ClusterGroupRepository,
     protected configRepository: ConfigRepository,
     protected cronRepository: CronRepository,
@@ -161,7 +179,9 @@ export class BaseService {
     protected oauthRepository: OAuthRepository,
     protected ocrRepository: OcrRepository,
     protected partnerRepository: PartnerRepository,
+    protected passkeyRepository: PasskeyRepository,
     protected personRepository: PersonRepository,
+    protected personUserRepository: PersonUserRepository,
     protected pluginRepository: PluginRepository,
     protected processRepository: ProcessRepository,
     protected searchRepository: SearchRepository,
@@ -181,6 +201,7 @@ export class BaseService {
     protected versionRepository: VersionHistoryRepository,
     protected videoStreamRepository: VideoStreamRepository,
     protected viewRepository: ViewRepository,
+    protected webAuthnRepository: WebAuthnRepository,
     protected websocketRepository: WebsocketRepository,
     protected workflowRepository: WorkflowRepository,
   ) {
@@ -210,6 +231,7 @@ export class BaseService {
       ctx.assetEditRepository,
       ctx.assetFileRepository,
       ctx.assetJobRepository,
+      ctx.authChallengeRepository,
       ctx.clusterGroupRepository,
       ctx.configRepository,
       ctx.cronRepository,
@@ -232,7 +254,9 @@ export class BaseService {
       ctx.oauthRepository,
       ctx.ocrRepository,
       ctx.partnerRepository,
+      ctx.passkeyRepository,
       ctx.personRepository,
+      ctx.personUserRepository,
       ctx.pluginRepository,
       ctx.processRepository,
       ctx.searchRepository,
@@ -252,6 +276,7 @@ export class BaseService {
       ctx.versionRepository,
       ctx.videoStreamRepository,
       ctx.viewRepository,
+      ctx.webAuthnRepository,
       ctx.websocketRepository,
       ctx.workflowRepository,
     );
@@ -289,6 +314,14 @@ export class BaseService {
     return checkAccess(this.accessRepository, request);
   }
 
+  requirePersonAccess(request: AccessPersonRequest) {
+    return requirePersonAccess(this.accessRepository, request);
+  }
+
+  checkPersonAccess(request: AccessPersonRequest) {
+    return checkPersonAccess(this.accessRepository, request);
+  }
+
   async isSetupAvailable(): Promise<boolean> {
     const { setup } = this.configRepository.getEnv();
     return setup.allow && !(await this.userRepository.hasAdmin());
@@ -319,7 +352,7 @@ export class BaseService {
       payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
     }
     if (payload.storageLabel) {
-      payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
+      payload.storageLabel = sanitize(payload.storageLabel);
     }
 
     const clusterGroup = await this.clusterGroupRepository.create();
@@ -328,5 +361,27 @@ export class BaseService {
     await this.eventRepository.emit('UserCreate', user);
 
     return user;
+  }
+
+  protected async createLoginResponse(
+    user: UserAdmin,
+    loginDetails: LoginDetails,
+    oauthSid?: string,
+    oauthBearerToken?: string,
+  ) {
+    const token = this.cryptoRepository.randomBytesAsText(32);
+    const hashed = this.cryptoRepository.hashSha256(token);
+
+    await this.sessionRepository.create({
+      token: hashed,
+      deviceOS: loginDetails.deviceOS,
+      deviceType: loginDetails.deviceType,
+      appVersion: loginDetails.appVersion,
+      userId: user.id,
+      oauthSid: oauthSid ?? null,
+      oauthBearerToken: oauthBearerToken ?? null,
+    });
+
+    return mapLoginResponse(user, token);
   }
 }

@@ -26,7 +26,8 @@ void main() {
 
   setUpAll(() async {
     await app.initApp();
-    (drift, _) = await Bootstrap.initDomain();
+    final (dataController, _) = await Bootstrap.initDomain();
+    drift = dataController.db;
   });
 
   setUp(() async {
@@ -119,7 +120,9 @@ void main() {
     final releaseTxn = Completer<void>();
     final txnHeld = Completer<void>();
     final txn = drift.transaction(() async {
-      await drift.into(drift.userEntity).insert(
+      await drift
+          .into(drift.userEntity)
+          .insert(
             UserEntityCompanion.insert(
               id: 'holder',
               name: 'holder',

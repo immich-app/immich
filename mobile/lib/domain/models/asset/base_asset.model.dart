@@ -58,6 +58,7 @@ sealed class BaseAsset {
 
   bool get hasRemote => storage == AssetState.remote || storage == AssetState.merged;
   bool get hasLocal => storage == AssetState.local || storage == AssetState.merged;
+  // ignore: unused-code
   bool get isLocalOnly => storage == AssetState.local;
   bool get isRemoteOnly => storage == AssetState.remote;
   bool get isMerged => storage == .merged;

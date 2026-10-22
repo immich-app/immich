@@ -1,16 +1,16 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
-import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { mapSharedLink } from 'src/dtos/shared-link.dto';
-import { SharedLinkType } from 'src/enum';
-import { SharedLinkService } from 'src/services/shared-link.service';
-import { AlbumFactory } from 'test/factories/album.factory';
-import { AssetFactory } from 'test/factories/asset.factory';
-import { SharedLinkFactory } from 'test/factories/shared-link.factory';
-import { authStub } from 'test/fixtures/auth.stub';
-import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
-import { getForSharedLink } from 'test/mappers';
-import { factory } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
+import { mapSharedLink } from 'src/dtos/shared-link.dto.js';
+import { SharedLinkType } from 'src/enum.js';
+import { SharedLinkService } from 'src/services/shared-link.service.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { SharedLinkFactory } from 'test/factories/shared-link.factory.js';
+import { authStub } from 'test/fixtures/auth.stub.js';
+import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
+import { getForSharedLink } from 'test/mappers.js';
+import { factory } from 'test/small.factory.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
@@ -30,7 +30,7 @@ describe(SharedLinkService.name, () => {
       mocks.sharedLink.getAll.mockResolvedValue([getForSharedLink(sharedLink1), getForSharedLink(sharedLink2)]);
       await expect(sut.getAll(authStub.user1, {})).resolves.toEqual(
         [getForSharedLink(sharedLink1), getForSharedLink(sharedLink2)].map((link) =>
-          mapSharedLink(link, { stripAssetMetadata: false }),
+          mapSharedLink(link, { auth: authStub.user1 }),
         ),
       );
       expect(mocks.sharedLink.getAll).toHaveBeenCalledWith({ userId: authStub.user1.user.id });
@@ -48,7 +48,7 @@ describe(SharedLinkService.name, () => {
       const sharedLink = SharedLinkFactory.create();
       mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
       await expect(sut.getMine(authDto, [])).resolves.toEqual(
-        mapSharedLink(getForSharedLink(sharedLink), { stripAssetMetadata: false }),
+        mapSharedLink(getForSharedLink(sharedLink), { auth: authDto }),
       );
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
@@ -71,6 +71,20 @@ describe(SharedLinkService.name, () => {
       const response = await sut.getMine(authDto, []);
       expect(response.assets[0]).toMatchObject({ hasMetadata: false });
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
+    });
+
+    it('should not return album users', async () => {
+      const authDto = authStub.adminSharedLink;
+      const sharedLink = SharedLinkFactory.from()
+        .album({}, (builder) => builder.albumUser())
+        .build();
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+      mocks.album.getMetadataForIds.mockResolvedValue([]);
+
+      const response = await sut.getMine(authDto, []);
+
+      expect(sharedLink.album?.albumUsers.length).toBeGreaterThan(0);
+      expect(response.album).toMatchObject({ id: sharedLink.album!.id, albumUsers: [], shared: true });
     });
 
     it('should throw an error for a request without a shared link auth token', async () => {
@@ -107,7 +121,7 @@ describe(SharedLinkService.name, () => {
       const sharedLink = SharedLinkFactory.create();
       mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
       await expect(sut.get(authStub.user1, sharedLink.id)).resolves.toEqual(
-        mapSharedLink(getForSharedLink(sharedLink), { stripAssetMetadata: true }),
+        mapSharedLink(getForSharedLink(sharedLink), { auth: authStub.user1 }),
       );
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, sharedLink.id);
     });

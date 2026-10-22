@@ -101,17 +101,6 @@ abstract class UserDto with _$UserDto {
       quotaUsageInBytes.hashCode;
 }
 
-@freezed
-abstract class PartnerUserDto with _$PartnerUserDto {
-  const factory PartnerUserDto({
-    required String id,
-    required String email,
-    required String name,
-    required bool inTimeline,
-    String? profileImagePath,
-  }) = _PartnerUserDto;
-}
-
 class User {
   final String id;
   final String name;
@@ -152,50 +141,10 @@ class User {
   int get hashCode => Object.hash(id, name, email, profileChangedAt, hasProfileImage, avatarColor);
 }
 
-class AuthUser extends User {
-  final bool isAdmin;
-  final String? pinCode;
-  final int? quotaSizeInBytes;
-  final int quotaUsageInBytes;
-
-  const AuthUser({
-    required super.id,
-    required super.name,
-    required super.email,
-    required super.profileChangedAt,
-    required super.hasProfileImage,
-    super.avatarColor,
-    this.isAdmin = false,
-    this.pinCode,
-    this.quotaSizeInBytes = 0,
-    this.quotaUsageInBytes = 0,
-  });
-
-  @override
-  String toString() {
-    return 'AuthUser(user: ${super.toString()}, isAdmin: $isAdmin, pinCode: $pinCode, quotaSizeInBytes: $quotaSizeInBytes, quotaUsageInBytes: $quotaUsageInBytes)';
-  }
-
-  @override
-  bool operator ==(covariant AuthUser other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return super == other &&
-        other.isAdmin == isAdmin &&
-        other.pinCode == pinCode &&
-        other.quotaSizeInBytes == quotaSizeInBytes &&
-        other.quotaUsageInBytes == quotaUsageInBytes;
-  }
-
-  @override
-  int get hashCode => Object.hash(super.hashCode, isAdmin, pinCode, quotaSizeInBytes, quotaUsageInBytes);
-}
-
 class Partner extends User {
   final bool inTimeline;
 
+  @visibleForTesting
   const Partner({
     required super.id,
     required super.name,

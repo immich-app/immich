@@ -7,7 +7,7 @@ import {
   createAlbum,
 } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
-import { asBearerAuth, utils } from 'src/utils';
+import { asBearerAuth, utils } from 'src/utils.js';
 
 test.describe('Shared Links', () => {
   let admin: LoginResponseDto;
@@ -80,7 +80,7 @@ test.describe('Shared Links', () => {
     const input = page.getByPlaceholder('Password');
     await input.fill('test-password');
     await page.getByRole('button', { name: 'Show password' }).click();
-    // await page.getByText('test-password', { exact: true }).waitFor();
+    // await page.getByText('test-password').waitFor();
     await expect(input).toHaveAttribute('type', 'text');
   });
 

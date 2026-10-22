@@ -2,17 +2,19 @@ import { FileValidator, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
-import { isIP, isIPRange } from 'validator';
+import validator from 'validator';
 import z from 'zod';
 
 export type IsIPRangeOptions = { requireCIDR?: boolean };
 
 function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
   const { requireCIDR = true } = options ?? {};
-  if (isIPRange(value)) {
+  // eslint-disable-next-line import-x/no-named-as-default-member
+  if (validator.isIPRange(value)) {
     return true;
   }
-  return !requireCIDR && isIP(value);
+  // eslint-disable-next-line import-x/no-named-as-default-member
+  return !requireCIDR && validator.isIP(value);
 }
 
 /**
@@ -169,7 +171,7 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => DateTime.fromJSDate(date).toFormat('yyyy-MM-dd'),
+      encode: (date) => DateTime.fromJSDate(date, { zone: 'utc' }).toFormat('yyyy-MM-dd'),
     },
   )
   .meta({ example: '2024-01-01' });
@@ -245,4 +247,6 @@ export const hexColor = z
   .regex(hexColorRegex)
   .transform((val) => (val.startsWith('#') ? val : `#${val}`));
 
-export const sanitizeFilename = z.string().transform((val) => sanitize(val.replaceAll('.', '')));
+export const sanitizeFilename = z.string().transform((val) => sanitize(val));
+
+export const uniqueIds = z.array(z.uuid()).refine((ids) => ids.length === new Set(ids).size, 'Items must be unique');

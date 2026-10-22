@@ -8,11 +8,11 @@ from functools import lru_cache
 
 import cv2
 import numpy as np
+from immich_model.constants import FACE_DETECTION_SIZE as DET_SIZE
 from numpy.typing import NDArray
 
 from immich_ml.models.transforms import ensure_dims
 
-DET_SIZE = 640
 ALIGNED_SIZE = 112
 
 # the FPN levels for which the fused detector emits a (scores, boxes, kps) triple,
@@ -69,6 +69,5 @@ def umeyama(src: NDArray[np.float32], dst: NDArray[np.float32]) -> NDArray[np.fl
     return np.hstack([scale * rotation, translation[:, None]], dtype=np.float32)
 
 
-def align_face(image: NDArray[np.uint8], kps: NDArray[np.float32]) -> NDArray[np.float32]:
-    matrix = umeyama(kps, ARCFACE_DST)
-    return cv2.warpAffine(image, matrix, (ALIGNED_SIZE, ALIGNED_SIZE)).astype(np.float32)
+def align_face(image: NDArray[np.uint8], kps: NDArray[np.float32], crop: NDArray[np.uint8]) -> None:
+    cv2.warpAffine(image, umeyama(kps, ARCFACE_DST), (ALIGNED_SIZE, ALIGNED_SIZE), dst=crop)

@@ -5,14 +5,14 @@ import cookieParser from 'cookie-parser';
 import helmetMiddleware from 'helmet';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
-import { IMMICH_SERVER_START, excludePaths, serverVersion } from 'src/constants';
-import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
-import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
-import { ApiService } from 'src/services/api.service';
-import { useSwagger } from 'src/utils/misc';
+import { IMMICH_SERVER_START, excludePaths, serverVersion } from 'src/constants.js';
+import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
+import { WebSocketAdapter } from 'src/middleware/websocket.adapter.js';
+import { ConfigRepository } from 'src/repositories/config.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { bootstrapTelemetry } from 'src/repositories/telemetry.repository.js';
+import { ApiService } from 'src/services/api.service.js';
+import { useSwagger } from 'src/utils/misc.js';
 
 export function configureTelemetry() {
   const { telemetry } = new ConfigRepository().getEnv();
@@ -90,6 +90,13 @@ export async function configureExpress(
 
   const server = await (host ? app.listen(port, host) : app.listen(port));
   server.requestTimeout = 24 * 60 * 60 * 1000;
+
+  // make sure every socket always has an error handler
+  server.on('connection', (socket) => {
+    socket.on('error', (error) => {
+      logger.debug(`Socket error: ${error.message}`);
+    });
+  });
 
   logger.log(`${IMMICH_SERVER_START} on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
 }

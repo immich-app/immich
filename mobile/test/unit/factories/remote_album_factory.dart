@@ -3,8 +3,6 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import '../../utils.dart';
 
 class RemoteAlbumFactory {
-  const RemoteAlbumFactory();
-
   static RemoteAlbum create({
     String? id,
     String? name,

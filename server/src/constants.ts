@@ -9,7 +9,7 @@ import {
   TranscodeHardwareAcceleration,
   VectorIndex,
   VideoCodec,
-} from 'src/enum';
+} from 'src/enum.js';
 
 export const IMMICH_SERVER_START = 'Immich Server is listening';
 
@@ -49,8 +49,7 @@ export const LOGIN_DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQR
 
 export const IWorker = 'IWorker';
 
-// eslint-disable-next-line unicorn/prefer-module
-const basePath = dirname(__filename);
+const basePath = dirname(import.meta.filename);
 const packageFile = join(basePath, '..', 'package.json');
 const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
@@ -61,7 +60,7 @@ export const reverseGeocodeMaxDistance = 25_000;
 export const MOBILE_REDIRECT = 'app.immich:///oauth-callback';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';
 
-export const excludePaths = ['/.well-known/immich', '/custom.css', '/favicon.ico'];
+export const excludePaths = ['/.well-known/immich', '/.well-known/webauthn', '/custom.css', '/favicon.ico'];
 
 export const FACE_THUMBNAIL_SIZE = 250;
 
@@ -176,6 +175,7 @@ export const endpointTags: Record<ApiTag, string> = {
     'A notification is a specialized message sent to users to inform them of important events. Currently, these notifications are only shown in the Immich web application.',
   [ApiTag.NotificationsAdmin]: 'Notification administrative endpoints.',
   [ApiTag.Partners]: 'A partner is a link with another user that allows sharing of assets between two users.',
+  [ApiTag.Passkeys]: 'A passkey is a WebAuthn credential that can be used to login without a password.',
   [ApiTag.People]:
     'A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job.',
   [ApiTag.Plugins]:

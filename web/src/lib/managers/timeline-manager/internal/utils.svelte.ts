@@ -24,5 +24,5 @@ export function updateObject(target: any, source: any): boolean {
   return updated;
 }
 export function isMismatched<T>(option: T | undefined, value: T): boolean {
-  return option === undefined ? false : option !== value;
+  return option !== undefined && option !== value;
 }

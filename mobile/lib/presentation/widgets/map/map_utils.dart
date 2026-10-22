@@ -1,3 +1,4 @@
+// TODO: Dedupe against lib/utils/map_utils.dart
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -13,17 +14,6 @@ class MapUtils {
   static const mapZoomToAssetLevel = 12.0;
   static const defaultSourceId = 'asset-map-markers';
   static const defaultHeatMapLayerId = 'asset-heatmap-layer';
-  static var markerCompleter = Completer()..complete();
-
-  static const defaultCircleLayerLayerProperties = CircleLayerProperties(
-    circleRadius: 10,
-    circleColor: "rgba(150,86,34,0.7)",
-    circleBlur: 1.0,
-    circleOpacity: 0.7,
-    circleStrokeWidth: 0.1,
-    circleStrokeColor: "rgba(203,46,19,0.5)",
-    circleStrokeOpacity: 0.7,
-  );
 
   static const defaultHeatmapLayerProperties = HeatmapLayerProperties(
     heatmapColor: [

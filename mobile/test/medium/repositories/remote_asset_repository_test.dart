@@ -1,5 +1,7 @@
 import 'package:async/async.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 
@@ -67,7 +69,7 @@ void main() {
     });
   });
 
-  group('watchHiddenIds', () {
+  group('watchDeletedAssetIds', () {
     late String userId;
 
     setUp(() async {
@@ -81,7 +83,7 @@ void main() {
       final trashed = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2020));
       final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
 
-      final result = await sut.watchHiddenIds([
+      final result = await sut.watchDeletedAssetIds([
         timeline.id,
         trashed.id,
         archived.id,
@@ -95,14 +97,14 @@ void main() {
       final timeline = await ctx.newRemoteAsset(ownerId: userId);
       final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
 
-      final result = await sut.watchHiddenIds([timeline.id, archived.id], AssetVisibility.archive).first;
+      final result = await sut.watchDeletedAssetIds([timeline.id, archived.id], AssetVisibility.archive).first;
 
       expect(result, {timeline.id});
     });
 
     test('emits when an asset is trashed and again when it is restored', () async {
       final asset = await ctx.newRemoteAsset(ownerId: userId);
-      final queue = StreamQueue(sut.watchHiddenIds([asset.id], AssetVisibility.timeline));
+      final queue = StreamQueue(sut.watchDeletedAssetIds([asset.id], AssetVisibility.timeline));
 
       expect(await queue.next, isEmpty);
 
@@ -113,6 +115,35 @@ void main() {
       expect(await queue.next, isEmpty);
 
       await queue.cancel();
+    });
+  });
+
+  group('updateAssets', () {
+    Future<String?> groupDate(String id) async =>
+        (await (ctx.db.remoteAssetEntity.select()..where((row) => row.id.equals(id))).getSingle()).groupDate;
+
+    test('a created_at edit moves group_date only for rows without local_date_time', () async {
+      final user = await ctx.newUser();
+      final withLocal = await ctx.newRemoteAsset(ownerId: user.id, localDateTime: DateTime.utc(2024, 1, 5, 12));
+      final noLocal = await ctx.newRemoteAsset(ownerId: user.id, createdAt: DateTime.utc(2024, 1, 1, 12));
+      final clearLocal = ctx.db.update(ctx.db.remoteAssetEntity)..where((row) => row.id.equals(noLocal.id));
+      await clearLocal.write(const RemoteAssetEntityCompanion(localDateTime: Value(null)));
+
+      await sut.updateAssets([withLocal.id, noLocal.id], createdAt: .some(DateTime.utc(2026, 7, 24, 12)));
+
+      expect(await groupDate(withLocal.id), '2024-01-05');
+      expect(await groupDate(noLocal.id), '2026-07-24');
+    });
+
+    test('a favorite edit leaves group_date alone', () async {
+      final user = await ctx.newUser();
+      final asset = await ctx.newRemoteAsset(ownerId: user.id, createdAt: DateTime.utc(2024, 1, 1, 12));
+      final clearLocal = ctx.db.update(ctx.db.remoteAssetEntity)..where((row) => row.id.equals(asset.id));
+      await clearLocal.write(const RemoteAssetEntityCompanion(localDateTime: Value(null)));
+
+      await sut.updateAssets([asset.id], isFavorite: const .some(true));
+
+      expect(await groupDate(asset.id), '2024-01-01');
     });
   });
 }

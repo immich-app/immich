@@ -64,98 +64,45 @@ from
   left join lateral (
     select
       "album".*,
-      coalesce(
-        json_agg(
-          "assets"
-          order by
-            "assets"."fileCreatedAt" asc
-        ) filter (
-          where
-            "assets"."id" is not null
-        ),
-        '[]'
-      ) as "assets",
-      to_json("owner") as "owner"
-    from
-      "album"
-      left join "album_asset" on "album_asset"."albumId" = "album"."id"
-      left join lateral (
+      (
         select
-          "asset".*,
-          to_json("exifInfo") as "exifInfo"
+          coalesce(json_agg(agg), '[]')
         from
-          "asset"
-          inner join lateral (
+          (
             select
-              "asset_exif"."assetId",
-              "asset_exif"."autoStackId",
-              "asset_exif"."bitsPerSample",
-              "asset_exif"."city",
-              "asset_exif"."colorspace",
-              "asset_exif"."country",
-              "asset_exif"."dateTimeOriginal",
-              "asset_exif"."description",
-              "asset_exif"."exifImageHeight",
-              "asset_exif"."exifImageWidth",
-              "asset_exif"."exposureTime",
-              "asset_exif"."fileSizeInByte",
-              "asset_exif"."fNumber",
-              "asset_exif"."focalLength",
-              "asset_exif"."fps",
-              "asset_exif"."iso",
-              "asset_exif"."latitude",
-              "asset_exif"."lensModel",
-              "asset_exif"."livePhotoCID",
-              "asset_exif"."longitude",
-              "asset_exif"."make",
-              "asset_exif"."model",
-              "asset_exif"."modifyDate",
-              "asset_exif"."orientation",
-              "asset_exif"."profileDescription",
-              "asset_exif"."projectionType",
-              "asset_exif"."rating",
-              "asset_exif"."state",
-              "asset_exif"."tags",
-              "asset_exif"."timeZone"
-            from
-              "asset_exif"
-            where
-              "asset_exif"."assetId" = "asset"."id"
-          ) as "exifInfo" on true
-        where
-          "album_asset"."assetId" = "asset"."id"
-          and "asset"."deletedAt" is null
-        order by
-          "asset"."fileCreatedAt" asc
-      ) as "assets" on true
-      inner join lateral (
-        select
-          "id",
-          "name",
-          "email",
-          "avatarColor",
-          "profileImagePath",
-          "profileChangedAt"
-        from
-          "user"
-        where
-          exists (
-            select
+              "album_user"."role",
+              (
+                select
+                  to_json(obj)
+                from
+                  (
+                    select
+                      "id",
+                      "name",
+                      "email",
+                      "avatarColor",
+                      "profileImagePath",
+                      "profileChangedAt"
+                    from
+                      (
+                        select
+                          1
+                      ) as "dummy"
+                  ) as obj
+              ) as "user"
             from
               "album_user"
+              inner join "user" on "user"."id" = "album_user"."userId"
             where
               "album_user"."role" = 'owner'
               and "album_user"."albumId" = "album"."id"
-              and "album_user"."userId" = "user"."id"
-          )
-          and "user"."deletedAt" is null
-      ) as "owner" on true
+          ) as agg
+      ) as "albumUsers"
+    from
+      "album"
     where
       "album"."id" = "shared_link"."albumId"
       and "album"."deletedAt" is null
-    group by
-      "album"."id",
-      "owner".*
   ) as "album" on true
 where
   "shared_link"."id" = $1
@@ -195,31 +142,42 @@ from
   left join lateral (
     select
       "album".*,
-      to_json("owner") as "owner"
-    from
-      "album"
-      inner join lateral (
+      (
         select
-          "id",
-          "name",
-          "email",
-          "avatarColor",
-          "profileImagePath",
-          "profileChangedAt"
+          coalesce(json_agg(agg), '[]')
         from
-          "user"
-        where
-          exists (
+          (
             select
+              "album_user"."role",
+              (
+                select
+                  to_json(obj)
+                from
+                  (
+                    select
+                      "id",
+                      "name",
+                      "email",
+                      "avatarColor",
+                      "profileImagePath",
+                      "profileChangedAt"
+                    from
+                      (
+                        select
+                          1
+                      ) as "dummy"
+                  ) as obj
+              ) as "user"
             from
               "album_user"
+              inner join "user" on "user"."id" = "album_user"."userId"
             where
               "album_user"."role" = 'owner'
               and "album_user"."albumId" = "album"."id"
-              and "album_user"."userId" = "user"."id"
-          )
-          and "user"."deletedAt" is null
-      ) as "owner" on true
+          ) as agg
+      ) as "albumUsers"
+    from
+      "album"
     where
       "album"."id" = "shared_link"."albumId"
       and "album"."deletedAt" is null

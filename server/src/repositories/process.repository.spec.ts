@@ -1,7 +1,7 @@
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { ProcessRepository } from 'src/repositories/process.repository';
+import { ProcessRepository } from 'src/repositories/process.repository.js';
 
 function* data() {
   yield 'Hello, world!';

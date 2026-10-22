@@ -4,33 +4,28 @@
   import NotificationItem from '$lib/components/shared-components/navigation-bar/NotificationItem.svelte';
   import { OpenQueryParam } from '$lib/constants';
   import { Route } from '$lib/route';
-  import { notificationManager } from '$lib/stores/notification-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import { executeMutation } from '$lib/queries/client';
+  import {
+    getNotificationsQuery,
+    updateNotificationMutation,
+    updateNotificationsMutation,
+  } from '$lib/queries/notification.query';
   import { NotificationType, type NotificationDto } from '@immich/sdk';
-  import { Button, Icon, Scrollable, Stack, Text, toastManager } from '@immich/ui';
+  import { Button, Icon, Scrollable, Stack, Text } from '@immich/ui';
   import { mdiBellOutline, mdiCheckAll } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
   import { fade } from 'svelte/transition';
 
-  const noUnreadNotifications = $derived(notificationManager.notifications.length === 0);
+  const query = createQuery(getNotificationsQuery);
+  const notifications = $derived(query.data ?? []);
+  const noUnreadNotifications = $derived(notifications.length === 0);
 
-  const markAsRead = async (id: string) => {
-    try {
-      await notificationManager.markAsRead(id);
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_update_notification_status'));
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      await notificationManager.markAllAsRead();
-      toastManager.info($t('marked_all_as_read'));
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_update_notification_status'));
-    }
-  };
+  const markAllAsRead = () =>
+    executeMutation(updateNotificationsMutation, [
+      { notificationUpdateAllDto: { ids: notifications.map(({ id }) => id), readAt: new Date().toISOString() } },
+    ]);
 
   const handleNotificationAction = async (notification: NotificationDto) => {
     switch (notification.type) {
@@ -63,10 +58,12 @@
     }
   };
 
-  const onclick = async (notification: NotificationDto) => {
-    await markAsRead(notification.id);
-    await handleNotificationAction(notification);
-  };
+  const onclick = (notification: NotificationDto) =>
+    executeMutation(
+      updateNotificationMutation,
+      [{ id: notification.id, notificationUpdateDto: { readAt: new Date().toISOString() } }],
+      { onSuccess: () => void handleNotificationAction(notification) },
+    );
 </script>
 
 <div
@@ -104,7 +101,7 @@
     {:else}
       <Scrollable class="pb-6">
         <Stack gap={0}>
-          {#each notificationManager.notifications as notification (notification.id)}
+          {#each notifications as notification (notification.id)}
             <div animate:flip={{ duration: 400 }}>
               <NotificationItem {notification} {onclick} />
             </div>

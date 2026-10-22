@@ -3,8 +3,6 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import '../../utils.dart';
 
 class UserFactory {
-  const UserFactory();
-
   static User create({
     String? id,
     String? name,

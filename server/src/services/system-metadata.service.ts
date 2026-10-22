@@ -4,9 +4,9 @@ import {
   AdminOnboardingUpdateDto,
   ReverseGeocodingStateResponseDto,
   VersionCheckStateResponseDto,
-} from 'src/dtos/system-metadata.dto';
-import { SystemMetadataKey } from 'src/enum';
-import { BaseService } from 'src/services/base.service';
+} from 'src/dtos/system-metadata.dto.js';
+import { SystemMetadataKey } from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
 export class SystemMetadataService extends BaseService {

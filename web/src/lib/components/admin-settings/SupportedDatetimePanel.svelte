@@ -1,7 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import type { SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
-  import { Card, CardBody, CardHeader, Text } from '@immich/ui';
+  import { Card, CardBody, CardHeader, Heading, Text } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -25,9 +25,9 @@
   </div>
 {/snippet}
 
-<Text size="small">{$t('date_and_time')}</Text>
+<Heading size="small">{$t('date_and_time')}</Heading>
 
-<Card class="mt-2 bg-light-50 text-sm shadow-none">
+<Card class="bg-light-50 text-sm shadow-none">
   <CardHeader>
     <Text class="mb-1">{$t('admin.storage_template_date_time_description')}</Text>
     <Text color="primary"

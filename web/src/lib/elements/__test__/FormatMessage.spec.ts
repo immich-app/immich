@@ -30,6 +30,7 @@ describe('FormatMessage component', () => {
       key: 'hello' as Translations,
       values: { name: 'test' },
     });
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByText('Hello test')).toBeInTheDocument();
   });
 
@@ -43,6 +44,7 @@ describe('FormatMessage component', () => {
     render(FormatMessage, {
       key: 'hello' as Translations,
     });
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByText('Hello {name}')).toBeInTheDocument();
   });
 
@@ -51,6 +53,7 @@ describe('FormatMessage component', () => {
       key: 'html' as Translations,
       values: { name: 'test' },
     });
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByText('Hello test')).toBeInTheDocument();
   });
 
@@ -74,11 +77,13 @@ describe('FormatMessage component', () => {
     render(FormatMessage, {
       key: 'xss' as Translations,
     });
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByText('<image/src/onerror=prompt(8)>')).toBeInTheDocument();
   });
 
   it('displays the message key when not found', () => {
     render(FormatMessage, { key: 'invalid.key' as Translations });
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByText('invalid.key')).toBeInTheDocument();
   });
 

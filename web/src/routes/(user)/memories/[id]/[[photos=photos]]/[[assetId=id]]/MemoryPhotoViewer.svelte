@@ -35,7 +35,9 @@
     };
   });
 
-  const imageLoaderUrl = $derived(getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview }));
+  const imageLoaderUrl = $derived(
+    getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey: asset.thumbhash }),
+  );
 </script>
 
 {#if !imageLoaded}

@@ -1,14 +1,14 @@
 import { Kysely } from 'kysely';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { StackRepository } from 'src/repositories/stack.repository';
-import { DB } from 'src/schema';
-import { StackService } from 'src/services/stack.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { StackRepository } from 'src/repositories/stack.repository.js';
+import { DB } from 'src/schema/index.js';
+import { StackService } from 'src/services/stack.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

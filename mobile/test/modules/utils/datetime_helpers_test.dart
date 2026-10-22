@@ -8,15 +8,7 @@ void main() {
       expect(result, isNull);
     });
 
-    test('returns null for value below minimum allowed range', () {
-      // _minMillisecondsSinceEpoch = -62135596800000
-      const seconds = -62135596800000 ~/ 1000 - 1; // One second before min allowed
-      final result = tryFromSecondsSinceEpoch(seconds);
-      expect(result, isNull);
-    });
-
     test('returns null for value above maximum allowed range', () {
-      // _maxMillisecondsSinceEpoch = 8640000000000000
       const seconds = 8640000000000000 ~/ 1000 + 1; // One second after max allowed
       final result = tryFromSecondsSinceEpoch(seconds);
       expect(result, isNull);

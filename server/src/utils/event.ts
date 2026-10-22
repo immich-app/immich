@@ -1,4 +1,4 @@
-import { ArgOf, EmitEvent } from 'src/repositories/event.repository';
+import type { ArgOf, EmitEvent } from 'src/repositories/event.repository.js';
 
 export class PendingEvents<T extends { [T in EmitEvent]: ArgOf<T> extends { error?: string } ? T : never }[EmitEvent]> {
   private pending = new Map<string, { completers: PromiseWithResolvers<ArgOf<T>>[]; timeout: NodeJS.Timeout }>();

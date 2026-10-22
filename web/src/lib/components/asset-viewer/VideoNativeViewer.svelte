@@ -4,7 +4,6 @@
   import { assetViewerFadeDuration } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
@@ -45,6 +44,11 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import './immich-time-range';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+
+  const query = createPreloadedQuery(getPublicConfigQuery);
+  const publicConfig = $derived(query.data);
 
   interface Props {
     asset: AssetResponseDto;
@@ -78,7 +82,7 @@
   let isLoading = $state(true);
   let hasLoadedMetadata = $state(false);
   let assetFileUrl = $derived.by(() => {
-    if (featureFlagsManager.value.realtimeTranscoding) {
+    if (publicConfig.ffmpeg.realtime.enabled) {
       return getAssetHlsUrl(assetId);
     }
 
@@ -376,7 +380,7 @@
         style:aspect-ratio={aspectRatio}
         defaultduration={asset.duration! / 1000}
       >
-        {#if featureFlagsManager.value.realtimeTranscoding}
+        {#if publicConfig.ffmpeg.realtime.enabled}
           <hls-video
             bind:this={videoPlayer}
             slot="media"
@@ -440,7 +444,7 @@
                 <span slot="title">{$t('media_chrome.playback_rate')}</span>
               </media-playback-rate-menu>
             </media-settings-menu-item>
-            {#if featureFlagsManager.value.realtimeTranscoding}
+            {#if publicConfig.ffmpeg.realtime.enabled}
               <media-settings-menu-item class="mx-1 rounded-lg p-1 ps-2">
                 {$t('video_quality')}
                 <Icon slot="suffix" icon={mdiChevronRight} class="m-2" />
@@ -494,7 +498,12 @@
       {/if}
 
       {#if assetViewerManager.isFaceEditMode && videoPlayer && hasLoadedMetadata}
-        <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
+        <FaceEditor
+          htmlElement={isHlsElement(videoPlayer) ? videoPlayer.nativeEl : videoPlayer}
+          {containerWidth}
+          {containerHeight}
+          {assetId}
+        />
       {/if}
     {/if}
   </div>

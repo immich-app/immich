@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/memory/memory_title.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -75,9 +75,11 @@ class _MemoryListPageState extends ConsumerState<MemoryListPage> {
                         Positioned(
                           bottom: 16,
                           left: 16,
-                          child: Text(
-                            DateFormat.yMMMMd().format(memories[index].memoryAt),
+                          right: 16,
+                          child: MemoryTitle(
+                            memory: memories[index],
                             style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 15),
+                            preferDate: true,
                           ),
                         ),
                         if (memories[index].isSaved)

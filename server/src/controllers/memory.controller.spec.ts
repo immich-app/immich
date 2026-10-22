@@ -1,9 +1,9 @@
-import { MemoryController } from 'src/controllers/memory.controller';
-import { MemoryService } from 'src/services/memory.service';
 import request from 'supertest';
-import { errorDto } from 'test/medium/responses';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { MemoryController } from 'src/controllers/memory.controller.js';
+import { MemoryService } from 'src/services/memory.service.js';
+import { errorDto } from 'test/medium/responses.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(MemoryController.name, () => {
   let ctx: ControllerContext;
@@ -42,6 +42,36 @@ describe(MemoryController.name, () => {
           { path: ['data', 'year'], message: 'Invalid input: expected number, received undefined' },
         ]),
       );
+    });
+
+    it('should validate data when type is birthday', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/memories')
+        .send({
+          type: 'birthday',
+          data: { year: 1990 },
+          memoryAt: new Date(2021).toISOString(),
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['data', 'personId'], message: 'Required for birthday memories' },
+          { path: ['data', 'personName'], message: 'Required for birthday memories' },
+        ]),
+      );
+    });
+
+    it('should accept a birthday memory', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/memories')
+        .send({
+          type: 'birthday',
+          data: { personId: factory.uuid(), personName: 'Alice', year: 1990 },
+          memoryAt: new Date(2021).toISOString(),
+        });
+
+      expect(status).toBe(201);
     });
 
     it('should accept showAt and hideAt', async () => {

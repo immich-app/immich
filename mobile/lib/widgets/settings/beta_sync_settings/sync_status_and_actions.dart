@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
@@ -86,7 +87,37 @@ class SyncStatusAndActions extends HookConsumerWidget {
     }
 
     Future<void> clearFileCache() async {
-      await ref.read(storageRepositoryProvider).clearCache();
+      try {
+        await ref.read(storageRepositoryProvider).clearCache();
+
+        if (!context.mounted) {
+          return;
+        }
+
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text(
+              context.t.clear_file_cache_success,
+              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+            ),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) {
+          return;
+        }
+
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text(
+              context.t.clear_file_cache_error,
+              style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.error),
+            ),
+          ),
+        );
+      }
     }
 
     Future<void> resetSqliteDb(BuildContext context) {
@@ -176,12 +207,13 @@ class SyncStatusAndActions extends HookConsumerWidget {
           leading: const Icon(Icons.playlist_remove_rounded),
           onTap: clearFileCache,
         ),
-        ListTile(
-          title: Text(context.t.export_database, style: const TextStyle(fontWeight: FontWeight.w500)),
-          subtitle: Text(context.t.export_database_description),
-          leading: const Icon(Icons.download),
-          onTap: exportDatabase,
-        ),
+        if (!kReleaseMode)
+          ListTile(
+            title: Text(context.t.export_database, style: const TextStyle(fontWeight: FontWeight.w500)),
+            subtitle: Text(context.t.export_database_description),
+            leading: const Icon(Icons.download),
+            onTap: exportDatabase,
+          ),
         ListTile(
           title: Text(
             context.t.reset_sqlite,
@@ -243,18 +275,14 @@ class _SyncStatsCounts extends ConsumerWidget {
         }
 
         if (snapshot.hasError) {
-          return ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Center(
-                  child: Text(
-                    "Error occur, reset the local database by tapping the button below",
-                    style: context.textTheme.bodyLarge,
-                  ),
-                ),
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Text(
+                context.t.reset_sqlite_error_hint,
+                style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.error),
               ),
-            ],
+            ),
           );
         }
 

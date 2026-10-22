@@ -10,10 +10,10 @@ import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dar
 import 'package:immich_mobile/repositories/album_api_repository.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 
-final localAlbumProvider = FutureProvider<List<LocalAlbum>>(
+final localAlbumProvider = StreamProvider<List<LocalAlbum>>(
   (ref) => LocalAlbumService(ref.watch(driftProvider).localAlbumRepository)
-      .getAll(sortBy: {SortLocalAlbumsBy.newestAsset})
-      .then((albums) => albums.where((album) => album.assetCount > 0).toList()),
+      .watchAll(sortBy: {SortLocalAlbumsBy.newestAsset})
+      .map((albums) => albums.where((album) => album.assetCount > 0).toList()),
 );
 
 final localAlbumThumbnailProvider = FutureProvider.family<LocalAsset?, String>(

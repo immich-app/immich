@@ -1,8 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
-import { HistoryBuilder } from 'src/decorators';
-import { Permission } from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
+import { HistoryBuilder } from 'src/decorators.js';
+import { Permission } from 'src/enum.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const PermissionSchema = z.enum(Permission).describe('List of permissions').meta({ id: 'Permission' });
 

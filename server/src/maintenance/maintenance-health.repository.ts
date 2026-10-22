@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
-import { IMMICH_SERVER_START } from 'src/constants';
+import { IMMICH_SERVER_START } from 'src/constants.js';
 
 @Injectable()
 export class MaintenanceHealthRepository {
   checkApiHealth(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      // eslint-disable-next-line unicorn/prefer-module
-      const basePath = dirname(__filename);
+      const basePath = dirname(import.meta.filename);
       const workerFile = join(basePath, '..', 'workers', `api.js`);
 
       const worker = fork(workerFile, [], {
@@ -30,10 +29,12 @@ export class MaintenanceHealthRepository {
 
         output += data;
 
-        if (output.includes(IMMICH_SERVER_START)) {
-          resolve();
-          worker.kill('SIGTERM');
+        if (!output.includes(IMMICH_SERVER_START)) {
+          return;
         }
+
+        resolve();
+        worker.kill('SIGTERM');
       });
 
       worker.on('exit', (code, signal) =>

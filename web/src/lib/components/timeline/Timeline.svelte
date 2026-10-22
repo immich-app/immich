@@ -90,7 +90,6 @@
   $effect(() => options && void timelineManager.updateOptions(options));
 
   let scrollableElement: HTMLElement | undefined = $state();
-  let timelineElement: HTMLElement | undefined = $state();
   let invisible = $state(true);
   // The percentage of scroll through the month that is currently intersecting the top boundary of the viewport.
   // Note: There may be multiple months visible within the viewport at any given time.
@@ -213,8 +212,10 @@
     if (scrolled && scrollTarget) {
       await tick();
       focusAsset(scrollTarget);
-    } else {
+    } else if (scrollTarget) {
       timelineManager.scrollTo(lastVisibleScrollTop);
+    } else {
+      timelineManager.scrollTo(0);
     }
 
     invisible = false;
@@ -611,12 +612,7 @@
   bind:this={scrollableElement}
   onscroll={() => (handleTimelineScroll(), timelineManager.updateSlidingWindow(), updateIsScrolling())}
 >
-  <section
-    bind:this={timelineElement}
-    id="virtual-timeline"
-    class:invisible
-    style:height={timelineManager.totalViewerHeight + 'px'}
-  >
+  <section id="virtual-timeline" class:invisible style:height={timelineManager.totalViewerHeight + 'px'}>
     <section
       bind:clientHeight={timelineManager.topSectionHeight}
       class:invisible

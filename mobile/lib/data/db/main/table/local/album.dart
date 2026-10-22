@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/album.dart';
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 
@@ -9,7 +10,7 @@ class LocalAlbumEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get id => text()();
   TextColumn get name => text()();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
   IntColumn get backupSelection => intEnum<BackupSelection>()();
   BoolColumn get isIosSharedAlbum => boolean().withDefault(const Constant(false))();
 

@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
-import { IntegrityReport, IntegrityReportSchema } from 'src/enum';
 import z from 'zod';
+import { IntegrityReport, IntegrityReportSchema } from 'src/enum.js';
 
 const IntegrityReportSummaryResponseSchema = z
   .object({
@@ -14,7 +14,7 @@ const IntegrityGetReportSchema = z
   .object({
     type: IntegrityReportSchema,
     cursor: z.string().optional().describe('Cursor for pagination'),
-    limit: z.int().positive().default(500).optional().describe('Number of items per page'),
+    limit: z.coerce.number().int().positive().default(500).optional().describe('Number of items per page'),
   })
   .meta({ id: 'IntegrityGetReportDto' });
 

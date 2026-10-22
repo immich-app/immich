@@ -129,9 +129,9 @@ class AuthService {
     ]);
   }
 
-  Future<void> changePassword(String newPassword) {
+  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
     try {
-      return _authApiRepository.changePassword(newPassword);
+      await _authApiRepository.changePassword(currentPassword: currentPassword, newPassword: newPassword);
     } catch (error, stackTrace) {
       _log.severe("Error changing password", error, stackTrace);
       rethrow;
@@ -162,6 +162,7 @@ class AuthService {
       final localEndpoint = _authRepository.getLocalEndpoint();
       if (localEndpoint != null) {
         await _apiService.resolveAndSetEndpoint(localEndpoint);
+        _log.info("Using local endpoint");
         return localEndpoint;
       }
     } catch (error, stackTrace) {
@@ -181,9 +182,11 @@ class AuthService {
       return null;
     }
 
-    for (final endpoint in endpointList) {
+    for (var i = 0; i < endpointList.length; i++) {
       try {
-        return await _apiService.resolveAndSetEndpoint(endpoint.url);
+        final url = await _apiService.resolveAndSetEndpoint(endpointList[i].url);
+        _log.info("Using external endpoint ${i + 1}");
+        return url;
       } on ApiException catch (error) {
         _log.severe("Cannot resolve endpoint", error);
         continue;

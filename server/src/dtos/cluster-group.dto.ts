@@ -1,8 +1,8 @@
 import { Selectable } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
-import { ClusterGroupRequestTable } from 'src/schema/tables/cluster-group-request.table';
-import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
+import { ClusterGroupRequestTable } from 'src/schema/tables/cluster-group-request.table.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const ClusterGroupRequestCreateSchema = z
   .object({

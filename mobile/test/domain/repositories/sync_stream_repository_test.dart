@@ -4,10 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:openapi/api.dart';
 
 SyncUserV1 _createUser({String id = 'user-1'}) {
@@ -30,6 +32,8 @@ SyncAssetV1 _createAsset({
   int? height,
   String? libraryId,
   bool isFavorite = false,
+  DateTime? localDateTime,
+  bool withoutDates = false,
 }) {
   return SyncAssetV1(
     id: id,
@@ -38,10 +42,10 @@ SyncAssetV1 _createAsset({
     type: AssetTypeEnum.IMAGE,
     ownerId: 'user-1',
     isFavorite: isFavorite,
-    fileCreatedAt: DateTime(2024, 1, 1),
+    fileCreatedAt: withoutDates ? null : DateTime(2024, 1, 1),
     fileModifiedAt: DateTime(2024, 1, 1),
     createdAt: DateTime(2024, 1, 1),
-    localDateTime: DateTime(2024, 1, 1),
+    localDateTime: withoutDates ? null : localDateTime ?? DateTime(2024, 1, 1),
     visibility: AssetVisibility.timeline,
     width: width,
     height: height,
@@ -55,7 +59,13 @@ SyncAssetV1 _createAsset({
   );
 }
 
-SyncAssetV2 _createAssetV2({required String id, required String checksum, required String fileName}) {
+SyncAssetV2 _createAssetV2({
+  required String id,
+  required String checksum,
+  required String fileName,
+  DateTime? localDateTime,
+  bool withoutDates = false,
+}) {
   return SyncAssetV2(
     id: id,
     checksum: checksum,
@@ -63,10 +73,10 @@ SyncAssetV2 _createAssetV2({required String id, required String checksum, requir
     type: AssetTypeEnum.IMAGE,
     ownerId: 'user-1',
     isFavorite: false,
-    fileCreatedAt: DateTime(2024, 1, 1),
+    fileCreatedAt: withoutDates ? null : DateTime(2024, 1, 1),
     fileModifiedAt: DateTime(2024, 1, 1),
     createdAt: DateTime(2024, 1, 1),
-    localDateTime: DateTime(2024, 1, 1),
+    localDateTime: withoutDates ? null : localDateTime ?? DateTime(2024, 1, 1),
     visibility: AssetVisibility.timeline,
     width: null,
     height: null,
@@ -361,6 +371,42 @@ void main() {
       final rows = await db.remoteAssetEntity.select().get();
       expect(rows, hasLength(2), reason: 'REPLACE makes batch-internal duplicates last-wins, no crash');
       expect(rows.map((r) => r.id).toSet(), {last.id, lastLib.id});
+    });
+  });
+
+  group('SyncStreamRepository - group_date without server dates', () {
+    Future<RemoteAssetEntityData> row(String id) =>
+        (db.remoteAssetEntity.select()..where((t) => t.id.equals(id))).getSingle();
+
+    test('assets without dates group on the stored created_at', () async {
+      await sut.updateUsersV1([_createUser()]);
+      final known = _createAsset(id: 'known', checksum: 'AAA', fileName: 'a.jpg', localDateTime: DateTime(2024, 1, 5));
+      await sut.updateAssetsV1([known]);
+
+      await sut.updateAssetsV1([
+        _createAsset(id: 'known', checksum: 'AAA', fileName: 'a.jpg', withoutDates: true),
+        _createAsset(id: 'fresh', checksum: 'BBB', fileName: 'b.jpg', withoutDates: true),
+      ]);
+
+      final kept = await row('known');
+      expect(kept.createdAt, known.fileCreatedAt);
+      expect(kept.localDateTime, isNull);
+      expect(kept.groupDate, '2024-01-01', reason: 'the local day is gone, created_at stays');
+      final fresh = await row('fresh');
+      expect(fresh.groupDate, timelineGroupDate(fresh.createdAt.toLocal()));
+
+      // same scenario through V2
+      await sut.updateAssetsV2([
+        _createAssetV2(id: 'known2', checksum: 'CCC', fileName: 'c.jpg', localDateTime: DateTime(2024, 1, 5)),
+      ]);
+      await sut.updateAssetsV2([
+        _createAssetV2(id: 'known2', checksum: 'CCC', fileName: 'c.jpg', withoutDates: true),
+        _createAssetV2(id: 'fresh2', checksum: 'DDD', fileName: 'd.jpg', withoutDates: true),
+      ]);
+
+      expect((await row('known2')).groupDate, '2024-01-01');
+      final freshV2 = await row('fresh2');
+      expect(freshV2.groupDate, timelineGroupDate(freshV2.createdAt.toLocal()));
     });
   });
 }

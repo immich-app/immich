@@ -49,10 +49,12 @@ export class TreeNode extends Map<string, TreeNode> {
       // segments common to all subtrees can be collapsed together
       curPart = curPart === null ? part : joinPaths(curPart, part);
       const next = current.get(curPart);
-      if (next) {
-        current = next;
-        curPart = null;
+      if (!next) {
+        continue;
       }
+
+      current = next;
+      curPart = null;
     }
     return current;
   }

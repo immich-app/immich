@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/rating_bar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 
 class RatingDetails extends ConsumerWidget {
   final ExifInfo? exifInfo;
@@ -17,7 +17,7 @@ class RatingDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isRatingEnabled = ref
-        .watch(userMetadataPreferencesProvider)
+        .watch(Store.userMetadata.preferences())
         .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
 
     if (!isRatingEnabled) {

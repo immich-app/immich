@@ -1,17 +1,17 @@
 import { Kysely } from 'kysely';
-import { ReactionType } from 'src/dtos/activity.dto';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { ActivityRepository } from 'src/repositories/activity.repository';
-import { AlbumUserRepository } from 'src/repositories/album-user.repository';
-import { AlbumRepository } from 'src/repositories/album.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { DB } from 'src/schema';
-import { ActivityService } from 'src/services/activity.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory, newUuid } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { ReactionType } from 'src/dtos/activity.dto.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { ActivityRepository } from 'src/repositories/activity.repository.js';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
+import { AlbumRepository } from 'src/repositories/album.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { DB } from 'src/schema/index.js';
+import { ActivityService } from 'src/services/activity.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory, newUuid } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

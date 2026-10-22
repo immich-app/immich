@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -11,7 +10,7 @@ enum ShareIntentAttachmentType { image, video }
 
 enum UploadStatus { enqueued, running, complete, failed }
 
-@Freezed(fromJson: false, toJson: false, equal: false)
+@Freezed(equal: false)
 abstract class ShareIntentAttachment with _$ShareIntentAttachment {
   const ShareIntentAttachment._();
 
@@ -31,32 +30,10 @@ abstract class ShareIntentAttachment with _$ShareIntentAttachment {
 
   bool get isImage => type == ShareIntentAttachmentType.image;
 
+  // ignore: unused-code
   bool get isVideo => type == ShareIntentAttachmentType.video;
 
   String get fileSize => formatHumanReadableBytes(fileLength, 2);
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'path': path,
-      'type': type.index,
-      'status': status.index,
-      'uploadProgress': uploadProgress,
-    };
-  }
-
-  factory ShareIntentAttachment.fromMap(Map<String, dynamic> map) {
-    return ShareIntentAttachment(
-      path: map['path'] as String,
-      type: ShareIntentAttachmentType.values[map['type'] as int],
-      status: UploadStatus.values[map['status'] as int],
-      uploadProgress: map['uploadProgress'] as double,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory ShareIntentAttachment.fromJson(String source) =>
-      ShareIntentAttachment.fromMap(json.decode(source) as Map<String, dynamic>);
 
   // Identity is sourced from the backing file, not from upload progress
   @override

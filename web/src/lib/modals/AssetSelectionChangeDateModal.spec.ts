@@ -86,6 +86,7 @@ describe('DateSelectionModal component', () => {
     expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
 
     await fireEvent.focus(getTimeZoneInput());
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('no_results')).not.toBeInTheDocument();
   });
 
@@ -100,6 +101,7 @@ describe('DateSelectionModal component', () => {
     expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
 
     await fireEvent.focus(getTimeZoneInput());
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('no_results')).not.toBeInTheDocument();
   });
 

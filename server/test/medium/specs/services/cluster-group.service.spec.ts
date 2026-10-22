@@ -1,15 +1,15 @@
 import { Kysely } from 'kysely';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { DB } from 'src/schema';
-import { ClusterGroupService } from 'src/services/cluster-group.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository.js';
+import { EventRepository } from 'src/repositories/event.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { DB } from 'src/schema/index.js';
+import { ClusterGroupService } from 'src/services/cluster-group.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

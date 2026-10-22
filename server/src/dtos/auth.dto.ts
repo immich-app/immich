@@ -1,9 +1,9 @@
 import { createZodDto } from 'nestjs-zod';
-import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
-import { ImmichCookie, UserMetadataKey } from 'src/enum';
-import { UserMetadataItem } from 'src/types';
-import { toEmail } from 'src/validation';
 import z from 'zod';
+import type { UserMetadataItem } from 'src/types.js';
+import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
+import { ImmichCookie, UserMetadataKey } from 'src/enum.js';
+import { toEmail } from 'src/validation.js';
 
 export type CookieResponse = {
   isSecure: boolean;
@@ -18,6 +18,10 @@ export type AuthDto = {
   sharedLink?: AuthSharedLink;
   session?: AuthSession;
 };
+
+export const isMetadataHidden = (auth?: AuthDto) => !!auth?.sharedLink && !auth.sharedLink.showExif;
+
+export const isEditedOnly = (auth: AuthDto, edited = false) => !!auth.sharedLink || edited;
 
 const LoginCredentialSchema = z
   .object({

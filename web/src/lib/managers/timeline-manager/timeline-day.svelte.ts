@@ -150,6 +150,7 @@ export class TimelineDay {
       }
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);
+      // eslint-disable-next-line unicorn/prefer-continue
       if (remove || this.timelineMonth.timelineManager.isExcluded(asset)) {
         this.viewerAssets.splice(index, 1);
         changedGeometry = true;

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 
@@ -12,7 +13,7 @@ class AuthUserEntity extends Table with DriftDefaultsMixin {
 
   // Profile image
   BoolColumn get hasProfileImage => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get profileChangedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get profileChangedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
   IntColumn get avatarColor => intEnum<AvatarColor>()();
 
   // Quota

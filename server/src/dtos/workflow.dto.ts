@@ -1,8 +1,8 @@
-import type { WorkflowStepConfig, WorkflowTrigger } from '@immich/plugin-sdk';
 import { createZodDto } from 'nestjs-zod';
-import { WorkflowResultSchema, WorkflowTriggerSchema, WorkflowTypeSchema } from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
+import type { WorkflowStepConfig, WorkflowTrigger } from '@immich/plugin-sdk';
+import { WorkflowResultSchema, WorkflowTriggerSchema, WorkflowTypeSchema } from 'src/enum.js';
+import { isoDatetimeToDate } from 'src/validation.js';
 
 const WorkflowTriggerResponseSchema = z
   .object({
@@ -160,7 +160,7 @@ export const mapWorkflowShare = (workflow: Workflow & { steps: WorkflowStep[] })
       method: `${step.pluginName}#${step.methodName}`,
       // TODO fix this
       config: step.config as any,
-      enabled: step.enabled ? undefined : false,
+      enabled: step.enabled && undefined,
     })),
   };
 };

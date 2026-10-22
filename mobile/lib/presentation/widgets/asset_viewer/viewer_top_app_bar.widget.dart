@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
@@ -10,7 +11,6 @@ import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
-import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
@@ -38,7 +38,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
 
     if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
-      ref.watch(albumActivityProvider((album.id, asset.id)));
+      ref.watch(Store.activity.list(album.id, assetId: asset.id));
     }
 
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));

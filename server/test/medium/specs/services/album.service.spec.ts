@@ -1,14 +1,14 @@
 import { Kysely } from 'kysely';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AlbumRepository } from 'src/repositories/album.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { UserRepository } from 'src/repositories/user.repository';
-import { DB } from 'src/schema';
-import { AlbumService } from 'src/services/album.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AlbumRepository } from 'src/repositories/album.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
+import { DB } from 'src/schema/index.js';
+import { AlbumService } from 'src/services/album.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/dtos/time-bucket.dto';
-import { AssetVisibility, Permission } from 'src/enum';
-import { TimeBucketOptions } from 'src/repositories/asset.repository';
-import { BaseService } from 'src/services/base.service';
-import { requireElevatedPermission } from 'src/utils/access';
-import { getMyPartnerIds } from 'src/utils/asset.util';
+import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
+import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/dtos/time-bucket.dto.js';
+import { AssetVisibility, Permission } from 'src/enum.js';
+import { TimeBucketOptions } from 'src/repositories/asset.repository.js';
+import { BaseService } from 'src/services/base.service.js';
+import { requireElevatedPermission } from 'src/utils/access.js';
+import { getMyPartnerIds } from 'src/utils/asset.util.js';
 
 @Injectable()
 export class TimelineService extends BaseService {
@@ -35,7 +35,7 @@ export class TimelineService extends BaseService {
         const partnerIds = await getMyPartnerIds({
           userId: auth.user.id,
           repository: this.partnerRepository,
-          timelineEnabled: true,
+          timelineEnabled: !options.personId || undefined,
         });
         userIds.push(...partnerIds);
       }
@@ -57,11 +57,15 @@ export class TimelineService extends BaseService {
 
     if (dto.userId) {
       await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: [dto.userId] });
-      if (dto.visibility === AssetVisibility.Archive) {
-        await this.requireAccess({ auth, permission: Permission.ArchiveRead, ids: [dto.userId] });
-      }
-      if (dto.visibility === AssetVisibility.Locked && dto.userId !== auth.user.id) {
-        throw new BadRequestException("You may not access another user's locked timeline");
+    }
+
+    const includesOtherUsers = dto.withPartners || (dto.userId && dto.userId !== auth.user.id);
+    if (includesOtherUsers) {
+      dto.visibility ??= AssetVisibility.Timeline;
+      if (dto.visibility !== AssetVisibility.Timeline || dto.isTrashed || dto.isFavorite !== undefined) {
+        throw new BadRequestException(
+          'Only non-archived, non-trashed, non-favorited, non-locked assets can be requested for other users',
+        );
       }
     }
 
@@ -69,21 +73,8 @@ export class TimelineService extends BaseService {
       await this.requireAccess({ auth, permission: Permission.TagRead, ids: [dto.tagId] });
     }
 
-    if (auth.sharedLink && !auth.sharedLink.showExif) {
+    if (isMetadataHidden(auth)) {
       dto.withCoordinates = false;
-    }
-
-    if (dto.withPartners) {
-      const isRequestedLocked = dto.visibility === AssetVisibility.Locked;
-      const isRequestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
-      const isRequestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
-      const isRequestedTrash = dto.isTrashed === true;
-
-      if (isRequestedLocked || isRequestedArchived || isRequestedFavorite || isRequestedTrash) {
-        throw new BadRequestException(
-          'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
-        );
-      }
     }
   }
 }

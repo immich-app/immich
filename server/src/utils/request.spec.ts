@@ -1,4 +1,4 @@
-import { getAppVersionFromUA } from 'src/utils/request';
+import { getAppVersionFromUA } from 'src/utils/request.js';
 
 describe(getAppVersionFromUA.name, () => {
   it('should get the app version for android', () => {

@@ -13,6 +13,7 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.drift.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 
 enum SortRemoteAlbumsBy { id, updatedAt }
 
@@ -330,6 +331,7 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
             isFavorite: Value(source.isFavorite),
             visibility: const Value(AssetVisibility.timeline),
             isEdited: Value(source.isEdited),
+            groupDate: Value(timelineGroupDate(source.createdAt.toLocal())),
           ),
           mode: InsertMode.insertOrIgnore,
         );

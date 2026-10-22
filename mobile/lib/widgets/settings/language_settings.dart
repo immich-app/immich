@@ -97,7 +97,6 @@ class LanguageSettings extends HookWidget {
                       return _LanguageItem(
                         key: ValueKey(localeValue.toString()),
                         countryName: countryName,
-                        localeValue: localeValue,
                         isSelected: isSelected,
                         onTap: () {
                           selectedLocale.value = localeValue;
@@ -225,16 +224,9 @@ class _LanguageApplyButton extends StatelessWidget {
 }
 
 class _LanguageItem extends StatelessWidget {
-  const _LanguageItem({
-    super.key,
-    required this.countryName,
-    required this.localeValue,
-    required this.isSelected,
-    required this.onTap,
-  });
+  const _LanguageItem({super.key, required this.countryName, required this.isSelected, required this.onTap});
 
   final String countryName;
-  final Locale localeValue;
   final bool isSelected;
   final VoidCallback onTap;
 

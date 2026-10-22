@@ -1,7 +1,7 @@
-import { DatabaseExtension, ImmichEnvironment, ImmichWorker, LogFormat } from 'src/enum';
-import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
-import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
+import type { RepositoryInterface } from 'src/types.js';
+import { DatabaseExtension, ImmichEnvironment, ImmichWorker, LogFormat } from 'src/enum.js';
+import { ConfigRepository, EnvData } from 'src/repositories/config.repository.js';
 
 export const envData: EnvData = {
   port: 2283,
@@ -70,6 +70,7 @@ export const envData: EnvData = {
       admin1: '/build/geodata/admin1CodesASCII.txt',
       admin2: '/build/geodata/admin2Codes.txt',
       cities500: '/build/geodata/cities500.txt',
+      countryInfo: '/build/geodata/countryInfo.txt',
       naturalEarthCountriesPath: 'build/ne_10m_admin_0_countries.geojson',
     },
     web: {
@@ -111,5 +112,6 @@ export const newConfigRepositoryMock = (): Mocked<RepositoryInterface<ConfigRepo
     getEnv: vitest.fn().mockReturnValue(mockEnvData({})),
     getWorker: vitest.fn().mockReturnValue(ImmichWorker.Api),
     isDev: vitest.fn().mockReturnValue(false),
+    isProduction: vitest.fn().mockReturnValue(true),
   };
 };

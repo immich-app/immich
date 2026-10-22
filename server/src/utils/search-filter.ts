@@ -1,7 +1,7 @@
-import { AuthDto } from 'src/dtos/auth.dto';
-import { SearchFilter, SearchFilterBranch } from 'src/dtos/search.dto';
-import { AssetVisibility } from 'src/enum';
-import { requireElevatedPermission } from 'src/utils/access';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { SearchFilter, SearchFilterBranch } from 'src/dtos/search.dto.js';
+import { AssetVisibility } from 'src/enum.js';
+import { requireElevatedPermission } from 'src/utils/access.js';
 
 type EnumField = 'type' | 'visibility';
 type EnumOperator = keyof NonNullable<SearchFilterBranch[EnumField]>;

@@ -1,23 +1,24 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import sanitize from 'sanitize-filename';
-import { StorageCore } from 'src/cores/storage.core';
-import { Asset, AuthSharedLink } from 'src/database';
+import type { UploadFile, UploadRequest } from 'src/types.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { Asset, AuthSharedLink } from 'src/database.js';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
   AssetMediaStatus,
   AssetRejectReason,
   AssetUploadAction,
-} from 'src/dtos/asset-media-response.dto';
+} from 'src/dtos/asset-media-response.dto.js';
 import {
   AssetBulkUploadCheckDto,
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
   AssetMediaSize,
   UploadFieldName,
-} from 'src/dtos/asset-media.dto';
-import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+} from 'src/dtos/asset-media.dto.js';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto.js';
+import { AuthDto, isEditedOnly, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import {
   AssetFileType,
   AssetVisibility,
@@ -26,16 +27,15 @@ import {
   JobName,
   Permission,
   StorageFolder,
-} from 'src/enum';
-import { AuthRequest } from 'src/middleware/auth.guard';
-import { BaseService } from 'src/services/base.service';
-import { UploadFile, UploadRequest } from 'src/types';
-import { requireUploadAccess } from 'src/utils/access';
-import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
-import { isAssetChecksumConstraint } from 'src/utils/database';
-import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
-import { mimeTypes } from 'src/utils/mime-types';
-import { fromChecksum } from 'src/utils/request';
+} from 'src/enum.js';
+import { AuthRequest } from 'src/middleware/auth.guard.js';
+import { BaseService } from 'src/services/base.service.js';
+import { requireUploadAccess } from 'src/utils/access.js';
+import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util.js';
+import { isAssetChecksumConstraint } from 'src/utils/database.js';
+import { ImmichFileResponse, getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { fromChecksum } from 'src/utils/request.js';
 
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
@@ -47,6 +47,8 @@ export class AssetMediaService extends BaseService {
     if (!checksum) {
       return;
     }
+
+    await this.requireAccess({ auth, permission: Permission.AssetUpload, ids: [auth.user.id] });
 
     const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
     if (!assetId) {
@@ -229,13 +231,9 @@ export class AssetMediaService extends BaseService {
   async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
-    if (auth.sharedLink) {
-      dto.edited = true;
-    }
-
     const { originalPath, originalFileName, editedPath } = await this.assetRepository.getForOriginal(
       id,
-      dto.edited ?? false,
+      isEditedOnly(auth, dto.edited),
     );
 
     const path = editedPath ?? originalPath!;
@@ -259,18 +257,11 @@ export class AssetMediaService extends BaseService {
       throw new BadRequestException('May not request original file');
     }
 
-    if (auth.sharedLink) {
-      dto.edited = true;
-    }
-
+    const edited = isEditedOnly(auth, dto.edited);
     const size = (dto.size ?? AssetMediaSize.THUMBNAIL) as unknown as AssetFileType;
-    const { originalPath, originalFileName, path } = await this.assetRepository.getForThumbnail(
-      id,
-      size,
-      dto.edited ?? false,
-    );
+    const { originalPath, originalFileName, path } = await this.assetRepository.getForThumbnail(id, size, edited);
 
-    if (size === AssetFileType.FullSize && mimeTypes.isWebSupportedImage(originalPath) && !dto.edited) {
+    if (size === AssetFileType.FullSize && mimeTypes.isWebSupportedImage(originalPath) && !edited) {
       // use original file for web supported images
       return { targetSize: 'original' };
     }
@@ -285,8 +276,7 @@ export class AssetMediaService extends BaseService {
       throw new NotFoundException('Asset media not found');
     }
 
-    const fileNameBase =
-      auth.sharedLink && !auth.sharedLink.showExif ? id : getFileNameWithoutExtension(originalFileName);
+    const fileNameBase = isMetadataHidden(auth) ? id : getFileNameWithoutExtension(originalFileName);
     const fileName = `${fileNameBase}_${size}${getFilenameExtension(path)}`;
 
     return new ImmichFileResponse({
@@ -351,7 +341,7 @@ export class AssetMediaService extends BaseService {
       return;
     }
 
-    const album = await this.albumRepository.getById(sharedLink.albumId, { withAssets: false });
+    const album = await this.albumRepository.getById(sharedLink.albumId);
     if (!album) {
       return;
     }

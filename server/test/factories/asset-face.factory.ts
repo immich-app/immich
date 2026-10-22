@@ -1,10 +1,10 @@
 import { Selectable } from 'kysely';
-import { SourceType } from 'src/enum';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { build } from 'test/factories/builder.factory';
-import { PersonFactory } from 'test/factories/person.factory';
-import { AssetFaceLike, FactoryBuilder, PersonLike } from 'test/factories/types';
-import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
+import { AssetVisibility, SourceType } from 'src/enum.js';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import { build } from 'test/factories/builder.factory.js';
+import { PersonFactory } from 'test/factories/person.factory.js';
+import { AssetFaceLike, FactoryBuilder, PersonLike } from 'test/factories/types.js';
+import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
 
 export class AssetFaceFactory {
   #person: PersonFactory | null = null;
@@ -31,6 +31,9 @@ export class AssetFaceFactory {
       sourceType: SourceType.MachineLearning,
       updatedAt: newDate(),
       updateId: newUuidV7(),
+      ownerId: newUuid(),
+      assetVisibility: AssetVisibility.Timeline,
+      assetDeletedAt: null,
       ...dto,
     });
   }

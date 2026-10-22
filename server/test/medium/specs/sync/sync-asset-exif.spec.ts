@@ -1,9 +1,9 @@
 import { Kysely } from 'kysely';
-import { SyncEntityType, SyncRequestType } from 'src/enum';
-import { DB } from 'src/schema';
-import { SyncTestContext } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { SyncTestContext } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 

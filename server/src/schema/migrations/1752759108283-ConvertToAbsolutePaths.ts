@@ -1,5 +1,5 @@
 import { Kysely, sql } from 'kysely';
-import { LoggingRepository } from 'src/repositories/logging.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 const logger = LoggingRepository.create('Migrations');
 

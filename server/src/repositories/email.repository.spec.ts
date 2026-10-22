@@ -1,6 +1,6 @@
-import { EmailRenderRequest, EmailRepository, EmailTemplate } from 'src/repositories/email.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { automock } from 'test/utils';
+import { EmailRenderRequest, EmailRepository, EmailTemplate } from 'src/repositories/email.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { automock } from 'test/utils.js';
 
 describe(EmailRepository.name, () => {
   let sut: EmailRepository;
@@ -54,6 +54,28 @@ describe(EmailRepository.name, () => {
 
       expect(result.html).toContain('<!DOCTYPE html PUBLIC');
       expect(result.text).toContain('Vacation');
+    });
+
+    it('should escape user controlled values in a custom template', async () => {
+      const request: EmailRenderRequest = {
+        template: EmailTemplate.ALBUM_INVITE,
+        data: {
+          albumName: '</p><a href="https://example.com">Reset your password</a><p>',
+          albumId: '123',
+          senderName: '<script>alert(1)</script>',
+          recipientName: "Tom & Jerry O'Brien",
+          baseUrl: 'http://localhost',
+        },
+        customTemplate: '<p>Hey {recipientName}, {senderName} added you to {albumName}</p>',
+      };
+
+      const result = await sut.renderEmail(request);
+
+      expect(result.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+      expect(result.html).toContain('&lt;a href=&quot;https://example.com&quot;&gt;');
+      expect(result.html).not.toContain('<script>alert(1)</script>');
+      expect(result.html).not.toContain('<a href="https://example.com">');
+      expect(result.html).toContain('<p>Hey Tom &amp; Jerry O&#39;Brien');
     });
 
     it('should render the email correctly for ALBUM_UPDATE template', async () => {

@@ -73,7 +73,6 @@
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
     onClose?: (assetId: string) => void;
-    onRemoveFromAlbum?: (assetIds: string[]) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
   }
 
@@ -89,7 +88,6 @@
     onAction,
     onUndoDelete,
     onClose,
-    onRemoveFromAlbum,
     onRandom,
   }: Props = $props();
 
@@ -105,7 +103,7 @@
   const stackSelectedThumbnailSize = 65;
 
   let previewStackedAsset: AssetResponseDto | undefined = $state();
-  let stack: StackResponseDto | null = $state(null);
+  let stack: StackResponseDto | undefined = $state();
 
   const asset = $derived(previewStackedAsset ?? cursor.current);
   const nextAsset = $derived(cursor.nextAsset);
@@ -130,7 +128,7 @@
     }
 
     if (!stack?.assets.some(({ id }) => id === asset.id)) {
-      stack = null;
+      stack = undefined;
     }
   };
 
@@ -159,6 +157,32 @@
     const restoredAsset = assets[0];
     await assetViewerManager.setAssetId(restoredAsset.id);
     await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+  };
+
+  const onStackCreate = (createdStack: StackResponseDto) => {
+    if (createdStack.assets.map((a) => a.id).includes(asset.id)) {
+      stack = createdStack;
+    }
+  };
+
+  const onStackUpdate = (updatedStack: StackResponseDto) => {
+    if (stack?.id !== updatedStack.id) {
+      return;
+    }
+
+    stack = updatedStack;
+    if (!stack.assets.map((a) => a.id).includes(asset.id)) {
+      // current asset was removed from stack, go to primary
+      cursor.current = stack.assets[0];
+    }
+  };
+
+  const onPersonThumbnailReady = async ({ id: personId }: { id: string }) => {
+    if (person && person.id !== personId) {
+      return;
+    }
+    faceManager.clear();
+    await faceManager.getAssetFaces(asset.id);
   };
 
   onMount(() => {
@@ -329,29 +353,11 @@
     preAction?.(action);
   };
 
-  const handleAction = async (action: Action) => {
+  const handleAction = (action: Action) => {
     switch (action.type) {
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
         eventManager.emit('AssetsDelete', [asset.id]);
-        break;
-      }
-      case AssetAction.REMOVE_ASSET_FROM_STACK: {
-        stack = action.stack;
-        if (stack) {
-          cursor.current = stack.assets[0];
-        }
-        break;
-      }
-      case AssetAction.STACK:
-      case AssetAction.SET_STACK_PRIMARY_ASSET: {
-        stack = action.stack;
-        break;
-      }
-      case AssetAction.SET_PERSON_FEATURED_PHOTO: {
-        const assetInfo = await getAssetInfo({ id: asset.id });
-        cursor.current = { ...asset, people: assetInfo.people };
-        eventManager.emit('AssetUpdate', cursor.current);
         break;
       }
       case AssetAction.RATING: {
@@ -362,10 +368,6 @@
             rating: action.rating,
           },
         };
-        break;
-      }
-      case AssetAction.UNSTACK: {
-        closeViewer();
         break;
       }
       // no default
@@ -490,7 +492,14 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents {onAssetUpdate} {onAssetsUndoArchive} />
+<OnEvents
+  {onAssetUpdate}
+  {onAssetsUndoArchive}
+  {onStackCreate}
+  onStackDelete={() => closeViewer()}
+  {onStackUpdate}
+  {onPersonThumbnailReady}
+/>
 
 <svelte:document
   bind:fullscreenElement
@@ -518,7 +527,6 @@
         onAction={handleAction}
         {onUndoDelete}
         onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
-        {onRemoveFromAlbum}
         {isPlayingOriginalVideo}
         {setPlayOriginalVideo}
       />
@@ -650,9 +658,8 @@
             style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
           >
             <Thumbnail
-              imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
+              imageClass={stackedAsset.id === asset.id ? 'border-2 border-white' : 'brightness-70'}
               brokenAssetClass="text-xs"
-              dimmed={stackedAsset.id !== asset.id}
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
                 cursor.current = stackedAsset;

@@ -10,11 +10,11 @@
   type Props = {
     id: string;
     albumName: string;
-    isOwned: boolean;
+    isEditor: boolean;
     onUpdate: (albumName: string) => void;
   };
 
-  let { id, albumName = $bindable(), isOwned, onUpdate }: Props = $props();
+  let { id, albumName = $bindable(), isEditor, onUpdate }: Props = $props();
 
   let newAlbumName = $derived(albumName);
 
@@ -39,7 +39,7 @@
 </script>
 
 <div class="mb-2">
-  {#if isOwned}
+  {#if isEditor}
     <Textarea
       bind:value={newAlbumName}
       variant="ghost"

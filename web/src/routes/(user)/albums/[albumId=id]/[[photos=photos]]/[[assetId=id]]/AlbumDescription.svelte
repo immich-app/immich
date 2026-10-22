@@ -10,10 +10,10 @@
   interface Props {
     id: string;
     description: string;
-    isOwned: boolean;
+    isEditor: boolean;
   }
 
-  let { id, description = $bindable(), isOwned }: Props = $props();
+  let { id, description = $bindable(), isEditor }: Props = $props();
 
   const handleFocusOut = async () => {
     try {
@@ -30,7 +30,7 @@
   };
 </script>
 
-{#if isOwned}
+{#if isEditor}
   <Textarea
     bind:value={description}
     variant="ghost"

@@ -1,5 +1,7 @@
 # Hardware Transcoding
 
+import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
+
 This feature allows you to use a GPU to accelerate transcoding and reduce CPU load.
 Note that hardware transcoding produces significantly larger videos than software transcoding with similar settings, typically with lower quality. Using slow presets and preferring more efficient codecs can narrow this gap.
 As this is a new feature, it is still experimental and may not work on all systems.
@@ -56,6 +58,8 @@ For RKMPP to work:
   - `- /usr/lib/aarch64-linux-gnu/libmali.so.1:/usr/lib/aarch64-linux-gnu/libmali.so.1:ro`
 
 ## Setup
+
+<ComposeBuilder />
 
 #### Basic Setup
 

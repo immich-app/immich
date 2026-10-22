@@ -1,16 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetVisibility, SharedLinkType } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PartnerRepository } from 'src/repositories/partner.repository';
-import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
-import { DB } from 'src/schema';
-import { TimelineService } from 'src/services/timeline.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetVisibility, SharedLinkType } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
+import { DB } from 'src/schema/index.js';
+import { TimelineService } from 'src/services/timeline.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -51,14 +51,20 @@ describe(TimelineService.name, () => {
       const response1 = sut.getTimeBuckets(auth, { withPartners: true, visibility: AssetVisibility.Archive });
       await expect(response1).rejects.toBeInstanceOf(BadRequestException);
       await expect(response1).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
+        'Only non-archived, non-trashed, non-favorited, non-locked assets can be requested for other users',
       );
 
-      const response2 = sut.getTimeBuckets(auth, { withPartners: true });
+      const response2 = sut.getTimeBuckets(auth, { withPartners: true, visibility: AssetVisibility.Hidden });
       await expect(response2).rejects.toBeInstanceOf(BadRequestException);
       await expect(response2).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
+        'Only non-archived, non-trashed, non-favorited, non-locked assets can be requested for other users',
       );
+    });
+
+    it('should default to timeline visibility if time bucket is requested with partners assets', async () => {
+      const { sut } = setup();
+      const auth = factory.auth();
+      await expect(sut.getTimeBuckets(auth, { withPartners: true })).resolves.toEqual([]);
     });
 
     it('should return error if time bucket is requested with partners asset and favorite', async () => {
@@ -67,13 +73,13 @@ describe(TimelineService.name, () => {
       const response1 = sut.getTimeBuckets(auth, { withPartners: true, isFavorite: false });
       await expect(response1).rejects.toBeInstanceOf(BadRequestException);
       await expect(response1).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
+        'Only non-archived, non-trashed, non-favorited, non-locked assets can be requested for other users',
       );
 
       const response2 = sut.getTimeBuckets(auth, { withPartners: true, isFavorite: true });
       await expect(response2).rejects.toBeInstanceOf(BadRequestException);
       await expect(response2).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
+        'Only non-archived, non-trashed, non-favorited, non-locked assets can be requested for other users',
       );
     });
 
@@ -83,7 +89,7 @@ describe(TimelineService.name, () => {
       const response = sut.getTimeBuckets(auth, { withPartners: true, isTrashed: true });
       await expect(response).rejects.toBeInstanceOf(BadRequestException);
       await expect(response).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
+        'Only non-archived, non-trashed, non-favorited, non-locked assets can be requested for other users',
       );
     });
 
@@ -96,7 +102,9 @@ describe(TimelineService.name, () => {
       const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
 
       const response = sut.getTimeBuckets(auth, { userId: partner.id, visibility: AssetVisibility.Locked });
-      await expect(response).rejects.toThrow("You may not access another user's locked timeline");
+      await expect(response).rejects.toThrow(
+        'Only non-archived, non-trashed, non-favorited, non-locked assets can be requested for other users',
+      );
     });
 
     it('should not allow access for unrelated shared links', async () => {

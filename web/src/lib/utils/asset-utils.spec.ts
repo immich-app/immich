@@ -1,5 +1,13 @@
-import type { AssetResponseDto } from '@immich/sdk';
-import { canCopyImageToClipboard, getAssetFilename, getFilenameExtension } from './asset-utils';
+import { AssetVisibility, updateAsset, type AssetResponseDto } from '@immich/sdk';
+import { canCopyImageToClipboard, getAssetFilename, getFilenameExtension, toggleArchive } from './asset-utils';
+
+vi.mock('@immich/sdk', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@immich/sdk')>();
+  return {
+    ...actual,
+    updateAsset: vi.fn(),
+  };
+});
 
 describe('get file extension from filename', () => {
   it('returns the extension without including the dot', () => {
@@ -61,5 +69,38 @@ describe('copy image to clipboard', () => {
   // This test is dubious, as it totally on the environment where the test is run which is mocked.
   it('should allow copy image to clipboard', () => {
     expect(canCopyImageToClipboard()).toEqual(true);
+  });
+});
+
+describe('toggleArchive', () => {
+  beforeEach(() => {
+    vi.mocked(updateAsset).mockReset();
+  });
+
+  it('updates both isArchived and visibility when archiving', async () => {
+    vi.mocked(updateAsset).mockResolvedValue({
+      isArchived: true,
+      visibility: AssetVisibility.Archive,
+    } as AssetResponseDto);
+
+    const asset = { id: '1', isArchived: false, visibility: AssetVisibility.Timeline } as AssetResponseDto;
+    await toggleArchive(asset);
+
+    expect(asset.isArchived).toBe(true);
+    // regression: visibility must be refreshed so the timeline correctly excludes the archived asset
+    expect(asset.visibility).toBe(AssetVisibility.Archive);
+  });
+
+  it('updates both isArchived and visibility when unarchiving', async () => {
+    vi.mocked(updateAsset).mockResolvedValue({
+      isArchived: false,
+      visibility: AssetVisibility.Timeline,
+    } as AssetResponseDto);
+
+    const asset = { id: '1', isArchived: true, visibility: AssetVisibility.Archive } as AssetResponseDto;
+    await toggleArchive(asset);
+
+    expect(asset.isArchived).toBe(false);
+    expect(asset.visibility).toBe(AssetVisibility.Timeline);
   });
 });

@@ -8,10 +8,10 @@ import {
   RELEASE_TYPES,
   ReleaseError,
   ReleaseInputError,
-  ReleaseOptions,
-  ReleaseType,
+  type ReleaseOptions,
+  type ReleaseType,
   TextFile,
-} from 'src/types';
+} from 'src/types.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../../');
 
@@ -52,8 +52,8 @@ export const handleRelease = ({ type }: ReleaseOptions) => {
   }
 
   // machine-learning
-  execSync(`uv version --directory machine-learning ${newVersionRaw}`, {
-    cwd: root,
+  execSync(`mise exec -- uv version ${newVersionRaw}`, {
+    cwd: join(root, 'machine-learning'),
     stdio: 'inherit',
   });
 

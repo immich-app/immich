@@ -2,7 +2,9 @@ import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immi
 import { PUBLIC_IMMICH_BUY_HOST, PUBLIC_IMMICH_PAY_HOST } from '$env/static/public';
 import type { ImmichProduct } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import { queryClient, readPreloadedQuery } from '$lib/queries/client';
+import { getUserConfigQuery } from '$lib/queries/config-user.query';
+import { getAboutInfoQuery } from '$lib/queries/server.query';
 
 export const activateProduct = async (licenseKey: string, activationKey: string): Promise<LicenseResponseDto> => {
   // TODO is this needed?
@@ -11,7 +13,14 @@ export const activateProduct = async (licenseKey: string, activationKey: string)
   const isServerActivation = authManager.user.isAdmin && licenseKey.search('IMSV') !== -1;
   const licenseKeyDto = { licenseKey, activationKey };
   // Send server key to user activation if user is not admin
-  return isServerActivation ? setServerLicense({ licenseKeyDto }) : setUserLicense({ licenseKeyDto });
+  if (!isServerActivation) {
+    return setUserLicense({ licenseKeyDto });
+  }
+
+  const license = await setServerLicense({ licenseKeyDto });
+  // contains license status
+  await queryClient.invalidateQueries({ queryKey: getAboutInfoQuery().queryKey });
+  return license;
 };
 
 export const getActivationKey = async (licenseKey: string): Promise<string> => {
@@ -25,6 +34,9 @@ export const getActivationKey = async (licenseKey: string): Promise<string> => {
 export const getLicenseLink = (license: ImmichProduct) => {
   const url = new URL('/', PUBLIC_IMMICH_BUY_HOST);
   url.searchParams.append('productId', license);
-  url.searchParams.append('instanceUrl', serverConfigManager.value.externalDomain || globalThis.origin);
+  url.searchParams.append(
+    'instanceUrl',
+    readPreloadedQuery(getUserConfigQuery()).server.externalDomain || globalThis.origin,
+  );
   return url.href;
 };

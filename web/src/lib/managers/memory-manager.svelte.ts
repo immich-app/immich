@@ -1,6 +1,7 @@
 import {
   type AssetResponseDto,
   MemorySearchOrder,
+  MemoryType,
   deleteMemory,
   type MemoryResponseDto,
   removeMemoryAssets,
@@ -89,8 +90,8 @@ class MemoryManager {
     const { showUpcoming, onlyFavorites } = userPreferencesManager.memories;
     this.setFilters({
       order: MemorySearchOrder.Desc,
-      isSaved: onlyFavorites ? true : undefined,
-      isUpcoming: showUpcoming ? undefined : false,
+      isSaved: onlyFavorites || undefined,
+      isUpcoming: showUpcoming && undefined,
     });
 
     return this.refresh();
@@ -321,7 +322,6 @@ class MemoryManager {
   }
 
   private clearCache() {
-    this.#loading = undefined;
     this.#hasNextPage = true;
     this.#page = 1;
     this.#total = undefined;
@@ -338,10 +338,22 @@ class MemoryManager {
 
   private async load(page: number) {
     const items = await searchMemories({ ...this.#filters, page });
+
+    if (this.#queued) {
+      this.#queued = false;
+      this.#loading = this.load(this.#page++);
+      await this.#loading;
+      return;
+    }
+
     for (const item of items) {
       if (!this.#lookup.has(item.id)) {
         this.memories.push(item);
       }
+    }
+
+    if (this.#filters.$for) {
+      this.memories.sort((a, b) => Number(b.type === MemoryType.Birthday) - Number(a.type === MemoryType.Birthday));
     }
 
     if (this.#total === undefined) {
@@ -351,12 +363,6 @@ class MemoryManager {
 
     this.#hasNextPage = this.memories.length < this.#total;
     this.#loading = undefined;
-
-    if (this.#queued) {
-      this.#queued = false;
-      this.#loading = this.load(this.#page++);
-      await this.#loading;
-    }
   }
 
   private scheduleHourlyRefresh() {

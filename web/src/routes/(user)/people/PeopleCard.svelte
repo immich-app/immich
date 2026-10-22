@@ -1,52 +1,40 @@
 <script lang="ts">
-  import { focusOutside } from '$lib/actions/focus-outside';
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import PersonIndicator from '$lib/components/faces-page/PersonIndicator.svelte';
   import { Route } from '$lib/route';
   import { getPersonActions } from '$lib/services/person.service';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
-  import {
-    mdiAccountMultipleCheckOutline,
-    mdiDotsVertical,
-    mdiEyeOffOutline,
-    mdiHeart,
-    mdiHeartMinusOutline,
-    mdiHeartOutline,
-  } from '@mdi/js';
+  import { ContextMenuButton } from '@immich/ui';
+  import { mdiAccountMultipleCheckOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
 
   type Props = {
     person: PersonResponseDto;
     onMergePeople: () => void;
-    onHidePerson: () => void;
-    onToggleFavorite: () => void;
   };
 
-  let { person, onMergePeople, onHidePerson, onToggleFavorite }: Props = $props();
+  let { person, onMergePeople }: Props = $props();
 
-  let showVerticalDots = $state(false);
+  const { Edit, HidePerson, Favorite, Unfavorite, Access } = $derived(getPersonActions($t, person));
 
-  const { SetDateOfBirth } = $derived(getPersonActions($t, person));
+  const items = $derived([
+    Edit,
+    HidePerson,
+    {
+      icon: mdiAccountMultipleCheckOutline,
+      title: $t('merge_people'),
+      onAction: onMergePeople,
+    },
+    Favorite,
+    Unfavorite,
+    Access,
+  ]);
 </script>
 
-<div
-  id="people-card"
-  class="relative"
-  onmouseenter={() => (showVerticalDots = true)}
-  onmouseleave={() => (showVerticalDots = false)}
-  role="group"
-  use:focusOutside={{ onFocusOut: () => (showVerticalDots = false) }}
->
-  <a
-    href={Route.viewPerson(person, { previousRoute: Route.people() })}
-    draggable="false"
-    onfocus={() => (showVerticalDots = true)}
-  >
-    <div class="size-full rounded-xl brightness-95 filter">
+<div id="people-card" class="relative" role="group">
+  <a href={Route.viewPerson(person, { previousRoute: Route.people() })} draggable="false" class="group">
+    <div class="@container relative size-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
         url={getPeopleThumbnailUrl(person)}
@@ -56,33 +44,16 @@
         circle
         preload={false}
       />
-      {#if person.isFavorite}
-        <div class="absolute inset-s-4 top-4">
-          <Icon icon={mdiHeart} size="24" class="text-white" />
-        </div>
-      {/if}
+      <PersonIndicator {person} />
+    </div>
+
+    <div class="absolute inset-e-2 top-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+      <ContextMenuButton
+        variant="filled"
+        class="icon-white-drop-shadow"
+        translations={{ open_menu: $t('show_person_options') }}
+        {items}
+      />
     </div>
   </a>
-
-  {#if showVerticalDots}
-    <div class="absolute inset-e-2 top-2 z-1">
-      <ButtonContextMenu
-        buttonClass="icon-white-drop-shadow"
-        color="secondary"
-        size="medium"
-        variant="filled"
-        icon={mdiDotsVertical}
-        title={$t('show_person_options')}
-      >
-        <MenuOption onClick={onHidePerson} icon={mdiEyeOffOutline} text={$t('hide_person')} />
-        <ActionMenuItem action={SetDateOfBirth} />
-        <MenuOption onClick={onMergePeople} icon={mdiAccountMultipleCheckOutline} text={$t('merge_people')} />
-        <MenuOption
-          onClick={onToggleFavorite}
-          icon={person.isFavorite ? mdiHeartMinusOutline : mdiHeartOutline}
-          text={person.isFavorite ? $t('unfavorite') : $t('to_favorite')}
-        />
-      </ButtonContextMenu>
-    </div>
-  {/if}
 </div>

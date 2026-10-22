@@ -144,6 +144,7 @@ where
   and "asset"."ownerId" = any ($3::uuid[])
   and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
+  and "asset"."visibility" != 'hidden'
   and "asset_exif"."fileSizeInByte" > $5
 order by
   "asset_exif"."fileSizeInByte" desc

@@ -15,8 +15,8 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { signupDto } from 'src/fixtures';
-import { parseTimeBucketKey } from 'src/ui/generators/timeline/utils';
+import { signupDto } from 'src/fixtures.js';
+import { parseTimeBucketKey } from 'src/ui/generators/timeline/utils.js';
 import type { MockTimelineAsset, MockTimelineData } from './timeline-config';
 
 /**
@@ -118,8 +118,8 @@ export function getTimeBucket(
     if (deletedAssetIds.has(asset.id) || archivedAssetIds.has(asset.id) || favoritedAssetIds.has(asset.id)) {
       return {
         ...asset,
-        isFavorite: favoritedAssetIds.has(asset.id) ? true : asset.isFavorite,
-        isTrashed: deletedAssetIds.has(asset.id) ? true : asset.isTrashed,
+        isFavorite: favoritedAssetIds.has(asset.id) || asset.isFavorite,
+        isTrashed: deletedAssetIds.has(asset.id) || asset.isTrashed,
         visibility: archivedAssetIds.has(asset.id) ? AssetVisibility.Archive : asset.visibility,
       };
     }

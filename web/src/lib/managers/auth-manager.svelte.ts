@@ -1,5 +1,4 @@
 import {
-  getAboutInfo,
   getMyPreferences,
   getMyUser,
   logout,
@@ -10,6 +9,10 @@ import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { queryClient } from '$lib/queries/client';
+import { getAdminConfigQuery } from '$lib/queries/config-admin.query';
+import { getUserConfigQuery } from '$lib/queries/config-user.query';
+import { getAboutInfoQuery } from '$lib/queries/server.query';
 import { Route } from '$lib/route';
 import { isSharedLinkRoute } from '$lib/utils/navigation';
 
@@ -61,7 +64,14 @@ class AuthManager {
 
   async refresh() {
     try {
-      const [user, preferences] = await Promise.all([getMyUser(), getMyPreferences()]);
+      const [user, preferences] = await Promise.all([
+        getMyUser(),
+        getMyPreferences(),
+        queryClient.query(getUserConfigQuery()),
+      ]);
+      if (user.isAdmin) {
+        await queryClient.query(getAdminConfigQuery());
+      }
       this.#preferences = preferences;
       this.#user = user;
 
@@ -69,7 +79,7 @@ class AuthManager {
         this.isPurchased = true;
       } else {
         // check server status
-        const serverInfo = await getAboutInfo().catch(() => {});
+        const serverInfo = await queryClient.query(getAboutInfoQuery()).catch(() => {});
         if (serverInfo?.licensed) {
           this.isPurchased = true;
         }

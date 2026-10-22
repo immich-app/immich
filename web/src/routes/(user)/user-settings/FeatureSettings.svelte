@@ -1,12 +1,16 @@
 <script lang="ts">
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetOrder, updateMyPreferences } from '@immich/sdk';
+  import { AssetOrder, PersonUpdateStrategy, updateMyPreferences } from '@immich/sdk';
   import { Button, Field, NumberInput, Select, Switch, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   // Albums
   let defaultAssetOrder = $state(authManager.preferences.albums?.defaultAssetOrder ?? AssetOrder.Desc);
@@ -23,7 +27,10 @@
   // People
   let peopleEnabled = $state(authManager.preferences.people?.enabled ?? false);
   let peopleSidebar = $state(authManager.preferences.people?.sidebarWeb ?? false);
-  let peopleMinFaces = $state(authManager.preferences.people?.minimumFaces ?? serverConfigManager.value.minFaces);
+  let peopleMinFaces = $state(
+    authManager.preferences.people?.minimumFaces ?? config.machineLearning.facialRecognition.minFaces,
+  );
+  let peopleUpdateStrategy = $state(authManager.preferences.people?.updateStrategy ?? PersonUpdateStrategy.Everyone);
 
   // Ratings
   let ratingsEnabled = $state(authManager.preferences.ratings?.enabled ?? false);
@@ -49,7 +56,12 @@
           albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
           memories: { enabled: memoriesEnabled, duration: memoriesDuration, sidebarWeb: memoriesSidebar },
-          people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar, minimumFaces: peopleMinFaces },
+          people: {
+            enabled: peopleEnabled,
+            sidebarWeb: peopleSidebar,
+            minimumFaces: peopleMinFaces,
+            updateStrategy: peopleUpdateStrategy,
+          },
           ratings: { enabled: ratingsEnabled },
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
@@ -132,6 +144,15 @@
               </Field>
               <Field label={$t('minFaces')} description={$t('minFaces_description')}>
                 <NumberInput bind:value={peopleMinFaces} />
+              </Field>
+              <Field label={$t('person_update_strategy')} description={$t('person_update_strategy_description')}>
+                <Select
+                  options={[
+                    { label: $t('person_update_strategy_everyone'), value: PersonUpdateStrategy.Everyone },
+                    { label: $t('person_update_strategy_self'), value: PersonUpdateStrategy.Self },
+                  ]}
+                  bind:value={peopleUpdateStrategy}
+                />
               </Field>
             {/if}
           </div>

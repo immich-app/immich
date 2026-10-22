@@ -1,5 +1,5 @@
 import { Command, CommandRunner, InquirerService, Question, QuestionSet } from 'nest-commander';
-import { CliService } from 'src/services/cli.service';
+import { CliService } from 'src/services/cli.service.js';
 
 @Command({
   name: 'change-media-location',
@@ -17,14 +17,16 @@ export class ChangeMediaLocationCommand extends CommandRunner {
     hint = hint ? ` (${hint})` : '';
 
     const paths = await this.service.getSampleFilePaths();
-    if (paths.length > 0) {
-      let message = `  Examples from the database${hint}:\n`;
-      for (const path of paths) {
-        message += `  - ${path}\n`;
-      }
-
-      console.log(`\n${message}`);
+    if (paths.length === 0) {
+      return;
     }
+
+    let message = `  Examples from the database${hint}:\n`;
+    for (const path of paths) {
+      message += `  - ${path}\n`;
+    }
+
+    console.log(`\n${message}`);
   }
 
   async run(): Promise<void> {

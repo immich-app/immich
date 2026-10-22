@@ -219,6 +219,43 @@ export const person_delete_audit = registerFunction({
     END`,
 });
 
+export const person_user_after_insert = registerFunction({
+  name: 'person_user_after_insert',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO person ("ownerId", "personGroupId", "name", "birthDate")
+      SELECT DISTINCT ON (i."sharedWithId", i."personGroupId")
+        i."sharedWithId", i."personGroupId", shared."name", shared."birthDate"
+      FROM inserted_rows i
+      INNER JOIN person shared
+        ON shared."ownerId" = i."sharedById" AND shared."personGroupId" = i."personGroupId"
+      ORDER BY i."sharedWithId", i."personGroupId", shared."name" = '', shared."birthDate" IS NULL
+      ON CONFLICT ("ownerId", "personGroupId") DO UPDATE
+      SET
+        "name" = CASE WHEN person."name" = '' THEN EXCLUDED."name" ELSE person."name" END,
+        "birthDate" = COALESCE(person."birthDate", EXCLUDED."birthDate")
+      WHERE (person."name" = '' AND EXCLUDED."name" <> '')
+        OR (person."birthDate" IS NULL AND EXCLUDED."birthDate" IS NOT NULL);
+      RETURN NULL;
+    END`,
+});
+
+export const person_delete_shares = registerFunction({
+  name: 'person_delete_shares',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      DELETE FROM person_user
+      USING deleted_rows
+      WHERE person_user."personGroupId" = deleted_rows."personGroupId"
+        AND person_user."sharedWithId" = deleted_rows."ownerId";
+      RETURN NULL;
+    END`,
+});
+
 export const person_group_delete_audit = registerFunction({
   name: 'person_group_delete_audit',
   returnType: 'TRIGGER',
@@ -267,6 +304,35 @@ export const asset_face_audit = registerFunction({
       INSERT INTO asset_face_audit ("assetFaceId", "assetId")
       SELECT "id", "assetId"
       FROM OLD;
+      RETURN NULL;
+    END`,
+});
+
+export const asset_face_set_asset_state = registerFunction({
+  name: 'asset_face_set_asset_state',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      -- FOR SHARE so a concurrent update of the asset cannot leave this face with stale state
+      SELECT "ownerId", "visibility", "deletedAt"
+      INTO NEW."ownerId", NEW."assetVisibility", NEW."assetDeletedAt"
+      FROM asset
+      WHERE "id" = NEW."assetId"
+      FOR SHARE;
+      RETURN NEW;
+    END`,
+});
+
+export const asset_face_update_asset_state = registerFunction({
+  name: 'asset_face_update_asset_state',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      UPDATE asset_face
+      SET "ownerId" = NEW."ownerId", "assetVisibility" = NEW."visibility", "assetDeletedAt" = NEW."deletedAt"
+      WHERE "assetId" = NEW."id";
       RETURN NULL;
     END`,
 });

@@ -1,5 +1,5 @@
 import { Column, ForeignKeyColumn, Index, Table } from '@immich/sql-tools';
-import { AssetTable } from 'src/schema/tables/asset.table';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table('ocr_search')
 @Index({

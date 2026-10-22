@@ -64,11 +64,10 @@
     border && 'border-3 border-immich-dark-primary/80 hover:border-immich-primary',
     'transition-shadow duration-150',
     highlighted && 'ring-4 ring-immich-primary dark:ring-immich-dark-primary',
+    hidden && 'grayscale-50 opacity-50',
   ]);
 
-  let style = $derived(
-    `width: ${widthStyle}; height: ${heightStyle ?? ''}; filter: ${hidden ? 'grayscale(50%)' : 'none'}; opacity: ${hidden ? '0.5' : '1'};`,
-  );
+  let style = $derived(`width: ${widthStyle}; height: ${heightStyle ?? ''};`);
 </script>
 
 {#if errored}

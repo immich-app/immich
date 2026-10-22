@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, NotNull, Selectable, ShallowDehydrateObject, sql } from 'kysely';
+import { type Kysely, type NotNull, type Selectable, type ShallowDehydrateObject, sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
-import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetType, VectorIndex } from 'src/enum';
-import { probes } from 'src/repositories/database.repository';
-import { DB } from 'src/schema';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, asUuid, withDefaultVisibility } from 'src/utils/database';
+import { columns } from 'src/database.js';
+import { Chunked, DummyValue, GenerateSql } from 'src/decorators.js';
+import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { AssetType, VectorIndex } from 'src/enum.js';
+import { probes } from 'src/repositories/database.repository.js';
+import { DB } from 'src/schema/index.js';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import { anyUuid, asUuid, withDefaultVisibility } from 'src/utils/database.js';
 
 // Maximum number of candidate duplicates to return from vector search
 const DUPLICATE_SEARCH_LIMIT = 64;

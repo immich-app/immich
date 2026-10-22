@@ -1,8 +1,8 @@
-import { NotificationAdminController } from 'src/controllers/notification-admin.controller';
-import { NotificationAdminService } from 'src/services/notification-admin.service';
 import request from 'supertest';
-import { factory } from 'test/small.factory';
-import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
+import { NotificationAdminController } from 'src/controllers/notification-admin.controller.js';
+import { NotificationAdminService } from 'src/services/notification-admin.service.js';
+import { factory } from 'test/small.factory.js';
+import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
 describe(NotificationAdminController.name, () => {
   let ctx: ControllerContext;

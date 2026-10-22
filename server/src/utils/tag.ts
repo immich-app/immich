@@ -1,5 +1,5 @@
-import { Tag } from 'src/database';
-import { TagRepository } from 'src/repositories/tag.repository';
+import { Tag } from 'src/database.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 
 type UpsertRequest = { userId: string; tags: string[] };
 export const upsertTags = async (repository: TagRepository, { userId, tags }: UpsertRequest) => {

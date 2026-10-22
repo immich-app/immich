@@ -1,18 +1,18 @@
 import { Kysely } from 'kysely';
-import { SearchSuggestionType } from 'src/dtos/search.dto';
-import { AlbumUserRole, AssetOrder, AssetVisibility, SearchOrderField } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { PartnerRepository } from 'src/repositories/partner.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
-import { SearchRepository } from 'src/repositories/search.repository';
-import { DB } from 'src/schema';
-import { SearchService } from 'src/services/search.service';
-import { newMediumService } from 'test/medium.factory';
-import { factory } from 'test/small.factory';
-import { getKyselyDB } from 'test/utils';
+import { SearchSuggestionType } from 'src/dtos/search.dto.js';
+import { AlbumUserRole, AssetOrder, AssetVisibility, SearchOrderField } from 'src/enum.js';
+import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PersonRepository } from 'src/repositories/person.repository.js';
+import { SearchRepository } from 'src/repositories/search.repository.js';
+import { DB } from 'src/schema/index.js';
+import { SearchService } from 'src/services/search.service.js';
+import { newMediumService } from 'test/medium.factory.js';
+import { factory } from 'test/small.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -65,6 +65,22 @@ describe(SearchService.name, () => {
     ]);
   });
 
+  it('should not return hidden assets', async () => {
+    const { sut, ctx } = setup();
+    const { user } = await ctx.newUser();
+
+    const { asset: visibleAsset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newExif({ assetId: visibleAsset.id, fileSizeInByte: 1000 });
+    const { asset: hiddenAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Hidden });
+    await ctx.newExif({ assetId: hiddenAsset.id, fileSizeInByte: 2000 });
+
+    const auth = factory.auth({ user: { id: user.id } });
+
+    await expect(sut.searchLargeAssets(auth, { size: 250 })).resolves.toEqual([
+      expect.objectContaining({ id: visibleAsset.id }),
+    ]);
+  });
+
   describe('searchStatistics', () => {
     it('should return statistics when filtering by personIds', async () => {
       const { sut, ctx } = setup();
@@ -106,6 +122,31 @@ describe(SearchService.name, () => {
       const result = await sut.searchStatistics(auth, { visibility: AssetVisibility.Locked });
 
       expect(result).toEqual({ total: 0 });
+    });
+
+    it('should not return locked assets of partner in elevated session without a visibility filter', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      await ctx.newAsset({ ownerId: partner.id, visibility: AssetVisibility.Locked });
+      await ctx.newAsset({ ownerId: partner.id });
+
+      const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
+
+      await expect(sut.searchStatistics(auth, {})).resolves.toEqual({ total: 2 });
+
+      const response = await sut.searchMetadata(auth, { size: 250, withStacked: false });
+      expect(response.assets.items.map(({ ownerId, visibility }) => ({ ownerId, visibility }))).toEqual(
+        expect.arrayContaining([
+          { ownerId: user.id, visibility: AssetVisibility.Locked },
+          { ownerId: partner.id, visibility: AssetVisibility.Timeline },
+        ]),
+      );
+      expect(response.assets.items).toHaveLength(2);
     });
   });
 

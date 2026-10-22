@@ -1,11 +1,11 @@
 import { Kysely } from 'kysely';
 import { resolve } from 'node:path';
-import { AssetType } from 'src/enum';
-import { DB } from 'src/schema';
-import { withAudioStream, withVideoFormat, withVideoPackets, withVideoStream } from 'src/utils/database';
-import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub';
-import { ExifTestContext, testAssetsDir } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import { AssetType } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
+import { withAudioStream, withVideoFormat, withVideoPackets, withVideoStream } from 'src/utils/database.js';
+import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub.js';
+import { ExifTestContext, testAssetsDir } from 'test/medium.factory.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let database: Kysely<DB>;
 

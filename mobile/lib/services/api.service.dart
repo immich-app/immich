@@ -22,17 +22,21 @@ class ApiService {
   late AssetsApi assetsApi;
   late SearchApi searchApi;
   late ServerApi serverInfoApi;
+  // ignore: unused-code
   late MapApi mapApi;
   late PartnersApi partnersApi;
   late PeopleApi peopleApi;
   late SharedLinksApi sharedLinksApi;
   late SyncApi syncApi;
+  // ignore: unused-code
   late SystemConfigApi systemConfigApi;
   late ActivitiesApi activitiesApi;
+  // ignore: unused-code
   late DownloadApi downloadApi;
   late TrashApi trashApi;
   late StacksApi stacksApi;
   late ViewsApi viewApi;
+  // ignore: unused-code
   late MemoriesApi memoriesApi;
   late SessionsApi sessionsApi;
   late TagsApi tagsApi;
@@ -41,10 +45,6 @@ class ApiService {
     // The below line ensures that the api clients are initialized when the service is instantiated
     // This is required to avoid late initialization errors when the clients are access before the endpoint is resolved
     setEndpoint('');
-    final endpoint = Store.tryGet(StoreKey.serverEndpoint);
-    if (endpoint != null && endpoint.isNotEmpty) {
-      setEndpoint(endpoint);
-    }
   }
   final _log = Logger("ApiService");
 

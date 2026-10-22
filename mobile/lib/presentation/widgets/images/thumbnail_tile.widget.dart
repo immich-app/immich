@@ -17,7 +17,6 @@ class ThumbnailTile extends ConsumerStatefulWidget {
     this.asset, {
     this.size = kThumbnailResolution,
     this.remoteSize,
-    this.fit = BoxFit.cover,
     this.showStorageIndicator = false,
     this.lockSelection = false,
     this.heroOffset,
@@ -30,7 +29,6 @@ class ThumbnailTile extends ConsumerStatefulWidget {
 
   /// Physical size to decode for remote thumbnails.
   final Size? remoteSize;
-  final BoxFit fit;
   final bool showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;

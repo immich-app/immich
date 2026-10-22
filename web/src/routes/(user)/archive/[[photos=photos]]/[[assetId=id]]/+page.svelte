@@ -3,7 +3,6 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
@@ -68,7 +67,7 @@
       unarchive
       onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
     />
-    <CreateSharedLink />
+    <ActionButton action={Actions.CreateSharedLink} />
     <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
     <ActionButton action={Actions.AddToAlbum} />
     <FavoriteAction

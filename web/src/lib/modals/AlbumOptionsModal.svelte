@@ -9,17 +9,11 @@
     handleUpdateAlbum,
     handleUpdateUserAlbumRole,
   } from '$lib/services/album.service';
-  import {
-    AlbumUserRole,
-    AssetOrder,
-    getAlbumInfo,
-    getAllSharedLinks,
-    type AlbumResponseDto,
-    type SharedLinkResponseDto,
-    type UserResponseDto,
-  } from '@immich/sdk';
+  import { AlbumUserRole, AssetOrder, getAlbumInfo, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
   import { Field, HStack, Modal, ModalBody, Select, Stack, Switch, Text, type SelectOption } from '@immich/ui';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
+  import { queryClient } from '$lib/queries/client';
+  import { getAllSharedLinksQuery } from '$lib/queries/shared-link.query';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -48,30 +42,16 @@
     await refreshAlbum();
   };
 
-  const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinks.push(sharedLink);
-  };
-
-  const onSharedLinkDelete = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinks = sharedLinks.filter(({ id }) => sharedLink.id !== id);
-  };
-
   const { AddUsers, CreateSharedLink } = $derived(getAlbumActions($t, album));
 
-  let sharedLinks: SharedLinkResponseDto[] = $state([]);
-
-  onMount(async () => {
-    sharedLinks = await getAllSharedLinks({ albumId: album.id });
-  });
+  const query = createQuery(
+    () => getAllSharedLinksQuery({ albumId: album.id }),
+    () => queryClient,
+  );
+  const sharedLinks = $derived(query.data ?? []);
 </script>
 
-<OnEvents
-  {onAlbumUserDelete}
-  onAlbumShare={refreshAlbum}
-  {onSharedLinkCreate}
-  {onSharedLinkDelete}
-  onAlbumUpdate={(newAlbum) => (album = newAlbum)}
-/>
+<OnEvents {onAlbumUserDelete} onAlbumShare={refreshAlbum} onAlbumUpdate={(newAlbum) => (album = newAlbum)} />
 
 <Modal title={readOnly ? $t('album') : $t('options')} {onClose} size="small">
   <ModalBody>
@@ -102,7 +82,7 @@
 
       <div>
         <HStack fullWidth class="mb-2 justify-between">
-          <Text size="medium" fontWeight="semi-bold">{$t('people')}</Text>
+          <Text size="medium" fontWeight="semi-bold">{$t('users')}</Text>
           {#if !readOnly}
             <HeaderActionButton action={AddUsers} />
           {/if}

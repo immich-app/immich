@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/ocr.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/ocr.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 class OcrOverlay extends ConsumerStatefulWidget {
@@ -92,11 +91,11 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
       return const SizedBox.shrink();
     }
 
-    final ocrData = ref.watch(ocrAssetProvider((widget.asset as RemoteAsset).id));
+    final ocrData = ref.watch(Store.ocr.forAsset((widget.asset as RemoteAsset).id));
 
     return ocrData.when(
       data: (data) {
-        if (data == null || data.isEmpty) {
+        if (data.isEmpty) {
           return const SizedBox.shrink();
         }
         return _OcrBoxes(
