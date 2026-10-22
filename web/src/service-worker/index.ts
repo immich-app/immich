@@ -19,7 +19,9 @@ const handleInstall = (event: ExtendableEvent) => {
 };
 
 const handleFetch = (event: FetchEvent): void => {
-  if (event.request.method !== 'GET') {
+  // Only intercept image loads, since the app can cancel those by URL. A download of the
+  // same URL (e.g. `<a download>`) must not be aborted when the viewer moves on.
+  if (event.request.method !== 'GET' || event.request.destination !== 'image') {
     return;
   }
 
