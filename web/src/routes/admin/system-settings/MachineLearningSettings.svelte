@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createPreloadedQuery } from '$lib/queries/client';
-  import { getConfigQuery } from '$lib/queries/system-config.query';
+  import { getAdminConfigQuery } from '$lib/queries/config-admin.query';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSelect from './SettingSelect.svelte';
@@ -15,7 +15,7 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const query = createPreloadedQuery(getConfigQuery);
+  const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
   const disabled = $derived(featureFlagsManager.value.configFile);
@@ -171,7 +171,7 @@
             min={0.001}
             max={0.1}
             description={$t('admin.machine_learning_max_detection_distance_description')}
-            disabled={disabled || !featureFlagsManager.value.duplicateDetection}
+            disabled={disabled || !config.machineLearning.duplicateDetection.enabled}
             isEdited={configToEdit.machineLearning.duplicateDetection.maxDistance !==
               config.machineLearning.duplicateDetection.maxDistance}
           />

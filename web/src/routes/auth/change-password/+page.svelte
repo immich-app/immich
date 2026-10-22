@@ -3,7 +3,7 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
-  import { updateMyUser } from '@immich/sdk';
+  import { handleChangePassword } from '$lib/services/user.service';
   import { Alert, Button, Field, HelperText, PasswordInput, Stack, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -14,9 +14,10 @@
 
   let { data }: Props = $props();
 
+  let currentPassword = $state('');
   let password = $state('');
   let passwordConfirm = $state('');
-  const valid = $derived(password === passwordConfirm && passwordConfirm.length > 0);
+  const valid = $derived(currentPassword.length > 0 && password === passwordConfirm && passwordConfirm.length > 0);
   const errorMessage = $derived(passwordConfirm.length === 0 || valid ? '' : $t('password_does_not_match'));
 
   const onSubmit = async () => {
@@ -24,8 +25,10 @@
       return;
     }
 
-    await updateMyUser({ userUpdateMeDto: { password } });
-    await goto(Route.logout());
+    const success = await handleChangePassword({ password: currentPassword, newPassword: password });
+    if (success) {
+      await goto(Route.logout());
+    }
   };
 </script>
 
@@ -37,6 +40,10 @@
         <Text>{$t('change_password_description')}</Text>
       </Stack>
     </Alert>
+
+    <Field label={$t('password')} required>
+      <PasswordInput bind:value={currentPassword} autocomplete="current-password" />
+    </Field>
 
     <Field label={$t('new_password')} required>
       <PasswordInput bind:value={password} autocomplete="new-password" />

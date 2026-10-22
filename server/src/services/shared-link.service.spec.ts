@@ -73,6 +73,20 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
 
+    it('should not return album users', async () => {
+      const authDto = authStub.adminSharedLink;
+      const sharedLink = SharedLinkFactory.from()
+        .album({}, (builder) => builder.albumUser())
+        .build();
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+      mocks.album.getMetadataForIds.mockResolvedValue([]);
+
+      const response = await sut.getMine(authDto, []);
+
+      expect(sharedLink.album?.albumUsers.length).toBeGreaterThan(0);
+      expect(response.album).toMatchObject({ id: sharedLink.album!.id, albumUsers: [], shared: true });
+    });
+
     it('should throw an error for a request without a shared link auth token', async () => {
       const authDto = authStub.adminSharedLink;
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.passwordRequired);

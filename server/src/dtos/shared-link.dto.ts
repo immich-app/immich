@@ -114,7 +114,7 @@ export function mapSharedLink(sharedLink: SharedLink, { auth }: { auth: AuthDto 
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
     assets: assets.map((asset) => mapAsset(asset, { auth })),
-    album: sharedLink.album ? mapAlbum(sharedLink.album) : undefined,
+    album: sharedLink.album ? mapAlbum(sharedLink.album, { auth }) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,

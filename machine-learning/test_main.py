@@ -1877,6 +1877,14 @@ class TestCache:
         assert len(model_cache._models) == 1
         model.create.assert_called_once()
 
+    async def test_shares_an_instance_across_names_of_the_same_model(self) -> None:
+        model_cache = ModelCache()
+        bare = model_cache.get(InferenceEntry(OpenClipTextualEncoder, "ViT-B-32__openai", TextualOptions()))
+        prefixed = model_cache.get(
+            InferenceEntry(OpenClipTextualEncoder, "immich-app/ViT-B-32__openai", TextualOptions(language="en-US"))
+        )
+        assert bare is prefixed
+
     async def test_separate_instances_per_graph_option(self) -> None:
         # the real TextDetector, so that keying it on anything but its resolution fails this
         model_cache = ModelCache()

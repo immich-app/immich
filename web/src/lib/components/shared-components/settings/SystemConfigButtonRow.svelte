@@ -1,6 +1,10 @@
 <script lang="ts">
   import { createPreloadedQuery } from '$lib/queries/client';
-  import { getConfigDefaultsQuery, getConfigQuery, updateConfigMutation } from '$lib/queries/system-config.query';
+  import {
+    getAdminConfigDefaultsQuery,
+    getAdminConfigQuery,
+    updateAdminConfigMutation,
+  } from '$lib/queries/config-admin.query';
   import type { AdminConfigDto } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
   import { createMutation } from '@tanstack/svelte-query';
@@ -16,19 +20,24 @@
 
   let { disabled, keys, configToEdit = $bindable(), onBeforeSave }: Props = $props();
 
-  const config = createPreloadedQuery(getConfigQuery);
-  const defaults = createPreloadedQuery(getConfigDefaultsQuery);
-  const save = createMutation(updateConfigMutation);
+  const queries = {
+    config: createPreloadedQuery(getAdminConfigQuery),
+    defaults: createPreloadedQuery(getAdminConfigDefaultsQuery),
+  };
 
-  const showResetToDefault = $derived(!isEqual(pick(config.data, keys), pick(defaults.data, keys)));
+  const config = $derived(queries.config.data);
+  const defaults = $derived(queries.defaults.data);
+  const save = createMutation(updateAdminConfigMutation);
+
+  const showResetToDefault = $derived(!isEqual(pick(config, keys), pick(defaults, keys)));
 
   const handleReset = () => {
-    configToEdit = cloneDeep(config.data);
+    configToEdit = cloneDeep(config);
     toastManager.info($t('admin.reset_settings_to_recent_saved'));
   };
 
   const handleResetToDefault = () => {
-    configToEdit = { ...configToEdit, ...cloneDeep(pick(defaults.data, keys)) };
+    configToEdit = { ...configToEdit, ...cloneDeep(pick(defaults, keys)) };
     toastManager.info($t('admin.reset_settings_to_default'));
   };
 
