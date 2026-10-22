@@ -75,24 +75,41 @@ export class MediaRepository {
   /**
    *
    * @param input file path to the input image
-   * @returns ExtractResult if succeeded, or null if failed
+   * @returns the embedded images that could be extracted, in order of preference
    */
-  async extract(input: string): Promise<ExtractResult | null> {
+  async *extract(input: string): AsyncGenerator<ExtractResult> {
     for (const { tag, format } of [
       { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
       { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg },
       { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl },
       { tag: 'PreviewImage', format: RawExtractedFormat.Jpeg },
+      // some cameras (e.g. Ricoh GR III) have a small maker note preview that takes priority over the DNG preview
+      { tag: 'SubIFD1:PreviewImage', format: RawExtractedFormat.Jpeg },
     ]) {
+      let buffer: Buffer;
       try {
-        const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        buffer = await this.extractBinaryTag(tag, input);
         this.logger.debug(`Successfully extracted ${tag} buffer from image`);
-        return { buffer, format };
       } catch (error: any) {
         this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);
+        continue;
       }
+      yield { buffer, format };
     }
-    return null;
+  }
+
+  private async extractBinaryTag(tag: string, input: string): Promise<Buffer> {
+    if (!tag.includes(':')) {
+      return exiftool.extractBinaryTagToBuffer(tag, input);
+    }
+
+    // exiftool omits the group from JSON keys unless -G1 is passed, which extractBinaryTagToBuffer doesn't do
+    const tags = await exiftool.readRaw(input, { readArgs: ['-G1', '-b', `-${tag}`] });
+    const value = (tags as Record<string, unknown>)[tag];
+    if (typeof value !== 'string' || !value.startsWith('base64:')) {
+      throw new Error(`${tag} not found`);
+    }
+    return Buffer.from(value.slice('base64:'.length), 'base64');
   }
 
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {

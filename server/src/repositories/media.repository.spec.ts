@@ -1,9 +1,10 @@
+import { Tags, exiftool } from 'exiftool-vendored';
 import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
-import { Colorspace, ImageFormat } from 'src/enum.js';
+import { Colorspace, ImageFormat, RawExtractedFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { automock } from 'test/utils.js';
@@ -336,6 +337,41 @@ describe(MediaRepository.name, () => {
       );
 
       expect(statSync(file).blksize).toBeGreaterThan(0);
+    });
+  });
+
+  describe('extract', () => {
+    afterEach(() => {
+      vitest.restoreAllMocks();
+    });
+
+    it('should yield the embedded images that exist in order of preference', async () => {
+      const preview = Buffer.from('preview');
+      const dngPreview = Buffer.from('dng preview');
+      vitest
+        .spyOn(exiftool, 'extractBinaryTagToBuffer')
+        .mockImplementation((tag) =>
+          tag === 'PreviewImage' ? Promise.resolve(preview) : Promise.reject(new Error(`${tag} not found`)),
+        );
+      const readRaw = vitest
+        .spyOn(exiftool, 'readRaw')
+        // exiftool's Tags type doesn't include group-qualified keys
+        .mockResolvedValue({ 'SubIFD1:PreviewImage': `base64:${dngPreview.toString('base64')}` } as Tags);
+
+      await expect(Array.fromAsync(sut.extract('/path/to/file.dng'))).resolves.toEqual([
+        { buffer: preview, format: RawExtractedFormat.Jpeg },
+        { buffer: dngPreview, format: RawExtractedFormat.Jpeg },
+      ]);
+      expect(readRaw).toHaveBeenCalledWith('/path/to/file.dng', {
+        readArgs: ['-G1', '-b', '-SubIFD1:PreviewImage'],
+      });
+    });
+
+    it('should not yield anything if there are no embedded images', async () => {
+      vitest.spyOn(exiftool, 'extractBinaryTagToBuffer').mockRejectedValue(new Error('not found'));
+      vitest.spyOn(exiftool, 'readRaw').mockResolvedValue({ SourceFile: '/path/to/file.dng' });
+
+      await expect(Array.fromAsync(sut.extract('/path/to/file.dng'))).resolves.toEqual([]);
     });
   });
 });

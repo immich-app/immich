@@ -231,12 +231,13 @@ export class MediaService extends BaseService {
   }
 
   private async extractImage(originalPath: string, minSize: number) {
-    let extracted = await this.mediaRepository.extract(originalPath);
-    if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, minSize))) {
-      extracted = null;
+    for await (const extracted of this.mediaRepository.extract(originalPath)) {
+      if (await this.shouldUseExtractedImage(extracted.buffer, minSize)) {
+        return extracted;
+      }
     }
 
-    return extracted;
+    return null;
   }
 
   private async decodeImage(thumbSource: string | Buffer, exifInfo: ThumbnailAsset['exifInfo'], targetSize?: number) {
