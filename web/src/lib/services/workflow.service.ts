@@ -1,13 +1,5 @@
-import {
-  createWorkflow,
-  deleteWorkflow,
-  updateWorkflow,
-  WorkflowTrigger,
-  type WorkflowCreateDto,
-  type WorkflowResponseDto,
-  type WorkflowUpdateDto,
-} from '@immich/sdk';
-import { modalManager, toastManager, type ActionItem } from '@immich/ui';
+import { WorkflowTrigger, type WorkflowResponseDto } from '@immich/sdk';
+import { modalManager, type ActionItem } from '@immich/ui';
 import {
   mdiCodeJson,
   mdiContentCopy,
@@ -23,13 +15,14 @@ import {
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
-import { eventManager } from '$lib/managers/event-manager.svelte';
+import { page } from '$app/state';
 import WorkflowDuplicateModal from '$lib/modals/WorkflowDuplicateModal.svelte';
 import WorkflowLogsModal from '$lib/modals/WorkflowLogsModal.svelte';
 import WorkflowTemplatePickerModal from '$lib/modals/WorkflowTemplatePickerModal.svelte';
+import { executeMutation } from '$lib/queries/client';
+import { createWorkflowMutation, deleteWorkflowMutation, updateWorkflowMutation } from '$lib/queries/workflow.query';
 import { Route } from '$lib/route';
 import { copyToClipboard, downloadJson } from '$lib/utils';
-import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
 export const getWorkflowsActions = ($t: MessageFormatter) => {
@@ -37,11 +30,11 @@ export const getWorkflowsActions = ($t: MessageFormatter) => {
     title: $t('create_workflow'),
     icon: mdiPlus,
     onAction: () =>
-      handleCreateWorkflow({
-        trigger: WorkflowTrigger.AssetCreate,
-        steps: [],
-        enabled: false,
-      }),
+      executeMutation(
+        createWorkflowMutation,
+        [{ workflowCreateDto: { trigger: WorkflowTrigger.AssetCreate, steps: [], enabled: false } }],
+        { onSuccess: (workflow) => void goto(Route.viewWorkflow(workflow)) },
+      ),
   };
 
   const UseTemplate: ActionItem = {
@@ -57,7 +50,8 @@ export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowRespo
   const ToggleEnabled: ActionItem = {
     title: workflow.enabled ? $t('disable') : $t('enable'),
     icon: workflow.enabled ? mdiPause : mdiPlay,
-    onAction: () => handleUpdateWorkflow(workflow.id, { enabled: !workflow.enabled }),
+    onAction: () =>
+      executeMutation(updateWorkflowMutation, [{ id: workflow.id, workflowUpdateDto: { enabled: !workflow.enabled } }]),
   };
 
   const CopyJson: ActionItem = {
@@ -133,34 +127,7 @@ export const getWorkflowShowSchemaAction = (
   onAction: onToggle,
 });
 
-export const handleCreateWorkflow = async (dto: WorkflowCreateDto) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await createWorkflow({ workflowCreateDto: dto });
-    eventManager.emit('WorkflowCreate', response);
-    toastManager.success();
-    return response;
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_create'));
-  }
-};
-
-export const handleUpdateWorkflow = async (id: string, dto: WorkflowUpdateDto) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updateWorkflow({ id, workflowUpdateDto: dto });
-    eventManager.emit('WorkflowUpdate', response);
-    toastManager.primary($t('workflow_update_success'), { closable: true });
-    return true;
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_update_workflow'));
-    return false;
-  }
-};
-
-export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promise<boolean> => {
+const handleDeleteWorkflow = async (workflow: WorkflowResponseDto) => {
   const $t = await getFormatter();
 
   const confirmed = await modalManager.showDialog({
@@ -169,16 +136,14 @@ export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promi
   });
 
   if (!confirmed) {
-    return false;
+    return;
   }
 
-  try {
-    await deleteWorkflow({ id: workflow.id });
-    eventManager.emit('WorkflowDelete', workflow);
-    toastManager.primary($t('workflow_deleted'));
-    return true;
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_delete_workflow'));
-    return false;
-  }
+  await executeMutation(deleteWorkflowMutation, [{ id: workflow.id }], {
+    onSuccess: () => {
+      if (page.params.workflowId === workflow.id) {
+        void goto(Route.workflows());
+      }
+    },
+  });
 };
