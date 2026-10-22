@@ -1,7 +1,6 @@
 <script lang="ts">
   import AlbumCardGroup from '$lib/components/album-page/AlbumCardGroup.svelte';
   import AlbumsTable from '$lib/components/album-page/AlbumsTable.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleDeleteAlbum, isAlbumOwner } from '$lib/services/album.service';
   import {
@@ -32,8 +31,8 @@
   }
 
   let {
-    ownedAlbums = $bindable([]),
-    sharedAlbums = $bindable([]),
+    ownedAlbums = [],
+    sharedAlbums = [],
     searchQuery = '',
     userSettings,
     allowEdit = false,
@@ -166,28 +165,7 @@
     const albumsToRemove = ownedAlbums.filter((album) => album.assetCount === 0 && !album.albumName);
     await Promise.allSettled(albumsToRemove.map((album) => handleDeleteAlbum(album, { prompt: false, notify: false })));
   };
-
-  const findAndUpdate = (albums: AlbumResponseDto[], album: AlbumResponseDto) => {
-    const target = albums.find(({ id }) => id === album.id);
-    if (target) {
-      Object.assign(target, album);
-    }
-
-    return albums;
-  };
-
-  const onAlbumUpdate = (album: AlbumResponseDto) => {
-    ownedAlbums = findAndUpdate(ownedAlbums, album);
-    sharedAlbums = findAndUpdate(sharedAlbums, album);
-  };
-
-  const onAlbumDelete = (album: AlbumResponseDto) => {
-    ownedAlbums = ownedAlbums.filter(({ id }) => id !== album.id);
-    sharedAlbums = sharedAlbums.filter(({ id }) => id !== album.id);
-  };
 </script>
-
-<OnEvents {onAlbumUpdate} {onAlbumDelete} />
 
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}

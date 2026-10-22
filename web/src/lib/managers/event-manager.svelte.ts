@@ -1,6 +1,4 @@
 import type {
-  AlbumResponseDto,
-  AlbumUserRole,
   ApiKeyResponseDto,
   AssetResponseDto,
   IntegrityReport,
@@ -47,12 +45,6 @@ export type Events = {
 
   AlbumAddAssets: [{ assetIds: string[]; albumIds: string[] }];
   AlbumRemoveAssets: [{ assetIds: string[]; albumIds: string[] }];
-  AlbumCreate: [AlbumResponseDto];
-  AlbumUpdate: [AlbumResponseDto];
-  AlbumDelete: [AlbumResponseDto];
-  AlbumShare: [];
-  AlbumUserUpdate: [{ albumId: string; userId: string; role: AlbumUserRole }];
-  AlbumUserDelete: [{ albumId: string; userId: string }];
 
   PersonUpdate: [PersonResponseDto];
   PersonShare: [{ personId: string }];
