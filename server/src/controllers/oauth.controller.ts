@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { parse as parseCookie } from 'cookie';
+import { parseCookie } from 'cookie';
 import type { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
