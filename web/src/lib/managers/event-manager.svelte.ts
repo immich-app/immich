@@ -1,12 +1,10 @@
 import type {
   AlbumResponseDto,
   AlbumUserRole,
-  ApiKeyResponseDto,
   AssetResponseDto,
   IntegrityReport,
   JobCreateDto,
   LoginResponseDto,
-  PasskeyResponseDto,
   PersonResponseDto,
   QueueResponseDto,
   ReleaseEventV1,
@@ -28,14 +26,6 @@ export type Events = {
   AuthUserLoaded: [UserAdminResponseDto];
 
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
-
-  ApiKeyCreate: [ApiKeyResponseDto];
-  ApiKeyUpdate: [ApiKeyResponseDto];
-  ApiKeyDelete: [ApiKeyResponseDto];
-
-  PasskeyCreate: [PasskeyResponseDto];
-  PasskeyUpdate: [PasskeyResponseDto];
-  PasskeyDelete: [PasskeyResponseDto];
 
   AssetUpdate: [AssetResponseDto];
   AssetsArchive: [string[]];

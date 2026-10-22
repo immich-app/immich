@@ -8,7 +8,6 @@
   import UserUsageStatistic from './UserUsageStatistic.svelte';
   import { OpenQueryParam, QueryParameter } from '$lib/constants';
   import { oauth } from '$lib/utils';
-  import { type ApiKeyResponseDto, type PasskeyResponseDto, type SessionResponseDto } from '@immich/sdk';
   import {
     mdiAccountGroupOutline,
     mdiAccountOutline,
@@ -41,20 +40,6 @@
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);
 
-  interface Props {
-    keys?: ApiKeyResponseDto[];
-    sessions?: SessionResponseDto[];
-    passkeys?: PasskeyResponseDto[];
-    passkeyEnabled?: boolean;
-  }
-
-  let {
-    keys = $bindable([]),
-    sessions = $bindable([]),
-    passkeys = $bindable([]),
-    passkeyEnabled = false,
-  }: Props = $props();
-
   let oauthOpen =
     oauth.isCallback(location) || $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenQueryParam.OAUTH;
 </script>
@@ -82,7 +67,7 @@
 </SettingAccordion>
 
 <SettingAccordion icon={mdiApi} key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
-  <UserApiKeyList bind:keys />
+  <UserApiKeyList />
 </SettingAccordion>
 
 <SettingAccordion
@@ -91,7 +76,7 @@
   title={$t('authorized_devices')}
   subtitle={$t('manage_your_devices')}
 >
-  <DeviceList bind:devices={sessions} />
+  <DeviceList />
 </SettingAccordion>
 
 <SettingAccordion
@@ -133,14 +118,14 @@
   </SettingAccordion>
 {/if}
 
-{#if passkeyEnabled}
+{#if config.passkey.enabled}
   <SettingAccordion
     icon={mdiShieldKeyOutline}
     key="passkeys"
-    title={$t('passkeys', { values: { count: passkeys.length } })}
+    title={$t('passkeys', { values: { count: 5 } })}
     subtitle={$t('manage_your_passkeys')}
   >
-    <UserPasskeyList bind:passkeys />
+    <UserPasskeyList />
   </SettingAccordion>
 {/if}
 
