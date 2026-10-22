@@ -365,9 +365,22 @@
   const onAssetsChanged = async () => {
     mapMarkers = await loadMapMarkers();
   };
+
+  const onAssetsDelete = async (assetIds: string[]) => {
+    if (simplified && mapMarkers && mapMarkers.length === 1 && assetIds.includes(mapMarkers[0].id)) {
+      return; // don't update detail panel mini-map if asset got deleted
+    }
+    mapMarkers = await loadMapMarkers();
+  };
 </script>
 
-<OnEvents onAssetsDelete={onAssetsChanged} onAssetsArchive={onAssetsChanged} onAssetsUnarchive={onAssetsChanged} />
+<OnEvents
+  {onAssetsDelete}
+  onAssetsRestore={onAssetsChanged}
+  onAssetsArchive={onAssetsChanged}
+  onAssetsUnarchive={onAssetsChanged}
+/>
+
 <svelte:boundary>
   <!--  We handle style loading ourselves so we set style blank here -->
   <MapLibre

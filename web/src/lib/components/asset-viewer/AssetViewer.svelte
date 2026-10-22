@@ -13,7 +13,6 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetActions } from '$lib/services/asset.service';
   import { faceManager } from '$lib/stores/face.svelte';
@@ -21,7 +20,6 @@
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { getSharedLink, handlePromiseError } from '$lib/utils';
-  import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
@@ -71,7 +69,6 @@
     onAssetChange?: (asset: AssetResponseDto) => void;
     preAction?: PreAction;
     onAction?: OnAction;
-    onUndoDelete?: OnUndoDelete;
     onClose?: (assetId: string) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
   }
@@ -86,7 +83,6 @@
     onAssetChange,
     preAction,
     onAction,
-    onUndoDelete,
     onClose,
     onRandom,
   }: Props = $props();
@@ -148,6 +144,16 @@
     if (asset.id === updatedAsset.id) {
       cursor = { ...cursor, current: updatedAsset };
     }
+  };
+
+  const onAssetsRestore = async (assets: AssetResponseDto[]) => {
+    if (assets.length !== 1) {
+      return; // don't open asset viewer if multiple assets were restored (bulk action)
+    }
+
+    const restoredAsset = assets[0];
+    assetViewerManager.setAsset(restoredAsset);
+    await navigateToAsset(restoredAsset);
   };
 
   const onAssetsUndoArchive = async (assets: TimelineAsset[]) => {
@@ -355,11 +361,6 @@
 
   const handleAction = (action: Action) => {
     switch (action.type) {
-      case AssetAction.DELETE:
-      case AssetAction.TRASH: {
-        eventManager.emit('AssetsDelete', [asset.id]);
-        break;
-      }
       case AssetAction.RATING: {
         cursor.current = {
           ...asset,
@@ -494,6 +495,7 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
 <OnEvents
   {onAssetUpdate}
+  {onAssetsRestore}
   {onAssetsUndoArchive}
   {onStackCreate}
   onStackDelete={() => closeViewer()}
@@ -525,7 +527,6 @@
         {stack}
         preAction={handlePreAction}
         onAction={handleAction}
-        {onUndoDelete}
         onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
         {isPlayingOriginalVideo}
         {setPlayOriginalVideo}

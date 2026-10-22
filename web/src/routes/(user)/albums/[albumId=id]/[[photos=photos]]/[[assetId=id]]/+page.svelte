@@ -335,6 +335,7 @@
   onAlbumUserDelete={() => refreshAlbum()}
   onAlbumUpdate={(album) => refreshAlbum(album)}
   onAssetsDelete={() => refreshAlbum()}
+  onAssetsRestore={() => refreshAlbum()}
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close, ...Object.values(Actions)]} />
 
