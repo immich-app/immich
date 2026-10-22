@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { goto, invalidate, onNavigate } from '$app/navigation';
-  import { navigating } from '$app/state';
+  import { goto, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
@@ -29,7 +28,8 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { getAlbumInfoQuery } from '$lib/queries/album.query';
+  import { createPreloadedQuery, queryClient } from '$lib/queries/client';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
@@ -63,17 +63,17 @@
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
-  import type { PageData } from './$types';
+  import type { PageProps } from './$types';
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumTitle from './AlbumTitle.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import { delay } from '$lib/utils/asset-utils';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
 
-  interface Props {
-    data: PageData;
-  }
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
-  let { data = $bindable() }: Props = $props();
+  const { params }: PageProps = $props();
   let { slideshowState, slideshowNavigation } = slideshowStore;
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
@@ -127,12 +127,10 @@
       if (updated.id !== album.id) {
         return;
       }
-      album = updated;
+      queryClient.setQueryData(getAlbumInfoQuery(album.id).queryKey, updated);
     }
 
-    // invalidating during navigation causes an infinite page load
-    await navigating.complete;
-    await invalidate('album:data');
+    await queryClient.invalidateQueries({ queryKey: getAlbumInfoQuery(album.id).queryKey });
   };
 
   const setModeToView = async () => {
@@ -214,7 +212,8 @@
     }
   });
 
-  let album = $derived(data.album);
+  const albumQuery = createPreloadedQuery(() => getAlbumInfoQuery(params.albumId));
+  let album = $derived(albumQuery.data);
   const albumId = $derived(album.id);
 
   const albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
@@ -325,8 +324,6 @@
 </script>
 
 <OnEvents
-  onSharedLinkCreate={(link) => refreshAlbum(link.album)}
-  onSharedLinkDelete={() => refreshAlbum()}
   {onAlbumDelete}
   {onAlbumAddAssets}
   {onAlbumRemoveAssets}
@@ -518,7 +515,7 @@
 
             <ActionButton action={Actions.Share} />
 
-            {#if featureFlagsManager.value.map}
+            {#if config.map.enabled}
               <AlbumMap {album} />
             {/if}
 

@@ -15,7 +15,7 @@
   } from '$lib/stores/preferences.store';
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto } from '@immich/sdk';
   import { groupBy } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -185,15 +185,9 @@
     ownedAlbums = ownedAlbums.filter(({ id }) => id !== album.id);
     sharedAlbums = sharedAlbums.filter(({ id }) => id !== album.id);
   };
-
-  const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
-    if (sharedLink.album) {
-      onAlbumUpdate(sharedLink.album);
-    }
-  };
 </script>
 
-<OnEvents {onAlbumUpdate} {onAlbumDelete} {onSharedLinkCreate} />
+<OnEvents {onAlbumUpdate} {onAlbumDelete} />
 
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}
