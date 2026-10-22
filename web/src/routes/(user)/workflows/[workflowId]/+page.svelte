@@ -6,7 +6,6 @@
   import WorkflowTriggerPicker from '$lib/modals/WorkflowTriggerPicker.svelte';
   import { Route } from '$lib/route';
   import { getWorkflowActions, handleUpdateWorkflow } from '$lib/services/workflow.service';
-  import { generateId } from '$lib/utils/generate-id';
   import { getTriggerDescription, getTriggerName } from '$lib/utils/workflow';
   import type { WorkflowResponseDto, WorkflowUpdateDto } from '@immich/sdk';
   import {
@@ -62,6 +61,9 @@
   };
 
   let { data }: Props = $props();
+
+  let stepCounter = 0;
+  const generateId = () => `step-${stepCounter++}`;
 
   let { id, enabled, name, description, trigger } = $state(data.workflow);
   let steps = $state(data.workflow.steps.map((step) => ({ ...step, id: generateId() })));
