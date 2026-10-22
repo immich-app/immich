@@ -13,6 +13,7 @@
   import { getAssetMediaUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
+  import { getCameraName } from '$lib/utils/camera-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getParentPath } from '$lib/utils/tree-utils';
   import {
@@ -226,11 +227,10 @@
                     make: asset.exifInfo?.make ?? undefined,
                     model: asset.exifInfo?.model ?? undefined,
                   })}
-                  title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
+                  title="{$t('search_for')} {getCameraName(asset.exifInfo.make, asset.exifInfo.model)}"
                   class="hover:text-primary"
                 >
-                  {asset.exifInfo.make || ''}
-                  {asset.exifInfo.model || ''}
+                  {getCameraName(asset.exifInfo.make, asset.exifInfo.model)}
                 </a>
               </p>
             {/if}
