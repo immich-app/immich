@@ -6,7 +6,6 @@
   import LinkToDocs from './LinkToDocs.svelte';
   import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
@@ -26,6 +25,11 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   interface Props {
     data: PageData;
@@ -90,14 +94,14 @@
       return;
     }
 
-    const message = featureFlagsManager.value.trash
+    const message = config.trash.enabled
       ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
       : $t('permanently_deleted_assets_count', { values: { count: trashedCount } });
     toastManager.primary(message);
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
-    const forceDelete = !featureFlagsManager.value.trash;
+    const forceDelete = !config.trash.enabled;
     const shouldConfirmDelete = trashIds.length > 0 && forceDelete;
 
     return withConfirmation(
@@ -141,7 +145,7 @@
     });
 
     let prompt, confirmText;
-    if (featureFlagsManager.value.trash) {
+    if (config.trash.enabled) {
       prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: idsToDelete.length } });
       confirmText = $t('confirm');
     } else {

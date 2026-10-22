@@ -2,7 +2,9 @@
   import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+  import { getServerConfigQuery } from '$lib/queries/server.query';
   import { Route } from '$lib/route';
   import { handleLoginWithPasskey, isPasskeyCancelled, isPasskeySupported } from '$lib/services/passkey.service';
   import { oauth } from '$lib/utils';
@@ -28,10 +30,16 @@
   let loading = $state(false);
   let oauthLoading = $state(true);
   let passkeyLoading = $state(false);
-  const passkeySupported = isPasskeySupported();
 
-  const serverConfig = $derived(serverConfigManager.value);
-  const publicConfig = $derived(data.publicConfig);
+  const queries = {
+    publicConfig: createPreloadedQuery(getPublicConfigQuery),
+    serverConfig: createPreloadedQuery(getServerConfigQuery),
+  };
+
+  const publicConfig = $derived(queries.publicConfig.data);
+  const serverConfig = $derived(queries.serverConfig.data);
+
+  const passkeySupported = isPasskeySupported();
   const passkeyEnabled = $derived(publicConfig.passkey.enabled && passkeySupported);
 
   const onSuccess = async (user: LoginResponseDto) => {

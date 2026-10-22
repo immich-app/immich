@@ -1,6 +1,9 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
-  import { handleCreateWorkflow } from '$lib/services/workflow.service';
+  import { executeMutation } from '$lib/queries/client';
+  import { createWorkflowMutation } from '$lib/queries/workflow.query';
+  import { Route } from '$lib/route';
   import { type PluginTemplateResponseDto } from '@immich/sdk';
   import { Badge, FormModal, Icon, ListButton, Text } from '@immich/ui';
   import { mdiFlashOutline } from '@mdi/js';
@@ -19,17 +22,15 @@
       return;
     }
 
-    const success = await handleCreateWorkflow({
-      trigger: selected.trigger,
-      steps: selected.steps,
-      name: selected.title,
-      description: selected.description,
-      enabled: false,
-    });
+    const { trigger, steps, title: name, description } = selected;
+    const workflowCreateDto = { trigger, steps, name, description, enabled: false };
 
-    if (success) {
-      onClose();
-    }
+    await executeMutation(createWorkflowMutation, [{ workflowCreateDto }], {
+      onSuccess: (response) => {
+        onClose();
+        void goto(Route.viewWorkflow(response));
+      },
+    });
   };
 
   const isSelected = (template: PluginTemplateResponseDto) => selected?.key === template.key;

@@ -48,11 +48,12 @@ import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manage
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { readPreloadedQuery } from '$lib/queries/client';
+import { getUserConfigQuery } from '$lib/queries/config-user.query';
 import { Route } from '$lib/route';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
@@ -149,7 +150,7 @@ export const getAssetActions = (
   const authUser = authManager.authenticated ? authManager.user : undefined;
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
   const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers[0].user.id);
-  const smartSearchEnabled = featureFlagsManager.value.smartSearch;
+  const smartSearchEnabled = !!authUser && readPreloadedQuery(getUserConfigQuery()).machineLearning.clip.enabled;
 
   const Share: ActionItem = {
     title: $t('share'),

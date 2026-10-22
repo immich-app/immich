@@ -13,8 +13,9 @@ import { mdiContentCopy, mdiLink, mdiPencilOutline, mdiQrcode, mdiTrashCanOutlin
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
+import { readPreloadedQuery } from '$lib/queries/client';
+import { getUserConfigQuery } from '$lib/queries/config-user.query';
 import { Route } from '$lib/route';
 import { copyToClipboard } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
@@ -61,7 +62,7 @@ export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLin
 
 export const asUrl = (sharedLink: SharedLinkResponseDto) => {
   const path = Route.viewSharedLink(sharedLink);
-  return new URL(path, serverConfigManager.value.externalDomain || location.origin).href;
+  return new URL(path, readPreloadedQuery(getUserConfigQuery()).server.externalDomain || location.origin).href;
 };
 
 export const handleCreateSharedLink = async (dto: SharedLinkCreateDto) => {

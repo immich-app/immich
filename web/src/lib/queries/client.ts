@@ -1,12 +1,12 @@
 import { toastManager } from '@immich/ui';
 import {
   createQuery,
+  hashKey,
   MutationCache,
   mutationOptions,
   MutationObserver,
   QueryClient,
   type CreateMutationOptions,
-  type DataTag,
   type DefaultError,
   type DefinedCreateQueryResult,
   type MutateOptions,
@@ -17,6 +17,8 @@ import {
 import { noop } from 'lodash-es';
 import type { Translations } from 'svelte-i18n';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+import { getServerConfigQuery } from '$lib/queries/server.query';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
@@ -67,7 +69,15 @@ const createQueryClient = () => {
     }),
   });
 
-  eventManager.on({ AuthLogout: () => client.clear() });
+  const publicQueryHashes = new Set(
+    [getServerConfigQuery(), getPublicConfigQuery()].map(({ queryKey }) => hashKey(queryKey)),
+  );
+  eventManager.on({
+    AuthLogout: () => {
+      client.removeQueries({ predicate: ({ queryHash }) => !publicQueryHashes.has(queryHash) });
+      client.getMutationCache().clear();
+    },
+  });
 
   return client;
 };
@@ -79,35 +89,42 @@ export const asMutation = <TArgs extends unknown[], TData, TError = DefaultError
   options?: Omit<CreateMutationOptions<TData, TError, TArgs, TOnMutateResult>, 'mutationFn' | 'mutationKey'>,
 ) => mutationOptions({ ...options, mutationFn: (args: TArgs) => fn(...args) });
 
-export const createPreloadedQuery = <
-  TQueryFnData,
-  TError = DefaultError,
-  TData = TQueryFnData,
-  TQueryKey extends QueryKey = QueryKey,
->(
-  optionsFn: () => UndefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey> & {
-    queryKey: DataTag<TQueryKey, TQueryFnData, TError>;
-  },
+const getPreloadedData = <TQueryFnData>(queryKey: QueryKey) => {
+  const data = queryClient.getQueryData<TQueryFnData, QueryKey, NonUndefinedGuard<TQueryFnData>>(queryKey);
+  if (data === undefined) {
+    const error = new Error(`${queryKey.join('/')} must be loaded first`);
+    console.error(error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const readPreloadedQuery = <TQueryFnData, TError, TData, TQueryKey extends QueryKey>(
+  options: UndefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>,
+): TData => {
+  const data = getPreloadedData<TQueryFnData>(options.queryKey);
+  return options.select ? options.select(data) : (data as unknown as TData);
+};
+
+export const createPreloadedQuery = <TQueryFnData, TError, TData, TQueryKey extends QueryKey>(
+  optionsFn: () => UndefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>,
 ): DefinedCreateQueryResult<TData, TError> =>
-  createQuery(() => {
-    const options = optionsFn();
-    const initialData = queryClient.getQueryData<TQueryFnData, TQueryKey, NonUndefinedGuard<TQueryFnData>>(
-      options.queryKey,
-    );
-    if (initialData === undefined) {
-      throw new Error(`${options.queryKey.join('/')} must be loaded first`);
-    }
+  createQuery(
+    () => {
+      const options = optionsFn();
+      return { ...options, initialData: getPreloadedData<TQueryFnData>(options.queryKey) };
+    },
+    () => queryClient,
+  );
 
-    return { ...options, initialData };
-  });
+type MutationArgs<TData, TError, TVariables, TOnMutateResult> = TVariables extends void
+  ? [variables?: TVariables, mutateOptions?: MutateOptions<TData, TError, TVariables, TOnMutateResult>]
+  : [variables: TVariables, mutateOptions?: MutateOptions<TData, TError, TVariables, TOnMutateResult>];
 
-type MutationArgs<TData, TError, TVariables, TContext> = TVariables extends void
-  ? [variables?: TVariables, mutateOptions?: MutateOptions<TData, TError, TVariables, TContext>]
-  : [variables: TVariables, mutateOptions?: MutateOptions<TData, TError, TVariables, TContext>];
-
-export const executeMutation = <TData, TError, TVariables, TContext>(
-  options: () => CreateMutationOptions<TData, TError, TVariables, TContext>,
-  ...[variables, mutateOptions]: MutationArgs<TData, TError, TVariables, TContext>
+export const executeMutation = <TData, TError, TVariables, TOnMutateResult>(
+  options: () => CreateMutationOptions<TData, TError, TVariables, TOnMutateResult>,
+  ...[variables, mutateOptions]: MutationArgs<TData, TError, TVariables, TOnMutateResult>
 ) => {
   const observer = new MutationObserver(queryClient, options());
   const unsubscribe = observer.subscribe(noop);
