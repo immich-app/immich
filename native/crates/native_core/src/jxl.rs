@@ -132,18 +132,17 @@ impl<'a> Jxl<'a> {
             .iter()
             .any(|ec| ec.ec_type == ExtraChannel::Alpha);
         let format = self.decoder.current_pixel_format()?;
-        let stride = w
-            .checked_mul(format.color_type.samples_per_pixel())?
-            .checked_mul(format.color_data_format?.bytes_per_sample())?;
-        let len = stride.checked_mul(h)?;
+        let pixel_bytes =
+            format.color_type.samples_per_pixel() * format.color_data_format?.bytes_per_sample();
+        let stride = w.checked_mul(pixel_bytes)?;
         let samples = if color::is_hdr(self.cicp) {
-            let mut rgba = Pixels::zeroed(w, h, len)?;
+            let mut rgba = Pixels::zeroed(w, h, pixel_bytes)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
             Samples::U16(rgba.premultiply_resize(alpha, target)?)
         } else {
             // The buffer is sized for the wide decode and ends up holding the RGBA8 result at its
             // front.
-            let mut rgba = Pixels::zeroed(w, h, len)?;
+            let mut rgba = Pixels::zeroed(w, h, pixel_bytes)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
             if let Some(transform) = &self.transform {
                 color::convert_bands(transform.as_ref(), &mut rgba, stride, cancelled)?;

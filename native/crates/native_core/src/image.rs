@@ -53,11 +53,15 @@ impl Sample for u16 {
 }
 
 impl<T> Pixels<T> {
-    /// Allocates pixels of u8 or u16 samples, the only kinds this module makes.
-    pub(crate) fn zeroed(width: usize, height: usize, len: usize) -> Option<Self>
+    /// Allocates pixels of u8 or u16 samples, the only kinds this module makes, with `pixel_bytes`
+    /// each if a decoder first writes them wider.
+    pub(crate) fn zeroed(width: usize, height: usize, pixel_bytes: usize) -> Option<Self>
     where
         T: Sample,
     {
+        let len = width
+            .checked_mul(height)?
+            .checked_mul(pixel_bytes.max(size_of::<[T; 4]>()))?;
         // SAFETY: calloc has no preconditions.
         let ptr = NonNull::new(unsafe { libc::calloc(len, 1) }.cast())?;
         Some(Self {
@@ -74,9 +78,8 @@ impl<T> Pixels<T> {
     }
 
     fn pixels_mut(&mut self) -> &mut [[T; 4]] {
-        let len = self.buf.len() / size_of::<[T; 4]>();
         // SAFETY: as for pixels, and self is borrowed mutably.
-        unsafe { slice::from_raw_parts_mut(self.buf.as_ptr().cast(), len) }
+        unsafe { slice::from_raw_parts_mut(self.buf.as_ptr().cast(), self.width * self.height) }
     }
 
     /// Frees everything after the pixels.
@@ -118,9 +121,8 @@ impl<T> Pixels<T> {
     where
         T: Sample,
     {
-        let (w, h) = (self.width, self.height);
         // Alpha scaling itself at full opacity lets this vectorize as every lane does the same work.
-        for px in &mut self.pixels_mut()[..w * h] {
+        for px in self.pixels_mut() {
             let [r, g, b, a] = *px;
             *px = [r.scale(a), g.scale(a), b.scale(a), a.scale(T::MAX)];
         }
@@ -131,8 +133,7 @@ impl<T> Pixels<T> {
     where
         T: Sample,
     {
-        let (w, h) = (self.width, self.height);
-        for px in &mut self.pixels_mut()[..w * h] {
+        for px in self.pixels_mut() {
             let a = px[3];
             *px = px.map(|c| c.min(a));
         }
@@ -143,9 +144,13 @@ impl<T> Pixels<T> {
     where
         T: Sample,
     {
-        let (w, h) = (self.width, self.height);
-        let mut out = Self::zeroed(tw, th, tw * th * size_of::<[T; 4]>())?;
-        resize::lanczos(&self.pixels()[..w * h], (w, h), out.pixels_mut(), (tw, th))?;
+        let mut out = Self::zeroed(tw, th, size_of::<[T; 4]>())?;
+        resize::lanczos(
+            self.pixels(),
+            (self.width, self.height),
+            out.pixels_mut(),
+            (tw, th),
+        )?;
         Some(out)
     }
 
@@ -158,10 +163,9 @@ impl<T> Pixels<T> {
     }
 
     pub fn pixels(&self) -> &[[T; 4]] {
-        let len = self.buf.len() / size_of::<[T; 4]>();
-        // SAFETY: self owns these initialized bytes, and its u8 or u16 samples are valid for any
-        // bytes and aligned by malloc.
-        unsafe { slice::from_raw_parts(self.buf.as_ptr().cast(), len) }
+        // SAFETY: zeroed made room for at least these initialized pixels, and their u8 or u16 samples are
+        // valid for any bytes and aligned by malloc.
+        unsafe { slice::from_raw_parts(self.buf.as_ptr().cast(), self.width * self.height) }
     }
 
     /// Hands the buffer to a C caller, who frees it with free().
@@ -185,7 +189,7 @@ mod tests {
     fn keeps_colour_within_alpha() {
         fn check<T: Sample>(half: T) {
             let (zero, max) = (T::default(), T::MAX);
-            let mut px = Pixels::<T>::zeroed(16, 16, 16 * 16 * size_of::<[T; 4]>()).unwrap();
+            let mut px = Pixels::<T>::zeroed(16, 16, size_of::<[T; 4]>()).unwrap();
             // Opaque black against translucent white rings both ways across the edge.
             for (i, p) in px.pixels_mut().iter_mut().enumerate() {
                 *p = if i % 16 < 8 {
