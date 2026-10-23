@@ -2,7 +2,9 @@ import { setFetch } from '@immich/sdk';
 import { memoize } from 'lodash-es';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import { queryClient } from '$lib/queries/client';
+import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+import { getServerConfigQuery } from '$lib/queries/server.query';
 import { initLanguage } from '$lib/utils';
 
 type Fetch = typeof fetch;
@@ -13,11 +15,11 @@ async function _init(fetch: Fetch) {
   // https://github.com/oazapfts/oazapfts/blob/main/README.md#fetch-options
   setFetch(fetch);
   await initLanguage();
-  await serverConfigManager.init();
+  const serverConfig = await queryClient.query(getServerConfigQuery());
   await authManager.load();
 
-  if (!serverConfigManager.value.maintenanceMode) {
-    await featureFlagsManager.init();
+  if (!serverConfig.maintenanceMode) {
+    await Promise.all([queryClient.query(getPublicConfigQuery()), featureFlagsManager.init()]);
   }
 }
 

@@ -22,8 +22,9 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
+  import { createPreloadedQuery, queryClient } from '$lib/queries/client';
+  import { getAssetsByOriginalPathQuery, getFolderTreeQuery } from '$lib/queries/view.query';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { foldersStore } from '$lib/stores/folders.svelte';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
   import { ActionButton, CommandPaletteDefaultProvider, IconButton, Text } from '@immich/ui';
@@ -36,6 +37,9 @@
   }
 
   let { data }: Props = $props();
+
+  const query = createPreloadedQuery(getFolderTreeQuery);
+  const root = $derived(query.data);
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
   let folderScrollContainer: HTMLElement | undefined = $state();
@@ -66,7 +70,7 @@
   const triggerAssetUpdate = async () => {
     assetMultiSelectManager.clear();
     if (data.tree.path) {
-      await foldersStore.refreshAssetsByPath(data.tree.path);
+      await queryClient.invalidateQueries({ queryKey: getAssetsByOriginalPathQuery(data.tree.path).queryKey });
     }
     await invalidateAll();
   };
@@ -93,7 +97,7 @@
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiFolderOutline, active: mdiFolder }}
-            tree={foldersStore.folders!}
+            tree={root}
             active={data.tree.path}
             getLink={getLinkForPath}
           />

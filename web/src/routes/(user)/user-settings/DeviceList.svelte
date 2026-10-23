@@ -1,18 +1,14 @@
 <script lang="ts">
-  import { handleError } from '$lib/utils/handle-error';
-  import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
-  import { Button, modalManager, Text, toastManager } from '@immich/ui';
+  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
+  import { deleteAllSessionsMutation, deleteSessionMutation, getSessionsQuery } from '$lib/queries/session.query';
+  import { type SessionResponseDto } from '@immich/sdk';
+  import { Button, modalManager, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import DeviceCard from '$lib/components/user-settings-page/DeviceCard.svelte';
 
-  interface Props {
-    devices: SessionResponseDto[];
-  }
-
-  let { devices = $bindable() }: Props = $props();
-
-  const refresh = () => getSessions().then((_devices) => (devices = _devices));
+  const query = createPreloadedQuery(getSessionsQuery);
+  const devices = $derived(query.data);
 
   let currentSession = $derived(devices.find((device) => device.current));
   let otherSessions = $derived(devices.filter((device) => !device.current));
@@ -23,14 +19,7 @@
       return;
     }
 
-    try {
-      await deleteSession({ id: device.id });
-      toastManager.primary($t('logged_out_device'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_log_out_device'));
-    } finally {
-      await refresh();
-    }
+    await executeMutation(deleteSessionMutation, [{ id: device.id }]);
   };
 
   const handleDeleteAll = async () => {
@@ -39,14 +28,7 @@
       return;
     }
 
-    try {
-      await deleteAllSessions();
-      toastManager.primary($t('logged_out_all_devices'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_log_out_all_devices'));
-    } finally {
-      await refresh();
-    }
+    await executeMutation(deleteAllSessionsMutation);
   };
 </script>
 

@@ -7,9 +7,7 @@
   import UserPurchaseSettings from './UserPurchaseSettings.svelte';
   import UserUsageStatistic from './UserUsageStatistic.svelte';
   import { OpenQueryParam, QueryParameter } from '$lib/constants';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { oauth } from '$lib/utils';
-  import { type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
   import {
     mdiAccountGroupOutline,
     mdiAccountOutline,
@@ -23,6 +21,7 @@
     mdiKeyOutline,
     mdiLockSmart,
     mdiServerOutline,
+    mdiShieldKeyOutline,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -30,17 +29,16 @@
   import AppSettings from './AppSettings.svelte';
   import ChangePasswordSettings from './ChangePasswordSettings.svelte';
   import DeviceList from './DeviceList.svelte';
-  import OauthSettings from './OauthSettings.svelte';
+  import OAuthSettings from './OAuthSettings.svelte';
   import SharingSettings from './SharingSettings.svelte';
   import UserApiKeyList from './UserApiKeyList.svelte';
+  import UserPasskeyList from './UserPasskeyList.svelte';
   import UserProfileSettings from './UserProfileSettings.svelte';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
 
-  interface Props {
-    keys?: ApiKeyResponseDto[];
-    sessions?: SessionResponseDto[];
-  }
-
-  let { keys = $bindable([]), sessions = $bindable([]) }: Props = $props();
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   let oauthOpen =
     oauth.isCallback(location) || $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenQueryParam.OAUTH;
@@ -69,7 +67,7 @@
 </SettingAccordion>
 
 <SettingAccordion icon={mdiApi} key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
-  <UserApiKeyList bind:keys />
+  <UserApiKeyList />
 </SettingAccordion>
 
 <SettingAccordion
@@ -78,7 +76,7 @@
   title={$t('authorized_devices')}
   subtitle={$t('manage_your_devices')}
 >
-  <DeviceList bind:devices={sessions} />
+  <DeviceList />
 </SettingAccordion>
 
 <SettingAccordion
@@ -108,7 +106,7 @@
   <NotificationsSettings />
 </SettingAccordion>
 
-{#if featureFlagsManager.value.oauth}
+{#if config.oauth.enabled}
   <SettingAccordion
     icon={mdiTwoFactorAuthentication}
     key={OpenQueryParam.OAUTH}
@@ -116,7 +114,18 @@
     subtitle={$t('manage_your_oauth_connection')}
     isOpen={oauthOpen || undefined}
   >
-    <OauthSettings />
+    <OAuthSettings />
+  </SettingAccordion>
+{/if}
+
+{#if config.passkey.enabled}
+  <SettingAccordion
+    icon={mdiShieldKeyOutline}
+    key="passkeys"
+    title={$t('passkeys', { values: { count: 5 } })}
+    subtitle={$t('manage_your_passkeys')}
+  >
+    <UserPasskeyList />
   </SettingAccordion>
 {/if}
 

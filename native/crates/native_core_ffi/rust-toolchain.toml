@@ -1,6 +1,6 @@
 # Keep the channel in sync with the rust entries in native/mise.toml and mobile/mise.toml.
 [toolchain]
-channel = "1.98.0"
+channel = "1.99.1"
 targets = [
   "aarch64-linux-android",
   "armv7-linux-androideabi",

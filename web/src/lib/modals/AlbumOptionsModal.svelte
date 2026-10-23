@@ -1,25 +1,20 @@
 <script lang="ts">
   import AlbumSharedLink from '$lib/components/album-page/AlbumSharedLink.svelte';
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import {
-    getAlbumActions,
-    handleRemoveUserFromAlbum,
-    handleUpdateAlbum,
-    handleUpdateUserAlbumRole,
-  } from '$lib/services/album.service';
+  import { getAlbumActions, handleRemoveUserFromAlbum, handleUpdateUserAlbumRole } from '$lib/services/album.service';
+  import { getAlbumQuery, updateAlbumInfoMutation } from '$lib/queries/album.query';
+  import { executeMutation, queryClient } from '$lib/queries/client';
+  import { getAllSharedLinksQuery } from '$lib/queries/shared-link.query';
   import {
     AlbumUserRole,
     AssetOrder,
-    getAlbumInfo,
-    getAllSharedLinks,
     type AlbumResponseDto,
-    type SharedLinkResponseDto,
+    type UpdateAlbumDto,
     type UserResponseDto,
   } from '@immich/sdk';
   import { Field, HStack, Modal, ModalBody, Select, Stack, Switch, Text, type SelectOption } from '@immich/ui';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -28,7 +23,13 @@
     onClose: () => void;
   };
 
-  let { album, readOnly = false, onClose }: Props = $props();
+  let { album: initialAlbum, readOnly = false, onClose }: Props = $props();
+
+  const query = createQuery(
+    () => getAlbumQuery(initialAlbum.id),
+    () => queryClient,
+  );
+  const album = $derived(query.data ?? initialAlbum);
 
   const handleRoleSelect = async (user: UserResponseDto, role: AlbumUserRole | 'none') => {
     if (role === 'none') {
@@ -39,39 +40,17 @@
     await handleUpdateUserAlbumRole({ albumId: album.id, userId: user.id, role });
   };
 
-  const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id });
-  };
-
-  const onAlbumUserDelete = async ({ userId }: { userId: string }) => {
-    album.albumUsers = album.albumUsers.filter(({ user: { id } }) => id !== userId);
-    await refreshAlbum();
-  };
-
-  const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinks.push(sharedLink);
-  };
-
-  const onSharedLinkDelete = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinks = sharedLinks.filter(({ id }) => sharedLink.id !== id);
-  };
-
   const { AddUsers, CreateSharedLink } = $derived(getAlbumActions($t, album));
 
-  let sharedLinks: SharedLinkResponseDto[] = $state([]);
+  const updateAlbum = (updateAlbumDto: UpdateAlbumDto) =>
+    executeMutation(updateAlbumInfoMutation, [{ id: album.id, updateAlbumDto }]);
 
-  onMount(async () => {
-    sharedLinks = await getAllSharedLinks({ albumId: album.id });
-  });
+  const sharedLinksQuery = createQuery(
+    () => getAllSharedLinksQuery({ albumId: album.id }),
+    () => queryClient,
+  );
+  const sharedLinks = $derived(sharedLinksQuery.data ?? []);
 </script>
-
-<OnEvents
-  {onAlbumUserDelete}
-  onAlbumShare={refreshAlbum}
-  {onSharedLinkCreate}
-  {onSharedLinkDelete}
-  onAlbumUpdate={(newAlbum) => (album = newAlbum)}
-/>
 
 <Modal title={readOnly ? $t('album') : $t('options')} {onClose} size="small">
   <ModalBody>
@@ -87,14 +66,14 @@
                   { label: $t('newest_first'), value: AssetOrder.Desc },
                   { label: $t('oldest_first'), value: AssetOrder.Asc },
                 ]}
-                onChange={(value) => handleUpdateAlbum(album, { order: value })}
+                onChange={(value) => updateAlbum({ order: value })}
               />
             </Field>
           {/if}
           <Field label={$t('comments_and_likes')} description={$t('let_others_respond')} disabled={readOnly}>
             <Switch
               checked={album.isActivityEnabled}
-              onCheckedChange={(checked) => handleUpdateAlbum(album, { isActivityEnabled: checked })}
+              onCheckedChange={(checked) => updateAlbum({ isActivityEnabled: checked })}
             />
           </Field>
         </div>
