@@ -2,7 +2,6 @@ use std::marker::PhantomData;
 use std::mem::ManuallyDrop;
 use std::ptr::NonNull;
 use std::slice;
-use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::color::CicpProfile;
 use crate::resize::{self, Lanczos};
@@ -90,7 +89,32 @@ impl<T> Pixels<T> {
         Some(self)
     }
 
-    pub(crate) fn premultiply(&mut self)
+    /// Premultiplies if `alpha`, then resizes to cover `target` if that is smaller, or else frees
+    /// everything after the pixels.
+    pub(crate) fn premultiply_resize(
+        mut self,
+        alpha: bool,
+        target: Option<(usize, usize)>,
+    ) -> Option<Self>
+    where
+        T: Sample,
+    {
+        if alpha {
+            self.premultiply();
+        }
+        let Some(size) = target.and_then(|target| resize::cover((self.width, self.height), target))
+        else {
+            return self.shrink();
+        };
+        let mut out = self.resize(size)?;
+        if alpha {
+            // Lanczos3 overshoots, while premultiplied colour must stay within alpha.
+            out.clamp();
+        }
+        Some(out)
+    }
+
+    fn premultiply(&mut self)
     where
         T: Sample,
     {
@@ -102,30 +126,26 @@ impl<T> Pixels<T> {
         }
     }
 
-    /// Downscales to cover `target`, in a buffer that holds just the result.
-    pub(crate) fn downscale(
-        self,
-        target: Option<(usize, usize)>,
-        cancelled: &AtomicBool,
-    ) -> Option<Self>
+    /// Clamps colour to alpha.
+    fn clamp(&mut self)
     where
         T: Sample,
     {
         let (w, h) = (self.width, self.height);
-        let Some((tw, th)) = target.and_then(|target| resize::cover((w, h), target)) else {
-            return self.shrink();
-        };
-        // Resizing costs ~10% of a thumbnail decode, wasted on tiles that scrolled away meanwhile.
-        if cancelled.load(Ordering::Relaxed) {
-            return None;
-        }
-        let mut out = Self::zeroed(tw, th, tw * th * size_of::<[T; 4]>())?;
-        resize::lanczos(&self.pixels()[..w * h], (w, h), out.pixels_mut(), (tw, th))?;
-        // Lanczos3 overshoots, while premultiplied colour must stay within alpha.
-        for px in out.pixels_mut() {
+        for px in &mut self.pixels_mut()[..w * h] {
             let a = px[3];
             *px = px.map(|c| c.min(a));
         }
+    }
+
+    /// The pixels resampled to `size` with Lanczos3, in a new buffer.
+    fn resize(&self, (tw, th): (usize, usize)) -> Option<Self>
+    where
+        T: Sample,
+    {
+        let (w, h) = (self.width, self.height);
+        let mut out = Self::zeroed(tw, th, tw * th * size_of::<[T; 4]>())?;
+        resize::lanczos(&self.pixels()[..w * h], (w, h), out.pixels_mut(), (tw, th))?;
         Some(out)
     }
 
@@ -174,8 +194,7 @@ mod tests {
                     [max, max, max, half]
                 };
             }
-            px.premultiply();
-            let px = px.downscale(Some((5, 5)), &AtomicBool::new(false)).unwrap();
+            let px = px.premultiply_resize(true, Some((5, 5))).unwrap();
             for p in px.pixels() {
                 assert!(p[..3].iter().all(|&c| c <= p[3]), "{p:?}");
             }

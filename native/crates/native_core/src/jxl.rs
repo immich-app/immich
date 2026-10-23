@@ -139,10 +139,7 @@ impl<'a> Jxl<'a> {
         let samples = if color::is_hdr(self.cicp) {
             let mut rgba = Pixels::zeroed(w, h, len)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
-            if alpha {
-                rgba.premultiply();
-            }
-            Samples::U16(rgba.downscale(target, cancelled)?)
+            Samples::U16(rgba.premultiply_resize(alpha, target)?)
         } else {
             // The buffer is sized for the wide decode and ends up holding the RGBA8 result at its
             // front.
@@ -151,10 +148,7 @@ impl<'a> Jxl<'a> {
             if let Some(transform) = &self.transform {
                 color::convert_bands(transform.as_ref(), &mut rgba, stride, cancelled)?;
             }
-            if alpha {
-                rgba.premultiply();
-            }
-            Samples::U8(rgba.downscale(target, cancelled)?)
+            Samples::U8(rgba.premultiply_resize(alpha, target)?)
         };
         Some(Image {
             cicp: self.cicp,
@@ -188,7 +182,11 @@ impl<'a> Jxl<'a> {
                 .ok()?
             {
                 Event::FrameHeader => {}
-                Event::FrameComplete { .. } => return Some(()),
+                // Resizing costs ~10% of a thumbnail decode, wasted on tiles that scrolled away
+                // meanwhile.
+                Event::FrameComplete { .. } => {
+                    return (!cancelled.load(Ordering::Relaxed)).then_some(());
+                }
                 _ => return None,
             }
         }
