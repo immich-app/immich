@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import { readPreloadedQuery } from '$lib/queries/client';
+import { getServerConfigQuery } from '$lib/queries/server.query';
 import { Route } from '$lib/route';
 import { getFormatter } from '$lib/utils/i18n';
 import { init } from '$lib/utils/server';
@@ -13,7 +14,8 @@ export const load = (async ({ fetch }) => {
   try {
     await init(fetch);
 
-    if (serverConfigManager.value.maintenanceMode) {
+    const serverConfig = readPreloadedQuery(getServerConfigQuery());
+    if (serverConfig.maintenanceMode) {
       redirect(307, Route.maintenanceMode());
     }
 
@@ -22,7 +24,7 @@ export const load = (async ({ fetch }) => {
       redirect(307, Route.photos());
     }
 
-    if (serverConfigManager.value.isInitialized) {
+    if (serverConfig.isInitialized) {
       // Redirect to login page if there exists an admin account (i.e. server is initialized)
       redirect(307, Route.login());
     }

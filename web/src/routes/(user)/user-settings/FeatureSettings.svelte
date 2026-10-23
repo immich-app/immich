@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
@@ -7,6 +6,11 @@
   import { Button, Field, NumberInput, Select, Switch, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   // Albums
   let defaultAssetOrder = $state(authManager.preferences.albums?.defaultAssetOrder ?? AssetOrder.Desc);
@@ -23,7 +27,9 @@
   // People
   let peopleEnabled = $state(authManager.preferences.people?.enabled ?? false);
   let peopleSidebar = $state(authManager.preferences.people?.sidebarWeb ?? false);
-  let peopleMinFaces = $state(authManager.preferences.people?.minimumFaces ?? serverConfigManager.value.minFaces);
+  let peopleMinFaces = $state(
+    authManager.preferences.people?.minimumFaces ?? config.machineLearning.facialRecognition.minFaces,
+  );
   let peopleUpdateStrategy = $state(authManager.preferences.people?.updateStrategy ?? PersonUpdateStrategy.Everyone);
 
   // Ratings

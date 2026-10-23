@@ -1,16 +1,16 @@
 <script lang="ts">
   import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { getConfigQuery, updateConfigMutation } from '$lib/queries/system-config.query';
+  import { getAdminConfigQuery, updateAdminConfigMutation } from '$lib/queries/config-admin.query';
   import { cloneDeep } from 'lodash-es';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  const query = createPreloadedQuery(getConfigQuery);
+  const query = createPreloadedQuery(getAdminConfigQuery);
   const configToEdit = $state(cloneDeep(query.data));
 
   onDestroy(() => {
-    void executeMutation(updateConfigMutation, {
+    void executeMutation(updateAdminConfigMutation, {
       map: configToEdit.map,
       newVersionCheck: configToEdit.newVersionCheck,
     });

@@ -1,8 +1,7 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAlbumInfo } from '@immich/sdk';
+  import { updateAlbumInfoMutation } from '$lib/queries/album.query';
+  import { executeMutation } from '$lib/queries/client';
   import { Textarea } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fromAction } from 'svelte/attachments';
@@ -11,10 +10,9 @@
     id: string;
     albumName: string;
     isEditor: boolean;
-    onUpdate: (albumName: string) => void;
   };
 
-  let { id, albumName = $bindable(), isEditor, onUpdate }: Props = $props();
+  let { id, albumName, isEditor }: Props = $props();
 
   let newAlbumName = $derived(albumName);
 
@@ -25,14 +23,10 @@
       return;
     }
 
-    try {
-      const response = await updateAlbumInfo({ id, updateAlbumDto: { albumName: newAlbumName } });
-      ({ albumName } = response);
-      eventManager.emit('AlbumUpdate', response);
-      onUpdate(albumName);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_album'));
-    }
+    await executeMutation(
+      () => updateAlbumInfoMutation({ error: { toast: 'errors.unable_to_save_album' } }),
+      [{ id, updateAlbumDto: { albumName: newAlbumName } }],
+    );
   };
 
   const textClasses = 'text-2xl lg:text-6xl text-primary';

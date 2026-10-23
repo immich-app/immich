@@ -1,28 +1,12 @@
 <script lang="ts">
+  import { getRecentAlbumsQuery } from '$lib/queries/album.query';
+  import { queryClient } from '$lib/queries/client';
   import { Route } from '$lib/route';
-  import { userInteraction } from '$lib/stores/user.svelte';
   import { getAssetMediaUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getAllAlbums } from '@immich/sdk';
-  import { t } from 'svelte-i18n';
+  import { createQuery } from '@tanstack/svelte-query';
 
-  let albums = $state(userInteraction.recentAlbums);
-
-  const refreshAlbums = async () => {
-    try {
-      const allAlbums = await getAllAlbums({});
-      albums = allAlbums.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 3);
-      userInteraction.recentAlbums = albums;
-    } catch (error) {
-      handleError(error, $t('failed_to_load_assets'));
-    }
-  };
-
-  $effect(() => {
-    if (!userInteraction.recentAlbums) {
-      void refreshAlbums();
-    }
-  });
+  const query = createQuery(getRecentAlbumsQuery, () => queryClient);
+  const albums = $derived(query.data ?? []);
 </script>
 
 {#each albums as album (album.id)}

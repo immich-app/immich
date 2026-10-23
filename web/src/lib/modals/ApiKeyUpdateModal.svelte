@@ -1,8 +1,9 @@
 <script lang="ts">
   import ApiKeyPermissionsPicker from '$lib/components/ApiKeyPermissionsPicker.svelte';
-  import { handleUpdateApiKey } from '$lib/services/api-key.service';
+  import { updateApiKeyMutation } from '$lib/queries/api-key.query';
+  import { executeMutation } from '$lib/queries/client';
   import { Permission } from '@immich/sdk';
-  import { Field, FormModal, Input } from '@immich/ui';
+  import { Field, FormModal, Input, toastManager } from '@immich/ui';
   import { mdiKeyVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -24,13 +25,20 @@
   let selectedPermissions = $state<Permission[]>(mapPermissions(apiKey.permissions));
 
   const onSubmit = async () => {
-    const success = await handleUpdateApiKey(apiKey, {
-      name,
-      permissions: isAllPermissions(selectedPermissions) ? [Permission.All] : selectedPermissions,
-    });
-    if (success) {
-      onClose();
+    if (!name) {
+      toastManager.warning($t('api_key_empty'));
+      return;
     }
+
+    if (selectedPermissions.length === 0) {
+      toastManager.warning($t('permission_empty'));
+      return;
+    }
+
+    const permissions = isAllPermissions(selectedPermissions) ? [Permission.All] : selectedPermissions;
+    await executeMutation(updateApiKeyMutation, [{ id: apiKey.id, apiKeyUpdateDto: { name, permissions } }], {
+      onSuccess: onClose,
+    });
   };
 </script>
 

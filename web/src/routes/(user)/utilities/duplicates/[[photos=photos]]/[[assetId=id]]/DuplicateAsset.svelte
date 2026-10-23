@@ -4,9 +4,11 @@
   import { getAllMetadataItems, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
+  import { getAlbumsByAssetQuery } from '$lib/queries/album.query';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiBookmarkOutline, mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import InfoRow from './InfoRow.svelte';
 
@@ -29,6 +31,9 @@
     showMore = false,
     initialVisibleCount = 5,
   }: Props = $props();
+
+  const query = createQuery(() => getAlbumsByAssetQuery(asset.id));
+  const albums = $derived(query.data);
 
   const listFormat = $derived(new Intl.ListFormat($lang));
   const isFromExternalLibrary = $derived(!!asset.libraryId);
@@ -114,17 +119,15 @@
 
     <!-- Albums always shown -->
     <InfoRow icon={mdiBookmarkOutline} title={$t('albums')}>
-      {#await getAllAlbums({ assetId: asset.id })}
+      {#if !albums}
         {$t('scanning_for_album')}
-      {:then albums}
-        {#if albums.length === 1}
-          {albums[0].albumName}
-        {:else}
-          <span title={listFormat.format(albums.map(({ albumName }) => albumName))}>
-            {$t('in_albums', { values: { count: albums.length } })}
-          </span>
-        {/if}
-      {/await}
+      {:else if albums.length === 1}
+        {albums[0].albumName}
+      {:else}
+        <span title={listFormat.format(albums.map(({ albumName }) => albumName))}>
+          {$t('in_albums', { values: { count: albums.length } })}
+        </span>
+      {/if}
     </InfoRow>
   </div>
 </div>
