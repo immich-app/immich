@@ -24,7 +24,6 @@ export const createAlbumAndRedirect = (name?: string, assetIds?: string[]) =>
   executeMutation(createAlbumMutation, [{ createAlbumDto: { albumName: name ?? '', assetIds } }], {
     onSuccess: (album) => void goto(Route.viewAlbum(album)),
   });
-};
 
 /**
  * -------------
