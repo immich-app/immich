@@ -77,7 +77,7 @@ impl<T> Pixels<T> {
         unsafe { self.buf.as_mut() }
     }
 
-    fn pixels_mut(&mut self) -> &mut [[T; 4]] {
+    pub(crate) fn pixels_mut(&mut self) -> &mut [[T; 4]] {
         // SAFETY: as for pixels, and self is borrowed mutably.
         unsafe { slice::from_raw_parts_mut(self.buf.as_ptr().cast(), self.width * self.height) }
     }
@@ -145,12 +145,7 @@ impl<T> Pixels<T> {
         T: Sample,
     {
         let mut out = Self::zeroed(tw, th, size_of::<[T; 4]>())?;
-        resize::lanczos(
-            self.pixels(),
-            (self.width, self.height),
-            out.pixels_mut(),
-            (tw, th),
-        )?;
+        resize::lanczos(self, &mut out)?;
         Some(out)
     }
 

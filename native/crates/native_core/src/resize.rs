@@ -6,6 +6,8 @@ use pic_scale::{
 };
 use quick_cache::sync::Cache;
 
+use crate::image::Pixels;
+
 /// Reuse the resampling plan for a given src-dst image size pair.
 type Plans<T> = Cache<[usize; 4], Arc<Resampling<T, 4>>>;
 
@@ -56,14 +58,10 @@ pub(crate) fn cover((w, h): (usize, usize), (tw, th): (usize, usize)) -> Option<
 }
 
 /// Resamples `src` into `dst` with Lanczos3.
-pub(crate) fn lanczos<T: Lanczos>(
-    src: &[[T; 4]],
-    (w, h): (usize, usize),
-    dst: &mut [[T; 4]],
-    (tw, th): (usize, usize),
-) -> Option<()> {
-    let from = ImageStore::borrow(src.as_flattened(), w, h).ok()?;
-    let mut to = ImageStoreMut::borrow(dst.as_flattened_mut(), tw, th).ok()?;
+pub(crate) fn lanczos<T: Lanczos>(src: &Pixels<T>, dst: &mut Pixels<T>) -> Option<()> {
+    let [w, h, tw, th] = [src.width(), src.height(), dst.width(), dst.height()];
+    let from = ImageStore::borrow(src.pixels().as_flattened(), w, h).ok()?;
+    let mut to = ImageStoreMut::borrow(dst.pixels_mut().as_flattened_mut(), tw, th).ok()?;
     to.bit_depth = 8 * size_of::<T>();
     T::cache()
         .get_or_insert_with(&[w, h, tw, th], || {

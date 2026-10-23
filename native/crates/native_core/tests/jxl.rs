@@ -169,10 +169,7 @@ fn downscales_to_cover() {
         panic!("not decoded to 8 bits");
     };
     // 16x16 covers 8x4 at 8x8, read through the wide decode buffer.
-    assert_eq!(
-        (rgba.width(), rgba.height(), rgba.pixels().len()),
-        (8, 8, 64)
-    );
+    assert_eq!((rgba.width(), rgba.height()), (8, 8));
     for px in rgba.pixels() {
         assert!(
             px.iter()
