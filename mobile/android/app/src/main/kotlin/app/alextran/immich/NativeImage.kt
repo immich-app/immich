@@ -27,9 +27,19 @@ object NativeImage {
   @JvmStatic
   external fun convert1010102(bitmap: Bitmap, outInfo: IntArray): Long
 
-  /** Like [convert1010102], but decodes the JPEG XL image of [length] bytes at [address], stopped by [cancel]. */
+  /**
+   * Like [convert1010102], but decodes the JPEG XL image of [length] bytes at [address], stopped by
+   * [cancel] and downscaled to cover [targetWidth] x [targetHeight] unless either is 0.
+   */
   @JvmStatic
-  external fun decodeJxl(address: Long, length: Int, cancelled: ByteBuffer, outInfo: IntArray): Long
+  external fun decodeJxl(
+    address: Long,
+    length: Int,
+    targetWidth: Int,
+    targetHeight: Int,
+    cancelled: ByteBuffer,
+    outInfo: IntArray
+  ): Long
 
   /** Stops the [decodeJxl] given this one-byte direct buffer. */
   @JvmStatic

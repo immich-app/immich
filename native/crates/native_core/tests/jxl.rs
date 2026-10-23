@@ -3,7 +3,7 @@ use std::sync::atomic::AtomicBool;
 use native_core::jxl::{Cicp, Image, Jxl, Pixels, Primaries, Samples, Target, Transfer};
 
 fn decode(data: &[u8], target: Target) -> Option<Image> {
-    Jxl::open(data, target)?.decode(&AtomicBool::new(false))
+    Jxl::open(data, target)?.decode(None, &AtomicBool::new(false))
 }
 
 fn decode_srgb(data: &[u8]) -> Option<Pixels<u8>> {
@@ -58,14 +58,21 @@ fn decodes_to_premultiplied_srgb() {
 
 #[test]
 fn converts_lossy_icc_to_srgb() {
-    let rgba = decode_srgb(include_bytes!("fixtures/xyb_icc.jxl")).unwrap();
-    for px in rgba.pixels() {
-        assert!(
-            px.iter()
-                .zip([210, 119, 65, 255])
-                .all(|(&a, b)| a.abs_diff(b) <= 3),
-            "{px:?}"
-        );
+    // jxl-rs renders XYB straight to sRGB, while a JPEG transcode decodes in its ICC space and
+    // takes our transform.
+    for data in [
+        &include_bytes!("fixtures/xyb_icc.jxl")[..],
+        include_bytes!("fixtures/jpeg_icc.jxl"),
+    ] {
+        let rgba = decode_srgb(data).unwrap();
+        for px in rgba.pixels() {
+            assert!(
+                px.iter()
+                    .zip([210, 119, 65, 255])
+                    .all(|(&a, b)| a.abs_diff(b) <= 3),
+                "{px:?}"
+            );
+        }
     }
 }
 
@@ -136,6 +143,33 @@ fn converts_other_spaces_to_srgb() {
 }
 
 #[test]
+fn downscales_to_cover() {
+    let data = include_bytes!("fixtures/jpeg_icc.jxl");
+    let Some(Image {
+        samples: Samples::U8(rgba),
+        ..
+    }) = Jxl::open(data, Target::Srgb)
+        .unwrap()
+        .decode(Some((8, 4)), &AtomicBool::new(false))
+    else {
+        panic!("not decoded to 8 bits");
+    };
+    // 16x16 covers 8x4 at 8x8, read through the wide decode buffer.
+    assert_eq!(
+        (rgba.width(), rgba.height(), rgba.pixels().len()),
+        (8, 8, 64)
+    );
+    for px in rgba.pixels() {
+        assert!(
+            px.iter()
+                .zip([210, 119, 65, 255])
+                .all(|(&a, b)| a.abs_diff(b) <= 3),
+            "{px:?}"
+        );
+    }
+}
+
+#[test]
 fn rejects_truncated_input() {
     let data = include_bytes!("fixtures/srgb_alpha.jxl");
     assert!(decode_srgb(&data[..data.len() / 2]).is_none());
@@ -147,7 +181,7 @@ fn stops_when_cancelled() {
     let decode = |cancelled| {
         Jxl::open(data, Target::Srgb)
             .unwrap()
-            .decode(&AtomicBool::new(cancelled))
+            .decode(None, &AtomicBool::new(cancelled))
             .is_some()
     };
     assert_eq!((decode(false), decode(true)), (true, false));

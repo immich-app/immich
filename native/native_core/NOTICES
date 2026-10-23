@@ -7,12 +7,15 @@ crossbeam-deque
 crossbeam-epoch
 crossbeam-utils
 either
+equivalent
+hashbrown
 jni
 jni-sys
 libc
 log
 memchr
 num-traits
+quick_cache
 rayon
 rayon-core
 simd_cesu8
@@ -31,6 +34,9 @@ Copyright (c) 2017-2020 The array-init developers
 Copyright (c) 2019 The Crossbeam Project Developers
 Copyright (c) 2015
 Copyright (c) 2010 The Rust Project Developers
+Copyright (c) 2016--2023
+Copyright (c) 2016 Amanieu d'Antras
+Copyright (c) 2022 Arthur Silva
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +61,7 @@ jxl
 jxl_simd
 jxl_transforms
 moxcms
+pic-scale
 pxfm
 
 Copyright (c) the JPEG XL Project Authors.

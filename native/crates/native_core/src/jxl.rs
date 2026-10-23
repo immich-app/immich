@@ -1,9 +1,10 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::mem::ManuallyDrop;
 use std::ptr::NonNull;
 use std::slice;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, LazyLock};
 
 use jxl::api::{
     AlphaMode, Endianness, Event, ExtraChannel, JxlColorEncoding, JxlColorProfile, JxlColorType,
@@ -13,6 +14,10 @@ use jxl::api::{
 use moxcms::{
     ColorProfile, DataColorSpace, Layout, RenderingIntent, Transform16BitExecutor, TransformOptions,
 };
+use pic_scale::{
+    ImageSize, ImageStore, ImageStoreMut, Resampling, ResamplingFunction, Scaler, WorkloadStrategy,
+};
+use quick_cache::sync::Cache;
 use rayon::prelude::*;
 
 /// A JPEG XL image whose header has been read.
@@ -93,11 +98,20 @@ pub struct Pixels<T> {
     sample: PhantomData<T>,
 }
 
-trait Sample: Copy {
+/// Reuse the resampling plan for a given src-dst image size pair.
+type Plans<T> = Cache<[usize; 4], Arc<Resampling<T, 4>>>;
+
+const PLANS: usize = 16;
+
+trait Sample: Copy + Ord + Default + Debug + 'static {
     const MAX: Self;
 
     /// Rounds like dividing the product by MAX would.
     fn scale(self, alpha: Self) -> Self;
+
+    fn lanczos(from: ImageSize, to: ImageSize) -> Option<Arc<Resampling<Self, 4>>>;
+
+    fn plans() -> &'static Plans<Self>;
 }
 
 impl Sample for u8 {
@@ -107,6 +121,19 @@ impl Sample for u8 {
         let x = u16::from(self) * u16::from(alpha) + 128;
         ((x + (x >> 8)) >> 8) as u8
     }
+
+    fn lanczos(from: ImageSize, to: ImageSize) -> Option<Arc<Resampling<Self, 4>>> {
+        // The 8-bit speed path brightens by up to two levels and is barely faster.
+        Scaler::new(ResamplingFunction::Lanczos3)
+            .set_workload_strategy(WorkloadStrategy::PreferQuality)
+            .plan_rgba_resampling(from, to, false)
+            .ok()
+    }
+
+    fn plans() -> &'static Plans<Self> {
+        static CACHE: LazyLock<Plans<u8>> = LazyLock::new(|| Cache::new(PLANS));
+        &CACHE
+    }
 }
 
 impl Sample for u16 {
@@ -115,6 +142,17 @@ impl Sample for u16 {
     fn scale(self, alpha: Self) -> Self {
         let x = u32::from(self) * u32::from(alpha) + 32768;
         ((x + (x >> 16)) >> 16) as u16
+    }
+
+    fn lanczos(from: ImageSize, to: ImageSize) -> Option<Arc<Resampling<Self, 4>>> {
+        Scaler::new(ResamplingFunction::Lanczos3)
+            .plan_rgba_resampling16(from, to, false, 16)
+            .ok()
+    }
+
+    fn plans() -> &'static Plans<Self> {
+        static CACHE: LazyLock<Plans<u16>> = LazyLock::new(|| Cache::new(PLANS));
+        &CACHE
     }
 }
 
@@ -153,6 +191,50 @@ impl<T> Pixels<T> {
         // A failed realloc leaves the original buffer, which self still frees.
         self.buf = NonNull::slice_from_raw_parts(NonNull::new(shrunk.cast())?, len);
         Some(self)
+    }
+
+    /// Premultiplies if `alpha`, then downscales to cover `target` or frees everything after the
+    /// pixels.
+    fn finish(
+        mut self,
+        alpha: bool,
+        target: Option<(usize, usize)>,
+        cancelled: &AtomicBool,
+    ) -> Option<Self>
+    where
+        T: Sample,
+    {
+        let (w, h) = (self.width, self.height);
+        let pixels = &mut self.pixels_mut()[..w * h];
+        if alpha {
+            premultiply(pixels);
+        }
+        let Some((tw, th)) = target.and_then(|target| cover((w, h), target)) else {
+            return self.shrink();
+        };
+        // Resizing costs ~10% of a thumbnail decode, wasted on tiles that scrolled away meanwhile.
+        if cancelled.load(Ordering::Relaxed) {
+            return None;
+        }
+        let mut out = Self::zeroed(tw, th, tw * th * size_of::<[T; 4]>())?;
+        let src = ImageStore::borrow(pixels.as_flattened(), w, h).ok()?;
+        let mut dst = ImageStoreMut::borrow(out.pixels_mut().as_flattened_mut(), tw, th).ok()?;
+        dst.bit_depth = 8 * size_of::<T>();
+        T::plans()
+            .get_or_insert_with(&[w, h, tw, th], || {
+                T::lanczos(src.size(), dst.size()).ok_or(())
+            })
+            .ok()?
+            .resample(&src, &mut dst)
+            .ok()?;
+        if alpha {
+            // Lanczos3 overshoots, while premultiplied colour must stay within alpha.
+            for px in out.pixels_mut() {
+                let a = px[3];
+                *px = px.map(|c| c.min(a));
+            }
+        }
+        Some(out)
     }
 
     pub fn width(&self) -> usize {
@@ -277,8 +359,12 @@ impl<'a> Jxl<'a> {
         })
     }
 
-    /// Decodes the first frame unless cancelled.
-    pub fn decode(mut self, cancelled: &AtomicBool) -> Option<Image> {
+    /// Decodes the first frame unless cancelled, downscaled to cover `target` pixels.
+    pub fn decode(
+        mut self,
+        target: Option<(usize, usize)>,
+        cancelled: &AtomicBool,
+    ) -> Option<Image> {
         let info = self.decoder.basic_info()?;
         let (w, h) = info.size;
         let alpha = info
@@ -293,21 +379,14 @@ impl<'a> Jxl<'a> {
         let samples = if self.cicp.transfer.is_hdr() {
             let mut rgba = Pixels::zeroed(w, h, len)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
-            if alpha {
-                premultiply(rgba.pixels_mut());
-            }
-            Samples::U16(rgba)
+            Samples::U16(rgba.finish(alpha, target, cancelled)?)
         } else {
             // The buffer is sized for the wide decode and ends up holding the RGBA8 result at its
             // front.
             let mut rgba = Pixels::zeroed(w, h, len)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
             self.convert_bands(&mut rgba, stride, cancelled)?;
-            let mut rgba = rgba.shrink()?;
-            if alpha {
-                premultiply(rgba.pixels_mut());
-            }
-            Samples::U8(rgba)
+            Samples::U8(rgba.finish(alpha, target, cancelled)?)
         };
         Some(Image {
             cicp: self.cicp,
@@ -445,5 +524,44 @@ fn premultiply<T: Sample>(pixels: &mut [[T; 4]]) {
     for px in pixels {
         let [r, g, b, a] = *px;
         *px = [r.scale(a), g.scale(a), b.scale(a), a.scale(T::MAX)];
+    }
+}
+
+/// The size of `size` scaled to cover `target`, if smaller.
+fn cover((w, h): (usize, usize), (tw, th): (usize, usize)) -> Option<(usize, usize)> {
+    let size = if tw * h >= th * w {
+        (tw, (h * tw).div_ceil(w))
+    } else {
+        ((w * th).div_ceil(h), th)
+    };
+    (size.0 * size.1 < w * h).then_some(size)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn keeps_colour_within_alpha() {
+        fn check<T: Sample>(half: T) {
+            let (zero, max) = (T::default(), T::MAX);
+            let mut px = Pixels::<T>::zeroed(16, 16, 16 * 16 * size_of::<[T; 4]>()).unwrap();
+            // Opaque black against translucent white rings both ways across the edge.
+            for (i, p) in px.pixels_mut().iter_mut().enumerate() {
+                *p = if i % 16 < 8 {
+                    [zero, zero, zero, max]
+                } else {
+                    [max, max, max, half]
+                };
+            }
+            let px = px
+                .finish(true, Some((5, 5)), &AtomicBool::new(false))
+                .unwrap();
+            for p in px.pixels() {
+                assert!(p[..3].iter().all(|&c| c <= p[3]), "{p:?}");
+            }
+        }
+        check(128u8);
+        check(32768u16);
     }
 }

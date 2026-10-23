@@ -13,6 +13,8 @@ jni = { version = "0.22", default-features = false }
 jxl = { version = "0.8", default-features = false, features = ["neon"] }
 libc = { version = "0.2", default-features = false }
 moxcms = { version = "0.9", default-features = false, features = ["neon_luts", "neon_shaper_paths"] }
+pic-scale = { version = "0.7", default-features = false, features = ["neon", "rdm"] }
+quick_cache = { version = "0.7", default-features = false }
 rayon = { version = "1.11", default-features = false }
 
 [workspace.lints.clippy]

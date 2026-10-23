@@ -104,8 +104,14 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
             // The fetch is done, so cancelling now stops the decode instead.
             val cancelled = ByteBuffer.allocateDirect(1)
             signal.setOnCancelListener { NativeImage.cancel(cancelled) }
-            val pointer =
-              if (signal.isCanceled) 0L else NativeImage.decodeJxl(buffer.pointer, buffer.offset, cancelled, info)
+            val pointer = if (signal.isCanceled) 0L else NativeImage.decodeJxl(
+              buffer.pointer,
+              buffer.offset,
+              width?.toInt() ?: 0,
+              height?.toInt() ?: 0,
+              cancelled,
+              info
+            )
             buffer.free()
             requestMap.remove(requestId)
             callback(

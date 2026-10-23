@@ -30,8 +30,9 @@ pub struct NativeCoreImageInfo {
 
 /// Decodes a JPEG XL image to premultiplied RGBA in sRGB, or with `keep_space`, in the image's own
 /// space when it has BT.709, BT.2020 or Display P3 primaries with the sRGB, PQ or HLG transfer.
-/// `info` gets the size and space. The caller frees the returned buffer with free(). Returns null on
-/// failure, or once `native_core_cancel` was called on `cancelled`.
+/// Unless either is 0, it is downscaled to cover `target_width` x `target_height`. `info` gets the
+/// size and space. The caller frees the returned buffer with free(). Returns null on failure, or
+/// once `native_core_cancel` was called on `cancelled`.
 ///
 /// # Safety
 /// `data` must be null or readable for `len` bytes, at most `isize::MAX`.
@@ -42,6 +43,8 @@ pub unsafe extern "C" fn native_core_jxl_decode(
     data: *const u8,
     len: size_t,
     keep_space: bool,
+    target_width: u32,
+    target_height: u32,
     cancelled: *mut bool,
     info: *mut NativeCoreImageInfo,
 ) -> *mut u8 {
@@ -58,8 +61,10 @@ pub unsafe extern "C" fn native_core_jxl_decode(
         } else {
             Target::Srgb
         };
+        let cover = (target_width > 0 && target_height > 0)
+            .then_some((target_width as usize, target_height as usize));
         let Some(Image { cicp, samples }) =
-            Jxl::open(input, target).and_then(|image| image.decode(cancelled))
+            Jxl::open(input, target).and_then(|image| image.decode(cover, cancelled))
         else {
             return ptr::null_mut();
         };
@@ -100,6 +105,8 @@ pub extern "system" fn Java_app_alextran_immich_NativeImage_decodeJxl<'caller>(
     _class: JClass<'caller>,
     data: jlong,
     length: jint,
+    target_width: jint,
+    target_height: jint,
     cancelled: JByteBuffer<'caller>,
     info: JIntArray<'caller>,
 ) -> jlong {
@@ -113,6 +120,8 @@ pub extern "system" fn Java_app_alextran_immich_NativeImage_decodeJxl<'caller>(
                 data as *const u8,
                 length as size_t,
                 false,
+                target_width as u32,
+                target_height as u32,
                 flag,
                 &mut decoded,
             )

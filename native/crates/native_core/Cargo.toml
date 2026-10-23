@@ -8,6 +8,8 @@ license.workspace = true
 jxl = { workspace = true }
 libc = { workspace = true }
 moxcms = { workspace = true }
+pic-scale = { workspace = true }
+quick_cache = { workspace = true }
 rayon = { workspace = true }
 
 [lints]
