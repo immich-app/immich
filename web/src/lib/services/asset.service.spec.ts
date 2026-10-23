@@ -1,7 +1,9 @@
-import { getAssetInfo } from '@immich/sdk';
+import { getAssetInfo, type UserConfigDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { vitest } from 'vitest';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { queryClient } from '$lib/queries/client';
+import { getUserConfigQuery } from '$lib/queries/config-user.query';
 import { getAssetActions, handleDownloadAsset } from '$lib/services/asset.service';
 import { setSharedLink } from '$lib/utils';
 import { getFormatter } from '$lib/utils/i18n';
@@ -31,16 +33,19 @@ vitest.mock('$lib/utils', async () => {
   };
 });
 
-vi.mock(import('$lib/managers/feature-flags-manager.svelte'), function () {
-  return {
-    featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: {} } as never,
-  };
-});
-
 describe('AssetService', () => {
   describe('getAssetActions', () => {
     beforeEach(() => {
       authManager.setPreferences(preferencesFactory.build());
+      queryClient.setQueryData(getUserConfigQuery().queryKey, {
+        machineLearning: {
+          enabled: false,
+          clip: { enabled: false },
+          duplicateDetection: { enabled: false },
+          facialRecognition: { enabled: false },
+          ocr: { enabled: false },
+        },
+      } as UserConfigDto);
     });
 
     it('should allow shared link downloads if the user owns the asset and shared link downloads are disabled', () => {

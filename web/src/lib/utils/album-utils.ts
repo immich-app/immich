@@ -1,10 +1,9 @@
 import type { AlbumResponseDto } from '@immich/sdk';
-import * as sdk from '@immich/sdk';
 import { orderBy } from 'lodash-es';
-import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
-import { eventManager } from '$lib/managers/event-manager.svelte';
+import { createAlbumMutation } from '$lib/queries/album.query';
+import { executeMutation } from '$lib/queries/client';
 import { Route } from '$lib/route';
 import {
   AlbumFilter,
@@ -15,35 +14,16 @@ import {
   locale,
   type AlbumViewSettings,
 } from '$lib/stores/preferences.store';
-import { handleError } from '$lib/utils/handle-error';
 
 /**
  * -------------------------
  * Albums General Management
  * -------------------------
  */
-export const createAlbum = async (name?: string, assetIds?: string[]) => {
-  try {
-    const newAlbum: AlbumResponseDto = await sdk.createAlbum({
-      createAlbumDto: {
-        albumName: name ?? '',
-        assetIds,
-      },
-    });
-    eventManager.emit('AlbumCreate', newAlbum);
-    return newAlbum;
-  } catch (error) {
-    const $t = get(t);
-    handleError(error, $t('errors.failed_to_create_album'));
-  }
-};
-
-export const createAlbumAndRedirect = async (name?: string, assetIds?: string[]) => {
-  const newAlbum = await createAlbum(name, assetIds);
-  if (newAlbum) {
-    await goto(Route.viewAlbum(newAlbum));
-  }
-};
+export const createAlbumAndRedirect = (name?: string, assetIds?: string[]) =>
+  executeMutation(createAlbumMutation, [{ createAlbumDto: { albumName: name ?? '', assetIds } }], {
+    onSuccess: (album) => void goto(Route.viewAlbum(album)),
+  });
 
 /**
  * -------------

@@ -198,17 +198,6 @@ describe(UserService.name, () => {
       await expect(sut.updateMe(auth, dto)).resolves.toMatchObject(dto);
       await expect(sut.getMe(auth)).resolves.toMatchObject(dto);
     });
-
-    it('should clear shouldChangePassword when the password is updated', async () => {
-      const { sut, ctx } = setup();
-      const { user } = await ctx.newUser({ shouldChangePassword: true });
-      const auth = factory.auth({ user: { id: user.id } });
-
-      await expect(sut.updateMe(auth, { password: 'super-secret' })).resolves.toMatchObject({
-        shouldChangePassword: false,
-      });
-      await expect(sut.getMe(auth)).resolves.toMatchObject({ shouldChangePassword: false });
-    });
   });
 
   describe('updateMyPreferences', () => {

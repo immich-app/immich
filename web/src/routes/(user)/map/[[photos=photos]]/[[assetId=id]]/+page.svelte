@@ -6,7 +6,6 @@
   import { timeToLoadTheMap } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { handlePromiseError } from '$lib/utils';
   import { delay } from '$lib/utils/asset-utils';
@@ -15,6 +14,11 @@
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   interface Props {
     data: PageData;
@@ -35,9 +39,11 @@
     assetViewerManager.showAssetViewer(false);
   });
 
-  if (!featureFlagsManager.value.map) {
-    handlePromiseError(goto(Route.photos()));
-  }
+  $effect(() => {
+    if (!config.map.enabled) {
+      handlePromiseError(goto(Route.photos()));
+    }
+  });
 
   async function onViewAssets(assetIds: string[]) {
     await assetViewerManager.setAssetId(assetIds[0]);
@@ -53,7 +59,7 @@
   }
 </script>
 
-{#if featureFlagsManager.value.map}
+{#if config.map.enabled}
   <UserPageLayout title={data.meta.title}>
     <div class="isolate flex size-full flex-col sm:flex-row">
       <div

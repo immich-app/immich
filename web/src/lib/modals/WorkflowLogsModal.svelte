@@ -21,7 +21,8 @@
   import { locale } from '$lib/stores/preferences.store';
   import { DateTime } from 'luxon';
   import { Route } from '$lib/route';
-  import { handleUpdateWorkflow } from '$lib/services/workflow.service';
+  import { executeMutation } from '$lib/queries/client';
+  import { updateWorkflowMutation } from '$lib/queries/workflow.query';
 
   type Props = {
     workflow: WorkflowResponseDto;
@@ -37,14 +38,13 @@
   let hasNext = $state(true);
   let loading = $state(false);
 
-  const setLogging = async (logging: boolean) => {
-    const success = await handleUpdateWorkflow(workflow.id, { logging });
-    if (!success) {
-      return;
-    }
-    workflow = { ...workflow, logging };
-    reset();
-  };
+  const setLogging = (logging: boolean) =>
+    executeMutation(updateWorkflowMutation, [{ id: workflow.id, workflowUpdateDto: { logging } }], {
+      onSuccess: () => {
+        workflow = { ...workflow, logging };
+        reset();
+      },
+    });
 
   const reset = () => {
     entries = [];

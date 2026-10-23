@@ -8,32 +8,30 @@
   import { timeToLoadTheMap } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import {
-    AssetMediaSize,
-    getAllAlbums,
-    getAssetInfo,
-    type AlbumResponseDto,
-    type AssetResponseDto,
-  } from '@immich/sdk';
+  import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import { createQuery } from '@tanstack/svelte-query';
   import { Icon, IconButton, Link, LoadingSpinner, Text } from '@immich/ui';
   import { mdiCamera, mdiCameraIris, mdiClose, mdiImageOutline, mdiInformationOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
   import PersonSidePanel from '../faces-page/PersonSidePanel.svelte';
-  import OnEvents from '../OnEvents.svelte';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
   import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
+  import { getAlbumsByAssetQuery } from '$lib/queries/album.query';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+
+  const query = createPreloadedQuery(getPublicConfigQuery);
+  const publicConfig = $derived(query.data);
 
   interface Props {
     asset: AssetResponseDto;
@@ -56,20 +54,11 @@
   let previousId: string | undefined = $state();
   let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
 
-  const refreshAlbums = async () => {
-    if (authManager.isSharedLink) {
-      return [];
-    }
-
-    try {
-      return await getAllAlbums({ assetId: asset.id });
-    } catch (error) {
-      handleError(error, 'Error getting asset album membership');
-      return [];
-    }
-  };
-
-  let albums = $derived(refreshAlbums());
+  const albumsQuery = createQuery(() => ({
+    ...getAlbumsByAssetQuery(asset.id),
+    enabled: !authManager.isSharedLink,
+  }));
+  const albums = $derived(albumsQuery.data ?? []);
 
   $effect(() => {
     if (!previousId) {
@@ -111,8 +100,6 @@
     assetViewerManager.closeEditFacesPanel();
   });
 </script>
-
-<OnEvents onAlbumAddAssets={() => (albums = refreshAlbums())} />
 
 {#if !assetViewerManager.isEditFacesPanelOpen}
   <section class="relative p-2">
@@ -278,7 +265,7 @@
     </div>
   </section>
 
-  {#if latlng && featureFlagsManager.value.map}
+  {#if latlng && publicConfig.map.enabled}
     <div class="h-90">
       {#await import('$lib/components/shared-components/map/Map.svelte')}
         {#await delay(timeToLoadTheMap) then}
@@ -341,39 +328,37 @@
     </section>
   {/if}
 
-  {#await albums then albums}
-    {#if albums.length > 0}
-      <section class="p-6 dark:text-immich-dark-fg">
-        <div class="pb-4">
-          <Text size="small" color="muted">{$t('appears_in')}</Text>
-        </div>
-        {#each albums as album (album.id)}
-          <a href={Route.viewAlbum(album)}>
-            <div class="flex items-center gap-4 pt-2 hover:cursor-pointer">
-              <div>
-                <img
-                  alt={album.albumName}
-                  class="size-12.5 rounded-sm object-cover"
-                  src={album.albumThumbnailAssetId &&
-                    getAssetMediaUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
-                  draggable="false"
-                />
-              </div>
+  {#if albums.length > 0}
+    <section class="p-6 dark:text-immich-dark-fg">
+      <div class="pb-4">
+        <Text size="small" color="muted">{$t('appears_in')}</Text>
+      </div>
+      {#each albums as album (album.id)}
+        <a href={Route.viewAlbum(album)}>
+          <div class="flex items-center gap-4 pt-2 hover:cursor-pointer">
+            <div>
+              <img
+                alt={album.albumName}
+                class="size-12.5 rounded-sm object-cover"
+                src={album.albumThumbnailAssetId &&
+                  getAssetMediaUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
+                draggable="false"
+              />
+            </div>
 
-              <div class="my-auto">
-                <p class="dark:text-immich-dark-primary">{album.albumName}</p>
-                <div class="flex flex-col gap-0 text-sm">
-                  <div>
-                    <AlbumListItemDetails {album} />
-                  </div>
+            <div class="my-auto">
+              <p class="dark:text-immich-dark-primary">{album.albumName}</p>
+              <div class="flex flex-col gap-0 text-sm">
+                <div>
+                  <AlbumListItemDetails {album} />
                 </div>
               </div>
             </div>
-          </a>
-        {/each}
-      </section>
-    {/if}
-  {/await}
+          </div>
+        </a>
+      {/each}
+    </section>
+  {/if}
 
   {#if authManager.authenticated && authManager.preferences.tags.enabled}
     <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">

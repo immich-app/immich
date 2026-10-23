@@ -5,7 +5,6 @@ import {
   AssetVisibility,
   bulkTagAssets,
   getAssetInfo,
-  removeAssetFromAlbum,
   runAssetJobs,
   updateAsset,
   type AlbumResponseDto,
@@ -48,11 +47,13 @@ import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manage
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { removeAssetFromAlbumMutation } from '$lib/queries/album.query';
+import { executeMutation, readPreloadedQuery } from '$lib/queries/client';
+import { getUserConfigQuery } from '$lib/queries/config-user.query';
 import { Route } from '$lib/route';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
@@ -149,7 +150,7 @@ export const getAssetActions = (
   const authUser = authManager.authenticated ? authManager.user : undefined;
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
   const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers[0].user.id);
-  const smartSearchEnabled = featureFlagsManager.value.smartSearch;
+  const smartSearchEnabled = !!authUser && readPreloadedQuery(getUserConfigQuery()).machineLearning.clip.enabled;
 
   const Share: ActionItem = {
     title: $t('share'),
@@ -517,19 +518,13 @@ const handleBulkRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumR
 const handleRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
   const $t = await getFormatter();
 
-  try {
-    const results = await removeAssetFromAlbum({
-      id: album.id,
-      bulkIdsDto: { ids: assetIds },
-    });
-
-    const count = results.filter(({ success }) => success).length;
-
-    toastManager.primary($t('assets_removed_count', { values: { count } }));
-    eventManager.emit('AlbumRemoveAssets', { assetIds, albumIds: [album.id] });
-  } catch (error) {
-    handleError(error, $t('errors.error_removing_assets_from_album'));
-  }
+  await executeMutation(removeAssetFromAlbumMutation, [{ id: album.id, bulkIdsDto: { ids: assetIds } }], {
+    onSuccess: (results) => {
+      const count = results.filter(({ success }) => success).length;
+      toastManager.primary($t('assets_removed_count', { values: { count } }));
+      eventManager.emit('AlbumRemoveAssets', { assetIds, albumIds: [album.id] });
+    },
+  });
 };
 
 const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {

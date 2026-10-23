@@ -1,16 +1,14 @@
-import { getAlbumInfo } from '@immich/sdk';
+import { getAlbumInfoQuery } from '$lib/queries/album.query';
+import { queryClient } from '$lib/queries/client';
 import { authenticate } from '$lib/utils/auth';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params, url, depends }) => {
+export const load = (async ({ params, url }) => {
   await authenticate(url);
 
-  depends('album:data');
-
-  const album = await getAlbumInfo({ id: params.albumId });
+  const album = await queryClient.query(getAlbumInfoQuery(params.albumId));
 
   return {
-    album,
     meta: {
       title: album.albumName,
     },
