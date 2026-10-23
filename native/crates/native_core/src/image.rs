@@ -90,11 +90,21 @@ impl<T> Pixels<T> {
         Some(self)
     }
 
-    /// Premultiplies if `alpha`, then downscales to cover `target` or frees everything after the
-    /// pixels.
-    pub(crate) fn finish(
-        mut self,
-        alpha: bool,
+    pub(crate) fn premultiply(&mut self)
+    where
+        T: Sample,
+    {
+        let (w, h) = (self.width, self.height);
+        // Alpha scaling itself at full opacity lets this vectorize as every lane does the same work.
+        for px in &mut self.pixels_mut()[..w * h] {
+            let [r, g, b, a] = *px;
+            *px = [r.scale(a), g.scale(a), b.scale(a), a.scale(T::MAX)];
+        }
+    }
+
+    /// Downscales to cover `target`, in a buffer that holds just the result.
+    pub(crate) fn downscale(
+        self,
         target: Option<(usize, usize)>,
         cancelled: &AtomicBool,
     ) -> Option<Self>
@@ -102,10 +112,6 @@ impl<T> Pixels<T> {
         T: Sample,
     {
         let (w, h) = (self.width, self.height);
-        let pixels = &mut self.pixels_mut()[..w * h];
-        if alpha {
-            premultiply(pixels);
-        }
         let Some((tw, th)) = target.and_then(|target| resize::cover((w, h), target)) else {
             return self.shrink();
         };
@@ -114,13 +120,11 @@ impl<T> Pixels<T> {
             return None;
         }
         let mut out = Self::zeroed(tw, th, tw * th * size_of::<[T; 4]>())?;
-        resize::lanczos(pixels, (w, h), out.pixels_mut(), (tw, th))?;
-        if alpha {
-            // Lanczos3 overshoots, while premultiplied colour must stay within alpha.
-            for px in out.pixels_mut() {
-                let a = px[3];
-                *px = px.map(|c| c.min(a));
-            }
+        resize::lanczos(&self.pixels()[..w * h], (w, h), out.pixels_mut(), (tw, th))?;
+        // Lanczos3 overshoots, while premultiplied colour must stay within alpha.
+        for px in out.pixels_mut() {
+            let a = px[3];
+            *px = px.map(|c| c.min(a));
         }
         Some(out)
     }
@@ -153,14 +157,6 @@ impl<T> Drop for Pixels<T> {
     }
 }
 
-fn premultiply<T: Sample>(pixels: &mut [[T; 4]]) {
-    // Alpha scaling itself at full opacity lets this vectorize as every lane does the same work.
-    for px in pixels {
-        let [r, g, b, a] = *px;
-        *px = [r.scale(a), g.scale(a), b.scale(a), a.scale(T::MAX)];
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -178,9 +174,8 @@ mod tests {
                     [max, max, max, half]
                 };
             }
-            let px = px
-                .finish(true, Some((5, 5)), &AtomicBool::new(false))
-                .unwrap();
+            px.premultiply();
+            let px = px.downscale(Some((5, 5)), &AtomicBool::new(false)).unwrap();
             for p in px.pixels() {
                 assert!(p[..3].iter().all(|&c| c <= p[3]), "{p:?}");
             }

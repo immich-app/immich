@@ -139,7 +139,10 @@ impl<'a> Jxl<'a> {
         let samples = if color::is_hdr(self.cicp) {
             let mut rgba = Pixels::zeroed(w, h, len)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
-            Samples::U16(rgba.finish(alpha, target, cancelled)?)
+            if alpha {
+                rgba.premultiply();
+            }
+            Samples::U16(rgba.downscale(target, cancelled)?)
         } else {
             // The buffer is sized for the wide decode and ends up holding the RGBA8 result at its
             // front.
@@ -148,7 +151,10 @@ impl<'a> Jxl<'a> {
             if let Some(transform) = &self.transform {
                 color::convert_bands(transform.as_ref(), &mut rgba, stride, cancelled)?;
             }
-            Samples::U8(rgba.finish(alpha, target, cancelled)?)
+            if alpha {
+                rgba.premultiply();
+            }
+            Samples::U8(rgba.downscale(target, cancelled)?)
         };
         Some(Image {
             cicp: self.cicp,
