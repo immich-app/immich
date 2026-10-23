@@ -1,6 +1,8 @@
 use std::sync::atomic::AtomicBool;
 
-use native_core::jxl::{Cicp, Image, Jxl, Pixels, Primaries, Samples, Target, Transfer};
+use native_core::color::{Cicp, Primaries, Target, Transfer};
+use native_core::image::{Image, Pixels, Samples};
+use native_core::jxl::Jxl;
 
 fn decode(data: &[u8], target: Target) -> Option<Image> {
     Jxl::open(data, target)?.decode(None, &AtomicBool::new(false))

@@ -1,24 +1,16 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
-use std::mem::ManuallyDrop;
-use std::ptr::NonNull;
-use std::slice;
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, LazyLock};
 
 use jxl::api::{
     AlphaMode, Endianness, Event, ExtraChannel, JxlColorEncoding, JxlColorProfile, JxlColorType,
     JxlDataFormat, JxlDecoder, JxlDecoderOptions, JxlOutputBuffer, JxlParallelRunner,
     JxlParallelRunnerFun, JxlPixelFormat, JxlPrimaries, JxlTransferFunction, JxlWhitePoint,
 };
-use moxcms::{
-    ColorProfile, DataColorSpace, Layout, RenderingIntent, Transform16BitExecutor, TransformOptions,
-};
-use pic_scale::{
-    ImageSize, ImageStore, ImageStoreMut, Resampling, ResamplingFunction, Scaler, WorkloadStrategy,
-};
-use quick_cache::sync::Cache;
+use moxcms::{Layout, Transform16BitExecutor};
 use rayon::prelude::*;
+
+use crate::color::{self, Cicp, Primaries, Target, Transfer};
+use crate::image::{Image, Pixels, Samples};
 
 /// A JPEG XL image whose header has been read.
 pub struct Jxl<'a> {
@@ -28,241 +20,6 @@ pub struct Jxl<'a> {
     cicp: Cicp,
     /// Converts wide samples to sRGB when the output is not in the source space.
     transform: Option<Arc<Transform16BitExecutor>>,
-}
-
-/// The colour space decoded pixels should be in.
-#[derive(Clone, Copy, PartialEq)]
-pub enum Target {
-    /// sRGB, converting and tone-mapping as needed.
-    Srgb,
-    /// The image's own space whenever [`Cicp`] can describe it, otherwise sRGB.
-    Source,
-}
-
-/// ITU-T H.273 colour primaries.
-#[derive(Clone, Copy, PartialEq)]
-#[repr(u8)]
-pub enum Primaries {
-    Bt709 = 1,
-    Bt2020 = 9,
-    DisplayP3 = 12,
-}
-
-/// ITU-T H.273 transfer characteristics.
-#[derive(Clone, Copy, PartialEq)]
-#[repr(u8)]
-pub enum Transfer {
-    Srgb = 13,
-    Pq = 16,
-    Hlg = 18,
-}
-
-impl Transfer {
-    fn is_hdr(self) -> bool {
-        matches!(self, Self::Pq | Self::Hlg)
-    }
-}
-
-/// A colour space as ITU-T H.273 code points, for full-range RGB.
-#[derive(Clone, Copy, PartialEq)]
-pub struct Cicp {
-    pub primaries: Primaries,
-    pub transfer: Transfer,
-}
-
-impl Cicp {
-    pub const SRGB: Self = Self {
-        primaries: Primaries::Bt709,
-        transfer: Transfer::Srgb,
-    };
-}
-
-/// Decoded pixels and the colour space they are in.
-pub struct Image {
-    pub cicp: Cicp,
-    pub samples: Samples,
-}
-
-pub enum Samples {
-    U8(Pixels<u8>),
-    /// For HDR transfers, which need more than 8 bits.
-    U16(Pixels<u16>),
-}
-
-/// Premultiplied RGBA pixels in a malloc'd buffer.
-pub struct Pixels<T> {
-    /// Initialized bytes from calloc or realloc that only self references.
-    buf: NonNull<[u8]>,
-    width: usize,
-    height: usize,
-    sample: PhantomData<T>,
-}
-
-/// Reuse the resampling plan for a given src-dst image size pair.
-type Plans<T> = Cache<[usize; 4], Arc<Resampling<T, 4>>>;
-
-const PLANS: usize = 16;
-
-trait Sample: Copy + Ord + Default + Debug + 'static {
-    const MAX: Self;
-
-    /// Rounds like dividing the product by MAX would.
-    fn scale(self, alpha: Self) -> Self;
-
-    fn lanczos(from: ImageSize, to: ImageSize) -> Option<Arc<Resampling<Self, 4>>>;
-
-    fn plans() -> &'static Plans<Self>;
-}
-
-impl Sample for u8 {
-    const MAX: Self = u8::MAX;
-
-    fn scale(self, alpha: Self) -> Self {
-        let x = u16::from(self) * u16::from(alpha) + 128;
-        ((x + (x >> 8)) >> 8) as u8
-    }
-
-    fn lanczos(from: ImageSize, to: ImageSize) -> Option<Arc<Resampling<Self, 4>>> {
-        // The 8-bit speed path brightens by up to two levels and is barely faster.
-        Scaler::new(ResamplingFunction::Lanczos3)
-            .set_workload_strategy(WorkloadStrategy::PreferQuality)
-            .plan_rgba_resampling(from, to, false)
-            .ok()
-    }
-
-    fn plans() -> &'static Plans<Self> {
-        static CACHE: LazyLock<Plans<u8>> = LazyLock::new(|| Cache::new(PLANS));
-        &CACHE
-    }
-}
-
-impl Sample for u16 {
-    const MAX: Self = u16::MAX;
-
-    fn scale(self, alpha: Self) -> Self {
-        let x = u32::from(self) * u32::from(alpha) + 32768;
-        ((x + (x >> 16)) >> 16) as u16
-    }
-
-    fn lanczos(from: ImageSize, to: ImageSize) -> Option<Arc<Resampling<Self, 4>>> {
-        Scaler::new(ResamplingFunction::Lanczos3)
-            .plan_rgba_resampling16(from, to, false, 16)
-            .ok()
-    }
-
-    fn plans() -> &'static Plans<Self> {
-        static CACHE: LazyLock<Plans<u16>> = LazyLock::new(|| Cache::new(PLANS));
-        &CACHE
-    }
-}
-
-impl<T> Pixels<T> {
-    /// Allocates pixels of u8 or u16 samples, the only kinds this module makes.
-    fn zeroed(width: usize, height: usize, len: usize) -> Option<Self>
-    where
-        T: Sample,
-    {
-        // SAFETY: calloc has no preconditions.
-        let ptr = NonNull::new(unsafe { libc::calloc(len, 1) }.cast())?;
-        Some(Self {
-            buf: NonNull::slice_from_raw_parts(ptr, len),
-            width,
-            height,
-            sample: PhantomData,
-        })
-    }
-
-    fn bytes_mut(&mut self) -> &mut [u8] {
-        // SAFETY: self owns these initialized bytes.
-        unsafe { self.buf.as_mut() }
-    }
-
-    fn pixels_mut(&mut self) -> &mut [[T; 4]] {
-        let len = self.buf.len() / size_of::<[T; 4]>();
-        // SAFETY: as for pixels, and self is borrowed mutably.
-        unsafe { slice::from_raw_parts_mut(self.buf.as_ptr().cast(), len) }
-    }
-
-    /// Frees everything after the pixels.
-    fn shrink(mut self) -> Option<Self> {
-        let len = self.width * self.height * 4 * size_of::<T>();
-        // SAFETY: the buffer is live and the pixels fill its first len bytes.
-        let shrunk = unsafe { libc::realloc(self.buf.as_ptr().cast(), len) };
-        // A failed realloc leaves the original buffer, which self still frees.
-        self.buf = NonNull::slice_from_raw_parts(NonNull::new(shrunk.cast())?, len);
-        Some(self)
-    }
-
-    /// Premultiplies if `alpha`, then downscales to cover `target` or frees everything after the
-    /// pixels.
-    fn finish(
-        mut self,
-        alpha: bool,
-        target: Option<(usize, usize)>,
-        cancelled: &AtomicBool,
-    ) -> Option<Self>
-    where
-        T: Sample,
-    {
-        let (w, h) = (self.width, self.height);
-        let pixels = &mut self.pixels_mut()[..w * h];
-        if alpha {
-            premultiply(pixels);
-        }
-        let Some((tw, th)) = target.and_then(|target| cover((w, h), target)) else {
-            return self.shrink();
-        };
-        // Resizing costs ~10% of a thumbnail decode, wasted on tiles that scrolled away meanwhile.
-        if cancelled.load(Ordering::Relaxed) {
-            return None;
-        }
-        let mut out = Self::zeroed(tw, th, tw * th * size_of::<[T; 4]>())?;
-        let src = ImageStore::borrow(pixels.as_flattened(), w, h).ok()?;
-        let mut dst = ImageStoreMut::borrow(out.pixels_mut().as_flattened_mut(), tw, th).ok()?;
-        dst.bit_depth = 8 * size_of::<T>();
-        T::plans()
-            .get_or_insert_with(&[w, h, tw, th], || {
-                T::lanczos(src.size(), dst.size()).ok_or(())
-            })
-            .ok()?
-            .resample(&src, &mut dst)
-            .ok()?;
-        if alpha {
-            // Lanczos3 overshoots, while premultiplied colour must stay within alpha.
-            for px in out.pixels_mut() {
-                let a = px[3];
-                *px = px.map(|c| c.min(a));
-            }
-        }
-        Some(out)
-    }
-
-    pub fn width(&self) -> usize {
-        self.width
-    }
-
-    pub fn height(&self) -> usize {
-        self.height
-    }
-
-    pub fn pixels(&self) -> &[[T; 4]] {
-        let len = self.buf.len() / size_of::<[T; 4]>();
-        // SAFETY: self owns these initialized bytes, and its u8 or u16 samples are valid for any
-        // bytes and aligned by malloc.
-        unsafe { slice::from_raw_parts(self.buf.as_ptr().cast(), len) }
-    }
-
-    /// Hands the buffer to a C caller, who frees it with free().
-    pub fn into_raw(self) -> *mut u8 {
-        ManuallyDrop::new(self).buf.as_ptr().cast()
-    }
-}
-
-impl<T> Drop for Pixels<T> {
-    fn drop(&mut self) {
-        // SAFETY: self owns the buffer, which came from calloc or realloc.
-        unsafe { libc::free(self.buf.as_ptr().cast()) };
-    }
 }
 
 /// Runs on the global pool with up to this many threads, or inline with one.
@@ -340,10 +97,13 @@ impl<'a> Jxl<'a> {
                 transform: None,
             });
         }
-        let (transform, color_type) = to_srgb(profile)?;
+        let (transform, layout) = color::to_srgb(&profile.try_as_icc()?)?;
         decoder
             .set_pixel_format(JxlPixelFormat {
-                color_type,
+                color_type: match layout {
+                    Layout::GrayAlpha => JxlColorType::GrayscaleAlpha,
+                    _ => JxlColorType::Rgba,
+                },
                 color_data_format: Some(JxlDataFormat::U16 {
                     endianness: Endianness::native(),
                     bit_depth: 12,
@@ -385,7 +145,9 @@ impl<'a> Jxl<'a> {
             // front.
             let mut rgba = Pixels::zeroed(w, h, len)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
-            self.convert_bands(&mut rgba, stride, cancelled)?;
+            if let Some(transform) = &self.transform {
+                color::convert_bands(transform.as_ref(), &mut rgba, stride, cancelled)?;
+            }
             Samples::U8(rgba.finish(alpha, target, cancelled)?)
         };
         Some(Image {
@@ -425,41 +187,6 @@ impl<'a> Jxl<'a> {
             }
         }
     }
-
-    fn convert_bands(
-        &self,
-        rgba: &mut Pixels<u8>,
-        stride: usize,
-        cancelled: &AtomicBool,
-    ) -> Option<()> {
-        let Some(transform) = &self.transform else {
-            return Some(());
-        };
-        let (w, h) = (rgba.width(), rgba.height());
-        let buf = rgba.bytes_mut();
-        // Narrowing in place keeps peak memory at the wide decode plus one band.
-        let rows = 64;
-        let mut converted = vec![0u16; w * 4 * rows.min(h)];
-        for y in (0..h).step_by(rows) {
-            if cancelled.load(Ordering::Relaxed) {
-                return None;
-            }
-            let n = rows.min(h - y);
-            let band = &buf[y * stride..][..n * stride];
-            // SAFETY: any two bytes are a valid u16.
-            let ([], src, []) = (unsafe { band.align_to::<u16>() }) else {
-                return None;
-            };
-            transform.transform(src, &mut converted[..n * w * 4]).ok()?;
-            // Pixels decode at least as wide as RGBA8, so this only overwrites converted rows.
-            let narrowed = &mut buf[y * w * 4..][..n * w * 4];
-            for (dst, &src) in narrowed.iter_mut().zip(&converted) {
-                const NARROW: u32 = ((255 << 16) + 4095 / 2) / 4095;
-                *dst = ((u32::from(src) * NARROW + (1 << 15)) >> 16) as u8;
-            }
-        }
-        Some(())
-    }
 }
 
 /// The space of the decoded samples, if [`Cicp`] can describe it.
@@ -496,72 +223,4 @@ fn cicp(profile: &JxlColorProfile) -> Option<Cicp> {
             _ => return None,
         },
     })
-}
-
-/// Builds the transform from the decoded profile to sRGB, and the colour type it reads.
-fn to_srgb(profile: &JxlColorProfile) -> Option<(Arc<Transform16BitExecutor>, JxlColorType)> {
-    let source = ColorProfile::new_from_slice(&profile.try_as_icc()?).ok()?;
-    let (layout, color_type) = match source.color_space {
-        DataColorSpace::Gray => (Layout::GrayAlpha, JxlColorType::GrayscaleAlpha),
-        _ => (Layout::Rgba, JxlColorType::Rgba),
-    };
-    let options = TransformOptions {
-        // jxl-rs only writes a perceptual table into the tone-mapping profiles of HDR images.
-        rendering_intent: RenderingIntent::Perceptual,
-        // The fixed-point path loses precision with the narrower samples it reads.
-        prefer_fixed_point: false,
-        ..Default::default()
-    };
-    // Going past 12-bit makes the transform's tables much slower to build for negligible benefit.
-    let transform = source
-        .create_transform_12bit(layout, &ColorProfile::new_srgb(), Layout::Rgba, options)
-        .ok()?;
-    Some((transform, color_type))
-}
-
-fn premultiply<T: Sample>(pixels: &mut [[T; 4]]) {
-    // Alpha scaling itself at full opacity lets this vectorize as every lane does the same work.
-    for px in pixels {
-        let [r, g, b, a] = *px;
-        *px = [r.scale(a), g.scale(a), b.scale(a), a.scale(T::MAX)];
-    }
-}
-
-/// The size of `size` scaled to cover `target`, if smaller.
-fn cover((w, h): (usize, usize), (tw, th): (usize, usize)) -> Option<(usize, usize)> {
-    let size = if tw * h >= th * w {
-        (tw, (h * tw).div_ceil(w))
-    } else {
-        ((w * th).div_ceil(h), th)
-    };
-    (size.0 * size.1 < w * h).then_some(size)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn keeps_colour_within_alpha() {
-        fn check<T: Sample>(half: T) {
-            let (zero, max) = (T::default(), T::MAX);
-            let mut px = Pixels::<T>::zeroed(16, 16, 16 * 16 * size_of::<[T; 4]>()).unwrap();
-            // Opaque black against translucent white rings both ways across the edge.
-            for (i, p) in px.pixels_mut().iter_mut().enumerate() {
-                *p = if i % 16 < 8 {
-                    [zero, zero, zero, max]
-                } else {
-                    [max, max, max, half]
-                };
-            }
-            let px = px
-                .finish(true, Some((5, 5)), &AtomicBool::new(false))
-                .unwrap();
-            for p in px.pixels() {
-                assert!(p[..3].iter().all(|&c| c <= p[3]), "{p:?}");
-            }
-        }
-        check(128u8);
-        check(32768u16);
-    }
 }

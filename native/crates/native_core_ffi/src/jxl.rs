@@ -10,7 +10,9 @@ use jni::{
     objects::{JByteBuffer, JClass, JIntArray},
     sys::{jint, jlong},
 };
-use native_core::jxl::{Image, Jxl, Samples, Target};
+use native_core::color::Target;
+use native_core::image::{Image, Samples};
+use native_core::jxl::Jxl;
 
 use super::guard;
 
