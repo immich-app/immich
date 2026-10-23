@@ -1,6 +1,6 @@
 use std::sync::atomic::AtomicBool;
 
-use native_core::color::{Cicp, Primaries, Target, Transfer};
+use native_core::color::{CicpColorPrimaries, CicpProfile, Target, TransferCharacteristics};
 use native_core::image::{Image, Pixels, Samples};
 use native_core::jxl::Jxl;
 
@@ -10,7 +10,12 @@ fn decode(data: &[u8], target: Target) -> Option<Image> {
 
 fn decode_srgb(data: &[u8]) -> Option<Pixels<u8>> {
     let Image {
-        cicp: Cicp::SRGB,
+        cicp:
+            CicpProfile {
+                color_primaries: CicpColorPrimaries::Bt709,
+                transfer_characteristics: TransferCharacteristics::Srgb,
+                ..
+            },
         samples: Samples::U8(rgba),
     } = decode(data, Target::Srgb)?
     else {
@@ -103,9 +108,10 @@ fn keeps_spaces_that_cicp_describes() {
     let pq = decode(include_bytes!("fixtures/pq_alpha.jxl"), Target::Source);
     let Some(Image {
         cicp:
-            Cicp {
-                primaries: Primaries::Bt2020,
-                transfer: Transfer::Pq,
+            CicpProfile {
+                color_primaries: CicpColorPrimaries::Bt2020,
+                transfer_characteristics: TransferCharacteristics::Smpte2084,
+                ..
             },
         samples: Samples::U16(rgba),
     }) = pq
@@ -119,9 +125,10 @@ fn keeps_spaces_that_cicp_describes() {
     let p3 = decode(include_bytes!("fixtures/p3.jxl"), Target::Source);
     let Some(Image {
         cicp:
-            Cicp {
-                primaries: Primaries::DisplayP3,
-                transfer: Transfer::Srgb,
+            CicpProfile {
+                color_primaries: CicpColorPrimaries::Smpte432,
+                transfer_characteristics: TransferCharacteristics::Srgb,
+                ..
             },
         samples: Samples::U8(rgba),
     }) = p3
@@ -135,7 +142,12 @@ fn keeps_spaces_that_cicp_describes() {
 fn converts_other_spaces_to_srgb() {
     let data = include_bytes!("fixtures/gray_icc.jxl");
     let Some(Image {
-        cicp: Cicp::SRGB,
+        cicp:
+            CicpProfile {
+                color_primaries: CicpColorPrimaries::Bt709,
+                transfer_characteristics: TransferCharacteristics::Srgb,
+                ..
+            },
         samples: Samples::U8(rgba),
     }) = decode(data, Target::Source)
     else {

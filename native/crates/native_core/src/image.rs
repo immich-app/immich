@@ -4,12 +4,12 @@ use std::ptr::NonNull;
 use std::slice;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use crate::color::Cicp;
+use crate::color::CicpProfile;
 use crate::resize::{self, Lanczos};
 
 /// Decoded pixels and the colour space they are in.
 pub struct Image {
-    pub cicp: Cicp,
+    pub cicp: CicpProfile,
     pub samples: Samples,
 }
 

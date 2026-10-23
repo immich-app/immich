@@ -6,10 +6,10 @@ use jxl::api::{
     JxlDataFormat, JxlDecoder, JxlDecoderOptions, JxlOutputBuffer, JxlParallelRunner,
     JxlParallelRunnerFun, JxlPixelFormat, JxlPrimaries, JxlTransferFunction, JxlWhitePoint,
 };
-use moxcms::{Layout, Transform16BitExecutor};
+use moxcms::{Layout, MatrixCoefficients, Transform16BitExecutor};
 use rayon::prelude::*;
 
-use crate::color::{self, Cicp, Primaries, Target, Transfer};
+use crate::color::{self, CicpColorPrimaries, CicpProfile, Target, TransferCharacteristics};
 use crate::image::{Image, Pixels, Samples};
 
 /// A JPEG XL image whose header has been read.
@@ -17,7 +17,7 @@ pub struct Jxl<'a> {
     decoder: JxlDecoder,
     input: &'a [u8],
     /// The space of the output.
-    cicp: Cicp,
+    cicp: CicpProfile,
     /// Converts wide samples to sRGB when the output is not in the source space.
     transform: Option<Arc<Transform16BitExecutor>>,
 }
@@ -83,9 +83,9 @@ impl<'a> Jxl<'a> {
             .ok()?;
         let profile = decoder.output_color_profile()?;
         if let Some(cicp) = cicp(profile)
-            && (target == Target::Source || cicp == Cicp::SRGB)
+            && (target == Target::Source || color::is_srgb(cicp))
         {
-            if cicp.transfer.is_hdr() {
+            if color::is_hdr(cicp) {
                 decoder
                     .set_pixel_format(JxlPixelFormat::rgba16(extra))
                     .ok()?;
@@ -114,7 +114,7 @@ impl<'a> Jxl<'a> {
         Some(Self {
             decoder,
             input,
-            cicp: Cicp::SRGB,
+            cicp: color::SRGB,
             transform: Some(transform),
         })
     }
@@ -136,7 +136,7 @@ impl<'a> Jxl<'a> {
             .checked_mul(format.color_type.samples_per_pixel())?
             .checked_mul(format.color_data_format?.bytes_per_sample())?;
         let len = stride.checked_mul(h)?;
-        let samples = if self.cicp.transfer.is_hdr() {
+        let samples = if color::is_hdr(self.cicp) {
             let mut rgba = Pixels::zeroed(w, h, len)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
             Samples::U16(rgba.finish(alpha, target, cancelled)?)
@@ -189,8 +189,8 @@ impl<'a> Jxl<'a> {
     }
 }
 
-/// The space of the decoded samples, if [`Cicp`] can describe it.
-fn cicp(profile: &JxlColorProfile) -> Option<Cicp> {
+/// The space of the decoded samples, if CICP can describe it.
+fn cicp(profile: &JxlColorProfile) -> Option<CicpProfile> {
     let JxlColorProfile::Simple(encoding) = profile else {
         return None;
     };
@@ -209,18 +209,20 @@ fn cicp(profile: &JxlColorProfile) -> Option<Cicp> {
         } => (&JxlPrimaries::SRGB, transfer_function),
         _ => return None,
     };
-    Some(Cicp {
-        primaries: match primaries {
-            JxlPrimaries::SRGB => Primaries::Bt709,
-            JxlPrimaries::BT2100 => Primaries::Bt2020,
-            JxlPrimaries::P3 => Primaries::DisplayP3,
+    Some(CicpProfile {
+        color_primaries: match primaries {
+            JxlPrimaries::SRGB => CicpColorPrimaries::Bt709,
+            JxlPrimaries::BT2100 => CicpColorPrimaries::Bt2020,
+            JxlPrimaries::P3 => CicpColorPrimaries::Smpte432,
             JxlPrimaries::Chromaticities { .. } => return None,
         },
-        transfer: match transfer_function {
-            JxlTransferFunction::SRGB => Transfer::Srgb,
-            JxlTransferFunction::PQ => Transfer::Pq,
-            JxlTransferFunction::HLG => Transfer::Hlg,
+        transfer_characteristics: match transfer_function {
+            JxlTransferFunction::SRGB => TransferCharacteristics::Srgb,
+            JxlTransferFunction::PQ => TransferCharacteristics::Smpte2084,
+            JxlTransferFunction::HLG => TransferCharacteristics::Hlg,
             _ => return None,
         },
+        matrix_coefficients: MatrixCoefficients::Identity,
+        full_range: true,
     })
 }

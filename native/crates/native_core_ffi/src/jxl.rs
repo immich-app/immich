@@ -80,8 +80,8 @@ pub unsafe extern "C" fn native_core_jxl_decode(
                 width: width as i32,
                 height: height as i32,
                 bit_depth,
-                primaries: cicp.primaries as u8,
-                transfer: cicp.transfer as u8,
+                primaries: cicp.color_primaries as u8,
+                transfer: cicp.transfer_characteristics as u8,
             };
         }
         pixels

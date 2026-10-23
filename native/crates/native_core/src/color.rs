@@ -1,8 +1,10 @@
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+pub use moxcms::{CicpColorPrimaries, CicpProfile, TransferCharacteristics};
 use moxcms::{
-    ColorProfile, DataColorSpace, Layout, RenderingIntent, Transform16BitExecutor, TransformOptions,
+    ColorProfile, DataColorSpace, Layout, MatrixCoefficients, RenderingIntent,
+    Transform16BitExecutor, TransformOptions,
 };
 
 use crate::image::Pixels;
@@ -12,46 +14,27 @@ use crate::image::Pixels;
 pub enum Target {
     /// sRGB, converting and tone-mapping as needed.
     Srgb,
-    /// The image's own space whenever [`Cicp`] can describe it, otherwise sRGB.
+    /// The image's own space whenever CICP can describe it, otherwise sRGB.
     Source,
 }
 
-/// ITU-T H.273 colour primaries.
-#[derive(Clone, Copy, PartialEq)]
-#[repr(u8)]
-pub enum Primaries {
-    Bt709 = 1,
-    Bt2020 = 9,
-    DisplayP3 = 12,
+pub(crate) const SRGB: CicpProfile = CicpProfile {
+    color_primaries: CicpColorPrimaries::Bt709,
+    transfer_characteristics: TransferCharacteristics::Srgb,
+    matrix_coefficients: MatrixCoefficients::Identity,
+    full_range: true,
+};
+
+pub(crate) fn is_srgb(cicp: CicpProfile) -> bool {
+    cicp.color_primaries == SRGB.color_primaries
+        && cicp.transfer_characteristics == SRGB.transfer_characteristics
 }
 
-/// ITU-T H.273 transfer characteristics.
-#[derive(Clone, Copy, PartialEq)]
-#[repr(u8)]
-pub enum Transfer {
-    Srgb = 13,
-    Pq = 16,
-    Hlg = 18,
-}
-
-impl Transfer {
-    pub(crate) fn is_hdr(self) -> bool {
-        matches!(self, Self::Pq | Self::Hlg)
-    }
-}
-
-/// A colour space as ITU-T H.273 code points, for full-range RGB.
-#[derive(Clone, Copy, PartialEq)]
-pub struct Cicp {
-    pub primaries: Primaries,
-    pub transfer: Transfer,
-}
-
-impl Cicp {
-    pub const SRGB: Self = Self {
-        primaries: Primaries::Bt709,
-        transfer: Transfer::Srgb,
-    };
+pub(crate) fn is_hdr(cicp: CicpProfile) -> bool {
+    matches!(
+        cicp.transfer_characteristics,
+        TransferCharacteristics::Smpte2084 | TransferCharacteristics::Hlg
+    )
 }
 
 /// Builds the transform from an ICC profile to sRGB, and the layout of the 12-bit samples it reads.
