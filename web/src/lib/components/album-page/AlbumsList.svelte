@@ -1,7 +1,6 @@
 <script lang="ts">
   import AlbumCardGroup from '$lib/components/album-page/AlbumCardGroup.svelte';
   import AlbumsTable from '$lib/components/album-page/AlbumsTable.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleDeleteAlbum, isAlbumOwner } from '$lib/services/album.service';
   import {
@@ -15,7 +14,7 @@
   } from '$lib/stores/preferences.store';
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto } from '@immich/sdk';
   import { groupBy } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -32,8 +31,8 @@
   }
 
   let {
-    ownedAlbums = $bindable([]),
-    sharedAlbums = $bindable([]),
+    ownedAlbums = [],
+    sharedAlbums = [],
     searchQuery = '',
     userSettings,
     allowEdit = false,
@@ -166,34 +165,7 @@
     const albumsToRemove = ownedAlbums.filter((album) => album.assetCount === 0 && !album.albumName);
     await Promise.allSettled(albumsToRemove.map((album) => handleDeleteAlbum(album, { prompt: false, notify: false })));
   };
-
-  const findAndUpdate = (albums: AlbumResponseDto[], album: AlbumResponseDto) => {
-    const target = albums.find(({ id }) => id === album.id);
-    if (target) {
-      Object.assign(target, album);
-    }
-
-    return albums;
-  };
-
-  const onAlbumUpdate = (album: AlbumResponseDto) => {
-    ownedAlbums = findAndUpdate(ownedAlbums, album);
-    sharedAlbums = findAndUpdate(sharedAlbums, album);
-  };
-
-  const onAlbumDelete = (album: AlbumResponseDto) => {
-    ownedAlbums = ownedAlbums.filter(({ id }) => id !== album.id);
-    sharedAlbums = sharedAlbums.filter(({ id }) => id !== album.id);
-  };
-
-  const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
-    if (sharedLink.album) {
-      onAlbumUpdate(sharedLink.album);
-    }
-  };
 </script>
-
-<OnEvents {onAlbumUpdate} {onAlbumDelete} {onSharedLinkCreate} />
 
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}

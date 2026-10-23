@@ -1616,6 +1616,8 @@ export type UserConfigNotificationsDto = {
     smtp: UserConfigSmtpDto;
 };
 export type UserConfigOAuthDto = {
+    /** Account management URL */
+    accountManagementUrl?: string;
     /** Auto launch */
     autoLaunch: boolean;
     /** Button text */
@@ -3266,8 +3268,6 @@ export type UserUpdateMeDto = {
     email?: string;
     /** User name */
     name?: string;
-    /** User password (deprecated, use change password endpoint) */
-    password?: string;
 };
 export type OnboardingResponseDto = {
     /** Is user onboarded */

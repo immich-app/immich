@@ -123,6 +123,31 @@ describe(SearchService.name, () => {
 
       expect(result).toEqual({ total: 0 });
     });
+
+    it('should not return locked assets of partner in elevated session without a visibility filter', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      await ctx.newAsset({ ownerId: partner.id, visibility: AssetVisibility.Locked });
+      await ctx.newAsset({ ownerId: partner.id });
+
+      const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
+
+      await expect(sut.searchStatistics(auth, {})).resolves.toEqual({ total: 2 });
+
+      const response = await sut.searchMetadata(auth, { size: 250, withStacked: false });
+      expect(response.assets.items.map(({ ownerId, visibility }) => ({ ownerId, visibility }))).toEqual(
+        expect.arrayContaining([
+          { ownerId: user.id, visibility: AssetVisibility.Locked },
+          { ownerId: partner.id, visibility: AssetVisibility.Timeline },
+        ]),
+      );
+      expect(response.assets.items).toHaveLength(2);
+    });
   });
 
   describe('withStacked option', () => {

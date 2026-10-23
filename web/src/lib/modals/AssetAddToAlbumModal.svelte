@@ -1,6 +1,7 @@
 <script lang="ts">
   import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
-  import { addAssetsToAlbums } from '$lib/services/album.service';
+  import { addAssetsToAlbumsMutation } from '$lib/queries/album.query';
+  import { executeMutation } from '$lib/queries/client';
   import { type AlbumResponseDto } from '@immich/sdk';
 
   type Props = {
@@ -17,10 +18,7 @@
       return;
     }
 
-    const success = await addAssetsToAlbums(albumIds, assetIds, { notify: true });
-    if (success) {
-      onClose();
-    }
+    await executeMutation(addAssetsToAlbumsMutation, { albumIds, assetIds }, { onSuccess: onClose });
   };
 </script>
 

@@ -1,13 +1,9 @@
-import type { ServerConfigDto } from '@immich/sdk';
 import { asUrl } from '$lib/services/shared-link.service';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
-vi.mock(import('$lib/managers/server-config-manager.svelte'), () => ({
-  serverConfigManager: {
-    value: { externalDomain: 'http://localhost:2283' } as ServerConfigDto,
-    init: vi.fn(),
-    loadServerConfig: vi.fn(),
-  },
+vi.mock(import('$lib/queries/client'), async (importOriginal) => ({
+  ...(await importOriginal()),
+  readPreloadedQuery: vi.fn().mockReturnValue({ server: { externalDomain: 'http://localhost:2283' } }),
 }));
 
 describe('SharedLinkService', () => {

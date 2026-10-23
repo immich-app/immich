@@ -6,6 +6,8 @@
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import GroupTab from '$lib/elements/GroupTab.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
+  import { getAllAlbumsQuery } from '$lib/queries/album.query';
+  import { createPreloadedQuery } from '$lib/queries/client';
   import { Route } from '$lib/route';
   import { AlbumFilter, albumViewSettings } from '$lib/stores/preferences.store';
   import { createAlbumAndRedirect } from '$lib/utils/album-utils';
@@ -17,6 +19,11 @@
   }
 
   let { data }: Props = $props();
+
+  const queries = {
+    ownedAlbums: createPreloadedQuery(() => getAllAlbumsQuery({ isOwned: true })),
+    sharedAlbums: createPreloadedQuery(() => getAllAlbumsQuery({ isShared: true })),
+  };
 
   let searchQuery = $state('');
   let albumGroups: string[] = $state([]);
@@ -44,8 +51,8 @@
   </div>
 
   <Albums
-    ownedAlbums={data.albums}
-    sharedAlbums={data.sharedAlbums}
+    ownedAlbums={queries.ownedAlbums.data}
+    sharedAlbums={queries.sharedAlbums.data}
     userSettings={$albumViewSettings}
     allowEdit
     {searchQuery}

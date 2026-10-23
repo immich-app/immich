@@ -1,8 +1,7 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAlbumInfo } from '@immich/sdk';
+  import { updateAlbumInfoMutation } from '$lib/queries/album.query';
+  import { executeMutation } from '$lib/queries/client';
   import { Textarea } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fromAction } from 'svelte/attachments';
@@ -13,26 +12,20 @@
     isEditor: boolean;
   }
 
-  let { id, description = $bindable(), isEditor }: Props = $props();
+  let { id, description, isEditor }: Props = $props();
 
-  const handleFocusOut = async () => {
-    try {
-      const response = await updateAlbumInfo({
-        id,
-        updateAlbumDto: {
-          description: description || null,
-        },
-      });
-      eventManager.emit('AlbumUpdate', response);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_album'));
-    }
-  };
+  let value = $derived(description);
+
+  const handleFocusOut = () =>
+    executeMutation(
+      () => updateAlbumInfoMutation({ error: { toast: 'errors.unable_to_save_album' } }),
+      [{ id, updateAlbumDto: { description: value || null } }],
+    );
 </script>
 
 {#if isEditor}
   <Textarea
-    bind:value={description}
+    bind:value
     variant="ghost"
     onfocusout={handleFocusOut}
     placeholder={$t('add_a_description')}

@@ -1,9 +1,10 @@
 <script lang="ts">
   import ApiKeyPermissionsPicker from '$lib/components/ApiKeyPermissionsPicker.svelte';
   import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
-  import { handleCreateApiKey } from '$lib/services/api-key.service';
+  import { createApiKeyMutation } from '$lib/queries/api-key.query';
+  import { executeMutation } from '$lib/queries/client';
   import { Permission } from '@immich/sdk';
-  import { Field, FormModal, Input, modalManager } from '@immich/ui';
+  import { Field, FormModal, Input, modalManager, toastManager } from '@immich/ui';
   import { mdiKeyVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -16,12 +17,20 @@
   const isAllPermissions = $derived(selectedPermissions.length === Object.keys(Permission).length - 1);
 
   const onSubmit = async () => {
-    const permissions = isAllPermissions ? [Permission.All] : selectedPermissions;
-    const response = await handleCreateApiKey({ name, permissions });
-    if (response) {
-      await modalManager.show(ApiKeySecretModal, { secret: response.secret });
-      onClose();
+    if (!name) {
+      toastManager.warning($t('api_key_empty'));
+      return;
     }
+
+    if (selectedPermissions.length === 0) {
+      toastManager.warning($t('permission_empty'));
+      return;
+    }
+
+    const permissions = isAllPermissions ? [Permission.All] : selectedPermissions;
+    await executeMutation(createApiKeyMutation, [{ apiKeyCreateDto: { name, permissions } }], {
+      onSuccess: ({ secret }) => void modalManager.show(ApiKeySecretModal, { secret }).then(onClose),
+    });
   };
 </script>
 

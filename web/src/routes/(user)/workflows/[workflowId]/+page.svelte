@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { beforeNavigate, goto, invalidate } from '$app/navigation';
-  import OnEvents from '$lib/components/OnEvents.svelte';
+  import { beforeNavigate, goto } from '$app/navigation';
   import WorkflowAddStepModal from '$lib/modals/WorkflowAddStepModal.svelte';
   import WorkflowEditStepModal from '$lib/modals/WorkflowEditStepModal.svelte';
   import WorkflowTriggerPicker from '$lib/modals/WorkflowTriggerPicker.svelte';
+  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
+  import { getWorkflowQuery, updateWorkflowMutation } from '$lib/queries/workflow.query';
   import { Route } from '$lib/route';
-  import { getWorkflowActions, handleUpdateWorkflow } from '$lib/services/workflow.service';
+  import { getWorkflowActions } from '$lib/services/workflow.service';
   import { generateId } from '$lib/utils/generate-id';
   import { getTriggerDescription, getTriggerName } from '$lib/utils/workflow';
-  import type { WorkflowResponseDto, WorkflowUpdateDto } from '@immich/sdk';
+  import type { WorkflowUpdateDto } from '@immich/sdk';
   import {
     ActionBar,
     AppShell,
@@ -46,7 +47,7 @@
   import { cloneDeep, isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
-  import type { PageData } from './$types';
+  import type { PageProps } from './$types';
   import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
   import WorkflowStepCard from './WorkflowStepCard.svelte';
   import WorkflowSummary from './WorkflowSummary.svelte';
@@ -57,15 +58,14 @@
 
   type EditMode = 'visual' | 'json';
 
-  type Props = {
-    data: PageData;
-  };
+  let { params }: PageProps = $props();
 
-  let { data }: Props = $props();
+  const query = createPreloadedQuery(() => getWorkflowQuery(params.workflowId));
+  const workflow = $derived(query.data);
 
-  let { id, enabled, name, description, trigger } = $state(data.workflow);
-  let steps = $state(data.workflow.steps.map((step) => ({ ...step, id: generateId() })));
-  let savedWorkflow = $derived(cloneDeep(data.workflow));
+  let { id, enabled, name, description, trigger } = $state(query.data);
+  let steps = $state(query.data.steps.map((step) => ({ ...step, id: generateId() })));
+  const savedWorkflow = $derived(cloneDeep(workflow));
   let allowNavigation = $state(false);
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
@@ -188,22 +188,6 @@
     }
   };
 
-  const onWorkflowUpdate = async (response: WorkflowResponseDto) => {
-    if (id !== response.id) {
-      return;
-    }
-
-    data.workflow = response;
-    savedWorkflow = cloneDeep(response);
-    await invalidate('workflow:data');
-  };
-
-  const onWorkflowDelete = async (response: WorkflowResponseDto) => {
-    if (id === response.id) {
-      await goto(Route.workflows());
-    }
-  };
-
   const confirmNavigation = async () => {
     if (!hasChanges) {
       return true;
@@ -231,12 +215,9 @@
 
     isSaving = true;
     try {
-      const submitted = { enabled, name, description, trigger, steps: cloneDeep(steps) };
-      const saved = await handleUpdateWorkflow(id, submitted);
-
-      if (saved) {
-        Object.assign(savedWorkflow, submitted);
-      }
+      await executeMutation(updateWorkflowMutation, [
+        { id, workflowUpdateDto: { enabled, name, description, trigger, steps: cloneDeep(steps) } },
+      ]);
     } finally {
       isSaving = false;
     }
@@ -268,8 +249,6 @@
   );
 </script>
 
-<OnEvents {onWorkflowUpdate} {onWorkflowDelete} />
-
 <AppShell class="">
   <AppShellBar>
     <ActionBar
@@ -281,8 +260,8 @@
       actions={[Logs, Duplicate, CopyJson, Download, Delete].map((item) => ({ ...item, color: undefined }))}
     >
       <ControlBarHeader>
-        <ControlBarTitle>{data.workflow.name}</ControlBarTitle>
-        <ControlBarDescription>{data.workflow.description}</ControlBarDescription>
+        <ControlBarTitle>{workflow.name}</ControlBarTitle>
+        <ControlBarDescription>{workflow.description}</ControlBarDescription>
       </ControlBarHeader>
       <ControlBarContent class="flex items-center justify-end gap-6">
         {#if hasChanges}

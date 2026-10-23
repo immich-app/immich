@@ -10,12 +10,10 @@ import type {
   PersonResponseDto,
   QueueResponseDto,
   ReleaseEventV1,
-  SharedLinkResponseDto,
   StackResponseDto,
   AdminConfigDto,
   TagResponseDto,
   UserAdminResponseDto,
-  WorkflowResponseDto,
 } from '@immich/sdk';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
@@ -68,10 +66,6 @@ export type Events = {
 
   QueueUpdate: [QueueResponseDto];
 
-  SharedLinkCreate: [SharedLinkResponseDto];
-  SharedLinkUpdate: [SharedLinkResponseDto];
-  SharedLinkDelete: [SharedLinkResponseDto];
-
   StackCreate: [StackResponseDto];
   /** Unstacked, with assets to handle */
   StackDelete: [{ id: string; assets: AssetResponseDto[] }];
@@ -95,10 +89,6 @@ export type Events = {
   IntegrityReportDeleted: [{ type?: IntegrityReport; id?: string }];
 
   JobCreate: [{ dto: JobCreateDto }];
-
-  WorkflowCreate: [WorkflowResponseDto];
-  WorkflowUpdate: [WorkflowResponseDto];
-  WorkflowDelete: [WorkflowResponseDto];
 
   ReleaseEvent: [ReleaseEventV1];
 
