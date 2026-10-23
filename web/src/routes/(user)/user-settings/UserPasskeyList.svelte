@@ -1,39 +1,19 @@
 <script lang="ts">
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import TableButton from '$lib/components/TableButton.svelte';
   import { dateFormats } from '$lib/constants';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { searchPasskeysQuery } from '$lib/queries/passkey.query';
   import { getPasskeyActions, getPasskeysActions } from '$lib/services/passkey.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { type PasskeyResponseDto } from '@immich/sdk';
   import { Button, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  type Props = {
-    passkeys: PasskeyResponseDto[];
-  };
-
-  let { passkeys = $bindable() }: Props = $props();
-
-  const onPasskeyCreate = (passkey: PasskeyResponseDto) => {
-    passkeys = [passkey, ...passkeys];
-  };
-
-  const onPasskeyUpdate = (update: PasskeyResponseDto) => {
-    const index = passkeys.findIndex((passkey) => passkey.id === update.id);
-    if (index !== -1) {
-      passkeys[index] = update;
-    }
-  };
-
-  const onPasskeyDelete = ({ id }: PasskeyResponseDto) => {
-    passkeys = passkeys.filter((passkey) => passkey.id !== id);
-  };
+  const query = createPreloadedQuery(searchPasskeysQuery);
+  const passkeys = $derived(query.data);
 
   const { Create } = $derived(getPasskeysActions($t));
 </script>
-
-<OnEvents {onPasskeyCreate} {onPasskeyUpdate} {onPasskeyDelete} />
 
 <section class="my-4">
   <div class="flex flex-col gap-2 sm:ms-8" in:fade={{ duration: 500 }}>
