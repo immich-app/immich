@@ -14,6 +14,7 @@ import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic
 import { snakeCase, startCase } from 'lodash-es';
 import { MetricService } from 'nestjs-otel';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils.js';
+import { createRequire } from 'node:module';
 import { excludePaths, serverVersion } from 'src/constants.js';
 import { ImmichTelemetry, MetadataKey } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -92,6 +93,10 @@ export const bootstrapTelemetry = (port: number) => {
   });
 
   instance.start();
+
+  const require = createRequire(import.meta.url);
+  require('node:http');
+  require('node:https');
 };
 
 export const teardownTelemetry = async () => {
