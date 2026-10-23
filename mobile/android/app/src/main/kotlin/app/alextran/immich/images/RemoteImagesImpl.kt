@@ -272,7 +272,11 @@ private class CronetImageFetcher : ImageFetcher {
       requestBuilder.addHeader(key, value)
     }
     val request = requestBuilder.build()
-    signal.setOnCancelListener(request::cancel)
+    // Cronet's disk cache can still use a read buffer after onCanceled, so only cancel between reads.
+    signal.setOnCancelListener {
+      callback.requestCancel = true
+      if (!callback.receivingResponse) request.cancel()
+    }
     request.start()
   }
 
@@ -328,12 +332,16 @@ private class CronetImageFetcher : ImageFetcher {
   ) : UrlRequest.Callback() {
     private var buffer: NativeByteBuffer? = null
     private var error: Exception? = null
+    @Volatile var receivingResponse = false
+    @Volatile var requestCancel = false
 
     override fun onRedirectReceived(request: UrlRequest, info: UrlResponseInfo, newUrl: String) {
       request.followRedirect()
     }
 
     override fun onResponseStarted(request: UrlRequest, info: UrlResponseInfo) {
+      receivingResponse = true
+      if (requestCancel) return request.cancel()
       if (info.httpStatusCode !in 200..299) {
         error = IOException("HTTP ${info.httpStatusCode}: ${info.httpStatusText}")
         return request.cancel()
@@ -361,6 +369,7 @@ private class CronetImageFetcher : ImageFetcher {
       info: UrlResponseInfo,
       byteBuffer: ByteBuffer
     ) {
+      if (requestCancel) return request.cancel()
       try {
         // Always pass a fresh wrap so byteBuffer.position() represents only the
         // bytes Cronet wrote in this iteration. Reusing the caller-supplied
