@@ -5,7 +5,7 @@ use native_core::image::{Image, Pixels, Samples};
 use native_core::jxl::Jxl;
 
 fn decode(data: &[u8], target: Target) -> Option<Image> {
-    Jxl::open(data, target)?.decode(None, &AtomicBool::new(false))
+    Jxl::open(data, target)?.decode(None, 16384, &AtomicBool::new(false))
 }
 
 fn decode_srgb(data: &[u8]) -> Option<Pixels<u8>> {
@@ -162,9 +162,10 @@ fn downscales_to_cover() {
     let Some(Image {
         samples: Samples::U8(rgba),
         ..
-    }) = Jxl::open(data, Target::Srgb)
-        .unwrap()
-        .decode(Some((8, 4)), &AtomicBool::new(false))
+    }) =
+        Jxl::open(data, Target::Srgb)
+            .unwrap()
+            .decode(Some((8, 4)), 16384, &AtomicBool::new(false))
     else {
         panic!("not decoded to 8 bits");
     };
@@ -192,7 +193,7 @@ fn stops_when_cancelled() {
     let decode = |cancelled| {
         Jxl::open(data, Target::Srgb)
             .unwrap()
-            .decode(None, &AtomicBool::new(cancelled))
+            .decode(None, 16384, &AtomicBool::new(cancelled))
             .is_some()
     };
     assert_eq!((decode(false), decode(true)), (true, false));

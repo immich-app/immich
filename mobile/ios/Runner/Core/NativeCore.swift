@@ -23,11 +23,11 @@ enum NativeCore {
     }
   }
 
-  static func decodeJxl(_ data: Data, targetWidth: Int64?, targetHeight: Int64?, cancelled: UnsafeMutablePointer<Bool>) -> (width: Int, height: Int, pointer: UnsafeMutableRawPointer)? {
+  static func decodeJxl(_ data: Data, targetWidth: Int64?, targetHeight: Int64?, maxPixelSize: Int, cancelled: UnsafeMutablePointer<Bool>) -> (width: Int, height: Int, pointer: UnsafeMutableRawPointer)? {
     guard let coreJxlDecode else { return nil }
     var info = NativeCoreImageInfo()
     return data.withUnsafeBytes { bytes in
-      guard let pointer = coreJxlDecode(bytes.bindMemory(to: UInt8.self).baseAddress, bytes.count, false, UInt32(clamping: targetWidth ?? 0), UInt32(clamping: targetHeight ?? 0), cancelled, &info)
+      guard let pointer = coreJxlDecode(bytes.bindMemory(to: UInt8.self).baseAddress, bytes.count, false, UInt32(clamping: targetWidth ?? 0), UInt32(clamping: targetHeight ?? 0), UInt32(clamping: maxPixelSize), cancelled, &info)
       else { return nil }
       return (Int(info.width), Int(info.height), UnsafeMutableRawPointer(pointer))
     }

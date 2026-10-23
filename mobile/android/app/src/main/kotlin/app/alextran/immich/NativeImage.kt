@@ -29,7 +29,8 @@ object NativeImage {
 
   /**
    * Like [convert1010102], but decodes the JPEG XL image of [length] bytes at [address], stopped by
-   * [cancel] and downscaled to cover [targetWidth] x [targetHeight] unless either is 0.
+   * [cancel], downscaled to cover [targetWidth] x [targetHeight] unless either is 0 and to fit
+   * within [maxPixelSize].
    */
   @JvmStatic
   external fun decodeJxl(
@@ -37,6 +38,7 @@ object NativeImage {
     length: Int,
     targetWidth: Int,
     targetHeight: Int,
+    maxPixelSize: Int,
     cancelled: ByteBuffer,
     outInfo: IntArray
   ): Long

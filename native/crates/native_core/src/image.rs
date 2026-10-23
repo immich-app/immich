@@ -92,12 +92,11 @@ impl<T> Pixels<T> {
         Some(self)
     }
 
-    /// Premultiplies if `alpha`, then resizes to cover `target` if that is smaller, or else frees
-    /// everything after the pixels.
+    /// Premultiplies if `alpha`, then resizes to `size`, or else frees everything after the pixels.
     pub(crate) fn premultiply_resize(
         mut self,
         alpha: bool,
-        target: Option<(usize, usize)>,
+        size: Option<(usize, usize)>,
     ) -> Option<Self>
     where
         T: Sample,
@@ -105,8 +104,7 @@ impl<T> Pixels<T> {
         if alpha {
             self.premultiply();
         }
-        let Some(size) = target.and_then(|target| resize::cover((self.width, self.height), target))
-        else {
+        let Some(size) = size else {
             return self.shrink();
         };
         let mut out = self.resize(size)?;

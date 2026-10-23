@@ -47,14 +47,27 @@ impl Lanczos for u16 {
     }
 }
 
-/// The size of `size` scaled to cover `target`, if smaller.
-pub(crate) fn cover((w, h): (usize, usize), (tw, th): (usize, usize)) -> Option<(usize, usize)> {
-    let size = if tw * h >= th * w {
-        (tw, (h * tw).div_ceil(w))
-    } else {
-        ((w * th).div_ceil(h), th)
+/// The size of `size` scaled down to cover `target` and to fit within `max_pixel_size`, if that
+/// is smaller.
+pub(crate) fn cover(
+    (w, h): (usize, usize),
+    target: Option<(usize, usize)>,
+    max_pixel_size: usize,
+) -> Option<(usize, usize)> {
+    // Scales as side ratios, so the side that sets the scale lands exactly on its limit.
+    let fit = (max_pixel_size, w.max(h));
+    let (num, den) = match target {
+        Some((tw, th)) => {
+            let cover = if tw * h >= th * w { (tw, w) } else { (th, h) };
+            if cover.0 * fit.1 < fit.0 * cover.1 {
+                cover
+            } else {
+                fit
+            }
+        }
+        None => fit,
     };
-    (size.0 * size.1 < w * h).then_some(size)
+    (num < den).then(|| ((w * num).div_ceil(den), (h * num).div_ceil(den)))
 }
 
 /// Resamples `src` into `dst` with Lanczos3.
@@ -70,4 +83,21 @@ pub(crate) fn lanczos<T: Lanczos>(src: &Pixels<T>, dst: &mut Pixels<T>) -> Optio
         .ok()?
         .resample(&from, &mut to)
         .ok()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn covers_within_max_pixel_size() {
+        // A 720p thumbnail for a 266 px tile and for a larger target, and panoramas past the limit.
+        assert_eq!(cover((960, 720), Some((266, 266)), 16384), Some((355, 266)));
+        assert_eq!(cover((960, 720), Some((1000, 1000)), 16384), None);
+        assert_eq!(cover((40000, 1000), None, 16384), Some((16384, 410)));
+        assert_eq!(
+            cover((1000, 40000), Some((20000, 20000)), 16384),
+            Some((410, 16384))
+        );
+    }
 }

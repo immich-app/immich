@@ -109,6 +109,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
               buffer.offset,
               width?.toInt() ?: 0,
               height?.toInt() ?: 0,
+              MAX_PIXEL_SIZE,
               cancelled,
               info
             )

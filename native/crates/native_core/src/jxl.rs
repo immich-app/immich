@@ -11,6 +11,7 @@ use rayon::prelude::*;
 
 use crate::color::{self, CicpColorPrimaries, CicpProfile, Target, TransferCharacteristics};
 use crate::image::{Image, Pixels, Samples};
+use crate::resize;
 
 /// A JPEG XL image whose header has been read.
 pub struct Jxl<'a> {
@@ -119,10 +120,12 @@ impl<'a> Jxl<'a> {
         })
     }
 
-    /// Decodes the first frame unless cancelled, downscaled to cover `target` pixels.
+    /// Decodes the first frame unless cancelled, downscaled to cover `target` pixels and to fit
+    /// within `max_pixel_size`.
     pub fn decode(
         mut self,
         target: Option<(usize, usize)>,
+        max_pixel_size: usize,
         cancelled: &AtomicBool,
     ) -> Option<Image> {
         let info = self.decoder.basic_info()?;
@@ -135,10 +138,11 @@ impl<'a> Jxl<'a> {
         let pixel_bytes =
             format.color_type.samples_per_pixel() * format.color_data_format?.bytes_per_sample();
         let stride = w.checked_mul(pixel_bytes)?;
+        let size = resize::cover((w, h), target, max_pixel_size);
         let samples = if color::is_hdr(self.cicp) {
             let mut rgba = Pixels::zeroed(w, h, pixel_bytes)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
-            Samples::U16(rgba.premultiply_resize(alpha, target)?)
+            Samples::U16(rgba.premultiply_resize(alpha, size)?)
         } else {
             // The buffer is sized for the wide decode and ends up holding the RGBA8 result at its
             // front.
@@ -147,7 +151,7 @@ impl<'a> Jxl<'a> {
             if let Some(transform) = &self.transform {
                 color::convert_bands(transform.as_ref(), &mut rgba, stride, cancelled)?;
             }
-            Samples::U8(rgba.premultiply_resize(alpha, target)?)
+            Samples::U8(rgba.premultiply_resize(alpha, size)?)
         };
         Some(Image {
             cicp: self.cicp,
