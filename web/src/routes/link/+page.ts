@@ -1,7 +1,5 @@
-import { getConfig, updateConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { OpenQueryParam } from '$lib/constants';
-import { eventManager } from '$lib/managers/event-manager.svelte';
 import { Route } from '$lib/route';
 import type { PageLoad } from './$types';
 
@@ -13,7 +11,7 @@ enum LinkTarget {
   BACKUPS = 'backups',
 }
 
-export const load = (async ({ url }) => {
+export const load = (({ url }) => {
   const queryParams = url.searchParams;
   const target = queryParams.get('target') as LinkTarget;
   switch (target) {
@@ -26,17 +24,6 @@ export const load = (async ({ url }) => {
     }
 
     case LinkTarget.BACKUPS: {
-      const config = await getConfig().catch(() => undefined);
-      if (config && !config.backup.beta) {
-        const newConfig = await updateConfig({
-          adminConfigDto: { ...config, backup: { ...config.backup, beta: true } },
-        }).catch(() => undefined);
-
-        if (newConfig) {
-          eventManager.emit('SystemConfigUpdate', newConfig);
-        }
-      }
-
       return redirect(307, Route.backups());
     }
 
