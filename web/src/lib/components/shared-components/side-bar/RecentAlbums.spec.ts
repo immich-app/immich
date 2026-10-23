@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/svelte';
-import { tick } from 'svelte';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import RecentAlbums from '$lib/components/shared-components/side-bar/RecentAlbums.svelte';
 import { albumFactory } from '@test-data/factories/album-factory';
@@ -16,13 +15,8 @@ describe('RecentAlbums component', () => {
     sdkMock.getAllAlbums.mockResolvedValueOnce([...albums]);
     render(RecentAlbums);
 
+    const links = await screen.findAllByRole('link');
     expect(sdkMock.getAllAlbums).toHaveBeenCalledOnce();
-
-    // wtf
-    await tick();
-    await tick();
-
-    const links = screen.getAllByRole('link');
     expect(links).toHaveLength(3);
     // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(links[0]).toHaveAttribute('href', `/albums/${albums[2].id}`);

@@ -9694,6 +9694,415 @@
         "x-immich-state": "Stable"
       }
     },
+    "/passkeys": {
+      "get": {
+        "description": "Search the passkeys of the current user.",
+        "operationId": "searchPasskeys",
+        "parameters": [
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Filter by passkey ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PasskeyResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Search passkeys",
+        "tags": [
+          "Passkeys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "passkey.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/passkeys/authentication/finish": {
+      "post": {
+        "description": "Verify the response from the authenticator and receive a session token.",
+        "operationId": "finishAuthentication",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasskeyAuthenticationFinishDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Finish passkey authentication",
+        "tags": [
+          "Passkeys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/passkeys/authentication/start": {
+      "post": {
+        "description": "Generate the options used by the browser to sign in with a passkey.",
+        "operationId": "startAuthentication",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeyAuthenticationOptionsDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Start passkey authentication",
+        "tags": [
+          "Passkeys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/passkeys/registration/finish": {
+      "post": {
+        "description": "Verify the response from the authenticator and save the new passkey for the current user.",
+        "operationId": "finishRegistration",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasskeyRegistrationFinishDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Finish passkey registration",
+        "tags": [
+          "Passkeys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/passkeys/registration/start": {
+      "post": {
+        "description": "Generate the options used by the browser to create a new passkey for the current user.",
+        "operationId": "startRegistration",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeyRegistrationOptionsDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Start passkey registration",
+        "tags": [
+          "Passkeys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/passkeys/{id}": {
+      "delete": {
+        "description": "Delete a passkey by its ID. The current user must own this passkey.",
+        "operationId": "deletePasskey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a passkey",
+        "tags": [
+          "Passkeys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "passkey.delete",
+        "x-immich-state": "Alpha"
+      },
+      "get": {
+        "description": "Retrieve a passkey by its ID. The current user must own this passkey.",
+        "operationId": "getPasskey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a passkey",
+        "tags": [
+          "Passkeys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "passkey.read",
+        "x-immich-state": "Alpha"
+      },
+      "patch": {
+        "description": "Update the name of a passkey by its ID. The current user must own this passkey.",
+        "operationId": "updatePasskey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasskeyUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a passkey",
+        "tags": [
+          "Passkeys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "passkey.update",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/people": {
       "delete": {
         "description": "Bulk delete a list of people at once.",
@@ -18287,6 +18696,10 @@
       "description": "A partner is a link with another user that allows sharing of assets between two users."
     },
     {
+      "name": "Passkeys",
+      "description": "A passkey is a WebAuthn credential that can be used to login without a password."
+    },
+    {
       "name": "People",
       "description": "A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job."
     },
@@ -18590,6 +19003,9 @@
           "oauth": {
             "$ref": "#/components/schemas/AdminConfigOAuthDto"
           },
+          "passkey": {
+            "$ref": "#/components/schemas/AdminConfigPasskeyDto"
+          },
           "passwordLogin": {
             "$ref": "#/components/schemas/AdminConfigPasswordLoginDto"
           },
@@ -18630,6 +19046,7 @@
           "nightlyTasks",
           "notifications",
           "oauth",
+          "passkey",
           "passwordLogin",
           "reverseGeocoding",
           "server",
@@ -19489,6 +19906,34 @@
           "minDetectionScore",
           "minRecognitionScore",
           "modelName"
+        ],
+        "type": "object"
+      },
+      "AdminConfigPasskeyDto": {
+        "properties": {
+          "additionalDomains": {
+            "description": "Additional domains",
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "domain": {
+            "description": "Passkey domain",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "additionalDomains",
+          "domain",
+          "enabled"
         ],
         "type": "object"
       },
@@ -22761,6 +23206,7 @@
           "AssetGenerateThumbnailsQueueAll",
           "AssetGenerateThumbnails",
           "AuditTableCleanup",
+          "AuthChallengeCleanup",
           "DatabaseBackup",
           "FacialRecognitionQueueAll",
           "FacialRecognition",
@@ -24889,6 +25335,127 @@
         ],
         "type": "object"
       },
+      "PasskeyAuthenticationFinishDto": {
+        "properties": {
+          "response": {
+            "additionalProperties": {},
+            "description": "Response returned by @simplewebauthn/browser's `startAuthentication()`",
+            "properties": {
+              "id": {
+                "description": "Credential ID",
+                "format": "base64url",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "type": "string"
+              },
+              "response": {
+                "additionalProperties": {},
+                "properties": {
+                  "userHandle": {
+                    "description": "User handle",
+                    "format": "base64url",
+                    "pattern": "^[A-Za-z0-9_-]*$",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "response"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "response"
+        ],
+        "type": "object"
+      },
+      "PasskeyAuthenticationOptionsDto": {
+        "additionalProperties": {},
+        "description": "Response returned by @simplewebauthn/server's `generateAuthenticationOptions`",
+        "type": "object"
+      },
+      "PasskeyRegistrationFinishDto": {
+        "properties": {
+          "name": {
+            "description": "Passkey name",
+            "type": "string"
+          },
+          "response": {
+            "description": "Response returned by @simplewebauthn/browser's `startAuthentication()`"
+          }
+        },
+        "required": [
+          "response"
+        ],
+        "type": "object"
+      },
+      "PasskeyRegistrationOptionsDto": {
+        "additionalProperties": {},
+        "description": "Response returned by @simplewebauthn/server's `generateRegistrationOptions`",
+        "type": "object"
+      },
+      "PasskeyResponseDto": {
+        "properties": {
+          "createdAt": {
+            "description": "Creation date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Passkey ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "name": {
+            "description": "Passkey name",
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "usedAt": {
+            "description": "Last used date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "name",
+          "updatedAt",
+          "usedAt"
+        ],
+        "type": "object"
+      },
+      "PasskeyUpdateDto": {
+        "properties": {
+          "name": {
+            "description": "Passkey name",
+            "minLength": 1,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
       "PeopleDeleteDto": {
         "properties": {
           "ids": {
@@ -25251,6 +25818,9 @@
           "partner.read",
           "partner.update",
           "partner.delete",
+          "passkey.read",
+          "passkey.update",
+          "passkey.delete",
           "person.create",
           "person.read",
           "person.update",
@@ -25934,6 +26504,9 @@
           "oauth": {
             "$ref": "#/components/schemas/PublicConfigOAuthDto"
           },
+          "passkey": {
+            "$ref": "#/components/schemas/PublicConfigPasskeyDto"
+          },
           "passwordLogin": {
             "$ref": "#/components/schemas/PublicConfigPasswordLoginDto"
           },
@@ -25945,6 +26518,7 @@
           "ffmpeg",
           "map",
           "oauth",
+          "passkey",
           "passwordLogin",
           "server"
         ],
@@ -26015,6 +26589,18 @@
         "required": [
           "autoLaunch",
           "buttonText",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "PublicConfigPasskeyDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
           "enabled"
         ],
         "type": "object"
@@ -33144,6 +33730,9 @@
           "oauth": {
             "$ref": "#/components/schemas/UserConfigOAuthDto"
           },
+          "passkey": {
+            "$ref": "#/components/schemas/UserConfigPasskeyDto"
+          },
           "passwordLogin": {
             "$ref": "#/components/schemas/UserConfigPasswordLoginDto"
           },
@@ -33167,6 +33756,7 @@
           "map",
           "notifications",
           "oauth",
+          "passkey",
           "passwordLogin",
           "reverseGeocoding",
           "server",
@@ -33355,6 +33945,11 @@
       },
       "UserConfigOAuthDto": {
         "properties": {
+          "accountManagementUrl": {
+            "default": "",
+            "description": "Account management URL",
+            "type": "string"
+          },
           "autoLaunch": {
             "description": "Auto launch",
             "type": "boolean"
@@ -33379,6 +33974,18 @@
         "properties": {
           "enabled": {
             "description": "Whether the task is enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "UserConfigPasskeyDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           }
         },
@@ -33680,11 +34287,6 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
-          },
-          "password": {
-            "deprecated": true,
-            "description": "User password (deprecated, use change password endpoint)",
             "type": "string"
           }
         },

@@ -15,11 +15,11 @@ import { page } from '$app/state';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { queryClient } from '$lib/queries/client';
-import { getConfigQuery } from '$lib/queries/system-config.query';
+import { getNotificationsQuery } from '$lib/queries/notification.query';
+import { getServerConfigQuery } from '$lib/queries/server.query';
 import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
 import { Route } from '$lib/route';
 import { maintenanceStore } from '$lib/stores/maintenance.store';
-import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import { createEventEmitter } from '$lib/utils/eventemitter';
 
 interface AppRestartEvent {
@@ -78,10 +78,10 @@ websocket
       void queryClient.invalidateQueries({ queryKey: ['server'] });
     }
   })
-  .on(
-    'on_config_update',
-    () => void queryClient.invalidateQueries({ queryKey: getConfigQuery().queryKey, exact: true }),
-  )
+  .on('on_config_update', () => {
+    void queryClient.invalidateQueries({ queryKey: ['config'] });
+    void queryClient.invalidateQueries({ queryKey: getServerConfigQuery().queryKey });
+  })
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
   .on('MaintenanceStatusV1', (status) => {
     maintenanceStore.status.set(status);
@@ -103,7 +103,7 @@ websocket
   .on('on_asset_trash', (assets) => eventManager.emit('AssetsDelete', assets))
   .on('on_asset_update', (asset) => eventManager.emit('AssetUpdate', asset))
   .on('on_person_thumbnail', (id) => eventManager.emit('PersonThumbnailReady', { id }))
-  .on('on_notification', () => notificationManager.refresh())
+  .on('on_notification', () => void queryClient.invalidateQueries({ queryKey: getNotificationsQuery().queryKey }))
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
 export const openWebsocketConnection = () => {

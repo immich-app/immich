@@ -2,17 +2,18 @@
   import { getHeatmapRange } from '$lib';
   import CalendarHeatmap from '$lib/components/CalendarHeatmap.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
+  import { getAlbumStatisticsQuery } from '$lib/queries/album.query';
   import { locale } from '$lib/stores/preferences.store';
   import {
     AssetVisibility,
     CalendarHeatmapType,
-    getAlbumStatistics,
     getAssetStatistics,
     getMyCalendarHeatmap,
     type AlbumStatisticsResponseDto,
     type AssetStatsResponseDto,
   } from '@immich/sdk';
   import { Heading, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -42,19 +43,15 @@
     total: 0,
   });
 
-  let albumStats: AlbumStatisticsResponseDto = $state({
-    owned: 0,
-    shared: 0,
-    notShared: 0,
-  });
+  const query = createQuery(getAlbumStatisticsQuery);
+  const albumStats: AlbumStatisticsResponseDto = $derived(query.data ?? { owned: 0, shared: 0, notShared: 0 });
 
   const getUsage = async () => {
-    [timelineStats, favoriteStats, archiveStats, trashStats, albumStats] = await Promise.all([
+    [timelineStats, favoriteStats, archiveStats, trashStats] = await Promise.all([
       getAssetStatistics({ visibility: AssetVisibility.Timeline }),
       getAssetStatistics({ isFavorite: true }),
       getAssetStatistics({ visibility: AssetVisibility.Archive }),
       getAssetStatistics({ isTrashed: true }),
-      getAlbumStatistics(),
     ]);
   };
 

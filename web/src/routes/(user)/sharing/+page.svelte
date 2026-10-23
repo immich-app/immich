@@ -4,6 +4,8 @@
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import { getAllAlbumsQuery } from '$lib/queries/album.query';
+  import { createPreloadedQuery } from '$lib/queries/client';
   import { Route } from '$lib/route';
   import { getAlbumsActions } from '$lib/services/album.service';
   import { getSharedLinksActions } from '$lib/services/shared-link.service';
@@ -23,6 +25,9 @@
   };
 
   let { data }: Props = $props();
+
+  const query = createPreloadedQuery(() => getAllAlbumsQuery({ isShared: true }));
+  const sharedAlbums = $derived(query.data);
 
   const settings: AlbumViewSettings = {
     view: AlbumViewMode.Cover,
@@ -76,7 +81,7 @@
 
       <div>
         <!-- Shared Album List -->
-        <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
+        <Albums {sharedAlbums} userSettings={settings} showOwner>
           <!-- Empty List -->
           {#snippet empty()}
             <EmptyPlaceholder text={$t('no_shared_albums_message')} src={empty2Url} class="mx-auto mt-10" />

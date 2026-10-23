@@ -6,7 +6,6 @@ import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/share_intent_service.dart';
-import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
 final shareIntentUploadProvider = StateNotifierProvider<ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
@@ -21,7 +20,6 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
   final AppRouter router;
   final ForegroundUploadService _foregroundUploadService;
   final ShareIntentService _shareIntentService;
-  final Logger _logger = Logger('ShareIntentUploadStateNotifier');
 
   ShareIntentUploadStateNotifier(this.router, this._foregroundUploadService, this._shareIntentService) : super([]);
 
@@ -74,8 +72,7 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
       onSuccess: (fileId, _) {
         _updateStatus(fileId, UploadStatus.complete, progress: 1.0);
       },
-      onError: (fileId, errorMessage) {
-        _logger.warning("Upload failed for file: $fileId, error: $errorMessage");
+      onError: (fileId, _) {
         _updateStatus(fileId, UploadStatus.failed);
       },
     );

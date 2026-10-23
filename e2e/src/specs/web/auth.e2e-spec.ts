@@ -28,7 +28,7 @@ test.describe('Registration', () => {
     await page.goto('/auth/login?autoLaunch=0');
     await page.getByLabel('Email').fill('admin@immich.app');
     await page.getByLabel('Password', { exact: true }).fill('password');
-    await page.getByRole('button', { name: 'Login' }).click();
+    await page.getByRole('button', { name: 'Login', exact: true }).click();
 
     // onboarding
     await expect(page).toHaveURL('/auth/onboarding');
@@ -66,11 +66,12 @@ test.describe('Registration', () => {
     await page.goto('/auth/login?autoLaunch=0');
     await page.getByLabel('Email').fill('user@immich.cloud');
     await page.getByLabel('Password').fill('password');
-    await page.getByRole('button', { name: 'Login' }).click();
+    await page.getByRole('button', { name: 'Login', exact: true }).click();
 
     // change password
     await expect(page.getByRole('heading')).toHaveText('Change Password');
     await expect(page).toHaveURL('/auth/change-password');
+    await page.getByLabel('Password', { exact: true }).fill('password');
     await page.getByLabel('New Password').fill('new-password');
     await page.getByLabel('Confirm Password').fill('new-password');
     await page.getByRole('button', { name: 'Change password' }).click();
@@ -79,7 +80,7 @@ test.describe('Registration', () => {
     await expect(page).toHaveURL('/auth/login?autoLaunch=0');
     await page.getByLabel('Email').fill('user@immich.cloud');
     await page.getByLabel('Password').fill('new-password');
-    await page.getByRole('button', { name: 'Login' }).click();
+    await page.getByRole('button', { name: 'Login', exact: true }).click();
 
     // onboarding
     await expect(page).toHaveURL('/auth/onboarding');

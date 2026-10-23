@@ -2,7 +2,7 @@ import { Kysely, sql } from 'kysely';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { OcrRepository } from 'src/repositories/ocr.repository.js';
 import { DB } from 'src/schema/index.js';
-import { up } from 'src/schema/migrations/1792437393085-RebuildOcrSearchText.js';
+import { up } from 'src/schema/migrations/1792758630761-RebuildOcrSearchText.js';
 import { BaseService } from 'src/services/base.service.js';
 import { newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
