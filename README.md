@@ -19,6 +19,10 @@
 <br/>
 
 <p align="center">
+  [![Deploy to Railyard](https://app.railyard.run/deploy/badge)](https://app.railyard.run/deploy?repo=https://github.com/immich-app/immich)
+</p>
+
+<p align="center">
   <a href="readme_i18n/README_ca_ES.md">Català</a>
   <a href="readme_i18n/README_es_ES.md">Español</a>
   <a href="readme_i18n/README_fr_FR.md">Français</a>
