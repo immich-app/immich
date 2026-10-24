@@ -89,6 +89,7 @@ describe('getAltText', () => {
           second: testDate.getUTCSeconds(),
           millisecond: testDate.getUTCMilliseconds(),
         },
+        localOffsetHours: testDate.getTimezoneOffset() / 60,
 
         visibility: AssetVisibility.Timeline,
         isFavorite: false,
