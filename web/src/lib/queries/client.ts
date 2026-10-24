@@ -29,8 +29,15 @@ declare module '@tanstack/svelte-query' {
   interface Register {
     mutationMeta: {
       success?: { toast?: ToastMeta };
-      error?: { toast?: Translations };
+      error?: { toast?: Translations | false };
     };
+  }
+}
+
+export class MutationCancelledError extends Error {
+  constructor() {
+    super('Mutation cancelled');
+    this.name = 'MutationCancelledError';
   }
 }
 
@@ -63,8 +70,13 @@ const createQueryClient = () => {
         toastManager[toast.color]($t(toast.description));
       },
       onError: async (error, _variables, _onMutateResult, { meta }) => {
+        const toast = meta?.error?.toast;
+        if (toast === false || error instanceof MutationCancelledError) {
+          return;
+        }
+
         const $t = await getFormatter();
-        handleError(error, $t(meta?.error?.toast ?? 'errors.something_went_wrong'));
+        handleError(error, $t(toast ?? 'errors.something_went_wrong'));
       },
     }),
   });

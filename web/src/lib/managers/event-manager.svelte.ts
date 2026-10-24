@@ -10,7 +10,6 @@ import type {
   PersonResponseDto,
   QueueResponseDto,
   ReleaseEventV1,
-  SharedLinkResponseDto,
   StackResponseDto,
   AdminConfigDto,
   TagResponseDto,
@@ -66,10 +65,6 @@ export type Events = {
   BackupUpload: [{ progress: number; isComplete: boolean }];
 
   QueueUpdate: [QueueResponseDto];
-
-  SharedLinkCreate: [SharedLinkResponseDto];
-  SharedLinkUpdate: [SharedLinkResponseDto];
-  SharedLinkDelete: [SharedLinkResponseDto];
 
   StackCreate: [StackResponseDto];
   /** Unstacked, with assets to handle */

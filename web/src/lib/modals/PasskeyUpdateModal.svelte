@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { handleUpdatePasskey } from '$lib/services/passkey.service';
+  import { executeMutation } from '$lib/queries/client';
+  import { updatePasskeyMutation } from '$lib/queries/passkey.query';
   import { Field, FormModal, Input } from '@immich/ui';
   import { mdiShieldKeyOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -14,10 +15,9 @@
   let name = $state(passkey.name ?? '');
 
   const onSubmit = async () => {
-    const success = await handleUpdatePasskey(passkey, { name });
-    if (success) {
-      onClose();
-    }
+    await executeMutation(updatePasskeyMutation, [{ id: passkey.id, passkeyUpdateDto: { name: name || null } }], {
+      onSuccess: onClose,
+    });
   };
 </script>
 
