@@ -29,6 +29,11 @@ export class OcrRepository {
 
   deleteAll() {
     return this.db.transaction().execute(async (trx: Kysely<DB>) => {
+      await trx
+        .insertInto('asset_ocr_audit')
+        .columns(['assetId'])
+        .expression(trx.selectFrom('asset_ocr').select('assetId').distinct())
+        .execute();
       await sql`truncate ${sql.table('asset_ocr')}`.execute(trx);
       await sql`truncate ${sql.table('ocr_search')}`.execute(trx);
     });
