@@ -77,6 +77,18 @@ export class UserRepository {
   }
 
   @GenerateSql()
+  getAdmins() {
+    return this.db
+      .selectFrom('user')
+      .select(columns.userAdmin)
+      .select(withMetadata)
+      .where('user.isAdmin', '=', true)
+      .where('user.deletedAt', 'is', null)
+      .orderBy('createdAt', 'asc')
+      .execute();
+  }
+
+  @GenerateSql()
   getFileSamples() {
     return this.db
       .selectFrom('user')

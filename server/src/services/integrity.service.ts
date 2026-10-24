@@ -65,6 +65,18 @@ import { batched, handlePromiseError } from 'src/utils/misc.js';
 export class IntegrityService extends BaseService {
   private integrityLock = false;
 
+  /**
+   * Queues a per-check error notification. This must only be called at the end of a full
+   * (non-refresh) scan: the job runs on the same single-concurrency queue after all of the
+   * scan's jobs, so the integrity summary it reads covers the finished check.
+   */
+  private queueIntegrityErrorNotification(type: IntegrityReport) {
+    return this.jobRepository.queue({
+      name: JobName.NotifyIntegrityErrors,
+      data: { type },
+    });
+  }
+
   @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Microservices] })
   async onConfigInit({
     newConfig: {
@@ -268,6 +280,8 @@ export class IntegrityService extends BaseService {
       this.logger.log(`Queued untracked check of ${count} file(s) (${total} so far)`);
     }
 
+    await this.queueIntegrityErrorNotification(IntegrityReport.UntrackedFile);
+
     return JobStatus.Success;
   }
 
@@ -392,6 +406,8 @@ export class IntegrityService extends BaseService {
       total += batchPaths.length;
       this.logger.log(`Queued missing check of ${batchPaths.length} file(s) (${total} so far)`);
     }
+
+    await this.queueIntegrityErrorNotification(IntegrityReport.MissingFile);
 
     return JobStatus.Success;
   }
@@ -598,6 +614,8 @@ export class IntegrityService extends BaseService {
     } else {
       this.logger.log(`Finished checksum job, covered all assets.`);
     }
+
+    await this.queueIntegrityErrorNotification(IntegrityReport.ChecksumFail);
 
     return JobStatus.Success;
   }
