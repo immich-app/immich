@@ -1801,6 +1801,59 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/users/{id}/oauth-relink-token": {
+      "post": {
+        "description": "Create a single-use token that lets a user re-link their account to a new OAuth sub (e.g. when migrating IdPs). Deliver the token to the user out-of-band.",
+        "operationId": "createOAuthReLinkTokenAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthReLinkTokenResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Issue an OAuth re-link token",
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v4",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "adminUser.update"
+      }
+    },
     "/admin/users/{id}/preferences": {
       "get": {
         "description": "Retrieve the preferences of a specific user.",
@@ -5917,6 +5970,35 @@
         "x-immich-state": "Stable"
       }
     },
+    "/auth/register": {
+      "post": {
+        "description": "Create a new user from a pending OAuth link token (requires OAuth auto-register to be enabled).",
+        "operationId": "register",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Register via OAuth",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/auth/session/lock": {
       "post": {
         "description": "Remove elevated access to locked assets from the current session.",
@@ -9254,65 +9336,6 @@
         "x-immich-state": "Stable"
       }
     },
-    "/oauth/link": {
-      "post": {
-        "description": "Link an OAuth account to the authenticated user.",
-        "operationId": "linkOAuthAccount",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthCallbackDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserAdminResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Link OAuth account",
-        "tags": [
-          "Authentication"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-state": "Stable"
-      }
-    },
     "/oauth/mobile-redirect": {
       "get": {
         "description": "Requests to this URL are automatically forwarded to the mobile app, and is used in some cases for OAuth redirecting.",
@@ -9342,6 +9365,38 @@
           }
         ],
         "x-immich-state": "Stable"
+      }
+    },
+    "/oauth/relink-start": {
+      "post": {
+        "description": "Redeem an admin-issued OAuth re-link token, setting a short-lived cookie that gets consumed by the subsequent OAuth callback.",
+        "operationId": "startOAuthReLink",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthReLinkStartDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Start OAuth re-link",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4",
+            "state": "Added"
+          }
+        ]
       }
     },
     "/oauth/unlink": {
@@ -25223,6 +25278,38 @@
         ],
         "type": "object"
       },
+      "OAuthReLinkStartDto": {
+        "properties": {
+          "token": {
+            "description": "Plaintext OAuth re-link token issued by an administrator",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "OAuthReLinkTokenResponseDto": {
+        "properties": {
+          "expiresAt": {
+            "description": "Token expiration",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "token": {
+            "description": "Single-use token; deliver to the user via /auth/link?token=<token>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expiresAt",
+          "token"
+        ],
+        "type": "object"
+      },
       "OAuthTokenEndpointAuthMethod": {
         "description": "OAuth token endpoint auth method",
         "enum": [
@@ -28474,6 +28561,10 @@
             "description": "Whether OAuth auto-launch is enabled",
             "type": "boolean"
           },
+          "oauthAutoRegister": {
+            "description": "Whether OAuth auto-register is enabled",
+            "type": "boolean"
+          },
           "ocr": {
             "description": "Whether OCR is enabled",
             "type": "boolean"
@@ -28516,6 +28607,7 @@
           "map",
           "oauth",
           "oauthAutoLaunch",
+          "oauthAutoRegister",
           "ocr",
           "passwordLogin",
           "realtimeTranscoding",
