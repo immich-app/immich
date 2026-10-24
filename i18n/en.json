@@ -2320,7 +2320,7 @@
   "user": "User",
   "user_has_been_deleted": "This user has been deleted.",
   "user_id": "User ID",
-  "user_liked": "{user} liked {type, select, photo {this photo} video {this video} asset {this asset} other {it}}",
+  "user_liked": "{user} liked {type, select, image {this photo} video {this video} other {this}}",
   "user_pin_code_settings": "PIN Code",
   "user_pin_code_settings_description": "Manage your PIN code",
   "user_privacy": "User Privacy",
