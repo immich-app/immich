@@ -245,11 +245,10 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
       );
     }
 
-    _textArea = textArea;
-    // Dim the image, with the text boxes punched out by the even-odd rule
-    _scrim = Path.from(textArea)
-      ..fillType = PathFillType.evenOdd
-      ..addRect(Offset.zero & _imageSize);
+    // Combine overlapping shapes
+    _textArea = Path.combine(PathOperation.union, textArea, Path());
+    // Dim the image, with the text boxes punched out
+    _scrim = Path.combine(PathOperation.difference, Path()..addRect(Offset.zero & _imageSize), _textArea);
     _lines = Stack(clipBehavior: Clip.none, children: lines);
   }
 
