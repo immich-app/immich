@@ -27,6 +27,7 @@ import {
 export interface EnvData {
   host?: string;
   port: number;
+  unixHost?: string;
   environment: ImmichEnvironment;
   configFile?: string;
   logLevel?: LogLevel;
@@ -255,6 +256,7 @@ const getEnv = (): EnvData => {
   return {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
+    unixHost: dto.IMMICH_UNIX_HOST,
     environment,
     configFile: dto.IMMICH_CONFIG_FILE,
     logLevel: dto.IMMICH_LOG_LEVEL,

@@ -73,6 +73,7 @@ describe('getEnv', () => {
     expect(config).toMatchObject({
       host: undefined,
       port: 2283,
+      unixHost: undefined,
       environment: 'production',
       configFile: undefined,
       logLevel: undefined,

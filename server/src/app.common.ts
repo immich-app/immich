@@ -3,7 +3,7 @@ import { json, urlencoded } from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmetMiddleware from 'helmet';
-import { existsSync } from 'node:fs';
+import { chmodSync, existsSync, unlinkSync } from 'node:fs';
 import sirv from 'sirv';
 import { IMMICH_SERVER_START, excludePaths, serverVersion } from 'src/constants.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
@@ -40,7 +40,7 @@ export async function configureExpress(
   },
 ) {
   const configRepository = app.get(ConfigRepository);
-  const { environment, host, port, helmet, resourcePaths, network } = configRepository.getEnv();
+  const { environment, host, unixHost, port, helmet, resourcePaths, network } = configRepository.getEnv();
 
   const logger = await app.resolve(LoggingRepository);
   logger.setContext('Bootstrap');
@@ -88,7 +88,28 @@ export async function configureExpress(
   app.use(app.get(ssr).ssr(excludePaths));
   app.use(compression());
 
-  const server = await (host ? app.listen(port, host) : app.listen(port));
+  let server;
+  if (unixHost?.startsWith('/') === true) {
+    // Remove leftover socket file from ungraceful shutdowns to prevent EADDRINUSE
+    if (existsSync(unixHost)) {
+      unlinkSync(unixHost);
+    }
+
+    server = await app.listen(unixHost);
+
+    // Allow listeners in the same group to read/write to the socket
+    chmodSync(unixHost, 0o660);
+
+    // Clean up socket file on server close
+    server.on('close', () => {
+      if (existsSync(unixHost)) {
+        unlinkSync(unixHost);
+      }
+    });
+  } else {
+    server = await (host ? app.listen(port, host) : app.listen(port));
+  }
+
   server.requestTimeout = 24 * 60 * 60 * 1000;
 
   // make sure every socket always has an error handler
@@ -98,5 +119,6 @@ export async function configureExpress(
     });
   });
 
-  logger.log(`${IMMICH_SERVER_START} on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
+  const runningHost = unixHost?.startsWith('/') === true ? `unix:${unixHost}` : await app.getUrl();
+  logger.log(`${IMMICH_SERVER_START} on ${runningHost} [v${serverVersion}] [${environment}] `);
 }
