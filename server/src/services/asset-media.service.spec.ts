@@ -757,7 +757,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.originalPath,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'application/octet-stream',
         }),
       );
