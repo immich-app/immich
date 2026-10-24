@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetVisibility, SharedLinkType } from 'src/enum.js';
+import { AssetOrderBy, AssetVisibility, SharedLinkType } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -162,6 +162,34 @@ describe(TimelineService.name, () => {
       const rawResponse = await sut.getTimeBucket(factory.auth(), { timeBucket: '012345-01-01' });
       const response = JSON.parse(rawResponse);
       expect(response).toEqual(expect.objectContaining({ id: [] }));
+
+      const createdAtResponse = await sut.getTimeBucket(factory.auth(), {
+        timeBucket: '012345-01-01',
+        orderBy: AssetOrderBy.CreatedAt,
+      });
+      expect(JSON.parse(createdAtResponse)).toEqual(expect.objectContaining({ id: [] }));
+    });
+
+    it('should bucket by upload month when ordering by createdAt', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user: { id: user.id } });
+      const dates = [
+        '1970-01-31T23:59:59.999Z',
+        '1970-02-01T00:00:00.000Z',
+        '1970-02-28T23:59:59.999Z',
+        '1970-03-01T00:00:00.000Z',
+      ];
+      const ids: string[] = [];
+      for (const createdAt of dates) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, createdAt, localDateTime: new Date('2000-01-01') });
+        await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+        ids.push(asset.id);
+      }
+
+      const rawResponse = await sut.getTimeBucket(auth, { timeBucket: '1970-02-01', orderBy: AssetOrderBy.CreatedAt });
+      const response = JSON.parse(rawResponse);
+      expect(response.id).toEqual([ids[2], ids[1]]);
     });
 
     it('should return time bucket in trash', async () => {

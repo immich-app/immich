@@ -1,9 +1,10 @@
 <script lang="ts">
   import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getAlbumInfo } from '@immich/sdk';
+  import { getAlbumQuery } from '$lib/queries/album.query';
+  import { queryClient } from '$lib/queries/client';
   import { IconButton, Text, LoadingSpinner } from '@immich/ui';
   import { mdiTrashCanOutline } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -12,12 +13,18 @@
   }
 
   let { albumId, onDelete }: Props = $props();
+
+  const query = createQuery(
+    () => getAlbumQuery(albumId),
+    () => queryClient,
+  );
+  const album = $derived(query.data);
 </script>
 
 <div>
-  {#await getAlbumInfo({ ...authManager.params, id: albumId })}
+  {#if query.isPending}
     <LoadingSpinner />
-  {:then album}
+  {:else if album}
     <div class="flex gap-2">
       <AlbumCover {album} class="size-24" />
       <p
@@ -46,7 +53,7 @@
         />
       </div>
     </div>
-  {:catch}
+  {:else}
     <div class="flex justify-between gap-2">
       <div class="flex flex-col gap-1">
         <Text>{$t('unknown')}</Text>
@@ -63,5 +70,5 @@
         />
       </div>
     </div>
-  {/await}
+  {/if}
 </div>

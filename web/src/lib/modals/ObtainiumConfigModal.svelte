@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { handleCreateApiKey } from '$lib/services/api-key.service';
+  import { createApiKeyMutation } from '$lib/queries/api-key.query';
+  import { executeMutation } from '$lib/queries/client';
   import { Permission } from '@immich/sdk';
   import { Button, Field, Input, Modal, ModalBody, obtainiumBadge, Select, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -16,12 +17,12 @@
 
   let { onClose }: Props = $props();
 
-  const handleCreate = async () => {
-    const response = await handleCreateApiKey({ name: 'Obtainium', permissions: [Permission.ServerApkLinks] });
-    if (response) {
-      inputApiKey = response.secret;
-    }
-  };
+  const handleCreate = () =>
+    executeMutation(
+      createApiKeyMutation,
+      [{ apiKeyCreateDto: { name: 'Obtainium', permissions: [Permission.ServerApkLinks] } }],
+      { onSuccess: ({ secret }) => (inputApiKey = secret) },
+    );
 </script>
 
 <Modal title={$t('obtainium_configurator')} size="medium" {onClose}>

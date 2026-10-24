@@ -2,11 +2,13 @@
   import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
+  import { createPreloadedQuery, MutationCancelledError } from '$lib/queries/client';
   import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+  import { loginWithPasskeyMutation } from '$lib/queries/passkey.query';
   import { getServerConfigQuery } from '$lib/queries/server.query';
   import { Route } from '$lib/route';
-  import { handleLoginWithPasskey, isPasskeyCancelled, isPasskeySupported } from '$lib/services/passkey.service';
+  import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
+  import { createMutation } from '@tanstack/svelte-query';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { login, type LoginResponseDto } from '@immich/sdk';
@@ -26,10 +28,8 @@
   let email = $state('');
   let password = $state('');
   let oauthError = $state('');
-  let passkeyError = $state('');
   let loading = $state(false);
   let oauthLoading = $state(true);
-  let passkeyLoading = $state(false);
 
   const queries = {
     publicConfig: createPreloadedQuery(getPublicConfigQuery),
@@ -39,8 +39,16 @@
   const publicConfig = $derived(queries.publicConfig.data);
   const serverConfig = $derived(queries.serverConfig.data);
 
-  const passkeySupported = isPasskeySupported();
+  const passkeySupported = browserSupportsWebAuthn();
   const passkeyEnabled = $derived(publicConfig.passkey.enabled && passkeySupported);
+
+  const passkeyLogin = createMutation(() => ({ ...loginWithPasskeyMutation(), onSuccess: (user) => onLogin(user) }));
+  const passkeyLoading = $derived(passkeyLogin.isPending || passkeyLogin.isSuccess);
+  const passkeyError = $derived(
+    passkeyLogin.error && !(passkeyLogin.error instanceof MutationCancelledError)
+      ? getServerErrorMessage(passkeyLogin.error) || $t('errors.something_went_wrong')
+      : '',
+  );
 
   const onSuccess = async (user: LoginResponseDto) => {
     await goto(data.continueUrl, { invalidateAll: true });
@@ -125,20 +133,6 @@
     }
   };
 
-  const handlePasskeyLogin = async () => {
-    try {
-      passkeyError = '';
-      passkeyLoading = true;
-      const user = await handleLoginWithPasskey();
-      await onLogin(user);
-    } catch (error) {
-      if (!isPasskeyCancelled(error)) {
-        passkeyError = getServerErrorMessage(error) || $t('errors.something_went_wrong');
-      }
-      passkeyLoading = false;
-    }
-  };
-
   const handleOAuthLogin = async () => {
     oauthLoading = true;
     oauthError = '';
@@ -208,7 +202,7 @@
         size="large"
         fullWidth
         color={publicConfig.passwordLogin.enabled ? 'secondary' : 'primary'}
-        onclick={handlePasskeyLogin}
+        onclick={() => passkeyLogin.mutate()}
       >
         {$t('login_with_passkey')}
       </Button>
