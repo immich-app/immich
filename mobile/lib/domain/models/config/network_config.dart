@@ -13,6 +13,9 @@ abstract class NetworkConfig with _$NetworkConfig {
     String? localEndpoint,
     @Default([]) List<String> externalEndpointList,
     @Default({}) Map<String, String> customHeaders,
+    @Default(false) bool tailscaleEnabled,
+    Option<String>? tailscaleAuthKey,
+    Option<String>? tailscaleStatus,
   }) = _NetworkConfig;
 
   // We patch `preferredWifiName` and `localEndpoint`, which prevents us from using Freezed `copyWith`
@@ -22,11 +25,17 @@ abstract class NetworkConfig with _$NetworkConfig {
     Option<String>? localEndpoint,
     List<String>? externalEndpointList,
     Map<String, String>? customHeaders,
+    bool? tailscaleEnabled,
+    Option<String>? tailscaleAuthKey,
+    Option<String>? tailscaleStatus,
   }) => NetworkConfig(
     autoEndpointSwitching: autoEndpointSwitching ?? this.autoEndpointSwitching,
     preferredWifiName: preferredWifiName.patch(this.preferredWifiName),
     localEndpoint: localEndpoint.patch(this.localEndpoint),
     externalEndpointList: externalEndpointList ?? this.externalEndpointList,
     customHeaders: customHeaders ?? this.customHeaders,
+    tailscaleEnabled: tailscaleEnabled.patch(this.tailscaleEnabled),
+    tailscaleAuthKey: tailscaleAuthKey.patch(this.tailscaleAuthKey),
+    tailscaleStatus: tailscaleStatus.patch(this.tailscaleStatus),
   );
 }

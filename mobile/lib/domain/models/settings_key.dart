@@ -24,12 +24,15 @@ enum SettingsKey<T> {
   viewerAutoPlayVideo<bool>(),
   viewerTapToNavigate<bool>(),
 
-  // Network
+// Network
   networkAutoEndpointSwitching<bool>(),
   networkExternalEndpointList<List<String>>(codec: ListCodec(PrimitiveCodec.string)),
   networkCustomHeaders<Map<String, String>>(codec: MapCodec(PrimitiveCodec.string, PrimitiveCodec.string)),
   networkPreferredWifiName<String?>(),
   networkLocalEndpoint<String?>(),
+  tailscaleEnabled<bool>(),
+  tailscaleAuthKey<String?>(),
+  tailscaleStatus<String?>()),
 
   // Album
   albumSortMode<AlbumSortMode>(codec: EnumCodec(AlbumSortMode.values)),

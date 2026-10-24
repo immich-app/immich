@@ -93,6 +93,7 @@ dependencies:
       ref: '549c24b0a4d3881a9a44b70f4873450d43c1c4af' # https://github.com/dart-lang/http/pull/1877
       path: pkgs/ok_http/
   freezed_annotation: ^3.1.0
+  tailscale: ^0.9.0
 
 dev_dependencies:
   auto_route_generator: ^10.5.0

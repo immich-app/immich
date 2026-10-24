@@ -26,7 +26,8 @@ enum SettingSection {
   notifications(Icons.notifications_none_rounded),
   preferences(Icons.interests_outlined),
   timeline(Icons.auto_awesome_mosaic_outlined),
-  beta(Icons.sync_outlined);
+  beta(Icons.sync_outlined),
+  tailscale(Icons.qr_code_outlined);
 
   final IconData icon;
 
@@ -67,6 +68,7 @@ enum SettingSection {
     SettingSection.preferences => const PreferenceSetting(),
     SettingSection.timeline => const AssetListSettings(),
     SettingSection.beta => const SyncStatusAndActions(),
+    SettingSection.tailscale => const TailscaleSettings(),
   };
 
   const SettingSection(this.icon);
@@ -89,6 +91,29 @@ class _MobileLayout extends StatelessWidget {
   const _MobileLayout();
   @override
   Widget build(BuildContext context) {
+    Future<void> _onTailscaleTap(BuildContext context) async {
+      final service = TailscaleService.instance;
+      if (!service.isInitialized) {
+        await service.init(
+          stateDir: '/immich/tailscale-state',
+          appId: 'org.immich.mobile',
+        );
+      }
+
+      // Check current status
+      final status = await service.getStatus();
+
+      if (status != null && status.connected) {
+        // Already logged in, show options or just logout
+        await service.logout();
+      } else {
+        // Show login screen - in a real implementation, this would
+        // navigate to a Tailscale auth screen or show QR code
+        // For now, prompt for auth key
+        _showAuthKeyDialog(context);
+      }
+    }
+
     final List<Widget> settings = SettingSection.values
         .expand(
           (setting) => setting == SettingSection.beta
@@ -100,14 +125,23 @@ class _MobileLayout extends StatelessWidget {
                     onTap: () => context.pushRoute(const SyncStatusRoute()),
                   ),
                 ]
-              : [
-                  SettingsCard(
-                    title: setting.title(context.t),
-                    subtitle: setting.subtitle(context.t),
-                    icon: setting.icon,
-                    onTap: () => context.pushRoute(SettingsSubRoute(section: setting)),
-                  ),
-                ],
+              : setting == SettingSection.tailscale
+                  ? [
+                      SettingsCard(
+                        icon: setting.icon,
+                        title: setting.title(context.t),
+                        subtitle: setting.subtitle(context.t),
+                        onTap: () => _onTailscaleTap(context),
+                      ),
+                    ]
+                  : [
+                      SettingsCard(
+                        title: setting.title(context.t),
+                        subtitle: setting.subtitle(context.t),
+                        icon: setting.icon,
+                        onTap: () => context.pushRoute(SettingsSubRoute(section: setting)),
+                      ),
+                    ],
         )
         .toList();
     settings.add(
@@ -119,6 +153,41 @@ class _MobileLayout extends StatelessWidget {
       ),
     );
     return ListView(padding: const EdgeInsets.only(top: 10.0, bottom: 60), children: [...settings]);
+  }
+
+  void _showAuthKeyDialog(BuildContext context) {
+    final _authKeyController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(context.t.tailscale_login),
+          content: TextField(
+            controller: _authKeyController,
+            decoration: const InputDecoration(labelText: 'Auth Key'),
+            obscureText: false,
+            enableSuggestions: true,
+            autocorrect: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(context.t.cancel),
+            ),
+            TextButton(
+              onPressed: () async {
+                await TailscaleService.instance.login(
+                  authKey: _authKeyController.text,
+                  hostname: 'immich-mobile',
+                );
+                Navigator.pop(context);
+              },
+              child: Text(context.t.login),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
