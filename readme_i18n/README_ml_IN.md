@@ -116,16 +116,6 @@
 
 ![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
-## സ്റ്റാർ ചരിത്രം
-
-<a href="https://star-history.com/#immich-app/immich&type=date&legend=top-left">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=date" width="100%" />
-  </picture>
-</a>
-
 ## സംഭാവന ചെയ്തവർ
 
 <a href="https://github.com/immich-app/immich/graphs/contributors">
