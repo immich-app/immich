@@ -112,7 +112,7 @@ export class AlbumService extends BaseService {
 
     const allowedAssetIdsSet = await this.checkAccess({
       auth,
-      permission: Permission.AssetView,
+      permission: Permission.AssetShare,
       ids: dto.assetIds || [],
     });
     const assetIds = [...allowedAssetIdsSet].map((id) => id);
@@ -177,7 +177,7 @@ export class AlbumService extends BaseService {
     const results = await addAssets(
       auth,
       { access: this.accessRepository, bulk: this.albumRepository },
-      { parentId: id, assetIds: dto.ids, permission: Permission.AssetView },
+      { parentId: id, assetIds: dto.ids, permission: Permission.AssetShare },
     );
 
     const { id: firstNewAssetId } = results.find(({ success }) => success) || {};
@@ -216,7 +216,7 @@ export class AlbumService extends BaseService {
       return results;
     }
 
-    const allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetView, ids: dto.assetIds });
+    const allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
     if (allowedAssetIds.size === 0) {
       results.error = BulkIdErrorReason.NO_PERMISSION;
       return results;
