@@ -61,7 +61,16 @@ from immich_ml.schemas import (
     VisualOptions,
 )
 from immich_ml.sessions.ann import AnnSession
-from immich_ml.sessions.ort import Device, GraphSpec, OrtSession, flush_denormals, fresh, prepared
+from immich_ml.sessions.ort import (
+    DYNAMIC_PROVIDERS,
+    Device,
+    GraphSpec,
+    OrtSession,
+    _providers_default,
+    flush_denormals,
+    fresh,
+    prepared,
+)
 from immich_ml.sessions.policy import ShapePolicy, batches, runs
 from immich_ml.sessions.rknn import RknnSession, run_inference
 from immich_ml.sessions.rknn import model_path as rknn_model_path
@@ -1788,7 +1797,7 @@ class TestOcr:
             mocker,
         )
         text_recognizer.decoder = mock.Mock()
-        text_recognizer.decoder.return_value = (["hello"], np.array([0.8], dtype=np.float32))
+        text_recognizer.decoder.return_value = (["hello"], np.array([0.75], dtype=np.float32))
         mocker.patch.object(text_recognizer, "_crop", return_value=np.zeros((48, 96, 3), dtype=np.uint8))
         image = Image.new("RGB", (100, 50))
         box = np.array([[[0, 0], [96, 0], [96, 48], [0, 48]]], dtype=np.float32)
@@ -1797,7 +1806,7 @@ class TestOcr:
             return {"boxes": box.copy(), "scores": np.array([0.9], dtype=np.float32)}
 
         assert text_recognizer._predict(image, texts(), TextRecognitionOptions(min_score=0.7))["text"] == ["hello"]
-        # the default (0.9) rejects a 0.8 score, and must be unaffected by the 0.7 request
+        # the default (0.8) rejects a 0.75 score, and must be unaffected by the 0.7 request
         assert text_recognizer._predict(image, texts(), TextRecognitionOptions())["text"] == []
 
     def test_rec_decodes_the_half_precision_probabilities_a_host_decode_graph_emits(self) -> None:
@@ -2123,7 +2132,7 @@ def test_reads_each_entrys_options_as_its_model_takes_them(tmp_path: Path) -> No
     # such as where a model is cached, goes nowhere
     assert {entry.options for entry in entries} == {
         TextDetectionOptions(max_resolution=736, min_score=0.3),
-        TextRecognitionOptions(min_score=0.9),
+        TextRecognitionOptions(min_score=0.8),
         TextualOptions(language="de"),
         FaceRecognitionOptions(),
     }
@@ -2274,7 +2283,8 @@ def test_ping_endpoint(deployed_app: TestClient) -> None:
 )
 class TestPredictionEndpoints:
     @pytest.fixture(autouse=True)
-    def providers(self, mocker: MockerFixture) -> Iterator[None]:
+    def providers(self, deployed_app: TestClient, mocker: MockerFixture) -> Iterator[None]:
+        # the app is set up before the spy, so it shuts down and unloads its models after the spy lets go of them
         sessions = mocker.spy(ort, "InferenceSession")
         yield
         if settings.test_provider:
@@ -2307,10 +2317,19 @@ class TestPredictionEndpoints:
         assert response.status_code == 200
         assert cosine(orjson.loads(response.json()["clip"]), responses["clip"]["text"]) >= 0.999
 
+    @pytest.mark.parametrize(
+        "image", ["metadata/faces/portrait.jpg", "../../machine-learning/worlds-largest-selfie.jpg"]
+    )
+    @pytest.mark.parametrize("model", ["buffalo_l", "antelopev2"])
     def test_face_endpoint(
-        self, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
+        self,
+        model: str,
+        image: str,
+        asset: Callable[[str], bytes],
+        responses: dict[str, Any],
+        deployed_app: TestClient,
     ) -> None:
-        expected = responses["facial-recognition"]
+        expected = responses["facial-recognition"][Path(image).stem][model]
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
@@ -2318,30 +2337,47 @@ class TestPredictionEndpoints:
                 "entries": json.dumps(
                     {
                         "facial-recognition": {
-                            "detection": {"modelName": "buffalo_l", "options": {"minScore": 0.7}},
-                            "recognition": {"modelName": "buffalo_l"},
+                            "detection": {"modelName": model, "options": {"minScore": 0.7}},
+                            "recognition": {"modelName": model},
                         }
                     }
                 )
             },
-            files={"image": asset("metadata/faces/portrait.jpg")},
+            files={"image": asset(image)},
         )
 
         actual = response.json()
         assert response.status_code == 200
         assert actual["imageWidth"] == expected["imageWidth"]
         assert actual["imageHeight"] == expected["imageHeight"]
-        assert len(actual["facial-recognition"]) == len(expected["faces"])
+        # faces are matched by box, since near-equal scores can swap their order
+        shared = []
+        for expected_face in expected["faces"]:
+            for actual_face in actual["facial-recognition"]:
+                if actual_face["boundingBox"] == pytest.approx(expected_face["boundingBox"], abs=1):
+                    shared.append((expected_face, actual_face))
+                    break
+        assert len(shared) >= 0.9 * len(expected["faces"])
+        assert len(shared) >= 0.9 * len(actual["facial-recognition"])
 
-        for expected_face, actual_face in zip(expected["faces"], actual["facial-recognition"]):
-            assert actual_face["boundingBox"] == pytest.approx(expected_face["boundingBox"], abs=1)
+        for expected_face, actual_face in shared:
             assert actual_face["score"] == pytest.approx(expected_face["score"], abs=0.01)
-            assert cosine(orjson.loads(actual_face["embedding"]), expected_face["embedding"]) >= 0.999
+        similarities = [
+            cosine(orjson.loads(actual_face["embedding"]), expected_face["embedding"])
+            for expected_face, actual_face in shared
+        ]
+        # a landmark that moves by a fraction of a pixel moves a small face's embedding
+        assert min(similarities) >= 0.98
+        assert np.median(similarities) >= 0.999
 
+    @pytest.mark.parametrize(
+        "model", ["PP-OCRv5_mobile", "PP-OCRv5_server", "PP-OCRv6_tiny", "PP-OCRv6_small", "PP-OCRv6_medium"]
+    )
     def test_ocr_endpoint(
-        self, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
+        self, model: str, asset: Callable[[str], bytes], responses: dict[str, Any], deployed_app: TestClient
     ) -> None:
-        expected = responses["ocr"]
+        # the CPU EP reads each image at its own size, where the other providers pad it to a bucket
+        expected = responses["ocr"]["dynamic" if _providers_default()[0] in DYNAMIC_PROVIDERS else "bucketed"][model]
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
@@ -2349,11 +2385,8 @@ class TestPredictionEndpoints:
                 "entries": json.dumps(
                     {
                         "ocr": {
-                            "detection": {
-                                "modelName": "PP-OCRv5_mobile",
-                                "options": {"maxResolution": 736, "minScore": 0.5},
-                            },
-                            "recognition": {"modelName": "PP-OCRv5_mobile", "options": {"minScore": 0.9}},
+                            "detection": {"modelName": model, "options": {"maxResolution": 736, "minScore": 0.5}},
+                            "recognition": {"modelName": model, "options": {"minScore": 0.8}},
                         }
                     }
                 )
@@ -2364,8 +2397,10 @@ class TestPredictionEndpoints:
         actual = response.json()["ocr"]
         assert response.status_code == 200
         # lines are matched by text, since one read differently can move in reading order
-        found = {text: line for line, text in enumerate(actual["text"])}
-        shared = [(found[text], line) for line, text in enumerate(expected["text"]) if text in found]
+        found: dict[str, list[int]] = {}
+        for line, text in enumerate(actual["text"]):
+            found.setdefault(text, []).append(line)
+        shared = [(found[text].pop(0), line) for line, text in enumerate(expected["text"]) if found.get(text)]
         assert len(shared) >= 0.9 * len(expected["text"])
         assert len(shared) >= 0.9 * len(actual["text"])
         for found_line, expected_line in shared:

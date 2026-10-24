@@ -154,7 +154,7 @@ class TextDetectionOptions(Options):
 
 @dataclass(frozen=True)
 class TextRecognitionOptions(Options):
-    min_score: Annotated[float, Field(alias="minScore")] = 0.9
+    min_score: Annotated[float, Field(alias="minScore")] = 0.8
 
 
 InferenceResponse = dict[str, Any]
