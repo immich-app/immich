@@ -248,7 +248,8 @@
     "map_settings_description": "Karten- und GPS-Einstellungen verwalten",
     "map_style_description": "URL zu einem style.json Karten-Theme",
     "memory_cleanup_job": "Erinnerungen aufräumen",
-    "memory_generate_job": "Erinnerungen Generierung"
+    "memory_generate_job": "Erinnerungen Generierung",
+    "metadata_extraction_job": "Metadaten extrahieren"
   },
   "video_quality": "Videoqualität",
   "videos": "Videos",
