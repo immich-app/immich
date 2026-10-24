@@ -24,10 +24,8 @@ import { LockableProperty, Person, columns, lockableProperties } from 'src/datab
 import { DummyValue, GenerateSqlQueries } from 'src/decorators.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import {
-  DEFAULT_SEARCH_ORDER,
   IdsFilter,
   SearchFilterBranch,
-  SearchOrder,
   StringFilter,
   StringPatternFilter,
   isAlbumConfined,
@@ -844,28 +842,6 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
   );
 }
 
-const searchOrderColumns = {
-  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false },
-  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false },
-  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true },
-  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
-} as const;
-
-export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order?: SearchOrder) {
-  const { field, direction } = order ?? DEFAULT_SEARCH_ORDER;
-  const { column, nullable } = searchOrderColumns[field];
-  return (
-    qb
-      .orderBy(column, (ob) => {
-        const ordered = direction === AssetOrder.Asc ? ob.asc() : ob.desc();
-        // nulls last: assets without an asset_exif row would otherwise lead descending results
-        return nullable ? ordered.nullsLast() : ordered;
-      })
-      // id tie-break for deterministic pagination
-      .orderBy('asset.id', direction)
-  );
-}
-
 const scopeExample: AssetSearchScope = { userIds: [DummyValue.UUID], lockedOwnerId: DummyValue.UUID };
 
 export const searchMetadataV3Examples: GenerateSqlQueries[] = [
@@ -1040,8 +1016,42 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
     ],
   },
   {
-    name: 'cursor-offset',
-    params: [{ take: 100, skip: 100 }, { filter: { isFavorite: { eq: true } } }, scopeExample],
+    name: 'cursor',
+    params: [
+      {
+        take: 100,
+        cursor: {
+          field: SearchOrderField.FileCreatedAt,
+          direction: AssetOrder.Desc,
+          value: DummyValue.TIME_BUCKET,
+          id: DummyValue.UUID,
+        },
+      },
+      { filter: { isFavorite: { eq: true } } },
+      scopeExample,
+    ],
+  },
+  {
+    name: 'cursor-nullable-order',
+    params: [
+      {
+        take: 100,
+        cursor: { field: SearchOrderField.Rating, direction: AssetOrder.Desc, value: 3, id: DummyValue.UUID },
+      },
+      { order: { field: SearchOrderField.Rating, direction: AssetOrder.Desc } },
+      scopeExample,
+    ],
+  },
+  {
+    name: 'cursor-null-tail',
+    params: [
+      {
+        take: 100,
+        cursor: { field: SearchOrderField.Rating, direction: AssetOrder.Desc, value: null, id: DummyValue.UUID },
+      },
+      { order: { field: SearchOrderField.Rating, direction: AssetOrder.Desc } },
+      scopeExample,
+    ],
   },
 ];
 
@@ -1070,8 +1080,8 @@ export const searchSmartV3Examples: GenerateSqlQueries[] = [
     ],
   },
   {
-    name: 'cursor-offset',
-    params: [{ take: 100, skip: 100 }, { embedding: DummyValue.VECTOR }, scopeExample],
+    name: 'cursor',
+    params: [{ take: 100, cursor: { id: DummyValue.UUID } }, { embedding: DummyValue.VECTOR }, scopeExample],
   },
 ];
 

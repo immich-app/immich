@@ -5,13 +5,14 @@ import z from 'zod';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
-import { SearchFilter, SearchOrder } from 'src/dtos/search.dto.js';
-import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum.js';
+import { DEFAULT_SEARCH_ORDER, SearchFilter, SearchOrder } from 'src/dtos/search.dto.js';
+import { AssetOrder, AssetStatus, AssetType, AssetVisibility, SearchOrderField, VectorIndex } from 'src/enum.js';
 import { probes } from 'src/repositories/database.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import {
   anyUuid,
+  asUuid,
   searchAssetBuilder,
   searchAssetBuilderLegacy,
   searchMetadataV3Examples,
@@ -19,9 +20,9 @@ import {
   searchSmartV3Examples,
   searchStatisticsV3Examples,
   withExifInner,
-  withSearchOrder,
 } from 'src/utils/database.js';
-import { type PaginationOptions, paginationHelper } from 'src/utils/pagination.js';
+import { type CursorPaginationOptions, paginationHelper } from 'src/utils/pagination.js';
+import { MetadataCursor, SmartCursor } from 'src/utils/search-cursor.js';
 
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
@@ -207,6 +208,13 @@ export interface GetCameraLensModelsOptions {
   make?: string;
   model?: string;
 }
+
+const searchOrderColumns = {
+  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false },
+  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false },
+  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true },
+  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
+} as const;
 
 @Injectable()
 export class SearchRepository {
@@ -541,11 +549,37 @@ export class SearchRepository {
 
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchMetadataV3Examples)
-  async searchMetadataV3(pagination: PaginationOptions, options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
-    const items = await withSearchOrder(searchAssetBuilder(this.db, options, scope), options.order)
+  async searchMetadataV3(
+    pagination: CursorPaginationOptions<MetadataCursor>,
+    options: AssetSearchBuilderV3Options,
+    scope: AssetSearchScope,
+  ) {
+    const { cursor } = pagination;
+    const { field, direction } = options.order ?? DEFAULT_SEARCH_ORDER;
+    const { column, nullable } = searchOrderColumns[field];
+    const op = direction === AssetOrder.Asc ? '>' : '<';
+    const items = await searchAssetBuilder(this.db, options, scope)
       .select(columns.searchAsset)
+      .select(['asset_exif.fileSizeInByte', 'asset_exif.rating'])
+      .$if(!!cursor, (qb) =>
+        qb.where((eb) => {
+          const { value, id } = cursor!;
+          if (value === null) {
+            return eb.and([eb(column, 'is', null), eb('asset.id', op, asUuid(id))]);
+          }
+
+          const after = eb(eb.refTuple(column, 'asset.id'), op, eb.tuple(value, asUuid(id)));
+          return nullable ? eb.or([after, eb(column, 'is', null)]) : after;
+        }),
+      )
+      .orderBy(column, (ob) => {
+        const ordered = direction === AssetOrder.Asc ? ob.asc() : ob.desc();
+        // nulls last: assets without an asset_exif row would otherwise lead descending results
+        return nullable ? ordered.nullsLast() : ordered;
+      })
+      // id tie-break for deterministic pagination
+      .orderBy('asset.id', direction)
       .limit(pagination.take + 1)
-      .offset(pagination.skip ?? 0)
       .execute();
     return paginationHelper(items, pagination.take);
   }
@@ -567,19 +601,28 @@ export class SearchRepository {
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchSmartV3Examples)
   searchSmartV3(
-    pagination: PaginationOptions,
+    pagination: CursorPaginationOptions<SmartCursor>,
     options: Omit<AssetSearchBuilderV3Options, 'order'> & { embedding: string },
     scope: AssetSearchScope,
   ) {
+    const { cursor } = pagination;
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
+      const distance = sql<number>`smart_search.embedding <=> ${options.embedding}`;
       const items = await searchAssetBuilder(trx, options, scope)
         .select(columns.searchAsset)
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
-        .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
-        .orderBy('asset.id', 'asc')
+        .$if(!!cursor, (qb) =>
+          qb.where(distance, '>', (eb) =>
+            eb
+              .selectFrom('smart_search as cursor_asset')
+              .select(sql<number>`cursor_asset.embedding <=> ${options.embedding}`.as('distance'))
+              .where('cursor_asset.assetId', '=', asUuid(cursor!.id)),
+          ),
+        )
+        // no id tie-break: a secondary sort key keeps the query from using the vector index
+        .orderBy(distance)
         .limit(pagination.take + 1)
-        .offset(pagination.skip ?? 0)
         .execute();
       return paginationHelper(items, pagination.take);
     });
