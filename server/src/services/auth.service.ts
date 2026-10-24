@@ -60,6 +60,7 @@ export type ValidateRequest = {
     /** `false` explicitly means no permission is required, which otherwise defaults to `all` */
     permission?: Permission | false;
     uri: string;
+    privateRoute?: boolean;
   };
 };
 
@@ -222,7 +223,8 @@ export class AuthService extends BaseService {
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
     const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, uri } = metadata;
+    const { adminRoute, sharedLinkRoute } = metadata;
+    const uri = metadata.privateRoute ? '[private request]' : metadata.uri;
     const requestedPermission = metadata.permission ?? Permission.All;
 
     if (!authDto.user.isAdmin && adminRoute) {

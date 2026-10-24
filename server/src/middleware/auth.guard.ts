@@ -8,11 +8,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiExtension, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { ApiCustomExtension, ImmichQuery, MetadataKey, Permission } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { AuthService, LoginDetails } from 'src/services/auth.service.js';
+import { isPrivateRequest } from 'src/utils/private-request.js';
 import { getUserAgentDetails } from 'src/utils/request.js';
 
 type AdminRoute = { admin?: true };
@@ -97,6 +98,12 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const privateRoute = isPrivateRequest(this.reflector, context);
+    if (privateRoute) {
+      // Guards run before interceptors: protect failed authentication as well.
+      context.switchToHttp().getResponse<Response>().setHeader('Cache-Control', 'no-store');
+    }
+
     const options = getAuthenticatedOptions(this.reflector, context.getHandler());
     if (!options) {
       throw new Error(`Route ${context.getHandler().name} does not declare @Authenticated()`);
@@ -116,7 +123,7 @@ export class AuthGuard implements CanActivate {
     request.user = await this.authService.authenticate({
       headers: request.headers,
       queryParams: request.query as Record<string, string>,
-      metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },
+      metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path, privateRoute },
     });
 
     return true;

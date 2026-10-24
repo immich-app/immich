@@ -3,8 +3,8 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import PinCodeCreateForm from '$lib/components/user-settings-page/PinCodeCreateForm.svelte';
   import { Route } from '$lib/route';
+  import { unlockLockedAccess } from '$lib/services/locked-access';
   import { handleError } from '$lib/utils/handle-error';
-  import { unlockAuthSession } from '@immich/sdk';
   import { Button, Icon, PinInput } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline, mdiLockSmart } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -24,7 +24,7 @@
 
   const handleUnlockSession = async (code: string) => {
     try {
-      await unlockAuthSession({ sessionUnlockDto: { pinCode: code } });
+      await unlockLockedAccess(code);
 
       isVerified = true;
 

@@ -67,6 +67,13 @@ export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyCon
         return;
       }
 
+      // PostgreSQL errors can repeat bound values in detail/constraint fields.
+      // Never emit SQL, parameters or raw errors for these private tables.
+      if (/\blocked_album(?:_asset)?\b/i.test(event.query.sql)) {
+        console.error('Private query failed', { durationMs: event.queryDurationMillis });
+        return;
+      }
+
       if (isAssetChecksumConstraint(event.error)) {
         return;
       }

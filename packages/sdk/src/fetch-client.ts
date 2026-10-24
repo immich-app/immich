@@ -1883,6 +1883,23 @@ export type ValidateLibraryResponseDto = {
     /** Validation results for import paths */
     importPaths?: ValidateLibraryImportPathResponseDto[];
 };
+export type LockedAlbumResponseDto = {
+    albumName: string;
+    assetCount: number;
+    createdAt: string;
+    id: string;
+    updatedAt: string;
+};
+export type CreateLockedAlbumDto = {
+    albumName: string;
+};
+export type LockedAlbumAssetsDto = {
+    ids: string[];
+};
+export type LockedAlbumAssetsResponseDto = {
+    assetIds: string[];
+    hasNextPage: boolean;
+};
 export type MapReverseGeocodeResponseDto = {
     /** City name */
     city: string | null;
@@ -3938,6 +3955,7 @@ export type SyncUserV1 = {
     /** User profile changed at */
     profileChangedAt: string;
 };
+export type UpdateLockedAlbumDto = CreateLockedAlbumDto;
 /**
  * List all activities
  */
@@ -5760,6 +5778,116 @@ export function validate({ id, validateLibraryDto }: {
         ...opts,
         method: "POST",
         body: validateLibraryDto
+    })));
+}
+/**
+ * List private groups
+ */
+export function getAllLockedAlbums(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LockedAlbumResponseDto[];
+    }>("/locked-albums", {
+        ...opts
+    }));
+}
+/**
+ * Create a private group
+ */
+export function createLockedAlbum({ createLockedAlbumDto }: {
+    createLockedAlbumDto: CreateLockedAlbumDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: LockedAlbumResponseDto;
+    }>("/locked-albums", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: createLockedAlbumDto
+    })));
+}
+/**
+ * Delete a private grouping without deleting its photos
+ */
+export function deleteLockedAlbum({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/locked-albums/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Read a private group
+ */
+export function getLockedAlbum({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LockedAlbumResponseDto;
+    }>(`/locked-albums/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Rename a private group
+ */
+export function updateLockedAlbum({ id, createLockedAlbumDto }: {
+    id: string;
+    createLockedAlbumDto: CreateLockedAlbumDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LockedAlbumResponseDto;
+    }>(`/locked-albums/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PATCH",
+        body: createLockedAlbumDto
+    })));
+}
+/**
+ * Remove membership without deleting or unlocking photos
+ */
+export function removeLockedAlbumAssets({ id, lockedAlbumAssetsDto }: {
+    id: string;
+    lockedAlbumAssetsDto: LockedAlbumAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/locked-albums/${encodeURIComponent(id)}/assets`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: lockedAlbumAssetsDto
+    })));
+}
+/**
+ * List locked assets in a private group
+ */
+export function getLockedAlbumAssets({ id, skip, take }: {
+    id: string;
+    skip?: number;
+    take?: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LockedAlbumAssetsResponseDto;
+    }>(`/locked-albums/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
+        skip,
+        take
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Add locked assets to a private group
+ */
+export function addLockedAlbumAssets({ id, lockedAlbumAssetsDto }: {
+    id: string;
+    lockedAlbumAssetsDto: LockedAlbumAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/locked-albums/${encodeURIComponent(id)}/assets`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: lockedAlbumAssetsDto
     })));
 }
 /**

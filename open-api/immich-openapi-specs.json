@@ -7892,6 +7892,362 @@
         "x-immich-state": "Stable"
       }
     },
+    "/locked-albums": {
+      "get": {
+        "description": "Experimental. Requires the owner's PIN-elevated session. API keys and shared links are rejected.",
+        "operationId": "getAllLockedAlbums",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LockedAlbumResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "List private groups",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "album.read"
+      },
+      "post": {
+        "description": "Experimental. Requires the owner's PIN-elevated session. API keys and shared links are rejected.",
+        "operationId": "createLockedAlbum",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLockedAlbumDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LockedAlbumResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Create a private group",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "album.create"
+      }
+    },
+    "/locked-albums/{id}": {
+      "delete": {
+        "description": "Experimental. Requires the owner's PIN-elevated session. API keys and shared links are rejected.",
+        "operationId": "deleteLockedAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Delete a private grouping without deleting its photos",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "album.delete"
+      },
+      "get": {
+        "description": "Experimental. Requires the owner's PIN-elevated session. API keys and shared links are rejected.",
+        "operationId": "getLockedAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LockedAlbumResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Read a private group",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "album.read"
+      },
+      "patch": {
+        "description": "Experimental. Requires the owner's PIN-elevated session. API keys and shared links are rejected.",
+        "operationId": "updateLockedAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLockedAlbumDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LockedAlbumResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Rename a private group",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "album.update"
+      }
+    },
+    "/locked-albums/{id}/assets": {
+      "delete": {
+        "description": "Experimental. Requires the owner's PIN-elevated session. API keys and shared links are rejected.",
+        "operationId": "removeLockedAlbumAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LockedAlbumAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Remove membership without deleting or unlocking photos",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "albumAsset.delete"
+      },
+      "get": {
+        "description": "Experimental. Requires the owner's PIN-elevated session. API keys and shared links are rejected.",
+        "operationId": "getLockedAlbumAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LockedAlbumAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "List locked assets in a private group",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "album.read"
+      },
+      "put": {
+        "description": "Experimental. Requires the owner's PIN-elevated session. API keys and shared links are rejected.",
+        "operationId": "addLockedAlbumAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LockedAlbumAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Add locked assets to a private group",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "albumAsset.create"
+      }
+    },
     "/map/markers": {
       "get": {
         "description": "Retrieve a list of latitude and longitude coordinates for every asset with location data.",
@@ -22294,6 +22650,19 @@
         ],
         "type": "object"
       },
+      "CreateLockedAlbumDto": {
+        "properties": {
+          "albumName": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumName"
+        ],
+        "type": "object"
+      },
       "CreateProfileImageDto": {
         "properties": {
           "file": {
@@ -23389,6 +23758,77 @@
       },
       "LicenseResponseDto": {
         "$ref": "#/components/schemas/UserLicense"
+      },
+      "LockedAlbumAssetsDto": {
+        "properties": {
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
+      "LockedAlbumAssetsResponseDto": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assetIds",
+          "hasNextPage"
+        ],
+        "type": "object"
+      },
+      "LockedAlbumResponseDto": {
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "assetCount": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumName",
+          "assetCount",
+          "createdAt",
+          "id",
+          "updatedAt"
+        ],
+        "type": "object"
       },
       "LogLevel": {
         "description": "Log level",
@@ -33363,6 +33803,9 @@
           }
         },
         "type": "object"
+      },
+      "UpdateLockedAlbumDto": {
+        "$ref": "#/components/schemas/CreateLockedAlbumDto"
       },
       "UsageByUserDto": {
         "properties": {

@@ -19,6 +19,7 @@ class TestController {
 const contextFor = (handler: () => void) =>
   ({
     getHandler: () => handler,
+    getClass: () => TestController,
     switchToHttp: () => ({ getRequest: () => ({ headers: {}, query: {}, path: '/' }) }),
   }) as unknown as ExecutionContext;
 
