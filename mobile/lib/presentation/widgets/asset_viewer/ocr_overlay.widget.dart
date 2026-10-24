@@ -358,13 +358,16 @@ class _OcrBoxesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawPath(scrim, Paint()..color = Colors.black54);
+    canvas.save();
+    canvas.clipPath(scrim);
     canvas.drawPath(
       boxes,
       Paint()
         ..color = Colors.white.withValues(alpha: 0.8)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = scale > 0 ? 1.5 / scale : 1.5,
+        ..strokeWidth = scale > 0 ? 2 / scale : 2,
     );
+    canvas.restore();
   }
 
   @override
