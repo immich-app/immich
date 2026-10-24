@@ -170,8 +170,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -960,8 +958,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/sdk
       '@immich/ui':
-        specifier: ^0.90.0
-        version: 0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
+        specifier: ^0.91.0
+        version: 0.91.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       '@mdi/js':
         specifier: ^7.4.47
         version: 7.4.47
@@ -3152,10 +3150,10 @@ packages:
     resolution: {integrity: sha512-NXxDO0jIzXmNvJAR+somSmN81zOP+11DboGaXRMxxpcZVRBIrWpwGPLZ3dG7SZfpyccKlgZGRBWqQGRm9U5A4w==}
     hasBin: true
 
-  '@immich/ui@0.90.0':
-    resolution: {integrity: sha512-bQY5K1af/m8p66jTZyzGSfUvfzAQZd3+8z+9nMGPb5wojTZODU81s+TSg/zNE93DcXY2++DdRpdf2nrPH1Nbpw==}
+  '@immich/ui@0.91.0':
+    resolution: {integrity: sha512-68TGDhVdv0Ezff148+grTFHV0NyrfQ464OXg0p9e6ISxUBcfqAiP/i62LbVWsork/gj+G2a9WnKeJrLrv6YWyA==}
     peerDependencies:
-      '@sveltejs/kit': ^2.13.0
+      '@sveltejs/kit': ^2.13.0 || ^3.0.0
       svelte: ^5.0.0
 
   '@inquirer/ansi@2.0.9':
@@ -16044,7 +16042,7 @@ snapshots:
       pg-connection-string: 2.14.1
       postgres: 3.4.9
 
-  '@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))':
+  '@immich/ui@0.91.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))':
     dependencies:
       '@internationalized/date': 3.12.2
       '@mdi/js': 7.4.47
@@ -16052,6 +16050,7 @@ snapshots:
       bits-ui: 2.18.1(@internationalized/date@3.12.2)(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       fuse.js: 7.5.0
       luxon: 3.7.2
+      runed: 0.35.1(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       simple-icons: 16.35.0
       svelte: 5.57.2(@typescript-eslint/types@8.71.2)
       svelte-highlight: 7.11.0
@@ -21065,18 +21064,19 @@ snapshots:
   exiftool-vendored.exe@13.59.3:
     optional: true
 
-  exiftool-vendored.pl@13.59.3: {}
+  exiftool-vendored.pl@13.59.3:
+    optional: true
 
   exiftool-vendored@39.0.1:
     dependencies:
       '@photostructure/tz-lookup': 11.7.0
       '@types/luxon': 3.7.6
       batch-cluster: 19.5.0
-      exiftool-vendored.pl: 13.59.3
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.59.3
+      exiftool-vendored.pl: 13.59.3
 
   expand-template@2.0.3:
     optional: true
