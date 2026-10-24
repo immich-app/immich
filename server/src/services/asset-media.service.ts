@@ -142,6 +142,7 @@ export class AssetMediaService extends BaseService {
       this.requireQuota(auth, file.size);
 
       if (dto.livePhotoVideoId) {
+        await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [dto.livePhotoVideoId] });
         await onBeforeLink(
           { asset: this.assetRepository, event: this.eventRepository },
           { userId: auth.user.id, livePhotoVideoId: dto.livePhotoVideoId },

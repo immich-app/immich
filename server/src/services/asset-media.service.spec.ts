@@ -422,6 +422,7 @@ describe(AssetMediaService.name, () => {
         .owner(authStub.user1.user)
         .build();
       const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([motionAsset.id]));
       mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
       mocks.asset.create.mockResolvedValueOnce(asset);
 
@@ -439,6 +440,7 @@ describe(AssetMediaService.name, () => {
     it('should hide the linked motion asset', async () => {
       const motionAsset = AssetFactory.from({ type: AssetType.Video }).owner(authStub.user1.user).build();
       const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([motionAsset.id]));
       mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
       mocks.asset.create.mockResolvedValueOnce(asset);
 
@@ -454,6 +456,19 @@ describe(AssetMediaService.name, () => {
         id: motionAsset.id,
         visibility: AssetVisibility.Hidden,
       });
+    });
+
+    it('should not link a live photo video through a shared link', async () => {
+      const motionAsset = AssetFactory.from({ type: AssetType.Video }).owner(authStub.user1.user).build();
+      const auth = AuthFactory.from(authStub.user1.user).sharedLink({ allowUpload: true }).build();
+
+      await expect(
+        sut.uploadAsset(auth, { ...createDto, livePhotoVideoId: motionAsset.id }, fileStub.livePhotoStill),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.asset.getById).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.asset.create).not.toHaveBeenCalled();
     });
 
     it('should handle a sidecar file', async () => {
