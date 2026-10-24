@@ -25,7 +25,7 @@
     projectionType,
     cacheKey,
     loopVideo,
-    playOriginalVideo,
+    playOriginalVideo = $bindable(),
     extendedControls = false,
     onPreviousAsset,
     onClose,
@@ -45,7 +45,7 @@
     {cacheKey}
     {asset}
     assetId={effectiveAssetId}
-    {playOriginalVideo}
+    bind:playOriginalVideo
     {extendedControls}
     {onPreviousAsset}
     {onNextAsset}

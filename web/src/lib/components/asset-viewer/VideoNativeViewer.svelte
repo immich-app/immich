@@ -69,7 +69,7 @@
     assetId,
     loopVideo,
     cacheKey,
-    playOriginalVideo,
+    playOriginalVideo = $bindable(),
     extendedControls = false,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
@@ -81,13 +81,14 @@
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
   let hasLoadedMetadata = $state(false);
+  const useHls = $derived(!playOriginalVideo && publicConfig.ffmpeg.realtime.enabled);
   let assetFileUrl = $derived.by(() => {
-    if (publicConfig.ffmpeg.realtime.enabled) {
-      return getAssetHlsUrl(assetId);
-    }
-
     if (playOriginalVideo) {
       return getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey });
+    }
+
+    if (useHls) {
+      return getAssetHlsUrl(assetId);
     }
 
     return getAssetPlaybackUrl({ id: assetId, cacheKey });
@@ -97,6 +98,47 @@
   let hasFocused = $state(false);
   let activeSession: { assetId: string; id: string } | undefined;
   let rebuildCount = 0;
+  let playbackRequested = false;
+  let playbackAssetId: string;
+  let pendingPlayback: { assetId: string; time: number; playing: boolean } | undefined;
+
+  $effect(() => {
+    if (playbackAssetId !== assetId) {
+      playbackAssetId = assetId;
+      playbackRequested = false;
+      pendingPlayback = undefined;
+    }
+  });
+
+  const handleOriginalError = (video: HTMLVideoElement) => {
+    // Ignore errors from a source that was replaced during navigation or manual switching.
+    const expectedSource = new URL(assetFileUrl, location.href).href;
+    if (video.currentSrc && video.currentSrc !== expectedSource) {
+      return;
+    }
+    // MEDIA_ERR_ABORTED (1) means the load was deliberately cancelled.
+    if (!playOriginalVideo || !video.error || video.error.code === 1) {
+      isLoading = false;
+      return;
+    }
+
+    pendingPlayback = {
+      assetId,
+      time: Number.isFinite(video.currentTime) ? video.currentTime : 0,
+      playing: playbackRequested || !video.paused,
+    };
+    // Updating the bound mode also keeps the asset menu in sync. A failed fallback
+    // cannot enter this branch again, so an unavailable transcode never causes a loop.
+    playOriginalVideo = false;
+    isLoading = true;
+  };
+
+  const handleLoadedMetadata = (video: HTMLVideoElement) => {
+    hasLoadedMetadata = true;
+    if (pendingPlayback?.assetId === assetId && pendingPlayback.time > 0) {
+      video.currentTime = Math.min(pendingPlayback.time, Number.isFinite(video.duration) ? video.duration : Infinity);
+    }
+  };
 
   const MAX_REBUILDS = 1;
   const SESSION_ID_REGEX = /\/video\/stream\/([0-9a-f-]{36})\//;
@@ -282,7 +324,9 @@
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
-      if (!video.paused) {
+      const resume = pendingPlayback?.assetId === assetId && pendingPlayback.playing;
+      pendingPlayback = undefined;
+      if (resume || !video.paused) {
         await video.play();
         onVideoStarted();
       }
@@ -380,7 +424,7 @@
         style:aspect-ratio={aspectRatio}
         defaultduration={asset.duration! / 1000}
       >
-        {#if publicConfig.ffmpeg.realtime.enabled}
+        {#if useHls}
           <hls-video
             bind:this={videoPlayer}
             slot="media"
@@ -391,7 +435,7 @@
             {...useSwipe(onSwipe)}
             class="h-full object-contain"
             oncanplay={(e: Event) => handleCanPlay(e.currentTarget as HTMLVideoElement)}
-            onloadedmetadata={() => (hasLoadedMetadata = true)}
+            onloadedmetadata={(e: Event) => handleLoadedMetadata(e.currentTarget as HTMLVideoElement)}
             onended={onVideoEnded}
             onseeking={onSeeking}
             onplaying={(e: Event) => {
@@ -416,8 +460,15 @@
             playsinline
             {...useSwipe(onSwipe)}
             class="h-full object-contain"
+            onerror={(e) => handleOriginalError(e.currentTarget as HTMLVideoElement)}
+            onplay={() => (playbackRequested = true)}
+            onpause={(e) => {
+              if (!e.currentTarget.error) {
+                playbackRequested = false;
+              }
+            }}
             oncanplay={(e) => handleCanPlay(e.currentTarget)}
-            onloadedmetadata={() => (hasLoadedMetadata = true)}
+            onloadedmetadata={(e) => handleLoadedMetadata(e.currentTarget)}
             onended={onVideoEnded}
             onseeking={onSeeking}
             onplaying={(e) => {
@@ -444,7 +495,7 @@
                 <span slot="title">{$t('media_chrome.playback_rate')}</span>
               </media-playback-rate-menu>
             </media-settings-menu-item>
-            {#if publicConfig.ffmpeg.realtime.enabled}
+            {#if useHls}
               <media-settings-menu-item class="mx-1 rounded-lg p-1 ps-2">
                 {$t('video_quality')}
                 <Icon slot="suffix" icon={mdiChevronRight} class="m-2" />

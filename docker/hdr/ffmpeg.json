@@ -1,0 +1,7 @@
+{
+  "sha256": {
+    "amd64": "fbef9f81a53e175194e3f67832618a86111f7bd37197df21a5d748c34289f9c0",
+    "arm64": "4af743bd776eda082d40c851a4201e51a77a258145dd6ebe164dade39b35b2d0"
+  },
+  "version": "8.1.3-1"
+}

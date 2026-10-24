@@ -240,7 +240,9 @@ export const getAssetMediaUrl = (options: AssetUrlOptions) => {
 
 export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
   const { id, cacheKey: c } = options;
-  return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
+  // Escape old day-long cache entries. The endpoint now revalidates mutable
+  // encoded files, so this stable URL can still reuse unchanged byte ranges.
+  return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c, v: 2 });
 };
 
 export const getAssetHlsUrl = (id: string) => {

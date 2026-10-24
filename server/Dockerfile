@@ -13,6 +13,18 @@ WORKDIR /usr/src/app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs ./
 
+FROM builder AS ffmpeg
+
+# 7.1's CUDA HLG tone mapper uses the wrong reference white (jellyfin-ffmpeg#775).
+# Install the official fixed build; retain NVDEC, CUDA tone mapping and NVENC.
+COPY docker/hdr/ffmpeg.json /tmp/ffmpeg.json
+RUN arch="$(dpkg --print-architecture)" && \
+  version="$(jq -er '.version' /tmp/ffmpeg.json)" && \
+  checksum="$(jq -er --arg arch "$arch" '.sha256[$arch]' /tmp/ffmpeg.json)" && \
+  wget -nv -O /jellyfin-ffmpeg.deb \
+    "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v${version}/jellyfin-ffmpeg8_${version}-trixie_${arch}.deb" && \
+  echo "${checksum}  /jellyfin-ffmpeg.deb" | sha256sum -c -
+
 FROM builder AS sdk
 
 COPY ./packages/sdk/package.json ./packages/sdk/package.json
@@ -94,6 +106,19 @@ ENV NODE_ENV=production \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
 
+COPY --from=ffmpeg /jellyfin-ffmpeg.deb /tmp/jellyfin-ffmpeg.deb
+COPY docker/hdr/ffmpeg.json /tmp/ffmpeg-version.json
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends /tmp/jellyfin-ffmpeg.deb && \
+  # Keep the base image's shared-library policy after replacing its FFmpeg package.
+  (cd /usr/lib/jellyfin-ffmpeg/lib && \
+    rm -f libdav1d.so* libfontconfig.so* libfreetype.so* libfribidi.so* libharfbuzz.so* libigdgmm.so* libz.so*) && \
+  ldconfig /usr/lib/jellyfin-ffmpeg/lib && \
+  ffmpeg -version && ffprobe -version && \
+  node --input-type=module -e 'import fs from "node:fs"; const path="/build/build-lock.json"; const lock=JSON.parse(fs.readFileSync(path)); const fixed=JSON.parse(fs.readFileSync("/tmp/ffmpeg-version.json")); lock.packages=lock.packages.map(p=>p.name==="ffmpeg"?{...p,...fixed}:p); fs.writeFileSync(path,JSON.stringify(lock,null,2));' && \
+  rm /tmp/jellyfin-ffmpeg.deb /tmp/ffmpeg-version.json && \
+  rm -rf /var/lib/apt/lists/*
+
 COPY --from=server /output/server-pruned ./server
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
@@ -102,6 +127,7 @@ COPY --from=plugins /usr/src/app/packages/plugin-core/manifest.json /build/plugi
 RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
+COPY scripts/verify-hdr.mjs ./server/bin/verify-hdr.mjs
 
 ENV PATH="${PATH}:/usr/src/app/server/bin"
 

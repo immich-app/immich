@@ -301,7 +301,9 @@ export class AssetMediaService extends BaseService {
     return new ImmichFileResponse({
       path: filepath,
       contentType: mimeTypes.lookup(filepath),
-      cacheControl: CacheControl.PrivateWithCache,
+      // Encoded files are replaced in place without changing the thumbnail hash
+      // in playback URLs. Revalidate instead of serving a stale conversion.
+      cacheControl: CacheControl.PrivateWithoutCache,
     });
   }
 

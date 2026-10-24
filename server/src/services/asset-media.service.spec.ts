@@ -742,7 +742,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.playbackVideo(authStub.admin, asset.id)).rejects.toBeInstanceOf(NotFoundException);
     });
 
-    it('should return the encoded video path if available', async () => {
+    it('should return the encoded video path and require revalidation when the copy is regenerated', async () => {
       const asset = AssetFactory.from()
         .file({ type: AssetFileType.EncodedVideo, path: '/path/to/encoded/video.mp4' })
         .build();
@@ -755,7 +755,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
         new ImmichFileResponse({
           path: '/path/to/encoded/video.mp4',
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'video/mp4',
         }),
       );
@@ -772,7 +772,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.originalPath,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'application/octet-stream',
         }),
       );

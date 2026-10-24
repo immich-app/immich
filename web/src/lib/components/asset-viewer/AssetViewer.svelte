@@ -112,6 +112,14 @@
   let fullscreenElement = $state<Element>();
 
   let isPlayingOriginalVideo = $state($alwaysLoadOriginalVideo);
+  let playbackAssetId: string;
+
+  $effect(() => {
+    if (playbackAssetId !== asset.id) {
+      playbackAssetId = asset.id;
+      isPlayingOriginalVideo = $alwaysLoadOriginalVideo;
+    }
+  });
   let slideshowStartAssetId = $state<string>();
 
   const setPlayOriginalVideo = (value: boolean) => {
@@ -565,7 +573,7 @@
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}
-        playOriginalVideo={isPlayingOriginalVideo}
+        bind:playOriginalVideo={isPlayingOriginalVideo}
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
@@ -577,7 +585,7 @@
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
         onVideoEnded={() => (assetViewerManager.isPlayingMotionPhoto = false)}
-        playOriginalVideo={isPlayingOriginalVideo}
+        bind:playOriginalVideo={isPlayingOriginalVideo}
       />
     {:else if viewerKind === 'ImagePanaramaViewer'}
       <ImagePanoramaViewer {asset} />
@@ -597,7 +605,7 @@
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}
-        playOriginalVideo={isPlayingOriginalVideo}
+        bind:playOriginalVideo={isPlayingOriginalVideo}
       />
     {/if}
 

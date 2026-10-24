@@ -16,6 +16,7 @@
 design/
 docker/
 !docker/scripts
+!docker/hdr
 
 docs/
 !docs/package.json

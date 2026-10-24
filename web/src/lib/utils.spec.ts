@@ -1,12 +1,26 @@
-import { AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
+import { AssetMediaSize, AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
 import { addMessages, init } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import en from '$i18n/en.json';
-import { getAssetUrl, memoryLaneTitle, semverToName } from '$lib/utils';
+import { getAssetMediaUrl, getAssetPlaybackUrl, getAssetUrl, memoryLaneTitle, semverToName } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
 describe('utils', () => {
+  describe(getAssetPlaybackUrl.name, () => {
+    it('escapes legacy playback cache entries without changing original URLs or creating a per-request nonce', () => {
+      const options = { id: 'video-1', cacheKey: 'unchanged-thumbhash' };
+      const playback = new URL(getAssetPlaybackUrl(options), 'https://immich.test');
+      const original = new URL(getAssetMediaUrl({ ...options, size: AssetMediaSize.Original }), 'https://immich.test');
+
+      expect(playback.pathname).toContain('/video/playback');
+      expect(playback.searchParams.get('c')).toBe(options.cacheKey);
+      expect(playback.searchParams.get('v')).toBe('2');
+      expect(original.searchParams.has('v')).toBe(false);
+      expect(getAssetPlaybackUrl(options)).toBe(getAssetPlaybackUrl(options));
+    });
+  });
+
   describe(getAssetUrl.name, () => {
     it('should return thumbnail URL for static images', () => {
       const asset = assetFactory.build({

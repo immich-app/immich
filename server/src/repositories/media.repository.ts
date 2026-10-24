@@ -3,9 +3,10 @@ import { ExifDateTime, WriteTags, exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
 import { camelCase, upperFirst } from 'lodash-es';
 import { Duration } from 'luxon';
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
+import { promisify } from 'node:util';
 import sharp, { Sharp } from 'sharp';
 import type {
   Bitmap,
@@ -47,6 +48,9 @@ const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   );
 
 const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
+const execFileAsync = promisify(execFile);
+
+type FrameColors = Pick<FfprobeStream, 'color_primaries' | 'color_transfer' | 'color_space'>;
 
 type ProgressEvent = {
   frames: number;
@@ -254,6 +258,32 @@ export class MediaRepository {
 
   async probe(input: string, options?: ProbeOptions): Promise<VideoInfo> {
     const results = await probe(input, options?.countFrames ? ['-count_packets'] : []); // gets frame count quickly: https://stackoverflow.com/a/28376817
+    for (const stream of results.streams) {
+      // FFmpeg 8 can expose HEVC VUI colors only on decoded frames. Without the
+      // transfer function, HDR would be mistaken for SDR and bypass tone mapping.
+      // Only examine a bounded prefix when a potential HDR stream lacks it.
+      const potentialHdr = /(?:10|12|16)(?:le|be)?$/.test(stream.pix_fmt ?? '') || stream.color_primaries === 'bt2020';
+      const transfer = this.parseEnum(ColorTransfer, stream.color_transfer);
+      if (
+        stream.codec_type !== 'video' ||
+        stream.disposition?.attached_pic ||
+        !potentialHdr ||
+        (transfer !== undefined && transfer !== ColorTransfer.Unknown)
+      ) {
+        continue;
+      }
+
+      try {
+        const colors = await this.probeFrameColors(input, stream.index);
+        for (const field of ['color_primaries', 'color_transfer', 'color_space'] as const) {
+          if ((!stream[field] || stream[field] === 'unknown') && colors?.[field] && colors[field] !== 'unknown') {
+            stream[field] = colors[field];
+          }
+        }
+      } catch (error) {
+        this.logger.warn('Unable to recover missing video color metadata', error);
+      }
+    }
     return {
       format: {
         formatName: results.format.format_name,
@@ -301,6 +331,32 @@ export class MediaRepository {
           bitrate: this.parseInt(stream.bit_rate),
         })),
     };
+  }
+
+  private async probeFrameColors(input: string, streamIndex: number): Promise<FrameColors | undefined> {
+    const { stdout } = await execFileAsync(
+      'ffprobe',
+      [
+        '-v',
+        'error',
+        '-select_streams',
+        String(streamIndex),
+        '-read_intervals',
+        '%+#32',
+        '-show_entries',
+        'frame=color_primaries,color_transfer,color_space',
+        '-of',
+        'json',
+        '-i',
+        input,
+      ],
+      { timeout: 15_000, maxBuffer: 256 * 1024 },
+    );
+    const { frames } = JSON.parse(stdout) as { frames?: FrameColors[] };
+    return frames?.find((frame) => {
+      const transfer = this.parseEnum(ColorTransfer, frame.color_transfer);
+      return transfer !== undefined && transfer !== ColorTransfer.Unknown;
+    });
   }
 
   /**
