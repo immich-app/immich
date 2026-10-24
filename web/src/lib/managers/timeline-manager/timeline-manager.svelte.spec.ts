@@ -1,4 +1,10 @@
-import { AssetOrderBy, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import {
+  AssetOrderBy,
+  AssetVisibility,
+  type AssetResponseDto,
+  type TimeBucketAssetResponseDto,
+  type TimeBucketsResponseDto,
+} from '@immich/sdk';
 import { tick } from 'svelte';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -173,6 +179,68 @@ describe('TimelineManager', () => {
 
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
       expect(month!.getAssets().length).toEqual(3);
+    });
+  });
+
+  describe('updateOptions', () => {
+    let timelineManager: TimelineManager;
+    const januaryAssets = toResponseDto(
+      ...timelineAssetFactory.buildList(3, { ratio: 1.5 }).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-01T00:00:00.000Z'),
+        }),
+      ),
+    );
+
+    beforeEach(async () => {
+      timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+    });
+
+    it('ignores time buckets that arrive after the options change', async () => {
+      let resolveOldBuckets: (buckets: TimeBucketsResponseDto[]) => void;
+      sdkMock.getTimeBuckets.mockImplementation(({ bbox }) =>
+        bbox === 'old'
+          ? new Promise<TimeBucketsResponseDto[]>((resolve) => (resolveOldBuckets = resolve))
+          : Promise.resolve([{ count: 3, timeBucket: '2024-01-01T00:00:00.000Z' }]),
+      );
+      sdkMock.getTimeBucket.mockResolvedValue(januaryAssets);
+
+      const oldUpdate = timelineManager.updateOptions({ bbox: 'old' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await timelineManager.updateOptions({ bbox: 'new' });
+      resolveOldBuckets!([{ count: 1, timeBucket: '2024-03-01T00:00:00.000Z' }]);
+      await oldUpdate;
+
+      expect(timelineManager.months.map(({ yearMonth }) => yearMonth)).toEqual([{ year: 2024, month: 1 }]);
+    });
+
+    it.each([true, false])('does not move months when an old load finishes (cancelable: %s)', async (cancelable) => {
+      let resolveOldMonth: (assets: TimeBucketAssetResponseDto) => void;
+      sdkMock.getTimeBuckets.mockImplementation(({ bbox }) =>
+        Promise.resolve([{ count: bbox === 'old' ? 30 : 3, timeBucket: '2024-01-01T00:00:00.000Z' }]),
+      );
+      sdkMock.getTimeBucket.mockImplementation(({ bbox }) =>
+        bbox === 'old'
+          ? new Promise<TimeBucketAssetResponseDto>((resolve) => (resolveOldMonth = resolve))
+          : Promise.resolve(januaryAssets),
+      );
+
+      await timelineManager.updateOptions({ bbox: 'old' });
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
+      const oldSignal = sdkMock.getTimeBucket.mock.calls[0][1]?.signal;
+      const oldMonth = timelineManager.months[0];
+      const oldLoad = timelineManager.loadTimelineMonth(oldMonth.yearMonth, { cancelable });
+      await timelineManager.updateOptions({ bbox: 'new' });
+      expect(oldSignal?.aborted).toBe(cancelable);
+      resolveOldMonth!(januaryAssets);
+      await oldLoad;
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(timelineManager.months[0]).not.toBe(oldMonth);
+      expect(timelineManager.months[0].top).toBe(0);
     });
   });
 
