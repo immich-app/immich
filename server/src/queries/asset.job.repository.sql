@@ -38,7 +38,14 @@ select
           and "asset_file"."type" = $1
       ) as agg
   ) as "files",
-  to_json("asset_exif") as "exifInfo"
+  (
+    select
+      to_json("exif") as "exifInfo"
+    from
+      "asset_exif" as "exif"
+    where
+      "exif"."assetId" = "asset"."id"
+  ) as "exifInfo"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -239,7 +246,14 @@ select
           "asset_edit"."assetId" = "asset"."id"
       ) as agg
   ) as "edits",
-  to_json("asset_exif") as "exifInfo",
+  (
+    select
+      to_json("exif") as "exifInfo"
+    from
+      "asset_exif" as "exif"
+    where
+      "exif"."assetId" = "asset"."id"
+  ) as "exifInfo",
   (
     select
       to_json(obj)
@@ -449,7 +463,14 @@ where
 select
   "asset"."id",
   "asset"."visibility",
-  to_json("asset_exif") as "exifInfo",
+  (
+    select
+      to_json("exif") as "exifInfo"
+    from
+      "asset_exif" as "exif"
+    where
+      "exif"."assetId" = "asset"."id"
+  ) as "exifInfo",
   (
     select
       coalesce(json_agg(agg), '[]')
