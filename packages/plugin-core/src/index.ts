@@ -181,6 +181,13 @@ const methods = wrapper<Manifest>({
     return { workflow: { continue: hasTimeZone === needsTimeZone } };
   },
 
+  assetOcrFilter: ({ config, data }) => {
+    const entries = (data.asset.ocr ?? []).filter((ocr) => ocr.textScore >= (config.minScore ?? 0));
+    const texts = config.matchScope === 'full' ? [entries.map((ocr) => ocr.text).join(' ')] : entries.map((ocr) => ocr.text);
+    const matched = texts.some((t) => matchValueResult(t, config).workflow?.continue);
+    return { workflow: { continue: matched } };
+  },
+
   assetTagFilter: ({ config, data }) => {
     const assetTags = data.asset.tags.map((tag) => tag.id);
 
@@ -241,6 +248,7 @@ const {
   assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
+  assetOcrFilter,
   assetTagFilter,
   assetTypeFilter,
   assetVisibility,
@@ -261,6 +269,7 @@ export {
   assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
+  assetOcrFilter,
   assetTagFilter,
   assetTypeFilter,
   assetVisibility,
