@@ -1,6 +1,7 @@
 package app.alextran.immich
 
 import android.graphics.Bitmap
+import java.nio.ByteBuffer
 
 object NativeImage {
   init {
@@ -25,4 +26,24 @@ object NativeImage {
    */
   @JvmStatic
   external fun convert1010102(bitmap: Bitmap, outInfo: IntArray): Long
+
+  /**
+   * Like [convert1010102], but decodes the JPEG XL image of [length] bytes at [address], stopped by
+   * [cancel], downscaled to cover [targetWidth] x [targetHeight] unless either is 0 and to fit
+   * within [maxPixelSize].
+   */
+  @JvmStatic
+  external fun decodeJxl(
+    address: Long,
+    length: Int,
+    targetWidth: Int,
+    targetHeight: Int,
+    maxPixelSize: Int,
+    cancelled: ByteBuffer,
+    outInfo: IntArray
+  ): Long
+
+  /** Stops the [decodeJxl] given this one-byte direct buffer. */
+  @JvmStatic
+  external fun cancel(cancelled: ByteBuffer)
 }

@@ -4,5 +4,13 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[dependencies]
+jxl = { workspace = true }
+libc = { workspace = true }
+moxcms = { workspace = true }
+pic-scale = { workspace = true }
+quick_cache = { workspace = true }
+rayon = { workspace = true }
+
 [lints]
 workspace = true
