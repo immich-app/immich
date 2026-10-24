@@ -127,7 +127,7 @@
 
 <div class="mt-10 flex flex-col gap-7">
   {#each queueList as [queueName, props] (queueName)}
-    {@const queue = queues.find(({ name }) => name === queueName)}
+    {const queue = $derived(queues.find(({ name }) => name === queueName))}
     {#if queue}
       <QueueCard {queue} onCommand={(command) => handleCommand(queueName, command)} {...props} />
     {/if}

@@ -40,7 +40,7 @@
     <Link href={Route.viewUser(owner)}>{owner.name}</Link>
   </TableCell>
   {#if stats}
-    {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(stats.usage, 0)}
+    {const [diskUsage, diskUsageUnit] = $derived(getBytesWithUnit(stats.usage, 0))}
     <TableCell class={libraryTableClasses.column3}>
       {stats.photos.toLocaleString($locale)}
     </TableCell>

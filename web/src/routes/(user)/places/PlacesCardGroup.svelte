@@ -39,7 +39,7 @@
   {#if !isCollapsed}
     <div class="flex flex-row flex-wrap gap-4">
       {#each places as item (item.id)}
-        {@const city = item.exifInfo?.city}
+        {const city = item.exifInfo?.city}
         <a class="relative" href={Route.search({ city })} draggable="false">
           <div
             class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-39 justify-center overflow-hidden rounded-xl brightness-75 filter"

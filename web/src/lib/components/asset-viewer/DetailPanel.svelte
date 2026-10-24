@@ -186,7 +186,7 @@
                     {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
                   </p>
                 {/if}
-                {@const { width, height } = getDimensions(asset.exifInfo)}
+                {const { width, height } = $derived(getDimensions(asset.exifInfo))}
                 <p>{width} × {height}</p>
               {/if}
               {#if asset.exifInfo?.fileSizeInByte}
@@ -295,8 +295,8 @@
           onOpenInMapView={() => goto(Route.map({ ...latlng, zoom: 12.5 }))}
         >
           {#snippet popup({ marker })}
-            {@const { lat, lon } = marker}
             <div class="flex flex-col items-center gap-1">
+              {const { lat, lon } = $derived(marker)}
               <Text fontWeight="bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</Text>
               <Link
                 href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"

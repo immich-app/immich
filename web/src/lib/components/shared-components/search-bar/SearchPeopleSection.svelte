@@ -46,13 +46,13 @@
   </div>
 {:then people}
   {#if people && people.length > 0}
-    {@const peopleList = showAllPeople
-      ? filterPeople(people, name)
-      : filterPeople(people, name).slice(0, numberOfPeople)}
-
     <div id="people-selection" class="max-h-80 immich-scrollbar overflow-y-auto">
       <Text class="pb-5">{$t('people_search_description')}</Text>
       <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
+
+      {const peopleList = $derived(
+        showAllPeople ? filterPeople(people, name) : filterPeople(people, name).slice(0, numberOfPeople),
+      )}
 
       <SingleGridRow
         class="space-between grid immich-scrollbar grid-auto-fill-20 gap-5 overflow-y-auto pt-5"
