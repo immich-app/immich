@@ -2,7 +2,6 @@
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import type { SelectionBBox } from '$lib/components/shared-components/map/types';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -146,11 +145,8 @@
           <ChangeDate menuItem />
           <ChangeDescription menuItem />
           <ChangeLocation menuItem />
-          <ArchiveAction
-            menuItem
-            unarchive={assetMultiSelectManager.isAllArchived}
-            onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
-          />
+          <ActionMenuItem action={Actions.Archive} />
+          <ActionMenuItem action={Actions.Unarchive} />
           <ActionMenuItem action={Actions.Tag} />
           <DeleteAssets
             menuItem

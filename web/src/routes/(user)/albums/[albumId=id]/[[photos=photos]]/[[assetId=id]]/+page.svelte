@@ -11,7 +11,6 @@
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -407,11 +406,8 @@
             <ChangeDate menuItem />
             <ChangeDescription menuItem />
             <ChangeLocation menuItem />
-            <ArchiveAction
-              menuItem
-              unarchive={assetMultiSelectManager.isAllArchived}
-              onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
-            />
+            <ActionMenuItem action={Actions.Archive} />
+            <ActionMenuItem action={Actions.Unarchive} />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
           {#if assetMultiSelectManager.assets.length === 1}
