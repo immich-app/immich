@@ -1237,6 +1237,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "notification.create",
         "x-immich-state": "Stable"
       }
     },
@@ -1306,6 +1307,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "notification.create",
         "x-immich-state": "Stable"
       }
     },
@@ -1366,6 +1368,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "notification.create",
         "x-immich-state": "Stable"
       }
     },
