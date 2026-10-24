@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
@@ -28,6 +29,8 @@ class MockViewIntentHostApi extends Mock implements ViewIntentHostApi {}
 class MockViewIntentAssetResolver extends Mock implements ViewIntentAssetResolver {}
 
 class MockAppRouter extends Mock implements AppRouter {}
+
+class MockRouteData extends Mock implements RouteData {}
 
 class MockAuthService extends Mock implements AuthService {}
 
@@ -95,6 +98,7 @@ void main() {
   late ViewIntentPayload payload;
   late LocalAsset deepLinkAsset;
   late TimelineService deepLinkTimelineService;
+  late String currentRouteName;
 
   setUpAll(() {
     registerFallbackValue(FakePageRouteInfo());
@@ -112,8 +116,18 @@ void main() {
     payload = ViewIntentPayload(path: '/tmp/incoming.jpg', mimeType: 'image/jpeg', localAssetId: 'local-1');
     deepLinkAsset = _localAsset(id: 'local-1');
     deepLinkTimelineService = await _createReadyTimelineService([deepLinkAsset], TimelineOrigin.deepLink);
+    currentRouteName = MainTimelineRoute.name;
 
     when(() => router.replaceAll(any())).thenAnswer((_) async {});
+    when(() => router.current).thenAnswer((_) {
+      final routeData = MockRouteData();
+      when(() => routeData.name).thenReturn(currentRouteName);
+      return routeData;
+    });
+    when(() => router.maybePop()).thenAnswer((_) async {
+      currentRouteName = TabShellRoute.name;
+      return true;
+    });
 
     container = ProviderContainer(
       overrides: [
@@ -210,6 +224,23 @@ void main() {
     expect(routes, hasLength(2));
     expect(routes[0].routeName, TabShellRoute.name);
     expect(routes[1].routeName, AssetViewerRoute.name);
+  });
+
+  test('replaces the active viewer with the incoming asset', () async {
+    currentRouteName = AssetViewerRoute.name;
+    final previousAsset = _localAsset(id: 'previous-asset');
+    container.read(assetViewerProvider.notifier).setAsset(previousAsset);
+    when(
+      () => resolver.resolve(payload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+
+    await handler.handle(payload);
+
+    expect(container.read(assetViewerProvider).currentAsset, deepLinkAsset);
+    verifyInOrder([
+      () => router.maybePop(),
+      () => router.replaceAll(any()),
+    ]);
   });
 }
 

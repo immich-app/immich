@@ -96,6 +96,10 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       unawaited(_viewIntentService.cleanupManagedTempFile());
     }
 
+    if (_router.current.name == AssetViewerRoute.name) {
+      await _router.maybePop();
+    }
+
     await _router.replaceAll([
       const TabShellRoute(),
       AssetViewerRoute(key: UniqueKey(), initialIndex: 0, timelineService: timelineService),
