@@ -174,6 +174,18 @@ The default configuration looks like this:
     "syncQuotaUsage": true
   },
   "notifications": {
+    "apprise": {
+      "basePath": "",
+      "configId": "",
+      "enabled": false,
+      "host": "",
+      "password": "",
+      "port": null,
+      "secure": false,
+      "tags": "",
+      "timeout": 20,
+      "username": ""
+    },
     "smtp": {
       "enabled": false,
       "from": "",

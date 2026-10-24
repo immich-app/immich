@@ -284,6 +284,12 @@ export interface IEmailJob {
   imageAttachments?: EmailImageAttachment[];
 }
 
+export interface IAppriseJob {
+  title: string;
+  body: string;
+  tag: string;
+}
+
 export interface INotifySignupJob extends IEntityJob {
   password?: string;
 }
@@ -434,6 +440,7 @@ export type JobItem =
 
   // Notification
   | { name: JobName.SendMail; data: IEmailJob }
+  | { name: JobName.SendApprise; data: IAppriseJob }
   | { name: JobName.NotifyAlbumInvite; data: INotifyAlbumInviteJob }
   | { name: JobName.NotifyAlbumUpdate; data: INotifyAlbumUpdateJob }
   | { name: JobName.NotifyUserSignup; data: INotifySignupJob }
@@ -598,6 +605,12 @@ export type UserPreferences = {
     enabled: boolean;
     albumInvite: boolean;
     albumUpdate: boolean;
+  };
+  appriseNotifications: {
+    enabled: boolean;
+    albumInvite: boolean;
+    albumUpdate: boolean;
+    tag: string;
   };
   download: {
     archiveSize: number;

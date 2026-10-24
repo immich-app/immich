@@ -22,6 +22,31 @@ Users can manage their email notification settings from their account settings p
 
 <img src={require('./img/user-notifications-settings.webp').default} width="80%" title="User notification settings" />
 
+## Apprise notifications
+
+Immich can also send album notifications through an [Apprise API](https://github.com/caronc/apprise-api) server, which can forward them to services like Discord, Telegram or ntfy. This is optional and works alongside email; turning it on does not change how email works.
+
+Apprise sends notifications when a user is added to a shared album and when new assets are added to a shared album. Welcome messages for new users are only sent by email, because they can contain a password.
+
+Under Apprise, in `Administration -> Settings -> Notification settings`, enter:
+
+- **Host**: host or IP address of the Apprise API server.
+- **Port**: optional. Leave it empty to use `80`, or `443` when **Secure** is on.
+- **Secure**: connect over HTTPS.
+- **Base path**: optional. Use it when the Apprise API is served under a path prefix, such as `/apprise`.
+- **Config ID**: required. The key of a configuration saved in the Apprise API.
+- **Tags**: optional. Separate them with commas or spaces. Only services that have every tag are notified. Leave it empty to notify the services in the configuration that have no tag.
+- **Username** and **Password**: optional, for an Apprise API server that requires a login. A password can be used without a username.
+- **Timeout**: how many seconds to wait for the Apprise API server before giving up.
+
+Like email, Immich checks the Apprise settings when you save them, and **Send test notification and save** sends a test notification through Apprise. If the Apprise API server is slow or unavailable, the notification is logged as failed. Email and in-app notifications are not affected.
+
+These settings can also be set with [environment variables](/install/environment-variables#apprise) or the [config file](/install/config-file).
+
+### User tags
+
+Each user can turn Apprise notifications on or off from their account settings page, and can enter their own **Apprise tags**. A user's tags are combined with the tags set by the administrator, so notifications only reach the services that have all of them. This lets each user receive notifications on their own services. Users without tags receive notifications on the services that match the administrator's tags (or, with no tags at all, the services that have no tag).
+
 ## Notification templates
 
 You can override the default notification text with custom templates in HTML format. You can use tags to show dynamic tags in your templates.

@@ -8,6 +8,12 @@ export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
   cast: {
     gCastEnabled: false,
   },
+  appriseNotifications: {
+    albumInvite: false,
+    albumUpdate: false,
+    enabled: false,
+    tag: '',
+  },
   download: {
     archiveSize: 0,
     includeEmbeddedVideos: false,
