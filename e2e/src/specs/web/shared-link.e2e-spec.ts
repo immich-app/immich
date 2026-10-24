@@ -45,6 +45,7 @@ test.describe('Shared Links', () => {
     individualSharedLink = await utils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Individual,
       assetIds: [asset.id, asset2.id],
+      allowUpload: true,
     });
   });
 
