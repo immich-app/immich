@@ -1,8 +1,10 @@
 import {
   AssetVisibility,
+  bulkTagAssets,
+  bulkUntagAssets,
+  bulkTagUntagAssets,
   getBaseUrl,
   getDownloadInfo,
-  untagAssets,
   updateAsset,
   updateAssets,
   type AssetResponseDto,
@@ -30,7 +32,7 @@ import { asQueryString } from '$lib/utils/shared-links';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
 
-export const removeTag = async ({
+export const tagAssets = async ({
   assetIds,
   tagIds,
   showNotification = true,
@@ -39,13 +41,58 @@ export const removeTag = async ({
   tagIds: string[];
   showNotification?: boolean;
 }) => {
-  for (const tagId of tagIds) {
-    await untagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
-  }
+  const assetCount = await bulkTagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
 
   if (showNotification) {
     const $t = await getFormatter();
-    toastManager.primary($t('removed_tagged_assets', { values: { count: assetIds.length } }));
+    toastManager.primary($t('tagged_assets', { values: { count: assetCount } }));
+  }
+
+  return assetIds;
+};
+
+export const untagAssets = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
+  const assetCount = await bulkUntagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    toastManager.primary($t('removed_tagged_assets', { values: { count: assetCount } }));
+  }
+
+  return assetIds;
+};
+
+export const tagUntagAssets = async ({
+  assetIds,
+  tagIdsToAdd,
+  tagIdsToRemove,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIdsToAdd: string[];
+  tagIdsToRemove: string[];
+  showNotification?: boolean;
+}) => {
+  const { addedCount, removedCount } = await bulkTagUntagAssets({
+    tagBulkAddRemoveAssetsDto: { tagIdsToAdd, tagIdsToRemove, assetIds },
+  });
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    if (addedCount) {
+      toastManager.primary($t('tagged_assets', { values: { count: addedCount } }));
+    }
+    if (removedCount) {
+      toastManager.primary($t('removed_tagged_assets', { values: { count: removedCount } }));
+    }
   }
 
   return assetIds;
