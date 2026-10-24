@@ -2146,7 +2146,7 @@ wheels = [
 
 [[package]]
 name = "rknn-toolkit-lite2"
-version = "2.3.2"
+version = "2.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
@@ -2154,7 +2154,7 @@ dependencies = [
     { name = "ruamel-yaml" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ff/db/64c756f3f06b219e92ff4f0fd4e000870ee49f214d505ff01c8b0275e26d/rknn_toolkit_lite2-2.3.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e1e4ec691fed900c0e6fde5e7d8eeba17f806aa45092b63b361ee775e2c1b50e", size = 527458, upload-time = "2025-04-09T09:39:58.881Z" },
+    { url = "https://files.pythonhosted.org/packages/25/9c/2b8f974a5b4f54676d51f40a8d21964f3728a15ea665796a882acb5a12da/rknn_toolkit_lite2-2.5.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5cea0e6ff6e52974debf21719b4499803b5ab62550107274e709846531bf53e1", size = 540851, upload-time = "2026-10-13T07:12:40.315Z" },
 ]
 
 [[package]]
