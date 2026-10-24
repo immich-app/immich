@@ -25,7 +25,9 @@ const run = (binary, args) => {
 assert.match(run(ffmpeg, ["-version"]), /ffmpeg version 8\.1\.3/);
 assert.match(run(ffprobe, ["-version"]), /ffprobe version 8\.1\.3/);
 const filters = run(ffmpeg, ["-hide_banner", "-filters"]);
-for (const filter of cuda ? ["tonemapx", "tonemap_cuda", "scale_cuda"] : ["tonemapx"])
+for (const filter of cuda
+  ? ["tonemapx", "tonemap_cuda", "scale_cuda"]
+  : ["tonemapx"])
   assert.ok(filters.includes(filter), filter);
 if (cuda)
   assert.ok(run(ffmpeg, ["-hide_banner", "-encoders"]).includes("h264_nvenc"));
