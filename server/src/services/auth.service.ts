@@ -74,7 +74,7 @@ export class AuthService extends BaseService {
     const user = await this.userRepository.getByEmail(dto.email, { withPassword: true });
     // Always run bcrypt so response time is constant regardless of whether the email
     // is registered, preventing timing-based user enumeration.
-    const isAuthenticated = this.cryptoRepository.compareBcrypt(dto.password, user?.password ?? LOGIN_DUMMY_HASH);
+    const isAuthenticated = await this.cryptoRepository.compareBcrypt(dto.password, user?.password ?? LOGIN_DUMMY_HASH);
 
     if (!user || !user.password || !isAuthenticated) {
       this.logger.warn(`Failed login attempt for user ${dto.email} from ip address ${details.clientIp}`);
@@ -136,7 +136,7 @@ export class AuthService extends BaseService {
   async changePassword(auth: AuthDto, dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
     const { password, newPassword } = dto;
     const user = await this.userRepository.getForChangePassword(auth.user.id);
-    const isValid = this.validateSecret(password, user.password);
+    const isValid = await this.validateSecret(password, user.password);
     if (!isValid) {
       throw new BadRequestException('Wrong password');
     }
@@ -173,7 +173,7 @@ export class AuthService extends BaseService {
 
   async resetPinCode(auth: AuthDto, dto: PinCodeResetDto) {
     const user = await this.userRepository.getForPinCode(auth.user.id);
-    this.validatePinCode(user, dto);
+    await this.validatePinCode(user, dto);
 
     await this.userRepository.update(auth.user.id, { pinCode: null });
     await this.sessionRepository.lockAll(auth.user.id);
@@ -181,13 +181,13 @@ export class AuthService extends BaseService {
 
   async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
     const user = await this.userRepository.getForPinCode(auth.user.id);
-    this.validatePinCode(user, dto);
+    await this.validatePinCode(user, dto);
 
     const hashed = await this.cryptoRepository.hashBcrypt(dto.newPinCode, SALT_ROUNDS);
     await this.userRepository.update(auth.user.id, { pinCode: hashed });
   }
 
-  private validatePinCode(
+  private async validatePinCode(
     user: { pinCode: string | null; password: string | null },
     dto: { pinCode?: string; password?: string },
   ) {
@@ -196,11 +196,11 @@ export class AuthService extends BaseService {
     }
 
     if (dto.password) {
-      if (!this.validateSecret(dto.password, user.password)) {
+      if (!(await this.validateSecret(dto.password, user.password))) {
         throw new BadRequestException('Wrong password');
       }
     } else if (dto.pinCode) {
-      if (!this.validateSecret(dto.pinCode, user.pinCode)) {
+      if (!(await this.validateSecret(dto.pinCode, user.pinCode))) {
         throw new BadRequestException('Wrong PIN code');
       }
     } else {
@@ -538,7 +538,7 @@ export class AuthService extends BaseService {
     throw new UnauthorizedException('Invalid API key');
   }
 
-  private validateSecret(inputSecret: string, existingHash?: string | null): boolean {
+  private async validateSecret(inputSecret: string, existingHash?: string | null): Promise<boolean> {
     if (!existingHash) {
       return false;
     }
@@ -596,7 +596,7 @@ export class AuthService extends BaseService {
     }
 
     const user = await this.userRepository.getForPinCode(auth.user.id);
-    this.validatePinCode(user, { pinCode: dto.pinCode });
+    await this.validatePinCode(user, { pinCode: dto.pinCode });
 
     await this.sessionRepository.update(auth.session.id, {
       pinExpiresAt: DateTime.now().plus({ minutes: 15 }).toJSDate(),

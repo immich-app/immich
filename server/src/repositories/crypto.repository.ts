@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { compareSync, hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createHash, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -19,7 +19,7 @@ export class CryptoRepository {
   }
 
   compareBcrypt(data: string | Buffer, encrypted: string) {
-    return compareSync(data, encrypted);
+    return compare(data, encrypted);
   }
 
   hashSha256(value: string) {

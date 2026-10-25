@@ -1,6 +1,5 @@
 import { NotFoundException, StreamableFile } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
-import { access, constants } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum.js';
@@ -57,8 +56,6 @@ export const sendFile = async (
   try {
     const file = await handler();
 
-    await access(file.path, constants.R_OK);
-
     const cacheControlHeader = cacheControlHeaders[file.cacheControl];
     if (cacheControlHeader) {
       // set the header to Cache-Control
@@ -74,6 +71,18 @@ export const sendFile = async (
   } catch (error: Error | any) {
     const { canWrite } = onRouteError(undefined, res, error, logger);
     if (canWrite) {
+      for (const header of [
+        'Cache-Control',
+        'ETag',
+        'Last-Modified',
+        'Accept-Ranges',
+        'Content-Disposition',
+        'Content-Type',
+        'Content-Length',
+        'Content-Range',
+      ]) {
+        res.removeHeader(header);
+      }
       next(new NotFoundException());
     }
   }

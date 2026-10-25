@@ -67,6 +67,35 @@ beforeAll(async () => {
 });
 
 describe(PersonRepository.name, () => {
+  describe('getRandomFace', () => {
+    it('returns a visible, non-deleted face from the requested group', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { result: person } = await ctx.newPerson({ ownerId: user.id });
+      const { result: otherPerson } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: otherPerson.personGroupId });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId, isVisible: false });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId, deletedAt: new Date() });
+      const { assetFace: visible } = await ctx.newAssetFace({
+        assetId: asset.id,
+        personGroupId: person.personGroupId,
+      });
+
+      await expect(sut.getRandomFace(person.personGroupId)).resolves.toMatchObject({ id: visible.id });
+      await sut.softDeleteAssetFaces(visible.id);
+      await expect(sut.getRandomFace(person.personGroupId)).resolves.toBeUndefined();
+    });
+
+    it('returns undefined for a group without faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { result: person } = await ctx.newPerson({ ownerId: user.id });
+
+      await expect(sut.getRandomFace(person.personGroupId)).resolves.toBeUndefined();
+    });
+  });
+
   describe('createAll', () => {
     it('should create people in the groups they were given', async () => {
       const { ctx, sut } = setup();

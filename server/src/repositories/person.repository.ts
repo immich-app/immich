@@ -926,6 +926,7 @@ export class PersonRepository {
       .where('asset_face.personGroupId', '=', personGroupId)
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
+      .limit(1)
       .executeTakeFirst();
   }
 
