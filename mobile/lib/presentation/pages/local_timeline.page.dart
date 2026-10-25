@@ -24,7 +24,7 @@ class LocalTimelinePage extends StatelessWidget {
         }),
       ],
       child: Timeline(
-        appBar: MesmerizingSliverAppBar(title: album.name),
+        appBar: MesmerizingSliverAppBar(title: album.name, showSelectAll: true),
         bottomSheet: const LocalAlbumBottomSheet(),
         showStorageIndicator: true,
       ),
