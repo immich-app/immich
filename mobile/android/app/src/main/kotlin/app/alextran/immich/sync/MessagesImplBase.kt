@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.ImageHeaderParser
 import com.bumptech.glide.load.ImageHeaderParserUtils
 import com.bumptech.glide.load.resource.bitmap.DefaultImageHeaderParser
+import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import kotlinx.coroutines.CoroutineScope
@@ -48,6 +49,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
   private var hashTask: Job? = null
   private var syncJob: Job? = null
   private val mediaTrashDelegate = MediaTrashDelegate(ctx)
+  private val mediaChanges = MediaChangeStreamHandler(ctx)
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
@@ -526,6 +528,16 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
 
   fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
     mediaTrashDelegate.restoreFromTrashById(mediaId, type) { completeWhenActive(callback, it) }
+  }
+
+  override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    super.onAttachedToEngine(binding)
+    StreamMediaChangesStreamHandler.register(binding.binaryMessenger, mediaChanges)
+  }
+
+  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    mediaChanges.onCancel(null)
+    super.onDetachedFromEngine(binding)
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
