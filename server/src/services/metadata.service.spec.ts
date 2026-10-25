@@ -1046,6 +1046,58 @@ describe(MetadataService.name, () => {
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
     });
 
+    it('should recover projection type from non-standard XMP', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ warnings: ['Ignored non-standard XMP at JPEG-APP1-IFD0-ExifIFD-XMP'] });
+      mocks.metadata.readXmpGpano.mockResolvedValue({ ProjectionType: 'equirectangular' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.metadata.readXmpGpano).toHaveBeenCalledExactlyOnceWith(asset.originalPath);
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ exif: expect.objectContaining({ projectionType: 'EQUIRECTANGULAR' }) }),
+      );
+    });
+
+    it('should not read GPano tags without a non-standard XMP warning', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.metadata.readXmpGpano).not.toHaveBeenCalled();
+    });
+
+    it('should not read GPano tags when projection type is already present', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({
+        ProjectionType: 'equirectangular',
+        warnings: ['Ignored non-standard XMP at JPEG-APP1-IFD0-ExifIFD-XMP'],
+      });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.metadata.readXmpGpano).not.toHaveBeenCalled();
+    });
+
+    it('should warn and continue when reading non-standard XMP fails', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ warnings: ['Ignored non-standard XMP at JPEG-APP1-IFD0-ExifIFD-XMP'] });
+      mocks.metadata.readXmpGpano.mockRejectedValue(new Error('Unable to read XMP'));
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ exif: expect.objectContaining({ projectionType: null }) }),
+      );
+      expect(mocks.logger.warn).toHaveBeenCalledWith(
+        `Error reading GPano metadata (${asset.originalPath}): Error: Unable to read XMP`,
+      );
+    });
+
     it('should save all metadata', async () => {
       const dateForTest = new Date('1970-01-01T00:00:00.000-11:30');
       const asset = AssetFactory.create();

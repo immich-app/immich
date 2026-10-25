@@ -86,6 +86,9 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
 
 @Injectable()
 export class MetadataRepository {
+  // MWG remains loaded in an ExifTool process, so use a separate pool for non-standard XMP.
+  private gpanoExiftool = new ExifTool({ useMWG: false, taskTimeoutMillis: 2 * 60 * 1000 });
+
   private exiftool = new ExifTool({
     defaultVideosToUTC: true,
     backfillTimezones: true,
@@ -120,10 +123,16 @@ export class MetadataRepository {
 
   setMaxConcurrency(concurrency: number) {
     this.exiftool.batchCluster.setMaxProcs(concurrency);
+    this.gpanoExiftool.batchCluster.setMaxProcs(concurrency);
   }
 
   async teardown() {
-    await this.exiftool.end();
+    await Promise.all([this.exiftool.end(), this.gpanoExiftool.end()]);
+  }
+
+  async readXmpGpano(path: string): Promise<Pick<ImmichTags, 'ProjectionType'>> {
+    const { ProjectionType } = await this.gpanoExiftool.read(path, { readArgs: ['-XMP-GPano:all'] });
+    return { ProjectionType };
   }
 
   readTags(path: string): Promise<ImmichTags> {

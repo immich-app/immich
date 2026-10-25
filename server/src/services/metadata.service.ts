@@ -579,6 +579,20 @@ export class MetadataService extends BaseService {
       shouldProbe ? this.getVideoTags(asset.originalPath) : null,
     ]);
 
+    if (
+      asset.type === AssetType.Image &&
+      !mediaTags.ProjectionType &&
+      !sidecarTags?.ProjectionType &&
+      mediaTags.warnings?.some((warning) => warning.includes('Ignored non-standard XMP'))
+    ) {
+      try {
+        const { ProjectionType } = await this.metadataRepository.readXmpGpano(asset.originalPath);
+        mediaTags.ProjectionType = ProjectionType;
+      } catch (error) {
+        this.logger.warn(`Error reading GPano metadata (${asset.originalPath}): ${error}`);
+      }
+    }
+
     // prefer dates from sidecar tags
     if (sidecarTags) {
       const result = firstDateTime(sidecarTags);
