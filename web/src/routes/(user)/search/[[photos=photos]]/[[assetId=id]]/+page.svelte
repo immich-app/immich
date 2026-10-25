@@ -248,7 +248,13 @@
     searchManager.setQuery(terms);
   }
 
-  onMount(() => searchManager.setQuery(terms));
+  onMount(() => {
+    searchManager.setQuery(terms);
+
+    return () => {
+      searchManager.filter.queryAssetId = undefined;
+    };
+  });
 </script>
 
 <svelte:window bind:scrollY />
