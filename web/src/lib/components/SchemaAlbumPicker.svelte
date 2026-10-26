@@ -49,7 +49,7 @@
       {@render button()}
     </div>
   {:else}
-    {@const albumId = albumIds[0]}
+    {const albumId = $derived(albumIds[0])}
     {#if albumId}
       <AlbumThumbnail {albumId} onDelete={() => (albumIds = [])} />
     {:else}

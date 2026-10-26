@@ -92,7 +92,7 @@
     <Select options={schema.enum} bind:value={getString, setValue} />
   </Field>
 {:else if schema.array}
-  {@const values = getValue<string[]>([])}
+  {const values = $derived(getValue<string[]>([]))}
   <Field {label} {description}>
     <Input value={values.join(',')} disabled />
     <HelperText>{$t('unsupported_field_type')}</HelperText>
