@@ -454,6 +454,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -751,6 +752,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         previewPath,
       );
@@ -800,6 +802,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         previewPath,
       );
@@ -1124,6 +1127,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1159,6 +1163,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1172,6 +1177,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1205,6 +1211,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1218,6 +1225,7 @@ describe(MediaService.name, () => {
           size: 1440,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1255,6 +1263,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1319,6 +1328,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1361,6 +1371,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1622,6 +1633,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1675,6 +1687,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1723,6 +1736,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1767,6 +1781,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1811,6 +1826,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1855,6 +1871,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1904,6 +1921,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
