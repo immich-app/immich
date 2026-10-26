@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, LazyLock};
 
 use jxl::api::{
     AlphaMode, Endianness, Event, ExtraChannel, JxlColorEncoding, JxlColorProfile, JxlColorType,
@@ -7,6 +7,7 @@ use jxl::api::{
     JxlParallelRunnerFun, JxlPixelFormat, JxlPrimaries, JxlTransferFunction, JxlWhitePoint,
 };
 use moxcms::{Layout, MatrixCoefficients, Transform16BitExecutor};
+use quick_cache::sync::Cache;
 use rayon::prelude::*;
 
 use crate::color::{self, CicpColorPrimaries, CicpProfile, Target, TransferCharacteristics};
@@ -98,7 +99,7 @@ impl<'a> Jxl<'a> {
                 transform: None,
             });
         }
-        let (transform, layout) = color::to_srgb(&profile.try_as_icc()?)?;
+        let (transform, layout) = srgb_transform(profile)?;
         decoder
             .set_pixel_format(JxlPixelFormat {
                 color_type: match layout {
@@ -232,4 +233,24 @@ fn cicp(profile: &JxlColorProfile) -> Option<CicpProfile> {
         matrix_coefficients: MatrixCoefficients::Identity,
         full_range: true,
     })
+}
+
+/// Reuse the transform to sRGB for a given source profile.
+type Transforms<K> = Cache<K, (Arc<Transform16BitExecutor>, Layout)>;
+
+/// [`color::to_srgb`] for `profile`, built once per distinct profile.
+fn srgb_transform(profile: &JxlColorProfile) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
+    const TRANSFORMS: usize = 8;
+    static ENCODINGS: LazyLock<Transforms<String>> = LazyLock::new(|| Cache::new(TRANSFORMS));
+    static ICCS: LazyLock<Transforms<Vec<u8>>> = LazyLock::new(|| Cache::new(TRANSFORMS));
+    match profile {
+        JxlColorProfile::Simple(encoding) => ENCODINGS
+            .get_or_insert_with(&encoding.get_color_encoding_description(), || {
+                color::to_srgb(&profile.try_as_icc().ok_or(())?).ok_or(())
+            }),
+        JxlColorProfile::Icc(icc) => {
+            ICCS.get_or_insert_with(icc.as_slice(), || color::to_srgb(icc).ok_or(()))
+        }
+    }
+    .ok()
 }
