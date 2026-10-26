@@ -157,5 +157,5 @@ export const calcNewDate = (timestamp: DateTime, selectedDuration: number, timez
   if (timezone) {
     newDateTime = newDateTime.setZone(timezone);
   }
-  return newDateTime.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+  return newDateTime;
 };
