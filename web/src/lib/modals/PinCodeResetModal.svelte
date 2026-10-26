@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { handleResetPinCode } from '$lib/services/user.service';
+  import { handleResetPinCode } from '#lib/services/user.service.js';
   import { BasicModal, Field, FormModal, HelperText, PasswordInput, Stack, type ModalSize } from '@immich/ui';
   import { mdiLockReset } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+  import { createPreloadedQuery } from '#lib/queries/client.js';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);

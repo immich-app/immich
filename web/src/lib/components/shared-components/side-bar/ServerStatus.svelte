@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { releaseManager } from '$lib/managers/release-manager.svelte';
-  import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
-  import { getAboutInfoQuery, getVersionHistoryQuery } from '$lib/queries/server.query';
-  import { websocketStore } from '$lib/stores/websocket';
-  import { semverToName } from '$lib/utils';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { releaseManager } from '#lib/managers/release-manager.svelte.js';
+  import ServerAboutModal from '#lib/modals/ServerAboutModal.svelte';
+  import { getAboutInfoQuery, getVersionHistoryQuery } from '#lib/queries/server-info.query.js';
+  import { websocketStore } from '#lib/stores/websocket.js';
+  import { semverToName } from '#lib/utils.js';
   import { type ReleaseEventV1 } from '@immich/sdk';
   import { Icon, modalManager, Text } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';

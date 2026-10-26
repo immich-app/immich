@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import FaceCreateTagModal from '$lib/modals/CreateFaceModal.svelte';
-  import { faceManager } from '$lib/stores/face.svelte';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { shortcut } from '#lib/actions/shortcut.js';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
+  import FaceCreateTagModal from '#lib/modals/CreateFaceModal.svelte';
+  import { faceManager } from '#lib/stores/face.svelte.js';
+  import { getPeopleThumbnailUrl } from '#lib/utils.js';
+  import { getNaturalSize, scaleToFit } from '#lib/utils/container-utils.js';
+  import { handleError } from '#lib/utils/handle-error.js';
+  import { normalizeSearchString } from '#lib/utils/string-utils.js';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';

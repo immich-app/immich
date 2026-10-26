@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
-  import { uploadAssetsStore } from '$lib/stores/upload';
-  import { uploadExecutionQueue } from '$lib/utils/file-uploader';
-  import { acquireWakeLock, releaseWakeLock } from '$lib/utils/wakelock.svelte';
+  import { locale } from '#lib/stores/preferences.store.js';
+  import { uploadAssetsStore } from '#lib/stores/upload.js';
+  import { uploadExecutionQueue } from '#lib/utils/file-uploader.js';
+  import { acquireWakeLock, releaseWakeLock } from '#lib/utils/wakelock.svelte.js';
   import { Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
   import { t } from 'svelte-i18n';

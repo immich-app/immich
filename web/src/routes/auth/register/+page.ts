@@ -1,8 +1,8 @@
+import { readPreloadedQuery } from '#lib/queries/client.js';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
+import { Route } from '#lib/route.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { redirect } from '@sveltejs/kit';
-import { readPreloadedQuery } from '$lib/queries/client';
-import { getServerConfigQuery } from '$lib/queries/server.query';
-import { Route } from '$lib/route';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ parent }) => {

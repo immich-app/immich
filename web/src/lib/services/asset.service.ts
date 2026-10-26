@@ -1,3 +1,21 @@
+import { ProjectionType } from '#lib/constants.js';
+import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
+import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import AssetAddToAlbumModal from '#lib/modals/AssetAddToAlbumModal.svelte';
+import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
+import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
+import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
+import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.js';
+import { executeMutation, readPreloadedQuery } from '#lib/queries/client.js';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+import { Route } from '#lib/route.js';
+import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.js';
+import { getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.js';
+import { downloadUrl } from '#lib/utils.js';
+import { handleError } from '#lib/utils/handle-error.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import {
   AssetJobName,
   AssetMediaSize,
@@ -42,24 +60,6 @@ import {
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
-import { ProjectionType } from '$lib/constants';
-import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
-import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
-import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
-import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { removeAssetFromAlbumMutation } from '$lib/queries/album.query';
-import { executeMutation, readPreloadedQuery } from '$lib/queries/client';
-import { getUserConfigQuery } from '$lib/queries/config-user.query';
-import { Route } from '$lib/route';
-import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
-import { downloadUrl } from '$lib/utils';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
   const assetIds = assetMultiSelectManager.assets.map((asset) => asset.id);

@@ -3,11 +3,11 @@
 </script>
 
 <script lang="ts">
-  import { useActions, type ActionArray } from '$lib/actions/use-actions';
-  import NavigationBar from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
-  import UserSidebar from '$lib/components/shared-components/side-bar/UserSidebar.svelte';
-  import type { HeaderButtonActionItem } from '$lib/types';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { useActions, type ActionArray } from '#lib/actions/use-actions.js';
+  import NavigationBar from '#lib/components/shared-components/navigation-bar/NavigationBar.svelte';
+  import UserSidebar from '#lib/components/shared-components/side-bar/UserSidebar.svelte';
+  import type { HeaderButtonActionItem } from '#lib/types.js';
+  import { openFileUploadDialog } from '#lib/utils/file-uploader.js';
   import { Button, ContextMenuButton, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';

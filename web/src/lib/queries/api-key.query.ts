@@ -1,6 +1,6 @@
+import { asMutation, queryClient } from '#lib/queries/client.js';
 import { createApiKey, deleteApiKey, getApiKeys, rotateApiKey, updateApiKey } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
-import { asMutation, queryClient } from '$lib/queries/client';
 
 export const getApiKeysQuery = () =>
   queryOptions({

@@ -1,4 +1,4 @@
-import { handlePromiseError } from '$lib/utils';
+import { handlePromiseError } from '#lib/utils.js';
 
 interface Options {
   concurrency: number;

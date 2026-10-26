@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { InterpolationValues } from '$lib/elements/format-message';
+  import type { InterpolationValues } from '#lib/elements/format-message.js';
   import {
     TYPE,
     type MessageFormatElement,

@@ -1,3 +1,16 @@
+import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { downloadManager } from '#lib/managers/download-manager.svelte.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+import { locale } from '#lib/stores/preferences.store.js';
+import { downloadUrlPost, withError } from '#lib/utils.js';
+import { getByteUnitString } from '#lib/utils/byte-units.js';
+import { getFormatter } from '#lib/utils/i18n.js';
+import { navigate } from '#lib/utils/navigation.js';
+import { asQueryString } from '#lib/utils/shared-links.js';
+import { toTimelineAsset } from '#lib/utils/timeline-util.js';
 import {
   AssetVisibility,
   getBaseUrl,
@@ -15,19 +28,6 @@ import { toastManager } from '@immich/ui';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { downloadManager } from '$lib/managers/download-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { locale } from '$lib/stores/preferences.store';
-import { downloadUrlPost, withError } from '$lib/utils';
-import { getByteUnitString } from '$lib/utils/byte-units';
-import { getFormatter } from '$lib/utils/i18n';
-import { navigate } from '$lib/utils/navigation';
-import { asQueryString } from '$lib/utils/shared-links';
-import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
 
 export const removeTag = async ({

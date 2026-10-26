@@ -1,7 +1,7 @@
 <script lang="ts">
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { PlacesGroupBy, placesViewSettings } from '$lib/stores/preferences.store';
-  import { collapseAllPlacesGroups, expandAllPlacesGroups } from '$lib/utils/places-utils';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { PlacesGroupBy, placesViewSettings } from '#lib/stores/preferences.store.js';
+  import { collapseAllPlacesGroups, expandAllPlacesGroups } from '#lib/utils/places-utils.js';
   import { IconButton, Select } from '@immich/ui';
   import { mdiUnfoldLessHorizontal, mdiUnfoldMoreHorizontal } from '@mdi/js';
   import { t } from 'svelte-i18n';

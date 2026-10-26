@@ -1,11 +1,15 @@
 <script lang="ts">
-  import AlbumSharedLink from '$lib/components/album-page/AlbumSharedLink.svelte';
-  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { getAlbumActions, handleRemoveUserFromAlbum, handleUpdateUserAlbumRole } from '$lib/services/album.service';
-  import { getAlbumQuery, updateAlbumInfoMutation } from '$lib/queries/album.query';
-  import { executeMutation, queryClient } from '$lib/queries/client';
-  import { getAllSharedLinksQuery } from '$lib/queries/shared-link.query';
+  import AlbumSharedLink from '#lib/components/album-page/AlbumSharedLink.svelte';
+  import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import {
+    getAlbumActions,
+    handleRemoveUserFromAlbum,
+    handleUpdateUserAlbumRole,
+  } from '#lib/services/album.service.js';
+  import { getAlbumQuery, updateAlbumInfoMutation } from '#lib/queries/album.query.js';
+  import { executeMutation, queryClient } from '#lib/queries/client.js';
+  import { getAllSharedLinksQuery } from '#lib/queries/shared-link.query.js';
   import {
     AlbumUserRole,
     AssetOrder,

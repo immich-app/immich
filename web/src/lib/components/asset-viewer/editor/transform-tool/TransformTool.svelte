@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
+  import { shortcuts } from '#lib/actions/shortcut.js';
+  import { transformManager } from '#lib/managers/edit/transform-manager.svelte.js';
   import { Button, HStack, IconButton } from '@immich/ui';
   import { mdiFlipHorizontal, mdiFlipVertical, mdiRotateLeft, mdiRotateRight } from '@mdi/js';
   import { t } from 'svelte-i18n';

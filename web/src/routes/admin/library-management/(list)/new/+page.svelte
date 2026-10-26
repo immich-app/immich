@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { createLibraryMutation } from '$lib/queries/library.query';
-  import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
-  import { Route } from '$lib/route';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.js';
+  import { createLibraryMutation } from '#lib/queries/library.query.js';
+  import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.js';
+  import { Route } from '#lib/route.js';
   import { Field, FormModal, HelperText, Select } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { t } from 'svelte-i18n';

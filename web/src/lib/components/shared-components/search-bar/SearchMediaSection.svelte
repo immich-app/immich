@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { MediaType } from '$lib/constants';
+  import { MediaType } from '#lib/constants.js';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.js';
   import SearchButton from './SearchButton.svelte';
 
   let filteredMedia = $derived(searchManager.filter.mediaType);

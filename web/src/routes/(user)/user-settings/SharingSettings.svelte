@@ -1,13 +1,13 @@
 <script lang="ts">
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import ClusterGroupUserSelectionModal from '$lib/modals/ClusterGroupUserSelectionModal.svelte';
-  import ClusterGroupUsersModal from '$lib/modals/ClusterGroupUsersModal.svelte';
-  import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
-  import { getPeopleUserActions } from '$lib/services/person-user.service';
-  import { handleError } from '$lib/utils/handle-error';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import ClusterGroupUserSelectionModal from '#lib/modals/ClusterGroupUserSelectionModal.svelte';
+  import ClusterGroupUsersModal from '#lib/modals/ClusterGroupUsersModal.svelte';
+  import PartnerSelectionModal from '#lib/modals/PartnerSelectionModal.svelte';
+  import { getPeopleUserActions } from '#lib/services/person-user.service.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import {
     acceptClusterGroupRequest,
     clusterGroupRegeneratePeople,

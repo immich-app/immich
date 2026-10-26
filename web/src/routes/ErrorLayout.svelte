@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { copyToClipboard } from '$lib/utils';
+  import { copyToClipboard } from '#lib/utils.js';
   import {
     Card,
     CardBody,

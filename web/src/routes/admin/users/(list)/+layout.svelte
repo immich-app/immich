@@ -1,11 +1,11 @@
 <script lang="ts">
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
-  import { Route } from '$lib/route';
-  import { getUserAdminActions, getUserAdminsActions } from '$lib/services/user-admin.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getByteUnitString } from '$lib/utils/byte-units';
+  import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.js';
+  import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.js';
+  import { Route } from '#lib/route.js';
+  import { getUserAdminActions, getUserAdminsActions } from '#lib/services/user-admin.service.js';
+  import { locale } from '#lib/stores/preferences.store.js';
+  import { getByteUnitString } from '#lib/utils/byte-units.js';
   import type { UserAdminResponseDto } from '@immich/sdk';
   import {
     CommandPaletteDefaultProvider,

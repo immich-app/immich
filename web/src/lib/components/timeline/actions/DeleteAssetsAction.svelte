@@ -1,10 +1,10 @@
 <script lang="ts">
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { type OnDelete, type OnUndoDelete, deleteAssets } from '$lib/utils/actions';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.js';
+  import AssetDeleteConfirmModal from '#lib/modals/AssetDeleteConfirmModal.svelte';
+  import { showDeleteModal } from '#lib/stores/preferences.store.js';
+  import { type OnDelete, type OnUndoDelete, deleteAssets } from '#lib/utils/actions.js';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiDeleteOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';

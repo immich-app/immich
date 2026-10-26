@@ -1,4 +1,4 @@
-import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
+import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.js';
 
 class SidebarStore {
   isOpen = $derived.by(() => mediaQueryManager.isFullSidebar);

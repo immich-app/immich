@@ -1,10 +1,10 @@
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.js';
+import Thumbnail from '#lib/components/assets/thumbnail/Thumbnail.svelte';
+import { getTabbable } from '#lib/utils/focus-util.js';
 import { render } from '@testing-library/svelte';
-import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
-import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
-import { getTabbable } from '$lib/utils/focus-util';
-import { assetFactory } from '@test-data/factories/asset-factory';
+import { assetFactory } from '#test-data/factories/asset-factory';
 
-vi.mock('$lib/utils/navigation', () => ({
+vi.mock('#lib/utils/navigation.js', () => ({
   currentUrlReplaceAssetId: vi.fn(),
   isSharedLinkRoute: vi.fn().mockReturnValue(false),
 }));

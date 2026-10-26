@@ -1,13 +1,13 @@
 <script lang="ts">
-  import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
-  import VideoRemoteViewer from '$lib/components/asset-viewer/VideoRemoteViewer.svelte';
-  import { assetViewerFadeDuration } from '$lib/constants';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
-  import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
-  import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import FaceEditor from '#lib/components/asset-viewer/face-editor/FaceEditor.svelte';
+  import VideoRemoteViewer from '#lib/components/asset-viewer/VideoRemoteViewer.svelte';
+  import { assetViewerFadeDuration } from '#lib/constants.js';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
+  import { castManager } from '#lib/managers/cast-manager.svelte.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { mediaCapabilitiesManager } from '#lib/managers/media-capabilities-manager.svelte.js';
+  import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '#lib/stores/preferences.store.js';
+  import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '#lib/utils.js';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon, LoadingSpinner, shortcuts } from '@immich/ui';
   import {
@@ -44,8 +44,8 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import './immich-time-range';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+  import { createPreloadedQuery } from '#lib/queries/client.js';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
 
   const query = createPreloadedQuery(getPublicConfigQuery);
   const publicConfig = $derived(query.data);

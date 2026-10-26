@@ -1,10 +1,6 @@
-import type { AlbumResponseDto } from '@immich/sdk';
-import { orderBy } from 'lodash-es';
-import { get } from 'svelte/store';
-import { goto } from '$app/navigation';
-import { createAlbumMutation } from '$lib/queries/album.query';
-import { executeMutation } from '$lib/queries/client';
-import { Route } from '$lib/route';
+import { createAlbumMutation } from '#lib/queries/album.query.js';
+import { executeMutation } from '#lib/queries/client.js';
+import { Route } from '#lib/route.js';
 import {
   AlbumFilter,
   AlbumGroupBy,
@@ -13,7 +9,11 @@ import {
   albumViewSettings,
   locale,
   type AlbumViewSettings,
-} from '$lib/stores/preferences.store';
+} from '#lib/stores/preferences.store.js';
+import type { AlbumResponseDto } from '@immich/sdk';
+import { orderBy } from 'lodash-es';
+import { get } from 'svelte/store';
+import { goto } from '$app/navigation';
 
 /**
  * -------------------------

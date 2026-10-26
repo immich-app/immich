@@ -1,7 +1,7 @@
 <script lang="ts">
-  import AlbumThumbnail from '$lib/components/album-page/AlbumThumbnail.svelte';
+  import AlbumThumbnail from '#lib/components/album-page/AlbumThumbnail.svelte';
   import { Button, Text, Label, modalManager } from '@immich/ui';
-  import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
+  import AlbumPickerModal from '#lib/modals/AlbumPickerModal.svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {

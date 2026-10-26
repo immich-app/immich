@@ -1,6 +1,6 @@
+import { asMutation, queryClient } from '#lib/queries/client.js';
 import { deleteAllSessions, deleteSession, getSessions } from '@immich/sdk';
 import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
-import { asMutation, queryClient } from '$lib/queries/client';
 
 export const getSessionsQuery = () =>
   queryOptions({

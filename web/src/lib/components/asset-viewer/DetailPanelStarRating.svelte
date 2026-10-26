@@ -1,8 +1,8 @@
 <script lang="ts">
-  import StarRating, { type Rating } from '$lib/elements/StarRating.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import StarRating, { type Rating } from '#lib/elements/StarRating.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { handlePromiseError } from '#lib/utils.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 

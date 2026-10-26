@@ -1,8 +1,8 @@
+import { fromQueueSlug, Route } from '#lib/route.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { getQueue, getQueueJobs, QueueJobStatus } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
-import { fromQueueSlug, Route } from '$lib/route';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {

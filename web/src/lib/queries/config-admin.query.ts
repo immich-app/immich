@@ -1,12 +1,12 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { queryClient } from '#lib/queries/client.js';
+import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { getAdminConfig, getAdminConfigDefaults, updateAdminConfig, type AdminConfigDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
 import { isEqual } from 'lodash-es';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { queryClient } from '$lib/queries/client';
-import { getPublicConfigQuery } from '$lib/queries/config-public.query';
-import { getUserConfigQuery } from '$lib/queries/config-user.query';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getAdminConfigQuery = () =>
   queryOptions({

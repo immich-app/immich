@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { focusOutside } from '$lib/actions/focus-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { Route } from '$lib/route';
-  import { searchStore } from '$lib/stores/search.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { generateId } from '$lib/utils/generate-id';
+  import { focusOutside } from '#lib/actions/focus-outside.js';
+  import { shortcuts } from '#lib/actions/shortcut.js';
+  import { Route } from '#lib/route.js';
+  import { searchStore } from '#lib/stores/search.svelte.js';
+  import { handlePromiseError } from '#lib/utils.js';
+  import { generateId } from '#lib/utils/generate-id.js';
   import { IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import SearchFilters from './SearchFilters.svelte';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.js';
   import { getSearchTypePlaceholder, isPopoverContent } from './search-bar-utils';
 
   type Props = {

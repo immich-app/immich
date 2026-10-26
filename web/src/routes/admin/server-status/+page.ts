@@ -1,9 +1,9 @@
+import { queryClient } from '#lib/queries/client.js';
+import { getServerStatisticsQuery } from '#lib/queries/server-info.query.js';
+import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { noop } from 'lodash-es';
-import { queryClient } from '$lib/queries/client';
-import { getServerStatisticsQuery } from '$lib/queries/server.query';
-import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

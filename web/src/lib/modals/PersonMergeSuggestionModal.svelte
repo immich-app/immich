@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import { getPeopleThumbnailUrl } from '#lib/utils.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { mergePeople, type PersonResponseDto } from '@immich/sdk';
   import { FormModal, Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiCallMerge, mdiSwapHorizontal } from '@mdi/js';

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { updateMyPreferences } from '@immich/sdk';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';

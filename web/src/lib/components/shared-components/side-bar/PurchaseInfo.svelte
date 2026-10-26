@@ -1,13 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { OpenQueryParam } from '$lib/constants';
-  import Portal from '$lib/elements/Portal.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
-  import { Route } from '$lib/route';
-  import { getAccountAge } from '$lib/utils/auth';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getButtonVisibility } from '$lib/utils/purchase-utils';
+  import { OpenQueryParam } from '#lib/constants.js';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import PurchaseModal from '#lib/modals/PurchaseModal.svelte';
+  import { Route } from '#lib/route.js';
+  import { getAccountAge } from '#lib/utils/auth.js';
+  import { handleError } from '#lib/utils/handle-error.js';
+  import { getButtonVisibility } from '#lib/utils/purchase-utils.js';
   import { updateMyPreferences } from '@immich/sdk';
   import { Button, Icon, IconButton, Logo, modalManager, SupporterBadge } from '@immich/ui';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';

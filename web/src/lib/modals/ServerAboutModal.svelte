@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ServerAboutItem from '$lib/components/ServerAboutItem.svelte';
-  import { locale } from '$lib/stores/preferences.store';
+  import ServerAboutItem from '#lib/components/ServerAboutItem.svelte';
+  import { locale } from '#lib/stores/preferences.store.js';
   import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
   import { Alert, Label, Modal, ModalBody } from '@immich/ui';
   import { DateTime } from 'luxon';

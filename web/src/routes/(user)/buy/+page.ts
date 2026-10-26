@@ -1,7 +1,7 @@
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
-import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
+import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
+import { activateProduct, getActivationKey } from '#lib/utils/license-utils.js';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

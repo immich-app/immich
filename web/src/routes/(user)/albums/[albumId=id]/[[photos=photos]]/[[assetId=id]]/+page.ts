@@ -1,6 +1,6 @@
-import { getAlbumInfoQuery } from '$lib/queries/album.query';
-import { queryClient } from '$lib/queries/client';
-import { authenticate } from '$lib/utils/auth';
+import { getAlbumInfoQuery } from '#lib/queries/album.query.js';
+import { queryClient } from '#lib/queries/client.js';
+import { authenticate } from '#lib/utils/auth.js';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {

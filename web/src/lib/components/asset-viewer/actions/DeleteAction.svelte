@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { AssetAction } from '$lib/constants';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { deleteAssets as deleteAssetsUtil, type OnUndoDelete } from '$lib/utils/actions';
-  import { handleError } from '$lib/utils/handle-error';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { shortcuts } from '#lib/actions/shortcut.js';
+  import { AssetAction } from '#lib/constants.js';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.js';
+  import AssetDeleteConfirmModal from '#lib/modals/AssetDeleteConfirmModal.svelte';
+  import { showDeleteModal } from '#lib/stores/preferences.store.js';
+  import { deleteAssets as deleteAssetsUtil, type OnUndoDelete } from '#lib/utils/actions.js';
+  import { handleError } from '#lib/utils/handle-error.js';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
   import { IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';

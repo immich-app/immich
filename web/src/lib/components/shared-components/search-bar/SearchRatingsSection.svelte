@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.js';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import SearchButton from './SearchButton.svelte';

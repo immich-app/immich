@@ -1,3 +1,8 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
+import { handleError } from '#lib/utils/handle-error.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { toastManager } from '@immich/ui';
 import {
   createQuery,
@@ -16,11 +21,6 @@ import {
 } from '@tanstack/svelte-query';
 import { noop } from 'lodash-es';
 import type { Translations } from 'svelte-i18n';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { getPublicConfigQuery } from '$lib/queries/config-public.query';
-import { getServerConfigQuery } from '$lib/queries/server.query';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 type ToastMeta =
   true | Translations | { color: 'primary' | 'success' | 'info' | 'warning' | 'danger'; description: Translations };

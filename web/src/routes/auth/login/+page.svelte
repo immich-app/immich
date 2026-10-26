@@ -1,16 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { createPreloadedQuery, MutationCancelledError } from '$lib/queries/client';
-  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
-  import { loginWithPasskeyMutation } from '$lib/queries/passkey.query';
-  import { getServerConfigQuery } from '$lib/queries/server.query';
-  import { Route } from '$lib/route';
+  import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
+  import { eventManager } from '#lib/managers/event-manager.svelte.js';
+  import { createPreloadedQuery, MutationCancelledError } from '#lib/queries/client.js';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
+  import { loginWithPasskeyMutation } from '#lib/queries/passkey.query.js';
+  import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
+  import { Route } from '#lib/route.js';
   import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
   import { createMutation } from '@tanstack/svelte-query';
-  import { oauth } from '$lib/utils';
-  import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
+  import { oauth } from '#lib/utils.js';
+  import { getServerErrorMessage, handleError } from '#lib/utils/handle-error.js';
   import { login, type LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
   import { mdiShieldKeyOutline } from '@mdi/js';
@@ -51,7 +51,7 @@
   );
 
   const onSuccess = async (user: LoginResponseDto) => {
-    await goto(data.continueUrl, { invalidateAll: true });
+    await goto(data.continueUrl, { refreshAll: true });
     eventManager.emit('AuthLogin', user);
   };
 

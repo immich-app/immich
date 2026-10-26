@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { pluginManager } from '$lib/managers/plugin-manager.svelte';
-  import { executeMutation } from '$lib/queries/client';
-  import { createWorkflowMutation } from '$lib/queries/workflow.query';
-  import { Route } from '$lib/route';
+  import { pluginManager } from '#lib/managers/plugin-manager.svelte.js';
+  import { executeMutation } from '#lib/queries/client.js';
+  import { createWorkflowMutation } from '#lib/queries/workflow.query.js';
+  import { Route } from '#lib/route.js';
   import { type PluginTemplateResponseDto } from '@immich/sdk';
   import { Badge, FormModal, Icon, ListButton, Text } from '@immich/ui';
   import { mdiFlashOutline } from '@mdi/js';

@@ -1,8 +1,8 @@
+import type { OcrBoundingBox } from '#lib/stores/ocr.svelte.js';
+import { mapNormalizedToContent, type Point, type Size } from '#lib/utils/container-utils.js';
 import { clamp } from 'lodash-es';
-import type { OcrBoundingBox } from '$lib/stores/ocr.svelte';
-import { mapNormalizedToContent, type Point, type Size } from '$lib/utils/container-utils';
 
-export type { Point } from '$lib/utils/container-utils';
+export type { Point } from '#lib/utils/container-utils.js';
 
 const distance = (p1: Point, p2: Point) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
 

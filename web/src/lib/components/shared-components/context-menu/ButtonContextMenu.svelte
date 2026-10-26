@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import ContextMenu from '$lib/components/shared-components/context-menu/ContextMenu.svelte';
-  import { languageManager } from '$lib/managers/language-manager.svelte';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
+  import { contextMenuNavigation } from '#lib/actions/context-menu-navigation.js';
+  import { shortcuts } from '#lib/actions/shortcut.js';
+  import ContextMenu from '#lib/components/shared-components/context-menu/ContextMenu.svelte';
+  import { languageManager } from '#lib/managers/language-manager.svelte.js';
+  import { optionClickCallbackStore, selectedIdStore } from '#lib/stores/context-menu.store.js';
   import {
     getContextMenuPositionFromBoundingRect,
     getContextMenuPositionFromEvent,
     type Align,
-  } from '$lib/utils/context-menu';
-  import { generateId } from '$lib/utils/generate-id';
+  } from '#lib/utils/context-menu.js';
+  import { generateId } from '#lib/utils/generate-id.js';
   import { IconButton, type Color, type Size, type Variants } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';

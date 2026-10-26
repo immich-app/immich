@@ -1,5 +1,5 @@
-import type { AssetAction } from '$lib/constants';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { AssetAction } from '#lib/constants.js';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
 
 type ActionMap = {
   [AssetAction.ARCHIVE]: { asset: TimelineAsset };

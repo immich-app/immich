@@ -1,0 +1,1 @@
+{ "extends": "$app/tsconfig/service-worker" }

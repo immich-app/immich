@@ -1,8 +1,8 @@
+import { getAllAlbumsQuery } from '#lib/queries/album.query.js';
+import { queryClient } from '#lib/queries/client.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { PartnerDirection, getPartners } from '@immich/sdk';
-import { getAllAlbumsQuery } from '$lib/queries/album.query';
-import { queryClient } from '$lib/queries/client';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

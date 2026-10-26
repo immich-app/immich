@@ -1,3 +1,8 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { uploadRequest } from '#lib/utils.js';
+import { openFilePicker } from '#lib/utils/file-uploader.js';
+import { handleError } from '#lib/utils/handle-error.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import {
   deleteDatabaseBackup,
   getBaseUrl,
@@ -8,11 +13,6 @@ import {
 import { modalManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { uploadRequest } from '$lib/utils';
-import { openFilePicker } from '$lib/utils/file-uploader';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string) => {
   const Download: ActionItem = {

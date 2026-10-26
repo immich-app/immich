@@ -1,33 +1,33 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
-  import SearchBar from '$lib/components/shared-components/search-bar/SearchBar.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { QueryParameter } from '$lib/constants';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
-  import type { Viewport } from '$lib/managers/timeline-manager/types';
-  import { Route } from '$lib/route';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { lang, locale } from '$lib/stores/preferences.store';
-  import { handlePromiseError } from '$lib/utils';
-  import { parseUtcDate } from '$lib/utils/date-time';
-  import { handleError } from '$lib/utils/handle-error';
-  import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
+  import GalleryViewer from '#lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
+  import SearchBar from '#lib/components/shared-components/search-bar/SearchBar.svelte';
+  import ArchiveAction from '#lib/components/timeline/actions/ArchiveAction.svelte';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import { QueryParameter } from '#lib/constants.js';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
+  import { searchManager } from '#lib/managers/search-manager.svelte.js';
+  import type { Viewport } from '#lib/managers/timeline-manager/types.js';
+  import { Route } from '#lib/route.js';
+  import { getAssetBulkActions } from '#lib/services/asset.service.js';
+  import { lang, locale } from '#lib/stores/preferences.store.js';
+  import { handlePromiseError } from '#lib/utils.js';
+  import { parseUtcDate } from '#lib/utils/date-time.js';
+  import { handleError } from '#lib/utils/handle-error.js';
+  import { isAlbumsRoute, isPeopleRoute } from '#lib/utils/navigation.js';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
   import {
     type AlbumResponseDto,
     type AssetResponseDto,
@@ -43,8 +43,8 @@
   import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { onMount, tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+  import { createPreloadedQuery } from '#lib/queries/client.js';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);
@@ -82,7 +82,9 @@
     }
   });
 
-  afterNavigate(({ from }) => {
+  afterNavigate(({ from, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     // Prevent setting previousRoute to the current page.
     if (from?.url && from.route.id !== page.route.id) {
       previousRoute = from.url.href;
@@ -252,7 +254,6 @@
 </script>
 
 <svelte:window bind:scrollY />
-
 <OnEvents {onAlbumAddAssets} />
 
 {#if searchTermKeys.length > 0}
@@ -379,7 +380,9 @@
               <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} />
               <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
               <ActionMenuItem action={Actions.Tag} />
+
               <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
+
               <hr />
               <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
               <ActionMenuItem action={Actions.RefreshMetadataJob} />

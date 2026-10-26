@@ -1,10 +1,10 @@
+import type { ImmichProduct } from '#lib/constants.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { queryClient, readPreloadedQuery } from '#lib/queries/client.js';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+import { getAboutInfoQuery } from '#lib/queries/server-info.query.js';
 import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
-import { PUBLIC_IMMICH_BUY_HOST, PUBLIC_IMMICH_PAY_HOST } from '$env/static/public';
-import type { ImmichProduct } from '$lib/constants';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { queryClient, readPreloadedQuery } from '$lib/queries/client';
-import { getUserConfigQuery } from '$lib/queries/config-user.query';
-import { getAboutInfoQuery } from '$lib/queries/server.query';
+import { PUBLIC_IMMICH_BUY_HOST, PUBLIC_IMMICH_PAY_HOST } from '$app/env/public';
 
 export const activateProduct = async (licenseKey: string, activationKey: string): Promise<LicenseResponseDto> => {
   // TODO is this needed?

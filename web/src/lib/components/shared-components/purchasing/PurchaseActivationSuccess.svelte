@@ -1,7 +1,7 @@
 <script lang="ts">
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { setSupportBadgeVisibility } from '#lib/utils/purchase-utils.js';
   import { Button, Icon } from '@immich/ui';
   import { mdiPartyPopper } from '@mdi/js';
   import { t } from 'svelte-i18n';
