@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
-  import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
-  import { uploadAssetsStore } from '$lib/stores/upload';
-  import type { CommonPosition } from '$lib/utils/layout-utils';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+  import type { ViewerAsset } from '#lib/managers/timeline-manager/viewer-asset.svelte.js';
+  import type { VirtualScrollManager } from '#lib/managers/VirtualScrollManager/VirtualScrollManager.svelte.js';
+  import { uploadAssetsStore } from '#lib/stores/upload.js';
+  import type { CommonPosition } from '#lib/utils/layout-utils.js';
   import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
   import { scale } from 'svelte/transition';

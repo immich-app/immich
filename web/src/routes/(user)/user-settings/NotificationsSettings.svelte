@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { updateMyPreferences } from '@immich/sdk';
   import { Button, Field, Switch, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';

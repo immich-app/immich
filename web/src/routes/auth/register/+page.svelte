@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import { queryClient } from '$lib/queries/client';
-  import { getServerConfigQuery } from '$lib/queries/server.query';
-  import { Route } from '$lib/route';
-  import { handleError } from '$lib/utils/handle-error';
+  import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
+  import { queryClient } from '#lib/queries/client.js';
+  import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
+  import { Route } from '#lib/route.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { signUpAdmin } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';

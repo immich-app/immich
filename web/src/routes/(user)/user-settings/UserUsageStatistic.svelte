@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getHeatmapRange } from '$lib';
-  import CalendarHeatmap from '$lib/components/CalendarHeatmap.svelte';
-  import Skeleton from '$lib/elements/Skeleton.svelte';
-  import { getAlbumStatisticsQuery } from '$lib/queries/album.query';
-  import { locale } from '$lib/stores/preferences.store';
+  import { getHeatmapRange } from '#lib';
+  import CalendarHeatmap from '#lib/components/CalendarHeatmap.svelte';
+  import Skeleton from '#lib/elements/Skeleton.svelte';
+  import { getAlbumStatisticsQuery } from '#lib/queries/album.query.js';
+  import { locale } from '#lib/stores/preferences.store.js';
   import {
     AssetVisibility,
     CalendarHeatmapType,

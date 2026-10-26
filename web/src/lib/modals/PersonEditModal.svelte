@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleUpdatePerson } from '$lib/services/person.service';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { handleUpdatePerson } from '#lib/services/person.service.js';
   import { PersonUpdateStrategy, type PersonResponseDto } from '@immich/sdk';
   import { Checkbox, DatePicker, Field, FormModal, HelperText, HStack, Input, Label, Stack } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';

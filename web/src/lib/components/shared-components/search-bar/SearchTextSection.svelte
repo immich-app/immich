@@ -1,11 +1,11 @@
 <script lang="ts">
   import { getSearchTypeTitle } from './search-bar-utils';
   import SearchButton from './SearchButton.svelte';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.js';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+  import { createPreloadedQuery } from '#lib/queries/client.js';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);

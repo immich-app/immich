@@ -1,8 +1,8 @@
 <script lang="ts">
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import type { OnSetVisibility } from '$lib/utils/actions';
-  import { handleError } from '$lib/utils/handle-error';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
+  import type { OnSetVisibility } from '#lib/utils/actions.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { AssetVisibility, updateAssets } from '@immich/sdk';
   import { Button, modalManager } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline } from '@mdi/js';

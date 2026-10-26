@@ -1,6 +1,6 @@
-import type { Faces } from '$lib/managers/asset-viewer-manager.svelte';
-import type { Size } from '$lib/utils/container-utils';
-import { getBoundingBox } from '$lib/utils/people-utils';
+import type { Faces } from '#lib/managers/asset-viewer-manager.svelte.js';
+import type { Size } from '#lib/utils/container-utils.js';
+import { getBoundingBox } from '#lib/utils/people-utils.js';
 
 const makeFace = (overrides: Partial<Faces> = {}): Faces => ({
   id: 'face-1',

@@ -1,4 +1,4 @@
-import { getWorkflowDefaultConfig } from '$lib/utils/workflow';
+import { getWorkflowDefaultConfig } from '#lib/utils/workflow.js';
 
 describe(getWorkflowDefaultConfig.name, () => {
   describe('required properties', () => {

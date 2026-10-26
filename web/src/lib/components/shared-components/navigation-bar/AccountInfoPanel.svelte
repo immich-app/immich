@@ -1,11 +1,11 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { focusTrap } from '$lib/actions/focus-trap';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
-  import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
-  import { Route } from '$lib/route';
-  import { getAboutInfoQuery } from '$lib/queries/server.query';
+  import { focusTrap } from '#lib/actions/focus-trap.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import AvatarEditModal from '#lib/modals/AvatarEditModal.svelte';
+  import HelpAndFeedbackModal from '#lib/modals/HelpAndFeedbackModal.svelte';
+  import { Route } from '#lib/route.js';
+  import { getAboutInfoQuery } from '#lib/queries/server-info.query.js';
   import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';

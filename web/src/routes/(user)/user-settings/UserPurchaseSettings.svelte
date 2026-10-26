@@ -1,15 +1,15 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
 
-  import PurchaseContent from '$lib/components/shared-components/purchasing/PurchaseContent.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import { dateFormats } from '$lib/constants';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getAboutInfoQuery } from '$lib/queries/server.query';
-  import { queryClient } from '$lib/queries/client';
-  import { locale } from '$lib/stores/preferences.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
+  import PurchaseContent from '#lib/components/shared-components/purchasing/PurchaseContent.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import { dateFormats } from '#lib/constants.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { getAboutInfoQuery } from '#lib/queries/server-info.query.js';
+  import { queryClient } from '#lib/queries/client.js';
+  import { locale } from '#lib/stores/preferences.store.js';
+  import { handleError } from '#lib/utils/handle-error.js';
+  import { setSupportBadgeVisibility } from '#lib/utils/purchase-utils.js';
   import {
     deleteUserLicense as deleteIndividualProductKey,
     deleteServerLicense as deleteServerProductKey,

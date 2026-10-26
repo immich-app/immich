@@ -1,9 +1,9 @@
+import { queryClient } from '#lib/queries/client.js';
+import { getLibraryQuery } from '#lib/queries/library.query.js';
+import { Route } from '#lib/route.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { redirect } from '@sveltejs/kit';
-import { queryClient } from '$lib/queries/client';
-import { getLibraryQuery } from '$lib/queries/library.query';
-import { Route } from '$lib/route';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { LayoutLoad } from './$types';
 
 export const load = (async ({ params: { id }, url }) => {

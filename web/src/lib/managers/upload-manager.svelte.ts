@@ -1,7 +1,7 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { uploadAssetsStore } from '#lib/stores/upload.js';
+import { cancelUploadRequests } from '#lib/utils.js';
 import { getSupportedMediaTypes, type ServerMediaTypesResponseDto } from '@immich/sdk';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { uploadAssetsStore } from '$lib/stores/upload';
-import { cancelUploadRequests } from '$lib/utils';
 
 class UploadManager {
   mediaTypes = $state<ServerMediaTypesResponseDto>({ image: [], sidecar: [], video: [] });

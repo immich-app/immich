@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import { handleError } from '$lib/utils/handle-error';
+  import { shortcut } from '#lib/actions/shortcut.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
   import { Textarea, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';

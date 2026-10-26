@@ -1,3 +1,13 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import PasswordResetSuccessModal from '#lib/modals/PasswordResetSuccessModal.svelte';
+import UserDeleteConfirmModal from '#lib/modals/UserDeleteConfirmModal.svelte';
+import UserRestoreConfirmModal from '#lib/modals/UserRestoreConfirmModal.svelte';
+import { executeMutation, readPreloadedQuery } from '#lib/queries/client.js';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+import { updateUserAdminMutation } from '#lib/queries/user-admin.query.js';
+import { Route } from '#lib/route.js';
+import type { HeaderButtonActionItem } from '#lib/types.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { UserStatus, type UserAdminResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import {
@@ -12,16 +22,6 @@ import {
 import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
-import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
-import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
-import { executeMutation, readPreloadedQuery } from '$lib/queries/client';
-import { getUserConfigQuery } from '$lib/queries/config-user.query';
-import { updateUserAdminMutation } from '$lib/queries/user-admin.query';
-import { Route } from '$lib/route';
-import type { HeaderButtonActionItem } from '$lib/types';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getUserAdminsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {

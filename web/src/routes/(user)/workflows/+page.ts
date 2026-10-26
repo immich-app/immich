@@ -1,8 +1,8 @@
-import { pluginManager } from '$lib/managers/plugin-manager.svelte';
-import { queryClient } from '$lib/queries/client';
-import { searchWorkflowsQuery } from '$lib/queries/workflow.query';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
+import { pluginManager } from '#lib/managers/plugin-manager.svelte.js';
+import { queryClient } from '#lib/queries/client.js';
+import { searchWorkflowsQuery } from '#lib/queries/workflow.query.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

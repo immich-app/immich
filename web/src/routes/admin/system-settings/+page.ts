@@ -1,7 +1,7 @@
-import { queryClient } from '$lib/queries/client';
-import { getAdminConfigDefaultsQuery } from '$lib/queries/config-admin.query';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
+import { queryClient } from '#lib/queries/client.js';
+import { getAdminConfigDefaultsQuery } from '#lib/queries/config-admin.query.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

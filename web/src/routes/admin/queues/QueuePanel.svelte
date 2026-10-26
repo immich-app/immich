@@ -1,11 +1,11 @@
 <script lang="ts">
   import QueueCard from './QueueCard.svelte';
   import QueueStorageMigrationDescription from './QueueStorageMigrationDescription.svelte';
-  import { queueManager } from '$lib/managers/queue-manager.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
-  import { asQueueItem } from '$lib/services/queue.service';
-  import { handleError } from '$lib/utils/handle-error';
+  import { queueManager } from '#lib/managers/queue-manager.svelte.js';
+  import { createPreloadedQuery } from '#lib/queries/client.js';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+  import { asQueueItem } from '#lib/services/queue.service.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import {
     QueueCommand,
     type QueueCommandDto,

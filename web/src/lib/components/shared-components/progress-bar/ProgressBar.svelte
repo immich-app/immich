@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { ProgressBarStatus } from '$lib/constants';
-  import { handlePromiseError } from '$lib/utils';
+  import { ProgressBarStatus } from '#lib/constants.js';
+  import { handlePromiseError } from '#lib/utils.js';
 
   import { onMount } from 'svelte';
   import { tweened } from 'svelte/motion';

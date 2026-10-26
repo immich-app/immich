@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { lang, locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { getAllMetadataItems, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAlbumsByAssetQuery } from '$lib/queries/album.query';
+  import { lang, locale } from '#lib/stores/preferences.store.js';
+  import { getAssetMediaUrl } from '#lib/utils.js';
+  import { getAllMetadataItems, type DifferingMetadataFields } from '#lib/utils/duplicate-utils.js';
+  import { getAltText } from '#lib/utils/thumbnail-util.js';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
+  import { getAlbumsByAssetQuery } from '#lib/queries/album.query.js';
   import { type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiBookmarkOutline, mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';

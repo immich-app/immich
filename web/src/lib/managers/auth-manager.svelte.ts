@@ -1,3 +1,10 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { queryClient } from '#lib/queries/client.js';
+import { getAdminConfigQuery } from '#lib/queries/config-admin.query.js';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+import { getAboutInfoQuery } from '#lib/queries/server-info.query.js';
+import { Route } from '#lib/route.js';
+import { isSharedLinkRoute } from '#lib/utils/navigation.js';
 import {
   getMyPreferences,
   getMyUser,
@@ -5,16 +12,9 @@ import {
   type UserAdminResponseDto,
   type UserPreferencesResponseDto,
 } from '@immich/sdk';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { queryClient } from '$lib/queries/client';
-import { getAdminConfigQuery } from '$lib/queries/config-admin.query';
-import { getUserConfigQuery } from '$lib/queries/config-user.query';
-import { getAboutInfoQuery } from '$lib/queries/server.query';
-import { Route } from '$lib/route';
-import { isSharedLinkRoute } from '$lib/utils/navigation';
 
 class AuthManager {
   isPurchased = $state(false);

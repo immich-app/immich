@@ -1,3 +1,6 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { handleError } from '#lib/utils/handle-error.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import {
   changePassword,
   lockAuthSession,
@@ -8,9 +11,6 @@ import {
 import { toastManager, type ActionItem } from '@immich/ui';
 import { mdiLockOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getUserActions = ($t: MessageFormatter) => {
   const LockSession: ActionItem = {

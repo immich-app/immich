@@ -1,5 +1,5 @@
+import { getTabbable } from '#lib/utils/focus-util.js';
 import { tick } from 'svelte';
-import { getTabbable } from '$lib/utils/focus-util';
 
 interface Options {
   /**

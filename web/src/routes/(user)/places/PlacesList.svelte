@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { PlacesGroupBy, type PlacesViewSettings } from '$lib/stores/preferences.store';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { PlacesGroupBy, type PlacesViewSettings } from '#lib/stores/preferences.store.js';
+  import { normalizeSearchString } from '#lib/utils/string-utils.js';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiMapMarkerOff } from '@mdi/js';
   import { groupBy } from 'lodash-es';
   import PlacesCardGroup from './PlacesCardGroup.svelte';
 
-  import { type PlacesGroup } from '$lib/utils/places-utils';
+  import { type PlacesGroup } from '#lib/utils/places-utils.js';
   import { Icon } from '@immich/ui';
   import { t } from 'svelte-i18n';
 

@@ -1,22 +1,22 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import { getPagesProvider, getSettingsProvider } from '$lib/commands';
+  import { getPagesProvider, getSettingsProvider } from '#lib/commands.js';
   import DownloadPanel from './DownloadPanel.svelte';
   import ErrorLayout from './ErrorLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
   import NavigationLoadingBar from './NavigationLoadingBar.svelte';
   import UploadPanel from './UploadPanel.svelte';
   import VersionAnnouncement from './VersionAnnouncement.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
-  import { queryClient } from '$lib/queries/client';
-  import { Route } from '$lib/route';
-  import { lang, locale } from '$lib/stores/preferences.store';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
-  import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { eventManager } from '#lib/managers/event-manager.svelte.js';
+  import ServerRestartingModal from '#lib/modals/ServerRestartingModal.svelte';
+  import { queryClient } from '#lib/queries/client.js';
+  import { Route } from '#lib/route.js';
+  import { lang, locale } from '#lib/stores/preferences.store.js';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.js';
+  import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '#lib/stores/websocket.js';
+  import { maintenanceShouldRedirect } from '#lib/utils/maintenance.js';
   import { getServerConfig } from '@immich/sdk';
   import {
     CommandPaletteProvider,
@@ -178,7 +178,9 @@
 
   eventManager.emit('AppInit');
 
-  beforeNavigate(({ from, to }) => {
+  beforeNavigate(({ from, to, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     if (sidebarStore.isOpen) {
       sidebarStore.reset();
     }
@@ -196,7 +198,9 @@
     showNavigationLoadingBar = true;
   });
 
-  afterNavigate(() => {
+  afterNavigate(({ shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     showNavigationLoadingBar = false;
   });
 
@@ -245,7 +249,7 @@
 <QueryClientProvider client={queryClient}>
   <TooltipProvider>
     {#if page.data.error}
-      <ErrorLayout error={page.data.error}></ErrorLayout>
+      <ErrorLayout error={page.data.error} />
     {:else}
       {@render children?.()}
     {/if}

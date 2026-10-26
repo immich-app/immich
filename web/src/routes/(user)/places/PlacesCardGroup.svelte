@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Route } from '$lib/route';
-  import { placesViewSettings } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '$lib/utils/places-utils';
+  import { Route } from '#lib/route.js';
+  import { placesViewSettings } from '#lib/stores/preferences.store.js';
+  import { getAssetMediaUrl } from '#lib/utils.js';
+  import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '#lib/utils/places-utils.js';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiChevronRight } from '@mdi/js';

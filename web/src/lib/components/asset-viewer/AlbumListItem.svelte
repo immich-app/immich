@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { normalizeSearchString } from '$lib/utils/string-utils.js';
+  import { SCROLL_PROPERTIES } from '#lib/components/shared-components/album-selection/album-selection-utils.js';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.js';
+  import { getAssetMediaUrl } from '#lib/utils.js';
+  import { normalizeSearchString } from '#lib/utils/string-utils.js';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiCheckCircle } from '@mdi/js';

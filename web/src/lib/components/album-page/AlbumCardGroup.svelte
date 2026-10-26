@@ -1,10 +1,10 @@
 <script lang="ts">
-  import AlbumCard from '$lib/components/album-page/AlbumCard.svelte';
-  import Portal from '$lib/elements/Portal.svelte';
-  import { Route } from '$lib/route';
-  import { getAlbumActions } from '$lib/services/album.service';
-  import { albumViewSettings } from '$lib/stores/preferences.store';
-  import { type AlbumGroup, isAlbumGroupCollapsed, toggleAlbumGroupCollapsing } from '$lib/utils/album-utils';
+  import AlbumCard from '#lib/components/album-page/AlbumCard.svelte';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { Route } from '#lib/route.js';
+  import { getAlbumActions } from '#lib/services/album.service.js';
+  import { albumViewSettings } from '#lib/stores/preferences.store.js';
+  import { type AlbumGroup, isAlbumGroupCollapsed, toggleAlbumGroupCollapsing } from '#lib/utils/album-utils.js';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { Icon, menuManager, type ActionItem } from '@immich/ui';
   import { mdiChevronRight } from '@mdi/js';

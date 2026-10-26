@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { cleanClass } from '$lib';
-  import { queueManager } from '$lib/managers/queue-manager.svelte';
-  import type { QueueSnapshot } from '$lib/types';
+  import { cleanClass } from '#lib';
+  import { queueManager } from '#lib/managers/queue-manager.svelte.js';
+  import type { QueueSnapshot } from '#lib/types.js';
   import type { QueueResponseDto } from '@immich/sdk';
   import { LoadingSpinner, Theme, themeManager } from '@immich/ui';
   import { DateTime } from 'luxon';

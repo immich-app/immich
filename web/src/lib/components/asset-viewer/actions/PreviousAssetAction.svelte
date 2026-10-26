@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { shortcuts } from '#lib/actions/shortcut.js';
   import { Icon } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import NavigationArea from '../NavigationArea.svelte';
-  import { languageManager } from '$lib/managers/language-manager.svelte';
+  import { languageManager } from '#lib/managers/language-manager.svelte.js';
 
   interface Props {
     onPreviousAsset: () => void;

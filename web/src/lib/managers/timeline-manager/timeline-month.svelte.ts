@@ -1,14 +1,10 @@
-import { AssetOrder, AssetOrderBy, type TimeBucketAssetResponseDto } from '@immich/sdk';
-import { t } from 'svelte-i18n';
-import { SvelteSet } from 'svelte/reactivity';
-import { get } from 'svelte/store';
 import {
   ViewportProximity,
   isInOrNearViewport as isInOrNearViewportUtil,
   isInViewport as isInViewportUtil,
-} from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
-import { CancellableTask } from '$lib/utils/cancellable-task';
-import { handleError } from '$lib/utils/handle-error';
+} from '#lib/managers/timeline-manager/internal/intersection-support.svelte.js';
+import { CancellableTask } from '#lib/utils/cancellable-task.js';
+import { handleError } from '#lib/utils/handle-error.js';
 import {
   formatGroupTitle,
   formatTimelineMonthTitle,
@@ -21,7 +17,11 @@ import {
   type TimelineYearMonth,
   getOrderingDate,
   fromISODateTimeUTC,
-} from '$lib/utils/timeline-util';
+} from '#lib/utils/timeline-util.js';
+import { AssetOrder, AssetOrderBy, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { t } from 'svelte-i18n';
+import { SvelteSet } from 'svelte/reactivity';
+import { get } from 'svelte/store';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import { TimelineDay } from './timeline-day.svelte';
 import type { TimelineManager } from './timeline-manager.svelte';

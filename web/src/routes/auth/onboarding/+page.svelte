@@ -10,9 +10,9 @@
   import OnboardingStorageTemplate from './OnboardingStorageTemplate.svelte';
   import OnboardingTheme from './OnboardingTheme.svelte';
   import OnboardingUserPrivacy from './OnboardingUserPrivacy.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { OnboardingRole } from '$lib/types';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { Route } from '#lib/route.js';
+  import { OnboardingRole } from '#lib/types.js';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
     mdiCellphoneArrowDownVariant,
@@ -23,8 +23,8 @@
     mdiTranslate,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { createPreloadedQuery, queryClient } from '$lib/queries/client';
-  import { getServerConfigQuery } from '$lib/queries/server.query';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.js';
+  import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
 
   const query = createPreloadedQuery(getServerConfigQuery);
   const serverConfig = $derived(query.data);

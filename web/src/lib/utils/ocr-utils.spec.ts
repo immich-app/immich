@@ -1,6 +1,6 @@
-import type { OcrBoundingBox } from '$lib/stores/ocr.svelte';
-import type { Size } from '$lib/utils/container-utils';
-import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
+import type { OcrBoundingBox } from '#lib/stores/ocr.svelte.js';
+import type { Size } from '#lib/utils/container-utils.js';
+import { getOcrBoundingBoxes } from '#lib/utils/ocr-utils.js';
 
 describe('getOcrBoundingBoxes', () => {
   it('should scale normalized coordinates by display dimensions', () => {

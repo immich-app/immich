@@ -1,10 +1,10 @@
+import { languageManager } from '#lib/managers/language-manager.svelte.js';
+import { readPreloadedQuery } from '#lib/queries/client.js';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
+import { init } from '#lib/utils/client.js';
+import { maintenanceCreateUrl, maintenanceReturnUrl, maintenanceShouldRedirect } from '#lib/utils/maintenance.js';
 import { commandPaletteManager } from '@immich/ui';
 import { goto } from '$app/navigation';
-import { languageManager } from '$lib/managers/language-manager.svelte';
-import { readPreloadedQuery } from '$lib/queries/client';
-import { getServerConfigQuery } from '$lib/queries/server.query';
-import { maintenanceCreateUrl, maintenanceReturnUrl, maintenanceShouldRedirect } from '$lib/utils/maintenance';
-import { init } from '$lib/utils/server';
 import type { LayoutLoad } from './$types';
 
 export const ssr = false;

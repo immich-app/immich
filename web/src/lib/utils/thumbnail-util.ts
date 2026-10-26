@@ -1,8 +1,8 @@
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+import { locale } from '#lib/stores/preferences.store.js';
+import { fromTimelinePlainDateTime } from '#lib/utils/timeline-util.js';
 import { t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { locale } from '$lib/stores/preferences.store';
-import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 
 export const getAltText = derived(t, ($t) => {
   return (asset: TimelineAsset) => {

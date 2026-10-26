@@ -1,4 +1,4 @@
-import { authenticate } from '$lib/utils/auth';
+import { authenticate } from '#lib/utils/auth.js';
 import type { LayoutLoad } from './$types';
 
 export const load = (async ({ url }) => {

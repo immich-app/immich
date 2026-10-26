@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import AssetUpdateDescriptionConfirmModal from '$lib/modals/AssetUpdateDescriptionConfirmModal.svelte';
-  import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import AssetUpdateDescriptionConfirmModal from '#lib/modals/AssetUpdateDescriptionConfirmModal.svelte';
+  import { getOwnedAssetsWithWarning } from '#lib/utils/asset-utils.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { updateAssets } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiText } from '@mdi/js';

@@ -1,14 +1,14 @@
 <script lang="ts">
   import { beforeNavigate, goto } from '$app/navigation';
-  import WorkflowAddStepModal from '$lib/modals/WorkflowAddStepModal.svelte';
-  import WorkflowEditStepModal from '$lib/modals/WorkflowEditStepModal.svelte';
-  import WorkflowTriggerPicker from '$lib/modals/WorkflowTriggerPicker.svelte';
-  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { getWorkflowQuery, updateWorkflowMutation } from '$lib/queries/workflow.query';
-  import { Route } from '$lib/route';
-  import { getWorkflowActions } from '$lib/services/workflow.service';
-  import { generateId } from '$lib/utils/generate-id';
-  import { getTriggerDescription, getTriggerName } from '$lib/utils/workflow';
+  import WorkflowAddStepModal from '#lib/modals/WorkflowAddStepModal.svelte';
+  import WorkflowEditStepModal from '#lib/modals/WorkflowEditStepModal.svelte';
+  import WorkflowTriggerPicker from '#lib/modals/WorkflowTriggerPicker.svelte';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.js';
+  import { getWorkflowQuery, updateWorkflowMutation } from '#lib/queries/workflow.query.js';
+  import { Route } from '#lib/route.js';
+  import { getWorkflowActions } from '#lib/services/workflow.service.js';
+  import { generateId } from '#lib/utils/generate-id.js';
+  import { getTriggerDescription, getTriggerName } from '#lib/utils/workflow.js';
   import type { WorkflowUpdateDto } from '@immich/sdk';
   import {
     ActionBar,
@@ -223,7 +223,9 @@
     }
   };
 
-  beforeNavigate(({ cancel, to, willUnload }) => {
+  beforeNavigate(({ cancel, to, willUnload, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     if (!hasChanges || allowNavigation) {
       return;
     }

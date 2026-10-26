@@ -1,7 +1,7 @@
+import { loadImage } from '#lib/actions/image-loader.svelte.js';
+import { getAssetUrls } from '#lib/utils.js';
+import { AdaptiveImageLoader, type QualityList } from '#lib/utils/adaptive-image-loader.svelte.js';
 import type { AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
-import { loadImage } from '$lib/actions/image-loader.svelte';
-import { getAssetUrls } from '$lib/utils';
-import { AdaptiveImageLoader, type QualityList } from '$lib/utils/adaptive-image-loader.svelte';
 
 type AssetCursor = {
   current: AssetResponseDto;

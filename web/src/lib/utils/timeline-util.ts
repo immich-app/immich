@@ -1,10 +1,10 @@
+import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '#lib/managers/timeline-manager/types.js';
+import { locale } from '#lib/stores/preferences.store.js';
+import { getAssetRatio } from '#lib/utils/asset-utils.js';
 import { AssetTypeEnum, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
-import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
-import { locale } from '$lib/stores/preferences.store';
-import { getAssetRatio } from '$lib/utils/asset-utils';
 
 // Move type definitions to the top
 export type TimelineYearMonth = {

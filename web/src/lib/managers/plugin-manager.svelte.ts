@@ -1,3 +1,8 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { queryClient } from '#lib/queries/client.js';
+import { searchPluginMethodsQuery, searchPluginTemplatesQuery } from '#lib/queries/plugin.query.js';
+import { getWorkflowTriggersQuery } from '#lib/queries/workflow.query.js';
 import {
   WorkflowTrigger,
   type PluginMethodResponseDto,
@@ -7,11 +12,6 @@ import {
 import { t } from 'svelte-i18n';
 import { SvelteMap } from 'svelte/reactivity';
 import { get } from 'svelte/store';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { queryClient } from '$lib/queries/client';
-import { searchPluginMethodsQuery, searchPluginTemplatesQuery } from '$lib/queries/plugin.query';
-import { getWorkflowTriggersQuery } from '$lib/queries/workflow.query';
 
 class PluginManager {
   #loading: Promise<void> | undefined;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { TreeNode } from '$lib/utils/tree-utils';
+  import type { TreeNode } from '#lib/utils/tree-utils.js';
   import { Icon } from '@immich/ui';
 
   interface Props {

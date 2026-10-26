@@ -1,10 +1,10 @@
+import { UUID_REGEX } from '#lib/constants.js';
+import { queryClient } from '#lib/queries/client.js';
+import { getSharedLinkQuery } from '#lib/queries/shared-link.query.js';
+import { Route } from '#lib/route.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { redirect } from '@sveltejs/kit';
-import { UUID_REGEX } from '$lib/constants';
-import { queryClient } from '$lib/queries/client';
-import { getSharedLinkQuery } from '$lib/queries/shared-link.query';
-import { Route } from '$lib/route';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { LayoutLoad } from './$types';
 
 export const load = (async ({ params, url }) => {

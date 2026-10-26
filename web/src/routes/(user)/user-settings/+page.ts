@@ -1,9 +1,9 @@
-import { getApiKeysQuery } from '$lib/queries/api-key.query';
-import { queryClient } from '$lib/queries/client';
-import { searchPasskeysQuery } from '$lib/queries/passkey.query';
-import { getSessionsQuery } from '$lib/queries/session.query';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
+import { getApiKeysQuery } from '#lib/queries/api-key.query.js';
+import { queryClient } from '#lib/queries/client.js';
+import { searchPasskeysQuery } from '#lib/queries/passkey.query.js';
+import { getSessionsQuery } from '#lib/queries/session.query.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

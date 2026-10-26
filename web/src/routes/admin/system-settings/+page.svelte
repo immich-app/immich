@@ -13,17 +13,17 @@
   import NightlyTasksSettings from './NightlyTasksSettings.svelte';
   import NotificationSettings from './NotificationSettings.svelte';
   import ServerSettings from './ServerSettings.svelte';
-  import StorageTemplateSettings from '$lib/components/admin-settings/StorageTemplateSettings.svelte';
+  import StorageTemplateSettings from '#lib/components/admin-settings/StorageTemplateSettings.svelte';
   import ThemeSettings from './ThemeSettings.svelte';
   import TrashSettings from './TrashSettings.svelte';
   import UserSettings from './UserSettings.svelte';
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getAdminConfigQuery } from '$lib/queries/config-admin.query';
-  import { getSystemConfigActions } from '$lib/services/system-config.service';
+  import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.js';
+  import { createPreloadedQuery } from '#lib/queries/client.js';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.js';
+  import { getSystemConfigActions } from '#lib/services/system-config.service.js';
   import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
   import {
     mdiAccountOutline,

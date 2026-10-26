@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-  import { getProfileImageUrl } from '$lib/utils';
+  import { getProfileImageUrl } from '#lib/utils.js';
   import { type UserAvatarColor } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import { Route } from '$lib/route';
-  import { websocketStore } from '$lib/stores/websocket';
-  import { handleError } from '$lib/utils/handle-error';
+  import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
+  import { Route } from '#lib/route.js';
+  import { websocketStore } from '#lib/stores/websocket.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { startDatabaseRestoreFlow } from '@immich/sdk';
   import { Button, Heading, Stack } from '@immich/ui';
   import { t } from 'svelte-i18n';

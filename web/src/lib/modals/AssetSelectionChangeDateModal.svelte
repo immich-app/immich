@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Combobox from '$lib/components/shared-components/Combobox.svelte';
-  import DateInput from '$lib/elements/DateInput.svelte';
-  import DurationInput from '$lib/elements/DurationInput.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '$lib/modals/timezone-utils';
-  import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import Combobox from '#lib/components/shared-components/Combobox.svelte';
+  import DateInput from '#lib/elements/DateInput.svelte';
+  import DurationInput from '#lib/elements/DurationInput.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+  import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '#lib/modals/timezone-utils.js';
+  import { getOwnedAssetsWithWarning } from '#lib/utils/asset-utils.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { updateAssets } from '@immich/sdk';
   import { Field, FormModal, Label, Switch } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';

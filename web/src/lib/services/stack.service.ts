@@ -1,3 +1,10 @@
+import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { openFileUploadDialog } from '#lib/utils/file-uploader.js';
+import { handleError } from '#lib/utils/handle-error.js';
+import { getFormatter } from '#lib/utils/i18n.js';
+import { navigate } from '#lib/utils/navigation.js';
 import {
   createStack,
   deleteAssets,
@@ -19,13 +26,6 @@ import {
   mdiUploadMultiple,
 } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
-import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { openFileUploadDialog } from '$lib/utils/file-uploader';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
-import { navigate } from '$lib/utils/navigation';
 
 export const getStackBulkActions = ($t: MessageFormatter) => {
   const Stack: ActionItem = {

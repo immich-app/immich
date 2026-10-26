@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Route } from '$lib/route';
-  import { locale } from '$lib/stores/preferences.store';
-  import { uploadAssetsStore } from '$lib/stores/upload';
-  import type { UploadAsset } from '$lib/types';
-  import { UploadState } from '$lib/types';
-  import { getByteUnitString } from '$lib/utils/byte-units';
-  import { fileUploadHandler } from '$lib/utils/file-uploader';
+  import { Route } from '#lib/route.js';
+  import { locale } from '#lib/stores/preferences.store.js';
+  import { uploadAssetsStore } from '#lib/stores/upload.js';
+  import type { UploadAsset } from '#lib/types.js';
+  import { UploadState } from '#lib/types.js';
+  import { getByteUnitString } from '#lib/utils/byte-units.js';
+  import { fileUploadHandler } from '#lib/utils/file-uploader.js';
   import { Icon } from '@immich/ui';
   import {
     mdiAlertCircle,

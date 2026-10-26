@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/Combobox.svelte';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
-  import { handlePromiseError } from '$lib/utils';
+  import Combobox, { asComboboxOptions, asSelectedOption } from '#lib/components/shared-components/Combobox.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.js';
+  import { handlePromiseError } from '#lib/utils.js';
   import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';

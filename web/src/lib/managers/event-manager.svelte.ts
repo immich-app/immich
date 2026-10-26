@@ -1,3 +1,6 @@
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+import { BaseEventManager } from '#lib/utils/base-event-manager.svelte.js';
+import type { TreeNode } from '#lib/utils/tree-utils.js';
 import type {
   AlbumResponseDto,
   AlbumUserRole,
@@ -15,9 +18,6 @@ import type {
   TagResponseDto,
   UserAdminResponseDto,
 } from '@immich/sdk';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
-import type { TreeNode } from '$lib/utils/tree-utils';
 
 export type Events = {
   AppInit: [];

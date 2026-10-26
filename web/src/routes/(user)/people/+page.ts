@@ -1,8 +1,8 @@
+import { QueryParameter } from '#lib/constants.js';
+import type { PeopleFilter } from '#lib/types.js';
+import { authenticate } from '#lib/utils/auth.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import { getAllPeople } from '@immich/sdk';
-import { QueryParameter } from '$lib/constants';
-import type { PeopleFilter } from '$lib/types';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

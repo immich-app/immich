@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SettingInputFieldType } from '$lib/constants';
+  import { SettingInputFieldType } from '#lib/constants.js';
   import { PasswordInput } from '@immich/ui';
   import { onMount, tick, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';

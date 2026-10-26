@@ -1,3 +1,11 @@
+import { OpenQueryParam } from '#lib/constants.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { queueManager } from '#lib/managers/queue-manager.svelte.js';
+import JobCreateModal from '#lib/modals/JobCreateModal.svelte';
+import { Route } from '#lib/route.js';
+import type { HeaderButtonActionItem } from '#lib/types.js';
+import { handleError } from '#lib/utils/handle-error.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import {
   emptyQueue,
   getQueue,
@@ -34,14 +42,6 @@ import {
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
-import { OpenQueryParam } from '$lib/constants';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { queueManager } from '$lib/managers/queue-manager.svelte';
-import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
-import { Route } from '$lib/route';
-import type { HeaderButtonActionItem } from '$lib/types';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 type QueueItem = {
   icon: IconLike;

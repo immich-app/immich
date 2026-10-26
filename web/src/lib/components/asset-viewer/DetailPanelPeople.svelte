@@ -1,11 +1,11 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { faceManager } from '$lib/stores/face.svelte';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { Route } from '#lib/route.js';
+  import { faceManager } from '#lib/stores/face.svelte.js';
+  import { locale } from '#lib/stores/preferences.store.js';
+  import { getPeopleThumbnailUrl } from '#lib/utils.js';
   import { type AssetResponseDto } from '@immich/sdk';
   import { IconButton, Text } from '@immich/ui';
   import { mdiEye, mdiEyeOff, mdiPencil, mdiPlus } from '@mdi/js';

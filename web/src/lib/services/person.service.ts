@@ -1,3 +1,9 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import PersonEditAccessModal from '#lib/modals/PersonEditAccessModal.svelte';
+import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
+import { handleError } from '#lib/utils/handle-error.js';
+import { getFormatter } from '#lib/utils/i18n.js';
 import {
   getPerson,
   PersonUpdateStrategy,
@@ -17,12 +23,6 @@ import {
   mdiPencilOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import PersonEditAccessModal from '$lib/modals/PersonEditAccessModal.svelte';
-import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto) => {
   const Edit: ActionItem = {

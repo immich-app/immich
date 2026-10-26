@@ -1,9 +1,9 @@
+import type { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
+import type { PendingChange, TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+import { websocketEvents } from '#lib/stores/websocket.js';
+import { toTimelineAsset } from '#lib/utils/timeline-util.js';
 import { throttle } from 'lodash-es';
 import type { Unsubscriber } from 'svelte/store';
-import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-import type { PendingChange, TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { websocketEvents } from '$lib/stores/websocket';
-import { toTimelineAsset } from '$lib/utils/timeline-util';
 
 export class WebsocketSupport {
   #pendingChanges: PendingChange[] = [];

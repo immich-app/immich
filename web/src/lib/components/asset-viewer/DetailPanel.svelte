@@ -1,19 +1,19 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import DetailPanelDate from '$lib/components/asset-viewer/DetailPanelDate.svelte';
-  import DetailPanelDescription from '$lib/components/asset-viewer/DetailPanelDescription.svelte';
-  import DetailPanelLocation from '$lib/components/asset-viewer/DetailPanelLocation.svelte';
-  import DetailPanelRating from '$lib/components/asset-viewer/DetailPanelStarRating.svelte';
-  import DetailPanelTags from '$lib/components/asset-viewer/DetailPanelTags.svelte';
-  import { timeToLoadTheMap } from '$lib/constants';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { delay, getDimensions } from '$lib/utils/asset-utils';
-  import { getByteUnitString } from '$lib/utils/byte-units';
-  import { getParentPath } from '$lib/utils/tree-utils';
+  import DetailPanelDate from '#lib/components/asset-viewer/DetailPanelDate.svelte';
+  import DetailPanelDescription from '#lib/components/asset-viewer/DetailPanelDescription.svelte';
+  import DetailPanelLocation from '#lib/components/asset-viewer/DetailPanelLocation.svelte';
+  import DetailPanelRating from '#lib/components/asset-viewer/DetailPanelStarRating.svelte';
+  import DetailPanelTags from '#lib/components/asset-viewer/DetailPanelTags.svelte';
+  import { timeToLoadTheMap } from '#lib/constants.js';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { Route } from '#lib/route.js';
+  import { locale } from '#lib/stores/preferences.store.js';
+  import { getAssetMediaUrl } from '#lib/utils.js';
+  import { delay, getDimensions } from '#lib/utils/asset-utils.js';
+  import { getByteUnitString } from '#lib/utils/byte-units.js';
+  import { getParentPath } from '#lib/utils/tree-utils.js';
   import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { createQuery } from '@tanstack/svelte-query';
   import { Icon, IconButton, Link, LoadingSpinner, Text } from '@immich/ui';
@@ -24,11 +24,11 @@
   import PersonSidePanel from '../faces-page/PersonSidePanel.svelte';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
-  import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
-  import { faceManager } from '$lib/stores/face.svelte';
-  import { getAlbumsByAssetQuery } from '$lib/queries/album.query';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+  import DetailPanelPeople from '#lib/components/asset-viewer/DetailPanelPeople.svelte';
+  import { faceManager } from '#lib/stores/face.svelte.js';
+  import { getAlbumsByAssetQuery } from '#lib/queries/album.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.js';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
 
   const query = createPreloadedQuery(getPublicConfigQuery);
   const publicConfig = $derived(query.data);
@@ -267,7 +267,7 @@
 
   {#if latlng && publicConfig.map.enabled}
     <div class="h-90">
-      {#await import('$lib/components/shared-components/map/Map.svelte')}
+      {#await import('#lib/components/shared-components/map/Map.svelte')}
         {#await delay(timeToLoadTheMap) then}
           <!-- show the loading spinner only if loading the map takes too much time -->
           <div class="flex size-full items-center justify-center">

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import { updateAlbumInfoMutation } from '$lib/queries/album.query';
-  import { executeMutation } from '$lib/queries/client';
+  import { shortcut } from '#lib/actions/shortcut.js';
+  import { updateAlbumInfoMutation } from '#lib/queries/album.query.js';
+  import { executeMutation } from '#lib/queries/client.js';
   import { Textarea } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fromAction } from 'svelte/attachments';

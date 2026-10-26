@@ -1,10 +1,10 @@
 <script lang="ts">
-  import BreadcrumbActionPage from '$lib/components/BreadcrumbActionPage.svelte';
-  import NavigationBar from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
-  import BottomInfo from '$lib/components/shared-components/side-bar/BottomInfo.svelte';
-  import { Route } from '$lib/route';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import type { HeaderButtonActionItem } from '$lib/types';
+  import BreadcrumbActionPage from '#lib/components/BreadcrumbActionPage.svelte';
+  import NavigationBar from '#lib/components/shared-components/navigation-bar/NavigationBar.svelte';
+  import BottomInfo from '#lib/components/shared-components/side-bar/BottomInfo.svelte';
+  import { Route } from '#lib/route.js';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.js';
+  import type { HeaderButtonActionItem } from '#lib/types.js';
   import { AppShell, AppShellHeader, AppShellSidebar, MenuItemType, NavbarItem, type BreadcrumbItem } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
   import type { Snippet } from 'svelte';

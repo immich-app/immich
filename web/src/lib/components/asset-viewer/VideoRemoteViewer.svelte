@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { castManager, CastState } from '$lib/managers/cast-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import { castManager, CastState } from '#lib/managers/cast-manager.svelte.js';
+  import { handleError } from '#lib/utils/handle-error.js';
   import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiCastConnected, mdiPause, mdiPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';

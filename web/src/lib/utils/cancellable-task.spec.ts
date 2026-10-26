@@ -1,4 +1,4 @@
-import { CancellableTask } from '$lib/utils/cancellable-task';
+import { CancellableTask } from '#lib/utils/cancellable-task.js';
 
 describe('CancellableTask', () => {
   describe('execute', () => {

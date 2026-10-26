@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { ProjectionType } from '$lib/constants';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
-  import { moveFocus } from '$lib/utils/focus-util';
-  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { getAltText } from '$lib/utils/thumbnail-util';
+  import { ProjectionType } from '#lib/constants.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.js';
+  import { locale, playVideoThumbnailOnHover } from '#lib/stores/preferences.store.js';
+  import { getAssetMediaUrl, getAssetPlaybackUrl } from '#lib/utils.js';
+  import { moveFocus } from '#lib/utils/focus-util.js';
+  import { currentUrlReplaceAssetId } from '#lib/utils/navigation.js';
+  import { getAltText } from '#lib/utils/thumbnail-util.js';
   import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import {
@@ -24,7 +24,7 @@
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
-  import Thumbhash from '$lib/components/Thumbhash.svelte';
+  import Thumbhash from '#lib/components/Thumbhash.svelte';
   import ImageThumbnail from './ImageThumbnail.svelte';
   import VideoThumbnail from './VideoThumbnail.svelte';
   interface Props {

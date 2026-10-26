@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { cleanClass } from '$lib';
+  import { cleanClass } from '#lib';
   import QueueCardBadge from './QueueCardBadge.svelte';
   import QueueCardButton from './QueueCardButton.svelte';
-  import { Route } from '$lib/route';
-  import { asQueueItem } from '$lib/services/queue.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { transformToTitleCase } from '$lib/utils';
+  import { Route } from '#lib/route.js';
+  import { asQueueItem } from '#lib/services/queue.service.js';
+  import { locale } from '#lib/stores/preferences.store.js';
+  import { transformToTitleCase } from '#lib/utils.js';
   import { QueueCommand, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
   import { Badge, Icon, IconButton, Link } from '@immich/ui';
   import {

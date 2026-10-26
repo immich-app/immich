@@ -1,7 +1,7 @@
+import { dateFormats } from '#lib/constants.js';
+import { locale } from '#lib/stores/preferences.store.js';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
-import { dateFormats } from '$lib/constants';
-import { locale } from '$lib/stores/preferences.store';
 
 export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();

@@ -1,3 +1,11 @@
+import { QueryParameter } from '#lib/constants.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.js';
+import { Route } from '#lib/route.js';
+import { memoryLaneTitle } from '#lib/utils.js';
+import { toTimelineAsset } from '#lib/utils/timeline-util.js';
 import {
   type AssetResponseDto,
   MemorySearchOrder,
@@ -17,14 +25,6 @@ import { SvelteMap } from 'svelte/reactivity';
 import { fromStore, get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { QueryParameter } from '$lib/constants';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
-import { Route } from '$lib/route';
-import { memoryLaneTitle } from '$lib/utils';
-import { toTimelineAsset } from '$lib/utils/timeline-util';
 
 type MemoriesSearchDto = Parameters<typeof searchMemories>[0];
 
@@ -272,7 +272,7 @@ class MemoryManager {
   }
 
   #goto(href: string) {
-    return goto(href, { replaceState: true, noScroll: true, keepFocus: true });
+    return goto(href, { replace: true, reset: false });
   }
 
   async #deleteMemory(id: string) {

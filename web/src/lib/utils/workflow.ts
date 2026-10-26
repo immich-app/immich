@@ -1,6 +1,6 @@
+import type { JSONSchemaProperty } from '#lib/types.js';
 import { WorkflowTrigger } from '@immich/sdk';
 import type { MessageFormatter } from 'svelte-i18n';
-import type { JSONSchemaProperty } from '$lib/types';
 
 export const getTriggerName = ($t: MessageFormatter, type: WorkflowTrigger) => {
   switch (type) {

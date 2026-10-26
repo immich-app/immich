@@ -1,9 +1,9 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import PersonIndicator from '$lib/components/faces-page/PersonIndicator.svelte';
-  import { Route } from '$lib/route';
-  import { getPersonActions } from '$lib/services/person.service';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import PersonIndicator from '#lib/components/faces-page/PersonIndicator.svelte';
+  import { Route } from '#lib/route.js';
+  import { getPersonActions } from '#lib/services/person.service.js';
+  import { getPeopleThumbnailUrl } from '#lib/utils.js';
   import { type PersonResponseDto } from '@immich/sdk';
   import { ContextMenuButton } from '@immich/ui';
   import { mdiAccountMultipleCheckOutline } from '@mdi/js';

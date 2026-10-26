@@ -1,13 +1,13 @@
 <script lang="ts">
-  import AlbumTableHeader from '$lib/components/album-page/AlbumsTableHeader.svelte';
-  import AlbumTableRow from '$lib/components/album-page/AlbumsTableRow.svelte';
-  import { AlbumGroupBy, albumViewSettings } from '$lib/stores/preferences.store';
+  import AlbumTableHeader from '#lib/components/album-page/AlbumsTableHeader.svelte';
+  import AlbumTableRow from '#lib/components/album-page/AlbumsTableRow.svelte';
+  import { AlbumGroupBy, albumViewSettings } from '#lib/stores/preferences.store.js';
   import {
     isAlbumGroupCollapsed,
     sortOptionsMetadata,
     toggleAlbumGroupCollapsing,
     type AlbumGroup,
-  } from '$lib/utils/album-utils';
+  } from '#lib/utils/album-utils.js';
   import { Icon } from '@immich/ui';
   import { mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
