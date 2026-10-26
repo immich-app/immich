@@ -94,6 +94,8 @@ export const bootstrapTelemetry = (port: number) => {
 
   instance.start();
 
+  // http and https are already loaded before telemetry starts, so they never get instrumented.
+  // Requiring them again here makes the instrumentation pick them up.
   const require = createRequire(import.meta.url);
   require('node:http');
   require('node:https');
