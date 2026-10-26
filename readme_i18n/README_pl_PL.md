@@ -11,7 +11,7 @@
 <p align="center">
 <img src="/design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
-<h3 align="center">Wydajne, samodzielnie hostowane rozwiązanie do zarządzania zdjęciami i filmami</h3>
+<h3 align="center">Hostowane lokalnie, wydajne rozwiązanie do zarządzania zdjęciami i filmami</h3>
 <br/>
 <a href="https://immich.app">
 <img src="/design/immich-screenshots.png" title="Główny zrzut ekranu">
@@ -45,12 +45,12 @@
 
 
 > [!WARNING]
-> ⚠️ Zawsze stosuj strategię kopii zapasowych [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) dla swoich cennych zdjęć i filmów!
+> ⚠️ Zawsze stosuj strategię kopii zapasowych [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) dla ochrony swoich multimediów!
 > 
  
 
 > [!NOTE]
-> Główną dokumentację, w tym instrukcje instalacji, znajdziesz na https://immich.app/.
+> Dokumentację oraz instrukcję instalacji znajdziesz na https://immich.app/.
 
 ## Linki
 
@@ -65,7 +65,7 @@
 
 ## Demo
 
-Wersję demonstracyjną znajdziesz [tutaj](https://demo.immich.app). W aplikacji mobilnej w polu z adresem serwera (`Server Endpoint URL`) możesz użyć `https://demo.immich.app`.
+Wersję demo znajdziesz [tutaj](https://demo.immich.app). W aplikacji mobilnej w polu z adresem serwera (`Punkt końcowy serwera`) użyj `https://demo.immich.app`.
 
 ### Dane logowania
 
@@ -78,12 +78,12 @@ Wersję demonstracyjną znajdziesz [tutaj](https://demo.immich.app). W aplikacji
 | Funkcje                                                    | Aplikacja mobilna | Web |
 | :--------------------------------------------------------- | ----------------- | --- |
 | Przesyłanie i przeglądanie zdjęć i filmów                  | Tak               | Tak |
-| Automatyczna kopia zapasowa po otwarciu aplikacji          | Tak               | N/D |
+| Automatyczna kopia zapasowa po uruchomieniu aplikacji      | Tak               | N/D |
 | Zapobieganie duplikowaniu plików                           | Tak               | Tak |
 | Wybór albumów do kopii zapasowej                           | Tak               | N/D |
 | Pobieranie zdjęć i filmów na urządzenie                    | Tak               | Tak |
 | Obsługa wielu użytkowników                                 | Tak               | Tak |
-| Albumy i albumy udostępnione                               | Tak               | Tak |
+| Albumy i Albumy udostępnione                               | Tak               | Tak |
 | Pasek przewijania z możliwością przeciągania               | Tak               | Tak |
 | Obsługa formatów RAW                                       | Tak               | Tak |
 | Podgląd metadanych (EXIF, mapa)                            | Tak               | Tak |
@@ -97,7 +97,7 @@ Wersję demonstracyjną znajdziesz [tutaj](https://demo.immich.app). W aplikacji
 | Wyświetlanie obrazów 360°                                  | Nie               | Tak |
 | Własna struktura przechowywania plików                     | Tak               | Tak |
 | Udostępnianie publiczne                                    | Tak               | Tak |
-| Archiwum i ulubione                                        | Tak               | Tak |
+| Archiwum i Ulubione                                        | Tak               | Tak |
 | Mapa globalna                                              | Tak               | Tak |
 | Udostępnianie partnerowi                                   | Tak               | Tak |
 | Rozpoznawanie i grupowanie twarzy                          | Tak               | Tak |
