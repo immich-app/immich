@@ -6,27 +6,27 @@
   import Scrubber from '#lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '#lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '#lib/components/timeline/actions/TimelineKeyboardActions.svelte';
-  import { focusAsset } from '#lib/components/timeline/actions/focus-actions.js';
-  import { AssetAction } from '#lib/constants.js';
+  import { focusAsset } from '#lib/components/timeline/actions/focus-actions.ts';
+  import { AssetAction } from '#lib/constants.ts';
   import HotModuleReload from '#lib/elements/HotModuleReload.svelte';
   import Portal from '#lib/elements/Portal.svelte';
   import Skeleton from '#lib/elements/Skeleton.svelte';
-  import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.js';
-  import { isIntersecting } from '#lib/managers/timeline-manager/internal/intersection-support.svelte.js';
-  import type { TimelineMonth } from '#lib/managers/timeline-manager/timeline-month.svelte.js';
-  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
+  import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
+  import { isIntersecting } from '#lib/managers/timeline-manager/internal/intersection-support.svelte.ts';
+  import type { TimelineMonth } from '#lib/managers/timeline-manager/timeline-month.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type {
     TimelineAsset,
     TimelineManagerOptions,
     ViewportTopMonth,
-  } from '#lib/managers/timeline-manager/types.js';
-  import { assetsSnapshot } from '#lib/managers/timeline-manager/utils.svelte.js';
-  import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.js';
-  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.js';
-  import { isAssetViewerRoute, navigate } from '#lib/utils/navigation.js';
-  import { getTimes, type ScrubberListener } from '#lib/utils/timeline-util.js';
+  } from '#lib/managers/timeline-manager/types.ts';
+  import { assetsSnapshot } from '#lib/managers/timeline-manager/utils.svelte.ts';
+  import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { isAssetViewerRoute, navigate } from '#lib/utils/navigation.ts';
+  import { getTimes, type ScrubberListener } from '#lib/utils/timeline-util.ts';
   import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, tick, type Snippet } from 'svelte';

@@ -1,9 +1,9 @@
-import { pluginManager } from '#lib/managers/plugin-manager.svelte.js';
-import { queryClient } from '#lib/queries/client.js';
-import { getWorkflowQuery } from '#lib/queries/workflow.query.js';
-import { Route } from '#lib/route.js';
-import { authenticate } from '#lib/utils/auth.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { pluginManager } from '#lib/managers/plugin-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getWorkflowQuery } from '#lib/queries/workflow.query.ts';
+import { Route } from '#lib/route.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 

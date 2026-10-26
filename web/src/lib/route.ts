@@ -1,4 +1,4 @@
-import { OpenQueryParam, type SharedLinkTab } from '#lib/constants.js';
+import { OpenQueryParam, type SharedLinkTab } from '#lib/constants.ts';
 import { getBaseUrl, IntegrityReport, QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
 

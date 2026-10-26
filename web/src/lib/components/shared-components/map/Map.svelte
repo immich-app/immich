@@ -11,10 +11,10 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
   import OnEvents from '#lib/components/OnEvents.svelte';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import MapSettingsModal from '#lib/modals/MapSettingsModal.svelte';
-  import { mapSettings } from '#lib/stores/preferences.store.js';
-  import { getAssetMediaUrl, handlePromiseError } from '#lib/utils.js';
+  import { mapSettings } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, handlePromiseError } from '#lib/utils.ts';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
   import { mdiCog, mdiImageMultiple, mdiMap, mdiMapMarker } from '@mdi/js';
@@ -47,8 +47,8 @@
     ScaleControl,
   } from 'svelte-maplibre';
   import type { SelectionBBox } from './types';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 
   const query = createPreloadedQuery(getPublicConfigQuery);
   const publicConfig = $derived(query.data);

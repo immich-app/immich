@@ -1,8 +1,8 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
-import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { toastManager } from '@immich/ui';
 import {
   createQuery,

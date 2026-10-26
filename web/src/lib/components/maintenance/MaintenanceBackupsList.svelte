@@ -2,7 +2,7 @@
   import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
   import MaintenanceBackupEntry from '#lib/components/maintenance/MaintenanceBackupEntry.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
-  import { handleUploadDatabaseBackup } from '#lib/services/database-backups.service.js';
+  import { handleUploadDatabaseBackup } from '#lib/services/database-backups.service.ts';
   import type { DatabaseBackupDto } from '@immich/sdk';
   import { listDatabaseBackups } from '@immich/sdk';
   import { Card, CardBody, HStack, Icon, ProgressBar, Stack, Text } from '@immich/ui';

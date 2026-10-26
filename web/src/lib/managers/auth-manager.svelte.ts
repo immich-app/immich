@@ -1,10 +1,10 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { queryClient } from '#lib/queries/client.js';
-import { getAdminConfigQuery } from '#lib/queries/config-admin.query.js';
-import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
-import { getAboutInfoQuery } from '#lib/queries/server-info.query.js';
-import { Route } from '#lib/route.js';
-import { isSharedLinkRoute } from '#lib/utils/navigation.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
+import { Route } from '#lib/route.ts';
+import { isSharedLinkRoute } from '#lib/utils/navigation.ts';
 import {
   getMyPreferences,
   getMyUser,

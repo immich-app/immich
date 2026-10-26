@@ -1,6 +1,6 @@
-import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.js';
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
 import Thumbnail from '#lib/components/assets/thumbnail/Thumbnail.svelte';
-import { getTabbable } from '#lib/utils/focus-util.js';
+import { getTabbable } from '#lib/utils/focus-util.ts';
 import { render } from '@testing-library/svelte';
 import { assetFactory } from '#test-data/factories/asset-factory';
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { clickOutside } from '#lib/actions/click-outside.js';
-  import { languageManager } from '#lib/managers/language-manager.svelte.js';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import type { Snippet } from 'svelte';
 
   interface Props {

@@ -1,9 +1,9 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { queryClient } from '#lib/queries/client.js';
-import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
-import { getAssetActions, handleDownloadAsset } from '#lib/services/asset.service.js';
-import { setSharedLink } from '#lib/utils.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { getAssetActions, handleDownloadAsset } from '#lib/services/asset.service.ts';
+import { setSharedLink } from '#lib/utils.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { getAssetInfo, type UserConfigDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { vitest } from 'vitest';

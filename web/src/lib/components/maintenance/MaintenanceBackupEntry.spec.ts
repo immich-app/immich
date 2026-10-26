@@ -1,4 +1,4 @@
-import { locale } from '#lib/stores/preferences.store.js';
+import { locale } from '#lib/stores/preferences.store.ts';
 import { renderWithTooltips } from '#tests/helpers';
 import { screen } from '@testing-library/svelte';
 import { DateTime } from 'luxon';

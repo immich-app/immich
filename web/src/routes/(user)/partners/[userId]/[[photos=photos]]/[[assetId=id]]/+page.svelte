@@ -4,9 +4,9 @@
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import { Route } from '#lib/route.js';
-  import { getAssetBulkActions } from '#lib/services/asset.service.js';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { AssetVisibility } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider } from '@immich/ui';
   import { mdiArrowLeft } from '@mdi/js';

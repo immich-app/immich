@@ -1,4 +1,4 @@
-import { searchManager } from '#lib/managers/search-manager.svelte.js';
+import { searchManager } from '#lib/managers/search-manager.svelte.ts';
 
 describe('SearchManager', () => {
   beforeEach(() => {

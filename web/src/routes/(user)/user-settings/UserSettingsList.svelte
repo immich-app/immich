@@ -6,8 +6,8 @@
   import NotificationsSettings from './NotificationsSettings.svelte';
   import UserPurchaseSettings from './UserPurchaseSettings.svelte';
   import UserUsageStatistic from './UserUsageStatistic.svelte';
-  import { OpenQueryParam, QueryParameter } from '#lib/constants.js';
-  import { oauth } from '#lib/utils.js';
+  import { OpenQueryParam, QueryParameter } from '#lib/constants.ts';
+  import { oauth } from '#lib/utils.ts';
   import {
     mdiAccountGroupOutline,
     mdiAccountOutline,
@@ -34,8 +34,8 @@
   import UserApiKeyList from './UserApiKeyList.svelte';
   import UserPasskeyList from './UserPasskeyList.svelte';
   import UserProfileSettings from './UserProfileSettings.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);

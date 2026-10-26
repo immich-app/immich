@@ -1,5 +1,5 @@
 import SideBarSection from '#lib/components/sidebar/Sidebar.svelte';
-import { sidebarStore } from '#lib/stores/sidebar.svelte.js';
+import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
 import { render, screen } from '@testing-library/svelte';
 import { vi } from 'vitest';
 

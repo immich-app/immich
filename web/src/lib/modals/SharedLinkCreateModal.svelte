@@ -1,8 +1,8 @@
 <script lang="ts">
   import SharedLinkFormFields from '#lib/components/SharedLinkFormFields.svelte';
-  import { executeMutation } from '#lib/queries/client.js';
-  import { createSharedLinkMutation } from '#lib/queries/shared-link.query.js';
-  import { showSharedLinkQrCode } from '#lib/services/shared-link.service.js';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { createSharedLinkMutation } from '#lib/queries/shared-link.query.ts';
+  import { showSharedLinkQrCode } from '#lib/services/shared-link.service.ts';
   import { SharedLinkType } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { mdiLink } from '@mdi/js';

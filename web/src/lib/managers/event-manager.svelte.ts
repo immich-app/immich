@@ -1,6 +1,6 @@
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-import { BaseEventManager } from '#lib/utils/base-event-manager.svelte.js';
-import type { TreeNode } from '#lib/utils/tree-utils.js';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { BaseEventManager } from '#lib/utils/base-event-manager.svelte.ts';
+import type { TreeNode } from '#lib/utils/tree-utils.ts';
 import type {
   AlbumResponseDto,
   AlbumUserRole,

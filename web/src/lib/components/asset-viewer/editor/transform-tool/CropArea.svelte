@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { ResizeBoundary, transformManager } from '#lib/managers/edit/transform-manager.svelte.js';
-  import { getAssetMediaUrl } from '#lib/utils.js';
-  import { getAltText } from '#lib/utils/thumbnail-util.js';
-  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
+  import { ResizeBoundary, transformManager } from '#lib/managers/edit/transform-manager.svelte.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { onMount } from 'svelte';

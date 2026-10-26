@@ -1,5 +1,5 @@
-import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.js';
-import { ocrManager, type OcrBoundingBox } from '#lib/stores/ocr.svelte.js';
+import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.ts';
+import { ocrManager, type OcrBoundingBox } from '#lib/stores/ocr.svelte.ts';
 import { getAssetOcr } from '@immich/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

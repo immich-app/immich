@@ -34,7 +34,7 @@ type NestedKeys<T, K = keyof T> = K extends keyof T & string
   : never;
 
 declare module 'svelte-i18n' {
-  import type { InterpolationValues } from '#lib/elements/format-message.js';
+  import type { InterpolationValues } from '#lib/elements/format-message.ts';
   import type { Readable } from 'svelte/store';
 
   type Translations = NestedKeys<typeof en>;

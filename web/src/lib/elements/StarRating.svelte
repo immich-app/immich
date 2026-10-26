@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { focusOutside } from '#lib/actions/focus-outside.js';
-  import { shortcuts } from '#lib/actions/shortcut.js';
-  import { generateId } from '#lib/utils/generate-id.js';
+  import { focusOutside } from '#lib/actions/focus-outside.ts';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { generateId } from '#lib/utils/generate-id.ts';
   import { Icon } from '@immich/ui';
   import { mdiStar, mdiStarOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';

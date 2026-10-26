@@ -2,9 +2,9 @@ import {
   ViewportProximity,
   isInOrNearViewport as isInOrNearViewportUtil,
   isInViewport as isInViewportUtil,
-} from '#lib/managers/timeline-manager/internal/intersection-support.svelte.js';
-import { CancellableTask } from '#lib/utils/cancellable-task.js';
-import { handleError } from '#lib/utils/handle-error.js';
+} from '#lib/managers/timeline-manager/internal/intersection-support.svelte.ts';
+import { CancellableTask } from '#lib/utils/cancellable-task.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
 import {
   formatGroupTitle,
   formatTimelineMonthTitle,
@@ -17,7 +17,7 @@ import {
   type TimelineYearMonth,
   getOrderingDate,
   fromISODateTimeUTC,
-} from '#lib/utils/timeline-util.js';
+} from '#lib/utils/timeline-util.ts';
 import { AssetOrder, AssetOrderBy, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { SvelteSet } from 'svelte/reactivity';

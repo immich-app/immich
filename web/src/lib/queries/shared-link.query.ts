@@ -1,5 +1,5 @@
-import { invalidateAlbum, invalidateAlbums } from '#lib/queries/album.query.js';
-import { asMutation, queryClient } from '#lib/queries/client.js';
+import { invalidateAlbum, invalidateAlbums } from '#lib/queries/album.query.ts';
+import { asMutation, queryClient } from '#lib/queries/client.ts';
 import {
   createSharedLink,
   getAllSharedLinks,

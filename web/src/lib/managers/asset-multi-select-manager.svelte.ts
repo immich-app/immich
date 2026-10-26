@@ -1,6 +1,6 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { AssetVisibility } from '@immich/sdk';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 

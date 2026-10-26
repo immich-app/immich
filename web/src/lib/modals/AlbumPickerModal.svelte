@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { initInput } from '#lib/actions/focus.js';
+  import { initInput } from '#lib/actions/focus.ts';
   import {
     AlbumModalRowConverter,
     AlbumModalRowType,
     isSelectableRowType,
-  } from '#lib/components/shared-components/album-selection/album-selection-utils.js';
-  import { createAlbumMutation, getAllAlbumsQuery, getRecentAlbumsQuery } from '#lib/queries/album.query.js';
-  import { executeMutation, queryClient } from '#lib/queries/client.js';
-  import { albumViewSettings } from '#lib/stores/preferences.store.js';
+  } from '#lib/components/shared-components/album-selection/album-selection-utils.ts';
+  import { createAlbumMutation, getAllAlbumsQuery, getRecentAlbumsQuery } from '#lib/queries/album.query.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { albumViewSettings } from '#lib/stores/preferences.store.ts';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiKeyboardReturn } from '@mdi/js';

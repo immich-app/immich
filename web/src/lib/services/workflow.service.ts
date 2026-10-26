@@ -1,11 +1,11 @@
 import WorkflowDuplicateModal from '#lib/modals/WorkflowDuplicateModal.svelte';
 import WorkflowLogsModal from '#lib/modals/WorkflowLogsModal.svelte';
 import WorkflowTemplatePickerModal from '#lib/modals/WorkflowTemplatePickerModal.svelte';
-import { executeMutation } from '#lib/queries/client.js';
-import { createWorkflowMutation, deleteWorkflowMutation, updateWorkflowMutation } from '#lib/queries/workflow.query.js';
-import { Route } from '#lib/route.js';
-import { copyToClipboard, downloadJson } from '#lib/utils.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { executeMutation } from '#lib/queries/client.ts';
+import { createWorkflowMutation, deleteWorkflowMutation, updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
+import { Route } from '#lib/route.ts';
+import { copyToClipboard, downloadJson } from '#lib/utils.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { WorkflowTrigger, type WorkflowResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import {

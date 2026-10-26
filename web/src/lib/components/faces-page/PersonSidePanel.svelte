@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { shortcut } from '#lib/actions/shortcut.js';
+  import { shortcut } from '#lib/actions/shortcut.ts';
   import OnEvents from '#lib/components/OnEvents.svelte';
-  import { timeBeforeShowLoadingSpinner } from '#lib/constants.js';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { eventManager } from '#lib/managers/event-manager.svelte.js';
-  import { languageManager } from '#lib/managers/language-manager.svelte.js';
-  import { getPeopleThumbnailUrl, handlePromiseError } from '#lib/utils.js';
-  import { handleError } from '#lib/utils/handle-error.js';
-  import { zoomImageToBase64 } from '#lib/utils/people-utils.js';
-  import { getPersonNameWithHiddenValue } from '#lib/utils/person.js';
+  import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
+  import { getPeopleThumbnailUrl, handlePromiseError } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { zoomImageToBase64 } from '#lib/utils/people-utils.ts';
+  import { getPersonNameWithHiddenValue } from '#lib/utils/person.ts';
   import {
     AssetTypeEnum,
     createPerson,

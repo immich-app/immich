@@ -2,14 +2,14 @@
   import emptyWorkflows from '#lib/assets/empty-workflows.svg';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
-  import { createPreloadedQuery, queryClient } from '#lib/queries/client.js';
-  import { getWorkflowForShareQuery, searchWorkflowsQuery } from '#lib/queries/workflow.query.js';
-  import { Route } from '#lib/route.js';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { getWorkflowForShareQuery, searchWorkflowsQuery } from '#lib/queries/workflow.query.ts';
+  import { Route } from '#lib/route.ts';
   import {
     getWorkflowActions,
     getWorkflowsActions,
     getWorkflowShowSchemaAction,
-  } from '#lib/services/workflow.service.js';
+  } from '#lib/services/workflow.service.ts';
   import {
     Badge,
     Button,

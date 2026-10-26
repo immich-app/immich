@@ -1,6 +1,6 @@
 <script lang="ts">
   import Image from '#lib/components/Image.svelte';
-  import type { AdaptiveImageLoader, ImageQuality } from '#lib/utils/adaptive-image-loader.svelte.js';
+  import type { AdaptiveImageLoader, ImageQuality } from '#lib/utils/adaptive-image-loader.svelte.ts';
 
   type Props = {
     adaptiveImageLoader: AdaptiveImageLoader;

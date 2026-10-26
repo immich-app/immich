@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { getAssetUrl } from '#lib/utils.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getAssetUrl } from '#lib/utils.ts';
   import { AssetMediaSize, viewAsset, type AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';

@@ -1,4 +1,4 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import type { ReleaseEventV1 } from '@immich/sdk';
 
 class ReleaseManager {

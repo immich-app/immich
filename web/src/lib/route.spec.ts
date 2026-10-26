@@ -1,5 +1,5 @@
-import { OpenQueryParam } from '#lib/constants.js';
-import { Route } from '#lib/route.js';
+import { OpenQueryParam } from '#lib/constants.ts';
+import { Route } from '#lib/route.ts';
 
 describe('Route', () => {
   describe(Route.login.name, () => {

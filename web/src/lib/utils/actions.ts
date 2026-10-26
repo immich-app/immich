@@ -1,5 +1,5 @@
-import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { AssetVisibility, deleteAssets as deleteBulk, restoreAssets, type StackResponseDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { t } from 'svelte-i18n';

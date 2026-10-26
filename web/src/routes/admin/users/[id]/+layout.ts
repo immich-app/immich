@@ -1,9 +1,9 @@
-import { UUID_REGEX } from '#lib/constants.js';
-import { queryClient } from '#lib/queries/client.js';
-import { getUserAdminQuery } from '#lib/queries/user-admin.query.js';
-import { Route } from '#lib/route.js';
-import { authenticate } from '#lib/utils/auth.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { UUID_REGEX } from '#lib/constants.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getUserAdminQuery } from '#lib/queries/user-admin.query.ts';
+import { Route } from '#lib/route.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { redirect } from '@sveltejs/kit';
 import type { LayoutLoad } from './$types';
 

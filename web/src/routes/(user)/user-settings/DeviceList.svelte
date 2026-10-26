@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.js';
-  import { deleteAllSessionsMutation, deleteSessionMutation, getSessionsQuery } from '#lib/queries/session.query.js';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { deleteAllSessionsMutation, deleteSessionMutation, getSessionsQuery } from '#lib/queries/session.query.ts';
   import { type SessionResponseDto } from '@immich/sdk';
   import { Button, modalManager, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';

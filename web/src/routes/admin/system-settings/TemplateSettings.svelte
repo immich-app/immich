@@ -2,10 +2,10 @@
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingTextarea from './SettingTextarea.svelte';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import EmailTemplatePreviewModal from '#lib/modals/EmailTemplatePreviewModal.svelte';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { type AdminConfigDto, type AdminConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
   import { Button, Icon, LoadingSpinner, modalManager } from '@immich/ui';
   import { mdiEyeOutline } from '@mdi/js';

@@ -6,10 +6,10 @@
     getAlbumActions,
     handleRemoveUserFromAlbum,
     handleUpdateUserAlbumRole,
-  } from '#lib/services/album.service.js';
-  import { getAlbumQuery, updateAlbumInfoMutation } from '#lib/queries/album.query.js';
-  import { executeMutation, queryClient } from '#lib/queries/client.js';
-  import { getAllSharedLinksQuery } from '#lib/queries/shared-link.query.js';
+  } from '#lib/services/album.service.ts';
+  import { getAlbumQuery, updateAlbumInfoMutation } from '#lib/queries/album.query.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { getAllSharedLinksQuery } from '#lib/queries/shared-link.query.ts';
   import {
     AlbumUserRole,
     AssetOrder,

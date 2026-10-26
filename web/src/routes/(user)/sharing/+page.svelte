@@ -4,11 +4,11 @@
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
-  import { getAllAlbumsQuery } from '#lib/queries/album.query.js';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { Route } from '#lib/route.js';
-  import { getAlbumsActions } from '#lib/services/album.service.js';
-  import { getSharedLinksActions } from '#lib/services/shared-link.service.js';
+  import { getAllAlbumsQuery } from '#lib/queries/album.query.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAlbumsActions } from '#lib/services/album.service.ts';
+  import { getSharedLinksActions } from '#lib/services/shared-link.service.ts';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -16,7 +16,7 @@
     AlbumViewMode,
     SortOrder,
     type AlbumViewSettings,
-  } from '#lib/stores/preferences.store.js';
+  } from '#lib/stores/preferences.store.ts';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { cloneDeep } from 'lodash-es';
   import SettingSelect from './SettingSelect.svelte';
   import { Colorspace, ImageFormat } from '@immich/sdk';
@@ -10,8 +10,8 @@
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '#lib/constants.js';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.js';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { t } from 'svelte-i18n';
 
   const query = createPreloadedQuery(getAdminConfigQuery);

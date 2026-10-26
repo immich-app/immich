@@ -2,9 +2,9 @@
   import BottomInfo from '#lib/components/shared-components/side-bar/BottomInfo.svelte';
   import RecentAlbums from '#lib/components/shared-components/side-bar/RecentAlbums.svelte';
   import Sidebar from '#lib/components/sidebar/Sidebar.svelte';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { Route } from '#lib/route.js';
-  import { recentAlbumsDropdown } from '#lib/stores/preferences.store.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { recentAlbumsDropdown } from '#lib/stores/preferences.store.ts';
   import { NavbarGroup, NavbarItem } from '@immich/ui';
   import {
     mdiAccount,
@@ -36,8 +36,8 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);

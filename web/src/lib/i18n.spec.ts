@@ -1,4 +1,4 @@
-import { getClosestAvailableLocale, langs } from '#lib/utils/i18n.js';
+import { getClosestAvailableLocale, langs } from '#lib/utils/i18n.ts';
 import { readFileSync, readdirSync } from 'node:fs';
 
 describe('i18n', () => {

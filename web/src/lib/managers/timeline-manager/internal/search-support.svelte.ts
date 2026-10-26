@@ -1,4 +1,4 @@
-import { getOrderingDate, plainDateTimeCompare, type TimelineYearMonth } from '#lib/utils/timeline-util.js';
+import { getOrderingDate, plainDateTimeCompare, type TimelineYearMonth } from '#lib/utils/timeline-util.ts';
 import { AssetOrder, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { TimelineManager } from '../timeline-manager.svelte';

@@ -3,11 +3,11 @@
   import { page, type ReadonlyURLSearchParams } from '$app/state';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import SharedLinkCard from './SharedLinkCard.svelte';
-  import { type SharedLinkTab } from '#lib/constants.js';
+  import { type SharedLinkTab } from '#lib/constants.ts';
   import GroupTab from '#lib/elements/GroupTab.svelte';
-  import { Route } from '#lib/route.js';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getAllSharedLinksQuery } from '#lib/queries/shared-link.query.js';
+  import { Route } from '#lib/route.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAllSharedLinksQuery } from '#lib/queries/shared-link.query.ts';
   import { SharedLinkType } from '@immich/sdk';
   import { Container } from '@immich/ui';
   import { type Snippet } from 'svelte';

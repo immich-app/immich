@@ -1,6 +1,6 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { uploadAssetsStore } from '#lib/stores/upload.js';
-import { cancelUploadRequests } from '#lib/utils.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { uploadAssetsStore } from '#lib/stores/upload.ts';
+import { cancelUploadRequests } from '#lib/utils.ts';
 import { getSupportedMediaTypes, type ServerMediaTypesResponseDto } from '@immich/sdk';
 
 class UploadManager {

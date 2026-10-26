@@ -1,11 +1,11 @@
-import { QueryParameter } from '#lib/constants.js';
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.js';
-import { Route } from '#lib/route.js';
-import { memoryLaneTitle } from '#lib/utils.js';
-import { toTimelineAsset } from '#lib/utils/timeline-util.js';
+import { QueryParameter } from '#lib/constants.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
+import { Route } from '#lib/route.ts';
+import { memoryLaneTitle } from '#lib/utils.ts';
+import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   type AssetResponseDto,
   MemorySearchOrder,

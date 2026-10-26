@@ -1,15 +1,15 @@
 <script lang="ts">
   import { isDefined } from '#lib';
-  import { clickOutside } from '#lib/actions/click-outside.js';
-  import { listNavigation } from '#lib/actions/list-navigation.js';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import { listNavigation } from '#lib/actions/list-navigation.ts';
   import CoordinatesInput from '#lib/components/shared-components/CoordinatesInput.svelte';
   import type Map from '#lib/components/shared-components/map/Map.svelte';
-  import { timeDebounceOnSearch, timeToLoadTheMap } from '#lib/constants.js';
+  import { timeDebounceOnSearch, timeToLoadTheMap } from '#lib/constants.ts';
   import SearchBar from '#lib/elements/SearchBar.svelte';
-  import { geolocationManager } from '#lib/managers/geolocation.manager.svelte.js';
-  import type { LatLng } from '#lib/types.js';
-  import { delay } from '#lib/utils/asset-utils.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { geolocationManager } from '#lib/managers/geolocation.manager.svelte.ts';
+  import type { LatLng } from '#lib/types.ts';
+  import { delay } from '#lib/utils/asset-utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import { ConfirmModal, LoadingSpinner } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';

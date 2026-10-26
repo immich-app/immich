@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto, onNavigate } from '$app/navigation';
-  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.js';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
   import AlbumMap from '#lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '#lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '#lib/components/asset-viewer/ActivityStatus.svelte';
@@ -22,21 +22,21 @@
   import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import { AlbumPageViewMode } from '#lib/constants.js';
-  import { activityManager } from '#lib/managers/activity-manager.svelte.js';
-  import { assetMultiSelectManager, AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
-  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-  import { Route } from '#lib/route.js';
-  import { getAlbumActions, getAlbumAssetsActions, isAlbumEditor, isAlbumOwner } from '#lib/services/album.service.js';
-  import { getGlobalActions } from '#lib/services/app.service.js';
-  import { getAssetBulkActions } from '#lib/services/asset.service.js';
-  import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.js';
-  import { handlePromiseError } from '#lib/utils.js';
-  import { handleError } from '#lib/utils/handle-error.js';
-  import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '#lib/utils/navigation.js';
+  import { AlbumPageViewMode } from '#lib/constants.ts';
+  import { activityManager } from '#lib/managers/activity-manager.svelte.ts';
+  import { assetMultiSelectManager, AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAlbumActions, getAlbumAssetsActions, isAlbumEditor, isAlbumOwner } from '#lib/services/album.service.ts';
+  import { getGlobalActions } from '#lib/services/app.service.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '#lib/utils/navigation.ts';
   import { AlbumUserRole, AssetVisibility } from '@immich/sdk';
 
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton } from '@immich/ui';
@@ -60,15 +60,15 @@
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumTitle from './AlbumTitle.svelte';
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
-  import { delay } from '#lib/utils/asset-utils.js';
+  import { delay } from '#lib/utils/asset-utils.ts';
   import {
     deleteAlbumMutation,
     getAlbumInfoQuery,
     invalidateAlbum,
     updateAlbumInfoMutation,
-  } from '#lib/queries/album.query.js';
-  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.js';
-  import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+  } from '#lib/queries/album.query.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 
   let { params }: PageProps = $props();
 

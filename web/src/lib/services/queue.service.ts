@@ -1,11 +1,11 @@
-import { OpenQueryParam } from '#lib/constants.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { queueManager } from '#lib/managers/queue-manager.svelte.js';
+import { OpenQueryParam } from '#lib/constants.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
 import JobCreateModal from '#lib/modals/JobCreateModal.svelte';
-import { Route } from '#lib/route.js';
-import type { HeaderButtonActionItem } from '#lib/types.js';
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { Route } from '#lib/route.ts';
+import type { HeaderButtonActionItem } from '#lib/types.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import {
   emptyQueue,
   getQueue,

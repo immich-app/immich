@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingCheckboxes from './SettingCheckboxes.svelte';
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSelect from './SettingSelect.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '#lib/constants.js';
+  import { SettingInputFieldType } from '#lib/constants.ts';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.js';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import {
     AudioCodec,
     CQMode,

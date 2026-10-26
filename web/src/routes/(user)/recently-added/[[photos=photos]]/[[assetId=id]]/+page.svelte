@@ -15,19 +15,19 @@
   import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import { AssetAction } from '#lib/constants.js';
-  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
-  import { getAssetBulkActions } from '#lib/services/asset.service.js';
-  import { type OnLink, type OnUnlink } from '#lib/utils/actions.js';
-  import { openFileUploadDialog } from '#lib/utils/file-uploader.js';
+  import { AssetAction } from '#lib/constants.ts';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { type OnLink, type OnUnlink } from '#lib/utils/actions.ts';
+  import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
   import { AssetVisibility, AssetOrderBy } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { getStackBulkActions } from '#lib/services/stack.service.js';
+  import { getStackBulkActions } from '#lib/services/stack.service.ts';
 
   type Props = {
     data: PageData;

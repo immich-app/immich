@@ -1,8 +1,8 @@
 <script lang="ts">
   import Combobox from '#lib/components/shared-components/Combobox.svelte';
-  import { defaultLang } from '#lib/constants.js';
-  import { lang } from '#lib/stores/preferences.store.js';
-  import { convertBCP47, getClosestAvailableLocale, langCodes, langs } from '#lib/utils/i18n.js';
+  import { defaultLang } from '#lib/constants.ts';
+  import { lang } from '#lib/stores/preferences.store.ts';
+  import { convertBCP47, getClosestAvailableLocale, langCodes, langs } from '#lib/utils/i18n.ts';
   import { refreshAll } from '$app/navigation';
   import { Label, Text } from '@immich/ui';
   import { locale as i18nLocale, t } from 'svelte-i18n';

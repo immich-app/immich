@@ -1,5 +1,5 @@
-import { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { AssetVisibility } from '@immich/sdk';
 import { timelineAssetFactory } from '#test-data/factories/asset-factory';
 import { preferencesFactory } from '#test-data/factories/preferences-factory';

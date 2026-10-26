@@ -1,6 +1,6 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { lang } from '#lib/stores/preferences.store.js';
-import { langs } from '#lib/utils/i18n.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { lang } from '#lib/stores/preferences.store.ts';
+import { langs } from '#lib/utils/i18n.ts';
 
 class LanguageManager {
   constructor() {

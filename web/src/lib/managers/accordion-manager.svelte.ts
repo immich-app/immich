@@ -1,5 +1,5 @@
-import { QueryParameter } from '#lib/constants.js';
-import { handlePromiseError } from '#lib/utils.js';
+import { QueryParameter } from '#lib/constants.ts';
+import { handlePromiseError } from '#lib/utils.ts';
 import { SvelteSet, SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';

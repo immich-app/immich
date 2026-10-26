@@ -1,10 +1,10 @@
 <script lang="ts">
   import ServerStatisticsCard from '#lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getServerStatisticsQuery } from '#lib/queries/server-info.query.js';
-  import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.js';
-  import { locale } from '#lib/stores/preferences.store.js';
-  import { getBytesWithUnit } from '#lib/utils/byte-units.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getServerStatisticsQuery } from '#lib/queries/server-info.query.ts';
+  import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import {
     Code,
     FormatBytes,

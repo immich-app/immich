@@ -1,5 +1,5 @@
-import { CastDestinationType, castManager } from '#lib/managers/cast-manager.svelte.js';
-import { GCastDestination } from '#lib/utils/cast/gcast-destination.svelte.js';
+import { CastDestinationType, castManager } from '#lib/managers/cast-manager.svelte.ts';
+import { GCastDestination } from '#lib/utils/cast/gcast-destination.svelte.ts';
 import type { ActionItem } from '@immich/ui';
 import { mdiCast, mdiCastConnected } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';

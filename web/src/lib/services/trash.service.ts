@@ -1,5 +1,5 @@
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { emptyTrash, restoreTrash } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';

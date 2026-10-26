@@ -1,5 +1,5 @@
-import { getAssetResolution, getFileSize } from '#lib/utils/asset-utils.js';
-import { fromISODateTime, fromISODateTimeUTC } from '#lib/utils/timeline-util.js';
+import { getAssetResolution, getFileSize } from '#lib/utils/asset-utils.ts';
+import { fromISODateTime, fromISODateTimeUTC } from '#lib/utils/timeline-util.ts';
 import type { AssetResponseDto } from '@immich/sdk';
 import {
   mdiBrightness6,

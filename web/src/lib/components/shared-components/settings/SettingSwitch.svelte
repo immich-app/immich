@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { generateId } from '#lib/utils/generate-id.js';
+  import { generateId } from '#lib/utils/generate-id.ts';
   import { Switch } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';

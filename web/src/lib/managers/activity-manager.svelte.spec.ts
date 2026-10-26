@@ -1,4 +1,4 @@
-import { activityManager } from '#lib/managers/activity-manager.svelte.js';
+import { activityManager } from '#lib/managers/activity-manager.svelte.ts';
 import {
   deleteActivity,
   getActivities,

@@ -1,9 +1,9 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import AddUsersModal from '#lib/modals/AddUsersModal.svelte';
 import PersonBulkShareModal from '#lib/modals/PersonBulkShareModal.svelte';
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import {
   PeopleUsersUpsertType,
   PersonUserRole,

@@ -1,8 +1,8 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { queryClient } from '#lib/queries/client.js';
-import { searchPluginMethodsQuery, searchPluginTemplatesQuery } from '#lib/queries/plugin.query.js';
-import { getWorkflowTriggersQuery } from '#lib/queries/workflow.query.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { searchPluginMethodsQuery, searchPluginTemplatesQuery } from '#lib/queries/plugin.query.ts';
+import { getWorkflowTriggersQuery } from '#lib/queries/workflow.query.ts';
 import {
   WorkflowTrigger,
   type PluginMethodResponseDto,

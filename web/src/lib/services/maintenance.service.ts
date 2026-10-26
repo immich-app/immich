@@ -1,5 +1,5 @@
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { MaintenanceAction, setMaintenanceMode, type SetMaintenanceModeDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import { mdiProgressWrench } from '@mdi/js';

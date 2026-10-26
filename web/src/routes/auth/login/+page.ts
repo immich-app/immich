@@ -1,8 +1,8 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { readPreloadedQuery } from '#lib/queries/client.js';
-import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
-import { Route } from '#lib/route.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { readPreloadedQuery } from '#lib/queries/client.ts';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { Route } from '#lib/route.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 

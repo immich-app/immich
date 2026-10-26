@@ -4,9 +4,9 @@
   import OnEvents from '#lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '#lib/components/server-statistics/ServerStatisticsCard.svelte';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
-  import { Route } from '#lib/route.js';
-  import { handleCreateJob } from '#lib/services/job.service.js';
-  import { getMaintenanceAdminActions } from '#lib/services/maintenance.service.js';
+  import { Route } from '#lib/route.ts';
+  import { handleCreateJob } from '#lib/services/job.service.ts';
+  import { getMaintenanceAdminActions } from '#lib/services/maintenance.service.ts';
   import {
     getIntegrityReportSummary,
     getQueuesLegacy,
