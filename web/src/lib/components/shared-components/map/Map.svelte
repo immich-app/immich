@@ -113,6 +113,7 @@
   let map: Map | undefined = $state();
   let marker: Marker | null = null;
   let abortController: AbortController;
+  let selectedClusterCamera: number[] | undefined;
 
   const mapTheme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.Light);
   const styleUrl = $derived(mapTheme === Theme.Dark ? publicConfig.map.darkStyle : publicConfig.map.lightStyle);
@@ -162,6 +163,7 @@
       }
 
       const bbox = { west, south, east, north };
+      selectedClusterCamera = getCameraState(map);
       onClusterSelect(ids, bbox);
       return;
     }
@@ -267,14 +269,14 @@
     }
   };
 
-  afterNavigate(() => {
+  afterNavigate(({ to }) => {
     if (!map) {
       return;
     }
 
     map.resize();
 
-    if (location.hash) {
+    if (to?.url.hash) {
       const hashChangeEvent = new HashChangeEvent('hashchange');
       // eslint-disable-next-line unicorn/no-unnecessary-global-this
       globalThis.dispatchEvent(hashChangeEvent);
@@ -339,6 +341,7 @@
     if (!map || !onClusterSelect || !mapMarkers) {
       return;
     }
+    selectedClusterCamera = undefined;
     const bounds = map.getBounds();
     const west = bounds.getWest();
     const east = bounds.getEast();
@@ -358,10 +361,21 @@
     onClusterSelect(visibleIds, bbox);
   };
 
+  const getCameraState = (map: Map) => {
+    const { lng, lat } = map.getCenter();
+    return [lng, lat, map.getZoom(), map.getBearing(), map.getPitch(), map.getRoll()];
+  };
+
   const handleMoveEnd = () => {
-    if (viewportGridActive && !assetViewerManager.isViewing) {
-      handleViewportSelect();
+    if (!map || !viewportGridActive || assetViewerManager.isViewing) {
+      return;
     }
+    const camera = getCameraState(map);
+    // Resizing emits moveend; tiny camera rounding errors must not replace the selected cluster.
+    if (selectedClusterCamera?.every((value, index) => Math.abs(value - camera[index]) < 1e-8)) {
+      return;
+    }
+    handleViewportSelect();
   };
 
   const onAssetsChanged = async () => {
