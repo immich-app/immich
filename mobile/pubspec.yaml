@@ -21,7 +21,7 @@ dependencies:
   diacritic: ^0.1.6
   drift: ^2.34.0
   drift_sqlite_async: 0.3.1
-  dynamic_color: ^1.8.1
+  dynamic_color: ^2.0.0
   easy_localization: ^3.0.8
   ffi: ^2.2.0
   flutter:
