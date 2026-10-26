@@ -3,12 +3,14 @@
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import FaceCreateTagModal from '#lib/modals/CreateFaceModal.svelte';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { createFaceMutation } from '#lib/queries/face.query.ts';
   import { faceManager } from '#lib/stores/face.svelte.ts';
   import { getPeopleThumbnailUrl } from '#lib/utils.ts';
   import { getNaturalSize, scaleToFit } from '#lib/utils/container-utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
-  import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
+  import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { clamp } from 'lodash-es';
@@ -304,38 +306,29 @@
   };
 
   const tagFace = async (person: PersonResponseDto) => {
-    try {
-      const data = getFaceCroppedCoordinates();
-      if (!data) {
-        toastManager.warning($t('error_tag_face_bounding_box'));
-        return;
-      }
+    const data = getFaceCroppedCoordinates();
+    if (!data) {
+      toastManager.warning($t('error_tag_face_bounding_box'));
+      return;
+    }
 
-      const isConfirmed = await modalManager.showDialog({
-        prompt: person.name
-          ? $t('confirm_tag_face', { values: { name: person.name } })
-          : $t('confirm_tag_face_unnamed'),
-      });
+    const isConfirmed = await modalManager.showDialog({
+      prompt: person.name ? $t('confirm_tag_face', { values: { name: person.name } }) : $t('confirm_tag_face_unnamed'),
+    });
 
-      if (!isConfirmed) {
-        return;
-      }
+    if (!isConfirmed) {
+      return;
+    }
 
-      await createFace({
-        assetFaceCreateDto: {
-          assetId,
-          personId: person.id,
-          ...data,
-        },
-      });
-
+    const onSuccess = async () => {
       await assetViewerManager.setAssetId(assetId);
       faceManager.clear();
-      onClose();
-    } catch (error) {
-      handleError(error, 'Error tagging face');
-      onClose();
-    }
+    };
+
+    await executeMutation(createFaceMutation, [{ assetFaceCreateDto: { assetId, personId: person.id, ...data } }], {
+      onSuccess: () => void onSuccess(),
+      onSettled: onClose,
+    });
   };
 
   const showCreateFaceModal = async () => {
