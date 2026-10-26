@@ -23101,6 +23101,7 @@
         "description": "Image format",
         "enum": [
           "jpeg",
+          "jxl",
           "webp"
         ],
         "type": "string"
