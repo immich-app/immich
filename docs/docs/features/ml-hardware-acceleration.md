@@ -85,7 +85,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - RKNPU driver V0.9.8 or later must be available in the host server
   - You may confirm this by running `cat /sys/kernel/debug/rknpu/version` to check the version
 - Optional: Configure your `.env` file, see [environment variables](/install/environment-variables) for RKNN specific settings
-  - For RK3576 and RK3588, set `MACHINE_LEARNING_RKNN_THREADS=3` so each of the three NPU cores can service a concurrent request. Contexts share model weights, so for weight-heavy models such as CLIP, RAM barely grows versus the single-core default, while sustained throughput can approach **3×**. Each context still needs its own working memory, which is significant for OCR detection at high resolution (roughly 250 MB per extra context at 736, 0.5 GB at 1440).
+  - By default each model gets one context per NPU core (1 on RK3566/RK3568, 2 on RK3576, 3 on RK3588), so concurrent requests run on all cores at once. The contexts of a model share its weights, but each one needs its own working memory. Extra contexts therefore cost little for models that are mostly weights, such as CLIP, but for OCR detection each one can add close to the model's own memory again, more so at higher OCR resolutions. Set `MACHINE_LEARNING_RKNN_THREADS=1` to trade throughput for memory.
   - Keep `MACHINE_LEARNING_WORKERS=1` unless you have a specific reason not to: each worker process still loads its own copy of the weights.
   - Raise Immich job concurrency (Smart Search, Face Detection, OCR) a bit above the number of NPU cores, e.g. `4`–`6`, so a prepared image is always waiting when a core frees up.
 
@@ -176,7 +176,7 @@ Note that you should increase job concurrencies to increase overall utilization 
   - Less heat generation
   - Very slightly lower accuracy (RKNPU always uses FP16, while ARM NN by default uses higher precision FP32 unless `MACHINE_LEARNING_ANN_FP16_TURBO` is enabled)
   - Varying speed (tested on RK3588):
-    - If `MACHINE_LEARNING_RKNN_THREADS` is at the default of 1, RKNPU will have substantially lower throughput for ML jobs than ARM NN in most cases, but similar latency (such as when searching)
-    - If `MACHINE_LEARNING_RKNN_THREADS` is set to 3, it will be somewhat faster than ARM NN at FP32, but somewhat slower than ARM NN if `MACHINE_LEARNING_ANN_FP16_TURBO` is enabled
+    - With a single context (`MACHINE_LEARNING_RKNN_THREADS=1`), RKNPU will have substantially lower throughput for ML jobs than ARM NN in most cases, but similar latency (such as when searching)
+    - With three contexts (the default on RK3588), it will be somewhat faster than ARM NN at FP32, but somewhat slower than ARM NN if `MACHINE_LEARNING_ANN_FP16_TURBO` is enabled
     - When other tasks also use the GPU (like transcoding), RKNPU has a significant advantage over ARM NN as it uses the otherwise idle NPU instead of competing for GPU usage
-  - Lower RAM usage than earlier RKNN builds: multi-core pools share weights via context duplication, so setting `MACHINE_LEARNING_RKNN_THREADS=3` no longer multiplies weight memory by the thread count. Prefer that setting on RK3576/RK3588, keep `MACHINE_LEARNING_WORKERS=1`, and raise Immich ML job concurrency a bit above the core count so every NPU core stays busy (~3× sustained throughput).
+  - Lower RAM usage than earlier RKNN builds: the contexts of a model share its weights instead of each loading their own copy. Keep `MACHINE_LEARNING_WORKERS=1` and raise Immich ML job concurrency a bit above the core count so every NPU core stays busy.

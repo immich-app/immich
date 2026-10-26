@@ -8,7 +8,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from immich_ml.config import log
-from immich_ml.models.constants import RKNN_SUPPORTED_SOCS
+from immich_ml.models.constants import RKNN_NPU_CORES
 from immich_ml.schemas import ModelTensor
 
 
@@ -16,7 +16,7 @@ def get_soc(device_tree_path: Path | str) -> str | None:
     try:
         with Path(device_tree_path).open() as f:
             device_compatible_str = f.read()
-            for soc in RKNN_SUPPORTED_SOCS:
+            for soc in RKNN_NPU_CORES:
                 if soc in device_compatible_str:
                     return soc
             log.warning("Device is not supported for RKNN")
@@ -112,6 +112,8 @@ class _Output(ctypes.Structure):
     ]
 
 
+_Key = tuple[tuple[int, ...], ...]
+_Spec = tuple[tuple[int, ...], np.dtype[Any]]
 _context = ctypes.c_uint64  # rknn_context on 64-bit
 _ctx_p = ctypes.POINTER(_context)
 _u32 = ctypes.c_uint32
@@ -151,6 +153,10 @@ def _attr(ctx: int, cmd: int, index: int) -> _TensorAttr:
     return attr
 
 
+def _specs(attrs: list[_TensorAttr]) -> list[_Spec]:
+    return [(tuple(attr.dims[: attr.n_dims]), np.dtype(_DTYPES[attr.type])) for attr in attrs]
+
+
 class RknnPoolExecutor:
     """One context per thread, all but the first duplicated from it so that they share its weights.
 
@@ -179,10 +185,15 @@ class RknnPoolExecutor:
         lib.rknn_query(master.value, _CUSTOM_STRING, byref(custom), sizeof(custom))
         self.custom_string = custom.string.decode()
 
-        self.ranges = [_InputRange(index=index) for index in range(io.n_input)]
-        for rng in self.ranges:
+        ranges = [_InputRange(index=index) for index in range(io.n_input)]
+        for rng in ranges:
             lib.rknn_query(master.value, _INPUT_DYNAMIC_RANGE, byref(rng), sizeof(rng))
-        self.dynamic = any(rng.shape_number > 0 for rng in self.ranges)
+        self.formats = [rng.fmt for rng in ranges]
+        self.compiled = [{tuple(rng.dyn_range[i][: rng.n_dims]) for i in range(rng.shape_number)} for rng in ranges]
+        self.dynamic = any(self.compiled)
+        self.shape_attrs: dict[_Key, ctypes.Array[_TensorAttr]] = {}
+        self.output_specs: dict[_Key, list[_Spec]] = {(): _specs(self.output_attrs)}
+        self.current: dict[int, _Key] = {}
 
     def run(self, inputs: list[ModelTensor], data_format: str | None) -> list[NDArray[Any]]:
         ctx = self.idle.get()
@@ -193,11 +204,10 @@ class RknnPoolExecutor:
 
     def _run(self, ctx: int, inputs: list[ModelTensor], data_format: str | None) -> list[NDArray[Any]]:
         fed: list[NDArray[Any]] = [
-            np.ascontiguousarray(array.transpose(0, 2, 3, 1)) if data_format == "nchw" and array.ndim == 4 else array
+            np.ascontiguousarray(array.transpose(0, 2, 3, 1) if data_format == "nchw" and array.ndim == 4 else array)
             for array in inputs
         ]
-        if self.dynamic:
-            self._set_shapes(ctx, fed)
+        key = self._set_shapes(ctx, fed) if self.dynamic else ()
         feed = (_Input * len(fed))(
             *(
                 _Input(index=i, buf=array.ctypes.data, size=array.nbytes, type=_TYPES[array.dtype], fmt=_NHWC)
@@ -207,12 +217,11 @@ class RknnPoolExecutor:
         _check(lib.rknn_inputs_set(ctx, len(fed), feed), "rknn_inputs_set")
         _check(lib.rknn_run(ctx, None), "rknn_run")
 
-        attrs = (
-            [_attr(ctx, _CURRENT_OUTPUT_ATTR, i) for i in range(len(self.output_attrs))]
-            if self.dynamic
-            else self.output_attrs
-        )
-        outputs = [np.empty(attr.dims[: attr.n_dims], _DTYPES[attr.type]) for attr in attrs]
+        specs = self.output_specs.get(key)
+        if specs is None:
+            attrs = [_attr(ctx, _CURRENT_OUTPUT_ATTR, i) for i in range(len(self.output_attrs))]
+            specs = self.output_specs[key] = _specs(attrs)
+        outputs = [np.empty(dims, dtype) for dims, dtype in specs]
         buffers = (_Output * len(outputs))(
             *(
                 _Output(is_prealloc=1, index=i, buf=array.ctypes.data, size=array.nbytes)
@@ -223,25 +232,31 @@ class RknnPoolExecutor:
         lib.rknn_outputs_release(ctx, len(outputs), buffers)
         return outputs
 
-    def _set_shapes(self, ctx: int, inputs: list[NDArray[Any]]) -> None:
-        shapes = [self._compiled_shape(rng, array.shape) for rng, array in zip(self.ranges, inputs)]
-        attrs = (_TensorAttr * len(shapes))()
-        for i, (source, rng, shape) in enumerate(zip(self.input_attrs, self.ranges, shapes)):
-            attrs[i] = _TensorAttr.from_buffer_copy(source)
-            if rng.shape_number > 0:
-                attrs[i].n_dims = len(shape)
-                attrs[i].dims[: len(shape)] = shape
-                attrs[i].fmt = rng.fmt
-        _check(lib.rknn_set_input_shapes(ctx, len(shapes), attrs), "rknn_set_input_shapes")
+    def _set_shapes(self, ctx: int, inputs: list[NDArray[Any]]) -> _Key:
+        key = tuple(
+            self._compiled_shape(fmt, compiled, array.shape)
+            for fmt, compiled, array in zip(self.formats, self.compiled, inputs)
+        )
+        if self.current.get(ctx) == key:
+            return key
+        attrs = self.shape_attrs.get(key)
+        if attrs is None:
+            attrs = self.shape_attrs[key] = (_TensorAttr * len(key))()
+            for i, (source, compiled, fmt, shape) in enumerate(zip(self.input_attrs, self.compiled, self.formats, key)):
+                attrs[i] = _TensorAttr.from_buffer_copy(source)
+                if compiled:
+                    attrs[i].n_dims = len(shape)
+                    attrs[i].dims[: len(shape)] = shape
+                    attrs[i].fmt = fmt
+        _check(lib.rknn_set_input_shapes(ctx, len(key), attrs), "rknn_set_input_shapes")
+        self.current[ctx] = key
+        return key
 
     @staticmethod
-    def _compiled_shape(rng: _InputRange, fed: tuple[int, ...]) -> tuple[int, ...]:
-        shape = fed  # NHWC by now
-        if len(fed) == 4 and rng.fmt == _NCHW:
-            shape = (fed[0], fed[3], fed[1], fed[2])
-        compiled = [tuple(rng.dyn_range[i][: rng.n_dims]) for i in range(rng.shape_number)]
+    def _compiled_shape(fmt: int, compiled: set[tuple[int, ...]], fed: tuple[int, ...]) -> tuple[int, ...]:
+        shape = (fed[0], fed[3], fed[1], fed[2]) if len(fed) == 4 and fmt == _NCHW else fed
         if compiled and shape not in compiled:
-            raise ValueError(f"binary was compiled for {compiled}, fed {list(fed)}")
+            raise ValueError(f"binary was compiled for {sorted(compiled)}, fed {list(fed)}")
         return shape
 
     def release(self) -> None:

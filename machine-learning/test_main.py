@@ -978,7 +978,20 @@ class TestRknnSession:
         session.run(None, input_feed)
 
         rknn_session.return_value.run.assert_called_once_with([input1, input2], "nchw")
-        assert all(fed.flags.c_contiguous for fed in rknn_session.return_value.run.call_args.args[0])
+
+    @pytest.mark.parametrize(
+        ("soc", "threads", "expected"),
+        [("rk3566", None, 1), ("rk3576", None, 2), ("rk3588", None, 3), ("rk3588", 2, 2)],
+    )
+    def test_uses_a_context_per_npu_core_unless_set(
+        self, soc: str, threads: int | None, expected: int, rknn_session: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        mocker.patch("immich_ml.sessions.rknn.soc_name", soc)
+        mocker.patch.object(settings, "rknn_threads", threads)
+
+        RknnSession(Path("ViT-B-32__openai"))
+
+        assert rknn_session.call_args.kwargs["tpes"] == expected
 
     def test_run_rknn_rejects_a_shape_the_binary_was_not_compiled_for(
         self, rknn_session: mock.Mock, mocker: MockerFixture
@@ -1023,6 +1036,8 @@ class FakeRknn:
         self.contexts = 0
         self.fed: list[tuple[int, int, int]] = []  # (context, type, fmt) per run
         self.data: list[bytes] = []
+        self.buffers: list[int] = []
+        self.output_queries = 0
         self.set_shapes: list[tuple[int, tuple[int, ...]]] = []
         self.rknn_destroy = mock.Mock(return_value=0)
         self.rknn_outputs_release = mock.Mock(return_value=0)
@@ -1056,6 +1071,7 @@ class FakeRknn:
             for i, shape in enumerate(self.ranges):
                 obj.dyn_range[i][:4] = shape
         elif cmd == 15:
+            self.output_queries += 1
             width = dict(self.set_shapes)[ctx][2]
             self._fill(obj, b"logits", (1, width // 8, 97), 1)
         return 0
@@ -1072,6 +1088,7 @@ class FakeRknn:
     def rknn_inputs_set(self, ctx: int, n: int, inputs: Any) -> int:
         self.fed.append((ctx, inputs[0].type, inputs[0].fmt))
         self.data.append(ctypes.string_at(inputs[0].buf, inputs[0].size))
+        self.buffers.append(inputs[0].buf)
         return 0
 
     def rknn_outputs_get(self, ctx: int, n: int, outputs: Any, extend: None) -> int:
@@ -1116,6 +1133,22 @@ class TestRknnPool:
         assert lib.fed == [(1, 3, 1), (1, 0, 1)]  # (context, rknn_tensor_type, rknn_tensor_format)
         assert lib.data[0] == image.tobytes()
         assert lib.data[1] == image.astype(np.float32).tobytes()  # transposed back to channels last
+
+    def test_feeds_a_channels_first_view_of_channels_last_data_without_a_copy(self, lib: FakeRknn) -> None:
+        pool = RknnPoolExecutor("model.rknn", 1)
+        image = np.zeros((1, 48, 320, 3), dtype=np.float32)
+
+        pool.run([image.transpose(0, 3, 1, 2)], "nchw")
+
+        assert lib.buffers == [image.ctypes.data]
+
+    def test_makes_every_input_contiguous(self, lib: FakeRknn) -> None:
+        pool = RknnPoolExecutor("model.rknn", 1)
+        image = np.arange(48 * 640 * 3, dtype=np.uint8).reshape(1, 48, 640, 3)[:, :, ::2]
+
+        pool.run([image], "nhwc")
+
+        assert lib.data == [np.ascontiguousarray(image).tobytes()]
 
     def test_returns_outputs_in_the_precision_computed(self, lib: FakeRknn) -> None:
         pool = RknnPoolExecutor("model.rknn", 1)
@@ -1180,6 +1213,24 @@ class TestRknnPool:
         pool.run([image], "nhwc")
 
         assert dynamic_lib.set_shapes == [(1, (1, 48, 640, 3)), (2, (1, 48, 640, 3))]
+
+    def test_sets_a_shape_again_only_when_it_changes(self, dynamic_lib: FakeRknn) -> None:
+        pool = RknnPoolExecutor("model.rknn", 1)
+        wide, narrow = np.zeros((1, 48, 640, 3), dtype=np.uint8), np.zeros((1, 48, 320, 3), dtype=np.uint8)
+
+        for image in (wide, wide, narrow, narrow, wide):
+            pool.run([image], "nhwc")
+
+        assert dynamic_lib.set_shapes == [(1, (1, 48, 640, 3)), (1, (1, 48, 320, 3)), (1, (1, 48, 640, 3))]
+
+    def test_queries_output_shapes_once_per_input_shape(self, dynamic_lib: FakeRknn) -> None:
+        pool = RknnPoolExecutor("model.rknn", 2)
+        image = np.zeros((1, 48, 640, 3), dtype=np.uint8)
+
+        outputs = [pool.run([image], "nhwc")[0] for _ in range(4)]
+
+        assert dynamic_lib.output_queries == 1
+        assert all(output.shape == (1, 80, 97) for output in outputs)
 
     def test_rejects_a_shape_the_binary_was_not_compiled_for(self, dynamic_lib: FakeRknn) -> None:
         pool = RknnPoolExecutor("model.rknn", 1)

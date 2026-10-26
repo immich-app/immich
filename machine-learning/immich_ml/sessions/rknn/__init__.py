@@ -9,6 +9,7 @@ import orjson
 from numpy.typing import NDArray
 
 from immich_ml.config import log, settings
+from immich_ml.models.constants import RKNN_NPU_CORES
 from immich_ml.schemas import ModelInput, ModelTensor, SessionNode, Shape
 
 from .rknnpool import RknnNode, RknnPoolExecutor, is_available, soc_name
@@ -33,7 +34,7 @@ def input_layout(compiled: tuple[int, ...], array: ModelTensor) -> str | None:
 
 class RknnSession:
     def __init__(self, model_path: Path) -> None:
-        self.tpe = settings.rknn_threads
+        self.tpe = settings.rknn_threads or RKNN_NPU_CORES.get(soc_name or "", 1)
 
         log.info(f"Loading RKNN model from {model_path} with {self.tpe} threads.")
         self.rknnpool = RknnPoolExecutor(model_path=model_path.as_posix(), tpes=self.tpe)
@@ -71,7 +72,7 @@ class RknnSession:
         input_feed: ModelInput,
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
-        inputs = [array if array.flags.c_contiguous else array.copy() for array in input_feed.values()]
+        inputs = list(input_feed.values())
         return self.rknnpool.run(inputs, input_layout(self.rknnpool.inputs[0].shape, inputs[0]))
 
 
