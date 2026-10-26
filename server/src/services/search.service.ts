@@ -76,7 +76,7 @@ export class SearchService extends BaseService {
       return this.searchMetadataV3(auth, dto);
     }
 
-    if (dto.visibility === AssetVisibility.Locked) {
+    if (dto.visibility === AssetVisibility.Locked || dto.visibilityIn?.includes(AssetVisibility.Locked)) {
       requireElevatedPermission(auth);
     }
 
@@ -93,7 +93,7 @@ export class SearchService extends BaseService {
     } else if (auth.sharedLink) {
       throw new BadRequestException('Shared link access is only allowed in combination with an albumIds filter');
     } else {
-      userIds = await this.getUserIdsToSearch(auth, dto.visibility);
+      userIds = await this.getUserIdsToSearch(auth, dto.visibilityIn ?? dto.visibility);
     }
 
     const page = dto.page ?? 1;
@@ -103,7 +103,7 @@ export class SearchService extends BaseService {
       {
         ...dto,
         checksum,
-        visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+        visibility: dto.visibilityIn ?? dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
         userIds,
         viewingUserId: auth.user.id,
         orderDirection: dto.order ?? AssetOrder.Desc,
@@ -118,14 +118,15 @@ export class SearchService extends BaseService {
       return this.searchStatisticsV3(auth, dto);
     }
 
-    const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
-    if (dto.visibility === AssetVisibility.Locked) {
+    const visibility = dto.visibilityIn ?? dto.visibility;
+    const userIds = await this.getUserIdsToSearch(auth, visibility);
+    if (dto.visibility === AssetVisibility.Locked || dto.visibilityIn?.includes(AssetVisibility.Locked)) {
       requireElevatedPermission(auth);
     }
 
     return await this.searchRepository.searchStatistics({
       ...dto,
-      visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      visibility: visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
       viewingUserId: auth.user.id,
     });
@@ -136,14 +137,15 @@ export class SearchService extends BaseService {
       return this.searchRandomV3(auth, dto);
     }
 
-    if (dto.visibility === AssetVisibility.Locked) {
+    if (dto.visibility === AssetVisibility.Locked || dto.visibilityIn?.includes(AssetVisibility.Locked)) {
       requireElevatedPermission(auth);
     }
 
-    const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
+    const visibility = dto.visibilityIn ?? dto.visibility;
+    const userIds = await this.getUserIdsToSearch(auth, visibility);
     const items = await this.searchRepository.searchRandom(dto.size, {
       ...dto,
-      visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      visibility: visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
       viewingUserId: auth.user.id,
     });
@@ -151,14 +153,15 @@ export class SearchService extends BaseService {
   }
 
   async searchLargeAssets(auth: AuthDto, dto: LargeAssetSearchDto): Promise<AssetResponseDto[]> {
-    if (dto.visibility === AssetVisibility.Locked) {
+    if (dto.visibility === AssetVisibility.Locked || dto.visibilityIn?.includes(AssetVisibility.Locked)) {
       requireElevatedPermission(auth);
     }
 
-    const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
+    const visibility = dto.visibilityIn ?? dto.visibility;
+    const userIds = await this.getUserIdsToSearch(auth, visibility);
     const items = await this.searchRepository.searchLargeAssets(dto.size, {
       ...dto,
-      visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      visibility: visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
       viewingUserId: auth.user.id,
     });
@@ -170,7 +173,7 @@ export class SearchService extends BaseService {
       return this.searchSmartV3(auth, dto);
     }
 
-    if (dto.visibility === AssetVisibility.Locked) {
+    if (dto.visibility === AssetVisibility.Locked || dto.visibilityIn?.includes(AssetVisibility.Locked)) {
       requireElevatedPermission(auth);
     }
 
@@ -179,7 +182,8 @@ export class SearchService extends BaseService {
       throw new BadRequestException('Smart search is not enabled');
     }
 
-    const userIds = this.getUserIdsToSearch(auth, dto.visibility);
+    const visibility = dto.visibilityIn ?? dto.visibility;
+    const userIds = this.getUserIdsToSearch(auth, visibility);
     const embedding = await this.resolveEmbedding(auth, dto, machineLearning);
     const page = dto.page ?? 1;
     const size = dto.size;
@@ -190,7 +194,7 @@ export class SearchService extends BaseService {
         userIds: await userIds,
         viewingUserId: auth.user.id,
         embedding,
-        visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+        visibility: visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       },
     );
 
@@ -353,9 +357,12 @@ export class SearchService extends BaseService {
     throw new BadRequestException('Either `query` or `queryAssetId` must be set');
   }
 
-  private async getUserIdsToSearch(auth: AuthDto, visibility?: AssetVisibility): Promise<string[]> {
+  private async getUserIdsToSearch(
+    auth: AuthDto,
+    visibility?: AssetVisibility | AssetVisibility[],
+  ): Promise<string[]> {
     // Locked assets are personal. Never include partner IDs, regardless of A's elevated session.
-    if (visibility === AssetVisibility.Locked) {
+    if (visibility === AssetVisibility.Locked || (Array.isArray(visibility) && visibility.includes(AssetVisibility.Locked))) {
       return [auth.user.id];
     }
     const partnerIds = await getMyPartnerIds({

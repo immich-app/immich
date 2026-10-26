@@ -2551,6 +2551,7 @@ export type MetadataSearchDto = {
     /** Filter by update date (before) */
     updatedBefore?: string;
     visibility?: AssetVisibility;
+    visibilityIn?: AssetVisibility[];
     /** Include deleted assets */
     withDeleted?: boolean;
     /** Include EXIF data in response */
@@ -2663,6 +2664,7 @@ export type RandomSearchDto = {
     /** Filter by update date (before) */
     updatedBefore?: string;
     visibility?: AssetVisibility;
+    visibilityIn?: AssetVisibility[];
     /** Include deleted assets */
     withDeleted?: boolean;
     /** Include EXIF data in response */
@@ -2736,6 +2738,7 @@ export type SmartSearchDto = {
     /** Filter by update date (before) */
     updatedBefore?: string;
     visibility?: AssetVisibility;
+    visibilityIn?: AssetVisibility[];
     /** Include deleted assets */
     withDeleted?: boolean;
     /** Include EXIF data in response */
@@ -2797,6 +2800,7 @@ export type StatisticsSearchDto = {
     /** Filter by update date (before) */
     updatedBefore?: string;
     visibility?: AssetVisibility;
+    visibilityIn?: AssetVisibility[];
 };
 export type SearchStatisticsResponseDto = {
     /** Total number of matching assets */

@@ -30,6 +30,7 @@ const BaseSearchSchema = z.object({
   isMotion: z.boolean().optional().describe('Filter by motion photo status').meta(DEPRECATED_FLAT_FIELD),
   isOffline: z.boolean().optional().describe('Filter by offline status').meta(DEPRECATED_FLAT_FIELD),
   visibility: AssetVisibilitySchema.optional().meta(DEPRECATED_FLAT_FIELD),
+  visibilityIn: z.array(AssetVisibilitySchema).min(1).optional().meta(DEPRECATED_FLAT_FIELD),
   createdBefore: isoDatetimeToDate.optional().describe('Filter by creation date (before)').meta(DEPRECATED_FLAT_FIELD),
   createdAfter: isoDatetimeToDate.optional().describe('Filter by creation date (after)').meta(DEPRECATED_FLAT_FIELD),
   updatedBefore: isoDatetimeToDate.optional().describe('Filter by update date (before)').meta(DEPRECATED_FLAT_FIELD),

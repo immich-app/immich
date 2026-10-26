@@ -434,6 +434,8 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
     .$if(!!options.visibility, (qb) =>
       options.visibility === 'not-locked'
         ? qb.where('asset.visibility', '!=', AssetVisibility.Locked)
+        : Array.isArray(options.visibility)
+          ? qb.where('asset.visibility', 'in', options.visibility)
         : qb.where('asset.visibility', '=', options.visibility!),
     )
     .$if(!!options.viewingUserId, (qb) =>

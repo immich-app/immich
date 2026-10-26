@@ -133,7 +133,7 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchOcrOptions;
 
 export type AssetSearchOptions = Omit<BaseAssetSearchOptions, 'visibility'> &
-  SearchRelationOptions & { visibility?: AssetVisibility | 'not-locked' };
+  SearchRelationOptions & { visibility?: AssetVisibility | AssetVisibility[] | 'not-locked' };
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
@@ -161,7 +161,7 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions & { visibility?: AssetVisibility | 'not-locked'; viewingUserId?: string };
+  SearchOcrOptions & { visibility?: AssetVisibility | AssetVisibility[] | 'not-locked'; viewingUserId?: string };
 
 export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
 

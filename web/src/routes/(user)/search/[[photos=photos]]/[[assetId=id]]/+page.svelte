@@ -32,6 +32,7 @@
     type AlbumResponseDto,
     type AssetResponseDto,
     AssetVisibility,
+    getAuthStatus,
     getPerson,
     getTagById,
     type MetadataSearchDto,
@@ -141,12 +142,15 @@
     };
 
     try {
+      const includeLocked = !searchDto.visibility && (await getAuthStatus()).isElevated;
+      const visibility = searchDto.visibility ?? (includeLocked ? undefined : AssetVisibility.Timeline);
+      const visibilityIn = includeLocked ? [AssetVisibility.Timeline, AssetVisibility.Locked] : undefined;
       const { albums, assets } =
         ('query' in searchDto || 'queryAssetId' in searchDto) && config.machineLearning.clip.enabled
           ? await searchSmart({
-              smartSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto, language: $lang },
+              smartSearchDto: { ...searchDto, visibility, visibilityIn, language: $lang },
             })
-          : await searchAssets({ metadataSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto } });
+          : await searchAssets({ metadataSearchDto: { ...searchDto, visibility, visibilityIn } });
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);

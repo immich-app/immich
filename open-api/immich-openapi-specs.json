@@ -24869,6 +24869,29 @@
           "withStacked": {
             "description": "Include stacked assets",
             "type": "boolean"
+          },
+          "visibilityIn": {
+            "deprecated": true,
+            "description": "Filter by asset visibility values",
+            "items": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            },
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           }
         },
         "type": "object"
@@ -27627,6 +27650,29 @@
           "withStacked": {
             "description": "Include stacked assets",
             "type": "boolean"
+          },
+          "visibilityIn": {
+            "deprecated": true,
+            "description": "Filter by asset visibility values",
+            "items": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            },
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           }
         },
         "type": "object"
@@ -29880,6 +29926,29 @@
           "withExif": {
             "description": "Include EXIF data in response",
             "type": "boolean"
+          },
+          "visibilityIn": {
+            "deprecated": true,
+            "description": "Filter by asset visibility values",
+            "items": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            },
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           }
         },
         "type": "object"
@@ -30566,6 +30635,29 @@
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility",
             "deprecated": true,
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "visibilityIn": {
+            "deprecated": true,
+            "description": "Filter by asset visibility values",
+            "items": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            },
+            "type": "array",
             "x-immich-history": [
               {
                 "version": "v1",
@@ -31494,42 +31586,42 @@
             "type": "number"
           },
           "x1": {
-            "description": "Top-left X coordinate (normalized 0–1)",
+            "description": "Top-left X coordinate (normalized 0\u20131)",
             "format": "double",
             "type": "number"
           },
           "x2": {
-            "description": "Top-right X coordinate (normalized 0–1)",
+            "description": "Top-right X coordinate (normalized 0\u20131)",
             "format": "double",
             "type": "number"
           },
           "x3": {
-            "description": "Bottom-right X coordinate (normalized 0–1)",
+            "description": "Bottom-right X coordinate (normalized 0\u20131)",
             "format": "double",
             "type": "number"
           },
           "x4": {
-            "description": "Bottom-left X coordinate (normalized 0–1)",
+            "description": "Bottom-left X coordinate (normalized 0\u20131)",
             "format": "double",
             "type": "number"
           },
           "y1": {
-            "description": "Top-left Y coordinate (normalized 0–1)",
+            "description": "Top-left Y coordinate (normalized 0\u20131)",
             "format": "double",
             "type": "number"
           },
           "y2": {
-            "description": "Top-right Y coordinate (normalized 0–1)",
+            "description": "Top-right Y coordinate (normalized 0\u20131)",
             "format": "double",
             "type": "number"
           },
           "y3": {
-            "description": "Bottom-right Y coordinate (normalized 0–1)",
+            "description": "Bottom-right Y coordinate (normalized 0\u20131)",
             "format": "double",
             "type": "number"
           },
           "y4": {
-            "description": "Bottom-left Y coordinate (normalized 0–1)",
+            "description": "Bottom-left Y coordinate (normalized 0\u20131)",
             "format": "double",
             "type": "number"
           }
@@ -33096,7 +33188,7 @@
             "type": "array"
           },
           "projectionType": {
-            "description": "Array of projection types for 360° content (e.g., \"EQUIRECTANGULAR\", \"CUBEFACE\", \"CYLINDRICAL\")",
+            "description": "Array of projection types for 360\u00b0 content (e.g., \"EQUIRECTANGULAR\", \"CUBEFACE\", \"CYLINDRICAL\")",
             "items": {
               "nullable": true,
               "type": "string"
