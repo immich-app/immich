@@ -1,5 +1,5 @@
 import FocusTrapTest from '#lib/actions/__test__/FocusTrapTest.svelte';
-import { setDefaultTabbleOptions } from '#lib/utils/focus-util.js';
+import { setDefaultTabbleOptions } from '#lib/utils/focus-util.ts';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';

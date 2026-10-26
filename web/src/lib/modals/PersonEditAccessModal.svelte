@@ -2,9 +2,9 @@
   import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { getPersonUserActions, getPersonUsersActions } from '#lib/services/person-user.service.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getPersonUserActions, getPersonUsersActions } from '#lib/services/person-user.service.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import {
     getClusterGroupUsers,
     getUsersForPeople,

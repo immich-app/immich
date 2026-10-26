@@ -1,4 +1,4 @@
-import { shortcuts } from '#lib/actions/shortcut.js';
+import { shortcuts } from '#lib/actions/shortcut.ts';
 import type { Action } from 'svelte/action';
 
 /**

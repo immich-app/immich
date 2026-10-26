@@ -1,5 +1,5 @@
 import Image from '#lib/components/Image.svelte';
-import { cancelImageUrl } from '#lib/utils/sw-messaging.js';
+import { cancelImageUrl } from '#lib/utils/sw-messaging.ts';
 import { fireEvent, render } from '@testing-library/svelte';
 
 vi.mock('#lib/utils/sw-messaging.js', () => ({

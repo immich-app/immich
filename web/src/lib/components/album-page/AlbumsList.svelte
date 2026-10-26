@@ -1,8 +1,8 @@
 <script lang="ts">
   import AlbumCardGroup from '#lib/components/album-page/AlbumCardGroup.svelte';
   import AlbumsTable from '#lib/components/album-page/AlbumsTable.svelte';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { handleDeleteAlbum, isAlbumOwner } from '#lib/services/album.service.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { handleDeleteAlbum, isAlbumOwner } from '#lib/services/album.service.ts';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -11,14 +11,14 @@
     locale,
     SortOrder,
     type AlbumViewSettings,
-  } from '#lib/stores/preferences.store.js';
+  } from '#lib/stores/preferences.store.ts';
   import {
     getSelectedAlbumGroupOption,
     sortAlbums,
     stringToSortOrder,
     type AlbumGroup,
-  } from '#lib/utils/album-utils.js';
-  import { normalizeSearchString } from '#lib/utils/string-utils.js';
+  } from '#lib/utils/album-utils.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { groupBy } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';

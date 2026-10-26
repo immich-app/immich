@@ -1,8 +1,8 @@
-import { sdkMock } from '#lib/__mocks__/sdk.mock.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { getTimelineMonthByDate } from '#lib/managers/timeline-manager/internal/search-support.svelte.js';
-import { AbortError } from '#lib/utils.js';
-import { fromISODateTimeUTCToObject } from '#lib/utils/timeline-util.js';
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { getTimelineMonthByDate } from '#lib/managers/timeline-manager/internal/search-support.svelte.ts';
+import { AbortError } from '#lib/utils.ts';
+import { fromISODateTimeUTCToObject } from '#lib/utils/timeline-util.ts';
 import { AssetOrderBy, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { tick } from 'svelte';
 import { assetFactory, timelineAssetFactory, toResponseDto } from '#test-data/factories/asset-factory';

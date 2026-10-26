@@ -2,8 +2,8 @@
   import { goto } from '$app/navigation';
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
   import PinCodeCreateForm from '#lib/components/user-settings-page/PinCodeCreateForm.svelte';
-  import { Route } from '#lib/route.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { Route } from '#lib/route.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { unlockAuthSession } from '@immich/sdk';
   import { Button, Icon, PinInput } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline, mdiLockSmart } from '@mdi/js';

@@ -1,5 +1,5 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { GCastDestination } from '#lib/utils/cast/gcast-destination.svelte.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { GCastDestination } from '#lib/utils/cast/gcast-destination.svelte.ts';
 import { createSession, type SessionCreateResponseDto } from '@immich/sdk';
 import { DateTime, Duration } from 'luxon';
 

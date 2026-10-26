@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.js';
-  import type { OcrBox } from '#lib/utils/ocr-utils.js';
-  import { calculateBoundingBoxMatrix, calculateFittedFontSize } from '#lib/utils/ocr-utils.js';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import type { OcrBox } from '#lib/utils/ocr-utils.ts';
+  import { calculateBoundingBoxMatrix, calculateFittedFontSize } from '#lib/utils/ocr-utils.ts';
 
   type Props = {
     ocrBox: OcrBox;

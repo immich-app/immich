@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { searchManager } from '#lib/managers/search-manager.svelte.js';
-  import { searchStore } from '#lib/stores/search.svelte.js';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
+  import { searchStore } from '#lib/stores/search.svelte.ts';
   import { Icon, IconButton, Text } from '@immich/ui';
   import { mdiClockOutline, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';

@@ -2,8 +2,8 @@
   import { getHeatmapRange } from '#lib';
   import CalendarHeatmap from '#lib/components/CalendarHeatmap.svelte';
   import Skeleton from '#lib/elements/Skeleton.svelte';
-  import { getAlbumStatisticsQuery } from '#lib/queries/album.query.js';
-  import { locale } from '#lib/stores/preferences.store.js';
+  import { getAlbumStatisticsQuery } from '#lib/queries/album.query.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import {
     AssetVisibility,
     CalendarHeatmapType,

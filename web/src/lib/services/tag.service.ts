@@ -1,9 +1,9 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import TagCreateModal from '#lib/modals/TagCreateModal.svelte';
 import TagEditModal from '#lib/modals/TagEditModal.svelte';
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
-import type { TreeNode } from '#lib/utils/tree-utils.js';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import type { TreeNode } from '#lib/utils/tree-utils.ts';
 import { deleteTag, updateTag, upsertTags, type TagUpdateDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiPencil, mdiPlus, mdiTrashCanOutline } from '@mdi/js';

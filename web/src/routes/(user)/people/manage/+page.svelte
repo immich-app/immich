@@ -3,10 +3,10 @@
   import PeopleInfiniteScroll from '../PeopleInfiniteScroll.svelte';
   import { goto } from '$app/navigation';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
-  import { ToggleVisibility } from '#lib/constants.js';
-  import { locale } from '#lib/stores/preferences.store.js';
-  import { getPeopleThumbnailUrl } from '#lib/utils.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { ToggleVisibility } from '#lib/constants.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { getAllPeople, updatePeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, IconButton, toastManager } from '@immich/ui';
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';

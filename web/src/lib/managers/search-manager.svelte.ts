@@ -1,7 +1,7 @@
-import { MediaType, QueryType, validQueryTypes } from '#lib/constants.js';
-import { Route } from '#lib/route.js';
-import type { SearchFilter } from '#lib/types.js';
-import { asLocalTimeISO, parseUtcDate } from '#lib/utils/date-time.js';
+import { MediaType, QueryType, validQueryTypes } from '#lib/constants.ts';
+import { Route } from '#lib/route.ts';
+import type { SearchFilter } from '#lib/types.ts';
+import { asLocalTimeISO, parseUtcDate } from '#lib/utils/date-time.ts';
 import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import type { DateTime } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';

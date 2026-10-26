@@ -4,8 +4,8 @@
   import LicenseActivationSuccess from '#lib/components/shared-components/purchasing/PurchaseActivationSuccess.svelte';
   import LicenseContent from '#lib/components/shared-components/purchasing/PurchaseContent.svelte';
   import SupporterBadge from './SupporterBadge.svelte';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { Route } from '#lib/route.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
   import { Alert, Container, Stack } from '@immich/ui';
   import { mdiAlertCircleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';

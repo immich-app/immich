@@ -1,5 +1,5 @@
-import { sortAlbums } from '#lib/utils/album-utils.js';
-import { normalizeSearchString } from '#lib/utils/string-utils.js';
+import { sortAlbums } from '#lib/utils/album-utils.ts';
+import { normalizeSearchString } from '#lib/utils/string-utils.ts';
 import type { AlbumResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';

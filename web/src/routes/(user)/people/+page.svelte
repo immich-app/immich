@@ -1,23 +1,23 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { scrollMemory } from '#lib/actions/scroll-memory.js';
-  import { shortcut } from '#lib/actions/shortcut.js';
+  import { scrollMemory } from '#lib/actions/scroll-memory.ts';
+  import { shortcut } from '#lib/actions/shortcut.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
-  import { QueryParameter, SessionStorageKey } from '#lib/constants.js';
+  import { QueryParameter, SessionStorageKey } from '#lib/constants.ts';
   import SearchBar from '#lib/elements/SearchBar.svelte';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import PeopleFilterModal from '#lib/modals/PeopleFilterModal.svelte';
   import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
-  import { Route } from '#lib/route.js';
-  import { getPeopleUserActions } from '#lib/services/person-user.service.js';
-  import { handleUpdatePersonName } from '#lib/services/person.service.js';
-  import { locale } from '#lib/stores/preferences.store.js';
-  import { websocketEvents } from '#lib/stores/websocket.js';
-  import { handlePromiseError } from '#lib/utils.js';
-  import { handleError } from '#lib/utils/handle-error.js';
-  import { normalizeSearchString } from '#lib/utils/string-utils.js';
+  import { Route } from '#lib/route.ts';
+  import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
+  import { handleUpdatePersonName } from '#lib/services/person.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { websocketEvents } from '#lib/stores/websocket.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
   import {
     getAllPeople,
     getClusterGroupUsers,

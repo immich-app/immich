@@ -2,7 +2,7 @@
   import type { ComboBoxOption } from '#lib/components/shared-components/Combobox.svelte';
   import SettingCombobox from './SettingCombobox.svelte';
   import SettingsLanguageSelector from '#lib/components/shared-components/settings/SettingsLanguageSelector.svelte';
-  import { fallbackLocale, locales } from '#lib/constants.js';
+  import { fallbackLocale, locales } from '#lib/constants.ts';
   import {
     alwaysLoadOriginalFile,
     alwaysLoadOriginalVideo,
@@ -11,8 +11,8 @@
     loopVideo,
     playVideoThumbnailOnHover,
     showDeleteModal,
-  } from '#lib/stores/preferences.store.js';
-  import { createDateFormatter, findLocale } from '#lib/utils.js';
+  } from '#lib/stores/preferences.store.ts';
+  import { createDateFormatter, findLocale } from '#lib/utils.ts';
   import { Field, Switch, Text, Theme, themeManager, ThemePreference } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';

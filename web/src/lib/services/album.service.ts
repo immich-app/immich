@@ -1,5 +1,5 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import AddUsersModal from '#lib/modals/AddUsersModal.svelte';
 import AlbumEditModal from '#lib/modals/AlbumEditModal.svelte';
 import AlbumOptionsModal from '#lib/modals/AlbumOptionsModal.svelte';
@@ -11,13 +11,13 @@ import {
   removeUserFromAlbumMutation,
   updateAlbumInfoMutation,
   updateAlbumUserMutation,
-} from '#lib/queries/album.query.js';
-import { executeMutation } from '#lib/queries/client.js';
-import { Route } from '#lib/route.js';
-import { createAlbumAndRedirect } from '#lib/utils/album-utils.js';
-import { downloadArchive } from '#lib/utils/asset-utils.js';
-import { openFileUploadDialog } from '#lib/utils/file-uploader.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+} from '#lib/queries/album.query.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { Route } from '#lib/route.ts';
+import { createAlbumAndRedirect } from '#lib/utils/album-utils.ts';
+import { downloadArchive } from '#lib/utils/asset-utils.ts';
+import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { AlbumUserRole, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import {

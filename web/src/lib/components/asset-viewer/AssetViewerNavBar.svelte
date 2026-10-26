@@ -1,23 +1,23 @@
 <script lang="ts">
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
-  import type { OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.js';
+  import type { OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
   import ArchiveAction from '#lib/components/asset-viewer/actions/ArchiveAction.svelte';
   import DeleteAction from '#lib/components/asset-viewer/actions/DeleteAction.svelte';
   import RestoreAction from '#lib/components/asset-viewer/actions/RestoreAction.svelte';
   import SetVisibilityAction from '#lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
   import LoadingDots from '#lib/components/LoadingDots.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { languageManager } from '#lib/managers/language-manager.svelte.js';
-  import { getAlbumAssetActions } from '#lib/services/album.service.js';
-  import { getGlobalActions } from '#lib/services/app.service.js';
-  import { getAssetActions } from '#lib/services/asset.service.js';
-  import { getPersonAssetActions } from '#lib/services/person.service.js';
-  import { getStackActions } from '#lib/services/stack.service.js';
-  import { getSharedLink, withoutIcons } from '#lib/utils.js';
-  import type { OnUndoDelete } from '#lib/utils/actions.js';
-  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
+  import { getAlbumAssetActions } from '#lib/services/album.service.ts';
+  import { getGlobalActions } from '#lib/services/app.service.ts';
+  import { getAssetActions } from '#lib/services/asset.service.ts';
+  import { getPersonAssetActions } from '#lib/services/person.service.ts';
+  import { getStackActions } from '#lib/services/stack.service.ts';
+  import { getSharedLink, withoutIcons } from '#lib/utils.ts';
+  import type { OnUndoDelete } from '#lib/utils/actions.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import {
     AssetTypeEnum,
     AssetVisibility,

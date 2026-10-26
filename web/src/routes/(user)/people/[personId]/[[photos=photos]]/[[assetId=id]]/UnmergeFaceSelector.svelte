@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { timeBeforeShowLoadingSpinner } from '#lib/constants.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import {
     createPerson,
     getAllPeople,

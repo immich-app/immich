@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { isFirefox } from '#lib/utils/asset-utils.js';
-  import { cancelImageUrl } from '#lib/utils/sw-messaging.js';
+  import { isFirefox } from '#lib/utils/asset-utils.ts';
+  import { cancelImageUrl } from '#lib/utils/sw-messaging.ts';
   import { onDestroy, untrack } from 'svelte';
   import type { HTMLImgAttributes } from 'svelte/elements';
 

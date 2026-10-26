@@ -1,9 +1,9 @@
-import { defaultLang, locales } from '#lib/constants.js';
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { alwaysLoadOriginalFile, lang, locale } from '#lib/stores/preferences.store.js';
-import { isWebCompatibleImage } from '#lib/utils/asset-utils.js';
-import { handleError } from '#lib/utils/handle-error.js';
-import { convertBCP47, langs } from '#lib/utils/i18n.js';
+import { defaultLang, locales } from '#lib/constants.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { alwaysLoadOriginalFile, lang, locale } from '#lib/stores/preferences.store.ts';
+import { isWebCompatibleImage } from '#lib/utils/asset-utils.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { convertBCP47, langs } from '#lib/utils/i18n.ts';
 import {
   AssetMediaSize,
   AssetTypeEnum,

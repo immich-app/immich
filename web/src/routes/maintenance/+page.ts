@@ -1,4 +1,4 @@
-import { loadMaintenanceAuth, loadMaintenanceStatus } from '#lib/utils/maintenance.js';
+import { loadMaintenanceAuth, loadMaintenanceStatus } from '#lib/utils/maintenance.ts';
 import { getServerVersion } from '@immich/sdk';
 import type { PageLoad } from '../admin/$types';
 

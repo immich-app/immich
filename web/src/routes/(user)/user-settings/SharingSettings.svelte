@@ -2,12 +2,12 @@
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import ClusterGroupUserSelectionModal from '#lib/modals/ClusterGroupUserSelectionModal.svelte';
   import ClusterGroupUsersModal from '#lib/modals/ClusterGroupUsersModal.svelte';
   import PartnerSelectionModal from '#lib/modals/PartnerSelectionModal.svelte';
-  import { getPeopleUserActions } from '#lib/services/person-user.service.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import {
     acceptClusterGroupRequest,
     clusterGroupRegeneratePeople,

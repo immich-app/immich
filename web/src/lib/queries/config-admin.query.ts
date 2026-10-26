@@ -1,8 +1,8 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { queryClient } from '#lib/queries/client.js';
-import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
-import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { getAdminConfig, getAdminConfigDefaults, updateAdminConfig, type AdminConfigDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { mutationOptions, queryOptions } from '@tanstack/svelte-query';

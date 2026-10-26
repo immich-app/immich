@@ -1,8 +1,8 @@
-import { queryClient } from '#lib/queries/client.js';
-import { getServerStatisticsQuery } from '#lib/queries/server-info.query.js';
-import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.js';
-import { authenticate } from '#lib/utils/auth.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { queryClient } from '#lib/queries/client.ts';
+import { getServerStatisticsQuery } from '#lib/queries/server-info.query.ts';
+import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { noop } from 'lodash-es';
 import type { PageLoad } from './$types';
 

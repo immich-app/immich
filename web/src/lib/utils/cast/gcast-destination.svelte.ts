@@ -1,5 +1,5 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { CastDestinationType, CastState, type ICastDestination } from '#lib/managers/cast-manager.svelte.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { CastDestinationType, CastState, type ICastDestination } from '#lib/managers/cast-manager.svelte.ts';
 import 'chromecast-caf-sender';
 import { Duration } from 'luxon';
 

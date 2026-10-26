@@ -4,9 +4,9 @@
   import type { PageData } from './$types';
   import { type AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
-  import { locale } from '#lib/stores/preferences.store.js';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import Places from './PlacesList.svelte';
-  import { placesViewSettings } from '#lib/stores/preferences.store.js';
+  import { placesViewSettings } from '#lib/stores/preferences.store.ts';
 
   interface Props {
     data: PageData;

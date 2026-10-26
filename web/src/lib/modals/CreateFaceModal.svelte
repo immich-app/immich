@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { delay } from '#lib/utils/asset-utils.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { delay } from '#lib/utils/asset-utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { createFace, createPerson } from '@immich/sdk';
   import { Field, FormModal, Input, LoadingSpinner, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';

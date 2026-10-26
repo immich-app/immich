@@ -1,10 +1,10 @@
 <script lang="ts">
   import TableButton from '#lib/components/TableButton.svelte';
-  import { dateFormats } from '#lib/constants.js';
-  import { getApiKeysQuery } from '#lib/queries/api-key.query.js';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getApiKeyActions, getApiKeysActions } from '#lib/services/api-key.service.js';
-  import { locale } from '#lib/stores/preferences.store.js';
+  import { dateFormats } from '#lib/constants.ts';
+  import { getApiKeysQuery } from '#lib/queries/api-key.query.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getApiKeyActions, getApiKeysActions } from '#lib/services/api-key.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import { Button, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';

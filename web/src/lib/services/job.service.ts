@@ -1,6 +1,6 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { createJob, type JobCreateDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 

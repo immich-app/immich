@@ -1,8 +1,8 @@
-import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.js';
-import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.js';
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
+import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.ts';
 import SearchTagsSection from '#lib/components/shared-components/search-bar/SearchTagsSection.svelte';
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { searchManager } from '#lib/managers/search-manager.svelte.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { searchManager } from '#lib/managers/search-manager.svelte.ts';
 import type { TagResponseDto } from '@immich/sdk';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';

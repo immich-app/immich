@@ -1,4 +1,4 @@
-import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.js';
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
 import { render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'svelte';

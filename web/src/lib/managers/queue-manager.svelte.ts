@@ -1,5 +1,5 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import type { QueueSnapshot } from '#lib/types.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import type { QueueSnapshot } from '#lib/types.ts';
 import { getQueues, type QueueResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
 

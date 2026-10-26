@@ -1,14 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { oauth } from '#lib/utils.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { oauth } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { Button, LoadingSpinner, toastManager } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);

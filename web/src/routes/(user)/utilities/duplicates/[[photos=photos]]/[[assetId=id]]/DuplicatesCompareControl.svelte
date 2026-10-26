@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { shortcuts } from '#lib/actions/shortcut.js';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
   import DuplicateAsset from './DuplicateAsset.svelte';
   import Portal from '#lib/elements/Portal.svelte';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { handlePromiseError } from '#lib/utils.js';
-  import { getNextAsset, getPreviousAsset } from '#lib/utils/asset-utils.js';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { getNextAsset, getPreviousAsset } from '#lib/utils/asset-utils.ts';
   import {
     computeDifferingMetadataFields,
     countDifferingMetadataItems,
     type DifferingMetadataFields,
-  } from '#lib/utils/duplicate-utils.js';
-  import { navigate } from '#lib/utils/navigation.js';
+  } from '#lib/utils/duplicate-utils.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button, Icon } from '@immich/ui';
   import { mdiCheck, mdiChevronDown, mdiChevronUp, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';

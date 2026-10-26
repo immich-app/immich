@@ -1,22 +1,22 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import { getPagesProvider, getSettingsProvider } from '#lib/commands.js';
+  import { getPagesProvider, getSettingsProvider } from '#lib/commands.ts';
   import DownloadPanel from './DownloadPanel.svelte';
   import ErrorLayout from './ErrorLayout.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import NavigationLoadingBar from './NavigationLoadingBar.svelte';
   import UploadPanel from './UploadPanel.svelte';
   import VersionAnnouncement from './VersionAnnouncement.svelte';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { eventManager } from '#lib/managers/event-manager.svelte.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { eventManager } from '#lib/managers/event-manager.svelte.ts';
   import ServerRestartingModal from '#lib/modals/ServerRestartingModal.svelte';
-  import { queryClient } from '#lib/queries/client.js';
-  import { Route } from '#lib/route.js';
-  import { lang, locale } from '#lib/stores/preferences.store.js';
-  import { sidebarStore } from '#lib/stores/sidebar.svelte.js';
-  import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '#lib/stores/websocket.js';
-  import { maintenanceShouldRedirect } from '#lib/utils/maintenance.js';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { Route } from '#lib/route.ts';
+  import { lang, locale } from '#lib/stores/preferences.store.ts';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
+  import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '#lib/stores/websocket.ts';
+  import { maintenanceShouldRedirect } from '#lib/utils/maintenance.ts';
   import { getServerConfig } from '@immich/sdk';
   import {
     CommandPaletteProvider,

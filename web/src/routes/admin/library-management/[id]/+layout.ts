@@ -1,8 +1,8 @@
-import { queryClient } from '#lib/queries/client.js';
-import { getLibraryQuery } from '#lib/queries/library.query.js';
-import { Route } from '#lib/route.js';
-import { authenticate } from '#lib/utils/auth.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { queryClient } from '#lib/queries/client.ts';
+import { getLibraryQuery } from '#lib/queries/library.query.ts';
+import { Route } from '#lib/route.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { redirect } from '@sveltejs/kit';
 import type { LayoutLoad } from './$types';
 

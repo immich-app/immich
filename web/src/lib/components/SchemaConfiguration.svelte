@@ -2,7 +2,7 @@
   import SchemaAlbumPicker from '#lib/components/SchemaAlbumPicker.svelte';
   import Self from '#lib/components/SchemaConfiguration.svelte';
   import SchemaTagPicker from '#lib/components/SchemaTagPicker.svelte';
-  import type { JSONSchemaProperty, SchemaConfig } from '#lib/types.js';
+  import type { JSONSchemaProperty, SchemaConfig } from '#lib/types.ts';
   import {
     CodeBlock,
     Field,

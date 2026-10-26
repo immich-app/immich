@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type { Action } from '#lib/components/asset-viewer/actions/action.js';
+  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import LargeAssetData from './LargeAssetData.svelte';
   import Portal from '#lib/elements/Portal.svelte';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { handlePromiseError } from '#lib/utils.js';
-  import { getNextAsset, getPreviousAsset, navigateToAsset } from '#lib/utils/asset-utils.js';
-  import { navigate } from '#lib/utils/navigation.js';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { getNextAsset, getPreviousAsset, navigateToAsset } from '#lib/utils/asset-utils.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
   import type { AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';

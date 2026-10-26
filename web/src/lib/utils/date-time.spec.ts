@@ -1,4 +1,4 @@
-import { locale } from '#lib/stores/preferences.store.js';
+import { locale } from '#lib/stores/preferences.store.ts';
 import { getAlbumDateRange, getShortDateRange } from './date-time';
 
 vitest.mock('#lib/stores/preferences.store.js', { spy: true });

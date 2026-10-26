@@ -1,5 +1,5 @@
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-import { getAltText } from '#lib/utils/thumbnail-util.js';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { getAltText } from '#lib/utils/thumbnail-util.ts';
 import { AssetVisibility } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
 

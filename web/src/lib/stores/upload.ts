@@ -1,4 +1,4 @@
-import { UploadState, type UploadAsset } from '#lib/types.js';
+import { UploadState, type UploadAsset } from '#lib/types.ts';
 import { derived, writable } from 'svelte/store';
 
 function createUploadStore() {

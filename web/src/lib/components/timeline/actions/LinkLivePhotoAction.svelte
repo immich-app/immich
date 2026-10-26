@@ -1,11 +1,11 @@
 <script lang="ts">
   import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
-  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-  import type { OnLink, OnUnlink } from '#lib/utils/actions.js';
-  import { handleError } from '#lib/utils/handle-error.js';
-  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import type { OnLink, OnUnlink } from '#lib/utils/actions.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { getAssetInfo, updateAsset } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiLinkOff, mdiMotionPlayOutline, mdiTimerSand } from '@mdi/js';

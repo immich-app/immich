@@ -20,10 +20,10 @@
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SearchBar from '#lib/elements/SearchBar.svelte';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.js';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.js';
-  import { getSystemConfigActions } from '#lib/services/system-config.service.js';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+  import { getSystemConfigActions } from '#lib/services/system-config.service.ts';
   import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
   import {
     mdiAccountOutline,

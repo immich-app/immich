@@ -1,8 +1,8 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { readPreloadedQuery } from '#lib/queries/client.js';
-import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
-import { Route } from '#lib/route.js';
-import { copyToClipboard } from '#lib/utils.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { readPreloadedQuery } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { Route } from '#lib/route.ts';
+import { copyToClipboard } from '#lib/utils.ts';
 import { defaultProvider, screencastManager, themeManager, ThemePreference, type ActionItem } from '@immich/ui';
 import {
   mdiAccountMultipleOutline,

@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { ProjectionType } from '#lib/constants.js';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.js';
-  import { locale, playVideoThumbnailOnHover } from '#lib/stores/preferences.store.js';
-  import { getAssetMediaUrl, getAssetPlaybackUrl } from '#lib/utils.js';
-  import { moveFocus } from '#lib/utils/focus-util.js';
-  import { currentUrlReplaceAssetId } from '#lib/utils/navigation.js';
-  import { getAltText } from '#lib/utils/thumbnail-util.js';
+  import { ProjectionType } from '#lib/constants.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { locale, playVideoThumbnailOnHover } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, getAssetPlaybackUrl } from '#lib/utils.ts';
+  import { moveFocus } from '#lib/utils/focus-util.ts';
+  import { currentUrlReplaceAssetId } from '#lib/utils/navigation.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
   import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import {

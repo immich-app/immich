@@ -1,8 +1,8 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { asMutation, queryClient } from '#lib/queries/client.js';
-import { Route } from '#lib/route.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { Route } from '#lib/route.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import {
   addAssetsToAlbum,
   addAssetsToAlbums,

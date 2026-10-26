@@ -1,8 +1,8 @@
 import TransformTool from '#lib/components/asset-viewer/editor/transform-tool/TransformTool.svelte';
-import { transformManager } from '#lib/managers/edit/transform-manager.svelte.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { waitForWebsocketEvent } from '#lib/stores/websocket.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { transformManager } from '#lib/managers/edit/transform-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { waitForWebsocketEvent } from '#lib/stores/websocket.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { editAsset, removeAssetEdits, type AssetEditsCreateDto, type AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
 import { mdiCropRotate } from '@mdi/js';

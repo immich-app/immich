@@ -3,12 +3,12 @@
   import { getPeople, getSearchPeopleTitle } from './search-bar-utils';
   import SingleGridRow from '#lib/components/shared-components/SingleGridRow.svelte';
   import SearchBar from '#lib/elements/SearchBar.svelte';
-  import { getPeopleThumbnailUrl } from '#lib/utils.js';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
   import { type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, LoadingSpinner, Text } from '@immich/ui';
   import { mdiArrowRight, mdiCheck, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { searchManager } from '#lib/managers/search-manager.svelte.js';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
 
   interface Props {
     title: string | undefined;

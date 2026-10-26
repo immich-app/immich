@@ -1,33 +1,33 @@
 <script lang="ts">
   import { browser } from '$app/env';
-  import { focusTrap } from '#lib/actions/focus-trap.js';
-  import { shortcuts } from '#lib/actions/shortcut.js';
-  import type { Action, OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.js';
+  import { focusTrap } from '#lib/actions/focus-trap.ts';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import type { Action, OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
   import NextAssetAction from '#lib/components/asset-viewer/actions/NextAssetAction.svelte';
   import PreviousAssetAction from '#lib/components/asset-viewer/actions/PreviousAssetAction.svelte';
   import AssetViewerNavBar from '#lib/components/asset-viewer/AssetViewerNavBar.svelte';
-  import { preloadManager } from '#lib/components/asset-viewer/PreloadManager.svelte.js';
+  import { preloadManager } from '#lib/components/asset-viewer/PreloadManager.svelte.ts';
   import OnEvents from '#lib/components/OnEvents.svelte';
-  import { AssetAction, ProjectionType } from '#lib/constants.js';
-  import { activityManager } from '#lib/managers/activity-manager.svelte.js';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { editManager, EditToolType } from '#lib/managers/edit/edit-manager.svelte.js';
-  import { eventManager } from '#lib/managers/event-manager.svelte.js';
-  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-  import { getAssetActions } from '#lib/services/asset.service.js';
-  import { faceManager } from '#lib/stores/face.svelte.js';
-  import { ocrManager } from '#lib/stores/ocr.svelte.js';
-  import { alwaysLoadOriginalVideo } from '#lib/stores/preferences.store.js';
-  import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.js';
-  import { getSharedLink, handlePromiseError } from '#lib/utils.js';
-  import type { OnUndoDelete } from '#lib/utils/actions.js';
-  import { navigateToAsset } from '#lib/utils/asset-utils.js';
-  import { handleError } from '#lib/utils/handle-error.js';
-  import { navigate } from '#lib/utils/navigation.js';
-  import { InvocationTracker } from '#lib/utils/invocationTracker.js';
-  import { SlideshowHistory } from '#lib/utils/slideshow-history.js';
-  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
+  import { AssetAction, ProjectionType } from '#lib/constants.ts';
+  import { activityManager } from '#lib/managers/activity-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { editManager, EditToolType } from '#lib/managers/edit/edit-manager.svelte.ts';
+  import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { getAssetActions } from '#lib/services/asset.service.ts';
+  import { faceManager } from '#lib/stores/face.svelte.ts';
+  import { ocrManager } from '#lib/stores/ocr.svelte.ts';
+  import { alwaysLoadOriginalVideo } from '#lib/stores/preferences.store.ts';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
+  import { getSharedLink, handlePromiseError } from '#lib/utils.ts';
+  import type { OnUndoDelete } from '#lib/utils/actions.ts';
+  import { navigateToAsset } from '#lib/utils/asset-utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
+  import { InvocationTracker } from '#lib/utils/invocationTracker.ts';
+  import { SlideshowHistory } from '#lib/utils/slideshow-history.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import {
     AssetTypeEnum,
     getAssetInfo,

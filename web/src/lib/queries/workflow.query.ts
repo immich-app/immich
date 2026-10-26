@@ -1,4 +1,4 @@
-import { asMutation, queryClient } from '#lib/queries/client.js';
+import { asMutation, queryClient } from '#lib/queries/client.ts';
 import {
   createWorkflow,
   deleteWorkflow,

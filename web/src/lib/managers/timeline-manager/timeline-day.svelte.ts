@@ -1,7 +1,7 @@
-import type { CommonLayoutOptions, CommonPosition } from '#lib/utils/layout-utils.js';
-import { getJustifiedLayoutFromAssets } from '#lib/utils/layout-utils.js';
-import { getOrderingDate, plainDateTimeCompare } from '#lib/utils/timeline-util.js';
-import { TUNABLES } from '#lib/utils/tunables.js';
+import type { CommonLayoutOptions, CommonPosition } from '#lib/utils/layout-utils.ts';
+import { getJustifiedLayoutFromAssets } from '#lib/utils/layout-utils.ts';
+import { getOrderingDate, plainDateTimeCompare } from '#lib/utils/timeline-util.ts';
+import { TUNABLES } from '#lib/utils/tunables.ts';
 import { AssetOrder, AssetOrderBy } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import type { TimelineMonth } from './timeline-month.svelte';

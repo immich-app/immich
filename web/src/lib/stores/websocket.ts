@@ -1,12 +1,12 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { queryClient } from '#lib/queries/client.js';
-import { getNotificationsQuery } from '#lib/queries/notification.query.js';
-import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
-import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.js';
-import { Route } from '#lib/route.js';
-import { maintenanceStore } from '#lib/stores/maintenance.store.js';
-import { createEventEmitter } from '#lib/utils/eventemitter.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
+import { Route } from '#lib/route.ts';
+import { maintenanceStore } from '#lib/stores/maintenance.store.ts';
+import { createEventEmitter } from '#lib/utils/eventemitter.ts';
 import {
   MaintenanceAction,
   type AssetResponseDto,

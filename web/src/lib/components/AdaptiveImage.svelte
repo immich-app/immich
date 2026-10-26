@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import { TUNABLES } from '#lib/utils/tunables.js';
+  import { TUNABLES } from '#lib/utils/tunables.ts';
 
   // Chrome renders HDR images with normally invisible seam lines in a regular
   // grid pattern. When the user pinch/scroll zooms, these seams become visible
@@ -55,15 +55,15 @@
   import DelayedLoadingSpinner from '#lib/components/DelayedLoadingSpinner.svelte';
   import ImageLayer from '#lib/components/ImageLayer.svelte';
   import Thumbhash from '#lib/components/Thumbhash.svelte';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { getAssetUrls } from '#lib/utils.js';
-  import { AdaptiveImageLoader, type QualityList } from '#lib/utils/adaptive-image-loader.svelte.js';
-  import { scaleToCover, scaleToFit, type Size } from '#lib/utils/container-utils.js';
-  import { getAltText } from '#lib/utils/thumbnail-util.js';
-  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { getAssetUrls } from '#lib/utils.ts';
+  import { AdaptiveImageLoader, type QualityList } from '#lib/utils/adaptive-image-loader.svelte.ts';
+  import { scaleToCover, scaleToFit, type Size } from '#lib/utils/container-utils.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import type { AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
   import { untrack, type Snippet } from 'svelte';
-  import { languageManager } from '#lib/managers/language-manager.svelte.js';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
 
   type Props = {
     asset: AssetResponseDto;

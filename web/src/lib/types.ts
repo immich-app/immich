@@ -1,4 +1,4 @@
-import { MediaType } from '#lib/constants.js';
+import { MediaType } from '#lib/constants.ts';
 import type { QueueResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';

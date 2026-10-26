@@ -6,15 +6,15 @@
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
   import TableButton from '#lib/components/TableButton.svelte';
   import LibraryFolderAddModal from '#lib/modals/LibraryFolderAddModal.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getLibraryQuery, getLibraryStatisticsQuery } from '#lib/queries/library.query.js';
-  import { Route } from '#lib/route.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getLibraryQuery, getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
+  import { Route } from '#lib/route.ts';
   import {
     getLibraryActions,
     getLibraryExclusionPatternActions,
     getLibraryFolderActions,
-  } from '#lib/services/library.service.js';
-  import { getBytesWithUnit } from '#lib/utils/byte-units.js';
+  } from '#lib/services/library.service.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import { Code, CommandPaletteDefaultProvider, Container, Heading, modalManager } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';

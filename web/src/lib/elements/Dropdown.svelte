@@ -11,7 +11,7 @@
 </script>
 
 <script lang="ts" generics="T">
-  import { clickOutside } from '#lib/actions/click-outside.js';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
   import { Button, Icon, Text } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
   import { isEqual } from 'lodash-es';

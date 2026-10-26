@@ -1,7 +1,7 @@
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-import { getAssetRatio } from '#lib/utils/asset-utils.js';
-import { isTimelineAsset, isTimelineAssets } from '#lib/utils/timeline-util.js';
-import { TUNABLES } from '#lib/utils/tunables.js';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { getAssetRatio } from '#lib/utils/asset-utils.ts';
+import { isTimelineAsset, isTimelineAssets } from '#lib/utils/timeline-util.ts';
+import { TUNABLES } from '#lib/utils/tunables.ts';
 import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
 import type { AssetResponseDto } from '@immich/sdk';
 import createJustifiedLayout from 'justified-layout';

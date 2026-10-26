@@ -1,6 +1,6 @@
-import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.js';
-import type { Faces } from '#lib/managers/asset-viewer-manager.svelte.js';
-import { CancellableTask } from '#lib/utils/cancellable-task.js';
+import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.ts';
+import type { Faces } from '#lib/managers/asset-viewer-manager.svelte.ts';
+import { CancellableTask } from '#lib/utils/cancellable-task.ts';
 import type { AssetFaceResponseDto, PersonResponseDto } from '@immich/sdk';
 import { SvelteMap } from 'svelte/reactivity';
 

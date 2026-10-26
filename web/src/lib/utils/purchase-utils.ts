@@ -1,4 +1,4 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { updateMyPreferences } from '@immich/sdk';
 import { DateTime } from 'luxon';
 

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { assetViewerFadeDuration } from '#lib/constants.js';
-  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-  import { getAssetMediaUrl } from '#lib/utils.js';
-  import { getAltText } from '#lib/utils/thumbnail-util.js';
+  import { assetViewerFadeDuration } from '#lib/constants.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
   import { AssetMediaSize } from '@immich/sdk';
   import DelayedLoadingSpinner from '#lib/components/DelayedLoadingSpinner.svelte';
   import { onMount } from 'svelte';

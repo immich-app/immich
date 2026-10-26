@@ -1,5 +1,5 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { Route } from '#lib/route.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { Route } from '#lib/route.ts';
 import { redirect } from '@sveltejs/kit';
 import { DateTime } from 'luxon';
 

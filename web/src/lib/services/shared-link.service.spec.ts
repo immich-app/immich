@@ -1,4 +1,4 @@
-import { asUrl } from '#lib/services/shared-link.service.js';
+import { asUrl } from '#lib/services/shared-link.service.ts';
 import { sharedLinkFactory } from '#test-data/factories/shared-link-factory';
 
 vi.mock(import('#lib/queries/client.js'), async (importOriginal) => ({

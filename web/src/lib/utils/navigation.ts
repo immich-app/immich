@@ -1,5 +1,5 @@
-import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.js';
-import { Route } from '#lib/route.js';
+import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.ts';
+import { Route } from '#lib/route.ts';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import type { RouteId } from '$app/types';

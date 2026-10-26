@@ -1,4 +1,4 @@
-import { getAssetMediaUrl } from '#lib/utils.js';
+import { getAssetMediaUrl } from '#lib/utils.ts';
 import { render, screen } from '@testing-library/svelte';
 import { albumFactory } from '#test-data/factories/album-factory';
 import { assetFactory } from '#test-data/factories/asset-factory';
