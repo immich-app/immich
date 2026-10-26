@@ -628,24 +628,21 @@
     </section>
 
     {#each timelineManager.months as timelineMonth (timelineMonth.viewId)}
-      {@const isInOrNearViewport = timelineMonth.isInOrNearViewport}
-      {@const absoluteHeight = timelineMonth.top}
-
       {#if !timelineMonth.isLoaded}
         <div
           style:height={timelineMonth.height + 'px'}
           style:position="absolute"
-          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
+          style:transform={`translate3d(0,${timelineMonth.top}px,0)`}
           style:width="100%"
         >
           <Skeleton {invisible} height={timelineMonth.height} title={timelineMonth.title} />
         </div>
-      {:else if isInOrNearViewport}
+      {:else if timelineMonth.isInOrNearViewport}
         <div
           class="timeline-month"
           style:height={timelineMonth.height + 'px'}
           style:position="absolute"
-          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
+          style:transform={`translate3d(0,${timelineMonth.top}px,0)`}
           style:width="100%"
         >
           <Month
@@ -657,10 +654,11 @@
             onTimelineDaySelect={handleGroupSelect}
           >
             {#snippet thumbnail({ asset, position, timelineDay, groupIndex })}
-              {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
-              {@const isAssetSelected =
-                assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
-              {@const isAssetDisabled = timelineManager.albumAssets.has(asset.id)}
+              {const isAssetSelectionCandidate = $derived(assetInteraction.hasSelectionCandidate(asset.id))}
+              {const isAssetSelected = $derived(
+                assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id),
+              )}
+              {const isAssetDisabled = $derived(timelineManager.albumAssets.has(asset.id))}
               <Thumbnail
                 showStackedIcon={withStacked}
                 {showArchiveIcon}

@@ -96,7 +96,7 @@
 </script>
 
 {#snippet row(id: string, label: string, userId: string, onPick: () => Promise<void>)}
-  {@const user = getUser(userId)}
+  {const user = $derived(getUser(userId))}
   <div class="flex items-center justify-between gap-2">
     <Label id="{id}-label" for={id}>{label}</Label>
     <Button

@@ -23,6 +23,8 @@
     preload = false,
     contextMenuItems,
   }: Props = $props();
+
+  const owner = $derived(album.albumUsers[0].user);
 </script>
 
 <div
@@ -74,7 +76,6 @@
       {/if}
 
       {#if showOwner}
-        {@const owner = album.albumUsers[0].user}
         {#if owner.id === authManager.user.id}
           <p>{$t('owned')}</p>
         {:else}

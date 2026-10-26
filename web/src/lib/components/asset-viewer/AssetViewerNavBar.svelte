@@ -142,11 +142,11 @@
         <ActionMenuItem action={StackActions.RemoveAsset} />
 
         {#if album}
-          {@const { SetCover } = getAlbumAssetActions($t, album, asset)}
+          {const { SetCover } = $derived(getAlbumAssetActions($t, album, asset))}
           <ActionMenuItem action={SetCover} />
         {/if}
         {#if person}
-          {@const { SetFeaturedPhoto } = getPersonAssetActions($t, person, asset)}
+          {const { SetFeaturedPhoto } = $derived(getPersonAssetActions($t, person, asset))}
           <ActionMenuItem action={SetFeaturedPhoto} />
         {/if}
 

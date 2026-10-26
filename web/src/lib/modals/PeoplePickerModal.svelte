@@ -72,7 +72,7 @@
         {:else if filteredPeople.length > 0}
           <div class="grid grid-cols-3 gap-4 p-2">
             {#each filteredPeople as person (person.id)}
-              {@const isSelected = selectedPeople.some((p) => p.id === person.id)}
+              {const isSelected = $derived(selectedPeople.some((p) => p.id === person.id))}
               <button
                 type="button"
                 onclick={() => togglePerson(person)}
