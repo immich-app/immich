@@ -148,6 +148,62 @@ describe(SearchService.name, () => {
       );
       expect(response.assets.items).toHaveLength(2);
     });
+
+    it('should return timeline and own locked assets when visibilityIn includes both', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+      const { asset: timeline } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: ownLocked } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      const { asset: partnerTimeline } = await ctx.newAsset({ ownerId: partner.id });
+      await ctx.newAsset({ ownerId: partner.id, visibility: AssetVisibility.Locked });
+
+      const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
+      const response = await sut.searchMetadata(auth, {
+        size: 250,
+        withStacked: false,
+        visibilityIn: [AssetVisibility.Timeline, AssetVisibility.Locked],
+      });
+
+      expect(response.assets.items.map(({ id }) => id).toSorted()).toEqual(
+        [timeline.id, ownLocked.id, partnerTimeline.id].toSorted(),
+      );
+    });
+
+    it('should require elevated permission when visibilityIn includes locked assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      await expect(
+        sut.searchMetadata(auth, {
+          size: 250,
+          visibilityIn: [AssetVisibility.Timeline, AssetVisibility.Locked],
+        }),
+      ).rejects.toThrow('Elevated permission is required');
+    });
+
+    it('should include own locked assets in statistics when visibilityIn includes locked', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      await ctx.newAsset({ ownerId: partner.id });
+      await ctx.newAsset({ ownerId: partner.id, visibility: AssetVisibility.Locked });
+
+      const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
+
+      await expect(
+        sut.searchStatistics(auth, { visibilityIn: [AssetVisibility.Timeline, AssetVisibility.Locked] }),
+      ).resolves.toEqual({ total: 3 });
+    });
   });
 
   describe('withStacked option', () => {

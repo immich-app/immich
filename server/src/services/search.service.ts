@@ -361,8 +361,8 @@ export class SearchService extends BaseService {
     auth: AuthDto,
     visibility?: AssetVisibility | AssetVisibility[],
   ): Promise<string[]> {
-    // Locked assets are personal. Never include partner IDs, regardless of A's elevated session.
-    if (visibility === AssetVisibility.Locked || (Array.isArray(visibility) && visibility.includes(AssetVisibility.Locked))) {
+    // Locked-only searches are personal. Mixed visibility searches may include partner timeline assets.
+    if (visibility === AssetVisibility.Locked) {
       return [auth.user.id];
     }
     const partnerIds = await getMyPartnerIds({
