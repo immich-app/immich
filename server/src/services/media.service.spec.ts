@@ -467,6 +467,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -549,6 +550,30 @@ describe(MediaService.name, () => {
           isTransparent: false,
         },
       ]);
+    });
+
+    it('should generate WebP video thumbnails when JPEG XL is configured', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { preview: { format: ImageFormat.Jxl }, thumbnail: { format: ImageFormat.Jxl } },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...probeStub.videoStream2160p,
+      });
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.stringMatching(/_preview\.webp$/),
+        expect.any(Object),
+      );
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.stringMatching(/_thumbnail\.webp$/),
+        expect.any(Object),
+      );
     });
 
     it('should tonemap thumbnail for hdr video', async () => {
@@ -739,6 +764,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 4,
         },
         thumbnailPath,
       );
@@ -787,6 +813,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 4,
         },
         thumbnailPath,
       );
@@ -867,6 +894,24 @@ describe(MediaService.name, () => {
           isProgressive: true,
           isTransparent: false,
         }),
+      ]);
+    });
+
+    it('should never set isProgressive for JPEG XL', async () => {
+      const asset = AssetFactory.from().exif().build();
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: {
+          preview: { format: ImageFormat.Jxl, progressive: true },
+          thumbnail: { format: ImageFormat.Jxl, progressive: true },
+        },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        expect.objectContaining({ type: AssetFileType.Preview, isProgressive: false }),
+        expect.objectContaining({ type: AssetFileType.Thumbnail, isProgressive: false }),
       ]);
     });
 
