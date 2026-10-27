@@ -151,21 +151,6 @@ const asSet = <T>(value: string | undefined, defaults: T[]) => {
   return new Set(values.length === 0 ? defaults : (values as T[]));
 };
 
-const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) => {
-  // default is off
-  if (!helmetFile || helmetFile === 'false') {
-    return;
-  }
-
-  helmetFile = helmetFile === 'true' ? join(import.meta.dirname, '..', '..', 'helmet.json') : helmetFile;
-
-  try {
-    return JSON.parse(readFileSync(helmetFile).toString()) as HelmetOptions;
-  } catch (error) {
-    throw new Error(`Failed to read helmet file: ${helmetFile}`, { cause: error });
-  }
-};
-
 type CspOptions = Exclude<NonNullable<HelmetOptions['contentSecurityPolicy']>, boolean>;
 type CspDirectives = NonNullable<CspOptions['directives']>;
 
@@ -181,17 +166,33 @@ export const applyCspHashes = (directives: CspDirectives, manifest: Record<strin
   return merged;
 };
 
-const resolveWebCsp = (config: HelmetOptions | undefined, webRoot: string) => {
-  const contentSecurityPolicy = config?.contentSecurityPolicy;
+const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined, webRoot: string) => {
+  // default is off
+  if (!helmetFile || helmetFile === 'false') {
+    return;
+  }
+
+  helmetFile = helmetFile === 'true' ? join(import.meta.dirname, '..', '..', 'helmet.json') : helmetFile;
+
+  let config: HelmetOptions;
+  try {
+    config = JSON.parse(readFileSync(helmetFile).toString()) as HelmetOptions;
+  } catch (error) {
+    throw new Error(`Failed to read helmet file: ${helmetFile}`, { cause: error });
+  }
+
+  const contentSecurityPolicy = config.contentSecurityPolicy;
   if (!contentSecurityPolicy || typeof contentSecurityPolicy === 'boolean' || !contentSecurityPolicy.directives) {
     return config;
   }
 
-  if (!existsSync(join(webRoot, 'index.html'))) {
+  // merge with csp build-time metadata
+  const manifestFile = join(webRoot, '.csp.json');
+
+  if (!existsSync(join(webRoot, 'index.html')) || !existsSync(manifestFile)) {
     return config;
   }
 
-  const manifestFile = join(webRoot, '.csp.json');
   let manifest: Record<string, string[]>;
   try {
     manifest = JSON.parse(readFileSync(manifestFile).toString()) as Record<string, string[]>;
@@ -348,7 +349,7 @@ const getEnv = (): EnvData => {
     },
 
     helmet: {
-      config: resolveWebCsp(resolveHelmetFile(dto.IMMICH_HELMET_FILE), folders.web),
+      config: resolveHelmetFile(dto.IMMICH_HELMET_FILE, folders.web),
     },
 
     licensePublicKey: isProd ? productionKeys : stagingKeys,
