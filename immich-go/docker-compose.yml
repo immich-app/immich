@@ -1,0 +1,76 @@
+# =============================================================================
+# immich-go — Docker Compose stack (works with `docker compose` AND `podman compose`,
+# and with rootless podman after enabling `podman-compose` or docker socket).
+#
+# Start:   docker compose up -d      (or: podman-compose up -d)
+# Logs:    docker compose logs -f server
+# Stop:    docker compose down       (data survives in the named volume)
+# Migrate: docker compose run --rm migrate --help
+# =============================================================================
+
+services:
+  server:
+    image: immich-go:latest
+    build:
+      context: .
+      args:
+        TARGETOS: linux
+        TARGETARCH: arm64   # change to amd64 for x86 machines
+    container_name: immich-go-server
+    restart: unless-stopped
+    ports:
+      - "2283:2283"
+    environment:
+      # --- REQUIRED in production: set a long random string, e.g.:
+      #     openssl rand -hex 32
+      IMMICHGO_JWT_SECRET: "${IMMICHGO_JWT_SECRET:?set it in .env (openssl rand -hex 32)}"
+
+      # --- First-run admin bootstrap (created only while the DB has no users)
+      IMMICHGO_ADMIN_EMAIL: "${IMMICHGO_ADMIN_EMAIL:-admin@example.com}"
+      IMMICHGO_ADMIN_PASSWORD: "${IMMICHGO_ADMIN_PASSWORD:-ChangeMe123!}"
+
+      # --- Storage (all inside the /data volume)
+      IMMICHGO_DATA_DIR: /data
+      IMMICHGO_DB_PATH: /data/immich.db
+
+      # --- Tuning for ODROID-C2 (2GB RAM / quad A53)
+      IMMICHGO_DB_MAX_CONNS: "5"
+      IMMICHGO_IMAGE_WORKERS: "2"
+      IMMICHGO_MAX_IMAGE_WIDTH: "2048"
+      IMMICHGO_JPEG_QUALITY: "80"
+      IMMICHGO_WORKER_INTERVAL: 30s
+      IMMICHGO_WORKER_SLEEP: 2s
+      IMMICHGO_MEMORY_LIMIT_MB: "500"
+      GIN_MODE: release
+    volumes:
+      - immich-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:2283/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    # Keep the server under ~500MB so the SBC never OOMs:
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+
+  # One-shot legacy importer. Run manually when needed:
+  #   docker compose run --rm migrate \
+  #     --legacy-dsn "postgres://immich:secret@192.168.1.50:5432/immich?sslmode=disable" \
+  #     --library-root /old-library --mode symlink
+  migrate:
+    image: immich-go:latest
+    entrypoint: ["/usr/local/bin/immich-migrate"]
+    profiles: ["migrate"]           # not started by `up`; use `run` explicitly
+    environment:
+      LEGACY_DSN: "${LEGACY_DSN:-}"
+    volumes:
+      - immich-data:/data
+      # Mount your OLD Immich upload/library folder read-only here:
+      - ${LEGACY_LIBRARY_HOST_PATH:-./empty-library}:/uploads/library:ro
+
+volumes:
+  immich-data:
+    name: immich-go-data

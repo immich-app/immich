@@ -78,7 +78,7 @@ var schema = []string{
 		id          TEXT PRIMARY KEY,
 		album_name  TEXT NOT NULL,
 		description TEXT NOT NULL DEFAULT '',
-		order       TEXT NOT NULL DEFAULT 'desc',
+		"order"     TEXT NOT NULL DEFAULT 'desc',
 		owner_id    TEXT NOT NULL REFERENCES users(id),
 		created_at  TEXT NOT NULL,
 		updated_at  TEXT NOT NULL,
@@ -91,7 +91,7 @@ var schema = []string{
 		album_id  TEXT NOT NULL REFERENCES albums(id) ON DELETE CASCADE,
 		asset_id  TEXT NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
 		created_at TEXT NOT NULL,
-		order     INTEGER NOT NULL DEFAULT 0,
+		"order"   INTEGER NOT NULL DEFAULT 0,
 		PRIMARY KEY (album_id, asset_id)
 	)`,
 

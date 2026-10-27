@@ -345,7 +345,7 @@ func (m *migrator) importAlbum(ctx context.Context, al *legacydb.LegacyAlbum) er
 	defer tx.Rollback() //nolint:errcheck
 
 	if _, err := tx.ExecContext(ctx,
-		`INSERT INTO albums (id,album_name,description,order,owner_id,created_at,updated_at)
+		`INSERT INTO albums (id,album_name,description,"order",owner_id,created_at,updated_at)
 		 VALUES (?,?,?,'desc',?,?,?)
 		 ON CONFLICT(id) DO UPDATE SET album_name=excluded.album_name`,
 		al.ID, al.AlbumName, al.Description, al.OwnerID, iso(al.CreatedAt), iso(al.UpdatedAt)); err != nil {

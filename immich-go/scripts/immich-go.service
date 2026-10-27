@@ -1,0 +1,38 @@
+# Installed by scripts/install-native.sh to /etc/systemd/system/immich-go.service
+# Tuned for ODROID-C2 (Amlogic S905, 2GB RAM): hard memory cap + CPU weight.
+[Unit]
+Description=immich-go — Immich-compatible photo server (pure Go)
+Documentation=https://github.com/your-org/immich-go
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=immich
+Group=immich
+EnvironmentFile=/etc/immich-go.env
+ExecStart=/usr/local/bin/immich-server
+WorkingDirectory=/var/lib/immich-go
+
+Restart=on-failure
+RestartSec=3
+
+# --- resource guards (ODROID-C2 friendly) -----------------------------------
+MemoryMax=600M
+MemoryHigh=500M
+CPUWeight=50
+IOSchedulingClass=best-effort
+IOSchedulingPriority=6
+
+# --- sandboxing ---------------------------------------------------------------
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/immich-go
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -399,7 +399,7 @@ func (s *Store) PendingCompressionAssets(ctx context.Context, limit int) ([]*mod
 func (s *Store) CreateAlbum(ctx context.Context, al *models.Album) error {
 	now := nowISO()
 	_, err := s.db.ExecContext(ctx,
-		`INSERT INTO albums (id,album_name,description,order,owner_id,created_at,updated_at)
+		`INSERT INTO albums (id,album_name,description,"order",owner_id,created_at,updated_at)
 		 VALUES (?,?,?,?,?,?,?)`,
 		al.ID, al.AlbumName, al.Description, al.Order, al.OwnerID, now, now)
 	return err
@@ -408,7 +408,7 @@ func (s *Store) CreateAlbum(ctx context.Context, al *models.Album) error {
 // GetAlbum loads an album plus its asset ids/counts.
 func (s *Store) GetAlbum(ctx context.Context, id string) (*models.Album, error) {
 	row := s.db.QueryRowContext(ctx,
-		`SELECT id,album_name,description,order,owner_id,created_at,updated_at FROM albums WHERE id=? AND deleted_at IS NULL`, id)
+		`SELECT id,album_name,description,"order",owner_id,created_at,updated_at FROM albums WHERE id=? AND deleted_at IS NULL`, id)
 	al := &models.Album{}
 	if err := row.Scan(&al.ID, &al.AlbumName, &al.Description, &al.Order, &al.OwnerID, &al.CreatedAt, &al.UpdatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -426,7 +426,7 @@ func (s *Store) GetAlbum(ctx context.Context, id string) (*models.Album, error) 
 // ListAlbums returns all non-deleted albums owned by userID with counts.
 func (s *Store) ListAlbums(ctx context.Context, userID string) ([]*models.Album, error) {
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT a.id,a.album_name,a.description,a.order,a.owner_id,a.created_at,a.updated_at,
+		`SELECT a.id,a.album_name,a.description,a."order",a.owner_id,a.created_at,a.updated_at,
 		        (SELECT COUNT(1) FROM album_assets aa WHERE aa.album_id=a.id)
 		 FROM albums a WHERE a.owner_id=? AND a.deleted_at IS NULL ORDER BY a.created_at DESC`, userID)
 	if err != nil {
@@ -455,7 +455,7 @@ func (s *Store) AddAssetsToAlbum(ctx context.Context, albumID string, assetIDs [
 	now := nowISO()
 	for i, aid := range assetIDs {
 		if _, err := tx.ExecContext(ctx,
-			`INSERT INTO album_assets (album_id,asset_id,created_at,order) VALUES (?,?,?,?)
+			`INSERT INTO album_assets (album_id,asset_id,created_at,"order") VALUES (?,?,?,?)
 			 ON CONFLICT(album_id,asset_id) DO NOTHING`,
 			albumID, aid, now, i); err != nil {
 			return err
