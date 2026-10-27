@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { focusTrap } from '$lib/actions/focus-trap';
-  import { menuButtonId } from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import { focusTrap } from '#lib/actions/focus-trap.ts';
+  import { menuButtonId } from '#lib/components/shared-components/navigation-bar/NavigationBar.svelte';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
   import { onMount, type Snippet } from 'svelte';
 
   interface Props {
@@ -42,7 +42,7 @@
   class:w-[min(100vw,16rem)]={sidebarStore.isOpen}
   data-testid="sidebar-parent"
   inert={isHidden}
-  use:clickOutside={{ onOutclick: closeSidebar, onEscape: closeSidebar }}
+  use:clickOutside={{ onOutclick: closeSidebar, onEscape: isExpanded ? closeSidebar : undefined }}
   use:focusTrap={{ active: isExpanded }}
 >
   <div class="flex h-max min-h-full flex-col gap-1 pe-6">

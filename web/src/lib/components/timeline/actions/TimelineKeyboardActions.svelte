@@ -1,27 +1,27 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
+  import { shortcuts, type ShortcutOptions } from '#lib/actions/shortcut.ts';
   import {
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
-  } from '$lib/components/timeline/actions/focus-actions';
-  import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
-  import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
-  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
-  import { Route } from '$lib/route';
-  import { handleStack } from '$lib/services/stack.service';
-  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { searchStore } from '$lib/stores/search.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, selectAllAssets } from '$lib/utils/asset-utils';
+  } from '#lib/components/timeline/actions/focus-actions.ts';
+  import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import AssetDeleteConfirmModal from '#lib/modals/AssetDeleteConfirmModal.svelte';
+  import NavigateToDateModal from '#lib/modals/NavigateToDateModal.svelte';
+  import ShortcutsModal from '#lib/modals/ShortcutsModal.svelte';
+  import { Route } from '#lib/route.ts';
+  import { handleStack } from '#lib/services/stack.service.ts';
+  import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
+  import { showDeleteModal } from '#lib/stores/preferences.store.ts';
+  import { searchStore } from '#lib/stores/search.svelte.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { deleteAssets } from '#lib/utils/actions.ts';
+  import { archiveAssets, selectAllAssets } from '#lib/utils/asset-utils.ts';
   import { AssetVisibility } from '@immich/sdk';
   import { isModalOpen, modalManager } from '@immich/ui';
 

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getPersonUserActions, getPersonUsersActions } from '$lib/services/person-user.service';
-  import { handleError } from '$lib/utils/handle-error';
+  import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getPersonUserActions, getPersonUsersActions } from '#lib/services/person-user.service.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import {
     getClusterGroupUsers,
     getUsersForPeople,
@@ -76,7 +76,7 @@
 
 <BasicModal title={$t('manage_person_access')} size="medium" icon={mdiAccountMultipleOutline} {onClose}>
   <Text size="small" color="muted" class="mb-4">
-    {$t('manage_person_access_description')}
+    {$t('manage_people_access_description_v2', { values: { count: 1 } })}
   </Text>
 
   <HStack fullWidth class="my-2 justify-between">

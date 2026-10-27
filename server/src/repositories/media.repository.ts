@@ -291,7 +291,7 @@ export class MediaRepository {
           };
         }),
       audioStreams: results.streams
-        .filter((stream) => stream.codec_type === 'audio')
+        .filter((stream) => stream.codec_type === 'audio' && stream.codec_name !== 'unknown')
         .sort((a, b) => this.compareStreams(a, b))
         .map((stream) => ({
           index: stream.index,
@@ -483,7 +483,9 @@ export class MediaRepository {
   }
 
   private parseEnum<E extends Record<string, number | string>>(enumObj: E, value?: string) {
-    return value ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null) : null;
+    return value && typeof value === 'string'
+      ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null)
+      : null;
   }
 
   /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */

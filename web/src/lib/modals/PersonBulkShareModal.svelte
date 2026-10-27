@@ -1,11 +1,11 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import PeopleSelectionModal from '$lib/modals/PeopleSelectionModal.svelte';
-  import { handleBulkUpsert } from '$lib/services/person-user.service';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import PeopleSelectionModal from '#lib/modals/PeopleSelectionModal.svelte';
+  import { handleBulkUpsert } from '#lib/services/person-user.service.ts';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { getAllPeople, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import {
     ActionButton,
@@ -87,8 +87,7 @@
     try {
       const sharedIds = new Set(serverPeople.map(({ id }) => id));
       const allPeople = await loadAllPeople();
-      const visiblePeople = allPeople.filter(({ isHidden }) => !isHidden);
-      shareEveryone = sharedIds.size > 0 && visiblePeople.every(({ id }) => sharedIds.has(id));
+      shareEveryone = sharedIds.size > 0 && allPeople.every(({ id }) => sharedIds.has(id));
     } catch (error) {
       handleError(error, $t('errors.something_went_wrong'));
     }
@@ -107,7 +106,7 @@
     const allPeople: PersonResponseDto[] = [];
 
     for (let page = 1, hasNextPage = true; hasNextPage; page++) {
-      const result = await getAllPeople({ withHidden: false, page, size: 1000 });
+      const result = await getAllPeople({ withHidden: true, page, size: 1000 });
       allPeople.push(...result.people);
       hasNextPage = result.hasNextPage ?? false;
     }
@@ -126,7 +125,7 @@
     }
 
     const updatedPeople = await modalManager.show(PeopleSelectionModal, {
-      people: allPeople.filter(({ isHidden }) => !isHidden),
+      people: allPeople,
       selectedPeople,
     });
 
@@ -179,7 +178,9 @@
   onClose={() => onClose()}
 >
   <div class="flex flex-col gap-4">
-    <Text size="small" color="muted">{$t('manage_people_access_description')}</Text>
+    <Text size="small" color="muted">
+      {$t('manage_people_access_description_v2', { values: { count: selectedPeople.length } })}
+    </Text>
 
     {#if users.length > 1}
       <Field label={$t('share_with')}>

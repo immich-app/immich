@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { AssetVisibility, SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SyncTestContext } from 'test/medium.factory.js';
@@ -396,6 +396,21 @@ describe(SyncEntityType.AssetFaceV3, () => {
       expect.objectContaining({ type: SyncEntityType.AssetFaceDeleteV1 }),
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV3]);
+  });
+
+  it.each([
+    { state: 'archived', values: { visibility: AssetVisibility.Archive } },
+    { state: 'trashed', values: { deletedAt: new Date() } },
+    { state: 'favorited', values: { isFavorite: true } },
+  ])('should not sync an asset face again when its asset is $state', async ({ values }) => {
+    const { auth, ctx } = await setup();
+    const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
+    await ctx.newAssetFace({ assetId: asset.id });
+    await ctx.syncAckAll(auth, await ctx.syncStream(auth, [SyncRequestType.AssetFacesV3]));
+
+    await ctx.database.updateTable('asset').set(values).where('id', '=', asset.id).execute();
+
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV3]);
   });
 

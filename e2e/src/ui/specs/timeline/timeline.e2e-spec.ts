@@ -494,7 +494,7 @@ test.describe('Timeline', () => {
         force: false,
         ids: [assetToTrash.id],
       });
-      await page.getByText('Trash', { exact: true }).click();
+      await page.getByRole('link', { name: 'Trash' }).click();
       await thumbnailUtils.expectInViewport(page, assetToTrash.id);
       await thumbnailUtils.withAssetId(page, assetToTrash.id).hover();
       await thumbnailUtils.selectButton(page, assetToTrash.id).click();
@@ -507,12 +507,12 @@ test.describe('Timeline', () => {
           json: { count: requestJson.ids.length },
         });
       });
-      await page.getByText('Restore', { exact: true }).click();
+      await page.getByText('Restore').click();
       await expect(restoreRequest).resolves.toEqual({
         ids: [assetToTrash.id],
       });
       await expect(thumbnailUtils.withAssetId(page, assetToTrash.id)).toHaveCount(0);
-      await page.getByText('Photos', { exact: true }).click();
+      await page.getByRole('link', { name: 'Photos' }).click();
       await thumbnailUtils.expectInViewport(page, assetToTrash.id);
     });
     test('open album, trash photo, open /trash, restore', async ({ page }) => {
@@ -537,7 +537,7 @@ test.describe('Timeline', () => {
         ids: [assetToTrash.id],
       });
       await page.locator('#control-bar').getByLabel('Close').click();
-      await page.getByText('Trash', { exact: true }).click();
+      await page.getByRole('link', { name: 'Trash' }).click();
       await timelineUtils.waitForTimelineLoad(page);
       await thumbnailUtils.expectInViewport(page, assetToTrash.id);
       await thumbnailUtils.withAssetId(page, assetToTrash.id).hover();
@@ -551,7 +551,7 @@ test.describe('Timeline', () => {
           json: { count: requestJson.ids.length },
         });
       });
-      await page.getByText('Restore', { exact: true }).click();
+      await page.getByText('Restore').click();
       await expect(restoreRequest).resolves.toEqual({
         ids: [assetToTrash.id],
       });
@@ -603,7 +603,7 @@ test.describe('Timeline', () => {
         ids: [assetToArchive.id],
       });
       await expect(thumbnailUtils.withAssetId(page, assetToArchive.id)).toHaveCount(0);
-      await page.getByText('Photos', { exact: true }).click();
+      await page.getByRole('link', { name: 'Photos' }).click();
       await thumbnailUtils.expectInViewport(page, assetToArchive.id);
     });
     test('open /archive, favorite photo, unfavorite', async ({ page }) => {
@@ -749,7 +749,7 @@ test.describe('Timeline', () => {
         ids: [assetToFavorite.id],
       });
       await expect(thumbnailUtils.withAssetId(page, assetToFavorite.id)).toHaveCount(0);
-      await page.getByText('Photos', { exact: true }).click();
+      await page.getByRole('link', { name: 'Photos' }).click();
       await thumbnailUtils.expectInViewport(page, assetToFavorite.id);
     });
     test.skip('open /favorites, archive photo, unarchive photo', async ({ page }) => {

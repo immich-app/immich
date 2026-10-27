@@ -18,6 +18,7 @@ describe(AlbumService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AlbumService));
+    mocks.album.getMetadataForIds.mockResolvedValue([]);
   });
 
   it('should work', () => {
@@ -591,7 +592,7 @@ describe(AlbumService.name, () => {
 
       expect(mocks.albumUser.delete).toHaveBeenCalledTimes(1);
       expect(mocks.albumUser.delete).toHaveBeenCalledWith({ albumId: album.id, userId });
-      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: false }, owner.id);
+      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, owner.id);
     });
 
     it('should prevent removing a shared user from a not-owned album (shared with auth user)', async () => {
@@ -693,7 +694,7 @@ describe(AlbumService.name, () => {
 
       await sut.get(AuthFactory.create(owner), album.id);
 
-      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: false }, owner.id);
+      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, owner.id);
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(owner.id, new Set([album.id]));
     });
 
@@ -712,10 +713,12 @@ describe(AlbumService.name, () => {
       ]);
 
       const auth = AuthFactory.from().sharedLink().build();
-      await sut.get(auth, album.id);
+      const result = await sut.get(auth, album.id);
 
-      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: false }, auth.user.id);
+      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, auth.user.id);
       expect(mocks.access.album.checkSharedLinkAccess).toHaveBeenCalledWith(auth.sharedLink!.id, new Set([album.id]));
+      expect(result).toMatchObject({ albumUsers: [], shared: true, contributorCounts: undefined });
+      expect(mocks.album.getContributorCounts).not.toHaveBeenCalled();
     });
 
     it('should get a shared album via shared with user', async () => {
@@ -735,7 +738,7 @@ describe(AlbumService.name, () => {
 
       await sut.get(AuthFactory.create(user), album.id);
 
-      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: false }, user.id);
+      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, user.id);
       expect(mocks.access.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
         user.id,
         new Set([album.id]),

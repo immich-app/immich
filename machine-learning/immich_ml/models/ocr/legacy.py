@@ -23,13 +23,14 @@ class TextModel[O: Options](InferenceModel[O]):
 
         detects = self.model_type == ModelType.DETECTION
         language = self.model_name.split("__")[0] if "__" in self.model_name else "CH"
+        version, size = self.model_name.split("__")[-1].rsplit("_", 1)
         model_info = InferSession.get_model_url(
             FileInfo(
                 engine_type=EngineType.ONNXRUNTIME,
-                ocr_version=OCRVersion.PPOCRV5,
+                ocr_version=OCRVersion(version),
                 task_type=TaskType.DET if detects else TaskType.REC,
                 lang_type=LangDet.CH if detects else LangRec[language],
-                model_type=RapidModelType.MOBILE if "mobile" in self.model_name else RapidModelType.SERVER,
+                model_type=RapidModelType(size),
             )
         )
         log.info(

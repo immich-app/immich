@@ -1,22 +1,22 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { Route } from '$lib/route';
-  import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '$lib/utils';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import PersonIndicator from '#lib/components/faces-page/PersonIndicator.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import SingleGridRow from '#lib/components/shared-components/SingleGridRow.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '#lib/utils.ts';
   import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
-  import { Icon, ImageCarousel } from '@immich/ui';
-  import { mdiHeart } from '@mdi/js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import MemoryCard from '#lib/components/memories/MemoryCard.svelte';
+  import { ImageCarousel } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import Portal from '$lib/elements/Portal.svelte';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
+  import Portal from '#lib/elements/Portal.svelte';
 
   interface Props {
     data: PageData;
@@ -81,19 +81,17 @@
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
         {#snippet children({ itemCount })}
           {#each people.slice(0, itemCount) as person (person.id)}
-            <a href={Route.viewPerson(person)} class="relative text-center">
-              <ImageThumbnail
-                circle
-                shadow
-                url={getPeopleThumbnailUrl(person)}
-                altText={person.name}
-                widthStyle="100%"
-              />
-              {#if person.isFavorite}
-                <div class="absolute inset-s-2 top-2">
-                  <Icon icon={mdiHeart} size="24" class="text-white" />
-                </div>
-              {/if}
+            <a href={Route.viewPerson(person)} class="text-center">
+              <div class="@container relative">
+                <ImageThumbnail
+                  circle
+                  shadow
+                  url={getPeopleThumbnailUrl(person)}
+                  altText={person.name}
+                  widthStyle="100%"
+                />
+                <PersonIndicator {person} />
+              </div>
               <p class="mt-2 text-sm font-medium text-ellipsis dark:text-white">{person.name}</p>
             </a>
           {/each}
@@ -188,7 +186,7 @@
 </UserPageLayout>
 
 {#if assetViewerManager.isViewing}
-  {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+  {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
         cursor={assetCursor}

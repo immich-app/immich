@@ -1,9 +1,11 @@
 import concurrent.futures
 import logging
+import logging.config
 import os
 import sys
 from pathlib import Path
 from socket import socket
+from typing import Any
 
 from gunicorn.arbiter import Arbiter
 from pydantic import BaseModel, Field
@@ -62,6 +64,7 @@ class Settings(BaseSettings):
     worker_timeout: int = Field(default_factory=default_worker_timeout)
     http_keepalive_timeout_s: int = 2
     test_full: bool = False
+    test_provider: str | None = None
     request_threads: int = os.cpu_count() or 4
     model_inter_op_threads: int = 0
     model_intra_op_threads: int = 0
@@ -142,6 +145,15 @@ class CustomRichHandler(RichHandler):
 
         return super().emit(record)
 
+
+LOG_CONFIG: dict[str, Any] = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"()": CustomRichHandler}},
+    "loggers": {"gunicorn.error": {"handlers": ["console"]}},
+    "root": {"handlers": ["console"]},
+}
+logging.config.dictConfig(LOG_CONFIG)
 
 log = logging.getLogger("ml.log")
 log.setLevel(LOG_LEVEL)

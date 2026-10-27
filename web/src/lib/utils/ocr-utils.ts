@@ -1,8 +1,8 @@
+import type { OcrBoundingBox } from '#lib/stores/ocr.svelte.ts';
+import { mapNormalizedToContent, type Point, type Size } from '#lib/utils/container-utils.ts';
 import { clamp } from 'lodash-es';
-import type { OcrBoundingBox } from '$lib/stores/ocr.svelte';
-import { mapNormalizedToContent, type Point, type Size } from '$lib/utils/container-utils';
 
-export type { Point } from '$lib/utils/container-utils';
+export type { Point } from '#lib/utils/container-utils.ts';
 
 const distance = (p1: Point, p2: Point) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
 
@@ -121,7 +121,6 @@ export const calculateFittedFontSize = (
       return clamp(fontSize, MIN_FONT_SIZE, MAX_FONT_SIZE);
     }
 
-    // eslint-disable-next-line tscompat/tscompat
     context.font = getReferenceFont();
 
     let maxCharWidth = 0;
@@ -147,7 +146,6 @@ export const calculateFittedFontSize = (
   }
 
   // Unsupported in Safari iOS <16.6; falls back to default canvas font, giving less accurate but functional sizing
-  // eslint-disable-next-line tscompat/tscompat
   context.font = getReferenceFont();
 
   const metrics = context.measureText(text);

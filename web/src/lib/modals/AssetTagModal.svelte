@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { handleTagAssets } from '$lib/services/asset.service';
+  import { handleTagAssets } from '#lib/services/asset.service.ts';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { mdiTag } from '@mdi/js';
@@ -79,7 +79,7 @@
 
   <section class="flex flex-wrap gap-1 pt-2">
     {#each selectedIds as tagId (tagId)}
-      {@const tag = tagMap[tagId]}
+      {const tag = $derived(tagMap[tagId])}
       {#if tag}
         <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
       {/if}

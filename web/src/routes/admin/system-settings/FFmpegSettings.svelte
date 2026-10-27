@@ -1,14 +1,15 @@
 <script lang="ts">
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingCheckboxes from './SettingCheckboxes.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSelect from './SettingSelect.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import {
     AudioCodec,
     CQMode,
@@ -21,13 +22,15 @@
   } from '@immich/sdk';
   import { Icon, Link } from '@immich/ui';
   import { mdiHelpCircleOutline } from '@mdi/js';
-  import { isEqual, sortBy } from 'lodash-es';
+  import { isEqual, sortBy, cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
+  const query = createPreloadedQuery(getAdminConfigQuery);
+  const config = $derived(query.data);
+
   const disabled = $derived(featureFlagsManager.value.configFile);
-  const config = $derived(systemConfigManager.value);
-  let configToEdit = $state(systemConfigManager.cloneValue());
+  let configToEdit = $state(cloneDeep(config));
 </script>
 
 <div>

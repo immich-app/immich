@@ -1,9 +1,16 @@
 import { WorkflowTrigger } from '@immich/plugin-sdk';
 import z from 'zod';
+import { asIntegerEnum } from 'src/utils/helpers.js';
 
 export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
+  Passkey = 'passkey',
+}
+
+export enum AuthChallengeType {
+  PasskeyRegistration = 'PasskeyRegistration',
+  PasskeyAuthentication = 'PasskeyAuthentication',
 }
 
 export enum ImmichCookie {
@@ -242,6 +249,10 @@ export enum Permission {
   PartnerRead = 'partner.read',
   PartnerUpdate = 'partner.update',
   PartnerDelete = 'partner.delete',
+
+  PasskeyRead = 'passkey.read',
+  PasskeyUpdate = 'passkey.update',
+  PasskeyDelete = 'passkey.delete',
 
   PersonCreate = 'person.create',
   PersonRead = 'person.read',
@@ -868,7 +879,6 @@ export enum QueueJobStatus {
   Complete = 'completed',
   Delayed = 'delayed',
   Waiting = 'waiting',
-  Paused = 'paused',
 }
 
 export const QueueJobStatusSchema = z.enum(QueueJobStatus).describe('Queue job status').meta({ id: 'QueueJobStatus' });
@@ -891,6 +901,8 @@ export enum JobName {
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
   AuditTableCleanup = 'AuditTableCleanup',
+
+  AuthChallengeCleanup = 'AuthChallengeCleanup',
 
   DatabaseBackup = 'DatabaseBackup',
 
@@ -1018,6 +1030,8 @@ export enum DatabaseLock {
   IntegrityCheck = 67,
   VersionCheck = 800,
   HlsSessionCleanup = 850,
+  FacialRecognition = 900,
+  DuplicateDetection = 1000,
 }
 
 export enum MaintenanceAction {
@@ -1055,7 +1069,9 @@ export enum SyncRequestType {
   AuthUsersV1 = 'AuthUsersV1',
   AuthUsersV2 = 'AuthUsersV2',
   MemoriesV1 = 'MemoriesV1',
+  MemoriesV2 = 'MemoriesV2',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
+  MemoryToAssetsV2 = 'MemoryToAssetsV2',
   PartnersV1 = 'PartnersV1',
   /** @deprecated */
   PartnerAssetsV1 = 'PartnerAssetsV1',
@@ -1139,9 +1155,11 @@ export enum SyncEntityType {
   AlbumToAssetBackfillV1 = 'AlbumToAssetBackfillV1',
 
   MemoryV1 = 'MemoryV1',
+  MemoryV2 = 'MemoryV2',
   MemoryDeleteV1 = 'MemoryDeleteV1',
 
   MemoryToAssetV1 = 'MemoryToAssetV1',
+  MemoryToAssetV2 = 'MemoryToAssetV2',
   MemoryToAssetDeleteV1 = 'MemoryToAssetDeleteV1',
 
   StackV1 = 'StackV1',
@@ -1265,6 +1283,7 @@ export enum ApiTag {
   NotificationsAdmin = 'Notifications (admin)',
   ClusterGroups = 'Cluster groups',
   Partners = 'Partners',
+  Passkeys = 'Passkeys',
   People = 'People',
   Plugins = 'Plugins',
   Queues = 'Queues',
@@ -1321,3 +1340,15 @@ export enum SearchOrderField {
 }
 
 export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'SearchOrderField' });
+
+export enum ServerFeatureLevel {
+  FeatureLevel = 1,
+}
+
+export const ServerFeatureLevelSchema = z
+  .enum(ServerFeatureLevel)
+  .describe('Server feature level')
+  .meta({
+    id: 'ServerFeatureLevel',
+    ...asIntegerEnum(ServerFeatureLevel),
+  });

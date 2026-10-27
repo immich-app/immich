@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { scrollMemory } from '$lib/actions/scroll-memory';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import { memoryManager } from '$lib/managers/memory-manager.svelte';
-  import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
-  import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
-  import MemoriesSettingsModal from '$lib/modals/MemoriesSettingsModal.svelte';
-  import { Route } from '$lib/route';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { scrollMemory } from '#lib/actions/scroll-memory.ts';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
+  import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
+  import MemoryCard from '#lib/components/memories/MemoryCard.svelte';
+  import MemoriesSettingsModal from '#lib/modals/MemoriesSettingsModal.svelte';
+  import { Route } from '#lib/route.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, memoryLaneTitle } from '#lib/utils.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import type { MemoryResponseDto } from '@immich/sdk';
   import { IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
@@ -76,7 +76,7 @@
               assetId: memory.assets[0].id,
               isSaved: userPreferencesManager.memories.onlyFavorites || undefined,
             }),
-            src: getAssetMediaUrl({ id: memory.assets[0].id }),
+            src: getAssetMediaUrl({ id: memory.assets[0].id, cacheKey: memory.assets[0].thumbhash }),
             alt: $getAltText(toTimelineAsset(memory.assets[0])),
             isSaved: memory.isSaved,
             type: memory.type,

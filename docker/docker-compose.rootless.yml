@@ -53,6 +53,8 @@ services:
       - ./ml-model-cache:/cache
     env_file:
       - .env
+    environment:
+      MACHINE_LEARNING_MODEL_REVISION: v2
     restart: always
     healthcheck:
       disable: false

@@ -91,6 +91,7 @@ jobs:
             device: openvino
             suffixes: '-openvino'
             platforms: linux/amd64
+            runner-mapping: '{"linux/amd64": "pokedex-large"}'
           - image: immich-machine-learning
             device: armnn
             suffixes: '-armnn'

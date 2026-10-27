@@ -298,7 +298,7 @@ export class MetadataService extends BaseService {
         exifTags.Author ??
         null,
       fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
-      iso: validate(exifTags.ISO) as number,
+      iso: validate(exifTags.RecommendedExposureIndex ?? exifTags.StandardOutputSensitivity ?? exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: getLensModel(exifTags),
       fNumber: validate(exifTags.FNumber),
@@ -593,7 +593,7 @@ export class MetadataService extends BaseService {
         //
         // this is especially important in the case of UTC+0 where exiftool-vendored does not return tz/zone fields
         // and as such the tags aren't overwritten when returning all tags.
-        for (const tag of ['zone', 'tz', 'tzSource'] as const) {
+        for (const tag of ['zone', 'tz', 'zoneSource'] as const) {
           delete mediaTags[tag];
         }
       }

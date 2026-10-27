@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cleanClass } from '$lib';
+  import { cleanClass } from '#lib';
 
   interface Props {
     alt?: string;
@@ -17,5 +17,5 @@
   draggable="false"
   loading={preload ? 'eager' : 'lazy'}
   sizes="min(271px,186px)"
-  src="$lib/assets/no-thumbnail.png"
+  src="#lib/assets/no-thumbnail.png"
 />

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import UserSettingsList from './UserSettingsList.svelte';
-  import { getKeyboardActions } from '$lib/services/keyboard.service';
+  import { getKeyboardActions } from '#lib/services/keyboard.service.ts';
   import { Container } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -17,6 +17,6 @@
 
 <UserPageLayout title={data.meta.title} actions={[KeyboardShortcuts]}>
   <Container size="medium" center>
-    <UserSettingsList keys={data.keys} sessions={data.sessions} />
+    <UserSettingsList />
   </Container>
 </UserPageLayout>

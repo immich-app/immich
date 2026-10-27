@@ -1,4 +1,4 @@
-import { handleError } from '$lib/utils/handle-error';
+import { handleError } from '#lib/utils/handle-error.ts';
 
 /**
  * Tracks the state of asynchronous invocations to handle race conditions and stale operations.

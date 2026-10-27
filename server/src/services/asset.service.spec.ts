@@ -93,12 +93,16 @@ describe(AssetService.name, () => {
     });
 
     it('should allow shared link access', async () => {
-      const asset = AssetFactory.create();
+      const asset = AssetFactory.from()
+        .owner()
+        .face({}, (face) => face.person())
+        .build();
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
       mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
-      await sut.get(authStub.adminSharedLink, asset.id);
+      const result = await sut.get(authStub.adminSharedLink, asset.id);
 
+      expect(result).toMatchObject({ id: asset.id, hasMetadata: true, people: [], owner: undefined });
       expect(mocks.access.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLink?.id,
         new Set([asset.id]),
@@ -628,20 +632,22 @@ describe(AssetService.name, () => {
       expect(mocks.stack.update).not.toHaveBeenCalled();
     });
 
-    it('should delete a live photo', async () => {
+    it.each([
+      { isOffline: false, deleteOnDisk: true },
+      { isOffline: true, deleteOnDisk: false },
+    ])('should delete a live photo (isOffline: $isOffline)', async ({ isOffline, deleteOnDisk }) => {
       const motionAsset = AssetFactory.from({ type: AssetType.Video, visibility: AssetVisibility.Hidden }).build();
-      const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
+      const asset = AssetFactory.from({ livePhotoVideoId: motionAsset.id, isOffline })
+        .file({ type: AssetFileType.Sidecar })
+        .build();
       mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
       mocks.asset.getLivePhotoCount.mockResolvedValue(0);
 
-      await sut.handleAssetDeletion({
-        id: asset.id,
-        deleteOnDisk: true,
-      });
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
       expect(mocks.job.queue.mock.calls).toEqual([
-        [{ name: JobName.AssetDelete, data: { id: motionAsset.id, deleteOnDisk: true } }],
-        [{ name: JobName.FileDelete, data: { files: [asset.originalPath] } }],
+        [{ name: JobName.AssetDelete, data: { id: motionAsset.id, deleteOnDisk } }],
+        [{ name: JobName.FileDelete, data: { files: deleteOnDisk ? [asset.files[0].path, asset.originalPath] : [] } }],
       ]);
     });
 

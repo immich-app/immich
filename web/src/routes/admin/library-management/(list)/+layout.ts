@@ -1,28 +1,16 @@
-import { getAllLibraries, getLibraryStatistics, getUserAdmin, searchUsersAdmin } from '@immich/sdk';
-import { authenticate, requestServerInfo } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
+import { queryClient } from '#lib/queries/client.ts';
+import { getAllLibrariesQuery } from '#lib/queries/library.query.ts';
+import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import type { LayoutLoad } from './$types';
 
-export const load = (async ({ url, depends }) => {
-  depends('app:libraries');
+export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
-  await requestServerInfo();
-  const allUsers = await searchUsersAdmin({ withDeleted: false });
+  await Promise.all([queryClient.query(getAllLibrariesQuery()), queryClient.query(searchUsersAdminQuery())]);
   const $t = await getFormatter();
 
-  const libraries = await getAllLibraries();
-  const statisticsPromise = Promise.all(
-    libraries.map(async ({ id }) => [id, await getLibraryStatistics({ id })] as const),
-  );
-  const owners = await Promise.all(
-    libraries.map(async ({ id, ownerId }) => [id, await getUserAdmin({ id: ownerId })] as const),
-  );
-
   return {
-    allUsers,
-    libraries,
-    statisticsPromise: statisticsPromise.then((stats) => Object.fromEntries(stats)),
-    owners: Object.fromEntries(owners),
     meta: {
       title: $t('external_libraries'),
     },

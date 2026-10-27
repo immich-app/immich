@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button, ButtonProps, Text } from '@react-email/components';
+import { Button, ButtonProps, Text } from 'react-email';
 
 export const ImmichButton = ({ children, ...props }: ButtonProps) => (
   <Button

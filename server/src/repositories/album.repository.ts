@@ -1,14 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  type ExpressionBuilder,
-  type Insertable,
-  type Kysely,
-  type NotNull,
-  type Selectable,
-  type ShallowDehydrateObject,
-  type Updateable,
-  sql,
-} from 'kysely';
+import { type ExpressionBuilder, type Insertable, type Kysely, type Updateable, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database.js';
@@ -17,7 +8,6 @@ import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto.js';
 import { AlbumUserRole } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { asUuid, dummy, withDefaultVisibility } from 'src/utils/database.js';
 
 export interface AlbumAssetCount {
@@ -26,10 +16,6 @@ export interface AlbumAssetCount {
   startDate: Date | null;
   endDate: Date | null;
   lastModifiedAssetTimestamp: Date | null;
-}
-
-export interface AlbumInfoOptions {
-  withAssets: boolean;
 }
 
 const withAlbumUsers = (authUserId?: string) => (eb: ExpressionBuilder<DB, 'album'>) =>
@@ -52,27 +38,6 @@ const withSharedLink = (eb: ExpressionBuilder<DB, 'album'>) =>
     eb.selectFrom('shared_link').selectAll('shared_link').whereRef('shared_link.albumId', '=', 'album.id'),
   ).as('sharedLinks');
 
-const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
-  return eb
-    .selectFrom((eb) =>
-      eb
-        .selectFrom('asset')
-        .selectAll('asset')
-        .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-        .select((eb) =>
-          eb.table('asset_exif').$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>>>().as('exifInfo'),
-        )
-        .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
-        .whereRef('album_asset.albumId', '=', 'album.id')
-        .where('asset.deletedAt', 'is', null)
-        .$call(withDefaultVisibility)
-        .orderBy('asset.fileCreatedAt', 'desc')
-        .as('asset'),
-    )
-    .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
-    .as('assets');
-};
-
 const isAlbumOwned = (ownerId: string) => (eb: ExpressionBuilder<DB, 'album'>) =>
   eb.exists(
     eb
@@ -86,8 +51,8 @@ const isAlbumOwned = (ownerId: string) => (eb: ExpressionBuilder<DB, 'album'>) =
 export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, { withAssets: true }, DummyValue.UUID] })
-  getById(id: string, options: AlbumInfoOptions, authUserId?: string) {
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  getById(id: string, authUserId?: string) {
     return this.db
       .with('album_user', (qb) => qb.selectFrom('album_user').selectAll().where('album_user.albumId', '=', id))
       .selectFrom('album')
@@ -96,8 +61,6 @@ export class AlbumRepository {
       .where('album.deletedAt', 'is', null)
       .select(withAlbumUsers(authUserId))
       .select(withSharedLink)
-      .$if(options.withAssets, (eb) => eb.select(withAssets))
-      .$narrowType<{ assets: NotNull }>()
       .executeTakeFirst();
   }
 
@@ -351,8 +314,6 @@ export class AlbumRepository {
       .selectFrom('album')
       .selectAll('album')
       .select(withAlbumUsers(authUserId))
-      .select(withAssets)
-      .$narrowType<{ assets: NotNull }>()
       .executeTakeFirstOrThrow();
 
     return result;

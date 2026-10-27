@@ -23,7 +23,6 @@ import {
   LogLevel,
   QueueName,
 } from 'src/enum.js';
-import { setDifference } from 'src/utils/set.js';
 
 export interface EnvData {
   host?: string;
@@ -181,7 +180,7 @@ const getEnv = (): EnvData => {
 
   const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.Api, ImmichWorker.Microservices]);
   const excludedWorkers = asSet(dto.IMMICH_WORKERS_EXCLUDE, []);
-  const workers = [...setDifference(includedWorkers, excludedWorkers)];
+  const workers = [...includedWorkers.difference(excludedWorkers)];
   for (const worker of workers) {
     if (!WORKER_TYPES.has(worker)) {
       throw new Error(`Invalid worker(s) found: ${workers.join(',')}`);
@@ -220,7 +219,7 @@ const getEnv = (): EnvData => {
       : asSet<ImmichTelemetry>(dto.IMMICH_TELEMETRY_INCLUDE, []);
 
   const excludedTelemetries = asSet<ImmichTelemetry>(dto.IMMICH_TELEMETRY_EXCLUDE, []);
-  const telemetries = setDifference(includedTelemetries, excludedTelemetries);
+  const telemetries = includedTelemetries.difference(excludedTelemetries);
   for (const telemetry of telemetries) {
     if (!TELEMETRY_TYPES.has(telemetry)) {
       throw new Error(`Invalid telemetry found: ${telemetry}`);

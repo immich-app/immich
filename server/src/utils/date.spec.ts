@@ -1,5 +1,6 @@
+import { DateTime } from 'luxon';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { asDateString, asDateTimeString, isLeapDayObserved } from 'src/utils/date.js';
+import { asDateString, asDateTimeString, asLocalTime, isLeapDayObserved } from 'src/utils/date.js';
 
 describe('asDateString', () => {
   afterEach(() => {
@@ -62,5 +63,12 @@ describe('asDateTimeString', () => {
   it('should return an ISO 8601 datetime string for a Date', () => {
     const date = new Date('2000-01-15T12:00:00.000Z');
     expect(asDateTimeString(date)).toBe('2000-01-15T12:00:00.000Z');
+  });
+});
+
+describe('asLocalTime', () => {
+  it('should keep the wall-clock time and reinterpret it as UTC', () => {
+    const date = DateTime.fromISO('2026-10-06T08:00:00', { zone: 'America/New_York' }) as DateTime<true>;
+    expect(asLocalTime(date).toISOString()).toBe('2026-10-06T08:00:00.000Z');
   });
 });
