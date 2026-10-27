@@ -26310,8 +26310,8 @@
           "task": {
             "type": "string"
           },
-          "yuccaLogId": {
-            "description": "Yucca log ID",
+          "yuccaJobId": {
+            "description": "Yucca job ID",
             "type": "string"
           }
         },

@@ -365,7 +365,7 @@ export class MaintenanceWorkerService {
         action: action.action,
         task: 'error',
         error: '' + error,
-        yuccaLogId: this.#status.yuccaLogId,
+        yuccaJobId: this.#status.yuccaJobId,
       });
     }
   }
@@ -377,12 +377,12 @@ export class MaintenanceWorkerService {
     });
 
     const yucca = this.moduleRef.get(YuccaService, { strict: false });
-    const { logId, task, immichBackupFileName } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
+    const { jobId, task, immichBackupFileName } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
 
     this.setStatus({
       active: true,
       action: MaintenanceAction.Rollback,
-      yuccaLogId: logId,
+      yuccaJobId: jobId,
     });
 
     await task;

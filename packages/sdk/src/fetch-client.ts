@@ -502,8 +502,8 @@ export type MaintenanceStatusResponseDto = {
     error?: string;
     progress?: number;
     task?: string;
-    /** Yucca log ID */
-    yuccaLogId?: string;
+    /** Yucca job ID */
+    yuccaJobId?: string;
 };
 export type NotificationCreateDto = {
     /** Additional notification data */
