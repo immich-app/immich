@@ -1,13 +1,10 @@
-import { AssetOrder, AssetOrderBy, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
-import { clamp, isEqual } from 'lodash-es';
-import { SvelteDate, SvelteSet } from 'svelte/reactivity';
-import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { GroupInsertionCache } from '$lib/managers/timeline-manager/group-insertion-cache.svelte';
-import { updateTimelineMonthViewportProximity } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
-import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
-import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
+import { VirtualScrollManager } from '#lib/managers/VirtualScrollManager/VirtualScrollManager.svelte.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { GroupInsertionCache } from '#lib/managers/timeline-manager/group-insertion-cache.svelte.ts';
+import { updateTimelineMonthViewportProximity } from '#lib/managers/timeline-manager/internal/intersection-support.svelte.ts';
+import { updateGeometry } from '#lib/managers/timeline-manager/internal/layout-support.svelte.ts';
+import { loadFromTimeBuckets } from '#lib/managers/timeline-manager/internal/load-support.svelte.ts';
 import {
   findClosestTimelineMonthForDate,
   findTimelineMonthForAsset as findTimelineMonthForAssetUtil,
@@ -15,11 +12,11 @@ import {
   getAssetWithOffset,
   getTimelineMonthByDate,
   retrieveRange as retrieveRangeUtil,
-} from '$lib/managers/timeline-manager/internal/search-support.svelte';
-import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
-import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
-import { updateStackedAssetInTimeline } from '$lib/utils/actions';
-import { CancellableTask } from '$lib/utils/cancellable-task';
+} from '#lib/managers/timeline-manager/internal/search-support.svelte.ts';
+import { WebsocketSupport } from '#lib/managers/timeline-manager/internal/websocket-support.svelte.ts';
+import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
+import { updateStackedAssetInTimeline } from '#lib/utils/actions.ts';
+import { CancellableTask } from '#lib/utils/cancellable-task.ts';
 import {
   getOrderingDate,
   isAssetResponseDto,
@@ -27,7 +24,17 @@ import {
   toTimelineAsset,
   type TimelineDateTime,
   type TimelineYearMonth,
-} from '$lib/utils/timeline-util';
+} from '#lib/utils/timeline-util.ts';
+import {
+  AssetOrder,
+  AssetOrderBy,
+  AssetVisibility,
+  getAssetInfo,
+  getTimeBuckets,
+  type AssetResponseDto,
+} from '@immich/sdk';
+import { clamp, isEqual } from 'lodash-es';
+import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { TimelineDay } from './timeline-day.svelte';
 import { TimelineMonth } from './timeline-month.svelte';
@@ -122,7 +129,14 @@ export class TimelineManager extends VirtualScrollManager {
             this.upsertAssets([timelineAsset]);
           }
         },
-        AssetsUnarchive: (assets) => this.upsertAssets(assets),
+        AssetsArchive: (assetIds) => this.update(assetIds, (asset) => (asset.visibility = AssetVisibility.Archive)),
+        AssetsUnarchive: (assets) => {
+          if (this.#options.visibility === AssetVisibility.Archive) {
+            this.removeAssets(assets.map((asset) => asset.id));
+          } else {
+            this.upsertAssets(assets);
+          }
+        },
         AlbumRemoveAssets: ({ assetIds, albumIds }) => {
           if (this.#options.albumId && albumIds.includes(this.#options.albumId)) {
             this.removeAssets(assetIds);

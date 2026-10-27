@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Tree from '$lib/components/shared-components/tree/Tree.svelte';
-  import { type TreeNode } from '$lib/utils/tree-utils';
+  import Tree from '#lib/components/shared-components/tree/Tree.svelte';
+  import { type TreeNode } from '#lib/utils/tree-utils.ts';
 
   interface Props {
     tree: TreeNode;

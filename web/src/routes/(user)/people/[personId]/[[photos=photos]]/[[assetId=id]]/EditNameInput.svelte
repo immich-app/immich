@@ -1,9 +1,9 @@
 <script lang="ts">
-  import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
+  import SearchPeople from '#lib/components/faces-page/PeopleSearch.svelte';
   import { type PersonResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
 
   interface Props {
     person: PersonResponseDto;

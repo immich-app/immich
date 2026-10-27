@@ -20,9 +20,8 @@
 </script>
 
 <script lang="ts">
-  import { focusOutside } from '$lib/actions/focus-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { generateId } from '$lib/utils/generate-id';
+  import { focusOutside } from '#lib/actions/focus-outside.ts';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
   import { Icon, IconButton, Label } from '@immich/ui';
   import { mdiChevronDown, mdiClose, mdiMagnify } from '@mdi/js';
   import { onMount, tick } from 'svelte';
@@ -63,10 +62,6 @@
   }: Props = $props();
 
   /**
-   * Unique identifier for the combobox.
-   */
-  let id: string = generateId();
-  /**
    * Indicates whether or not the dropdown autocomplete list should be visible.
    */
   let isOpen = $state(false);
@@ -80,6 +75,7 @@
   let input = $state<HTMLInputElement>();
   let bounds: DOMRect | undefined = $state();
 
+  const id = $props.id();
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
   /**

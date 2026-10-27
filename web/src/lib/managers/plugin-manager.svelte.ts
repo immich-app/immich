@@ -1,7 +1,9 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { searchPluginMethodsQuery, searchPluginTemplatesQuery } from '#lib/queries/plugin.query.ts';
+import { getWorkflowTriggersQuery } from '#lib/queries/workflow.query.ts';
 import {
-  getWorkflowTriggers,
-  searchPluginMethods,
-  searchPluginTemplates,
   WorkflowTrigger,
   type PluginMethodResponseDto,
   type PluginTemplateResponseDto,
@@ -10,8 +12,6 @@ import {
 import { t } from 'svelte-i18n';
 import { SvelteMap } from 'svelte/reactivity';
 import { get } from 'svelte/store';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
 
 class PluginManager {
   #loading: Promise<void> | undefined;
@@ -78,9 +78,9 @@ class PluginManager {
 
   private async load() {
     const [methods, triggers, templates] = await Promise.all([
-      searchPluginMethods({}),
-      getWorkflowTriggers(),
-      searchPluginTemplates(),
+      queryClient.query(searchPluginMethodsQuery()),
+      queryClient.query(getWorkflowTriggersQuery()),
+      queryClient.query(searchPluginTemplatesQuery()),
     ]);
 
     this.#methods = methods;

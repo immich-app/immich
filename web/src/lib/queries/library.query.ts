@@ -1,3 +1,4 @@
+import { asMutation, queryClient } from '#lib/queries/client.ts';
 import {
   createLibrary,
   deleteLibrary,
@@ -8,7 +9,6 @@ import {
   type LibraryResponseDto,
 } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
-import { asMutation, queryClient } from '$lib/queries/client';
 
 const findOrFail = (libraries: LibraryResponseDto[], id: string) => {
   const library = libraries.find((library) => library.id === id);

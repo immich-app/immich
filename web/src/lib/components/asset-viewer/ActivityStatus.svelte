@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { locale } from '$lib/stores/preferences.store';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import type { ActivityResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiCommentOutline, mdiThumbUp, mdiThumbUpOutline } from '@mdi/js';

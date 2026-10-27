@@ -1,12 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { Route } from '$lib/route';
-  import { handleLoginWithPasskey, isPasskeyCancelled, isPasskeySupported } from '$lib/services/passkey.service';
-  import { oauth } from '$lib/utils';
-  import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
+  import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
+  import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+  import { createPreloadedQuery, MutationCancelledError } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+  import { loginWithPasskeyMutation } from '#lib/queries/passkey.query.ts';
+  import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
+  import { createMutation } from '@tanstack/svelte-query';
+  import { oauth } from '#lib/utils.ts';
+  import { getServerErrorMessage, handleError } from '#lib/utils/handle-error.ts';
   import { login, type LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
   import { mdiShieldKeyOutline } from '@mdi/js';
@@ -24,18 +28,30 @@
   let email = $state('');
   let password = $state('');
   let oauthError = $state('');
-  let passkeyError = $state('');
   let loading = $state(false);
   let oauthLoading = $state(true);
-  let passkeyLoading = $state(false);
-  const passkeySupported = isPasskeySupported();
 
-  const serverConfig = $derived(serverConfigManager.value);
-  const publicConfig = $derived(data.publicConfig);
+  const queries = {
+    publicConfig: createPreloadedQuery(getPublicConfigQuery),
+    serverConfig: createPreloadedQuery(getServerConfigQuery),
+  };
+
+  const publicConfig = $derived(queries.publicConfig.data);
+  const serverConfig = $derived(queries.serverConfig.data);
+
+  const passkeySupported = browserSupportsWebAuthn();
   const passkeyEnabled = $derived(publicConfig.passkey.enabled && passkeySupported);
 
+  const passkeyLogin = createMutation(() => ({ ...loginWithPasskeyMutation(), onSuccess: (user) => onLogin(user) }));
+  const passkeyLoading = $derived(passkeyLogin.isPending || passkeyLogin.isSuccess);
+  const passkeyError = $derived(
+    passkeyLogin.error && !(passkeyLogin.error instanceof MutationCancelledError)
+      ? getServerErrorMessage(passkeyLogin.error) || $t('errors.something_went_wrong')
+      : '',
+  );
+
   const onSuccess = async (user: LoginResponseDto) => {
-    await goto(data.continueUrl, { invalidateAll: true });
+    await goto(data.continueUrl, { refreshAll: true });
     eventManager.emit('AuthLogin', user);
   };
 
@@ -117,20 +133,6 @@
     }
   };
 
-  const handlePasskeyLogin = async () => {
-    try {
-      passkeyError = '';
-      passkeyLoading = true;
-      const user = await handleLoginWithPasskey();
-      await onLogin(user);
-    } catch (error) {
-      if (!isPasskeyCancelled(error)) {
-        passkeyError = getServerErrorMessage(error) || $t('errors.something_went_wrong');
-      }
-      passkeyLoading = false;
-    }
-  };
-
   const handleOAuthLogin = async () => {
     oauthLoading = true;
     oauthError = '';
@@ -200,7 +202,7 @@
         size="large"
         fullWidth
         color={publicConfig.passwordLogin.enabled ? 'secondary' : 'primary'}
-        onclick={handlePasskeyLogin}
+        onclick={() => passkeyLogin.mutate()}
       >
         {$t('login_with_passkey')}
       </Button>

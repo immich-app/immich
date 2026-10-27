@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { handleError } from '$lib/utils/handle-error';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { setupPinCode } from '@immich/sdk';
   import { Button, Field, Heading, PinInput, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';

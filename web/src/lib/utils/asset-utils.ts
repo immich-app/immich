@@ -1,3 +1,16 @@
+import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { downloadManager } from '#lib/managers/download-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { locale } from '#lib/stores/preferences.store.ts';
+import { downloadUrlPost, withError } from '#lib/utils.ts';
+import { getByteUnitString } from '#lib/utils/byte-units.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import { navigate } from '#lib/utils/navigation.ts';
+import { asQueryString } from '#lib/utils/shared-links.ts';
+import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetVisibility,
   getBaseUrl,
@@ -6,7 +19,6 @@ import {
   updateAsset,
   updateAssets,
   type AssetResponseDto,
-  type AssetTypeEnum,
   type DownloadInfoDto,
   type ExifResponseDto,
   type UserResponseDto,
@@ -15,19 +27,6 @@ import { toastManager } from '@immich/ui';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { downloadManager } from '$lib/managers/download-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { locale } from '$lib/stores/preferences.store';
-import { downloadUrlPost, withError } from '$lib/utils';
-import { getByteUnitString } from '$lib/utils/byte-units';
-import { getFormatter } from '$lib/utils/i18n';
-import { navigate } from '$lib/utils/navigation';
-import { asQueryString } from '$lib/utils/shared-links';
-import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
 
 export const removeTag = async ({
@@ -126,7 +125,7 @@ function isRotated270CW(orientation: number) {
   return [7, 8, -90].includes(orientation);
 }
 
-export function isFlipped(orientation?: string | null) {
+function isFlipped(orientation?: string | null) {
   const value = Number(orientation);
   return value && (isRotated270CW(value) || isRotated90CW(value));
 }
@@ -150,7 +149,7 @@ export function getAssetResolution(asset: AssetResponseDto): string {
     return 'Invalid Data';
   }
 
-  return `${asset.width} x ${asset.height}`;
+  return `${asset.width} × ${asset.height}`;
 }
 
 /**
@@ -233,20 +232,6 @@ export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
 
   return supportedImageMimeTypes.has(asset.originalMimeType);
 }
-
-export const getAssetType = (type: AssetTypeEnum) => {
-  switch (type) {
-    case 'IMAGE': {
-      return 'Photo';
-    }
-    case 'VIDEO': {
-      return 'Video';
-    }
-    default: {
-      return 'Asset';
-    }
-  }
-};
 
 export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
@@ -350,32 +335,6 @@ const undoArchiveAssets = async (assets: TimelineAsset[]) => {
   } catch (error) {
     handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
   }
-};
-
-export const archiveAssets = async (assets: TimelineAsset[], visibility: AssetVisibility) => {
-  const ids = assets.map(({ id }) => id);
-  const $t = get(t);
-
-  try {
-    if (ids.length > 0) {
-      await updateAssets({
-        assetBulkUpdateDto: { ids, visibility },
-      });
-    }
-
-    if (visibility === AssetVisibility.Archive) {
-      showUndoArchiveToast($t('archived_count', { values: { count: ids.length } }), assets);
-    } else {
-      toastManager.primary($t('unarchived_count', { values: { count: ids.length } }));
-    }
-  } catch (error) {
-    handleError(
-      error,
-      $t('errors.unable_to_archive_unarchive', { values: { archived: visibility === AssetVisibility.Archive } }),
-    );
-  }
-
-  return ids;
 };
 
 export const delay = async (ms: number) => {

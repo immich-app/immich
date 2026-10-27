@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { focusTrap } from '$lib/actions/focus-trap';
-  import { menuButtonId } from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import { focusTrap } from '#lib/actions/focus-trap.ts';
+  import { menuButtonId } from '#lib/components/shared-components/navigation-bar/NavigationBar.svelte';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
   import { onMount, type Snippet } from 'svelte';
 
   interface Props {

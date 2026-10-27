@@ -308,7 +308,7 @@ describe(PasskeyService.name, () => {
       expect(mocks.passkey.create).not.toHaveBeenCalled();
     });
 
-    it('should verify against the android app origins when the origin header is missing', async () => {
+    it('should verify against the mobile app origins when the origin header is missing', async () => {
       const auth = AuthFactory.from().session().build();
       const passkey = PasskeyFactory.create({ userId: auth.user.id });
 
@@ -323,6 +323,7 @@ describe(PasskeyService.name, () => {
       expect(mocks.webAuthn.verifyRegistrationResponse).toHaveBeenCalledWith(
         expect.objectContaining({
           expectedOrigin: [
+            'https://my.immich.app',
             'android:apk-key-hash:hsXEVd-vSYWSOo81rbMdDJ4LlX1_lMLSr2okOKqWACA',
             'android:apk-key-hash:WiLBg0dUBfVJxOufsmwuk6PvnFdmFQp684yNP-UVzNY',
           ],

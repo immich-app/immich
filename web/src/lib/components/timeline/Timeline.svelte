@@ -1,28 +1,32 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
-  import Month from '$lib/components/timeline/Month.svelte';
-  import Scrubber from '$lib/components/timeline/Scrubber.svelte';
-  import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
-  import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
-  import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
-  import { AssetAction } from '$lib/constants';
-  import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
-  import Portal from '$lib/elements/Portal.svelte';
-  import Skeleton from '$lib/elements/Skeleton.svelte';
-  import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import type { TimelineDay } from '$lib/managers/timeline-manager/timeline-day.svelte';
-  import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
-  import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
-  import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
-  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
-  import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
+  import Thumbnail from '#lib/components/assets/thumbnail/Thumbnail.svelte';
+  import Month from '#lib/components/timeline/Month.svelte';
+  import Scrubber from '#lib/components/timeline/Scrubber.svelte';
+  import TimelineAssetViewer from '#lib/components/timeline/TimelineAssetViewer.svelte';
+  import TimelineKeyboardActions from '#lib/components/timeline/actions/TimelineKeyboardActions.svelte';
+  import { focusAsset } from '#lib/components/timeline/actions/focus-actions.ts';
+  import { AssetAction } from '#lib/constants.ts';
+  import HotModuleReload from '#lib/elements/HotModuleReload.svelte';
+  import Portal from '#lib/elements/Portal.svelte';
+  import Skeleton from '#lib/elements/Skeleton.svelte';
+  import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
+  import { isIntersecting } from '#lib/managers/timeline-manager/internal/intersection-support.svelte.ts';
+  import type { TimelineMonth } from '#lib/managers/timeline-manager/timeline-month.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type {
+    TimelineAsset,
+    TimelineManagerOptions,
+    ViewportTopMonth,
+  } from '#lib/managers/timeline-manager/types.ts';
+  import { assetsSnapshot } from '#lib/managers/timeline-manager/utils.svelte.ts';
+  import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { isAssetViewerRoute, navigate } from '#lib/utils/navigation.ts';
+  import { getTimes, type ScrubberListener } from '#lib/utils/timeline-util.ts';
   import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, tick, type Snippet } from 'svelte';
@@ -232,7 +236,9 @@
   // beforeNavigate is only called AFTER a svelte route has already been loaded
   // and a new route is being navigated to. It will never be called on direct
   // navigations by the browser.
-  beforeNavigate(({ from, to }) => {
+  beforeNavigate(({ from, to, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     timelineManager.suspendTransitions = true;
     const isNavigatingToAssetViewer = isAssetViewerRoute(to);
     const isNavigatingFromAssetViewer = isAssetViewerRoute(from);
@@ -241,7 +247,9 @@
 
   // afterNavigate is only called after navigation to a new URL, {complete} will resolve
   // after successful navigation.
-  afterNavigate(({ complete }) => {
+  afterNavigate(({ complete, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     void complete.finally(() => {
       const isAssetViewerPage = isAssetViewerRoute(page);
 
@@ -257,8 +265,8 @@
   });
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
-  // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
 
+  // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   onMount(() => {
     if (!enableRouting) {
       invisible = false;
@@ -628,24 +636,21 @@
     </section>
 
     {#each timelineManager.months as timelineMonth (timelineMonth.viewId)}
-      {@const isInOrNearViewport = timelineMonth.isInOrNearViewport}
-      {@const absoluteHeight = timelineMonth.top}
-
       {#if !timelineMonth.isLoaded}
         <div
           style:height={timelineMonth.height + 'px'}
           style:position="absolute"
-          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
+          style:transform={`translate3d(0,${timelineMonth.top}px,0)`}
           style:width="100%"
         >
           <Skeleton {invisible} height={timelineMonth.height} title={timelineMonth.title} />
         </div>
-      {:else if isInOrNearViewport}
+      {:else if timelineMonth.isInOrNearViewport}
         <div
           class="timeline-month"
           style:height={timelineMonth.height + 'px'}
           style:position="absolute"
-          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
+          style:transform={`translate3d(0,${timelineMonth.top}px,0)`}
           style:width="100%"
         >
           <Month
@@ -657,10 +662,11 @@
             onTimelineDaySelect={handleGroupSelect}
           >
             {#snippet thumbnail({ asset, position, timelineDay, groupIndex })}
-              {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
-              {@const isAssetSelected =
-                assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
-              {@const isAssetDisabled = timelineManager.albumAssets.has(asset.id)}
+              {const isAssetSelectionCandidate = $derived(assetInteraction.hasSelectionCandidate(asset.id))}
+              {const isAssetSelected = $derived(
+                assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id),
+              )}
+              {const isAssetDisabled = $derived(timelineManager.albumAssets.has(asset.id))}
               <Thumbnail
                 showStackedIcon={withStacked}
                 {showArchiveIcon}

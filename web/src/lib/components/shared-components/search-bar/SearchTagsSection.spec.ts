@@ -1,14 +1,14 @@
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
+import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.ts';
+import SearchTagsSection from '#lib/components/shared-components/search-bar/SearchTagsSection.svelte';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { searchManager } from '#lib/managers/search-manager.svelte.ts';
 import type { TagResponseDto } from '@immich/sdk';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
-import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
-import SearchTagsSection from '$lib/components/shared-components/search-bar/SearchTagsSection.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { searchManager } from '$lib/managers/search-manager.svelte';
-import { preferencesFactory } from '@test-data/factories/preferences-factory';
-import { userAdminFactory } from '@test-data/factories/user-factory';
+import { preferencesFactory } from '#test-data/factories/preferences-factory';
+import { userAdminFactory } from '#test-data/factories/user-factory';
 
 const tag = (id: string, value: string): TagResponseDto => ({
   id,

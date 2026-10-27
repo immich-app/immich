@@ -1,5 +1,5 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import type { ReleaseEventV1 } from '@immich/sdk';
-import { eventManager } from '$lib/managers/event-manager.svelte';
 
 class ReleaseManager {
   value = $state<ReleaseEventV1 | undefined>();
