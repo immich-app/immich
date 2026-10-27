@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { shortcut } from '#lib/actions/shortcut.ts';
 
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleDownloadAsset } from '$lib/services/asset.service';
-  import { downloadArchive } from '$lib/utils/asset-utils';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { handleDownloadAsset } from '#lib/services/asset.service.ts';
+  import { downloadArchive } from '#lib/utils/asset-utils.ts';
   import { getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiDownload } from '@mdi/js';

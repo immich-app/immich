@@ -1,8 +1,8 @@
 <script lang="ts">
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import AssetSelectionChangeDateModal from '$lib/modals/AssetSelectionChangeDateModal.svelte';
-  import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import AssetSelectionChangeDateModal from '#lib/modals/AssetSelectionChangeDateModal.svelte';
+  import { fromTimelinePlainDateTime } from '#lib/utils/timeline-util.ts';
   import { modalManager } from '@immich/ui';
   import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime } from 'luxon';

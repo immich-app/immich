@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { focusOutside } from '$lib/actions/focus-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { generateId } from '$lib/utils/generate-id';
+  import { focusOutside } from '#lib/actions/focus-outside.ts';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { generateId } from '#lib/utils/generate-id.ts';
   import { Icon } from '@immich/ui';
   import { mdiStar, mdiStarOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -70,9 +70,9 @@
   <legend class="sr-only">{$t('rating')}</legend>
   <div class="flex flex-row" data-testid="star-container">
     {#each { length: count } as _, index (index)}
-      {@const value = index + 1}
-      {@const filled = hoverRating === null ? (ratingSelection ?? 0) >= value : hoverRating >= value}
-      {@const starId = `${id}-${value}`}
+      {const value = index + 1}
+      {const filled = $derived(hoverRating === null ? (ratingSelection ?? 0) >= value : hoverRating >= value)}
+      {const starId = `${id}-${value}`}
       <!-- svelte-ignore a11y_mouse_events_have_key_events -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <label

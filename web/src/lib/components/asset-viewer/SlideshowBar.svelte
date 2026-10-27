@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
-  import ProgressBar from '$lib/components/shared-components/progress-bar/ProgressBar.svelte';
-  import { ProgressBarStatus } from '$lib/constants';
-  import { languageManager } from '$lib/managers/language-manager.svelte';
-  import SlideshowSettingsModal from '$lib/modals/SlideshowSettingsModal.svelte';
-  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { shortcuts, type ShortcutOptions } from '#lib/actions/shortcut.ts';
+  import ProgressBar from '#lib/components/shared-components/progress-bar/ProgressBar.svelte';
+  import { ProgressBarStatus } from '#lib/constants.ts';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
+  import SlideshowSettingsModal from '#lib/modals/SlideshowSettingsModal.svelte';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
   import { AssetTypeEnum } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';

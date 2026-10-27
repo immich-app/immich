@@ -1,12 +1,12 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import { libraryTableClasses } from '$lib/constants';
-  import { Route } from '$lib/route';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getAllLibrariesQuery } from '$lib/queries/library.query';
-  import { getLibrariesActions } from '$lib/services/library.service';
+  import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import { libraryTableClasses } from '#lib/constants.ts';
+  import { Route } from '#lib/route.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAllLibrariesQuery } from '#lib/queries/library.query.ts';
+  import { getLibrariesActions } from '#lib/services/library.service.ts';
   import { CommandPaletteDefaultProvider, Container, Table, TableBody, TableHeader, TableHeading } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';

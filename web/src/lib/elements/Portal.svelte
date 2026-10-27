@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import { handlePromiseError } from '$lib/utils';
+  import { handlePromiseError } from '#lib/utils.ts';
   import { tick, type Snippet } from 'svelte';
 
   /**

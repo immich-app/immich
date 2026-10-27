@@ -1,6 +1,6 @@
 <script lang="ts">
-  import NumberRangeInput from '$lib/components/shared-components/NumberRangeInput.svelte';
-  import { generateId } from '$lib/utils/generate-id';
+  import NumberRangeInput from '#lib/components/shared-components/NumberRangeInput.svelte';
+  import { generateId } from '#lib/utils/generate-id.ts';
   import { convert } from 'geo-coordinates-parser';
   import { t } from 'svelte-i18n';
 

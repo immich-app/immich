@@ -20,9 +20,9 @@
 </script>
 
 <script lang="ts">
-  import { focusOutside } from '$lib/actions/focus-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { generateId } from '$lib/utils/generate-id';
+  import { focusOutside } from '#lib/actions/focus-outside.ts';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { generateId } from '#lib/utils/generate-id.ts';
   import { Icon, IconButton, Label } from '@immich/ui';
   import { mdiChevronDown, mdiClose, mdiMagnify } from '@mdi/js';
   import { onMount, tick } from 'svelte';

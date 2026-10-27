@@ -1,22 +1,22 @@
 <script lang="ts">
   import { cloneDeep } from 'lodash-es';
   import TemplateSettings from './TemplateSettings.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { getConfigQuery, updateConfigMutation } from '$lib/queries/system-config.query';
-  import { handleError } from '$lib/utils/handle-error';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery, updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { sendTestEmailAdmin } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const query = createPreloadedQuery(getConfigQuery);
+  const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
   const disabled = $derived(featureFlagsManager.value.configFile);
@@ -53,7 +53,7 @@
       );
 
       if (!disabled) {
-        await executeMutation(updateConfigMutation, { notifications: configToEdit.notifications });
+        await executeMutation(updateAdminConfigMutation, { notifications: configToEdit.notifications });
       }
     } catch (error) {
       handleError(error, $t('admin.notification_email_test_email_failed'));

@@ -1,13 +1,13 @@
+import { getAnimateMock } from '#lib/__mocks__/animate.mock.ts';
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
+import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { calcNewDate } from '#lib/modals/timezone-utils.ts';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { DateTime } from 'luxon';
-import { getAnimateMock } from '$lib/__mocks__/animate.mock';
-import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
-import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { calcNewDate } from '$lib/modals/timezone-utils';
-import { userAdminFactory } from '@test-data/factories/user-factory';
+import { userAdminFactory } from '#test-data/factories/user-factory';
 import AssetSelectionChangeDateModal from './AssetSelectionChangeDateModal.svelte';
 
 describe('DateSelectionModal component', () => {

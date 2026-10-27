@@ -1,10 +1,10 @@
+import { UUID_REGEX } from '#lib/constants.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getUserAdminQuery } from '#lib/queries/user-admin.query.ts';
+import { Route } from '#lib/route.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { redirect } from '@sveltejs/kit';
-import { UUID_REGEX } from '$lib/constants';
-import { queryClient } from '$lib/queries/client';
-import { getUserAdminQuery } from '$lib/queries/user-admin.query';
-import { Route } from '$lib/route';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { LayoutLoad } from './$types';
 
 export const load = (async ({ params, url }) => {

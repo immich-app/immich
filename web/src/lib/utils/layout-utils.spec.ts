@@ -1,4 +1,4 @@
-import { scaleToCover, scaleToFit } from '$lib/utils/container-utils';
+import { scaleToCover, scaleToFit } from '#lib/utils/container-utils.ts';
 
 describe('scaleToFit', () => {
   const tests = [

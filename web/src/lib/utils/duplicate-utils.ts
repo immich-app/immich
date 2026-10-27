@@ -1,3 +1,5 @@
+import { getAssetResolution, getFileSize } from '#lib/utils/asset-utils.ts';
+import { fromISODateTime, fromISODateTimeUTC } from '#lib/utils/timeline-util.ts';
 import type { AssetResponseDto } from '@immich/sdk';
 import {
   mdiBrightness6,
@@ -24,8 +26,6 @@ import {
 } from '@mdi/js';
 import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
-import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
-import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
 
 const truncateMiddle = (path: string, maxLength = 50): string => {
   if (path.length <= maxLength) {
