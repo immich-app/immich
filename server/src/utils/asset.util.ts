@@ -153,11 +153,8 @@ export const onBeforeLink = async (
   if (motionAsset.type !== AssetType.Video) {
     throw new BadRequestException('Live photo video must be a video');
   }
-  if (motionAsset.ownerId !== userId) {
-    throw new BadRequestException('Live photo video does not belong to the user');
-  }
 
-  if (!motionAsset || motionAsset.visibility !== AssetVisibility.Timeline) {
+  if (motionAsset.visibility !== AssetVisibility.Timeline) {
     return;
   }
 
