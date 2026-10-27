@@ -170,6 +170,8 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
+pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
+
 importers:
 
   .:
@@ -21067,19 +21069,18 @@ snapshots:
   exiftool-vendored.exe@13.59.3:
     optional: true
 
-  exiftool-vendored.pl@13.59.3:
-    optional: true
+  exiftool-vendored.pl@13.59.3: {}
 
   exiftool-vendored@39.0.1:
     dependencies:
       '@photostructure/tz-lookup': 11.7.0
       '@types/luxon': 3.7.6
       batch-cluster: 19.5.0
+      exiftool-vendored.pl: 13.59.3
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.59.3
-      exiftool-vendored.pl: 13.59.3
 
   expand-template@2.0.3:
     optional: true
