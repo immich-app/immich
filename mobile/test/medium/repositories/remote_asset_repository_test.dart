@@ -16,6 +16,37 @@ void main() {
     await ctx.dispose();
   });
 
+  group('getStackChildren', () {
+    test('returns stack children from oldest to newest', () async {
+      final user = await ctx.newUser();
+      const stackId = 'stack';
+      final primary = await ctx.newRemoteAsset(
+        id: 'primary',
+        ownerId: user.id,
+        stackId: stackId,
+        createdAt: DateTime(2026, 1, 2),
+      );
+      final beforePrimary = await ctx.newRemoteAsset(
+        id: 'before-primary',
+        ownerId: user.id,
+        stackId: stackId,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      final afterPrimary = await ctx.newRemoteAsset(
+        id: 'after-primary',
+        ownerId: user.id,
+        stackId: stackId,
+        createdAt: DateTime(2026, 1, 3),
+      );
+      await ctx.newRemoteAsset(ownerId: user.id, stackId: 'other-stack');
+
+      final primaryAsset = await sut.get(primary.id);
+      final stack = await sut.getStackChildren(primaryAsset!);
+
+      expect(stack.map((asset) => asset.id), [beforePrimary.id, afterPrimary.id]);
+    });
+  });
+
   group('getByChecksum', () {
     late String userId;
 

@@ -59,7 +59,7 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
 
     final query = _db.remoteAssetEntity.select()
       ..where((row) => row.stackId.equals(stackId) & row.id.equals(asset.id).not())
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
+      ..orderBy([(row) => OrderingTerm.asc(row.createdAt)]);
 
     return query.map((row) => row.toDto()).get();
   }
