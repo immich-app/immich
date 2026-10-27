@@ -123,7 +123,7 @@
     "svelte-eslint-parser": "^1.8.1",
     "tailwindcss": "^4.2.4",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "8.71.2",
+    "typescript-eslint": "8.72.0",
     "vite": "^8.0.12",
     "vitest": "^5.0.0"
   }
