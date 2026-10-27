@@ -45,11 +45,13 @@ describe('/yucca', () => {
     }
   });
 
-  const waitForMessage = (type: string) => {
+  const finishedJobStatuses = new Set(['complete', 'warn', 'failed', 'cancelled', 'incomplete']);
+
+  const waitForMessage = (type: string, matches: (payload: any) => boolean = () => true) => {
     return new Promise((resolve) => {
       const listener = (msg: string) => {
         const payload = JSON.parse(msg);
-        if (payload.type !== type) {
+        if (payload.type !== type || !matches(payload)) {
           return;
         }
 
@@ -168,7 +170,7 @@ describe('/yucca', () => {
     });
 
     it.sequential('creates a snapshot', async () => {
-      const event = waitForMessage('TaskEnd');
+      const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
 
       const { repositories } = await sdk.getRepositories(requestOpts);
       const { id } = repositories[0];
@@ -301,7 +303,7 @@ describe('/yucca', () => {
           },
         });
 
-        const event = waitForMessage('TaskEnd');
+        const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
         await sdk.restoreFromPoint(
           repositoryId,
           snapshotId,
