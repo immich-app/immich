@@ -18,7 +18,7 @@ config_roots = [
 [tools]
 node = "24.22.1"
 pnpm = "12.15.0"
-terragrunt = "1.1.6"
+terragrunt = "1.2.0"
 opentofu = "1.13.2"
 "npm:@openapitools/openapi-generator-cli" = "2.42.0"
 "npm:oazapfts" = "7.5.0"
