@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getStorageQuery } from '$lib/queries/server.query';
-  import { getByteUnitString } from '$lib/utils/byte-units';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getStorageQuery } from '#lib/queries/server-info.query.ts';
+  import { getByteUnitString } from '#lib/utils/byte-units.ts';
   import { LoadingSpinner, Meter } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';

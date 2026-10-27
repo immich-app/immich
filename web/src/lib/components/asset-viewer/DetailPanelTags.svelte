@@ -1,10 +1,10 @@
 <script lang="ts">
-  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { getAssetActions } from '$lib/services/asset.service';
-  import { removeTag } from '$lib/utils/asset-utils';
+  import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetActions } from '#lib/services/asset.service.ts';
+  import { removeTag } from '#lib/utils/asset-utils.ts';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Badge, Link, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';

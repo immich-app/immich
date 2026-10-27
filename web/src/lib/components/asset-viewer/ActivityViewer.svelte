@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { activityManager } from '$lib/managers/activity-manager.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { getAssetType } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { isTenMinutesApart } from '$lib/utils/timesince';
+  import { shortcut } from '#lib/actions/shortcut.ts';
+  import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
+  import { activityManager } from '#lib/managers/activity-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
+  import { getAssetType } from '#lib/utils/asset-utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { isTenMinutesApart } from '#lib/utils/timesince.ts';
   import { ReactionType, type ActivityResponseDto, type AlbumUserResponseDto, type AssetTypeEnum } from '@immich/sdk';
   import { ContextMenuButton, Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
   import { mdiClose, mdiSend, mdiThumbUp, mdiTrashCanOutline } from '@mdi/js';

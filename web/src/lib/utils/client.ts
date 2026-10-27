@@ -1,11 +1,11 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { initLanguage } from '#lib/utils.ts';
 import { setFetch } from '@immich/sdk';
 import { memoize } from 'lodash-es';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-import { queryClient } from '$lib/queries/client';
-import { getPublicConfigQuery } from '$lib/queries/config-public.query';
-import { getServerConfigQuery } from '$lib/queries/server.query';
-import { initLanguage } from '$lib/utils';
 
 type Fetch = typeof fetch;
 

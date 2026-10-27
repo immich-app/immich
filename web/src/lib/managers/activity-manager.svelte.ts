@@ -1,3 +1,6 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { handlePromiseError } from '#lib/utils.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
 import {
   createActivity,
   deleteActivity,
@@ -10,9 +13,6 @@ import {
 } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { handlePromiseError } from '$lib/utils';
-import { handleError } from '$lib/utils/handle-error';
 
 type CacheKey = string;
 type ActivityCache = {

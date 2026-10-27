@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { executeMutation } from '$lib/queries/client';
-  import { updatePasskeyMutation } from '$lib/queries/passkey.query';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { updatePasskeyMutation } from '#lib/queries/passkey.query.ts';
   import { Field, FormModal, Input } from '@immich/ui';
   import { mdiShieldKeyOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';

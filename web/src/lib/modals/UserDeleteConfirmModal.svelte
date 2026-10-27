@@ -1,12 +1,12 @@
 <script lang="ts">
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { deleteUserAdminMutation } from '$lib/queries/user-admin.query';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { deleteUserAdminMutation } from '#lib/queries/user-admin.query.ts';
   import { type UserAdminResponseDto } from '@immich/sdk';
   import { Alert, Checkbox, ConfirmModal, Field, Input, Label, Text } from '@immich/ui';
   import { mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);

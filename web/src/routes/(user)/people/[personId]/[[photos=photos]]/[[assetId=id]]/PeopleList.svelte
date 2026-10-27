@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
+  import SearchPeople from '#lib/components/faces-page/PeopleSearch.svelte';
   import { type PersonResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import FaceThumbnail from './FaceThumbnail.svelte';

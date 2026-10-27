@@ -209,13 +209,13 @@ url = "https://nodejs.org/dist/v24.22.1/node-v24.22.1-win-x64.zip"
 
 [[tools."npm:@openapitools/openapi-generator-cli"]]
 version = "2.41.0"
-aube = { path = ".mise/locks/npm-openapitools-openapi-generator-cli/2.41.0", digest = "sha256:ede1f44852ad27a853fd1dfb6fe664e1b12ae6b4fa9b34956c95edc6a87356d4" }
+aube = { path = ".mise/locks/npm-openapitools-openapi-generator-cli/2.41.0", digest = "sha256:5f7c3d4af7ea3cb0da81c0ff0d95c52dd45ca031fc1520dddac8e99d29d93dab" }
 backend = "npm:@openapitools/openapi-generator-cli"
 specifiers = ["2.41.0"]
 
 [[tools."npm:oazapfts"]]
 version = "7.5.0"
-aube = { path = ".mise/locks/npm-oazapfts/7.5.0", digest = "sha256:768d3e4bc9dbbd6cb508fd63f04a41a1f6a649996469a7c4482b4ca0ded789d5" }
+aube = { path = ".mise/locks/npm-oazapfts/7.5.0", digest = "sha256:74214614b0338eaa2baee026d615afde514311c5c76e274f420f8de8b1f0e017" }
 backend = "npm:oazapfts"
 specifiers = ["7.5.0"]
 

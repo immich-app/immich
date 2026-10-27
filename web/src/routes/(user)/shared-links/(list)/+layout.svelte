@@ -1,13 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/state';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import { page, type ReadonlyURLSearchParams } from '$app/state';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import SharedLinkCard from './SharedLinkCard.svelte';
-  import { type SharedLinkTab } from '$lib/constants';
-  import GroupTab from '$lib/elements/GroupTab.svelte';
-  import { Route } from '$lib/route';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getAllSharedLinksQuery } from '$lib/queries/shared-link.query';
+  import { type SharedLinkTab } from '#lib/constants.ts';
+  import GroupTab from '#lib/elements/GroupTab.svelte';
+  import { Route } from '#lib/route.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAllSharedLinksQuery } from '#lib/queries/shared-link.query.ts';
   import { SharedLinkType } from '@immich/sdk';
   import { Container } from '@immich/ui';
   import { type Snippet } from 'svelte';
@@ -33,7 +33,7 @@
   let filters = Object.keys(filterMap);
   let labels = Object.values(filterMap);
 
-  const getActiveTab = (url: URL) => {
+  const getActiveTab = (url: { searchParams: ReadonlyURLSearchParams | URLSearchParams }) => {
     const filter = url.searchParams.get('filter');
     return filter && filters.includes(filter) ? filter : 'all';
   };

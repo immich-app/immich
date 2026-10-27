@@ -1,8 +1,8 @@
 <script lang="ts">
-  import ApiKeyPermissionsPicker from '$lib/components/ApiKeyPermissionsPicker.svelte';
-  import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
-  import { createApiKeyMutation } from '$lib/queries/api-key.query';
-  import { executeMutation } from '$lib/queries/client';
+  import ApiKeyPermissionsPicker from '#lib/components/ApiKeyPermissionsPicker.svelte';
+  import ApiKeySecretModal from '#lib/modals/ApiKeySecretModal.svelte';
+  import { createApiKeyMutation } from '#lib/queries/api-key.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import { Permission } from '@immich/sdk';
   import { Field, FormModal, Input, modalManager, toastManager } from '@immich/ui';
   import { mdiKeyVariant } from '@mdi/js';

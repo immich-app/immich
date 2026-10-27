@@ -1,33 +1,33 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto, invalidateAll } from '$app/navigation';
-  import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
-  import TreeBreadcrumbs from '$lib/components/shared-components/tree/TreeBreadcrumbs.svelte';
-  import TreeItemThumbnails from '$lib/components/shared-components/tree/TreeItemThumbnails.svelte';
-  import TreeItems from '$lib/components/shared-components/tree/TreeItems.svelte';
-  import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import SkipLink from '$lib/elements/SkipLink.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import type { Viewport } from '$lib/managers/timeline-manager/types';
-  import { Route } from '$lib/route';
-  import { createPreloadedQuery, queryClient } from '$lib/queries/client';
-  import { getAssetsByOriginalPathQuery, getFolderTreeQuery } from '$lib/queries/view.query';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { joinPaths } from '$lib/utils/tree-utils';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import UserPageLayout, { headerId } from '#lib/components/layouts/UserPageLayout.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import GalleryViewer from '#lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
+  import TreeBreadcrumbs from '#lib/components/shared-components/tree/TreeBreadcrumbs.svelte';
+  import TreeItemThumbnails from '#lib/components/shared-components/tree/TreeItemThumbnails.svelte';
+  import TreeItems from '#lib/components/shared-components/tree/TreeItems.svelte';
+  import Sidebar from '#lib/components/sidebar/Sidebar.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import ArchiveAction from '#lib/components/timeline/actions/ArchiveAction.svelte';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import SkipLink from '#lib/elements/SkipLink.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import type { Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { getAssetsByOriginalPathQuery, getFolderTreeQuery } from '#lib/queries/view.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { isAssetViewerRoute } from '#lib/utils/navigation.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
+  import { joinPaths } from '#lib/utils/tree-utils.ts';
+  import { afterNavigate, beforeNavigate, goto, refreshAll } from '$app/navigation';
   import { ActionButton, CommandPaletteDefaultProvider, IconButton, Text } from '@immich/ui';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -50,13 +50,17 @@
 
   const getLinkForPath = (path: string) => Route.folders({ path });
 
-  beforeNavigate(({ to }) => {
+  beforeNavigate(({ to, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     if (isAssetViewerRoute(to)) {
       savedScrollTop = folderScrollContainer?.scrollTop ?? 0;
     }
   });
 
-  afterNavigate(({ from }) => {
+  afterNavigate(({ from, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     assetMultiSelectManager.clear();
 
     if (isAssetViewerRoute(from) && folderScrollContainer) {
@@ -65,7 +69,7 @@
   });
 
   const navigateToView = (path: string) => {
-    return goto(getLinkForPath(path), { keepFocus: true, noScroll: true });
+    return goto(getLinkForPath(path), { reset: false });
   };
 
   const triggerAssetUpdate = async () => {
@@ -73,7 +77,7 @@
     if (data.tree.path) {
       await queryClient.invalidateQueries({ queryKey: getAssetsByOriginalPathQuery(data.tree.path).queryKey });
     }
-    await invalidateAll();
+    await refreshAll();
   };
 
   const handleSetVisibility = () => {
@@ -107,7 +111,7 @@
     </Sidebar>
   {/snippet}
 
-  <OnEvents onAssetsDelete={invalidateAll} />
+  <OnEvents onAssetsDelete={refreshAll} />
 
   <TreeBreadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 

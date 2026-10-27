@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { generateId } from '$lib/utils/generate-id';
+  import { generateId } from '#lib/utils/generate-id.ts';
 
   interface Props {
     filters: string[];

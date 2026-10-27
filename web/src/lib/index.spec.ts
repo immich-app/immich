@@ -1,4 +1,4 @@
-import { cleanClass, isDefined } from '$lib';
+import { cleanClass, isDefined } from '#lib';
 
 describe('cleanClass', () => {
   it('should return a string of class names', () => {

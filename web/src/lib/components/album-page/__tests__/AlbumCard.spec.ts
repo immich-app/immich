@@ -1,8 +1,8 @@
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';
-import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { albumFactory } from '@test-data/factories/album-factory';
+import { albumFactory } from '#test-data/factories/album-factory';
 import AlbumCard from '../AlbumCard.svelte';
 
 describe('AlbumCard component', () => {
@@ -10,7 +10,7 @@ describe('AlbumCard component', () => {
 
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });
-    register('en-US', () => import('$i18n/en.json'));
+    register('en-US', () => import('#i18n/en.json'));
     await waitLocale('en-US');
   });
 

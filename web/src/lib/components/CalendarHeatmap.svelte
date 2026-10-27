@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import type { CalendarHeatmapResponseDto } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { DateTime, Info } from 'luxon';

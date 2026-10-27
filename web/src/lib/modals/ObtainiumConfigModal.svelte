@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { createApiKeyMutation } from '$lib/queries/api-key.query';
-  import { executeMutation } from '$lib/queries/client';
+  import { createApiKeyMutation } from '#lib/queries/api-key.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import { Permission } from '@immich/sdk';
   import { Button, Field, Input, Modal, ModalBody, obtainiumBadge, Select, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';

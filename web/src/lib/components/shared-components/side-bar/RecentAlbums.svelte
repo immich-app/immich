@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { getRecentAlbumsQuery } from '$lib/queries/album.query';
-  import { queryClient } from '$lib/queries/client';
-  import { Route } from '$lib/route';
-  import { getAssetMediaUrl } from '$lib/utils';
+  import { getRecentAlbumsQuery } from '#lib/queries/album.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
   import { createQuery } from '@tanstack/svelte-query';
 
   const query = createQuery(getRecentAlbumsQuery, () => queryClient);

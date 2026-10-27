@@ -3,8 +3,8 @@
   import { Badge, BasicModal, ListButton, LoadingSpinner, Stack, Text } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
-  import { queryClient } from '$lib/queries/client';
-  import { searchPluginMethodsQuery } from '$lib/queries/plugin.query';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchPluginMethodsQuery } from '#lib/queries/plugin.query.ts';
 
   type Props = {
     trigger: WorkflowTrigger;

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { Shortcut } from '$lib/actions/shortcut';
-  import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '$lib/actions/shortcut';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
-  import { generateId } from '$lib/utils/generate-id';
+  import type { Shortcut } from '#lib/actions/shortcut.ts';
+  import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '#lib/actions/shortcut.ts';
+  import { optionClickCallbackStore, selectedIdStore } from '#lib/stores/context-menu.store.ts';
+  import { generateId } from '#lib/utils/generate-id.ts';
   import { Icon, type IconLike } from '@immich/ui';
 
   interface Props {

@@ -1,3 +1,8 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { Route } from '#lib/route.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import {
   addAssetsToAlbum,
   addAssetsToAlbums,
@@ -22,11 +27,6 @@ import { toastManager } from '@immich/ui';
 import { mutationOptions, queryOptions, type MutationMeta } from '@tanstack/svelte-query';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { asMutation, queryClient } from '$lib/queries/client';
-import { Route } from '$lib/route';
-import { getFormatter } from '$lib/utils/i18n';
 
 type AlbumsFilter = { isOwned?: boolean; isShared?: boolean };
 

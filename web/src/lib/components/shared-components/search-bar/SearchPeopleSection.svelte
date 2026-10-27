@@ -1,14 +1,14 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import { getPeople, getSearchPeopleTitle } from './search-bar-utils';
-  import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import SingleGridRow from '#lib/components/shared-components/SingleGridRow.svelte';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
   import { type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, LoadingSpinner, Text } from '@immich/ui';
   import { mdiArrowRight, mdiCheck, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
 
   interface Props {
     title: string | undefined;

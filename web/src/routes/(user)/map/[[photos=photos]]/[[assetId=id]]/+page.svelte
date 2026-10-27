@@ -1,21 +1,21 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import MapTimelinePanel from './MapTimelinePanel.svelte';
-  import type { SelectionBBox } from '$lib/components/shared-components/map/types';
-  import { timeToLoadTheMap } from '$lib/constants';
-  import Portal from '$lib/elements/Portal.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { Route } from '$lib/route';
-  import { handlePromiseError } from '$lib/utils';
-  import { delay } from '$lib/utils/asset-utils';
-  import { navigate } from '$lib/utils/navigation';
-  import { mapSettings } from '$lib/stores/preferences.store';
+  import type { SelectionBBox } from '#lib/components/shared-components/map/types.ts';
+  import { timeToLoadTheMap } from '#lib/constants.ts';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { delay } from '#lib/utils/asset-utils.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
+  import { mapSettings } from '#lib/stores/preferences.store.ts';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);
@@ -68,7 +68,7 @@
           isTimelinePanelVisible ? 'h-1/2 w-full pb-2 sm:h-full sm:w-2/3 sm:pe-2 sm:pb-0' : 'size-full',
         ]}
       >
-        {#await import('$lib/components/shared-components/map/Map.svelte')}
+        {#await import('#lib/components/shared-components/map/Map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
             <div class="flex size-full items-center justify-center">
@@ -101,7 +101,7 @@
   </UserPageLayout>
   <Portal target="body">
     {#if assetViewerManager.isViewing && !isTimelinePanelVisible}
-      {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+      {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           cursor={{ current: assetViewerManager.asset! }}
           showNavigation={false}

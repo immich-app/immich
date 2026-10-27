@@ -1,8 +1,8 @@
-import { QueryParameter } from '$lib/constants';
-import { queryClient } from '$lib/queries/client';
-import { getAssetsByOriginalPathQuery, getFolderTreeQuery } from '$lib/queries/view.query';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
+import { QueryParameter } from '#lib/constants.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getAssetsByOriginalPathQuery, getFolderTreeQuery } from '#lib/queries/view.query.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

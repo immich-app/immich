@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import { TUNABLES } from '$lib/utils/tunables';
+  import { TUNABLES } from '#lib/utils/tunables.ts';
 
   // Chrome renders HDR images with normally invisible seam lines in a regular
   // grid pattern. When the user pinch/scroll zooms, these seams become visible
@@ -50,20 +50,20 @@
 </script>
 
 <script lang="ts">
-  import AlphaBackground from '$lib/components/AlphaBackground.svelte';
-  import BrokenAsset from '$lib/components/assets/BrokenAsset.svelte';
-  import DelayedLoadingSpinner from '$lib/components/DelayedLoadingSpinner.svelte';
-  import ImageLayer from '$lib/components/ImageLayer.svelte';
-  import Thumbhash from '$lib/components/Thumbhash.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { getAssetUrls } from '$lib/utils';
-  import { AdaptiveImageLoader, type QualityList } from '$lib/utils/adaptive-image-loader.svelte';
-  import { scaleToCover, scaleToFit, type Size } from '$lib/utils/container-utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import AlphaBackground from '#lib/components/AlphaBackground.svelte';
+  import BrokenAsset from '#lib/components/assets/BrokenAsset.svelte';
+  import DelayedLoadingSpinner from '#lib/components/DelayedLoadingSpinner.svelte';
+  import ImageLayer from '#lib/components/ImageLayer.svelte';
+  import Thumbhash from '#lib/components/Thumbhash.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { getAssetUrls } from '#lib/utils.ts';
+  import { AdaptiveImageLoader, type QualityList } from '#lib/utils/adaptive-image-loader.svelte.ts';
+  import { scaleToCover, scaleToFit, type Size } from '#lib/utils/container-utils.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import type { AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
   import { untrack, type Snippet } from 'svelte';
-  import { languageManager } from '$lib/managers/language-manager.svelte';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
 
   type Props = {
     asset: AssetResponseDto;

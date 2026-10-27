@@ -1,3 +1,4 @@
+import { asMutation, queryClient } from '#lib/queries/client.ts';
 import {
   createWorkflow,
   deleteWorkflow,
@@ -8,7 +9,6 @@ import {
   type WorkflowResponseDto,
 } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
-import { asMutation, queryClient } from '$lib/queries/client';
 
 const findOrFail = (workflows: WorkflowResponseDto[], id: string) => {
   const workflow = workflows.find((workflow) => workflow.id === id);

@@ -1,5 +1,5 @@
 {
-  "importOrder": ["<THIRD_PARTY_MODULES>", "<BUILTIN_MODULES>", "^\\$(.*)$", "^@test-data(.*)$", "^[./]"],
+  "importOrder": ["<THIRD_PARTY_MODULES>", "<BUILTIN_MODULES>", "^\\$(.*)$", "^#test-data(.*)$", "^[./]"],
   "importOrderSeparation": false,
   "jsonRecursiveSort": true,
   "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }],
