@@ -10,8 +10,7 @@ pub mod jxl;
 mod resize;
 
 /// A format that one of the enabled decoders reads.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Format {
+enum Format {
     #[cfg(feature = "jxl")]
     Jxl,
 }
