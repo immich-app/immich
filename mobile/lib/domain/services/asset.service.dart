@@ -60,7 +60,6 @@ class AssetService {
     }
 
     final stack = await _remoteRepository.getStackChildren(asset);
-    // Include the primary asset in the stack as the first item
     return [asset, ...stack];
   }
 
