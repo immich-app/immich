@@ -458,13 +458,57 @@ describe(AssetMediaService.name, () => {
       });
     });
 
-    it('should not link a live photo video through a shared link', async () => {
+    it('should link a live photo video that is already in the shared link', async () => {
       const motionAsset = AssetFactory.from({ type: AssetType.Video }).owner(authStub.user1.user).build();
+      const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
       const auth = AuthFactory.from(authStub.user1.user).sharedLink({ allowUpload: true }).build();
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([motionAsset.id]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([motionAsset.id]));
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
+      mocks.asset.create.mockResolvedValueOnce(asset);
+      mocks.sharedLink.addAssets.mockResolvedValue([]);
 
       await expect(
         sut.uploadAsset(auth, { ...createDto, livePhotoVideoId: motionAsset.id }, fileStub.livePhotoStill),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).resolves.toEqual({
+        status: AssetMediaStatus.CREATED,
+        id: asset.id,
+      });
+
+      expect(mocks.access.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
+        auth.sharedLink!.id,
+        new Set([motionAsset.id]),
+      );
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([motionAsset.id]), false);
+      expect(mocks.asset.getById).toHaveBeenCalledWith(motionAsset.id);
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: motionAsset.id, visibility: AssetVisibility.Hidden });
+      expect(mocks.asset.create).toHaveBeenCalledWith(expect.objectContaining({ livePhotoVideoId: motionAsset.id }));
+    });
+
+    it('should not link a live photo video that is not in the shared link', async () => {
+      const motionAsset = AssetFactory.from({ type: AssetType.Video }).owner(authStub.user1.user).build();
+      const auth = AuthFactory.from(authStub.user1.user).sharedLink({ allowUpload: true }).build();
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set());
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([motionAsset.id]));
+
+      await expect(
+        sut.uploadAsset(auth, { ...createDto, livePhotoVideoId: motionAsset.id }, fileStub.livePhotoStill),
+      ).rejects.toThrow('Not found or no asset.update permission');
+
+      expect(mocks.asset.getById).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+    });
+
+    it('should not link a live photo video in the shared link that is owned by another user', async () => {
+      const motionAsset = AssetFactory.from({ type: AssetType.Video }).build();
+      const auth = AuthFactory.from(authStub.user1.user).sharedLink({ allowUpload: true }).build();
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([motionAsset.id]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+
+      await expect(
+        sut.uploadAsset(auth, { ...createDto, livePhotoVideoId: motionAsset.id }, fileStub.livePhotoStill),
+      ).rejects.toThrow('Not found or no asset.update permission');
 
       expect(mocks.asset.getById).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalled();
