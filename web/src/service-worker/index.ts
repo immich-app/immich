@@ -18,10 +18,11 @@ const handleInstall = (event: ExtendableEvent) => {
   event.waitUntil(sw.skipWaiting());
 };
 
+const isImageTagRequest = (event: FetchEvent) =>
+  event.request.method === 'GET' && event.request.destination === 'image';
+
 const handleFetch = (event: FetchEvent): void => {
-  // Only intercept image loads, since the app can cancel those by URL. A download of the
-  // same URL (e.g. `<a download>`) must not be aborted when the viewer moves on.
-  if (event.request.method !== 'GET' || event.request.destination !== 'image') {
+  if (!isImageTagRequest(event)) {
     return;
   }
 
