@@ -21,6 +21,7 @@ import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CustomSourceProperties implements SourceProperties {
   final Map<String, dynamic> data;
@@ -55,6 +56,7 @@ class _MapViewState extends ConsumerState<MapView> {
   final ValueNotifier<double> bottomSheetOffset = ValueNotifier(0.25);
   final GlobalKey _bottomSheetKey = GlobalKey();
   StreamSubscription? _eventSubscription;
+  List<MapAttribution> _attributions = const [];
 
   @override
   void initState() {
@@ -81,6 +83,9 @@ class _MapViewState extends ConsumerState<MapView> {
     if (controller == null) {
       return;
     }
+
+    // Start the fetch as soon as possible
+    final attributionsLoaded = MapUtils.getAttributions(controller);
 
     await controller.addSource(
       MapUtils.defaultSourceId,
@@ -113,6 +118,11 @@ class _MapViewState extends ConsumerState<MapView> {
 
     _debouncer.run(() => setBounds(forceReload: true));
     controller.addListener(onMapMoved);
+
+    final attributions = await attributionsLoaded;
+    if (mounted) {
+      setState(() => _attributions = attributions);
+    }
   }
 
   void onMapMoved() {
@@ -190,7 +200,11 @@ class _MapViewState extends ConsumerState<MapView> {
       children: [
         _Map(initialLocation: widget.initialLocation, onMapCreated: onMapCreated, onMapReady: onMapReady),
         _DynamicBottomSheet(bottomSheetOffset: bottomSheetOffset, sheetKey: _bottomSheetKey),
-        _DynamicMyLocationButton(onZoomToLocation: onZoomToLocation, bottomSheetOffset: bottomSheetOffset),
+        _DynamicBottomButtons(
+          onZoomToLocation: onZoomToLocation,
+          bottomSheetOffset: bottomSheetOffset,
+          attributions: _attributions,
+        ),
       ],
     );
   }
@@ -219,8 +233,8 @@ class _Map extends StatelessWidget {
           styleString: style,
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,
-          attributionButtonPosition: AttributionButtonPosition.topRight,
-          attributionButtonMargins: const Point(8, kToolbarHeight),
+          // Hide offscreen so we can draw our own
+          attributionButtonMargins: const Point(-200, 0),
         ),
       ),
     );
@@ -253,11 +267,16 @@ class _DynamicBottomSheetState extends State<_DynamicBottomSheet> {
   }
 }
 
-class _DynamicMyLocationButton extends StatelessWidget {
-  const _DynamicMyLocationButton({required this.onZoomToLocation, required this.bottomSheetOffset});
+class _DynamicBottomButtons extends StatelessWidget {
+  const _DynamicBottomButtons({
+    required this.onZoomToLocation,
+    required this.bottomSheetOffset,
+    required this.attributions,
+  });
 
   final VoidCallback onZoomToLocation;
   final ValueNotifier<double> bottomSheetOffset;
+  final List<MapAttribution> attributions;
 
   @override
   Widget build(BuildContext context) {
@@ -265,19 +284,89 @@ class _DynamicMyLocationButton extends StatelessWidget {
       valueListenable: bottomSheetOffset,
       builder: (context, offset, child) {
         return Positioned(
+          left: 20,
           right: 20,
           bottom: context.height * (offset - 0.02) + context.padding.bottom,
           child: AnimatedOpacity(
             opacity: offset < 0.8 ? 1 : 0,
             duration: const Duration(milliseconds: 150),
-            child: ElevatedButton(
-              onPressed: onZoomToLocation,
-              style: ElevatedButton.styleFrom(shape: const CircleBorder()),
-              child: const Icon(Icons.my_location),
+            child: Row(
+              children: [
+                if (attributions.isNotEmpty) _AttributionButton(attributions: attributions),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed: onZoomToLocation,
+                  style: ElevatedButton.styleFrom(shape: const CircleBorder()),
+                  child: const Icon(Icons.my_location),
+                ),
+              ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _AttributionButton extends StatefulWidget {
+  const _AttributionButton({required this.attributions});
+
+  final List<MapAttribution> attributions;
+
+  @override
+  State<_AttributionButton> createState() => _AttributionButtonState();
+}
+
+class _AttributionButtonState extends State<_AttributionButton> {
+  // OSM's attribution guidelines require it to be visible by default
+  bool _expanded = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return TapRegion(
+      // Any interaction outside of the popup causes it to close
+      onTapOutside: _expanded ? (_) => setState(() => _expanded = false) : null,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ElevatedButton(
+            onPressed: () => setState(() => _expanded = !_expanded),
+            style: ElevatedButton.styleFrom(shape: const CircleBorder()),
+            child: const Icon(Icons.info_outline),
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 100),
+            child: _expanded
+                ? Material(
+                    // Without a key the transition remotes pill instantly instead of fading it out
+                    key: const ValueKey('attribution'),
+                    color: context.colorScheme.surfaceContainerLow,
+                    elevation: 1,
+                    shape: const StadiumBorder(),
+                    child: Container(
+                      constraints: BoxConstraints(minHeight: 40, maxWidth: context.width / 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Center(
+                        widthFactor: 1,
+                        child: Wrap(
+                          spacing: 8,
+                          children: [
+                            for (final (:text, :url) in widget.attributions)
+                              GestureDetector(
+                                onTap: url == null
+                                    ? null
+                                    : () => unawaited(launchUrl(url, mode: LaunchMode.externalApplication)),
+                                child: Text(text, style: url == null ? null : TextStyle(color: context.primaryColor)),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
     );
   }
 }
