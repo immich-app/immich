@@ -87,6 +87,12 @@ export class MaintenanceWorkerService {
 
     await this.logSecret();
 
+    // The backups SDK only dispatches its jobs (rollbacks, restores) on the instance holding this lock, and in
+    // maintenance mode no API worker is running to take it.
+    if (await this.databaseRepository.tryLock(DatabaseLock.YuccaModuleConfig)) {
+      this.moduleRef.get(YuccaService, { strict: false }).acquireLock();
+    }
+
     if (state.action) {
       void this.runAction(state.action);
     }
