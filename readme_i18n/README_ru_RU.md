@@ -32,6 +32,7 @@
   <a href="README_zh_TW.md">正體中文</a>
   <a href="README_uk_UA.md">Українська</a>
   <a href="README_bg_BG.md">Български</a>
+  <a href="README_pl_PL.md">Polski</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
   <br>
