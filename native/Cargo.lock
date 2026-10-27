@@ -57,6 +57,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
+name = "codecs"
+version = "0.1.0"
+dependencies = [
+ "jxl",
+ "libc",
+ "moxcms",
+ "pic-scale",
+ "quick_cache",
+ "rayon",
+]
+
+[[package]]
 name = "combine"
 version = "4.6.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -287,12 +299,7 @@ dependencies = [
 name = "native_core"
 version = "0.1.0"
 dependencies = [
- "jxl",
- "libc",
- "moxcms",
- "pic-scale",
- "quick_cache",
- "rayon",
+ "codecs",
 ]
 
 [[package]]
