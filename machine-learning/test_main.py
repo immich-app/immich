@@ -1187,6 +1187,24 @@ class TestRknnPool:
 
         assert sorted(ctx for ctx, _, _ in lib.fed) == [1, 2, 3]
 
+    def test_a_waiting_run_is_not_overtaken_by_the_caller_that_just_ran(self, lib: FakeRknn) -> None:
+        pool = RknnPoolExecutor("model.rknn", 1)
+
+        def run(ctx: int, extend: None) -> int:
+            time.sleep(0.01)
+            return 0
+
+        lib.rknn_run.side_effect = run
+        busy, waiting = np.zeros((1, 48, 320, 3), np.uint8), np.ones((1, 48, 320, 3), np.uint8)
+        caller = threading.Thread(target=lambda: [pool.run([busy], "nhwc") for _ in range(20)])
+
+        caller.start()
+        time.sleep(0.005)
+        pool.run([waiting], "nhwc")
+        caller.join(5)
+
+        assert [data[0] for data in lib.data].index(1) <= 2
+
     def test_does_not_set_shapes_for_a_static_binary(self, lib: FakeRknn) -> None:
         pool = RknnPoolExecutor("model.rknn", 1)
 

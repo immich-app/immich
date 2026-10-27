@@ -1,4 +1,5 @@
 import ctypes
+from concurrent.futures import ThreadPoolExecutor
 from ctypes import byref, sizeof
 from pathlib import Path
 from queue import SimpleQueue
@@ -164,6 +165,7 @@ class RknnPoolExecutor:
 
     def __init__(self, model_path: str, tpes: int) -> None:
         self.contexts: list[int] = []
+        self.executor = ThreadPoolExecutor(tpes, thread_name_prefix="rknn")
         master = _context()
         _check(lib.rknn_init(byref(master), model_path.encode(), 0, 0, None), "rknn_init")
         self.contexts.append(master.value)
@@ -196,6 +198,9 @@ class RknnPoolExecutor:
         self.current: dict[int, _Key] = {}
 
     def run(self, inputs: list[ModelTensor], data_format: str | None) -> list[NDArray[Any]]:
+        return self.executor.submit(self._next, inputs, data_format).result()
+
+    def _next(self, inputs: list[ModelTensor], data_format: str | None) -> list[NDArray[Any]]:
         ctx = self.idle.get()
         try:
             return self._run(ctx, inputs, data_format)
@@ -260,6 +265,7 @@ class RknnPoolExecutor:
         return shape
 
     def release(self) -> None:
+        self.executor.shutdown()
         for ctx in reversed(self.contexts):  # duplicates before the context whose weights they share
             lib.rknn_destroy(ctx)
         self.contexts = []
