@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { handleTagAssets } from '#lib/services/asset.service.js';
+  import { handleTagAssets } from '#lib/services/asset.service.ts';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { mdiTag } from '@mdi/js';

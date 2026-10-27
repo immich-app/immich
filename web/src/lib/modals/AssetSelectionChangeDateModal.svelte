@@ -2,11 +2,11 @@
   import Combobox from '#lib/components/shared-components/Combobox.svelte';
   import DateInput from '#lib/elements/DateInput.svelte';
   import DurationInput from '#lib/elements/DurationInput.svelte';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-  import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '#lib/modals/timezone-utils.js';
-  import { getOwnedAssetsWithWarning } from '#lib/utils/asset-utils.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '#lib/modals/timezone-utils.ts';
+  import { getOwnedAssetsWithWarning } from '#lib/utils/asset-utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { updateAssets } from '@immich/sdk';
   import { Field, FormModal, Label, Switch } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';

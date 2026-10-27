@@ -1,12 +1,12 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { uploadManager } from '#lib/managers/upload-manager.svelte.js';
-import { addAssetsToAlbumsMutation } from '#lib/queries/album.query.js';
-import { executeMutation } from '#lib/queries/client.js';
-import { uploadAssetsStore } from '#lib/stores/upload.js';
-import { UploadState } from '#lib/types.js';
-import { uploadRequest } from '#lib/utils.js';
-import { ExecutorQueue } from '#lib/utils/executor-queue.js';
-import { asQueryString } from '#lib/utils/shared-links.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { uploadManager } from '#lib/managers/upload-manager.svelte.ts';
+import { addAssetsToAlbumsMutation } from '#lib/queries/album.query.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { uploadAssetsStore } from '#lib/stores/upload.ts';
+import { UploadState } from '#lib/types.ts';
+import { uploadRequest } from '#lib/utils.ts';
+import { ExecutorQueue } from '#lib/utils/executor-queue.ts';
+import { asQueryString } from '#lib/utils/shared-links.ts';
 import {
   AssetMediaStatus,
   AssetUploadAction,

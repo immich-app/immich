@@ -1,8 +1,8 @@
-import { QueryParameter, UUID_REGEX } from '#lib/constants.js';
-import { memoryManager } from '#lib/managers/memory-manager.svelte.js';
-import { Route } from '#lib/route.js';
-import { authenticate } from '#lib/utils/auth.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { QueryParameter, UUID_REGEX } from '#lib/constants.ts';
+import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
+import { Route } from '#lib/route.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 

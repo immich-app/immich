@@ -1,7 +1,7 @@
-import { getAnimateMock } from '#lib/__mocks__/animate.mock.js';
-import { getResizeObserverMock } from '#lib/__mocks__/resize-observer.mock.js';
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.js';
+import { getAnimateMock } from '#lib/__mocks__/animate.mock.ts';
+import { getResizeObserverMock } from '#lib/__mocks__/resize-observer.mock.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
 import { renderWithTooltips } from '#tests/helpers';
 import { updateAsset } from '@immich/sdk';
 import { fireEvent, waitFor } from '@testing-library/svelte';

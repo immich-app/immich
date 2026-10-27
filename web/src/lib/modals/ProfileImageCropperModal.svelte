@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
   import { FormModal, toastManager } from '@immich/ui';
   import domtoimage from 'dom-to-image';

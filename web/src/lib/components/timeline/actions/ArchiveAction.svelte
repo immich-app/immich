@@ -1,8 +1,8 @@
 <script lang="ts">
   import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
-  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import type { OnArchive } from '#lib/utils/actions.js';
-  import { archiveAssets } from '#lib/utils/asset-utils.js';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import type { OnArchive } from '#lib/utils/actions.ts';
+  import { archiveAssets } from '#lib/utils/asset-utils.ts';
   import { AssetVisibility } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';

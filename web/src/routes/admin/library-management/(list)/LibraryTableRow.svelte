@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { libraryTableClasses } from '#lib/constants.js';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getLibraryStatisticsQuery } from '#lib/queries/library.query.js';
-  import { getUserAdminQuery } from '#lib/queries/user-admin.query.js';
-  import { Route } from '#lib/route.js';
-  import { getLibraryActions } from '#lib/services/library.service.js';
-  import { locale } from '#lib/stores/preferences.store.js';
-  import { getBytesWithUnit } from '#lib/utils/byte-units.js';
+  import { libraryTableClasses } from '#lib/constants.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
+  import { getUserAdminQuery } from '#lib/queries/user-admin.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getLibraryActions } from '#lib/services/library.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import type { LibraryResponseDto } from '@immich/sdk';
   import { ContextMenuButton, Link, MenuItemType, TableCell, TableRow } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';

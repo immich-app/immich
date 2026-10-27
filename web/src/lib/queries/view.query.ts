@@ -1,4 +1,4 @@
-import { TreeNode } from '#lib/utils/tree-utils.js';
+import { TreeNode } from '#lib/utils/tree-utils.ts';
 import { getAssetsByOriginalPath, getUniqueOriginalPaths } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
 

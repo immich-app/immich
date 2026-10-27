@@ -1,5 +1,5 @@
-import { defaultLang } from '#lib/constants.js';
-import { convertBCP47, getPreferredLocale } from '#lib/utils/i18n.js';
+import { defaultLang } from '#lib/constants.ts';
+import { convertBCP47, getPreferredLocale } from '#lib/utils/i18n.ts';
 import { persisted } from 'svelte-persisted-store';
 import { browser } from '$app/env';
 

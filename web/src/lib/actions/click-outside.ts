@@ -1,4 +1,4 @@
-import { matchesShortcut } from '#lib/actions/shortcut.js';
+import { matchesShortcut } from '#lib/actions/shortcut.ts';
 import type { ActionReturn } from 'svelte/action';
 
 interface Options {

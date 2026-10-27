@@ -1,4 +1,4 @@
-import { sdkMock } from '#lib/__mocks__/sdk.mock.js';
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';

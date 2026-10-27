@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { initInput } from '#lib/actions/focus.js';
+  import { initInput } from '#lib/actions/focus.ts';
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
-  import { normalizeSearchString } from '#lib/utils/string-utils.js';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
   import { searchUsers, type UserResponseDto } from '@immich/sdk';
   import { FormModal, ListButton, LoadingSpinner, Stack, Text } from '@immich/ui';
   import { sortBy } from 'lodash-es';

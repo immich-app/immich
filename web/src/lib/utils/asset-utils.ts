@@ -1,16 +1,16 @@
-import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { downloadManager } from '#lib/managers/download-manager.svelte.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-import { locale } from '#lib/stores/preferences.store.js';
-import { downloadUrlPost, withError } from '#lib/utils.js';
-import { getByteUnitString } from '#lib/utils/byte-units.js';
-import { getFormatter } from '#lib/utils/i18n.js';
-import { navigate } from '#lib/utils/navigation.js';
-import { asQueryString } from '#lib/utils/shared-links.js';
-import { toTimelineAsset } from '#lib/utils/timeline-util.js';
+import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { downloadManager } from '#lib/managers/download-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { locale } from '#lib/stores/preferences.store.ts';
+import { downloadUrlPost, withError } from '#lib/utils.ts';
+import { getByteUnitString } from '#lib/utils/byte-units.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import { navigate } from '#lib/utils/navigation.ts';
+import { asQueryString } from '#lib/utils/shared-links.ts';
+import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetVisibility,
   getBaseUrl,

@@ -1,6 +1,6 @@
-import { getAnimateMock } from '#lib/__mocks__/animate.mock.js';
-import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.js';
-import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.js';
+import { getAnimateMock } from '#lib/__mocks__/animate.mock.ts';
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
+import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.ts';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { DateTime } from 'luxon';
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest';

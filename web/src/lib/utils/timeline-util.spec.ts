@@ -1,6 +1,6 @@
-import { locale } from '#lib/stores/preferences.store.js';
-import { parseUtcDate } from '#lib/utils/date-time.js';
-import { formatGroupTitle, toISOYearMonthUTC } from '#lib/utils/timeline-util.js';
+import { locale } from '#lib/stores/preferences.store.ts';
+import { parseUtcDate } from '#lib/utils/date-time.ts';
+import { formatGroupTitle, toISOYearMonthUTC } from '#lib/utils/timeline-util.ts';
 import { DateTime } from 'luxon';
 
 describe('formatGroupTitle', () => {

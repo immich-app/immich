@@ -7,19 +7,19 @@
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
   import DeviceCard from '#lib/components/user-settings-page/DeviceCard.svelte';
   import FeatureSetting from './FeatureSetting.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
   import {
     getUserAdminQuery,
     getUserCalendarHeatmapAdminQuery,
     getUserPreferencesAdminQuery,
     getUserSessionsAdminQuery,
     getUserStatisticsAdminQuery,
-  } from '#lib/queries/user-admin.query.js';
-  import { Route } from '#lib/route.js';
-  import { getUserAdminActions } from '#lib/services/user-admin.service.js';
-  import { locale } from '#lib/stores/preferences.store.js';
-  import { createDateFormatter, findLocale } from '#lib/utils.js';
-  import { getBytesWithUnit } from '#lib/utils/byte-units.js';
+  } from '#lib/queries/user-admin.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getUserAdminActions } from '#lib/services/user-admin.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { createDateFormatter, findLocale } from '#lib/utils.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import {
     Alert,
     Badge,

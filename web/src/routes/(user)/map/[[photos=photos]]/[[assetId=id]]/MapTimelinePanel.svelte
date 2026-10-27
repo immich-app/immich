@@ -1,7 +1,7 @@
 <script lang="ts">
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import type { SelectionBBox } from '#lib/components/shared-components/map/types.js';
+  import type { SelectionBBox } from '#lib/components/shared-components/map/types.ts';
   import ArchiveAction from '#lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -15,12 +15,12 @@
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
   import Portal from '#lib/elements/Portal.svelte';
-  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
-  import { getAssetBulkActions } from '#lib/services/asset.service.js';
-  import { getStackBulkActions } from '#lib/services/stack.service.js';
-  import { mapSettings } from '#lib/stores/preferences.store.js';
-  import { type OnLink, type OnUnlink } from '#lib/utils/actions.js';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { getStackBulkActions } from '#lib/services/stack.service.ts';
+  import { mapSettings } from '#lib/stores/preferences.store.ts';
+  import { type OnLink, type OnUnlink } from '#lib/utils/actions.ts';
   import { AssetVisibility } from '@immich/sdk';
   import { ActionButton, CloseButton, CommandPaletteDefaultProvider, Icon } from '@immich/ui';
   import { mdiDotsVertical, mdiImageMultiple } from '@mdi/js';

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { shortcuts } from '#lib/actions/shortcut.js';
-  import { editManager, EditToolType } from '#lib/managers/edit/edit-manager.svelte.js';
-  import { websocketEvents } from '#lib/stores/websocket.js';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { editManager, EditToolType } from '#lib/managers/edit/edit-manager.svelte.ts';
+  import { websocketEvents } from '#lib/stores/websocket.ts';
   import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
   import { Button, HStack, IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';

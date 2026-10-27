@@ -1,4 +1,4 @@
-import { authenticate } from '#lib/utils/auth.js';
+import { authenticate } from '#lib/utils/auth.ts';
 import { getAllPeople } from '@immich/sdk';
 import type { PageLoad } from './$types';
 

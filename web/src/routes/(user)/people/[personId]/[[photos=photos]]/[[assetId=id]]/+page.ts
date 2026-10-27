@@ -1,5 +1,5 @@
-import { authenticate } from '#lib/utils/auth.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { getPerson, getPersonStatistics } from '@immich/sdk';
 import type { PageLoad } from './$types';
 

@@ -2,11 +2,11 @@ import LibraryExclusionPatternAddModal from '#lib/modals/LibraryExclusionPattern
 import LibraryExclusionPatternEditModal from '#lib/modals/LibraryExclusionPatternEditModal.svelte';
 import LibraryFolderAddModal from '#lib/modals/LibraryFolderAddModal.svelte';
 import LibraryFolderEditModal from '#lib/modals/LibraryFolderEditModal.svelte';
-import { executeMutation } from '#lib/queries/client.js';
-import { deleteLibraryMutation, scanLibraryMutation, updateLibraryMutation } from '#lib/queries/library.query.js';
-import { scanAllLibrariesMutation } from '#lib/queries/queue.query.js';
-import { Route } from '#lib/route.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { executeMutation } from '#lib/queries/client.ts';
+import { deleteLibraryMutation, scanLibraryMutation, updateLibraryMutation } from '#lib/queries/library.query.ts';
+import { scanAllLibrariesMutation } from '#lib/queries/queue.query.ts';
+import { Route } from '#lib/route.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import type { LibraryResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import { mdiInformationOutline, mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';

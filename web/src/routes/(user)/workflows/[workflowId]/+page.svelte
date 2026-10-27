@@ -3,12 +3,12 @@
   import WorkflowAddStepModal from '#lib/modals/WorkflowAddStepModal.svelte';
   import WorkflowEditStepModal from '#lib/modals/WorkflowEditStepModal.svelte';
   import WorkflowTriggerPicker from '#lib/modals/WorkflowTriggerPicker.svelte';
-  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.js';
-  import { getWorkflowQuery, updateWorkflowMutation } from '#lib/queries/workflow.query.js';
-  import { Route } from '#lib/route.js';
-  import { getWorkflowActions } from '#lib/services/workflow.service.js';
-  import { generateId } from '#lib/utils/generate-id.js';
-  import { getTriggerDescription, getTriggerName } from '#lib/utils/workflow.js';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getWorkflowQuery, updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getWorkflowActions } from '#lib/services/workflow.service.ts';
+  import { generateId } from '#lib/utils/generate-id.ts';
+  import { getTriggerDescription, getTriggerName } from '#lib/utils/workflow.ts';
   import type { WorkflowUpdateDto } from '@immich/sdk';
   import {
     ActionBar,

@@ -5,17 +5,17 @@
   import OnEvents from '#lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
   import SingleGridRow from '#lib/components/shared-components/SingleGridRow.svelte';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { Route } from '#lib/route.js';
-  import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '#lib/utils.js';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '#lib/utils.ts';
   import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import MemoryCard from '#lib/components/memories/MemoryCard.svelte';
   import { ImageCarousel } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
-  import { getAltText } from '#lib/utils/thumbnail-util.js';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
   import Portal from '#lib/elements/Portal.svelte';
 
   interface Props {

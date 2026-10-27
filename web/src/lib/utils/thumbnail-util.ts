@@ -1,6 +1,6 @@
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-import { locale } from '#lib/stores/preferences.store.js';
-import { fromTimelinePlainDateTime } from '#lib/utils/timeline-util.js';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { locale } from '#lib/stores/preferences.store.ts';
+import { fromTimelinePlainDateTime } from '#lib/utils/timeline-util.ts';
 import { t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 

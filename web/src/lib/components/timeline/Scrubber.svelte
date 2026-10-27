@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
-  import type { ScrubberMonth, ViewportTopMonth } from '#lib/managers/timeline-manager/types.js';
-  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.js';
-  import { getTabbable } from '#lib/utils/focus-util.js';
-  import { type ScrubberListener } from '#lib/utils/timeline-util.js';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type { ScrubberMonth, ViewportTopMonth } from '#lib/managers/timeline-manager/types.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { getTabbable } from '#lib/utils/focus-util.ts';
+  import { type ScrubberListener } from '#lib/utils/timeline-util.ts';
   import { Icon } from '@immich/ui';
   import { mdiPlay } from '@mdi/js';
   import { clamp } from 'lodash-es';

@@ -1,5 +1,5 @@
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.js';
-import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '#lib/utils/timeline-util.js';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '#lib/utils/timeline-util.ts';
 import { faker } from '@faker-js/faker';
 import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';

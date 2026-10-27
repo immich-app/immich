@@ -3,13 +3,13 @@
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '#lib/constants.js';
+  import { SettingInputFieldType } from '#lib/constants.ts';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.js';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import AuthDisableLoginConfirmModal from '#lib/modals/AuthDisableLoginConfirmModal.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin } from '@immich/sdk';
   import { Button, IconButton, Link, modalManager, Text, toastManager } from '@immich/ui';
   import { mdiPlus, mdiRestart, mdiTrashCanOutline } from '@mdi/js';

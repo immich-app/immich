@@ -1,5 +1,5 @@
-import { dateFormats } from '#lib/constants.js';
-import { locale } from '#lib/stores/preferences.store.js';
+import { dateFormats } from '#lib/constants.ts';
+import { locale } from '#lib/stores/preferences.store.ts';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 

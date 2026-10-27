@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { shortcuts } from '#lib/actions/shortcut.js';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
   import AssetViewerEvents from '#lib/components/AssetViewerEvents.svelte';
-  import { assetViewerManager, type Faces } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { ocrManager, type OcrBoundingBox } from '#lib/stores/ocr.svelte.js';
-  import { alwaysLoadOriginalFile } from '#lib/stores/preferences.store.js';
-  import { calculateBoundingBoxMatrix, getOcrBoundingBoxes, type Point } from '#lib/utils/ocr-utils.js';
+  import { assetViewerManager, type Faces } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { ocrManager, type OcrBoundingBox } from '#lib/stores/ocr.svelte.ts';
+  import { alwaysLoadOriginalFile } from '#lib/stores/preferences.store.ts';
+  import { calculateBoundingBoxMatrix, getOcrBoundingBoxes, type Point } from '#lib/utils/ocr-utils.ts';
   import {
     EquirectangularAdapter,
     Viewer,

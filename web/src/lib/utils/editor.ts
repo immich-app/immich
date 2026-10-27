@@ -1,4 +1,4 @@
-import type { EditActions } from '#lib/managers/edit/edit-manager.svelte.js';
+import type { EditActions } from '#lib/managers/edit/edit-manager.svelte.ts';
 import type { MirrorParameters, RotateParameters } from '@immich/sdk';
 import { compose, flipX, flipY, identity, rotate } from 'transformation-matrix';
 

@@ -1,4 +1,4 @@
-import { asMutation, MutationCancelledError, queryClient } from '#lib/queries/client.js';
+import { asMutation, MutationCancelledError, queryClient } from '#lib/queries/client.ts';
 import {
   deletePasskey,
   finishAuthentication,

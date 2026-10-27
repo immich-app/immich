@@ -2,7 +2,7 @@
   import AlbumCover from '#lib/components/album-page/AlbumCover.svelte';
   import AssetCover from '#lib/components/sharedlinks-page/covers/AssetCover.svelte';
   import NoCover from '#lib/components/sharedlinks-page/covers/NoCover.svelte';
-  import { getAssetMediaUrl } from '#lib/utils.js';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
   import type { SharedLinkResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 

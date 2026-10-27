@@ -9,7 +9,7 @@
     AlbumViewMode,
     albumViewSettings,
     SortOrder,
-  } from '#lib/stores/preferences.store.js';
+  } from '#lib/stores/preferences.store.ts';
   import {
     type AlbumGroupOptionMetadata,
     type AlbumSortOptionMetadata,
@@ -22,7 +22,7 @@
     getSelectedAlbumGroupOption,
     groupOptionsMetadata,
     sortOptionsMetadata,
-  } from '#lib/utils/album-utils.js';
+  } from '#lib/utils/album-utils.ts';
   import { Button, IconButton, Text } from '@immich/ui';
   import {
     mdiArrowDownThin,

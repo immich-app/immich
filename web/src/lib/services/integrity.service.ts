@@ -1,7 +1,7 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { Route } from '#lib/route.js';
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { Route } from '#lib/route.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { createJob, deleteIntegrityReport, IntegrityReport, ManualJobName } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';

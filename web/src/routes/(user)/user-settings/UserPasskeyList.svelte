@@ -1,10 +1,10 @@
 <script lang="ts">
   import TableButton from '#lib/components/TableButton.svelte';
-  import { dateFormats } from '#lib/constants.js';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { searchPasskeysQuery } from '#lib/queries/passkey.query.js';
-  import { getPasskeyActions, getPasskeysActions } from '#lib/services/passkey.service.js';
-  import { locale } from '#lib/stores/preferences.store.js';
+  import { dateFormats } from '#lib/constants.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { searchPasskeysQuery } from '#lib/queries/passkey.query.ts';
+  import { getPasskeyActions, getPasskeysActions } from '#lib/services/passkey.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import { Button, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';

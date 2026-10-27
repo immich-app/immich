@@ -1,9 +1,9 @@
 import ApiKeyCreateModal from '#lib/modals/ApiKeyCreateModal.svelte';
 import ApiKeySecretModal from '#lib/modals/ApiKeySecretModal.svelte';
 import ApiKeyUpdateModal from '#lib/modals/ApiKeyUpdateModal.svelte';
-import { deleteApiKeyMutation, rotateApiKeyMutation } from '#lib/queries/api-key.query.js';
-import { executeMutation } from '#lib/queries/client.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { deleteApiKeyMutation, rotateApiKeyMutation } from '#lib/queries/api-key.query.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import type { ApiKeyResponseDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiAutorenew, mdiPencilOutline, mdiPlus, mdiTrashCanOutline } from '@mdi/js';

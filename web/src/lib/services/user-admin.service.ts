@@ -1,13 +1,13 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import PasswordResetSuccessModal from '#lib/modals/PasswordResetSuccessModal.svelte';
 import UserDeleteConfirmModal from '#lib/modals/UserDeleteConfirmModal.svelte';
 import UserRestoreConfirmModal from '#lib/modals/UserRestoreConfirmModal.svelte';
-import { executeMutation, readPreloadedQuery } from '#lib/queries/client.js';
-import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
-import { updateUserAdminMutation } from '#lib/queries/user-admin.query.js';
-import { Route } from '#lib/route.js';
-import type { HeaderButtonActionItem } from '#lib/types.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { updateUserAdminMutation } from '#lib/queries/user-admin.query.ts';
+import { Route } from '#lib/route.ts';
+import type { HeaderButtonActionItem } from '#lib/types.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { UserStatus, type UserAdminResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import {

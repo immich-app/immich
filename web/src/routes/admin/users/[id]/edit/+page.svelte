@@ -1,11 +1,11 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { Route } from '#lib/route.js';
-  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.js';
-  import { getStorageQuery } from '#lib/queries/server-info.query.js';
-  import { getUserAdminQuery, updateUserAdminMutation } from '#lib/queries/user-admin.query.js';
-  import { ByteUnit, convertFromBytes, convertToBytes } from '#lib/utils/byte-units.js';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getStorageQuery } from '#lib/queries/server-info.query.ts';
+  import { getUserAdminQuery, updateUserAdminMutation } from '#lib/queries/user-admin.query.ts';
+  import { ByteUnit, convertFromBytes, convertToBytes } from '#lib/utils/byte-units.ts';
   import { Field, FormModal, Input, Link, NumberInput, Switch, Text } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { mdiAccountEditOutline } from '@mdi/js';

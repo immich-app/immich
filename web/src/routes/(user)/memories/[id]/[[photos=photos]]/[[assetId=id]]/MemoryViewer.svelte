@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.js';
-  import { shortcuts } from '#lib/actions/shortcut.js';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import BirthdayConfetti from '#lib/components/memories/BirthdayConfetti.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
@@ -15,16 +15,16 @@
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
-  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { authManager } from '#lib/managers/auth-manager.svelte.js';
-  import { memoryManager } from '#lib/managers/memory-manager.svelte.js';
-  import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.js';
-  import { Route } from '#lib/route.js';
-  import { getAssetBulkActions } from '#lib/services/asset.service.js';
-  import { locale } from '#lib/stores/preferences.store.js';
-  import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '#lib/utils.js';
-  import { fromISODateTimeUTC, toTimelineAsset } from '#lib/utils/timeline-util.js';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
+  import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '#lib/utils.ts';
+  import { fromISODateTimeUTC, toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo, MemoryType } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text } from '@immich/ui';
   import {

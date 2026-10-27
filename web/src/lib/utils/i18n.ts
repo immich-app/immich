@@ -1,4 +1,4 @@
-import type { Lang } from '#lib/constants.js';
+import type { Lang } from '#lib/constants.ts';
 import { locale, t, waitLocale } from 'svelte-i18n';
 import { get, type Unsubscriber } from 'svelte/store';
 

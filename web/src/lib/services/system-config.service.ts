@@ -1,6 +1,6 @@
-import { executeMutation } from '#lib/queries/client.js';
-import { updateAdminConfigMutation } from '#lib/queries/config-admin.query.js';
-import { copyToClipboard, downloadJson } from '#lib/utils.js';
+import { executeMutation } from '#lib/queries/client.ts';
+import { updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
+import { copyToClipboard, downloadJson } from '#lib/utils.ts';
 import type { AdminConfigDto, ServerFeaturesDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';

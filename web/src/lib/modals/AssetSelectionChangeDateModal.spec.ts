@@ -1,9 +1,9 @@
-import { getAnimateMock } from '#lib/__mocks__/animate.mock.js';
-import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.js';
-import { sdkMock } from '#lib/__mocks__/sdk.mock.js';
-import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.js';
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { calcNewDate } from '#lib/modals/timezone-utils.js';
+import { getAnimateMock } from '#lib/__mocks__/animate.mock.ts';
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
+import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { calcNewDate } from '#lib/modals/timezone-utils.ts';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { DateTime } from 'luxon';

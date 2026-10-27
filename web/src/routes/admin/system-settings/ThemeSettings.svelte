@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { cloneDeep } from 'lodash-es';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingTextarea from './SettingTextarea.svelte';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.js';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 

@@ -1,4 +1,4 @@
-import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
+import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
 import { createZoomImageWheel } from '@zoom-image/core';
 
 // Minimal touch shape — avoids importing DOM TouchEvent which isn't available in all TS targets.

@@ -1,4 +1,4 @@
-import { PersistedLocalStorage } from '#lib/utils/persisted.js';
+import { PersistedLocalStorage } from '#lib/utils/persisted.ts';
 import { isEqual } from 'lodash-es';
 
 export type MemoriesPreferences = {

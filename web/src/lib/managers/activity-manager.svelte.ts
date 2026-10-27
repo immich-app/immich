@@ -1,6 +1,6 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { handlePromiseError } from '#lib/utils.js';
-import { handleError } from '#lib/utils/handle-error.js';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { handlePromiseError } from '#lib/utils.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
 import {
   createActivity,
   deleteActivity,

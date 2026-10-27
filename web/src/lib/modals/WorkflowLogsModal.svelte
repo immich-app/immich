@@ -18,11 +18,11 @@
   } from '@immich/ui';
   import { mdiHistory, mdiOpenInNew } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { locale } from '#lib/stores/preferences.store.js';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import { DateTime } from 'luxon';
-  import { Route } from '#lib/route.js';
-  import { executeMutation } from '#lib/queries/client.js';
-  import { updateWorkflowMutation } from '#lib/queries/workflow.query.js';
+  import { Route } from '#lib/route.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
 
   type Props = {
     workflow: WorkflowResponseDto;

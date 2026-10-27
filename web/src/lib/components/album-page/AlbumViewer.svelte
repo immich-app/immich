@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { shortcut } from '#lib/actions/shortcut.js';
+  import { shortcut } from '#lib/actions/shortcut.ts';
   import AlbumMap from '#lib/components/album-page/AlbumMap.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.js';
-  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.js';
-  import { handleDownloadAlbum } from '#lib/services/album.service.js';
-  import { getGlobalActions } from '#lib/services/app.service.js';
-  import { dragAndDropFilesStore } from '#lib/stores/drag-and-drop-files.store.js';
-  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.js';
-  import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.js';
-  import { handlePromiseError } from '#lib/utils.js';
-  import { fileUploadHandler, openFileUploadDialog } from '#lib/utils/file-uploader.js';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { handleDownloadAlbum } from '#lib/services/album.service.ts';
+  import { getGlobalActions } from '#lib/services/app.service.ts';
+  import { dragAndDropFilesStore } from '#lib/stores/drag-and-drop-files.store.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { fileUploadHandler, openFileUploadDialog } from '#lib/utils/file-uploader.ts';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
   import { ActionButton, IconButton, Logo } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
@@ -22,8 +22,8 @@
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import ThemeButton from '../shared-components/ThemeButton.svelte';
   import AlbumSummary from './AlbumSummary.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 
   const query = createPreloadedQuery(getPublicConfigQuery);
   const publicConfig = $derived(query.data);

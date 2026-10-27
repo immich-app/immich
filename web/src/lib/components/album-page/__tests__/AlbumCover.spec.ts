@@ -1,5 +1,5 @@
 import AlbumCover from '#lib/components/album-page/AlbumCover.svelte';
-import { getAssetMediaUrl } from '#lib/utils.js';
+import { getAssetMediaUrl } from '#lib/utils.ts';
 import { render } from '@testing-library/svelte';
 import { albumFactory } from '#test-data/factories/album-factory';
 

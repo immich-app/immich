@@ -1,5 +1,5 @@
-import type { EditActions } from '#lib/managers/edit/edit-manager.svelte.js';
-import { buildAffineFromEdits, normalizeTransformEdits } from '#lib/utils/editor.js';
+import type { EditActions } from '#lib/managers/edit/edit-manager.svelte.ts';
+import { buildAffineFromEdits, normalizeTransformEdits } from '#lib/utils/editor.ts';
 import { AssetEditAction, MirrorAxis } from '@immich/sdk';
 
 type NormalizedParameters = {

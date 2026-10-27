@@ -1,7 +1,7 @@
-import { QueryParameter } from '#lib/constants.js';
-import type { PeopleFilter } from '#lib/types.js';
-import { authenticate } from '#lib/utils/auth.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { QueryParameter } from '#lib/constants.ts';
+import type { PeopleFilter } from '#lib/types.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { getAllPeople } from '@immich/sdk';
 import type { PageLoad } from './$types';
 

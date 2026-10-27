@@ -1,8 +1,8 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { uploadRequest } from '#lib/utils.js';
-import { openFilePicker } from '#lib/utils/file-uploader.js';
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { uploadRequest } from '#lib/utils.ts';
+import { openFilePicker } from '#lib/utils/file-uploader.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import {
   deleteDatabaseBackup,
   getBaseUrl,

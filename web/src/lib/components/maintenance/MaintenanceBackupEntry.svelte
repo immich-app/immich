@@ -1,9 +1,9 @@
 <script lang="ts">
   import OnEvents from '#lib/components/OnEvents.svelte';
-  import { BackupFileStatus } from '#lib/constants.js';
-  import { getDatabaseBackupActions, handleRestoreDatabaseBackup } from '#lib/services/database-backups.service.js';
-  import { locale } from '#lib/stores/preferences.store.js';
-  import { getBytesWithUnit } from '#lib/utils/byte-units.js';
+  import { BackupFileStatus } from '#lib/constants.ts';
+  import { getDatabaseBackupActions, handleRestoreDatabaseBackup } from '#lib/services/database-backups.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import { Button, Card, CardBody, ContextMenuButton, HStack, Icon, Stack, Text } from '@immich/ui';
   import { mdiAlertCircle, mdiCheckCircle, mdiDatabaseRefreshOutline } from '@mdi/js';
   import { DateTime } from 'luxon';

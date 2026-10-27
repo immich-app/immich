@@ -1,5 +1,5 @@
-import { SessionStorageKey } from '#lib/constants.js';
-import { handlePromiseError } from '#lib/utils.js';
+import { SessionStorageKey } from '#lib/constants.ts';
+import { handlePromiseError } from '#lib/utils.ts';
 import { navigating } from '$app/state';
 
 interface Options {

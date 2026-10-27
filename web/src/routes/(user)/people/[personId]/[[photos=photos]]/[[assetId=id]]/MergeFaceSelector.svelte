@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { Route } from '#lib/route.js';
-  import { handleError } from '#lib/utils/handle-error.js';
+  import { Route } from '#lib/route.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { getAllPeople, getPerson, mergePeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';

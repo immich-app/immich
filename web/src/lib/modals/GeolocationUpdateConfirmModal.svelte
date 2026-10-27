@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import type { LatLng } from '#lib/types.js';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import type { LatLng } from '#lib/types.ts';
   import { Alert, ConfirmModal } from '@immich/ui';
   import { t } from 'svelte-i18n';
 

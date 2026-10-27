@@ -1,7 +1,7 @@
 import PasskeyUpdateModal from '#lib/modals/PasskeyUpdateModal.svelte';
-import { executeMutation } from '#lib/queries/client.js';
-import { createPasskeyMutation, deletePasskeyMutation } from '#lib/queries/passkey.query.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { executeMutation } from '#lib/queries/client.ts';
+import { createPasskeyMutation, deletePasskeyMutation } from '#lib/queries/passkey.query.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { type PasskeyResponseDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiPencilOutline, mdiPlus, mdiTrashCanOutline } from '@mdi/js';

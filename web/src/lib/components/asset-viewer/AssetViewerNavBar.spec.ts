@@ -1,7 +1,7 @@
-import { getResizeObserverMock } from '#lib/__mocks__/resize-observer.mock.js';
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { queryClient } from '#lib/queries/client.js';
-import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+import { getResizeObserverMock } from '#lib/__mocks__/resize-observer.mock.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { renderWithTooltips } from '#tests/helpers';
 import type { UserConfigDto } from '@immich/sdk';
 import '@testing-library/jest-dom';

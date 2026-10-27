@@ -1,4 +1,4 @@
-import { maintenanceReturnUrl } from '#lib/utils/maintenance.js';
+import { maintenanceReturnUrl } from '#lib/utils/maintenance.ts';
 
 describe('maintenance', () => {
   describe(maintenanceReturnUrl.name, () => {

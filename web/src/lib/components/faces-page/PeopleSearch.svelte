@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { initInput } from '#lib/actions/focus.js';
-  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '#lib/constants.js';
+  import { initInput } from '#lib/actions/focus.ts';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
   import SearchBar from '#lib/elements/SearchBar.svelte';
-  import { handleError } from '#lib/utils/handle-error.js';
-  import { searchNameLocal } from '#lib/utils/person.js';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { searchNameLocal } from '#lib/utils/person.ts';
   import { searchPerson, type PersonResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 

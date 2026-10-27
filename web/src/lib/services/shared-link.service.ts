@@ -1,10 +1,10 @@
 import QrCodeModal from '#lib/modals/QrCodeModal.svelte';
-import { executeMutation, readPreloadedQuery } from '#lib/queries/client.js';
-import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
-import { removeSharedLinkMutation } from '#lib/queries/shared-link.query.js';
-import { Route } from '#lib/route.js';
-import { copyToClipboard } from '#lib/utils.js';
-import { getFormatter } from '#lib/utils/i18n.js';
+import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { removeSharedLinkMutation } from '#lib/queries/shared-link.query.ts';
+import { Route } from '#lib/route.ts';
+import { copyToClipboard } from '#lib/utils.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { type SharedLinkResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiLink, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';

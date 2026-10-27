@@ -1,7 +1,7 @@
-import { getSharedLink as getCachedSharedLink, setSharedLink } from '#lib/utils.js';
-import { authenticate } from '#lib/utils/auth.js';
-import { getFormatter } from '#lib/utils/i18n.js';
-import { getAssetInfoFromParam } from '#lib/utils/navigation.js';
+import { getSharedLink as getCachedSharedLink, setSharedLink } from '#lib/utils.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import { getAssetInfoFromParam } from '#lib/utils/navigation.ts';
 import { getMySharedLink, isHttpError } from '@immich/sdk';
 
 export const asQueryString = ({ slug, key }: { slug?: string; key?: string }) => {

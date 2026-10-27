@@ -1,4 +1,4 @@
-import { SettingInputFieldType } from '#lib/constants.js';
+import { SettingInputFieldType } from '#lib/constants.ts';
 import { render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import SettingInputField from './SettingInputField.svelte';

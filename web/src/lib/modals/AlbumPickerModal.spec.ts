@@ -1,7 +1,7 @@
-import { getAnimateMock } from '#lib/__mocks__/animate.mock.js';
-import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.js';
-import { sdkMock } from '#lib/__mocks__/sdk.mock.js';
-import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.js';
+import { getAnimateMock } from '#lib/__mocks__/animate.mock.ts';
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
+import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.ts';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';
 import AlbumPickerModal from './AlbumPickerModal.svelte';

@@ -1,4 +1,4 @@
-import { sdkMock } from '#lib/__mocks__/sdk.mock.js';
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
 import RecentAlbums from '#lib/components/shared-components/side-bar/RecentAlbums.svelte';
 import { render, screen } from '@testing-library/svelte';
 import { albumFactory } from '#test-data/factories/album-factory';

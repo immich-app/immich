@@ -1,10 +1,10 @@
-import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-import { authManager } from '#lib/managers/auth-manager.svelte.js';
-import { eventManager } from '#lib/managers/event-manager.svelte.js';
-import { openFileUploadDialog } from '#lib/utils/file-uploader.js';
-import { handleError } from '#lib/utils/handle-error.js';
-import { getFormatter } from '#lib/utils/i18n.js';
-import { navigate } from '#lib/utils/navigation.js';
+import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import { navigate } from '#lib/utils/navigation.ts';
 import {
   createStack,
   deleteAssets,

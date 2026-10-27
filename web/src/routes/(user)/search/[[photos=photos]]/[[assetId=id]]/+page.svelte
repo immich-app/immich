@@ -16,18 +16,18 @@
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
   import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
-  import { QueryParameter } from '#lib/constants.js';
-  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.js';
-  import { searchManager } from '#lib/managers/search-manager.svelte.js';
-  import type { Viewport } from '#lib/managers/timeline-manager/types.js';
-  import { Route } from '#lib/route.js';
-  import { getAssetBulkActions } from '#lib/services/asset.service.js';
-  import { lang, locale } from '#lib/stores/preferences.store.js';
-  import { handlePromiseError } from '#lib/utils.js';
-  import { parseUtcDate } from '#lib/utils/date-time.js';
-  import { handleError } from '#lib/utils/handle-error.js';
-  import { isAlbumsRoute, isPeopleRoute } from '#lib/utils/navigation.js';
-  import { toTimelineAsset } from '#lib/utils/timeline-util.js';
+  import { QueryParameter } from '#lib/constants.ts';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
+  import type { Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { lang, locale } from '#lib/stores/preferences.store.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { parseUtcDate } from '#lib/utils/date-time.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { isAlbumsRoute, isPeopleRoute } from '#lib/utils/navigation.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import {
     type AlbumResponseDto,
     type AssetResponseDto,
@@ -43,8 +43,8 @@
   import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { onMount, tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { createPreloadedQuery } from '#lib/queries/client.js';
-  import { getUserConfigQuery } from '#lib/queries/config-user.query.js';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);

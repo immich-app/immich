@@ -1,16 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
-  import { eventManager } from '#lib/managers/event-manager.svelte.js';
-  import { createPreloadedQuery, MutationCancelledError } from '#lib/queries/client.js';
-  import { getPublicConfigQuery } from '#lib/queries/config-public.query.js';
-  import { loginWithPasskeyMutation } from '#lib/queries/passkey.query.js';
-  import { getServerConfigQuery } from '#lib/queries/server-info.query.js';
-  import { Route } from '#lib/route.js';
+  import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+  import { createPreloadedQuery, MutationCancelledError } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+  import { loginWithPasskeyMutation } from '#lib/queries/passkey.query.ts';
+  import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+  import { Route } from '#lib/route.ts';
   import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
   import { createMutation } from '@tanstack/svelte-query';
-  import { oauth } from '#lib/utils.js';
-  import { getServerErrorMessage, handleError } from '#lib/utils/handle-error.js';
+  import { oauth } from '#lib/utils.ts';
+  import { getServerErrorMessage, handleError } from '#lib/utils/handle-error.ts';
   import { login, type LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
   import { mdiShieldKeyOutline } from '@mdi/js';
