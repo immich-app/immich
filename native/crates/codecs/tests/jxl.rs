@@ -7,10 +7,10 @@ use codecs::color::{CicpColorPrimaries, CicpProfile, Target, TransferCharacteris
 use codecs::image::{Image, Pixels, Samples};
 use codecs::jxl::Jxl;
 
-fn decode(data: &[u8], target: Target) -> Option<Image> {
+fn decode(data: &[u8], color_space: Target) -> Option<Image> {
     let options = Options {
-        target,
-        cover: None,
+        color_space,
+        target_size: None,
         max_pixel_size: 16384,
     };
     codecs::decode(data, &options, &AtomicBool::new(false))

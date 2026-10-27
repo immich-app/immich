@@ -3,5 +3,5 @@
 
 // The function pointer type comes from the declaration, so nothing is retyped here.
 typedef __typeof__(&native_core_thumbhash) NativeCoreThumbhashFn;
-typedef __typeof__(&native_core_decode) NativeCoreDecodeFn;
+typedef __typeof__(&native_core_decode_image) NativeCoreDecodeImageFn;
 typedef __typeof__(&native_core_cancel) NativeCoreCancelFn;

@@ -9,22 +9,21 @@ pub mod image;
 pub mod jxl;
 mod resize;
 
-/// A format that one of the enabled decoders reads.
 enum Format {
     #[cfg(feature = "jxl")]
     Jxl,
 }
 
 pub struct Options {
-    /// The colour space of the output.
-    pub target: Target,
-    /// Downscales to cover this size.
-    pub cover: Option<(usize, usize)>,
+    pub color_space: Target,
+
+    /// Downscales to the smallest size that still fills this.
+    pub target_size: Option<(usize, usize)>,
+
     /// Downscales to fit within this many pixels per side.
     pub max_pixel_size: usize,
 }
 
-/// The format of `data`, if a decoder for it is enabled.
 fn probe(data: &[u8]) -> Option<Format> {
     #[cfg(feature = "jxl")]
     if matches!(
@@ -33,6 +32,7 @@ fn probe(data: &[u8]) -> Option<Format> {
     ) {
         return Some(Format::Jxl);
     }
+
     None
 }
 
@@ -40,8 +40,8 @@ fn probe(data: &[u8]) -> Option<Format> {
 pub fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> Option<Image> {
     match probe(data)? {
         #[cfg(feature = "jxl")]
-        Format::Jxl => jxl::Jxl::open(data, options.target)?.decode(
-            options.cover,
+        Format::Jxl => jxl::Jxl::open(data, options.color_space)?.decode(
+            options.target_size,
             options.max_pixel_size,
             cancelled,
         ),

@@ -42,7 +42,7 @@ pub struct NativeCoreImageInfo {
 /// `cancelled` must be null or valid for the call and only changed through `native_core_cancel`.
 /// `info` must be null or a valid writable pointer, outside `data`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn native_core_decode(
+pub unsafe extern "C" fn native_core_decode_image(
     data: *const u8,
     len: size_t,
     keep_space: bool,
@@ -60,16 +60,16 @@ pub unsafe extern "C" fn native_core_decode(
         let cancelled = unsafe { AtomicBool::from_ptr(cancelled) };
         // SAFETY: the caller provides a buffer readable for len bytes.
         let input = unsafe { slice::from_raw_parts(data, len) };
-        let target = if keep_space {
+        let color_space = if keep_space {
             Target::Source
         } else {
             Target::Srgb
         };
-        let cover = (target_width > 0 && target_height > 0)
+        let target_size = (target_width > 0 && target_height > 0)
             .then_some((target_width as usize, target_height as usize));
         let options = Options {
-            target,
-            cover,
+            color_space,
+            target_size,
             max_pixel_size: max_pixel_size as usize,
         };
         let Some(Image { cicp, samples }) = codecs::decode(input, &options, cancelled) else {
@@ -96,7 +96,7 @@ pub unsafe extern "C" fn native_core_decode(
 /// Asks the decode given `flag` to stop early.
 ///
 /// # Safety
-/// `flag` must be null or valid and otherwise only read by `native_core_decode`.
+/// `flag` must be null or valid and otherwise only read by `native_core_decode_image`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn native_core_cancel(flag: *mut bool) {
     if !flag.is_null() {
@@ -124,7 +124,7 @@ pub extern "system" fn Java_app_alextran_immich_NativeImage_decode<'caller>(
         // SAFETY: Kotlin passes a live native buffer of `length` bytes and a direct buffer it only
         // changes through `cancel`, and the output is valid.
         let rgba = unsafe {
-            native_core_decode(
+            native_core_decode_image(
                 data as *const u8,
                 length as size_t,
                 false,
