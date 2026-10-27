@@ -17,14 +17,10 @@ const inlineTags = ['script', 'style'];
 
 const cspManifest = (): Plugin => ({
   name: 'immich:csp-manifest',
-  enforce: 'post',
-  closeBundle: {
-    sequential: true,
-    handler() {
-      if (this.environment.name !== 'ssr') {
-        return;
-      }
-
+  apply: 'build',
+  buildApp: {
+    order: 'post',
+    async handler() {
       const indexHtml = path.join(buildDir, 'index.html');
       const hashes: Record<string, string[]> = Object.fromEntries(inlineTags.map((tag) => [`${tag}-src`, []]));
 
@@ -93,7 +89,6 @@ export default defineConfig({
   plugins: [
     enhancedImages(),
     tailwindcss(),
-    cspManifest(),
     sveltekit({
       compilerOptions: {},
       // TODO pending `@immich/ui` to enable it
@@ -117,6 +112,7 @@ export default defineConfig({
         'chromecast-caf-sender': './node_modules/@types/chromecast-caf-sender/index.d.ts',
       },
     }),
+    cspManifest(),
 
     process.env.BUILD_STATS === 'true'
       ? visualizer({
