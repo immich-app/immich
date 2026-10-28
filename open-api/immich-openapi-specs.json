@@ -6333,7 +6333,7 @@
             "state": "Added"
           }
         ],
-        "x-immich-permission": "clusterGroup.read"
+        "x-immich-permission": "clusterGroup.admin"
       }
     },
     "/cluster-groups/{id}/requests": {
@@ -25782,6 +25782,7 @@
           "backup.delete",
           "clusterGroup.read",
           "clusterGroup.leave",
+          "clusterGroup.admin",
           "clusterGroupRequest.create",
           "clusterGroupRequest.read",
           "clusterGroupRequest.delete",
