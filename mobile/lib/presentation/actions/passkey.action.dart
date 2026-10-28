@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
@@ -21,6 +22,9 @@ class PasskeyCreateAction extends ActionBuilder {
     try {
       if (await passkeyService.register()) {
         toastService.success(message);
+        if (context.mounted) {
+          ref.invalidate(Store.passkeys.all());
+        }
       }
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to create a passkey");

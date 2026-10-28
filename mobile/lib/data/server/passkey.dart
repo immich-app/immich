@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/api_repository.dart';
+import 'package:immich_mobile/domain/models/passkey.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:openapi/api.dart';
 
@@ -33,4 +34,12 @@ class PasskeyApiRepository extends ApiRepository {
     final dto = PasskeyAuthenticationFinishDto(response: jsonDecode(response));
     return checkNull(_api.finishAuthentication(dto));
   }
+
+  Future<List<Passkey>> getAll() async {
+    final response = await checkNull(_api.searchPasskeys());
+    return response.map(_toPasskey).toList();
+  }
+
+  static Passkey _toPasskey(PasskeyResponseDto dto) =>
+      .new(id: dto.id, createdAt: dto.createdAt, name: dto.name, usedAt: dto.usedAt);
 }
