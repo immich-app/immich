@@ -411,8 +411,8 @@ importers:
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
       '@futo-org/backups-orchestrator-api':
-        specifier: 1.10.0
-        version: 1.10.0(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(@nestjs/platform-socket.io@12.1.0)(@nestjs/schedule@12.0.2(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0))(@nestjs/swagger@12.0.2(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.1.0)(reflect-metadata@0.2.2)(supports-color@8.1.1)
+        specifier: 1.11.1
+        version: 1.11.1(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(@nestjs/platform-socket.io@12.1.0)(@nestjs/schedule@12.0.2(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0))(@nestjs/swagger@12.0.2(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.1.0)(reflect-metadata@0.2.2)(supports-color@8.1.1)
       '@immich/plugin-sdk':
         specifier: workspace:*
         version: link:../packages/plugin-sdk
@@ -2941,11 +2941,14 @@ packages:
   '@futo-org/backups-api-client@1.10.0':
     resolution: {integrity: sha512-ZQ+OOalrIddqXuICjGEVRmPlxMGIJA3jpy/2LxTUVTVsVVWpEAXkRBOl4F17wq5YE4hytH1JcHJI7Cuiq03e0A==}
 
+  '@futo-org/backups-api-client@1.11.1':
+    resolution: {integrity: sha512-8dLvzyYgASjp2NvpprNe1oaRDF1fnrgHDPgRUfQmyAP5ba2/bOO/+VYZ/OIryF61zB2D20UAPgXXIBumptKsAg==}
+
   '@futo-org/backups-api-client@1.5.0':
     resolution: {integrity: sha512-Fz1XluoXxMoJTdIhNjuT4yq+47tnTn5eCrukIN77nzCjpbYxkxq02Q5qKKL/WXIkEAzhlEkEjiAhehQENXfAVw==}
 
-  '@futo-org/backups-orchestrator-api@1.10.0':
-    resolution: {integrity: sha512-L+7jsNjjJg6o+5Q7gkVHt1uqU4Frf15lKaxEKYapEvlNiXXEUXN3Do+5BRInsir/7y9cpMvx/UP1zaByshZKXA==}
+  '@futo-org/backups-orchestrator-api@1.11.1':
+    resolution: {integrity: sha512-4w5a+4XcK2xZdHHxfqZDaEH1KmgQ4TRi+Qnipz/nRIH204TqtYXjirA+zIbAEGs8JAjRXRsD0NagX1YAslE3AA==}
     peerDependencies:
       '@nestjs/common': ^12.0.0
       '@nestjs/core': ^12.0.0
@@ -2970,8 +2973,8 @@ packages:
       svelte: ^5.0.0
       svelte-i18n-lingui: ^0.2.2
 
-  '@futo-org/restic-wrapper@1.6.0':
-    resolution: {integrity: sha512-00c8mW7ohhUQY+1MK9pyZQWMqx+5VAm5syDIRHLMQM/ziq/K/VxM0mVJ8YoX+EJHh15Jc2UzD8R5TPqWv3xDvg==}
+  '@futo-org/restic-wrapper@1.7.0':
+    resolution: {integrity: sha512-z27pVTOZA7h755RcZi7MCcCNh6o9lqmk55lRsAxV2gVWBQWfuPpdWVrpRI5Or3IgbYR4B82t7ICHBgtgcWvYrg==}
     engines: {node: '>=20'}
 
   '@golevelup/nestjs-discovery@7.0.3':
@@ -16449,14 +16452,18 @@ snapshots:
     dependencies:
       '@oazapfts/runtime': 1.2.0
 
+  '@futo-org/backups-api-client@1.11.1':
+    dependencies:
+      '@oazapfts/runtime': 1.2.0
+
   '@futo-org/backups-api-client@1.5.0':
     dependencies:
       '@oazapfts/runtime': 1.2.0
 
-  '@futo-org/backups-orchestrator-api@1.10.0(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(@nestjs/platform-socket.io@12.1.0)(@nestjs/schedule@12.0.2(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0))(@nestjs/swagger@12.0.2(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.1.0)(reflect-metadata@0.2.2)(supports-color@8.1.1)':
+  '@futo-org/backups-orchestrator-api@1.11.1(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(@nestjs/platform-socket.io@12.1.0)(@nestjs/schedule@12.0.2(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0))(@nestjs/swagger@12.0.2(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.1.0)(reflect-metadata@0.2.2)(supports-color@8.1.1)':
     dependencies:
-      '@futo-org/backups-api-client': 1.10.0
-      '@futo-org/restic-wrapper': 1.6.0
+      '@futo-org/backups-api-client': 1.11.1
+      '@futo-org/restic-wrapper': 1.7.0
       '@nestjs/common': 12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
       '@nestjs/core': 12.1.0(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@12.1.0)(@nestjs/websockets@12.1.0)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/event-emitter': 12.0.1(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.0)
@@ -16526,7 +16533,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@futo-org/restic-wrapper@1.6.0':
+  '@futo-org/restic-wrapper@1.7.0':
     dependencies:
       zod: 4.4.3
 

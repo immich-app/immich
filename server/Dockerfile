@@ -77,8 +77,7 @@ ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml
 ENV MISE_DATA_DIR=/buildcache/mise
 ENV MISE_DISABLE_TOOLS=flutter
 RUN --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
-  mise install --locked && \
-  cp "$(mise which restic)" /usr/local/bin/restic
+  mise install --locked
 COPY ./packages/plugin-core ./packages/plugin-core/
 
 # Build plugins
@@ -120,7 +119,7 @@ ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
 
 COPY --from=ghcr.io/immich-app/futo-backups-restic-proxy:commit-6297cf30a3caf4101e1ca74247bb822ab1f56ee0 /usr/local/bin/restic-proxy /usr/local/bin/restic-proxy
-COPY --from=plugins /usr/local/bin/restic /usr/local/bin/restic
+COPY --from=ghcr.io/futo-org/restic:sha-a24cc22@sha256:7b5cdba9cc8690ecc528e239e6f8b2cfb9ef3644895cafd0e0fa9003bcded1f6 /usr/bin/restic /usr/local/bin/restic
 
 VOLUME /data
 EXPOSE 2283
