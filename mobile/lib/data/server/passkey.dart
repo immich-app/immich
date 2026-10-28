@@ -24,8 +24,9 @@ class PasskeyApiRepository extends ApiRepository {
 
   Future<String> startRegistration() async => jsonEncode(await checkNull(_api.startRegistration()));
 
-  Future<void> finishRegistration(String response) async {
-    await _api.finishRegistration(PasskeyRegistrationFinishDto(response: jsonDecode(response)));
+  Future<Passkey> finishRegistration(String response) async {
+    final dto = PasskeyRegistrationFinishDto(response: jsonDecode(response));
+    return _toPasskey(await checkNull(_api.finishRegistration(dto)));
   }
 
   Future<String> startAuthentication() async => jsonEncode(await checkNull(_api.startAuthentication()));
@@ -38,6 +39,10 @@ class PasskeyApiRepository extends ApiRepository {
   Future<List<Passkey>> getAll() async {
     final response = await checkNull(_api.searchPasskeys());
     return response.map(_toPasskey).toList();
+  }
+
+  Future<void> update(String id, String? name) async {
+    await _api.updatePasskey(id, PasskeyUpdateDto(name: name));
   }
 
   static Passkey _toPasskey(PasskeyResponseDto dto) =>

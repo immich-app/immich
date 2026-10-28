@@ -29,4 +29,14 @@ final _allProvider = FutureProvider.autoDispose<List<Passkey>>((ref) async {
 
 class PasskeyMutations extends StoreMutations {
   const PasskeyMutations._(super.ref);
+
+  /// Rename the passkey [id], or clear its name with `null`
+  Future<void> rename(String id, String? name) async {
+    try {
+      await read(passkeyApiRepositoryProvider).update(id, name);
+    } catch (error, stack) {
+      _log.severe("Failed to rename passkey $id", error, stack);
+      rethrow;
+    }
+  }
 }

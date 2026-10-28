@@ -47,6 +47,7 @@ class _PasskeyTile extends StatelessWidget {
     return ListTile(
       title: Text(passkey.name ?? context.t.passkeys(count: 1)),
       subtitle: Text('${context.t.created} $created • ${context.t.last_used} $lastUsed'),
+      trailing: ActionIconButton(action: PasskeyRenameAction(passkey: passkey)),
     );
   }
 }

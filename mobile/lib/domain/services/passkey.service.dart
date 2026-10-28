@@ -1,4 +1,5 @@
 import 'package:immich_mobile/data/server/passkey.dart';
+import 'package:immich_mobile/domain/models/passkey.model.dart';
 import 'package:immich_mobile/platform/passkey_api.g.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -20,14 +21,13 @@ class PasskeyService {
     }
   }
 
-  Future<bool> register() async {
+  Future<Passkey?> register() async {
     final response = await _hostApi.register(await _apiRepository.startRegistration());
     if (response == null) {
-      return false;
+      return null;
     }
 
-    await _apiRepository.finishRegistration(response);
-    return true;
+    return _apiRepository.finishRegistration(response);
   }
 
   Future<LoginResponseDto?> login() async {

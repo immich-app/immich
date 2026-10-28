@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/server/passkey.dart';
+import 'package:immich_mobile/domain/models/passkey.model.dart';
 import 'package:immich_mobile/domain/services/passkey.service.dart';
 import 'package:immich_mobile/platform/passkey_api.g.dart';
 import 'package:mocktail/mocktail.dart';
@@ -44,22 +45,24 @@ void main() {
   });
 
   group('register', () {
+    final passkey = Passkey(id: 'passkey-id', createdAt: DateTime.utc(2026));
+
     setUp(() {
       when(() => apiRepository.startRegistration()).thenAnswer((_) async => '{"challenge":"abc"}');
-      when(() => apiRepository.finishRegistration(any())).thenAnswer((_) async {});
+      when(() => apiRepository.finishRegistration(any())).thenAnswer((_) async => passkey);
     });
 
     test('sends the server options to the platform and the credential back to the server', () async {
       when(() => hostApi.register('{"challenge":"abc"}')).thenAnswer((_) async => '{"id":"credential"}');
 
-      expect(await sut.register(), isTrue);
+      expect(await sut.register(), passkey);
       verify(() => apiRepository.finishRegistration('{"id":"credential"}')).called(1);
     });
 
     test('does not finish when the user cancels', () async {
       when(() => hostApi.register(any())).thenAnswer((_) async => null);
 
-      expect(await sut.register(), isFalse);
+      expect(await sut.register(), isNull);
       verifyNever(() => apiRepository.finishRegistration(any()));
     });
   });
