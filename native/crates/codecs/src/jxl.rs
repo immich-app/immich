@@ -70,7 +70,7 @@ impl JxlParallelRunner for Cancellable<'_> {
 }
 
 impl<'a> Jxl<'a> {
-    pub fn open(mut input: &'a [u8], target: Target) -> Option<Self> {
+    pub fn open(mut input: &'a [u8], color_space: Target) -> Option<Self> {
         let mut options = JxlDecoderOptions::default();
         // Colour transforms need straight alpha; premultiplying happens last.
         options.alpha_mode = AlphaMode::Unpremultiplied;
@@ -85,7 +85,7 @@ impl<'a> Jxl<'a> {
             .ok()?;
         let profile = decoder.output_color_profile()?;
         if let Some(cicp) = cicp(profile)
-            && (target == Target::Source || color::is_srgb(cicp))
+            && (color_space == Target::Source || color::is_srgb(cicp))
         {
             if color::is_hdr(cicp) {
                 decoder
@@ -121,11 +121,11 @@ impl<'a> Jxl<'a> {
         })
     }
 
-    /// Decodes the first frame unless cancelled, downscaled to cover `target` pixels and to fit
-    /// within `max_pixel_size`.
+    /// Decodes the first frame unless cancelled, downscaled to cover `target_size` pixels and to
+    /// fit within `max_pixel_size`.
     pub fn decode(
         mut self,
-        target: Option<(usize, usize)>,
+        target_size: Option<(usize, usize)>,
         max_pixel_size: usize,
         cancelled: &AtomicBool,
     ) -> Option<Image> {
@@ -139,7 +139,7 @@ impl<'a> Jxl<'a> {
         let pixel_bytes =
             format.color_type.samples_per_pixel() * format.color_data_format?.bytes_per_sample();
         let stride = w.checked_mul(pixel_bytes)?;
-        let size = resize::cover((w, h), target, max_pixel_size);
+        let size = resize::cover((w, h), target_size, max_pixel_size);
         let samples = if color::is_hdr(self.cicp) {
             let mut rgba = Pixels::zeroed(w, h, pixel_bytes)?;
             self.decode_frame(&mut rgba, stride, cancelled)?;
