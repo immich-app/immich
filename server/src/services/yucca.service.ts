@@ -24,13 +24,7 @@ export class YuccaService {
     private readonly systemConfigService: SystemConfigService,
     @Optional() private readonly maintenanceService: MaintenanceService,
     @Optional() private readonly yuccaService: YuccaOrchestratorService,
-  ) {
-    this.createDatabaseBackup = this.createDatabaseBackup.bind(this);
-    this.cleanupDatabaseBackups = this.cleanupDatabaseBackups.bind(this);
-    this.getImmichDatabaseDumpConfig = this.getImmichDatabaseDumpConfig.bind(this);
-    this.configureImmichDatabaseDump = this.configureImmichDatabaseDump.bind(this);
-    this.enterMaintenanceRollback = this.enterMaintenanceRollback.bind(this);
-  }
+  ) {}
 
   private updateSystemConfig({ server }: SystemConfig) {
     this.yuccaService.setExternalBaseUrl(getExternalDomain(server));
@@ -46,21 +40,13 @@ export class YuccaService {
         .filter((library) => !library.deletedAt)
         .map(({ id, name, importPaths, exclusionPatterns }) => ({ id, name, importPaths, exclusionPatterns })),
       hooks: {
-        createDatabaseBackup: this.createDatabaseBackup,
-        cleanupDatabaseBackups: this.cleanupDatabaseBackups,
-        getImmichDatabaseDumpConfig: this.getImmichDatabaseDumpConfig,
-        configureImmichDatabaseDump: this.configureImmichDatabaseDump,
-        enterMaintenanceRollback: this.enterMaintenanceRollback,
+        createDatabaseBackup: (signal) => this.databaseBackupService.createDatabaseBackup('', signal),
+        cleanupDatabaseBackups: () => this.databaseBackupService.cleanupDatabaseBackups(),
+        getImmichDatabaseDumpConfig: () => this.getImmichDatabaseDumpConfig(),
+        configureImmichDatabaseDump: (databaseDump) => this.configureImmichDatabaseDump(databaseDump),
+        enterMaintenanceRollback: (repositoryId, snapshotId) => this.enterMaintenanceRollback(repositoryId, snapshotId),
       },
     });
-  }
-
-  private createDatabaseBackup(signal?: AbortSignal) {
-    return this.databaseBackupService.createDatabaseBackup('', signal);
-  }
-
-  private cleanupDatabaseBackups() {
-    return this.databaseBackupService.cleanupDatabaseBackups();
   }
 
   private async getImmichDatabaseDumpConfig(): Promise<ImmichDatabaseDumpConfig> {
