@@ -5,8 +5,49 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import dotenv from 'dotenv';
+import { defaultTreeAdapter, parse, type DefaultTreeAdapterMap } from 'parse5';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { defineConfig, type ProxyOptions, type UserConfig } from 'vite';
+import { defineConfig, type Plugin, type ProxyOptions, type UserConfig } from 'vite';
+import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+
+const buildDir = 'build';
+const inlineTags = ['script', 'style'];
+
+const cspManifest = (): Plugin => ({
+  name: 'immich:csp-manifest',
+  apply: 'build',
+  buildApp: {
+    order: 'post',
+    async handler() {
+      const indexHtml = path.join(buildDir, 'index.html');
+      const hashes: Record<string, string[]> = Object.fromEntries(inlineTags.map((tag) => [`${tag}-src`, []]));
+
+      const walk = (node: DefaultTreeAdapterMap['node']) => {
+        if (
+          defaultTreeAdapter.isElementNode(node) &&
+          inlineTags.includes(node.tagName) &&
+          !node.attrs.some(({ name }) => name === 'src')
+        ) {
+          const [child] = node.childNodes;
+          const content = child && defaultTreeAdapter.isTextNode(child) ? child.value : '';
+          hashes[`${node.tagName}-src`].push(`'sha256-${createHash('sha256').update(content).digest('base64')}'`);
+        }
+
+        if ('childNodes' in node) {
+          for (const child of node.childNodes) {
+            walk(child);
+          }
+        }
+      };
+
+      walk(parse(readFileSync(indexHtml, 'utf8')));
+
+      writeFileSync(path.join(buildDir, '.csp.json'), JSON.stringify(hashes, undefined, 2) + '\n');
+    },
+  },
+});
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
@@ -71,6 +112,7 @@ export default defineConfig({
         'chromecast-caf-sender': './node_modules/@types/chromecast-caf-sender/index.d.ts',
       },
     }),
+    cspManifest(),
 
     process.env.BUILD_STATS === 'true'
       ? visualizer({

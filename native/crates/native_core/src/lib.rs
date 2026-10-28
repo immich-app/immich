@@ -1,9 +1,10 @@
-pub mod color;
+#[cfg(feature = "codecs")]
+pub use codecs;
+#[cfg(feature = "convert")]
 pub mod convert;
-pub mod image;
-pub mod jxl;
-mod resize;
+#[cfg(feature = "rotate")]
 pub mod rotate;
+#[cfg(feature = "thumbhash")]
 pub mod thumbhash;
 
 pub fn version() -> &'static str {

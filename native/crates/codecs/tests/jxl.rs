@@ -1,11 +1,19 @@
+#![cfg(feature = "jxl")]
+
 use std::sync::atomic::AtomicBool;
 
-use native_core::color::{CicpColorPrimaries, CicpProfile, Target, TransferCharacteristics};
-use native_core::image::{Image, Pixels, Samples};
-use native_core::jxl::Jxl;
+use codecs::Options;
+use codecs::color::{CicpColorPrimaries, CicpProfile, Target, TransferCharacteristics};
+use codecs::image::{Image, Pixels, Samples};
+use codecs::jxl::Jxl;
 
-fn decode(data: &[u8], target: Target) -> Option<Image> {
-    Jxl::open(data, target)?.decode(None, 16384, &AtomicBool::new(false))
+fn decode(data: &[u8], color_space: Target) -> Option<Image> {
+    let options = Options {
+        color_space,
+        target_size: None,
+        max_pixel_size: 16384,
+    };
+    codecs::decode(data, &options, &AtomicBool::new(false))
 }
 
 fn decode_srgb(data: &[u8]) -> Option<Pixels<u8>> {

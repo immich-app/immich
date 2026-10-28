@@ -17,14 +17,14 @@
   import { showDeleteModal } from '#lib/stores/preferences.store.ts';
   import { handlePromiseError } from '#lib/utils.ts';
   import { deleteAssets } from '#lib/utils/actions.ts';
-  import { archiveAssets, getNextAsset, getPreviousAsset, navigateToAsset } from '#lib/utils/asset-utils.ts';
+  import { getNextAsset, getPreviousAsset, navigateToAsset } from '#lib/utils/asset-utils.ts';
   import { moveFocus } from '#lib/utils/focus-util.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { getJustifiedLayoutFromAssets } from '#lib/utils/layout-utils.ts';
   import { navigate } from '#lib/utils/navigation.ts';
   import { isTimelineAsset, toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { TUNABLES } from '#lib/utils/tunables.ts';
-  import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -204,17 +204,6 @@
     assetInteraction.clear();
   };
 
-  const toggleArchive = async () => {
-    const ids = await archiveAssets(
-      assetInteraction.assets,
-      assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
-    );
-    if (ids) {
-      assets = assets.filter((asset) => !ids.includes(asset.id));
-      assetInteraction.clear();
-    }
-  };
-
   const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
   const focusPreviousAsset = () =>
     moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
@@ -258,7 +247,6 @@
           shortcuts.push(
             { shortcut: { key: 'Delete' }, onShortcut: onDelete },
             { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
-            { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
           );
         }
       }
