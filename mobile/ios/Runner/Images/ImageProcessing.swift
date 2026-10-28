@@ -9,4 +9,6 @@ enum ImageProcessing {
     return q
   }()
   static let cancelledResult = Result<[String: Int64]?, any Error>.success(nil)
+  // Impeller shrinks each side to the GPU texture limit on its own, which squishes long images.
+  static let maxPixelSize = 16384
 }

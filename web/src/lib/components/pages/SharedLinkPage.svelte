@@ -1,13 +1,13 @@
 <script lang="ts">
-  import AlbumViewer from '$lib/components/album-page/AlbumViewer.svelte';
-  import IndividualSharedViewer from '$lib/components/share-page/IndividualSharedViewer.svelte';
-  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
-  import ThemeButton from '$lib/components/shared-components/ThemeButton.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { setSharedLink } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { navigate } from '$lib/utils/navigation';
+  import AlbumViewer from '#lib/components/album-page/AlbumViewer.svelte';
+  import IndividualSharedViewer from '#lib/components/share-page/IndividualSharedViewer.svelte';
+  import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
+  import ThemeButton from '#lib/components/shared-components/ThemeButton.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { setSharedLink } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
   import { sharedLinkLogin, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { Button, Logo, PasswordInput } from '@immich/ui';
   import { onDestroy, tick } from 'svelte';
@@ -47,7 +47,7 @@
       await tick();
       await navigate(
         { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetViewerManager.gridScrollTarget },
-        { forceNavigate: true, replaceState: true },
+        { forceNavigate: true, replace: true },
       );
     } catch (error) {
       handleError(error, $t('errors.unable_to_get_shared_link'));

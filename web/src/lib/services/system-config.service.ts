@@ -1,10 +1,10 @@
+import { executeMutation } from '#lib/queries/client.ts';
+import { updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
+import { copyToClipboard, downloadJson } from '#lib/utils.ts';
 import type { AdminConfigDto, ServerFeaturesDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { executeMutation } from '$lib/queries/client';
-import { updateConfigMutation } from '$lib/queries/system-config.query';
-import { copyToClipboard, downloadJson } from '$lib/utils';
 
 export const getSystemConfigActions = (
   $t: MessageFormatter,
@@ -55,7 +55,7 @@ const handleUploadConfig = () => {
     }
     const reader = async () => {
       const text = await file.text();
-      await executeMutation(updateConfigMutation, JSON.parse(text));
+      await executeMutation(updateAdminConfigMutation, JSON.parse(text));
     };
     reader()
       .catch((error) => console.error('Error handling JSON config upload', error))

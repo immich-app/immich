@@ -1,30 +1,30 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
-  import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import type { AssetCursor } from '$lib/components/asset-viewer/AssetViewer.svelte';
-  import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
-  import { AssetAction } from '$lib/constants';
-  import Portal from '$lib/elements/Portal.svelte';
-  import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
-  import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
-  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
-  import { Route } from '$lib/route';
-  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, getNextAsset, getPreviousAsset, navigateToAsset } from '$lib/utils/asset-utils';
-  import { moveFocus } from '$lib/utils/focus-util';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
-  import { navigate } from '$lib/utils/navigation';
-  import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { TUNABLES } from '$lib/utils/tunables';
-  import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
+  import { shortcuts, type ShortcutOptions } from '#lib/actions/shortcut.ts';
+  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
+  import type { AssetCursor } from '#lib/components/asset-viewer/AssetViewer.svelte';
+  import Thumbnail from '#lib/components/assets/thumbnail/Thumbnail.svelte';
+  import { AssetAction } from '#lib/constants.ts';
+  import Portal from '#lib/elements/Portal.svelte';
+  import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import AssetDeleteConfirmModal from '#lib/modals/AssetDeleteConfirmModal.svelte';
+  import ShortcutsModal from '#lib/modals/ShortcutsModal.svelte';
+  import { Route } from '#lib/route.ts';
+  import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
+  import { showDeleteModal } from '#lib/stores/preferences.store.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { deleteAssets } from '#lib/utils/actions.ts';
+  import { getNextAsset, getPreviousAsset, navigateToAsset } from '#lib/utils/asset-utils.ts';
+  import { moveFocus } from '#lib/utils/focus-util.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { getJustifiedLayoutFromAssets } from '#lib/utils/layout-utils.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
+  import { isTimelineAsset, toTimelineAsset } from '#lib/utils/timeline-util.ts';
+  import { TUNABLES } from '#lib/utils/tunables.ts';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -204,17 +204,6 @@
     assetInteraction.clear();
   };
 
-  const toggleArchive = async () => {
-    const ids = await archiveAssets(
-      assetInteraction.assets,
-      assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
-    );
-    if (ids) {
-      assets = assets.filter((asset) => !ids.includes(asset.id));
-      assetInteraction.clear();
-    }
-  };
-
   const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
   const focusPreviousAsset = () =>
     moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
@@ -258,7 +247,6 @@
           shortcuts.push(
             { shortcut: { key: 'Delete' }, onShortcut: onDelete },
             { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
-            { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
           );
         }
       }
@@ -346,8 +334,8 @@
   >
     {#each assets as asset, index (asset.id + '-' + index)}
       {#if isInOrNearViewport(index)}
-        {@const currentAsset = toTimelineAsset(asset)}
         <div class="absolute" style:overflow="clip" style={getStyle(index)}>
+          {const currentAsset = toTimelineAsset(asset)}
           <Thumbnail
             onClick={() => {
               if (assetInteraction.selectionActive) {
@@ -382,7 +370,7 @@
 <!-- Overlay Asset Viewer -->
 {#if assetViewerManager.isViewing}
   <Portal target="body">
-    {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+    {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
       <AssetViewer
         cursor={assetCursor}
         onAction={handleAction}

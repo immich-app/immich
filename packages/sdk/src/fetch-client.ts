@@ -1616,6 +1616,8 @@ export type UserConfigNotificationsDto = {
     smtp: UserConfigSmtpDto;
 };
 export type UserConfigOAuthDto = {
+    /** Account management URL */
+    accountManagementUrl?: string;
     /** Auto launch */
     autoLaunch: boolean;
     /** Button text */
@@ -8212,6 +8214,7 @@ export enum Colorspace {
 }
 export enum ImageFormat {
     Jpeg = "jpeg",
+    Jxl = "jxl",
     Webp = "webp"
 }
 export enum LogLevel {
@@ -8348,6 +8351,7 @@ export enum Permission {
     BackupDelete = "backup.delete",
     ClusterGroupRead = "clusterGroup.read",
     ClusterGroupLeave = "clusterGroup.leave",
+    ClusterGroupAdmin = "clusterGroup.admin",
     ClusterGroupRequestCreate = "clusterGroupRequest.create",
     ClusterGroupRequestRead = "clusterGroupRequest.read",
     ClusterGroupRequestDelete = "clusterGroupRequest.delete",
@@ -8820,7 +8824,8 @@ export enum ReleaseType {
     Prerelease = "prerelease"
 }
 export enum ServerFeatureLevel {
-    FeatureLevel = 1
+    FeatureLevel = 1,
+    Passkeys = 2
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

@@ -35,10 +35,10 @@ const raw = {
 };
 
 /**
- * list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
- * @TODO share with the client
- * @see {@link web/src/lib/utils/asset-utils.ts#L329}
- **/
+list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
+@TODO share with the client
+@see {@link web/src/lib/utils/asset-utils.ts#L329}
+*/
 const webSupportedImage = {
   '.avif': ['image/avif'],
   '.bmp': ['image/bmp'],

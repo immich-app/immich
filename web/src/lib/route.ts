@@ -1,6 +1,6 @@
+import { OpenQueryParam, type SharedLinkTab } from '#lib/constants.ts';
 import { getBaseUrl, IntegrityReport, QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
-import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
 
 const asQueueSlug = (name: QueueName) => {
   return name.replaceAll(/[A-Z]/g, (m) => '-' + m.toLowerCase());
@@ -14,11 +14,7 @@ export const fromQueueSlug = (slug: string): QueueName | undefined => {
 };
 
 type QueryValue = number | string | boolean;
-const asQueryString = (
-  params?: Record<string, QueryValue | undefined>,
-  options?: { skipEmptyStrings?: boolean; skipNullValues?: boolean },
-) => {
-  const { skipEmptyStrings = true, skipNullValues = true } = options ?? {};
+const asQueryString = (params?: Record<string, QueryValue | undefined>) => {
   const items = Object.entries(params ?? {})
     .filter((item): item is [string, QueryValue] => {
       const value = item[1];
@@ -27,11 +23,11 @@ const asQueryString = (
         return false;
       }
 
-      if (skipNullValues && value === null) {
+      if (value === null) {
         return false;
       }
 
-      return !(skipEmptyStrings && value === '');
+      return value !== '';
     })
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
 

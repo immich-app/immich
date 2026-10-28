@@ -1,10 +1,10 @@
+import { renderWithTooltips } from '#tests/helpers';
 import type { AssetResponseDto } from '@immich/sdk';
 import '@testing-library/jest-dom';
-import { renderWithTooltips } from '$tests/helpers';
-import { assetFactory } from '@test-data/factories/asset-factory';
+import { assetFactory } from '#test-data/factories/asset-factory';
 import DeleteAction from './DeleteAction.svelte';
 
-vi.mock(import('$lib/managers/feature-flags-manager.svelte'), () => {
+vi.mock(import('#lib/managers/feature-flags-manager.svelte.js'), () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return { featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: { trash: true } } as any };
 });

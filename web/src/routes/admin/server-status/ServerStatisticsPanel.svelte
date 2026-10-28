@@ -1,10 +1,10 @@
 <script lang="ts">
-  import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getServerStatisticsQuery } from '$lib/queries/server.query';
-  import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getBytesWithUnit } from '$lib/utils/byte-units';
+  import ServerStatisticsCard from '#lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getServerStatisticsQuery } from '#lib/queries/server-info.query.ts';
+  import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import {
     Code,
     FormatBytes,
@@ -21,11 +21,13 @@
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  const usersQuery = createPreloadedQuery(searchUsersAdminQuery);
-  const users = $derived(usersQuery.data);
+  const queries = {
+    users: createPreloadedQuery(searchUsersAdminQuery),
+    statistics: createQuery(() => ({ ...getServerStatisticsQuery(), refetchInterval: 5000 })),
+  };
 
-  const query = createQuery(() => ({ ...getServerStatisticsQuery(), refetchInterval: 5000 }));
-  const stats = $derived(query.data);
+  const users = $derived(queries.users.data);
+  const stats = $derived(queries.statistics.data);
 
   const getStorageUsageWithUnit = (usage: number) => {
     const TiB = 1024 ** 4;
@@ -34,6 +36,7 @@
 
   const [storage, storageUnit] = $derived(stats ? getStorageUsageWithUnit(stats.usage) : [undefined, undefined]);
 
+  // eslint-disable-next-line unicorn/no-unnecessary-parameters
   const zeros = (value: number, maxLength = 13) => {
     const valueLength = value.toString().length;
     const zeroLength = maxLength - valueLength;
@@ -98,7 +101,7 @@
 
           <div class="relative flex text-center font-mono text-2xl font-medium">
             {#if stats}
-              {@const storageUsageWithUnit = getStorageUsageWithUnit(stats.usage)}
+              {const storageUsageWithUnit = $derived(getStorageUsageWithUnit(stats.usage))}
               <span class="text-light-300">{zeros(storageUsageWithUnit[0])}</span><span class="text-primary"
                 >{storageUsageWithUnit[0]}</span
               >
@@ -128,7 +131,7 @@
         {#each users as user (user.id)}
           <TableRow>
             <TableCell class="w-1/4">{user.name}</TableCell>
-            {@const userStats = getUserStats(user.id)}
+            {const userStats = $derived(getUserStats(user.id))}
             {#if userStats}
               <TableCell class="w-1/4">
                 {userStats.photos.toLocaleString($locale)} (<FormatBytes bytes={userStats.usagePhotos} />)</TableCell

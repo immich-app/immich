@@ -1,4 +1,4 @@
-import { getCameraName } from '$lib/utils/camera-utils';
+import { getCameraName } from '#lib/utils/camera-utils.ts';
 
 describe('getCameraName', () => {
   it('should not repeat the make when the model already starts with it', () => {
