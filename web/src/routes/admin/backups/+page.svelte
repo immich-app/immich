@@ -4,28 +4,29 @@
   import HideBackupsReminder from '$lib/components/backups/HideBackupsReminder.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { Route } from '$lib/route';
+  import type { ComponentProps } from 'svelte';
 
-  const questions = [
-    {
-      title: 'Where can I store my backups?',
-      answer: 'TODO',
-    },
-    {
-      title: 'Does my Immich product key include FUTO Backups?',
-      answer: 'TODO',
-    },
-    {
-      title: 'Do I need FUTO Backups to use Immich?',
-      answer: 'TODO',
-    },
-    {
-      title: 'How is FUTO Cloud priced?',
-      answer: 'TODO',
-    },
-    {
-      title: 'What does FUTO Backups protect?',
-      answer: 'TODO',
-    },
+  const questions: ComponentProps<typeof ImmichBackupsPage>['questions'] = [
+    // {
+    //   title: 'Where can I store my backups?',
+    //   answer: 'TODO',
+    // },
+    // {
+    //   title: 'Does my Immich product key include FUTO Backups?',
+    //   answer: 'TODO',
+    // },
+    // {
+    //   title: 'Do I need FUTO Backups to use Immich?',
+    //   answer: 'TODO',
+    // },
+    // {
+    //   title: 'How is FUTO Cloud priced?',
+    //   answer: 'TODO',
+    // },
+    // {
+    //   title: 'What does FUTO Backups protect?',
+    //   answer: 'TODO',
+    // },
   ];
 </script>
 
