@@ -12,7 +12,7 @@ const matchValueResult = (value: string | null | undefined, config: MatchValueCo
   const { pattern = '', matchType = 'contains', caseSensitive = false } = config;
 
   if (value == null) {
-    return { workflow: { continue: matchType == 'missing' } };
+    return { workflow: { continue: matchType === 'missing' } };
   }
 
   const searchName = caseSensitive ? value : value.toLowerCase();
