@@ -1,12 +1,12 @@
-import { queryClient } from '$lib/queries/client';
-import { getConfigDefaultsQuery, getConfigQuery } from '$lib/queries/system-config.query';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
+import { queryClient } from '#lib/queries/client.ts';
+import { getAdminConfigDefaultsQuery } from '#lib/queries/config-admin.query.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
-  await Promise.all([queryClient.query(getConfigQuery()), queryClient.query(getConfigDefaultsQuery())]);
+  await queryClient.query(getAdminConfigDefaultsQuery());
   const $t = await getFormatter();
 
   return {

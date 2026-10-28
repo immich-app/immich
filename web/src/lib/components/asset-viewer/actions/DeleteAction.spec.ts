@@ -1,10 +1,10 @@
+import { renderWithTooltips } from '#tests/helpers';
 import type { AssetResponseDto } from '@immich/sdk';
 import '@testing-library/jest-dom';
-import { renderWithTooltips } from '$tests/helpers';
-import { assetFactory } from '@test-data/factories/asset-factory';
+import { assetFactory } from '#test-data/factories/asset-factory';
 import DeleteAction from './DeleteAction.svelte';
 
-vi.mock(import('$lib/managers/feature-flags-manager.svelte'), () => {
+vi.mock(import('#lib/managers/feature-flags-manager.svelte.js'), () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return { featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: { trash: true } } as any };
 });
@@ -23,6 +23,7 @@ describe('DeleteAction component', () => {
         onAction: vi.fn(),
         preAction: vi.fn(),
       });
+      // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
       expect(getByLabelText('delete')).toBeInTheDocument();
       expect(queryByTitle('deletePermanently')).toBeNull();
     });
@@ -39,6 +40,7 @@ describe('DeleteAction component', () => {
         onAction: vi.fn(),
         preAction: vi.fn(),
       });
+      // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
       expect(getByLabelText('permanently_delete')).toBeInTheDocument();
       expect(queryByTitle('delete')).toBeNull();
     });

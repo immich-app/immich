@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { initInput } from '$lib/actions/focus';
-  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { searchNameLocal } from '$lib/utils/person';
+  import { initInput } from '#lib/actions/focus.ts';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { searchNameLocal } from '#lib/utils/person.ts';
   import { searchPerson, type PersonResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
@@ -47,7 +47,7 @@
 
   let {
     searchName = $bindable(),
-    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line no-useless-assignment
     searchedPeopleLocal = $bindable(),
     type,
     numberPeopleToSearch = maximumLengthSearchPeople,

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, DatePicker, Field } from '@immich/ui';
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
 

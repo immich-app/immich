@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { activateProduct, getActivationKey } from '#lib/utils/license-utils.ts';
   import { Button, Heading, LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import UserPurchaseOptionCard from './IndividualPurchaseOptionCard.svelte';

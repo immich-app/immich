@@ -1,40 +1,39 @@
 <script lang="ts">
-  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
-  import { page } from '$app/stores';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { listNavigation } from '$lib/actions/list-navigation';
-  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
-  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
-  import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
-  import { Route } from '$lib/route';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { getPersonActions, handleUpdatePersonName } from '$lib/services/person.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import { listNavigation } from '#lib/actions/list-navigation.ts';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
+  import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '#lib/components/timeline/Timeline.svelte';
+  import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '#lib/constants.ts';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
+  import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { getPersonActions, handleUpdatePersonName } from '#lib/services/person.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { websocketEvents } from '#lib/stores/websocket.ts';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
+  import { afterNavigate, goto, refreshAll } from '$app/navigation';
+  import { page } from '$app/state';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
@@ -99,10 +98,10 @@
   let suggestionContainer: HTMLElement | undefined = $state();
 
   onMount(() => {
-    const action = $page.url.searchParams.get(QueryParameter.ACTION);
+    const action = page.url.searchParams.get(QueryParameter.ACTION);
+    const fallbackRoute = page.params.assetId ? Route.viewPerson(data.person) : Route.explore();
 
-    const fallbackRoute = $page.params.assetId ? Route.viewPerson(data.person) : Route.explore();
-    previousRoute = Route.continue($page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE), fallbackRoute).toString();
+    previousRoute = Route.continue(page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE), fallbackRoute).toString();
 
     if (action === 'merge') {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
@@ -126,12 +125,14 @@
   };
 
   const updateAssetCount = async () => {
-    await invalidateAll();
+    await refreshAll();
   };
 
-  afterNavigate(({ from }) => {
+  afterNavigate(({ from, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     // Prevent setting previousRoute to the current page.
-    if (from?.url && from.route.id !== $page.route.id) {
+    if (from?.url && from.route.id !== page.route.id) {
       previousRoute = from.url.href;
     }
   });
@@ -267,9 +268,10 @@
 
   const handleGoBack = async () => {
     viewMode = PersonPageViewMode.VIEW_ASSETS;
-    if ($page.url.searchParams.has(QueryParameter.ACTION)) {
-      $page.url.searchParams.delete(QueryParameter.ACTION);
-      await goto($page.url);
+    if (page.url.searchParams.has(QueryParameter.ACTION)) {
+      const url = new URL(page.url.href);
+      url.searchParams.delete(QueryParameter.ACTION);
+      await goto(url);
     }
   };
 
@@ -476,10 +478,12 @@
 <header>
   {#if assetMultiSelectManager.selectionActive}
     <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t)}
+      {const Actions = $derived(getAssetBulkActions($t))}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <ActionButton action={Actions.CreateSharedLink} />
+
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
+
       <ActionButton action={Actions.AddToAlbum} />
       <FavoriteAction
         removeFavorite={assetMultiSelectManager.isAllFavorite}
@@ -495,14 +499,8 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction
-          menuItem
-          unarchive={assetMultiSelectManager.isAllArchived}
-          onArchive={(ids, visibility) =>
-            timelineManager.update(ids, (asset) => {
-              asset.visibility = visibility;
-            })}
-        />
+        <ActionMenuItem action={Actions.Archive} />
+        <ActionMenuItem action={Actions.Unarchive} />
         <ActionMenuItem action={Actions.Tag} />
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         <DeleteAssets

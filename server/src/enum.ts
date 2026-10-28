@@ -5,6 +5,12 @@ import { asIntegerEnum } from 'src/utils/helpers.js';
 export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
+  Passkey = 'passkey',
+}
+
+export enum AuthChallengeType {
+  PasskeyRegistration = 'PasskeyRegistration',
+  PasskeyAuthentication = 'PasskeyAuthentication',
 }
 
 export enum ImmichCookie {
@@ -243,6 +249,10 @@ export enum Permission {
   PartnerRead = 'partner.read',
   PartnerUpdate = 'partner.update',
   PartnerDelete = 'partner.delete',
+
+  PasskeyRead = 'passkey.read',
+  PasskeyUpdate = 'passkey.update',
+  PasskeyDelete = 'passkey.delete',
 
   PersonCreate = 'person.create',
   PersonRead = 'person.read',
@@ -600,6 +610,7 @@ export const ColorspaceSchema = z.enum(Colorspace).describe('Colorspace').meta({
 
 export enum ImageFormat {
   Jpeg = 'jpeg',
+  Jxl = 'jxl',
   Webp = 'webp',
 }
 
@@ -869,7 +880,6 @@ export enum QueueJobStatus {
   Complete = 'completed',
   Delayed = 'delayed',
   Waiting = 'waiting',
-  Paused = 'paused',
 }
 
 export const QueueJobStatusSchema = z.enum(QueueJobStatus).describe('Queue job status').meta({ id: 'QueueJobStatus' });
@@ -892,6 +902,8 @@ export enum JobName {
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
   AuditTableCleanup = 'AuditTableCleanup',
+
+  AuthChallengeCleanup = 'AuthChallengeCleanup',
 
   DatabaseBackup = 'DatabaseBackup',
 
@@ -1019,6 +1031,8 @@ export enum DatabaseLock {
   IntegrityCheck = 67,
   VersionCheck = 800,
   HlsSessionCleanup = 850,
+  FacialRecognition = 900,
+  DuplicateDetection = 1000,
 }
 
 export enum MaintenanceAction {
@@ -1270,6 +1284,7 @@ export enum ApiTag {
   NotificationsAdmin = 'Notifications (admin)',
   ClusterGroups = 'Cluster groups',
   Partners = 'Partners',
+  Passkeys = 'Passkeys',
   People = 'People',
   Plugins = 'Plugins',
   Queues = 'Queues',

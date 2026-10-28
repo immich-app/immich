@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { executeMutation } from '$lib/queries/client';
-  import { updateLibraryMutation } from '$lib/queries/library.query';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { updateLibraryMutation } from '#lib/queries/library.query.ts';
   import type { LibraryResponseDto } from '@immich/sdk';
   import { Field, FormModal, HelperText, Input, Text } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';

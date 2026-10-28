@@ -31,6 +31,7 @@ import { AlbumService } from 'src/services/album.service.js';
 import { AssetService } from 'src/services/asset.service.js';
 import { BaseService } from 'src/services/base.service.js';
 import { TagService } from 'src/services/tag.service.js';
+import { isAllowedHost } from 'src/utils/workflow.js';
 
 const dummy = () => {
   throw new Error(
@@ -93,22 +94,18 @@ export class WorkflowExecutionService extends BaseService {
       ]
     >(async (authDto, context, args) => {
       const hostname = new URL(args[0]).hostname;
-
-      for (const pattern of context.allowedHosts) {
-        const regex = new RegExp(pattern.replaceAll('.', String.raw`\.`).replaceAll('*', '.*'));
-        if (regex.test(hostname)) {
-          // eslint-disable-next-line unicorn/no-invalid-argument-count
-          const res = await fetch(...args);
-
-          return {
-            ok: res.ok,
-            status: res.status,
-            body: await res.text(),
-          };
-        }
+      if (!isAllowedHost(hostname, context.allowedHosts)) {
+        throw new Error('Hostname did not match any listed in methods[].allowedHosts in the plugin manifest');
       }
 
-      throw new Error('Hostname did not match any listed in methods[].allowedHosts in the plugin manifest');
+      // eslint-disable-next-line unicorn/no-invalid-argument-count
+      const res = await fetch(...args);
+
+      return {
+        ok: res.ok,
+        status: res.status,
+        body: await res.text(),
+      };
     });
     const bulkTagAssets = this.wrap<[dto: TagBulkAssetsDto]>((authDto, ctx, args) =>
       tagService.bulkTagAssets(authDto, ...args),

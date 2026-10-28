@@ -90,6 +90,17 @@ export type ApiKey = {
   permissions: Permission[];
 };
 
+export type Passkey = {
+  id: string;
+  name: string | null;
+  userId: string;
+  credentialId: string;
+  transports: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  usedAt: Date | null;
+};
+
 export type Tag = {
   id: string;
   value: string;
@@ -285,6 +296,9 @@ export type AssetFace = {
   updatedAt: Date;
   updateId: string;
   isVisible: boolean;
+  ownerId: string;
+  assetVisibility: AssetVisibility;
+  assetDeletedAt: Date | null;
 };
 
 export type Plugin = Selectable<PluginTable>;
@@ -414,6 +428,7 @@ export const columns = {
   ],
   tag: ['tag.id', 'tag.value', 'tag.createdAt', 'tag.updatedAt', 'tag.color', 'tag.parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
+  passkey: ['id', 'name', 'userId', 'credentialId', 'transports', 'createdAt', 'updatedAt', 'usedAt'],
   notification: ['id', 'createdAt', 'level', 'type', 'title', 'description', 'data', 'readAt'],
   pluginMethod: [
     'plugin_method.name',

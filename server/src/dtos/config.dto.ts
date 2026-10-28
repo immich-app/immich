@@ -58,6 +58,18 @@ const cronExpressionSchema = z
   })
   .describe('Cron expression');
 
+const httpsDomain = (label: string) =>
+  z
+    .url({ protocol: /^https$/, hostname: z.regexes.domain })
+    .normalize()
+    .refine((url) => {
+      try {
+        return new URL(url).href === `${new URL(url).origin}/`;
+      } catch {
+        return true;
+      }
+    }, `${label} must not include a path, query, or fragment`);
+
 const emptyOrUrl = (error: string) =>
   z.string().refine((url) => url.length === 0 || z.url().safeParse(url).success, { error });
 
@@ -291,7 +303,8 @@ const AdminConfigSchemaWithVisibility = z
         accountManagementUrl: emptyOrUrl('Account management URL must be an empty string or a valid URL')
           .describe('Account management URL')
           .optional()
-          .default(''),
+          .default('')
+          .meta({ visibility: User }),
         scope: z.string().describe('Scope'),
         prompt: z.string().describe('OAuth prompt parameter (e.g. select_account, login, consent)'),
         endSessionEndpoint: emptyOrUrl('endSessionEndpoint must be an empty string or a valid URL').describe(
@@ -322,6 +335,29 @@ const AdminConfigSchemaWithVisibility = z
         return value;
       })
       .meta({ id: 'AdminConfigOAuthDto' }),
+    passkey: z
+      .object({
+        enabled: configBool.describe('Enabled').meta({ visibility: Public }),
+        domain: httpsDomain('Passkey domain').nullable().describe('Passkey domain'),
+        additionalDomains: z
+          .array(httpsDomain('Additional domain'))
+          .refine(
+            (domains) => domains.length === new Set(domains.map((domain) => new URL(domain).origin)).size,
+            'Duplicate domain',
+          )
+          .describe('Additional domains'),
+      })
+      .superRefine((value, ctx) => {
+        const origin = value.domain && new URL(value.domain).origin;
+        if (origin && value.additionalDomains.some((domain) => new URL(domain).origin === origin)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'The passkey domain is always allowed and must not be listed as an additional domain',
+            input: value.additionalDomains,
+          });
+        }
+      })
+      .meta({ id: 'AdminConfigPasskeyDto' }),
     passwordLogin: z
       .object({ enabled: configBool.describe('Enabled').meta({ visibility: Public }) })
       .meta({ id: 'AdminConfigPasswordLoginDto' }),
@@ -469,7 +505,12 @@ const applyVisibilityRecursive = (
 
   let visible: z.ZodType | undefined;
   if (Object.keys(shape).length > 0) {
-    visible = z.object(shape).meta({
+    const isComplete = Object.keys(shape).length === Object.keys(object.shape).length;
+    const rebuilt =
+      schema instanceof z.ZodPipe && isComplete
+        ? z.object(shape).pipe(schema.def.out as z.ZodTransform<unknown, Record<string, unknown>>)
+        : z.object(shape);
+    visible = rebuilt.meta({
       ...(id && { id: `${visibility}${id.slice(Admin.length)}` }),
       ...((override ?? description) && { description: override ?? description }),
     });
@@ -498,7 +539,7 @@ const stripVisibilityMetadata = <T extends z.ZodType>(schema: T): T => {
   return schema;
 };
 
-const AdminConfigSchema = applyVisibility(Admin)! as z.ZodType<SystemConfig>;
+const AdminConfigSchema = AdminConfigSchemaWithVisibility;
 const UserConfigSchema = applyVisibility(User)! as z.ZodType<DeepPartial<SystemConfig>>;
 const PublicConfigSchema = applyVisibility(Public)! as z.ZodType<DeepPartial<SystemConfig>>;
 
@@ -681,6 +722,11 @@ export const defaults = Object.freeze<SystemConfig>({
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
     allowInsecureRequests: false,
+  },
+  passkey: {
+    enabled: true,
+    domain: null,
+    additionalDomains: [],
   },
   passwordLogin: {
     enabled: true,

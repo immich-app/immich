@@ -151,6 +151,7 @@ depends = ["//:open-api-dart"]
 run = [
   # This receives passed `--enforce-lockfile` args
   "flutter pub get",
+  { task = "install:build-runner-patch" },
   { task = "install:ios" },
 ]
 
@@ -209,6 +210,11 @@ if [ "$(uname)" != "Darwin" ]; then
 fi
 cd ios && pod install
 '''
+
+[tasks."install:build-runner-patch"]
+description = "Patch build_runner to prevent crashes when sources are deleted"
+hide = true
+run = "node ./scripts/build_runner_patch.mjs"
 
 [tasks."analyze:dart"]
 description = "Run Dart analysis"

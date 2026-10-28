@@ -200,8 +200,9 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
         working-directory: 'deployment/modules/cloudflare/docs'
+        shell: bash
         run: |
-          mise run //deployment:tf output -- -json | jq -r '
+          mise run //deployment:tf output -json | jq -r '
             "projectName=\(.pages_project_name.value)",
             "subdomain=\(.immich_app_branch_subdomain.value)"
           ' >> $GITHUB_OUTPUT
