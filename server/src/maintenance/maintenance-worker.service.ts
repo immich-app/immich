@@ -370,7 +370,7 @@ export class MaintenanceWorkerService {
         active: true,
         action: action.action,
         task: 'error',
-        error: '' + error,
+        error: String(error),
         yuccaJobId: this.#status.yuccaJobId,
       });
     }
