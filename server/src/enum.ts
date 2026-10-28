@@ -59,9 +59,7 @@ export enum ChecksumAlgorithm {
 }
 
 export enum AssetFileType {
-  /**
-   * An full/large-size image extracted/converted from RAW photos
-   */
+  /** An full/large-size image extracted/converted from RAW photos */
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
@@ -362,9 +360,9 @@ export enum SharedLinkType {
   Album = 'ALBUM',
 
   /**
-   * Individual asset
-   * or group of assets that are not in an album
-   */
+  Individual asset
+  or group of assets that are not in an album
+  */
   Individual = 'INDIVIDUAL',
 }
 
@@ -817,9 +815,9 @@ export enum DvProfile {
 }
 
 /**
- * Dolby Vision base-layer signal-compatibility ID from the DOVI configuration record.
- * Identifies what the base HEVC/AVC layer renders as on a non-DV decoder.
- */
+Dolby Vision base-layer signal-compatibility ID from the DOVI configuration record.
+Identifies what the base HEVC/AVC layer renders as on a non-DV decoder.
+*/
 export enum DvSignalCompatibility {
   None = 0,
   Hdr10 = 1,
@@ -1226,9 +1224,7 @@ export enum AssetVisibility {
   Archive = 'archive',
   Timeline = 'timeline',
 
-  /**
-   * Video part of the LivePhotos and MotionPhotos
-   */
+  /** Video part of the LivePhotos and MotionPhotos */
   Hidden = 'hidden',
   Locked = 'locked',
 }

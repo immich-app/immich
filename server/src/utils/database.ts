@@ -355,8 +355,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt, size?: 'DAY' | 'MONTH') {
-  return sql<O>`date_trunc(${sql.lit(size ?? 'MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt, size: 'DAY' | 'MONTH' = 'MONTH') {
+  return sql<O>`date_trunc(${sql.lit(size)}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {
@@ -1106,14 +1106,14 @@ export type ReindexVectorIndexOptions = { indexName: string; lists?: number };
 
 type VectorIndexQueryOptions = { table: string; vectorExtension: VectorExtension } & ReindexVectorIndexOptions;
 
-export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: VectorIndexQueryOptions): string {
+export function vectorIndexQuery({ vectorExtension, table, indexName, lists = 1 }: VectorIndexQueryOptions): string {
   switch (vectorExtension) {
     case DatabaseExtension.VectorChord: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table} USING vchordrq (embedding vector_cosine_ops) WITH (options = $$
         residual_quantization = false
         [build.internal]
-        lists = [${lists ?? 1}]
+        lists = [${lists}]
         spherical_centroids = true
         build_threads = 4
         sampling_factor = 1024

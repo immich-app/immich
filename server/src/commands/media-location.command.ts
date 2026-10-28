@@ -102,7 +102,7 @@ export class PromptConfirmMoveQuestions {
     message: 'Do you want to proceed? [Y/n]',
     name: 'value',
   })
-  value(value: string): boolean {
-    return ['yes', 'y'].includes((value || 'y').toLowerCase());
+  value(value: string = 'y'): boolean {
+    return ['yes', 'y'].includes(value.toLowerCase());
   }
 }

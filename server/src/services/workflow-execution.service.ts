@@ -98,7 +98,6 @@ export class WorkflowExecutionService extends BaseService {
         throw new Error('Hostname did not match any listed in methods[].allowedHosts in the plugin manifest');
       }
 
-      // eslint-disable-next-line unicorn/no-invalid-argument-count
       const res = await fetch(...args);
 
       return {

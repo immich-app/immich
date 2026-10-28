@@ -36,8 +36,8 @@
     isSelectionMode?: boolean;
     singleSelect?: boolean;
     /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
-     `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
-     additionally, update the page location/url with the asset as the timeline is scrolled */
+    `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
+    additionally, update the page location/url with the asset as the timeline is scrolled */
     enableRouting: boolean;
     timelineManager?: TimelineManager;
     options?: TimelineManagerOptions;
