@@ -615,6 +615,7 @@ where
 
 -- AssetJobRepository.getForOcr
 select
+  "asset"."ownerId",
   "asset"."visibility",
   (
     select
