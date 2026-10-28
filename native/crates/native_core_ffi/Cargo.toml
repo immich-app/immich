@@ -10,7 +10,7 @@ name = "native_core_ffi"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-native_core = { path = "../native_core" }
+native_core = { path = "../native_core", features = ["flutter"] }
 libc = { workspace = true }
 
 [target.'cfg(target_os = "android")'.dependencies]

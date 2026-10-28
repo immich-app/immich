@@ -94,7 +94,9 @@
   };
 
   const handleStack = () => {
-    onStack(assets);
+    const selectedAssets = assets.filter(({ id }) => selectedAssetIds.has(id));
+    const unselectedAssets = assets.filter(({ id }) => !selectedAssetIds.has(id));
+    onStack([...selectedAssets, ...unselectedAssets]);
   };
 
   const assetCursor = $derived({

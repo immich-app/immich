@@ -7,7 +7,6 @@
   import { getWorkflowQuery, updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
   import { Route } from '#lib/route.ts';
   import { getWorkflowActions } from '#lib/services/workflow.service.ts';
-  import { generateId } from '#lib/utils/generate-id.ts';
   import { getTriggerDescription, getTriggerName } from '#lib/utils/workflow.ts';
   import type { WorkflowUpdateDto } from '@immich/sdk';
   import {
@@ -62,6 +61,9 @@
 
   const query = createPreloadedQuery(() => getWorkflowQuery(params.workflowId));
   const workflow = $derived(query.data);
+
+  let stepCounter = 0;
+  const generateId = () => `step-${stepCounter++}`;
 
   let { id, enabled, name, description, trigger } = $state(query.data);
   let steps = $state(query.data.steps.map((step) => ({ ...step, id: generateId() })));
