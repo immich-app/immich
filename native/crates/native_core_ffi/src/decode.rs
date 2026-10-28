@@ -10,9 +10,9 @@ use jni::{
     objects::{JByteBuffer, JClass, JIntArray},
     sys::{jint, jlong},
 };
-use native_core::color::Target;
-use native_core::image::{Image, Samples};
-use native_core::jxl::Jxl;
+use native_core::codecs::color::Target;
+use native_core::codecs::image::{Image, Samples};
+use native_core::codecs::{self, Options};
 
 use super::guard;
 
@@ -30,7 +30,7 @@ pub struct NativeCoreImageInfo {
     pub transfer: u8,
 }
 
-/// Decodes a JPEG XL image to premultiplied RGBA in sRGB, or with `keep_space`, in the image's own
+/// Decodes an image to premultiplied RGBA in sRGB, or with `keep_space`, in the image's own
 /// space when it has BT.709, BT.2020 or Display P3 primaries with the sRGB, PQ or HLG transfer.
 /// Unless either is 0, it is downscaled to cover `target_width` x `target_height`, and it never
 /// exceeds `max_pixel_size` pixels per side. `info` gets the size and space. The caller frees the
@@ -42,7 +42,7 @@ pub struct NativeCoreImageInfo {
 /// `cancelled` must be null or valid for the call and only changed through `native_core_cancel`.
 /// `info` must be null or a valid writable pointer, outside `data`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn native_core_jxl_decode(
+pub unsafe extern "C" fn native_core_decode_image(
     data: *const u8,
     len: size_t,
     keep_space: bool,
@@ -60,16 +60,19 @@ pub unsafe extern "C" fn native_core_jxl_decode(
         let cancelled = unsafe { AtomicBool::from_ptr(cancelled) };
         // SAFETY: the caller provides a buffer readable for len bytes.
         let input = unsafe { slice::from_raw_parts(data, len) };
-        let target = if keep_space {
+        let color_space = if keep_space {
             Target::Source
         } else {
             Target::Srgb
         };
-        let cover = (target_width > 0 && target_height > 0)
+        let target_size = (target_width > 0 && target_height > 0)
             .then_some((target_width as usize, target_height as usize));
-        let Some(Image { cicp, samples }) = Jxl::open(input, target)
-            .and_then(|image| image.decode(cover, max_pixel_size as usize, cancelled))
-        else {
+        let options = Options {
+            color_space,
+            target_size,
+            max_pixel_size: max_pixel_size as usize,
+        };
+        let Some(Image { cicp, samples }) = codecs::decode(input, &options, cancelled) else {
             return ptr::null_mut();
         };
         let (width, height, bit_depth, pixels) = match samples {
@@ -93,7 +96,7 @@ pub unsafe extern "C" fn native_core_jxl_decode(
 /// Asks the decode given `flag` to stop early.
 ///
 /// # Safety
-/// `flag` must be null or valid and otherwise only read by `native_core_jxl_decode`.
+/// `flag` must be null or valid and otherwise only read by `native_core_decode_image`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn native_core_cancel(flag: *mut bool) {
     if !flag.is_null() {
@@ -104,7 +107,7 @@ pub unsafe extern "C" fn native_core_cancel(flag: *mut bool) {
 
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_app_alextran_immich_NativeImage_decodeJxl<'caller>(
+pub extern "system" fn Java_app_alextran_immich_NativeImage_decode<'caller>(
     mut env: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     data: jlong,
@@ -121,7 +124,7 @@ pub extern "system" fn Java_app_alextran_immich_NativeImage_decodeJxl<'caller>(
         // SAFETY: Kotlin passes a live native buffer of `length` bytes and a direct buffer it only
         // changes through `cancel`, and the output is valid.
         let rgba = unsafe {
-            native_core_jxl_decode(
+            native_core_decode_image(
                 data as *const u8,
                 length as size_t,
                 false,
@@ -154,7 +157,7 @@ pub extern "system" fn Java_app_alextran_immich_NativeImage_cancel<'caller>(
 ) {
     env.with_env(|env| -> jni::errors::Result<()> {
         let flag = env.get_direct_buffer_address(&flag)?.cast::<bool>();
-        // SAFETY: the buffer is the live one-byte flag Kotlin passed to `decodeJxl`.
+        // SAFETY: the buffer is the live one-byte flag Kotlin passed to `decode`.
         unsafe { native_core_cancel(flag) };
         Ok(())
     })

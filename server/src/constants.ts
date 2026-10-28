@@ -64,6 +64,9 @@ export const excludePaths = ['/.well-known/immich', '/.well-known/webauthn', '/c
 
 export const FACE_THUMBNAIL_SIZE = 250;
 
+// The fastest JPEG XL tier skips smoothing filters, which also keeps small thumbnails sharper
+export const THUMBNAIL_DECODING_TIER = 4;
+
 type ModelInfo = { dimSize: number };
 export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   RN101__openai: { dimSize: 512 },
