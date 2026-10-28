@@ -111,6 +111,15 @@ const UserAdminDeleteSchema = z
 
 export class UserAdminDeleteDto extends createZodDto(UserAdminDeleteSchema) {}
 
+const OAuthReLinkTokenResponseSchema = z
+  .object({
+    token: z.string().describe('Single-use token; deliver to the user via /auth/link?token=<token>'),
+    expiresAt: isoDatetimeToDate.describe('Token expiration'),
+  })
+  .meta({ id: 'OAuthReLinkTokenResponseDto' });
+
+export class OAuthReLinkTokenResponseDto extends createZodDto(OAuthReLinkTokenResponseSchema) {}
+
 const UserAdminResponseSchema = UserResponseSchema.extend({
   clusterGroupId: z
     .uuidv4()

@@ -655,6 +655,12 @@ export type CalendarHeatmapResponseDto = {
     /** Total activity count over the period */
     totalCount: number;
 };
+export type OAuthReLinkTokenResponseDto = {
+    /** Token expiration */
+    expiresAt: string;
+    /** Single-use token; deliver to the user via /auth/link?token=<token> */
+    token: string;
+};
 export type AlbumsResponse = {
     defaultAssetOrder: AssetOrder;
 };
@@ -1990,6 +1996,10 @@ export type OAuthCallbackDto = {
     /** OAuth callback URL */
     url: string;
 };
+export type OAuthReLinkStartDto = {
+    /** Plaintext OAuth re-link token issued by an administrator */
+    token: string;
+};
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;
     /** User email */
@@ -2901,6 +2911,8 @@ export type ServerFeaturesDto = {
     oauth: boolean;
     /** Whether OAuth auto-launch is enabled */
     oauthAutoLaunch: boolean;
+    /** Whether OAuth auto-register is enabled */
+    oauthAutoRegister: boolean;
     /** Whether OCR is enabled */
     ocr: boolean;
     /** Whether password login is enabled */
@@ -4367,6 +4379,20 @@ export function getUserCalendarHeatmapAdmin({ $from, id, to, $type }: {
     }));
 }
 /**
+ * Issue an OAuth re-link token
+ */
+export function createOAuthReLinkTokenAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: OAuthReLinkTokenResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/oauth-relink-token`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Retrieve user preferences
  */
 export function getUserPreferencesAdmin({ id }: {
@@ -5310,6 +5336,18 @@ export function changePinCode({ pinCodeChangeDto }: {
     })));
 }
 /**
+ * Register via OAuth
+ */
+export function register(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: LoginResponseDto;
+    }>("/auth/register", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Lock auth session
  */
 export function lockAuthSession(opts?: Oazapfts.RequestOpts) {
@@ -6081,27 +6119,24 @@ export function finishOAuth({ oAuthCallbackDto }: {
     })));
 }
 /**
- * Link OAuth account
- */
-export function linkOAuthAccount({ oAuthCallbackDto }: {
-    oAuthCallbackDto: OAuthCallbackDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserAdminResponseDto;
-    }>("/oauth/link", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: oAuthCallbackDto
-    })));
-}
-/**
  * Redirect OAuth to mobile
  */
 export function redirectOAuthToMobile(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/oauth/mobile-redirect", {
         ...opts
     }));
+}
+/**
+ * Start OAuth re-link
+ */
+export function startOAuthReLink({ oAuthReLinkStartDto }: {
+    oAuthReLinkStartDto: OAuthReLinkStartDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/oauth/relink-start", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: oAuthReLinkStartDto
+    })));
 }
 /**
  * Unlink OAuth account

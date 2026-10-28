@@ -48,7 +48,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'LoginResponseDto': {'isOnboarded': false},
   'SyncUserV1': {'profileChangedAt': _now, 'hasProfileImage': false},
   'SyncAssetV1': {'isEdited': false},
-  'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
+  'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false, 'oauthAutoRegister': false},
   'SearchAssetResponseDto': {'nextCursor': null},
   'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
   'PeopleResponse': {'updateStrategy': 'everyone'},

@@ -39,6 +39,7 @@ import { MemoryRepository } from 'src/repositories/memory.repository.js';
 import { MetadataRepository } from 'src/repositories/metadata.repository.js';
 import { MoveRepository } from 'src/repositories/move.repository.js';
 import { NotificationRepository } from 'src/repositories/notification.repository.js';
+import { OAuthLinkTokenRepository } from 'src/repositories/oauth-link-token.repository.js';
 import { OAuthRepository } from 'src/repositories/oauth.repository.js';
 import { OcrRepository } from 'src/repositories/ocr.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
@@ -110,6 +111,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   MetadataRepository,
   MoveRepository,
   NotificationRepository,
+  OAuthLinkTokenRepository,
   OAuthRepository,
   OcrRepository,
   PartnerRepository,
@@ -176,6 +178,7 @@ export class BaseService {
     protected metadataRepository: MetadataRepository,
     protected moveRepository: MoveRepository,
     protected notificationRepository: NotificationRepository,
+    protected oauthLinkTokenRepository: OAuthLinkTokenRepository,
     protected oauthRepository: OAuthRepository,
     protected ocrRepository: OcrRepository,
     protected partnerRepository: PartnerRepository,
@@ -251,6 +254,7 @@ export class BaseService {
       ctx.metadataRepository,
       ctx.moveRepository,
       ctx.notificationRepository,
+      ctx.oauthLinkTokenRepository,
       ctx.oauthRepository,
       ctx.ocrRepository,
       ctx.partnerRepository,
