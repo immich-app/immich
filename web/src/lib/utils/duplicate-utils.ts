@@ -293,15 +293,7 @@ export const computeDifferingMetadataFields = (assets: AssetResponseDto[]): Diff
   const diffs: DifferingMetadataFields = {};
 
   for (const key of metadataKeys) {
-    const uniqueValues = new Set<unknown>();
-
-    for (const asset of assets) {
-      const value = getValueForAsset(asset, key);
-      if (value !== undefined && value !== null) {
-        uniqueValues.add(normalizeForComparison(key, value));
-      }
-    }
-
+    const uniqueValues = new Set(assets.map((asset) => normalizeForComparison(key, getValueForAsset(asset, key))));
     diffs[key] = uniqueValues.size > 1;
   }
 

@@ -7,10 +7,9 @@
   import { Route } from '#lib/route.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl } from '#lib/utils.ts';
-  import { getAssetType } from '#lib/utils/asset-utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { isTenMinutesApart } from '#lib/utils/timesince.ts';
-  import { ReactionType, type ActivityResponseDto, type AlbumUserResponseDto, type AssetTypeEnum } from '@immich/sdk';
+  import { AssetTypeEnum, ReactionType, type ActivityResponseDto, type AlbumUserResponseDto } from '@immich/sdk';
   import { ContextMenuButton, Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
   import { mdiClose, mdiSend, mdiThumbUp, mdiTrashCanOutline } from '@mdi/js';
   import * as luxon from 'luxon';
@@ -188,17 +187,15 @@
               </div>
             {/if}
           {:else if reaction.type === ReactionType.Like}
+            {const type = $derived(
+              assetType === AssetTypeEnum.Image || assetType === AssetTypeEnum.Video ? assetType.toLowerCase() : null,
+            )}
             <div class="relative">
               <div class="mt-3 flex items-center gap-4 p-3 text-sm">
                 <div class="text-primary"><Icon icon={mdiThumbUp} size="20" /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
-                  {$t('user_liked', {
-                    values: {
-                      user: reaction.user.name,
-                      type: assetType ? getAssetType(assetType).toLowerCase() : null,
-                    },
-                  })}
+                  {$t('user_liked', { values: { user: reaction.user.name, type } })}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
                   <a class="aspect-square size-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
