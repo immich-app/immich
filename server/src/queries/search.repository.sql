@@ -450,7 +450,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -466,8 +468,6 @@ order by
   "asset"."id" desc
 limit
   $4
-offset
-  $5
 
 -- SearchRepository.searchMetadataV3 (or-mixed-scope)
 select
@@ -498,7 +498,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -526,8 +528,6 @@ order by
   "asset"."id" desc
 limit
   $6
-offset
-  $7
 
 -- SearchRepository.searchMetadataV3 (or-exif-only)
 select
@@ -558,7 +558,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -574,8 +576,6 @@ order by
   "asset"."id" desc
 limit
   $5
-offset
-  $6
 
 -- SearchRepository.searchMetadataV3 (string-eq-null)
 select
@@ -606,7 +606,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -622,8 +624,6 @@ order by
   "asset"."id" desc
 limit
   $4
-offset
-  $5
 
 -- SearchRepository.searchMetadataV3 (string-pattern-like)
 select
@@ -654,7 +654,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -670,8 +672,6 @@ order by
   "asset"."id" desc
 limit
   $5
-offset
-  $6
 
 -- SearchRepository.searchMetadataV3 (string-pattern-notLike)
 select
@@ -702,7 +702,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -718,8 +720,6 @@ order by
   "asset"."id" desc
 limit
   $5
-offset
-  $6
 
 -- SearchRepository.searchMetadataV3 (string-pattern-startsWith)
 select
@@ -750,7 +750,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -766,8 +768,6 @@ order by
   "asset"."id" desc
 limit
   $5
-offset
-  $6
 
 -- SearchRepository.searchMetadataV3 (string-similarity-ocr)
 select
@@ -798,7 +798,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -821,8 +823,6 @@ order by
   "asset"."id" desc
 limit
   $5
-offset
-  $6
 
 -- SearchRepository.searchMetadataV3 (ids-any)
 select
@@ -853,7 +853,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -875,8 +877,6 @@ order by
   "asset"."id" desc
 limit
   $4
-offset
-  $5
 
 -- SearchRepository.searchMetadataV3 (ids-all)
 select
@@ -907,7 +907,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -937,8 +939,6 @@ order by
   "asset"."id" desc
 limit
   $7
-offset
-  $8
 
 -- SearchRepository.searchMetadataV3 (ids-all-single)
 select
@@ -969,7 +969,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -991,8 +993,6 @@ order by
   "asset"."id" desc
 limit
   $4
-offset
-  $5
 
 -- SearchRepository.searchMetadataV3 (ids-none)
 select
@@ -1023,7 +1023,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1047,8 +1049,6 @@ order by
   "asset"."id" desc
 limit
   $5
-offset
-  $6
 
 -- SearchRepository.searchMetadataV3 (ids-tags-all)
 select
@@ -1079,7 +1079,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1108,8 +1110,6 @@ order by
   "asset"."id" desc
 limit
   $6
-offset
-  $7
 
 -- SearchRepository.searchMetadataV3 (has-albums-false)
 select
@@ -1140,7 +1140,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1162,8 +1164,6 @@ order by
   "asset"."id" desc
 limit
   $4
-offset
-  $5
 
 -- SearchRepository.searchMetadataV3 (is-encoded)
 select
@@ -1194,7 +1194,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1217,8 +1219,6 @@ order by
   "asset"."id" desc
 limit
   $5
-offset
-  $6
 
 -- SearchRepository.searchMetadataV3 (number-range)
 select
@@ -1249,7 +1249,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1268,8 +1270,6 @@ order by
   "asset"."id" desc
 limit
   $6
-offset
-  $7
 
 -- SearchRepository.searchMetadataV3 (date-eq)
 select
@@ -1300,7 +1300,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1316,8 +1318,6 @@ order by
   "asset"."id" desc
 limit
   $5
-offset
-  $6
 
 -- SearchRepository.searchMetadataV3 (date-range)
 select
@@ -1348,7 +1348,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1367,8 +1369,6 @@ order by
   "asset"."id" desc
 limit
   $6
-offset
-  $7
 
 -- SearchRepository.searchMetadataV3 (order-fileSize-noExif)
 select
@@ -1399,7 +1399,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1415,8 +1417,6 @@ order by
   "asset"."id" desc
 limit
   $4
-offset
-  $5
 
 -- SearchRepository.searchMetadataV3 (order-rating-withExif)
 select
@@ -1448,7 +1448,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1464,8 +1466,6 @@ order by
   "asset"."id" asc
 limit
   $4
-offset
-  $5
 
 -- SearchRepository.searchMetadataV3 (or-branches)
 select
@@ -1496,7 +1496,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1524,8 +1526,6 @@ order by
   "asset"."id" desc
 limit
   $7
-offset
-  $8
 
 -- SearchRepository.searchMetadataV3 (or-with-top-level)
 select
@@ -1556,7 +1556,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1588,10 +1590,8 @@ order by
   "asset"."id" desc
 limit
   $8
-offset
-  $9
 
--- SearchRepository.searchMetadataV3 (cursor-offset)
+-- SearchRepository.searchMetadataV3 (cursor)
 select
   "asset"."id",
   "asset"."updateId",
@@ -1620,7 +1620,9 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1631,13 +1633,116 @@ where
     or "asset"."ownerId" = $3
   )
   and "asset"."isFavorite" = $4
+  and ("asset"."fileCreatedAt", "asset"."id") < ($5, $6::uuid)
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
-offset
+  $7
+
+-- SearchRepository.searchMetadataV3 (cursor-nullable-order)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and true
+  and (
+    ("asset_exif"."rating", "asset"."id") < ($4, $5::uuid)
+    or "asset_exif"."rating" is null
+  )
+order by
+  "asset_exif"."rating" desc nulls last,
+  "asset"."id" desc
+limit
   $6
+
+-- SearchRepository.searchMetadataV3 (cursor-null-tail)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."rating"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."visibility" != $2
+    or "asset"."ownerId" = $3
+  )
+  and true
+  and (
+    "asset_exif"."rating" is null
+    and "asset"."id" < $4::uuid
+  )
+order by
+  "asset_exif"."rating" desc nulls last,
+  "asset"."id" desc
+limit
+  $5
 
 -- SearchRepository.searchRandomV3 (baseline)
 select
@@ -1774,12 +1879,9 @@ where
   )
   and true
 order by
-  smart_search.embedding <=> $4,
-  "asset"."id" asc
+  smart_search.embedding <=> $4
 limit
   $5
-offset
-  $6
 commit
 
 -- SearchRepository.searchSmartV3 (with-filter)
@@ -1830,15 +1932,12 @@ where
     and "asset"."fileCreatedAt" >= $5
   )
 order by
-  smart_search.embedding <=> $6,
-  "asset"."id" asc
+  smart_search.embedding <=> $6
 limit
   $7
-offset
-  $8
 commit
 
--- SearchRepository.searchSmartV3 (cursor-offset)
+-- SearchRepository.searchSmartV3 (cursor)
 begin
 set
   local vchordrq.probes = 1
@@ -1882,13 +1981,18 @@ where
     or "asset"."ownerId" = $3
   )
   and true
+  and smart_search.embedding <=> $4 > (
+    select
+      cursor_asset.embedding <=> $5 as "distance"
+    from
+      "smart_search" as "cursor_asset"
+    where
+      "cursor_asset"."assetId" = $6::uuid
+  )
 order by
-  smart_search.embedding <=> $4,
-  "asset"."id" asc
+  smart_search.embedding <=> $7
 limit
-  $5
-offset
-  $6
+  $8
 commit
 
 -- SearchRepository.searchStatisticsV3 (baseline)
