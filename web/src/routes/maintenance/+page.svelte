@@ -76,12 +76,12 @@
             <Text>{$t('maintenance_task_rollback')}</Text>
           {/if}
         {/if}
-      {:else if $status?.action === MaintenanceAction.Rollback && $status.yuccaLogId}
+      {:else if $status?.action === MaintenanceAction.Rollback && $status.yuccaJobId}
         <ViewStatusModal
-          logId={$status.yuccaLogId}
+          jobId={$status.yuccaJobId}
           onClose={() => {
             if ($status?.error) {
-              $status.yuccaLogId = '';
+              $status.yuccaJobId = '';
             }
           }}
         />

@@ -34,7 +34,7 @@ const MaintenanceStatusResponseSchema = z
     progress: z.int().optional(),
     task: z.string().optional(),
     error: z.string().optional(),
-    yuccaLogId: z.string().optional().describe('Yucca log ID'),
+    yuccaJobId: z.string().optional().describe('Yucca job ID'),
   })
   .meta({ id: 'MaintenanceStatusResponseDto' });
 
