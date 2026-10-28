@@ -5,4 +5,5 @@ export const getPublicConfigQuery = () =>
   queryOptions({
     queryKey: ['config', 'public'],
     queryFn: ({ signal }) => getPublicConfig({ signal }),
+    gcTime: Infinity,
   });

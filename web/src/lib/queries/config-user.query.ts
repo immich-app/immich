@@ -23,5 +23,6 @@ export const getUserConfigQuery = () =>
   queryOptions({
     queryKey: ['config', 'user'],
     queryFn: ({ signal }) => getUserConfig({ signal }),
+    gcTime: Infinity,
     select: withEffectiveFlags,
   });
