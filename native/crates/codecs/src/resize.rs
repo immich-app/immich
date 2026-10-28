@@ -47,16 +47,16 @@ impl Lanczos for u16 {
     }
 }
 
-/// The size of `size` scaled down to cover `target` and to fit within `max_pixel_size`, if that
-/// is smaller.
+/// The size of `size` scaled down to cover `target_size` and to fit within `max_pixel_size`, if
+/// that is smaller.
 pub(crate) fn cover(
     (w, h): (usize, usize),
-    target: Option<(usize, usize)>,
+    target_size: Option<(usize, usize)>,
     max_pixel_size: usize,
 ) -> Option<(usize, usize)> {
     // Scales as side ratios, so the side that sets the scale lands exactly on its limit.
     let fit = (max_pixel_size, w.max(h));
-    let (num, den) = match target {
+    let (num, den) = match target_size {
         Some((tw, th)) => {
             let cover = if tw * h >= th * w { (tw, w) } else { (th, h) };
             if cover.0 * fit.1 < fit.0 * cover.1 {

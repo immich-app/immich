@@ -11,8 +11,6 @@ thumbhash = []
 jxl = ["codecs/jxl"]
 # One group per target.
 flutter = ["convert", "rotate", "thumbhash", "jxl"]
-ios = ["jxl"]
-server = ["thumbhash", "jxl"]
 
 [dependencies]
 codecs = { path = "../codecs", default-features = false, optional = true }
