@@ -89,7 +89,7 @@ describe('/yucca', () => {
     });
   });
 
-  describe.sequential('Local Backup', async () => {
+  describe('Local Backup', { concurrent: false }, async () => {
     beforeAll(async () => {
       await sdk.importRecoveryKey(
         {
@@ -99,7 +99,7 @@ describe('/yucca', () => {
       );
     });
 
-    it.sequential('configures a local backend', async () => {
+    it('configures a local backend', { concurrent: false }, async () => {
       await utils.mkFolder('/local-backend');
 
       await sdk.createLocalBackend(
@@ -110,7 +110,7 @@ describe('/yucca', () => {
       );
     });
 
-    it.sequential('configures Immich backup', async () => {
+    it('configures Immich backup', { concurrent: false }, async () => {
       const event = waitForMessage('IntegrationUpdate');
 
       await sdk.configureImmichIntegration(
@@ -146,7 +146,7 @@ describe('/yucca', () => {
       );
     });
 
-    it.sequential('updates configuration', async () => {
+    it('updates configuration', { concurrent: false }, async () => {
       await utils.mkFolder('/test');
 
       ({ id: libraryId } = await utils.createLibrary(admin.accessToken, {
@@ -170,7 +170,7 @@ describe('/yucca', () => {
       );
     });
 
-    it.sequential('creates a snapshot', async () => {
+    it('creates a snapshot', { concurrent: false }, async () => {
       const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
 
       const { repositories } = await sdk.getRepositories(requestOpts);
@@ -233,7 +233,7 @@ describe('/yucca', () => {
     });
   });
 
-  describe.sequential('Restore Local Backup', async () => {
+  describe('Restore Local Backup', { concurrent: false }, async () => {
     let cookie: string;
 
     beforeAll(async () => {
@@ -247,127 +247,123 @@ describe('/yucca', () => {
       await utils.connectDatabase();
     });
 
-    it.sequential(
-      'restores backup',
-      async () => {
-        const { status, headers } = await request(app).post('/admin/database-backups/start-restore').send();
-        expect(status).toBe(201);
-        cookie = headers['set-cookie'][0].split(';', 1)[0];
+    it('restores backup', { timeout: 60_000, concurrent: false }, async () => {
+      const { status, headers } = await request(app).post('/admin/database-backups/start-restore').send();
+      expect(status).toBe(201);
+      cookie = headers['set-cookie'][0].split(';', 1)[0];
 
-        await expect
-          .poll(
-            async () => {
-              const { status, body } = await request(app).get('/server/config');
-              expect(status).toBe(200);
-              return body.maintenanceMode;
-            },
-            {
-              interval: 500,
-              timeout: 10_000,
-            },
-          )
-          .toBeTruthy();
-
-        const maintenanceRequestOpts = {
-          headers: {
-            cookie,
+      await expect
+        .poll(
+          async () => {
+            const { status, body } = await request(app).get('/server/config');
+            expect(status).toBe(200);
+            return body.maintenanceMode;
           },
-        };
-
-        await expect(sdk.getSchedules(maintenanceRequestOpts)).resolves.toEqual({ schedules: [] });
-
-        await sdk.importRecoveryKey(
           {
-            recoveryKey: '0'.repeat(64),
+            interval: 500,
+            timeout: 10_000,
           },
-          maintenanceRequestOpts,
-        );
+        )
+        .toBeTruthy();
 
-        const {
-          backend: { id: backendId },
-        } = await sdk.createLocalBackend(
+      const maintenanceRequestOpts = {
+        headers: {
+          cookie,
+        },
+      };
+
+      await expect(sdk.getSchedules(maintenanceRequestOpts)).resolves.toEqual({ schedules: [] });
+
+      await sdk.importRecoveryKey(
+        {
+          recoveryKey: '0'.repeat(64),
+        },
+        maintenanceRequestOpts,
+      );
+
+      const {
+        backend: { id: backendId },
+      } = await sdk.createLocalBackend(
+        {
+          path: '/local-backend',
+        },
+        maintenanceRequestOpts,
+      );
+
+      const { repositories } = await sdk.inspectRepositories({}, maintenanceRequestOpts);
+      const { id: repositoryId, snapshots } = repositories[0];
+      const { id: snapshotId } = (snapshots ?? [])[0];
+
+      socket = io(baseUrl, {
+        path: '/api/yucca/socket.io',
+        transports: ['websocket'],
+        extraHeaders: {
+          cookie,
+        },
+      });
+
+      const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
+      await sdk.restoreFromPoint(
+        repositoryId,
+        snapshotId,
+        backendId,
+        {
+          yuccaConfig: '/data/yucca',
+          include: ['/data'],
+        },
+        maintenanceRequestOpts,
+      );
+
+      await event;
+      socket.disconnect();
+
+      const { status: restoreStatus } = await request(app).post('/admin/maintenance').set('Cookie', cookie).send({
+        action: 'restore_database',
+        restoreBackupFilename: filename,
+      });
+
+      expect(restoreStatus).toBe(201);
+
+      await expect
+        .poll(
+          async () => {
+            const { status, body } = await request(app).get('/server/config');
+            expect(status).toBe(200);
+            return body.maintenanceMode;
+          },
           {
-            path: '/local-backend',
+            interval: 500,
+            timeout: 10_000,
           },
-          maintenanceRequestOpts,
-        );
+        )
+        .toBeTruthy();
 
-        const { repositories } = await sdk.inspectRepositories({}, maintenanceRequestOpts);
-        const { id: repositoryId, snapshots } = repositories[0];
-        const { id: snapshotId } = (snapshots ?? [])[0];
-
-        socket = io(baseUrl, {
-          path: '/api/yucca/socket.io',
-          transports: ['websocket'],
-          extraHeaders: {
-            cookie,
-          },
-        });
-
-        const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
-        await sdk.restoreFromPoint(
-          repositoryId,
-          snapshotId,
-          backendId,
-          {
-            yuccaConfig: '/data/yucca',
-            include: ['/data'],
-          },
-          maintenanceRequestOpts,
-        );
-
-        await event;
-        socket.disconnect();
-
-        const { status: restoreStatus } = await request(app).post('/admin/maintenance').set('Cookie', cookie).send({
+      const { status: status2, body } = await request(app).get('/admin/maintenance/status');
+      expect(status2).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          active: true,
           action: 'restore_database',
-          restoreBackupFilename: filename,
-        });
+        }),
+      );
 
-        expect(restoreStatus).toBe(201);
+      await expect
+        .poll(
+          async () => {
+            const { status, body } = await request(app).get('/server/config');
+            expect(status).toBe(200);
+            return body.maintenanceMode;
+          },
+          {
+            interval: 500,
+            timeout: 60_000,
+          },
+        )
+        .toBeFalsy();
 
-        await expect
-          .poll(
-            async () => {
-              const { status, body } = await request(app).get('/server/config');
-              expect(status).toBe(200);
-              return body.maintenanceMode;
-            },
-            {
-              interval: 500,
-              timeout: 10_000,
-            },
-          )
-          .toBeTruthy();
-
-        const { status: status2, body } = await request(app).get('/admin/maintenance/status');
-        expect(status2).toBe(200);
-        expect(body).toEqual(
-          expect.objectContaining({
-            active: true,
-            action: 'restore_database',
-          }),
-        );
-
-        await expect
-          .poll(
-            async () => {
-              const { status, body } = await request(app).get('/server/config');
-              expect(status).toBe(200);
-              return body.maintenanceMode;
-            },
-            {
-              interval: 500,
-              timeout: 60_000,
-            },
-          )
-          .toBeFalsy();
-
-        await expect(sdk.getSchedules(requestOpts)).resolves.toEqual({
-          schedules: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
-        });
-      },
-      60_000,
-    );
+      await expect(sdk.getSchedules(requestOpts)).resolves.toEqual({
+        schedules: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
+      });
+    });
   });
 });

@@ -18985,15 +18985,15 @@
         "x-immich-admin-only": true
       }
     },
-    "/yucca/logs/{id}": {
+    "/yucca/jobs": {
       "get": {
-        "description": "Retrieve a run and its status.",
-        "operationId": "yuccaGetRun",
+        "description": "List the jobs for a repository, newest first.",
+        "operationId": "yuccaGetJobs",
         "parameters": [
           {
-            "name": "id",
+            "name": "repositoryId",
             "required": true,
-            "in": "path",
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -19004,14 +19004,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RunResponseDto"
+                  "$ref": "#/components/schemas/JobListResponseDto"
                 }
               }
             },
             "description": ""
           }
         },
-        "summary": "Get a run",
+        "summary": "List jobs",
         "tags": [
           "Backups"
         ],
@@ -19040,10 +19040,111 @@
         "x-immich-admin-only": true
       }
     },
-    "/yucca/logs/{id}/download": {
+    "/yucca/jobs/{id}": {
+      "delete": {
+        "description": "Cancel a queued job, or stop it if it is already running.",
+        "operationId": "yuccaCancelJob",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Cancel a job",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      },
       "get": {
-        "description": "Download the log of a run.",
-        "operationId": "yuccaDownloadRunLog",
+        "description": "Get the status of a job.",
+        "operationId": "yuccaGetJob",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get a job",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/jobs/{id}/download": {
+      "get": {
+        "description": "Download the full log of a job as JSON lines.",
+        "operationId": "yuccaDownloadJobLog",
         "parameters": [
           {
             "name": "id",
@@ -19067,7 +19168,7 @@
             "description": ""
           }
         },
-        "summary": "Download a run log",
+        "summary": "Download a job log",
         "tags": [
           "Backups"
         ],
@@ -19096,10 +19197,10 @@
         "x-immich-admin-only": true
       }
     },
-    "/yucca/logs/{id}/stream": {
+    "/yucca/jobs/{id}/support-log/download": {
       "get": {
-        "description": "Stream the log of a run.",
-        "operationId": "yuccaLogStreamSse",
+        "description": "Download the verbose restic output recorded while the job ran in support mode, as JSON lines.",
+        "operationId": "yuccaDownloadJobSupportLog",
         "parameters": [
           {
             "name": "id",
@@ -19113,16 +19214,17 @@
         "responses": {
           "200": {
             "content": {
-              "text/event-stream": {
+              "application/jsonl": {
                 "schema": {
+                  "format": "binary",
                   "type": "string"
                 }
               }
             },
-            "description": "A stream of run log events."
+            "description": ""
           }
         },
-        "summary": "Stream a run log",
+        "summary": "Download a job support log",
         "tags": [
           "Backups"
         ],
@@ -19727,7 +19829,7 @@
         "x-immich-admin-only": true
       },
       "post": {
-        "description": "Start a backup to a repository and return the ID of its run log.",
+        "description": "Queue a backup to a repository and return the ID of its job.",
         "operationId": "yuccaCreateBackup",
         "parameters": [
           {
@@ -19744,7 +19846,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LogResponseDto"
+                  "$ref": "#/components/schemas/JobResponseDto"
                 }
               }
             },
@@ -19969,61 +20071,6 @@
         "x-immich-admin-only": true
       }
     },
-    "/yucca/repository/{id}/runs": {
-      "get": {
-        "description": "List the backup, prune and restore runs of a repository.",
-        "operationId": "yuccaGetRunHistory",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RunHistoryResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "summary": "List backup runs",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "x-immich-admin-only": true
-      }
-    },
     "/yucca/repository/{id}/snapshots": {
       "get": {
         "description": "List the snapshots in a repository.",
@@ -20081,7 +20128,7 @@
     },
     "/yucca/repository/{id}/snapshots/prune": {
       "post": {
-        "description": "Remove snapshots outside the retention policy and return the ID of the run log.",
+        "description": "Queue the removal of snapshots outside the retention policy and return the ID of its job.",
         "operationId": "yuccaPruneRepository",
         "parameters": [
           {
@@ -20098,7 +20145,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LogResponseDto"
+                  "$ref": "#/components/schemas/JobResponseDto"
                 }
               }
             },
@@ -20197,7 +20244,7 @@
         "x-immich-admin-only": true
       },
       "post": {
-        "description": "Restore files from a snapshot and return the ID of the run log.",
+        "description": "Queue a restore of files from a snapshot and return the ID of its job.",
         "operationId": "yuccaRestoreSnapshot",
         "parameters": [
           {
@@ -20232,7 +20279,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LogResponseDto"
+                  "$ref": "#/components/schemas/JobResponseDto"
                 }
               }
             },
@@ -20384,7 +20431,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LogResponseDto"
+                  "$ref": "#/components/schemas/JobResponseDto"
                 }
               }
             },
@@ -20392,6 +20439,61 @@
           }
         },
         "summary": "Restore from snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "x-immich-admin-only": true
+      }
+    },
+    "/yucca/repository/{id}/sync-deletion": {
+      "post": {
+        "description": "Remove a repository from this server once it has been deleted from its backend.",
+        "operationId": "yuccaSyncRepositoryDeletion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositorySyncDeletionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Sync a remote deletion",
         "tags": [
           "Backups"
         ],
@@ -20631,24 +20733,24 @@
         "x-immich-admin-only": true
       }
     },
-    "/yucca/tasks": {
+    "/yucca/support-mode": {
       "get": {
-        "description": "List the tasks running on this server.",
-        "operationId": "yuccaGetRunningTasks",
+        "description": "Retrieve how many upcoming runs use verbose restic logging, and whether they stream to FUTO.",
+        "operationId": "yuccaGetSupportMode",
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RunningTaskListResponse"
+                  "$ref": "#/components/schemas/SupportModeResponseDto"
                 }
               }
             },
             "description": ""
           }
         },
-        "summary": "List running tasks",
+        "summary": "Get support mode",
         "tags": [
           "Backups"
         ],
@@ -20675,28 +20777,34 @@
           }
         ],
         "x-immich-admin-only": true
-      }
-    },
-    "/yucca/tasks/{parentId}/cancel": {
-      "post": {
-        "description": "Cancel a running task and its subtasks.",
-        "operationId": "yuccaCancelTask",
-        "parameters": [
-          {
-            "name": "parentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
+      },
+      "put": {
+        "description": "Set how many upcoming runs use verbose restic logging, and whether they stream to FUTO.",
+        "operationId": "yuccaUpdateSupportMode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportModeUpdateRequestDto"
+              }
             }
-          }
-        ],
+          },
+          "required": true
+        },
         "responses": {
-          "201": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportModeResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
-        "summary": "Cancel a task",
+        "summary": "Update support mode",
         "tags": [
           "Backups"
         ],
@@ -20935,21 +21043,6 @@
       }
     },
     "schemas": {
-      "ActiveScheduleItemDto": {
-        "properties": {
-          "repositoryId": {
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/RunningTaskStatus"
-          }
-        },
-        "required": [
-          "repositoryId",
-          "status"
-        ],
-        "type": "object"
-      },
       "ActivityCreateDto": {
         "description": "Activity create",
         "properties": {
@@ -25549,8 +25642,8 @@
           "integration": {
             "$ref": "#/components/schemas/ImmichIntegrationDto"
           },
-          "latestBackupRun": {
-            "$ref": "#/components/schemas/RunDto"
+          "latestBackupJob": {
+            "$ref": "#/components/schemas/JobDto"
           },
           "repository": {
             "$ref": "#/components/schemas/LocalRepositoryDto"
@@ -25847,6 +25940,59 @@
         ],
         "type": "object"
       },
+      "JobDto": {
+        "properties": {
+          "end": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/YuccaJobName"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/JobOutcomeDto"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/JobProgressDto"
+          },
+          "queuedAt": {
+            "type": "string"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/YuccaJobStatus"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "queuedAt",
+          "repositoryId",
+          "status"
+        ],
+        "type": "object"
+      },
+      "JobListResponseDto": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/JobDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "jobs"
+        ],
+        "type": "object"
+      },
       "JobName": {
         "description": "Job name",
         "enum": [
@@ -25918,6 +26064,201 @@
           "IntegrityDeleteReports"
         ],
         "type": "string"
+      },
+      "JobOutcomeDto": {
+        "properties": {
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/JobSummaryDto"
+          },
+          "support": {
+            "$ref": "#/components/schemas/JobSupportDto"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "JobProgressDto": {
+        "properties": {
+          "bytesDone": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "currentFiles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "estimatedEndAt": {
+            "type": "string"
+          },
+          "percentDone": {
+            "format": "double",
+            "type": "number"
+          },
+          "scanning": {
+            "type": "boolean"
+          },
+          "totalBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "currentFiles",
+          "percentDone",
+          "scanning"
+        ],
+        "type": "object"
+      },
+      "JobResponseDto": {
+        "properties": {
+          "jobId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "jobId"
+        ],
+        "type": "object"
+      },
+      "JobSummaryDto": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "backup"
+                ]
+              },
+              "filesNew": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "filesChanged": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "totalFilesProcessed": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "totalBytesProcessed": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "snapshotId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "filesNew",
+              "filesChanged",
+              "totalFilesProcessed",
+              "totalBytesProcessed"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "restore"
+                ]
+              },
+              "filesRestored": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "filesSkipped": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "bytesRestored": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "type",
+              "filesRestored",
+              "filesSkipped",
+              "bytesRestored"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "prune"
+                ]
+              },
+              "kept": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "removed": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "type",
+              "kept",
+              "removed"
+            ]
+          }
+        ]
+      },
+      "JobSupportDto": {
+        "properties": {
+          "droppedLines": {
+            "description": "Log lines that could not be streamed in time",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "localDroppedLines": {
+            "description": "Log lines that could not be written to the local support log",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "sessionId": {
+            "description": "Support code to share with FUTO when the logs were streamed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "droppedLines",
+          "localDroppedLines"
+        ],
+        "type": "object"
       },
       "LibraryResponseDto": {
         "properties": {
@@ -26116,17 +26457,6 @@
           "fatal"
         ],
         "type": "string"
-      },
-      "LogResponseDto": {
-        "properties": {
-          "logId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "logId"
-        ],
-        "type": "object"
       },
       "LoginCredentialDto": {
         "properties": {
@@ -30562,6 +30892,18 @@
         },
         "type": "object"
       },
+      "RepositorySyncDeletionResponseDto": {
+        "properties": {
+          "deleted": {
+            "description": "Whether the repository was deleted remotely and removed from this server",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "deleted"
+        ],
+        "type": "object"
+      },
       "RepositoryUpdateRequestDto": {
         "properties": {
           "name": {
@@ -30658,132 +31000,6 @@
           "angle"
         ],
         "type": "object"
-      },
-      "RunDto": {
-        "properties": {
-          "end": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "logFilePath": {
-            "type": "string"
-          },
-          "repositoryId": {
-            "type": "string"
-          },
-          "start": {
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/RunStatus"
-          },
-          "type": {
-            "$ref": "#/components/schemas/RunType"
-          }
-        },
-        "required": [
-          "id",
-          "logFilePath",
-          "repositoryId",
-          "start",
-          "status",
-          "type"
-        ],
-        "type": "object"
-      },
-      "RunHistoryResponseDto": {
-        "properties": {
-          "runs": {
-            "items": {
-              "$ref": "#/components/schemas/RunDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "runs"
-        ],
-        "type": "object"
-      },
-      "RunResponseDto": {
-        "properties": {
-          "run": {
-            "$ref": "#/components/schemas/RunDto"
-          }
-        },
-        "required": [
-          "run"
-        ],
-        "type": "object"
-      },
-      "RunStatus": {
-        "enum": [
-          "incomplete",
-          "complete",
-          "warn",
-          "failed",
-          "cancelled"
-        ],
-        "type": "string"
-      },
-      "RunType": {
-        "enum": [
-          "schedule",
-          "restore",
-          "backup",
-          "forget"
-        ],
-        "type": "string"
-      },
-      "RunningTaskDto": {
-        "properties": {
-          "logId": {
-            "type": "string"
-          },
-          "parentId": {
-            "type": "string"
-          },
-          "scheduleStatus": {
-            "items": {
-              "$ref": "#/components/schemas/ActiveScheduleItemDto"
-            },
-            "type": "array"
-          },
-          "type": {
-            "$ref": "#/components/schemas/TaskType"
-          }
-        },
-        "required": [
-          "parentId",
-          "type"
-        ],
-        "type": "object"
-      },
-      "RunningTaskListResponse": {
-        "properties": {
-          "tasks": {
-            "items": {
-              "$ref": "#/components/schemas/RunningTaskDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "tasks"
-        ],
-        "type": "object"
-      },
-      "RunningTaskStatus": {
-        "enum": [
-          "incomplete",
-          "complete",
-          "warn",
-          "failed",
-          "cancelled"
-        ],
-        "type": "string"
       },
       "ScheduleCreateRequestDto": {
         "properties": {
@@ -33898,6 +34114,59 @@
         ],
         "type": "object"
       },
+      "SupportModeResponseDto": {
+        "properties": {
+          "includePaths": {
+            "description": "Send file paths as-is instead of redacted placeholders",
+            "type": "boolean"
+          },
+          "remainingRuns": {
+            "description": "How many more backup, cleanup, restore and delete runs use verbose restic logging",
+            "maximum": 20,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "streamToFuto": {
+            "description": "Stream those runs’ logs to FUTO; requires the support-log-streaming feature",
+            "type": "boolean"
+          },
+          "streamingAvailable": {
+            "description": "Whether this account may stream support logs to FUTO",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "includePaths",
+          "remainingRuns",
+          "streamToFuto",
+          "streamingAvailable"
+        ],
+        "type": "object"
+      },
+      "SupportModeUpdateRequestDto": {
+        "properties": {
+          "includePaths": {
+            "description": "Send file paths as-is instead of redacted placeholders",
+            "type": "boolean"
+          },
+          "remainingRuns": {
+            "description": "How many more backup, cleanup, restore and delete runs use verbose restic logging",
+            "maximum": 20,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "streamToFuto": {
+            "description": "Stream those runs’ logs to FUTO; requires the support-log-streaming feature",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "includePaths",
+          "remainingRuns",
+          "streamToFuto"
+        ],
+        "type": "object"
+      },
       "SyncAckDeleteDto": {
         "properties": {
           "types": {
@@ -36137,15 +36406,6 @@
         },
         "type": "object"
       },
-      "TaskType": {
-        "enum": [
-          "schedule",
-          "restore",
-          "backup",
-          "forget"
-        ],
-        "type": "string"
-      },
       "TelemetryLevel": {
         "enum": [
           "full",
@@ -37920,6 +38180,29 @@
           }
         },
         "type": "object"
+      },
+      "YuccaJobName": {
+        "enum": [
+          "repository-backup",
+          "repository-prune",
+          "repository-restore",
+          "repository-restore-from-point",
+          "repository-snapshot-forget",
+          "repository-sync-metrics"
+        ],
+        "type": "string"
+      },
+      "YuccaJobStatus": {
+        "enum": [
+          "queued",
+          "running",
+          "complete",
+          "warn",
+          "failed",
+          "cancelled",
+          "incomplete"
+        ],
+        "type": "string"
       }
     }
   }
