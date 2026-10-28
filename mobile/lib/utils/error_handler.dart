@@ -35,7 +35,6 @@ void handleError(Object error, {StackTrace? stack, String? description}) {
   snackbar.error(message);
 }
 
-@visibleForTesting
 String? serverErrorMessage(Object error) {
   if (error is! ApiException || error.innerException != null || error.message == null) {
     return null;

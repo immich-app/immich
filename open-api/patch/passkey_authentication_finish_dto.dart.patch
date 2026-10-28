@@ -1,0 +1,18 @@
+@@ -16,7 +16,7 @@ class PasskeyAuthenticationFinishDto {
+     required this.response,
+   });
+ 
+-  PasskeyAuthenticationFinishDtoResponse response;
++  Map<String, dynamic> response;
+ 
+   @override
+   bool operator ==(Object other) => identical(this, other) || other is PasskeyAuthenticationFinishDto &&
+@@ -45,7 +45,7 @@ class PasskeyAuthenticationFinishDto {
+       final json = value.cast<String, dynamic>();
+ 
+       return PasskeyAuthenticationFinishDto(
+-        response: PasskeyAuthenticationFinishDtoResponse.fromJson(json[r'response'])!,
++        response: json[r'response'],
+       );
+     }
+     return null;

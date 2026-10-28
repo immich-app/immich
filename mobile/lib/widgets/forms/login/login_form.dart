@@ -20,11 +20,13 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
+import 'package:immich_mobile/providers/passkey.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -69,6 +71,7 @@ class LoginForm extends HookConsumerWidget {
     final passwordFocusNode = useFocusNode();
     final isOauthEnable = useState<bool>(false);
     final isPasswordLoginEnable = useState<bool>(false);
+    final isPasskeyEnable = useState<bool>(false);
     final oAuthButtonLabel = useState<String>('OAuth');
     final logoAnimationController = useAnimationController(duration: const Duration(seconds: 60));
     unawaited(logoAnimationController.repeat());
@@ -111,12 +114,18 @@ class LoginForm extends HookConsumerWidget {
           return;
         }
 
+        final passkeyEnabled = await ref.read(passkeyServiceProvider).isEnabled();
+        if (!context.mounted) {
+          return;
+        }
+
         final serverInfo = ref.read(serverInfoProvider);
         final features = serverInfo.serverFeatures;
         final config = serverInfo.serverConfig;
 
         isOauthEnable.value = features.oauthEnabled;
         isPasswordLoginEnable.value = features.passwordLogin;
+        isPasskeyEnable.value = passkeyEnabled;
         oAuthButtonLabel.value = config.oauthButtonText.isNotEmpty ? config.oauthButtonText : 'OAuth';
 
         serverEndpoint.value = endpoint;
@@ -413,6 +422,50 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
+    Future<void> passkeyLogin() async {
+      try {
+        final result = await ref.read(passkeyServiceProvider).login();
+        if (result == null || !context.mounted) {
+          return;
+        }
+
+        invalidateAllApiRepositoryProviders(ref);
+        final isSuccess = await ref.read(authProvider.notifier).saveAuthInfo(accessToken: result.accessToken);
+        if (isSuccess && context.mounted) {
+          if (result.shouldChangePassword && !result.isAdmin && isPasswordLoginEnable.value) {
+            unawaited(context.pushRoute(const ChangePasswordRoute()));
+            return;
+          }
+
+          await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+          if (isSyncRemoteDeletionsMode()) {
+            await getManageMediaPermission();
+          }
+          unawaited(handleSyncFlow());
+          if (!context.mounted) {
+            return;
+          }
+
+          ref.read(websocketProvider.notifier).connect();
+          unawaited(ref.read(featureMessageServiceProvider).markSeen());
+          unawaited(context.router.replaceAll([const TabShellRoute()]));
+        }
+      } catch (error, stack) {
+        log.severe('Error logging in with passkey', error, stack);
+
+        if (!context.mounted) {
+          return;
+        }
+
+        ImmichToast.show(
+          context: context,
+          msg: serverErrorMessage(error) ?? context.t.errors.something_went_wrong,
+          toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
+        );
+      }
+    }
+
     SingleChildRenderObjectWidget buildVersionCompatWarning() {
       unawaited(checkVersionMismatch());
 
@@ -513,19 +566,32 @@ class LoginForm extends HookConsumerWidget {
                       ],
                     ),
                   ),
+                if (isPasskeyEnable.value)
+                  ImmichForm(
+                    onSubmit: passkeyLogin,
+                    submitText: context.t.login_with_passkey,
+                    submitIcon: Icons.key_outlined,
+                    builder: (context, _) => isPasswordLoginEnable.value
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 12.0),
+                            child: Divider(color: context.colorScheme.onSurface, height: 5),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
                 if (isOauthEnable.value)
                   ImmichForm(
                     onSubmit: oAuthLogin,
                     submitText: oAuthButtonLabel.value,
                     submitIcon: Icons.pin_outlined,
-                    builder: (context, _) => isPasswordLoginEnable.value
+                    builder: (context, _) => isPasswordLoginEnable.value || isPasskeyEnable.value
                         ? Padding(
                             padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 12.0),
                             child: Divider(color: context.isDarkTheme ? Colors.white : Colors.black, height: 5),
                           )
                         : const SizedBox.shrink(),
                   ),
-                if (!isOauthEnable.value && !isPasswordLoginEnable.value) Center(child: Text(context.t.login_disabled)),
+                if (!isOauthEnable.value && !isPasswordLoginEnable.value && !isPasskeyEnable.value)
+                  Center(child: Text(context.t.login_disabled)),
                 ImmichTextButton(
                   labelText: context.t.back,
                   icon: Icons.arrow_back,

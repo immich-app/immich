@@ -63,4 +63,36 @@ void main() {
       verifyNever(() => apiRepository.finishRegistration(any()));
     });
   });
+
+  group('login', () {
+    final login = LoginResponseDto(
+      accessToken: 'token',
+      isAdmin: false,
+      isOnboarded: true,
+      name: 'user',
+      profileImagePath: '',
+      shouldChangePassword: false,
+      userEmail: 'user@immich.app',
+      userId: 'user-id',
+    );
+
+    setUp(() {
+      when(() => apiRepository.startAuthentication()).thenAnswer((_) async => '{"challenge":"abc"}');
+      when(() => apiRepository.finishAuthentication(any())).thenAnswer((_) async => login);
+    });
+
+    test("returns the server's login for the credential", () async {
+      when(() => hostApi.authenticate('{"challenge":"abc"}')).thenAnswer((_) async => '{"id":"credential"}');
+
+      expect(await sut.login(), login);
+      verify(() => apiRepository.finishAuthentication('{"id":"credential"}')).called(1);
+    });
+
+    test('does not finish when the user cancels', () async {
+      when(() => hostApi.authenticate(any())).thenAnswer((_) async => null);
+
+      expect(await sut.login(), isNull);
+      verifyNever(() => apiRepository.finishAuthentication(any()));
+    });
+  });
 }

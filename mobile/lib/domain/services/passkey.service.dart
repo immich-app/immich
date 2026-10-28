@@ -1,6 +1,7 @@
 import 'package:immich_mobile/data/server/passkey.dart';
 import 'package:immich_mobile/platform/passkey_api.g.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 
 class PasskeyService {
   final Logger _log = Logger("PasskeyService");
@@ -27,5 +28,14 @@ class PasskeyService {
 
     await _apiRepository.finishRegistration(response);
     return true;
+  }
+
+  Future<LoginResponseDto?> login() async {
+    final response = await _hostApi.authenticate(await _apiRepository.startAuthentication());
+    if (response == null) {
+      return null;
+    }
+
+    return _apiRepository.finishAuthentication(response);
   }
 }
