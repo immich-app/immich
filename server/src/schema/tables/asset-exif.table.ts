@@ -92,6 +92,9 @@ export class AssetExifTable {
   @Column({ type: 'character varying', nullable: true })
   projectionType!: string | null;
 
+  @Column({ type: 'boolean', default: false })
+  isSpatial!: Generated<boolean>;
+
   @Column({ type: 'character varying', nullable: true })
   profileDescription!: string | null;
 

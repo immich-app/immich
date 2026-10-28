@@ -380,6 +380,23 @@ describe(MetadataService.name, () => {
       },
     );
 
+    it.each([
+      { description: 'a stereo pair photo', tags: { StereoImageEntities: 2 }, isSpatial: true },
+      { description: 'a video with both eye views', tags: { StereoInfo: 3 }, isSpatial: true },
+      { description: 'a video with additional views', tags: { StereoInfo: 7 }, isSpatial: true },
+      { description: 'a video with only the left eye view', tags: { StereoInfo: 1 }, isSpatial: false },
+      { description: 'a regular asset', tags: {}, isSpatial: false },
+    ])('should set isSpatial to $isSpatial for $description', async ({ tags, isSpatial }) => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags(tags);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ exif: expect.objectContaining({ isSpatial }) }),
+      );
+    });
+
     it('should not delete latituide and longitude without reverse geocode', async () => {
       // regression test for issue 17511
       const asset = AssetFactory.from().exif().build();
@@ -1183,6 +1200,7 @@ describe(MetadataService.name, () => {
             orientation: tags.Orientation?.toString(),
             profileDescription: tags.ProfileDescription,
             projectionType: 'EQUIRECTANGULAR',
+            isSpatial: false,
             timeZone: tags.zone,
             rating: tags.Rating,
             country: null,

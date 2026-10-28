@@ -280,6 +280,7 @@ export class MetadataService extends BaseService {
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       projectionType: exifTags.ProjectionType ? exifTags.ProjectionType.toUpperCase() : null,
+      isSpatial: this.isSpatial(exifTags),
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
@@ -664,6 +665,11 @@ export class MetadataService extends BaseService {
       id,
       results.map((tag) => tag.id),
     );
+  }
+
+  private isSpatial(tags: ImmichTags): boolean {
+    // photos pair a left and right image in a `ster` group; videos set both eye bits of `stri`
+    return tags.StereoImageEntities === 2 || ((tags.StereoInfo ?? 0) & 0b11) === 0b11;
   }
 
   private isMotionPhoto(asset: { type: AssetType }, tags: ImmichTags): boolean {

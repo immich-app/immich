@@ -179,6 +179,7 @@
       visibility: $t('in_archive'),
       isFavorite: $t('favorite'),
       isNotInAlbum: $t('not_in_any_album'),
+      isSpatial: $t('search_filter_display_option_spatial'),
       type: $t('media_type'),
       query: $t('context'),
       city: $t('city'),

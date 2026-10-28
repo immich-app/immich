@@ -134,6 +134,7 @@
     searchManager.filter.display.isArchive ||
       searchManager.filter.display.isFavorite ||
       searchManager.filter.display.isNotInAlbum ||
+      searchManager.filter.display.isSpatial ||
       searchManager.filter.rating,
   );
 

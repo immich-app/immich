@@ -47,6 +47,11 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   // Apparently LensModel can also be a float: https://github.com/immich-app/immich/issues/30492
   LensModel?: StringOrNumber;
 
+  // Spatial (stereoscopic) media, decoded since ExifTool 13.60: the HEIC `ster` entity group
+  // and the eye-view bitmask from a video's `vexu/eyes/stri` box
+  StereoImageEntities?: number;
+  StereoInfo?: number;
+
   // Extended properties for image regions, such as faces
   RegionInfo?: {
     AppliedToDimensions: {
@@ -92,7 +97,7 @@ export class MetadataRepository {
     inferTimezoneFromDatestamps: true,
     inferTimezoneFromTimeStamp: true,
     useMWG: true,
-    numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
+    numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation', 'StereoInfo'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
     // eslint-disable-next-line import-x/no-named-as-default-member
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],

@@ -277,6 +277,7 @@ export class AssetRepository {
                 latitude: ref('latitude'),
                 longitude: ref('longitude'),
                 projectionType: ref('projectionType'),
+                isSpatial: ref('isSpatial'),
                 city: ref('city'),
                 livePhotoCID: ref('livePhotoCID'),
                 autoStackId: ref('autoStackId'),
