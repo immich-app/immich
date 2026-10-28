@@ -16,7 +16,7 @@
 
   let now = DateTime.now();
   let expiresAt = $derived(sharedLink.expiresAt ? DateTime.fromISO(sharedLink.expiresAt) : undefined);
-  let isExpired = $derived(expiresAt ? now > expiresAt : false);
+  let isExpired = $derived(expiresAt && now > expiresAt);
 
   const getCountDownExpirationDate = (expiresAtDate: DateTime, now: DateTime) => {
     const relativeUnits: ToRelativeUnit[] = ['days', 'hours', 'minutes', 'seconds'];

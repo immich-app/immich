@@ -2,9 +2,7 @@ import { getTabbable } from '#lib/utils/focus-util.ts';
 import { tick } from 'svelte';
 
 interface Options {
-  /**
-   * Set whether the trap is active or not.
-   */
+  /** Set whether the trap is active or not. */
   active?: boolean;
 }
 

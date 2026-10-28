@@ -150,10 +150,10 @@ test.describe('Timeline', () => {
   });
   test.describe('keyboard', () => {
     /**
-     * This text tests keyboard nativation, and also ensures that the scroll-to-asset behavior
-     * scrolls the minimum amount. That is, if you are navigating using right arrow (auto scrolling
-     * as necessary downwards), then the asset should always be at the lowest row of the grid.
-     */
+    This text tests keyboard nativation, and also ensures that the scroll-to-asset behavior
+    scrolls the minimum amount. That is, if you are navigating using right arrow (auto scrolling
+    as necessary downwards), then the asset should always be at the lowest row of the grid.
+    */
     test('Next/previous asset - ArrowRight/ArrowLeft', async ({ page }) => {
       await pageUtils.openPhotosPage(page);
       await thumbnailUtils.withAssetId(page, assets[0].id).focus();
