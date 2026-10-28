@@ -3,7 +3,7 @@
   import { getDatabaseBackupDateTime } from '$lib/services/database-backups.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { Card, CardBody, HStack, Icon, Stack, Text } from '@immich/ui';
+  import { Card, CardBody, Code, HStack, Icon, Stack, Text } from '@immich/ui';
   import { mdiAlertCircle, mdiCheckCircle, mdiDatabaseRefreshOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import type { Snippet } from 'svelte';
@@ -86,7 +86,7 @@
 
       <HStack>
         <Icon icon={mdiDatabaseRefreshOutline} size="16" color="gray" />
-        <Text size="small" class="font-mono break-all">{filename}</Text>
+        <Code size="small" class="break-all">{filename}</Code>
       </HStack>
 
       {#if status === BackupFileStatus.UnknownVersion}
