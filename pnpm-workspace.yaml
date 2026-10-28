@@ -29,44 +29,44 @@ allowBuilds:
   core-js-pure: false
   postman-code-generators: false
   unrs-resolver: false
-dedupePeerDependents: false
-injectWorkspacePackages: true
 overrides:
   canvas: 3.2.3
   sharp: ^0.35.3
   # 1.9.3-1.9.5 are confirmed broken
   tsc-alias: 1.9.7
 packageExtensions:
-  '@immich/ui':
-    dependencies:
-      tailwindcss: '>=4.1'
-  '@nestjs/swagger':
-    peerDependencies:
-      typescript: '*'
-  '@photo-sphere-viewer/equirectangular-video-adapter':
-    dependencies:
-      three: '*'
-  '@photo-sphere-viewer/video-plugin':
-    dependencies:
-      three: '*'
-  bcrypt:
-    dependencies:
-      node-addon-api: '*'
-      node-gyp: '*'
   nestjs-kysely:
     dependencies:
       tslib: '*'
   nestjs-otel:
     dependencies:
       tslib: '*'
+  '@photo-sphere-viewer/equirectangular-video-adapter':
+    dependencies:
+      three: '*'
+  '@photo-sphere-viewer/video-plugin':
+    dependencies:
+      three: '*'
   sharp:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
+  '@immich/ui':
+    dependencies:
+      tailwindcss: '>=4.1'
   tailwind-variants:
     dependencies:
       tailwindcss: '>=4.1'
+  bcrypt:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+  '@nestjs/swagger':
+    peerDependencies:
+      typescript: '*'
+dedupePeerDependents: false
 preferWorkspacePackages: true
+injectWorkspacePackages: true
 shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
