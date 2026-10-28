@@ -9,7 +9,7 @@ enum NativeCore {
   }
 
   private static let coreThumbhash = symbol("native_core_thumbhash", as: NativeCoreThumbhashFn.self)
-  private static let coreJxlDecode = symbol("native_core_jxl_decode", as: NativeCoreJxlDecodeFn.self)
+  private static let coreDecodeImage = symbol("native_core_decode_image", as: NativeCoreDecodeImageFn.self)
   private static let coreCancel = symbol("native_core_cancel", as: NativeCoreCancelFn.self)
 
   static func thumbhash(_ hash: Data) -> (width: Int, height: Int, pointer: UnsafeMutableRawPointer)? {
@@ -23,11 +23,11 @@ enum NativeCore {
     }
   }
 
-  static func decodeJxl(_ data: Data, targetWidth: Int64?, targetHeight: Int64?, maxPixelSize: Int, cancelled: UnsafeMutablePointer<Bool>) -> (width: Int, height: Int, pointer: UnsafeMutableRawPointer)? {
-    guard let coreJxlDecode else { return nil }
+  static func decodeImage(_ data: Data, targetWidth: Int64?, targetHeight: Int64?, maxPixelSize: Int, cancelled: UnsafeMutablePointer<Bool>) -> (width: Int, height: Int, pointer: UnsafeMutableRawPointer)? {
+    guard let coreDecodeImage else { return nil }
     var info = NativeCoreImageInfo()
     return data.withUnsafeBytes { bytes in
-      guard let pointer = coreJxlDecode(bytes.bindMemory(to: UInt8.self).baseAddress, bytes.count, false, UInt32(clamping: targetWidth ?? 0), UInt32(clamping: targetHeight ?? 0), UInt32(clamping: maxPixelSize), cancelled, &info)
+      guard let pointer = coreDecodeImage(bytes.bindMemory(to: UInt8.self).baseAddress, bytes.count, false, UInt32(clamping: targetWidth ?? 0), UInt32(clamping: targetHeight ?? 0), UInt32(clamping: maxPixelSize), cancelled, &info)
       else { return nil }
       return (Int(info.width), Int(info.height), UnsafeMutableRawPointer(pointer))
     }
