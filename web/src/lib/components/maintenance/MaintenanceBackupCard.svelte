@@ -51,7 +51,7 @@
   });
 </script>
 
-<Card class={`dark:bg-dark-900 ${className ?? ''}`}>
+<Card class="dark:bg-dark-900 {className ?? ''}">
   <CardBody class="px-6 pt-3 pb-4">
     <Stack gap={3} class="min-w-0 grow">
       <div class={actions ? 'flex items-center justify-between gap-3' : ''}>
