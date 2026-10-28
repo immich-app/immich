@@ -666,7 +666,11 @@ describe('core plugin', () => {
         });
 
         await expect(
-          ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id }),
+          ctx.sut.handleAssetTrigger({
+            workflowId: workflow.id,
+            assetId: asset.id,
+            trigger: WorkflowTrigger.AssetCreate,
+          }),
         ).resolves.toBeUndefined();
         await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
       });
@@ -691,7 +695,11 @@ describe('core plugin', () => {
         });
 
         await expect(
-          ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id }),
+          ctx.sut.handleAssetTrigger({
+            workflowId: workflow.id,
+            assetId: asset.id,
+            trigger: WorkflowTrigger.AssetCreate,
+          }),
         ).resolves.toBeUndefined();
         await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
       });
@@ -718,7 +726,11 @@ describe('core plugin', () => {
         });
 
         await expect(
-          ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id }),
+          ctx.sut.handleAssetTrigger({
+            workflowId: workflow.id,
+            assetId: asset.id,
+            trigger: WorkflowTrigger.AssetCreate,
+          }),
         ).resolves.toBeUndefined();
         await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
       });
@@ -743,7 +755,11 @@ describe('core plugin', () => {
         });
 
         await expect(
-          ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id }),
+          ctx.sut.handleAssetTrigger({
+            workflowId: workflow.id,
+            assetId: asset.id,
+            trigger: WorkflowTrigger.AssetCreate,
+          }),
         ).resolves.toBeUndefined();
         await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
       });
