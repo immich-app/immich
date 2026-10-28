@@ -5,13 +5,18 @@ import { locale } from '$lib/stores/preferences.store';
 import { renderWithTooltips } from '$tests/helpers';
 import MaintenanceBackupEntry from './MaintenanceBackupEntry.svelte';
 
-vi.mock('$lib/services/database-backups.service', () => ({
-  getDatabaseBackupActions: () => ({
-    Download: { type: 'command', title: 'Download', onAction: vi.fn() },
-    Delete: { type: 'command', title: 'Delete', onAction: vi.fn() },
-  }),
-  handleRestoreDatabaseBackup: vi.fn(),
-}));
+vi.mock('$lib/services/database-backups.service', async (importOriginal) => {
+  const original = await importOriginal<typeof import('$lib/services/database-backups.service')>();
+
+  return {
+    ...original,
+    getDatabaseBackupActions: () => ({
+      Download: { type: 'command', title: 'Download', onAction: vi.fn() },
+      Delete: { type: 'command', title: 'Delete', onAction: vi.fn() },
+    }),
+    handleRestoreDatabaseBackup: vi.fn(),
+  };
+});
 
 describe('MaintenanceBackupEntry', () => {
   beforeEach(() => {

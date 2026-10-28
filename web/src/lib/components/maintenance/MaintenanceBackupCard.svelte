@@ -1,5 +1,6 @@
 <script lang="ts">
   import { BackupFileStatus } from '$lib/constants';
+  import { getDatabaseBackupDateTime } from '$lib/services/database-backups.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { Card, CardBody, HStack, Icon, Stack, Text } from '@immich/ui';
@@ -30,13 +31,7 @@
 
   const filesizeText = $derived(getBytesWithUnit(filesize, 1));
 
-  const backupDateTime = $derived.by(() => {
-    const dateMatch = filename.match(/\d+T\d+/);
-    if (dateMatch) {
-      return DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: timezone }).toLocal();
-    }
-    return null;
-  });
+  const backupDateTime = $derived(getDatabaseBackupDateTime(filename, timezone)?.toLocal());
 
   const dateDisplay = $derived(
     backupDateTime?.toLocaleString(showFullDate ? DateTime.DATETIME_MED : DateTime.TIME_SIMPLE),

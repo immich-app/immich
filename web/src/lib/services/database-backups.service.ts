@@ -22,13 +22,17 @@ export const loadDatabaseBackups = async (): Promise<DatabaseBackupDto[]> => {
   return backups;
 };
 
-const getBackupTimestamp = (backup: DatabaseBackupDto): number => {
-  const dateMatch = backup.filename.match(/\d+T\d+/);
+export const getDatabaseBackupDateTime = (filename: string, zone?: string): DateTime | undefined => {
+  const dateMatch = filename.match(/\d+T\d+/);
   if (!dateMatch) {
-    return 0;
+    return;
   }
-  return DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: backup.timezone }).toMillis();
+
+  return DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone });
 };
+
+const getBackupTimestamp = (backup: DatabaseBackupDto): number =>
+  getDatabaseBackupDateTime(backup.filename, backup.timezone)?.toMillis() ?? 0;
 
 export const getLatestBackup = (backups: DatabaseBackupDto[]): DatabaseBackupDto | undefined => {
   if (backups.length === 0) {
