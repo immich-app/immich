@@ -8,10 +8,10 @@ type MatchValueConfig = {
   caseSensitive?: boolean;
 };
 
-const matchValueResult = (value: string | null | undefined, config: MatchValueConfig) => {
+const matchValueResult = (value: string | null, config: MatchValueConfig) => {
   const { pattern = '', matchType = 'contains', caseSensitive = false } = config;
 
-  if (value == null) {
+  if (value === null) {
     return { workflow: { continue: matchType === 'missing' } };
   }
 
@@ -152,7 +152,7 @@ const methods = wrapper<Manifest>({
     let value = data.asset.exifInfo?.[config.property];
 
     // Empty EXIF value is treated as missing to mirror behavior of the web UI
-    return matchValueResult(value == null || value === '' ? null : String(value), config);
+    return matchValueResult(value === null || value === undefined || value === '' ? null : String(value), config);
   },
 
   assetDateFilter: ({ config, data }) => {
