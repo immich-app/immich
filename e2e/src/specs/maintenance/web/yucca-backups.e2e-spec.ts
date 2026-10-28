@@ -10,12 +10,14 @@ test.describe('Yucca Backups', () => {
   let admin: LoginResponseDto;
   let socket: Socket;
 
-  const waitForTaskEnd = () =>
+  const finishedJobStatuses = new Set(['complete', 'warn', 'failed', 'cancelled', 'incomplete']);
+
+  const waitForJobEnd = () =>
     new Promise<void>((resolve) => {
       const listener = (msg: string) => {
         try {
           const payload = JSON.parse(msg);
-          if (payload.type === 'TaskEnd') {
+          if (payload.type === 'JobUpdate' && finishedJobStatuses.has(payload.job?.status)) {
             socket.offAny(listener);
             resolve();
           }
@@ -86,7 +88,7 @@ test.describe('Yucca Backups', () => {
     );
 
     const { repositories } = await sdk.getRepositories({ headers });
-    const backupEnd = waitForTaskEnd();
+    const backupEnd = waitForJobEnd();
     await sdk.createBackup(repositories[0].id, { headers });
     await backupEnd;
 

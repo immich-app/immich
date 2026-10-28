@@ -502,8 +502,8 @@ export type MaintenanceStatusResponseDto = {
     error?: string;
     progress?: number;
     task?: string;
-    /** Yucca log ID */
-    yuccaLogId?: string;
+    /** Yucca job ID */
+    yuccaJobId?: string;
 };
 export type NotificationCreateDto = {
     /** Additional notification data */
@@ -3455,14 +3455,54 @@ export type ImmichDatabaseDumpConfigDto = {
     enabled: boolean;
     keepLastAmount: number;
 };
-export type RunDto = {
+export type JobSummaryDto = {
+    "type": Type;
+    filesNew: number;
+    filesChanged: number;
+    totalFilesProcessed: number;
+    totalBytesProcessed: number;
+    snapshotId?: string;
+} | {
+    "type": Type2;
+    filesRestored: number;
+    filesSkipped: number;
+    bytesRestored: number;
+} | {
+    "type": Type3;
+    kept: number;
+    removed: number;
+};
+export type JobSupportDto = {
+    /** Log lines that could not be streamed in time */
+    droppedLines: number;
+    /** Log lines that could not be written to the local support log */
+    localDroppedLines: number;
+    /** Support code to share with FUTO when the logs were streamed */
+    sessionId?: string;
+};
+export type JobOutcomeDto = {
+    errors: string[];
+    summary?: JobSummaryDto;
+    support?: JobSupportDto;
+};
+export type JobProgressDto = {
+    bytesDone?: number;
+    currentFiles: string[];
+    estimatedEndAt?: string;
+    percentDone: number;
+    scanning: boolean;
+    totalBytes?: number;
+};
+export type JobDto = {
     end?: string;
     id: string;
-    logFilePath: string;
+    name: YuccaJobName;
+    outcome?: JobOutcomeDto;
+    progress?: JobProgressDto;
+    queuedAt: string;
     repositoryId: string;
-    start: string;
-    status: RunStatus;
-    "type": RunType;
+    start?: string;
+    status: YuccaJobStatus;
 };
 export type RepositoryBackendDto = {
     id: string;
@@ -3514,12 +3554,12 @@ export type ImmichBackupStatusDto = {
     databaseDump?: ImmichDatabaseDumpConfigDto;
     databaseDumpWarningIgnored?: boolean;
     integration?: ImmichIntegrationDto;
-    latestBackupRun?: RunDto;
+    latestBackupJob?: JobDto;
     repository?: LocalRepositoryDto;
     schedule?: ScheduleDto;
 };
-export type RunResponseDto = {
-    run: RunDto;
+export type JobListResponseDto = {
+    jobs: JobDto[];
 };
 export type OnboardingStatusResponseDto = {
     error?: string;
@@ -3592,17 +3632,14 @@ export type RepositoryUpdateRequestDto = {
 export type RepositoryUpdateResponseDto = {
     repository: LocalRepositoryDto;
 };
-export type LogResponseDto = {
-    logId: string;
+export type JobResponseDto = {
+    jobId: string;
 };
 export type RepositoryPrimaryBackendReconfigureRequestDto = {
     backendId: string;
 };
 export type RepositoryCheckImportResponseDto = {
     readable: boolean;
-};
-export type RunHistoryResponseDto = {
-    runs: RunDto[];
 };
 export type ListSnapshotsResponseDto = {
     snapshots: SnapshotDto[];
@@ -3614,6 +3651,10 @@ export type RepositorySnapshotRestoreRequestDto = {
 export type RepositorySnapshotRestoreFromPointRequestDto = {
     include?: string[];
     yuccaConfig?: string;
+};
+export type RepositorySyncDeletionResponseDto = {
+    /** Whether the repository was deleted remotely and removed from this server */
+    deleted: boolean;
 };
 export type ScheduleListResponseDto = {
     schedules: ScheduleDto[];
@@ -3636,18 +3677,23 @@ export type ScheduleUpdateRequestDto = {
 export type ScheduleUpdateResponseDto = {
     schedule: ScheduleDto;
 };
-export type ActiveScheduleItemDto = {
-    repositoryId: string;
-    status: RunningTaskStatus;
+export type SupportModeResponseDto = {
+    /** Send file paths as-is instead of redacted placeholders */
+    includePaths: boolean;
+    /** How many more backup, cleanup, restore and delete runs use verbose restic logging */
+    remainingRuns: number;
+    /** Stream those runs’ logs to FUTO; requires the support-log-streaming feature */
+    streamToFuto: boolean;
+    /** Whether this account may stream support logs to FUTO */
+    streamingAvailable: boolean;
 };
-export type RunningTaskDto = {
-    logId?: string;
-    parentId: string;
-    scheduleStatus?: ActiveScheduleItemDto[];
-    "type": TaskType;
-};
-export type RunningTaskListResponse = {
-    tasks: RunningTaskDto[];
+export type SupportModeUpdateRequestDto = {
+    /** Send file paths as-is instead of redacted placeholders */
+    includePaths: boolean;
+    /** How many more backup, cleanup, restore and delete runs use verbose restic logging */
+    remainingRuns: number;
+    /** Stream those runs’ logs to FUTO; requires the support-log-streaming feature */
+    streamToFuto: boolean;
 };
 export type LicenseResponseDto = UserLicense;
 export type ReleaseEventV1 = {
@@ -8487,38 +8533,67 @@ export function yuccaGetImmichBackupStatus(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * Get a run
+ * List jobs
  */
-export function yuccaGetRun({ id }: {
-    id: string;
+export function yuccaGetJobs({ repositoryId }: {
+    repositoryId: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: RunResponseDto;
-    }>(`/yucca/logs/${encodeURIComponent(id)}`, {
+        data: JobListResponseDto;
+    }>(`/yucca/jobs${QS.query(QS.explode({
+        repositoryId
+    }))}`, {
         ...opts
     }));
 }
 /**
- * Download a run log
+ * Cancel a job
  */
-export function yuccaDownloadRunLog({ id }: {
+export function yuccaCancelJob({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/yucca/jobs/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Get a job
+ */
+export function yuccaGetJob({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: JobDto;
+    }>(`/yucca/jobs/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Download a job log
+ */
+export function yuccaDownloadJobLog({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
-    }>(`/yucca/logs/${encodeURIComponent(id)}/download`, {
+    }>(`/yucca/jobs/${encodeURIComponent(id)}/download`, {
         ...opts
     }));
 }
 /**
- * Stream a run log
+ * Download a job support log
  */
-export function yuccaLogStreamSse({ id }: {
+export function yuccaDownloadJobSupportLog({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/yucca/logs/${encodeURIComponent(id)}/stream`, {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/yucca/jobs/${encodeURIComponent(id)}/support-log/download`, {
         ...opts
     }));
 }
@@ -8674,7 +8749,7 @@ export function yuccaCreateBackup({ id }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: LogResponseDto;
+        data: JobResponseDto;
     }>(`/yucca/repository/${encodeURIComponent(id)}`, {
         ...opts,
         method: "POST"
@@ -8730,19 +8805,6 @@ export function yuccaImportRepository({ backend, id }: {
     }));
 }
 /**
- * List backup runs
- */
-export function yuccaGetRunHistory({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: RunHistoryResponseDto;
-    }>(`/yucca/repository/${encodeURIComponent(id)}/runs`, {
-        ...opts
-    }));
-}
-/**
  * List snapshots
  */
 export function yuccaGetSnapshots({ id }: {
@@ -8763,7 +8825,7 @@ export function yuccaPruneRepository({ id }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: LogResponseDto;
+        data: JobResponseDto;
     }>(`/yucca/repository/${encodeURIComponent(id)}/snapshots/prune`, {
         ...opts,
         method: "POST"
@@ -8794,7 +8856,7 @@ export function yuccaRestoreSnapshot({ id, snapshot, repositorySnapshotRestoreRe
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: LogResponseDto;
+        data: JobResponseDto;
     }>(`/yucca/repository/${encodeURIComponent(id)}/snapshots/${encodeURIComponent(snapshot)}`, oazapfts.json({
         ...opts,
         method: "POST",
@@ -8829,7 +8891,7 @@ export function yuccaRestoreFromPoint({ backend, id, snapshot, repositorySnapsho
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: LogResponseDto;
+        data: JobResponseDto;
     }>(`/yucca/repository/${encodeURIComponent(id)}/snapshots/${encodeURIComponent(snapshot)}/restore-from-point${QS.query(QS.explode({
         backend
     }))}`, oazapfts.json({
@@ -8837,6 +8899,20 @@ export function yuccaRestoreFromPoint({ backend, id, snapshot, repositorySnapsho
         method: "POST",
         body: repositorySnapshotRestoreFromPointRequestDto
     })));
+}
+/**
+ * Sync a remote deletion
+ */
+export function yuccaSyncRepositoryDeletion({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: RepositorySyncDeletionResponseDto;
+    }>(`/yucca/repository/${encodeURIComponent(id)}/sync-deletion`, {
+        ...opts,
+        method: "POST"
+    }));
 }
 /**
  * List schedules
@@ -8892,26 +8968,30 @@ export function yuccaUpdateSchedule({ id, scheduleUpdateRequestDto }: {
     })));
 }
 /**
- * List running tasks
+ * Get support mode
  */
-export function yuccaGetRunningTasks(opts?: Oazapfts.RequestOpts) {
+export function yuccaGetSupportMode(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: RunningTaskListResponse;
-    }>("/yucca/tasks", {
+        data: SupportModeResponseDto;
+    }>("/yucca/support-mode", {
         ...opts
     }));
 }
 /**
- * Cancel a task
+ * Update support mode
  */
-export function yuccaCancelTask({ parentId }: {
-    parentId: string;
+export function yuccaUpdateSupportMode({ supportModeUpdateRequestDto }: {
+    supportModeUpdateRequestDto: SupportModeUpdateRequestDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/yucca/tasks/${encodeURIComponent(parentId)}/cancel`, {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SupportModeResponseDto;
+    }>("/yucca/support-mode", oazapfts.json({
         ...opts,
-        method: "POST"
-    }));
+        method: "PUT",
+        body: supportModeUpdateRequestDto
+    })));
 }
 export enum ReactionLevel {
     Album = "album",
@@ -9601,18 +9681,31 @@ export enum BackendType {
     Local = "local",
     S3 = "s3"
 }
-export enum RunStatus {
-    Incomplete = "incomplete",
+export enum YuccaJobName {
+    RepositoryBackup = "repository-backup",
+    RepositoryPrune = "repository-prune",
+    RepositoryRestore = "repository-restore",
+    RepositoryRestoreFromPoint = "repository-restore-from-point",
+    RepositorySnapshotForget = "repository-snapshot-forget",
+    RepositorySyncMetrics = "repository-sync-metrics"
+}
+export enum Type {
+    Backup = "backup"
+}
+export enum Type2 {
+    Restore = "restore"
+}
+export enum Type3 {
+    Prune = "prune"
+}
+export enum YuccaJobStatus {
+    Queued = "queued",
+    Running = "running",
     Complete = "complete",
     Warn = "warn",
     Failed = "failed",
-    Cancelled = "cancelled"
-}
-export enum RunType {
-    Schedule = "schedule",
-    Restore = "restore",
-    Backup = "backup",
-    Forget = "forget"
+    Cancelled = "cancelled",
+    Incomplete = "incomplete"
 }
 export enum BackupStatus {
     Incomplete = "incomplete",
@@ -9629,19 +9722,6 @@ export enum BootstrapStatus {
     NotReady = "not-ready",
     Ready = "ready",
     Error = "error"
-}
-export enum RunningTaskStatus {
-    Incomplete = "incomplete",
-    Complete = "complete",
-    Warn = "warn",
-    Failed = "failed",
-    Cancelled = "cancelled"
-}
-export enum TaskType {
-    Schedule = "schedule",
-    Restore = "restore",
-    Backup = "backup",
-    Forget = "forget"
 }
 export enum MemoryTypeV1 {
     OnThisDay = "on_this_day"

@@ -87,6 +87,12 @@ export class MaintenanceWorkerService {
 
     await this.logSecret();
 
+    // The backups SDK only dispatches its jobs (rollbacks, restores) on the instance holding this lock, and in
+    // maintenance mode no API worker is running to take it.
+    if (await this.databaseRepository.tryLock(DatabaseLock.YuccaModuleConfig)) {
+      this.moduleRef.get(YuccaService, { strict: false }).acquireLock();
+    }
+
     if (state.action) {
       void this.runAction(state.action);
     }
@@ -365,7 +371,7 @@ export class MaintenanceWorkerService {
         action: action.action,
         task: 'error',
         error: '' + error,
-        yuccaLogId: this.#status.yuccaLogId,
+        yuccaJobId: this.#status.yuccaJobId,
       });
     }
   }
@@ -377,12 +383,12 @@ export class MaintenanceWorkerService {
     });
 
     const yucca = this.moduleRef.get(YuccaService, { strict: false });
-    const { logId, task, immichBackupFileName } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
+    const { jobId, task, immichBackupFileName } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
 
     this.setStatus({
       active: true,
       action: MaintenanceAction.Rollback,
-      yuccaLogId: logId,
+      yuccaJobId: jobId,
     });
 
     await task;
