@@ -50,7 +50,7 @@
     "@nestjs/schedule": "^12.0.1",
     "@nestjs/swagger": "^12.0.0",
     "@nestjs/websockets": "^12.0.0",
-    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api": "^1.10.0",
     "@opentelemetry/context-async-hooks": "^3.0.0",
     "@opentelemetry/exporter-prometheus": "^0.300.0",
     "@opentelemetry/instrumentation-http": "^0.300.0",
