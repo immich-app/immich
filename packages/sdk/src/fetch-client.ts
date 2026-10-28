@@ -8823,7 +8823,8 @@ export enum ReleaseType {
     Prerelease = "prerelease"
 }
 export enum ServerFeatureLevel {
-    FeatureLevel = 1
+    FeatureLevel = 1,
+    Passkeys = 2
 }
 export enum UserMetadataKey {
     Preferences = "preferences",
