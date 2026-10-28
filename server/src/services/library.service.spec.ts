@@ -620,7 +620,7 @@ describe(LibraryService.name, () => {
 
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.LibraryDelete, data: { id: library.id } });
       expect(mocks.library.softDelete).toHaveBeenCalledWith(library.id);
-      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('LibraryDelete');
+      expect(mocks.event.emit).toHaveBeenCalledWith('LibraryDelete');
     });
 
     it('should allow an external library to be deleted', async () => {
@@ -726,7 +726,7 @@ describe(LibraryService.name, () => {
             exclusionPatterns: expect.any(Array),
           }),
         );
-        expect(mocks.websocket.serverSend).toHaveBeenCalledWith('LibraryCreate');
+        expect(mocks.event.emit).toHaveBeenCalledWith('LibraryCreate');
       });
 
       it('should create with name', async () => {
@@ -894,7 +894,7 @@ describe(LibraryService.name, () => {
         'library-id',
         expect.objectContaining({ importPaths: [`${cwd}/foo/bar`] }),
       );
-      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('LibraryUpdate');
+      expect(mocks.event.emit).toHaveBeenCalledWith('LibraryUpdate');
     });
   });
 
