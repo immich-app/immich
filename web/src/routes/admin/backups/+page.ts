@@ -8,15 +8,17 @@ export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
   const $t = await getFormatter();
 
-  const config = await getConfig().catch(() => undefined);
-  if (config && !config.backup.beta) {
-    const newConfig = await updateConfig({
-      adminConfigDto: { ...config, backup: { ...config.backup, beta: true } },
-    }).catch(() => undefined);
+  try {
+    const config = await getConfig();
+    if (!config.backup.beta) {
+      const newConfig = await updateConfig({
+        adminConfigDto: { ...config, backup: { ...config.backup, beta: true } },
+      });
 
-    if (newConfig) {
       eventManager.emit('SystemConfigUpdate', newConfig);
     }
+  } catch {
+    // no-op
   }
 
   return {
