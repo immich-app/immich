@@ -13,6 +13,10 @@ async function bootstrap() {
 
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, {
     bufferLogs: true,
+    // default module id algorithm can cause
+    // the ApiModule to be instatiated more than
+    // once when injected into YuccaModule
+    moduleIdGeneratorAlgorithm: 'deep-hash',
     routeConflictPolicy: { duplicate: 'error' },
     routeResolutionStrategy: 'specificity',
   });

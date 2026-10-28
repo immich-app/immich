@@ -67,7 +67,7 @@
           inputType={SettingInputFieldType.NUMBER}
           required={true}
           label={$t('admin.backup_keep_last_amount')}
-          disabled={disabled || !configToEdit.backup.database.enabled}
+          {disabled}
           bind:value={configToEdit.backup.database.keepLastAmount}
           isEdited={configToEdit.backup.database.keepLastAmount !== config.backup.database.keepLastAmount}
         />
