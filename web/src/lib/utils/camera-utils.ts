@@ -1,3 +1,5 @@
+const whitespace = /\s+/;
+
 const isWordChar = (char: string | undefined) => char !== undefined && /\w/.test(char);
 
 /**
@@ -6,8 +8,9 @@ Builds the display name of a camera from its EXIF make and model.
 Many cameras (e.g. Canon) already include the manufacturer in the model
 (`Canon EOS R6m2`), so prefixing the make again would produce "Canon Canon EOS R6m2".
 The make is only prepended when the model does not already start with it.
-Makes such as "NIKON CORPORATION" are compared by their first word, since the
-model is typically "NIKON D850".
+Makes made up of several words are matched word by word, since the model usually
+repeats only part of them: `NIKON CORPORATION` / `NIKON D850` and
+`EASTMAN KODAK COMPANY` / `KODAK EASYSHARE C875`.
 */
 export const getCameraName = (make?: string | null, model?: string | null): string => {
   const trimmedMake = make?.trim() ?? '';
@@ -21,11 +24,11 @@ export const getCameraName = (make?: string | null, model?: string | null): stri
     return trimmedMake;
   }
 
-  const makeName = trimmedMake.split(/\s+/, 1)[0].toLocaleLowerCase();
-  const lowerModel = trimmedModel.toLocaleLowerCase();
-  if (lowerModel.startsWith(makeName) && !isWordChar(lowerModel[makeName.length])) {
-    return trimmedModel;
-  }
+  const lowerModel = trimmedModel.toLowerCase();
+  const modelIncludesMake = trimmedMake
+    .toLowerCase()
+    .split(whitespace)
+    .some((word) => lowerModel.startsWith(word) && !isWordChar(lowerModel[word.length]));
 
-  return `${trimmedMake} ${trimmedModel}`;
+  return modelIncludesMake ? trimmedModel : `${trimmedMake} ${trimmedModel}`;
 };

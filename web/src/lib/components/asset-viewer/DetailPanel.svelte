@@ -204,16 +204,17 @@
 
           <div>
             {#if asset.exifInfo?.make || asset.exifInfo?.model}
+              {const cameraName = getCameraName(asset.exifInfo.make, asset.exifInfo.model)}
               <p>
                 <a
                   href={Route.search({
                     make: asset.exifInfo?.make ?? undefined,
                     model: asset.exifInfo?.model ?? undefined,
                   })}
-                  title="{$t('search_for')} {getCameraName(asset.exifInfo.make, asset.exifInfo.model)}"
+                  title="{$t('search_for')} {cameraName}"
                   class="hover:text-primary"
                 >
-                  {getCameraName(asset.exifInfo.make, asset.exifInfo.model)}
+                  {cameraName}
                 </a>
               </p>
             {/if}

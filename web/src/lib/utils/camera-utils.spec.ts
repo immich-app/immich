@@ -16,6 +16,11 @@ describe('getCameraName', () => {
     expect(getCameraName('OLYMPUS IMAGING CORP.', 'OLYMPUS E-M1')).toBe('OLYMPUS E-M1');
   });
 
+  it('should match any word of a multi-word make', () => {
+    expect(getCameraName('EASTMAN KODAK COMPANY', 'KODAK EASYSHARE C875')).toBe('KODAK EASYSHARE C875');
+    expect(getCameraName('EASTMAN KODAK COMPANY', 'EASTMAN KODAK 1')).toBe('EASTMAN KODAK 1');
+  });
+
   it('should prepend the make when the model does not include it', () => {
     expect(getCameraName('SONY', 'ILCE-7M4')).toBe('SONY ILCE-7M4');
     expect(getCameraName('FUJIFILM', 'X-T5')).toBe('FUJIFILM X-T5');

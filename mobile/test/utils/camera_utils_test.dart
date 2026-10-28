@@ -18,6 +18,11 @@ void main() {
       expect(getCameraName('OLYMPUS IMAGING CORP.', 'OLYMPUS E-M1'), 'OLYMPUS E-M1');
     });
 
+    test('matches any word of a multi-word make', () {
+      expect(getCameraName('EASTMAN KODAK COMPANY', 'KODAK EASYSHARE C875'), 'KODAK EASYSHARE C875');
+      expect(getCameraName('EASTMAN KODAK COMPANY', 'EASTMAN KODAK 1'), 'EASTMAN KODAK 1');
+    });
+
     test('prepends the make when the model does not include it', () {
       expect(getCameraName('SONY', 'ILCE-7M4'), 'SONY ILCE-7M4');
       expect(getCameraName('FUJIFILM', 'X-T5'), 'FUJIFILM X-T5');
