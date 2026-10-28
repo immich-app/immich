@@ -1,15 +1,15 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { getAdminConfigQuery, updateAdminConfigMutation } from '$lib/queries/config-admin.query';
-  import StorageTemplateVariablesModal from '$lib/modals/StorageTemplateVariablesModal.svelte';
-  import { Route } from '$lib/route';
+  import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery, updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
+  import StorageTemplateVariablesModal from '#lib/modals/StorageTemplateVariablesModal.svelte';
+  import { Route } from '#lib/route.ts';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
   import { cloneDeep } from 'lodash-es';
   import { Code, Heading, IconButton, Link, modalManager, Text } from '@immich/ui';

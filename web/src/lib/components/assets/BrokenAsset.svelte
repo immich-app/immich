@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cleanClass } from '$lib';
+  import { cleanClass } from '#lib';
   import { Icon } from '@immich/ui';
   import { mdiImageBrokenVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';

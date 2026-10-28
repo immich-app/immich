@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import SharedLinkFormFields from '$lib/components/SharedLinkFormFields.svelte';
-  import { Route } from '$lib/route';
-  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { getSharedLinkQuery, updateSharedLinkMutation } from '$lib/queries/shared-link.query';
+  import SharedLinkFormFields from '#lib/components/SharedLinkFormFields.svelte';
+  import { Route } from '#lib/route.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getSharedLinkQuery, updateSharedLinkMutation } from '#lib/queries/shared-link.query.ts';
   import { SharedLinkType } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { mdiLink } from '@mdi/js';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ByteUnit } from '$lib/utils/byte-units';
+  import { ByteUnit } from '#lib/utils/byte-units.ts';
   import { Icon, Text } from '@immich/ui';
   import type { Snippet } from 'svelte';
 

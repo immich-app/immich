@@ -1,10 +1,10 @@
+import en from '#i18n/en.json';
+import { getAssetUrl, memoryLaneTitle, semverToName } from '#lib/utils.ts';
 import { AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
 import { addMessages, init } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import en from '$i18n/en.json';
-import { getAssetUrl, memoryLaneTitle, semverToName } from '$lib/utils';
-import { assetFactory } from '@test-data/factories/asset-factory';
-import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
+import { assetFactory } from '#test-data/factories/asset-factory.ts';
+import { sharedLinkFactory } from '#test-data/factories/shared-link-factory.ts';
 
 describe('utils', () => {
   describe(getAssetUrl.name, () => {

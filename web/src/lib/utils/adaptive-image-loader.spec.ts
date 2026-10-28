@@ -1,7 +1,7 @@
-import { AdaptiveImageLoader, type QualityList } from '$lib/utils/adaptive-image-loader.svelte';
-import { cancelImageUrl } from '$lib/utils/sw-messaging';
+import { AdaptiveImageLoader, type QualityList } from '#lib/utils/adaptive-image-loader.svelte.ts';
+import { cancelImageUrl } from '#lib/utils/sw-messaging.ts';
 
-vi.mock('$lib/utils/sw-messaging', () => ({
+vi.mock('#lib/utils/sw-messaging.js', () => ({
   cancelImageUrl: vi.fn(),
 }));
 

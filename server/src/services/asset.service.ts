@@ -91,6 +91,7 @@ export class AssetService extends BaseService {
 
     let previousMotion: { id: string } | null = null;
     if (rest.livePhotoVideoId) {
+      await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [rest.livePhotoVideoId] });
       await onBeforeLink(repos, { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId });
     } else if (rest.livePhotoVideoId === null) {
       const asset = await this.findOrFail(id);

@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getAdminConfigQuery } from '$lib/queries/config-admin.query';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { cloneDeep } from 'lodash-es';
   import SettingSelect from './SettingSelect.svelte';
   import { Colorspace, ImageFormat } from '@immich/sdk';
   import { fade } from 'svelte/transition';
 
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { t } from 'svelte-i18n';
 
   const query = createPreloadedQuery(getAdminConfigQuery);
@@ -36,13 +36,14 @@
             bind:value={configToEdit.image.thumbnail.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
+              { value: ImageFormat.Jxl, text: 'JPEG XL' },
               { value: ImageFormat.Webp, text: 'WebP' },
             ]}
             name="format"
             isEdited={configToEdit.image.thumbnail.format !== config.image.thumbnail.format}
             {disabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.thumbnail.progressive = false;
               }
             }}
@@ -80,7 +81,7 @@
             checked={configToEdit.image.thumbnail.progressive}
             onToggle={(isChecked) => (configToEdit.image.thumbnail.progressive = isChecked)}
             isEdited={configToEdit.image.thumbnail.progressive !== config.image.thumbnail.progressive}
-            disabled={disabled || configToEdit.image.thumbnail.format === ImageFormat.Webp}
+            disabled={disabled || configToEdit.image.thumbnail.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -95,13 +96,14 @@
             bind:value={configToEdit.image.preview.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
+              { value: ImageFormat.Jxl, text: 'JPEG XL' },
               { value: ImageFormat.Webp, text: 'WebP' },
             ]}
             name="format"
             isEdited={configToEdit.image.preview.format !== config.image.preview.format}
             {disabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.preview.progressive = false;
               }
             }}
@@ -138,7 +140,7 @@
             checked={configToEdit.image.preview.progressive}
             onToggle={(isChecked) => (configToEdit.image.preview.progressive = isChecked)}
             isEdited={configToEdit.image.preview.progressive !== config.image.preview.progressive}
-            disabled={disabled || configToEdit.image.preview.format === ImageFormat.Webp}
+            disabled={disabled || configToEdit.image.preview.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -164,13 +166,14 @@
             bind:value={configToEdit.image.fullsize.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
+              { value: ImageFormat.Jxl, text: 'JPEG XL' },
               { value: ImageFormat.Webp, text: 'WebP' },
             ]}
             name="format"
             isEdited={configToEdit.image.fullsize.format !== config.image.fullsize.format}
             disabled={disabled || !configToEdit.image.fullsize.enabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.fullsize.progressive = false;
               }
             }}
@@ -193,7 +196,7 @@
             isEdited={configToEdit.image.fullsize.progressive !== config.image.fullsize.progressive}
             disabled={disabled ||
               !configToEdit.image.fullsize.enabled ||
-              configToEdit.image.fullsize.format === ImageFormat.Webp}
+              configToEdit.image.fullsize.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 

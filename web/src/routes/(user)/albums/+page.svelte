@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { scrollMemory } from '$lib/actions/scroll-memory';
+  import { scrollMemory } from '#lib/actions/scroll-memory.ts';
   import AlbumsControls from './AlbumsControls.svelte';
-  import Albums from '$lib/components/album-page/AlbumsList.svelte';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import GroupTab from '$lib/elements/GroupTab.svelte';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { getAllAlbumsQuery } from '$lib/queries/album.query';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { Route } from '$lib/route';
-  import { AlbumFilter, albumViewSettings } from '$lib/stores/preferences.store';
-  import { createAlbumAndRedirect } from '$lib/utils/album-utils';
+  import Albums from '#lib/components/album-page/AlbumsList.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import GroupTab from '#lib/elements/GroupTab.svelte';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { getAllAlbumsQuery } from '#lib/queries/album.query.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { Route } from '#lib/route.ts';
+  import { AlbumFilter, albumViewSettings } from '#lib/stores/preferences.store.ts';
+  import { createAlbumAndRedirect } from '#lib/utils/album-utils.ts';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 

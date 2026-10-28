@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import { Link } from '@immich/ui';
 
   type Props = {

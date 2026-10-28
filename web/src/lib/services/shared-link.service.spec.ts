@@ -1,7 +1,7 @@
-import { asUrl } from '$lib/services/shared-link.service';
-import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
+import { asUrl } from '#lib/services/shared-link.service.ts';
+import { sharedLinkFactory } from '#test-data/factories/shared-link-factory';
 
-vi.mock(import('$lib/queries/client'), async (importOriginal) => ({
+vi.mock(import('#lib/queries/client.js'), async (importOriginal) => ({
   ...(await importOriginal()),
   readPreloadedQuery: vi.fn().mockReturnValue({ server: { externalDomain: 'http://localhost:2283' } }),
 }));

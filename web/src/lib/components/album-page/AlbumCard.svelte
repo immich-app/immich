@@ -1,7 +1,7 @@
 <script lang="ts">
-  import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getShortDateRange } from '$lib/utils/date-time';
+  import AlbumCover from '#lib/components/album-page/AlbumCover.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getShortDateRange } from '#lib/utils/date-time.ts';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { ContextMenuButton, type MenuItems } from '@immich/ui';
   import { t } from 'svelte-i18n';

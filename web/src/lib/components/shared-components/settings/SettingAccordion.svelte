@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { accordionManager } from '$lib/managers/accordion-manager.svelte';
+  import { accordionManager } from '#lib/managers/accordion-manager.svelte.ts';
   import { Icon } from '@immich/ui';
   import { onDestroy, type Snippet } from 'svelte';
   import { slide } from 'svelte/transition';

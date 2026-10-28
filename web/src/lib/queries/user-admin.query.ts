@@ -1,3 +1,5 @@
+import { getHeatmapRange } from '#lib';
+import { asMutation, queryClient } from '#lib/queries/client.ts';
 import {
   CalendarHeatmapType,
   createUserAdmin,
@@ -12,8 +14,6 @@ import {
   type UserAdminResponseDto,
 } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
-import { getHeatmapRange } from '$lib';
-import { asMutation, queryClient } from '$lib/queries/client';
 
 const findOrFail = (users: UserAdminResponseDto[], id: string) => {
   const user = users.find((user) => user.id === id);

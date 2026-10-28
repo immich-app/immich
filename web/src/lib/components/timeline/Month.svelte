@@ -1,14 +1,14 @@
 <script lang="ts">
-  import AssetLayout from '$lib/components/timeline/AssetLayout.svelte';
-  import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { TimelineDay } from '$lib/managers/timeline-manager/timeline-day.svelte';
-  import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { assetsSnapshot, filterIsInOrNearViewport } from '$lib/managers/timeline-manager/utils.svelte';
-  import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
-  import { uploadAssetsStore } from '$lib/stores/upload';
-  import type { CommonPosition } from '$lib/utils/layout-utils';
-  import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
+  import AssetLayout from '#lib/components/timeline/AssetLayout.svelte';
+  import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
+  import type { TimelineMonth } from '#lib/managers/timeline-manager/timeline-month.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { assetsSnapshot, filterIsInOrNearViewport } from '#lib/managers/timeline-manager/utils.svelte.ts';
+  import type { VirtualScrollManager } from '#lib/managers/VirtualScrollManager/VirtualScrollManager.svelte.ts';
+  import { uploadAssetsStore } from '#lib/stores/upload.ts';
+  import type { CommonPosition } from '#lib/utils/layout-utils.ts';
+  import { fromTimelinePlainDate, getDateLocaleString } from '#lib/utils/timeline-util.ts';
   import { Icon } from '@immich/ui';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import type { Snippet } from 'svelte';

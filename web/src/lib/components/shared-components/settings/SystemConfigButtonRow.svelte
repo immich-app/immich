@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { createPreloadedQuery } from '$lib/queries/client';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
   import {
     getAdminConfigDefaultsQuery,
     getAdminConfigQuery,
     updateAdminConfigMutation,
-  } from '$lib/queries/config-admin.query';
+  } from '#lib/queries/config-admin.query.ts';
   import type { AdminConfigDto } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
   import { createMutation } from '@tanstack/svelte-query';

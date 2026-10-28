@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import { AssetAction } from '$lib/constants';
-  import { toggleArchive } from '$lib/utils/asset-utils';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { shortcut } from '#lib/actions/shortcut.ts';
+  import type { OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import { AssetAction } from '#lib/constants.ts';
+  import { toggleArchive } from '#lib/utils/asset-utils.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';

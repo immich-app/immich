@@ -1,16 +1,16 @@
+import { getAnimateMock } from '#lib/__mocks__/animate.mock.ts';
+import { getResizeObserverMock } from '#lib/__mocks__/resize-observer.mock.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
+import { renderWithTooltips } from '#tests/helpers';
 import { updateAsset } from '@immich/sdk';
 import { fireEvent, waitFor } from '@testing-library/svelte';
-import { getAnimateMock } from '$lib/__mocks__/animate.mock';
-import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-import { renderWithTooltips } from '$tests/helpers';
-import { assetFactory } from '@test-data/factories/asset-factory';
-import { preferencesFactory } from '@test-data/factories/preferences-factory';
-import { userAdminFactory } from '@test-data/factories/user-factory';
+import { assetFactory } from '#test-data/factories/asset-factory';
+import { preferencesFactory } from '#test-data/factories/preferences-factory';
+import { userAdminFactory } from '#test-data/factories/user-factory';
 import AssetViewer from './AssetViewer.svelte';
 
-vi.mock('$lib/managers/feature-flags-manager.svelte', () => ({
+vi.mock('#lib/managers/feature-flags-manager.svelte.js', () => ({
   featureFlagsManager: {
     init: vi.fn(),
     loadFeatureFlags: vi.fn(),
@@ -18,7 +18,7 @@ vi.mock('$lib/managers/feature-flags-manager.svelte', () => ({
   } as never,
 }));
 
-vi.mock('$lib/stores/ocr.svelte', () => ({
+vi.mock('#lib/stores/ocr.svelte.js', () => ({
   ocrManager: {
     clear: vi.fn(),
     getAssetOcr: vi.fn(),

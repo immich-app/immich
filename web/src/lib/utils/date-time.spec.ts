@@ -1,10 +1,7 @@
-import { writable } from 'svelte/store';
-import { locale } from '$lib/stores/preferences.store';
+import { locale } from '#lib/stores/preferences.store.ts';
 import { getAlbumDateRange, getShortDateRange } from './date-time';
 
-vitest.mock('$lib/stores/preferences.store', () => ({
-  locale: writable('en'),
-}));
+vitest.mock('#lib/stores/preferences.store.js', { spy: true });
 
 describe('getShortDateRange', () => {
   beforeEach(() => {

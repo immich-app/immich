@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import PeopleFilterUserPicker from '$lib/modals/PeopleFilterUserPicker.svelte';
-  import type { PeopleFilter } from '$lib/types';
-  import { handleError } from '$lib/utils/handle-error';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import PeopleFilterUserPicker from '#lib/modals/PeopleFilterUserPicker.svelte';
+  import type { PeopleFilter } from '#lib/types.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { getClusterGroupUsers, type UserResponseDto } from '@immich/sdk';
   import { Button, Checkbox, FormModal, Label, modalManager, Stack, Text } from '@immich/ui';
   import { mdiClose, mdiTune } from '@mdi/js';

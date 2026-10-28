@@ -1,3 +1,8 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { readPreloadedQuery } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { Route } from '#lib/route.ts';
+import { copyToClipboard } from '#lib/utils.ts';
 import { defaultProvider, screencastManager, themeManager, ThemePreference, type ActionItem } from '@immich/ui';
 import {
   mdiAccountMultipleOutline,
@@ -30,11 +35,6 @@ import {
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { readPreloadedQuery } from '$lib/queries/client';
-import { getUserConfigQuery } from '$lib/queries/config-user.query';
-import { Route } from '$lib/route';
-import { copyToClipboard } from '$lib/utils';
 
 export const getPagesProvider = ($t: MessageFormatter) => {
   const adminPages: ActionItem[] = [

@@ -1,3 +1,11 @@
+import WorkflowDuplicateModal from '#lib/modals/WorkflowDuplicateModal.svelte';
+import WorkflowLogsModal from '#lib/modals/WorkflowLogsModal.svelte';
+import WorkflowTemplatePickerModal from '#lib/modals/WorkflowTemplatePickerModal.svelte';
+import { executeMutation } from '#lib/queries/client.ts';
+import { createWorkflowMutation, deleteWorkflowMutation, updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
+import { Route } from '#lib/route.ts';
+import { copyToClipboard, downloadJson } from '#lib/utils.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { WorkflowTrigger, type WorkflowResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import {
@@ -16,14 +24,6 @@ import {
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import WorkflowDuplicateModal from '$lib/modals/WorkflowDuplicateModal.svelte';
-import WorkflowLogsModal from '$lib/modals/WorkflowLogsModal.svelte';
-import WorkflowTemplatePickerModal from '$lib/modals/WorkflowTemplatePickerModal.svelte';
-import { executeMutation } from '$lib/queries/client';
-import { createWorkflowMutation, deleteWorkflowMutation, updateWorkflowMutation } from '$lib/queries/workflow.query';
-import { Route } from '$lib/route';
-import { copyToClipboard, downloadJson } from '$lib/utils';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getWorkflowsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {

@@ -53,7 +53,7 @@ export default defineConfig(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    // ignores: ['**/service-worker/**'],
+    ignores: ['**/service-worker/**'],
   },
   {
     ignores: [
@@ -74,6 +74,7 @@ export default defineConfig(
       'tailwind.config.js',
       'coverage',
       'vite.config.ts',
+      '**/service-worker/**',
     ],
   },
   typescriptEslint.configs.recommended,

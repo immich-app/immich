@@ -1,3 +1,12 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
+import { Route } from '#lib/route.ts';
+import { maintenanceStore } from '#lib/stores/maintenance.store.ts';
+import { createEventEmitter } from '#lib/utils/eventemitter.ts';
 import {
   MaintenanceAction,
   type AssetResponseDto,
@@ -12,15 +21,6 @@ import { isEqual } from 'lodash-es';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
 import { page } from '$app/state';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { queryClient } from '$lib/queries/client';
-import { getNotificationsQuery } from '$lib/queries/notification.query';
-import { getServerConfigQuery } from '$lib/queries/server.query';
-import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
-import { Route } from '$lib/route';
-import { maintenanceStore } from '$lib/stores/maintenance.store';
-import { createEventEmitter } from '$lib/utils/eventemitter';
 
 interface AppRestartEvent {
   isMaintenanceMode: boolean;
