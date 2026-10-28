@@ -112,9 +112,6 @@ importers:
       '@faker-js/faker':
         specifier: ^10.1.0
         version: 10.6.0
-      '@futo-org/backups-orchestrator-ui':
-        specifier: 1.11.2
-        version: 1.11.2(@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.2(@typescript-eslint/types@8.71.2)))(@lingui/core@5.9.5)(supports-color@8.1.1)(svelte-i18n-lingui@0.2.2(@lingui/cli@6.10.0(esbuild@0.28.2)(rolldown@1.2.13)(supports-color@8.1.1))(@lingui/core@5.9.5)(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.2(@typescript-eslint/types@8.71.2)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       '@immich/cli':
         specifier: workspace:*
         version: link:../packages/cli

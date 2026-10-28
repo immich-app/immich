@@ -1,4 +1,4 @@
-import * as sdk from '@futo-org/backups-orchestrator-ui/sdk';
+import * as sdk from '@immich/sdk';
 import { LoginResponseDto, StorageFolder } from '@immich/sdk';
 import { io, Socket } from 'socket.io-client';
 import { createUserDto } from 'src/fixtures';
@@ -25,7 +25,7 @@ describe('/yucca', () => {
     requestOpts = { headers: asBearerAuth(admin.accessToken) };
 
     await utils.resetBackups(admin.accessToken);
-    await sdk.resetOrchestrator(requestOpts);
+    await sdk.yuccaResetOrchestrator(requestOpts);
 
     socket = io(baseUrl, {
       path: '/api/yucca/socket.io',
@@ -65,7 +65,7 @@ describe('/yucca', () => {
 
   describe('Orchestration Module', async () => {
     it('works', async () => {
-      await expect(sdk.onboardingStatus(requestOpts)).resolves.toEqual(
+      await expect(sdk.yuccaOnboardingStatus(requestOpts)).resolves.toEqual(
         expect.objectContaining({
           hasOnboardedKey: false,
           hasBackend: false,
@@ -77,13 +77,13 @@ describe('/yucca', () => {
     });
 
     it('is inaccessible without admin', async () => {
-      await expect(sdk.onboardingStatus({ headers: asBearerAuth(nonAdmin.accessToken) })).rejects.toEqual(
+      await expect(sdk.yuccaOnboardingStatus({ headers: asBearerAuth(nonAdmin.accessToken) })).rejects.toEqual(
         expect.objectContaining({ data: { message: expect.any(String) } }),
       );
     });
 
     it('is inaccessible without logging in', async () => {
-      await expect(sdk.onboardingStatus()).rejects.toEqual(
+      await expect(sdk.yuccaOnboardingStatus()).rejects.toEqual(
         expect.objectContaining({ data: { message: 'Authentication required' } }),
       );
     });
@@ -91,9 +91,11 @@ describe('/yucca', () => {
 
   describe('Local Backup', { concurrent: false }, async () => {
     beforeAll(async () => {
-      await sdk.importRecoveryKey(
+      await sdk.yuccaImportRecoveryKey(
         {
-          recoveryKey: '0'.repeat(64),
+          importRecoveryKeyRequest: {
+            recoveryKey: '0'.repeat(64),
+          },
         },
         requestOpts,
       );
@@ -102,9 +104,11 @@ describe('/yucca', () => {
     it('configures a local backend', { concurrent: false }, async () => {
       await utils.mkFolder('/local-backend');
 
-      await sdk.createLocalBackend(
+      await sdk.yuccaCreateLocalBackend(
         {
-          path: '/local-backend',
+          createLocalBackendRequestDto: {
+            path: '/local-backend',
+          },
         },
         requestOpts,
       );
@@ -113,21 +117,23 @@ describe('/yucca', () => {
     it('configures Immich backup', { concurrent: false }, async () => {
       const event = waitForMessage('IntegrationUpdate');
 
-      await sdk.configureImmichIntegration(
+      await sdk.yuccaConfigureImmichIntegration(
         {
-          name: 'Immich',
-          worm: false,
-          cron: '0 3 * * *',
-          backupConfiguration: true,
-          dataFolders: [StorageFolder.Backups, StorageFolder.Upload],
-          libraries: ['all'],
+          configureImmichIntegrationRequestDto: {
+            name: 'Immich',
+            worm: false,
+            cron: '0 3 * * *',
+            backupConfiguration: true,
+            dataFolders: [StorageFolder.Backups, StorageFolder.Upload],
+            libraries: ['all'],
+          },
         },
         requestOpts,
       );
 
       await event;
 
-      await expect(sdk.getIntegrations(requestOpts)).resolves.toEqual(
+      await expect(sdk.yuccaGetIntegrations(requestOpts)).resolves.toEqual(
         expect.objectContaining({
           immichIntegration: expect.objectContaining({
             configuration: {
@@ -155,7 +161,7 @@ describe('/yucca', () => {
         importPaths: ['/test'],
       }));
 
-      await expect(sdk.getIntegrations(requestOpts)).resolves.toEqual(
+      await expect(sdk.yuccaGetIntegrations(requestOpts)).resolves.toEqual(
         expect.objectContaining({
           immichIntegration: expect.any(Object),
           immichState: expect.objectContaining({
@@ -173,18 +179,19 @@ describe('/yucca', () => {
     it('creates a snapshot', { concurrent: false }, async () => {
       const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
 
-      const { repositories } = await sdk.getRepositories(requestOpts);
+      const { repositories } = await sdk.yuccaGetRepositories(requestOpts);
       const { id } = repositories[0];
 
       filename = await utils.createBackup(admin.accessToken);
 
-      await sdk.createBackup(id, requestOpts);
+      await sdk.yuccaCreateBackup({ id }, requestOpts);
       await event;
 
-      const { snapshots } = await sdk.getSnapshots(id, requestOpts);
+      const { snapshots } = await sdk.yuccaGetSnapshots({ id }, requestOpts);
       const { id: snapshotId } = snapshots[0];
 
-      await expect(sdk.getSnapshotListing(id, snapshotId, {}, requestOpts)).resolves.toMatchInlineSnapshot(`
+      await expect(sdk.yuccaGetSnapshotListing({ id, snapshot: snapshotId }, requestOpts)).resolves
+        .toMatchInlineSnapshot(`
         {
           "items": [
             {
@@ -201,7 +208,7 @@ describe('/yucca', () => {
         }
       `);
 
-      await expect(sdk.getSnapshotListing(id, snapshotId, { path: '/data' }, requestOpts)).resolves
+      await expect(sdk.yuccaGetSnapshotListing({ id, snapshot: snapshotId, path: '/data' }, requestOpts)).resolves
         .toMatchInlineSnapshot(`
         {
           "items": [
@@ -219,7 +226,9 @@ describe('/yucca', () => {
         }
       `);
 
-      await expect(sdk.getSnapshotListing(id, snapshotId, { path: '/data/backups' }, requestOpts)).resolves.toEqual(
+      await expect(
+        sdk.yuccaGetSnapshotListing({ id, snapshot: snapshotId, path: '/data/backups' }, requestOpts),
+      ).resolves.toEqual(
         expect.objectContaining({
           items: expect.arrayContaining([
             { isDirectory: false, path: '/data/backups/.immich' },
@@ -237,7 +246,7 @@ describe('/yucca', () => {
     let cookie: string;
 
     beforeAll(async () => {
-      await sdk.resetOrchestrator(requestOpts);
+      await sdk.yuccaResetOrchestrator(requestOpts);
       await utils.resetDatabase();
       socket.disconnect();
       await utils.disconnectDatabase();
@@ -272,25 +281,29 @@ describe('/yucca', () => {
         },
       };
 
-      await expect(sdk.getSchedules(maintenanceRequestOpts)).resolves.toEqual({ schedules: [] });
+      await expect(sdk.yuccaGetSchedules(maintenanceRequestOpts)).resolves.toEqual({ schedules: [] });
 
-      await sdk.importRecoveryKey(
+      await sdk.yuccaImportRecoveryKey(
         {
-          recoveryKey: '0'.repeat(64),
+          importRecoveryKeyRequest: {
+            recoveryKey: '0'.repeat(64),
+          },
         },
         maintenanceRequestOpts,
       );
 
       const {
         backend: { id: backendId },
-      } = await sdk.createLocalBackend(
+      } = await sdk.yuccaCreateLocalBackend(
         {
-          path: '/local-backend',
+          createLocalBackendRequestDto: {
+            path: '/local-backend',
+          },
         },
         maintenanceRequestOpts,
       );
 
-      const { repositories } = await sdk.inspectRepositories({}, maintenanceRequestOpts);
+      const { repositories } = await sdk.yuccaInspectRepositories({}, maintenanceRequestOpts);
       const { id: repositoryId, snapshots } = repositories[0];
       const { id: snapshotId } = (snapshots ?? [])[0];
 
@@ -303,13 +316,15 @@ describe('/yucca', () => {
       });
 
       const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
-      await sdk.restoreFromPoint(
-        repositoryId,
-        snapshotId,
-        backendId,
+      await sdk.yuccaRestoreFromPoint(
         {
-          yuccaConfig: '/data/yucca',
-          include: ['/data'],
+          id: repositoryId,
+          snapshot: snapshotId,
+          backend: backendId,
+          repositorySnapshotRestoreFromPointRequestDto: {
+            yuccaConfig: '/data/yucca',
+            include: ['/data'],
+          },
         },
         maintenanceRequestOpts,
       );
@@ -361,7 +376,7 @@ describe('/yucca', () => {
         )
         .toBeFalsy();
 
-      await expect(sdk.getSchedules(requestOpts)).resolves.toEqual({
+      await expect(sdk.yuccaGetSchedules(requestOpts)).resolves.toEqual({
         schedules: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
       });
     });
