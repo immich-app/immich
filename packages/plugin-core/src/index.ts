@@ -3,13 +3,18 @@ import { AssetVisibility } from '@immich/sdk';
 import type { Manifest } from '../dist/index.d.ts';
 
 type MatchValueConfig = {
-  pattern: string;
-  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith';
+  pattern?: string;
+  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith' | 'missing' | 'present';
   caseSensitive?: boolean;
 };
 
-const matchValueResult = (value: string, config: MatchValueConfig) => {
-  const { pattern, matchType = 'contains', caseSensitive = false } = config;
+const matchValueResult = (value: string | null, config: MatchValueConfig) => {
+  const { pattern = '', matchType = 'contains', caseSensitive = false } = config;
+
+  if (value === null) {
+    return { workflow: { continue: matchType === 'missing' } };
+  }
+
   const searchName = caseSensitive ? value : value.toLowerCase();
   const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
 
@@ -30,6 +35,15 @@ const matchValueResult = (value: string, config: MatchValueConfig) => {
       const flags = caseSensitive ? '' : 'i';
       const regex = new RegExp(searchPattern, flags);
       return { workflow: { continue: regex.test(value) } };
+    }
+
+    case 'present': {
+      return { workflow: { continue: true } };
+    }
+
+    case 'missing': {
+      // value is not null at this point
+      return { workflow: { continue: false } };
     }
 
     default: {
@@ -135,11 +149,10 @@ const methods = wrapper<Manifest>({
   },
 
   assetExifFilter: ({ config, data }) => {
-    if (!data.asset.exifInfo || data.asset.exifInfo[config.property] === null) {
-      return { workflow: { continue: false } };
-    }
+    let value = data.asset.exifInfo?.[config.property];
 
-    return matchValueResult(String(data.asset.exifInfo[config.property]), config);
+    // Empty EXIF value is treated as missing to mirror behavior of the web UI
+    return matchValueResult(value === null || value === undefined || value === '' ? null : String(value), config);
   },
 
   assetDateFilter: ({ config, data }) => {

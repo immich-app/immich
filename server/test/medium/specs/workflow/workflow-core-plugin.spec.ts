@@ -530,6 +530,112 @@ describe('core plugin', () => {
     });
   });
 
+  describe('assetExifFilter', () => {
+    describe('missing', () => {
+      it('should favorite asset if it has no orientation', async () => {
+        const { user } = await ctx.newUser();
+        const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+        await ctx.newExif({ assetId: asset.id, orientation: null });
+
+        const workflow = await createWorkflow({
+          ownerId: user.id,
+          trigger: WorkflowTrigger.AssetMetadataExtraction,
+          steps: [
+            {
+              method: 'immich-plugin-core#assetExifFilter',
+              config: { property: 'orientation', matchType: 'missing' },
+            },
+            {
+              method: 'immich-plugin-core#assetFavorite',
+            },
+          ],
+        });
+
+        await expect(
+          ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id }),
+        ).resolves.toBeUndefined();
+        await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+      });
+
+      it('should not favorite asset if it has orientation', async () => {
+        const { user } = await ctx.newUser();
+        const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+        await ctx.newExif({ assetId: asset.id, orientation: '2' });
+
+        const workflow = await createWorkflow({
+          ownerId: user.id,
+          trigger: WorkflowTrigger.AssetMetadataExtraction,
+          steps: [
+            {
+              method: 'immich-plugin-core#assetExifFilter',
+              config: { property: 'orientation', matchType: 'missing' },
+            },
+            {
+              method: 'immich-plugin-core#assetFavorite',
+            },
+          ],
+        });
+
+        await expect(
+          ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id }),
+        ).resolves.toBeUndefined();
+        await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
+      });
+    });
+
+    describe('present', () => {
+      it('should favorite asset if it has orientation', async () => {
+        const { user } = await ctx.newUser();
+        const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+        await ctx.newExif({ assetId: asset.id, orientation: '2' });
+
+        const workflow = await createWorkflow({
+          ownerId: user.id,
+          trigger: WorkflowTrigger.AssetMetadataExtraction,
+          steps: [
+            {
+              method: 'immich-plugin-core#assetExifFilter',
+              config: { property: 'orientation', matchType: 'present' },
+            },
+            {
+              method: 'immich-plugin-core#assetFavorite',
+            },
+          ],
+        });
+
+        await expect(
+          ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id }),
+        ).resolves.toBeUndefined();
+        await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+      });
+
+      it('should not favorite asset if it has no orientation', async () => {
+        const { user } = await ctx.newUser();
+        const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+        await ctx.newExif({ assetId: asset.id, orientation: null });
+
+        const workflow = await createWorkflow({
+          ownerId: user.id,
+          trigger: WorkflowTrigger.AssetMetadataExtraction,
+          steps: [
+            {
+              method: 'immich-plugin-core#assetExifFilter',
+              config: { property: 'orientation', matchType: 'present' },
+            },
+            {
+              method: 'immich-plugin-core#assetFavorite',
+            },
+          ],
+        });
+
+        await expect(
+          ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id }),
+        ).resolves.toBeUndefined();
+        await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
+      });
+    });
+  });
+
   describe('assetDateFilter', () => {
     it('should favorite assets created during the first 7 days of a specific year and month', async () => {
       const { user } = await ctx.newUser();
