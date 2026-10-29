@@ -32,6 +32,7 @@ class MainActivity : FlutterFragmentActivity() {
   override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
     registerPlugins(this, flutterEngine)
+    flutterEngine.plugins.add(PasskeyPlugin())
   }
 
   override fun onNewIntent(intent: Intent) {
@@ -64,7 +65,6 @@ class MainActivity : FlutterFragmentActivity() {
       ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
 
       flutterEngine.plugins.add(ViewIntentPlugin())
-      flutterEngine.plugins.add(PasskeyPlugin())
       flutterEngine.plugins.add(backgroundEngineLockImpl)
       flutterEngine.plugins.add(nativeSyncApiImpl)
       flutterEngine.plugins.add(permissionApiImpl)

@@ -15,8 +15,8 @@ import 'package:pigeon/pigeon.dart';
 abstract class PasskeyHostApi {
   bool isSupported();
 
-  // register and authenticate take the server's WebAuthn options JSON
-  // and return the credential JSON, or null when the user cancels
+  // Register and authenticate using the server provided WebAuthn options JSON. Returns the resulting credential
+  // as JSON, or null if the user cancels
   @async
   String? register(String options);
 
