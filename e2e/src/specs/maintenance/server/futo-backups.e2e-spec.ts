@@ -6,7 +6,7 @@ import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-describe('/yucca', () => {
+describe('/futo-backups', () => {
   let admin: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
   let requestOpts: any;
@@ -25,10 +25,10 @@ describe('/yucca', () => {
     requestOpts = { headers: asBearerAuth(admin.accessToken) };
 
     await utils.resetBackups(admin.accessToken);
-    await sdk.yuccaResetOrchestrator(requestOpts);
+    await sdk.futoBackupsResetOrchestrator(requestOpts);
 
     socket = io(baseUrl, {
-      path: '/api/yucca/socket.io',
+      path: '/api/futo-backups/socket.io',
       transports: ['websocket'],
       extraHeaders: asBearerAuth(admin.accessToken),
     });
@@ -65,7 +65,7 @@ describe('/yucca', () => {
 
   describe('Orchestration Module', async () => {
     it('works', async () => {
-      await expect(sdk.yuccaOnboardingStatus(requestOpts)).resolves.toEqual(
+      await expect(sdk.futoBackupsOnboardingStatus(requestOpts)).resolves.toEqual(
         expect.objectContaining({
           hasOnboardedKey: false,
           hasBackend: false,
@@ -77,13 +77,13 @@ describe('/yucca', () => {
     });
 
     it('is inaccessible without admin', async () => {
-      await expect(sdk.yuccaOnboardingStatus({ headers: asBearerAuth(nonAdmin.accessToken) })).rejects.toEqual(
+      await expect(sdk.futoBackupsOnboardingStatus({ headers: asBearerAuth(nonAdmin.accessToken) })).rejects.toEqual(
         expect.objectContaining({ data: { message: expect.any(String) } }),
       );
     });
 
     it('is inaccessible without logging in', async () => {
-      await expect(sdk.yuccaOnboardingStatus()).rejects.toEqual(
+      await expect(sdk.futoBackupsOnboardingStatus()).rejects.toEqual(
         expect.objectContaining({ data: { message: 'Authentication required' } }),
       );
     });
@@ -91,7 +91,7 @@ describe('/yucca', () => {
 
   describe('Local Backup', { concurrent: false }, async () => {
     beforeAll(async () => {
-      await sdk.yuccaImportRecoveryKey(
+      await sdk.futoBackupsImportRecoveryKey(
         {
           importRecoveryKeyRequest: {
             recoveryKey: '0'.repeat(64),
@@ -104,7 +104,7 @@ describe('/yucca', () => {
     it('configures a local backend', { concurrent: false }, async () => {
       await utils.mkFolder('/local-backend');
 
-      await sdk.yuccaCreateLocalBackend(
+      await sdk.futoBackupsCreateLocalBackend(
         {
           createLocalBackendRequestDto: {
             path: '/local-backend',
@@ -117,7 +117,7 @@ describe('/yucca', () => {
     it('configures Immich backup', { concurrent: false }, async () => {
       const event = waitForMessage('IntegrationUpdate');
 
-      await sdk.yuccaConfigureImmichIntegration(
+      await sdk.futoBackupsConfigureImmichIntegration(
         {
           configureImmichIntegrationRequestDto: {
             name: 'Immich',
@@ -133,7 +133,7 @@ describe('/yucca', () => {
 
       await event;
 
-      await expect(sdk.yuccaGetIntegrations(requestOpts)).resolves.toEqual(
+      await expect(sdk.futoBackupsGetIntegrations(requestOpts)).resolves.toEqual(
         expect.objectContaining({
           immichIntegration: expect.objectContaining({
             configuration: {
@@ -161,7 +161,7 @@ describe('/yucca', () => {
         importPaths: ['/test'],
       }));
 
-      await expect(sdk.yuccaGetIntegrations(requestOpts)).resolves.toEqual(
+      await expect(sdk.futoBackupsGetIntegrations(requestOpts)).resolves.toEqual(
         expect.objectContaining({
           immichIntegration: expect.any(Object),
           immichState: expect.objectContaining({
@@ -179,18 +179,18 @@ describe('/yucca', () => {
     it('creates a snapshot', { concurrent: false }, async () => {
       const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
 
-      const { repositories } = await sdk.yuccaGetRepositories(requestOpts);
+      const { repositories } = await sdk.futoBackupsGetRepositories(requestOpts);
       const { id } = repositories[0];
 
       filename = await utils.createBackup(admin.accessToken);
 
-      await sdk.yuccaCreateBackup({ id }, requestOpts);
+      await sdk.futoBackupsCreateBackup({ id }, requestOpts);
       await event;
 
-      const { snapshots } = await sdk.yuccaGetSnapshots({ id }, requestOpts);
+      const { snapshots } = await sdk.futoBackupsGetSnapshots({ id }, requestOpts);
       const { id: snapshotId } = snapshots[0];
 
-      await expect(sdk.yuccaGetSnapshotListing({ id, snapshot: snapshotId }, requestOpts)).resolves
+      await expect(sdk.futoBackupsGetSnapshotListing({ id, snapshot: snapshotId }, requestOpts)).resolves
         .toMatchInlineSnapshot(`
         {
           "items": [
@@ -208,7 +208,7 @@ describe('/yucca', () => {
         }
       `);
 
-      await expect(sdk.yuccaGetSnapshotListing({ id, snapshot: snapshotId, path: '/data' }, requestOpts)).resolves
+      await expect(sdk.futoBackupsGetSnapshotListing({ id, snapshot: snapshotId, path: '/data' }, requestOpts)).resolves
         .toMatchInlineSnapshot(`
         {
           "items": [
@@ -227,7 +227,7 @@ describe('/yucca', () => {
       `);
 
       await expect(
-        sdk.yuccaGetSnapshotListing({ id, snapshot: snapshotId, path: '/data/backups' }, requestOpts),
+        sdk.futoBackupsGetSnapshotListing({ id, snapshot: snapshotId, path: '/data/backups' }, requestOpts),
       ).resolves.toEqual(
         expect.objectContaining({
           items: expect.arrayContaining([
@@ -246,7 +246,7 @@ describe('/yucca', () => {
     let cookie: string;
 
     beforeAll(async () => {
-      await sdk.yuccaResetOrchestrator(requestOpts);
+      await sdk.futoBackupsResetOrchestrator(requestOpts);
       await utils.resetDatabase();
       socket.disconnect();
       await utils.disconnectDatabase();
@@ -281,9 +281,9 @@ describe('/yucca', () => {
         },
       };
 
-      await expect(sdk.yuccaGetSchedules(maintenanceRequestOpts)).resolves.toEqual({ schedules: [] });
+      await expect(sdk.futoBackupsGetSchedules(maintenanceRequestOpts)).resolves.toEqual({ schedules: [] });
 
-      await sdk.yuccaImportRecoveryKey(
+      await sdk.futoBackupsImportRecoveryKey(
         {
           importRecoveryKeyRequest: {
             recoveryKey: '0'.repeat(64),
@@ -294,7 +294,7 @@ describe('/yucca', () => {
 
       const {
         backend: { id: backendId },
-      } = await sdk.yuccaCreateLocalBackend(
+      } = await sdk.futoBackupsCreateLocalBackend(
         {
           createLocalBackendRequestDto: {
             path: '/local-backend',
@@ -303,12 +303,12 @@ describe('/yucca', () => {
         maintenanceRequestOpts,
       );
 
-      const { repositories } = await sdk.yuccaInspectRepositories({}, maintenanceRequestOpts);
+      const { repositories } = await sdk.futoBackupsInspectRepositories({}, maintenanceRequestOpts);
       const { id: repositoryId, snapshots } = repositories[0];
       const { id: snapshotId } = (snapshots ?? [])[0];
 
       socket = io(baseUrl, {
-        path: '/api/yucca/socket.io',
+        path: '/api/futo-backups/socket.io',
         transports: ['websocket'],
         extraHeaders: {
           cookie,
@@ -316,7 +316,7 @@ describe('/yucca', () => {
       });
 
       const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
-      await sdk.yuccaRestoreFromPoint(
+      await sdk.futoBackupsRestoreFromPoint(
         {
           id: repositoryId,
           snapshot: snapshotId,
@@ -376,7 +376,7 @@ describe('/yucca', () => {
         )
         .toBeFalsy();
 
-      await expect(sdk.yuccaGetSchedules(requestOpts)).resolves.toEqual({
+      await expect(sdk.futoBackupsGetSchedules(requestOpts)).resolves.toEqual({
         schedules: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
       });
     });

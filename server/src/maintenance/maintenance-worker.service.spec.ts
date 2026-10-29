@@ -67,24 +67,24 @@ describe(MaintenanceWorkerService.name, () => {
     });
 
     it('takes the backups SDK lock so its jobs run during maintenance', async () => {
-      const yucca = { acquireLock: vitest.fn() };
-      moduleRefMock.get.mockReturnValue(yucca);
+      const futoBackups = { acquireLock: vitest.fn() };
+      moduleRefMock.get.mockReturnValue(futoBackups);
       mocks.database.tryLock.mockResolvedValue(true);
 
       await sut.init();
 
-      expect(mocks.database.tryLock).toHaveBeenCalledWith(DatabaseLock.YuccaModuleConfig);
-      expect(yucca.acquireLock).toHaveBeenCalled();
+      expect(mocks.database.tryLock).toHaveBeenCalledWith(DatabaseLock.FutoBackupsModuleConfig);
+      expect(futoBackups.acquireLock).toHaveBeenCalled();
     });
 
     it('leaves the backups SDK lock to whoever already holds it', async () => {
-      const yucca = { acquireLock: vitest.fn() };
-      moduleRefMock.get.mockReturnValue(yucca);
+      const futoBackups = { acquireLock: vitest.fn() };
+      moduleRefMock.get.mockReturnValue(futoBackups);
       mocks.database.tryLock.mockResolvedValue(false);
 
       await sut.init();
 
-      expect(yucca.acquireLock).not.toHaveBeenCalled();
+      expect(futoBackups.acquireLock).not.toHaveBeenCalled();
     });
   });
 

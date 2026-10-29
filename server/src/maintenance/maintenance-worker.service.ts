@@ -89,7 +89,7 @@ export class MaintenanceWorkerService {
 
     // The backups SDK only dispatches its jobs (rollbacks, restores) on the instance holding this lock, and in
     // maintenance mode no API worker is running to take it.
-    if (await this.databaseRepository.tryLock(DatabaseLock.YuccaModuleConfig)) {
+    if (await this.databaseRepository.tryLock(DatabaseLock.FutoBackupsModuleConfig)) {
       this.moduleRef.get(YuccaService, { strict: false }).acquireLock();
     }
 
@@ -371,7 +371,7 @@ export class MaintenanceWorkerService {
         action: action.action,
         task: 'error',
         error: String(error),
-        yuccaJobId: this.#status.yuccaJobId,
+        futoBackupsJobId: this.#status.futoBackupsJobId,
       });
     }
   }
@@ -382,13 +382,13 @@ export class MaintenanceWorkerService {
       action: MaintenanceAction.Rollback,
     });
 
-    const yucca = this.moduleRef.get(YuccaService, { strict: false });
-    const { jobId, task, immichBackupFileName } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
+    const futoBackups = this.moduleRef.get(YuccaService, { strict: false });
+    const { jobId, task, immichBackupFileName } = await futoBackups.restoreSnapshotInplace(repositoryId, snapshotId);
 
     this.setStatus({
       active: true,
       action: MaintenanceAction.Rollback,
-      yuccaJobId: jobId,
+      futoBackupsJobId: jobId,
     });
 
     await task;

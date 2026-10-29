@@ -15,7 +15,7 @@ async function bootstrap() {
     bufferLogs: true,
     // default module id algorithm can cause
     // the ApiModule to be instatiated more than
-    // once when injected into YuccaModule
+    // once when injected into OrchestrationApiModule
     moduleIdGeneratorAlgorithm: 'deep-hash',
     routeConflictPolicy: { duplicate: 'error' },
     routeResolutionStrategy: 'specificity',

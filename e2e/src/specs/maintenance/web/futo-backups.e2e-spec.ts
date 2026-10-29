@@ -6,7 +6,7 @@ import { asBearerAuth, baseUrl, utils } from 'src/utils';
 
 test.describe.configure({ mode: 'serial' });
 
-test.describe('Yucca Backups', () => {
+test.describe('FUTO Backups', () => {
   let admin: LoginResponseDto;
   let socket: Socket;
 
@@ -35,14 +35,14 @@ test.describe('Yucca Backups', () => {
     admin = await utils.adminSetup();
 
     const headers = asBearerAuth(admin.accessToken);
-    await sdk.yuccaResetOrchestrator({ headers });
-    await sdk.yuccaImportRecoveryKey({ importRecoveryKeyRequest: { recoveryKey: '0'.repeat(64) } }, { headers });
-    await sdk.yuccaConfirmRecoveryKey({ headers });
-    await sdk.yuccaEnableTelemetry({ headers });
+    await sdk.futoBackupsResetOrchestrator({ headers });
+    await sdk.futoBackupsImportRecoveryKey({ importRecoveryKeyRequest: { recoveryKey: '0'.repeat(64) } }, { headers });
+    await sdk.futoBackupsConfirmRecoveryKey({ headers });
+    await sdk.futoBackupsEnableTelemetry({ headers });
     await utils.mkFolder('/local-backend');
 
     socket = io(baseUrl, {
-      path: '/api/yucca/socket.io',
+      path: '/api/futo-backups/socket.io',
       transports: ['websocket'],
       extraHeaders: headers,
       forceNew: true,
@@ -74,8 +74,8 @@ test.describe('Yucca Backups', () => {
     const headers = asBearerAuth(admin.accessToken);
     await utils.setAuthCookies(context, admin.accessToken);
 
-    await sdk.yuccaCreateLocalBackend({ createLocalBackendRequestDto: { path: '/local-backend' } }, { headers });
-    await sdk.yuccaConfigureImmichIntegration(
+    await sdk.futoBackupsCreateLocalBackend({ createLocalBackendRequestDto: { path: '/local-backend' } }, { headers });
+    await sdk.futoBackupsConfigureImmichIntegration(
       {
         configureImmichIntegrationRequestDto: {
           name: 'Immich',
@@ -89,9 +89,9 @@ test.describe('Yucca Backups', () => {
       { headers },
     );
 
-    const { repositories } = await sdk.yuccaGetRepositories({ headers });
+    const { repositories } = await sdk.futoBackupsGetRepositories({ headers });
     const backupEnd = waitForJobEnd();
-    await sdk.yuccaCreateBackup({ id: repositories[0].id }, { headers });
+    await sdk.futoBackupsCreateBackup({ id: repositories[0].id }, { headers });
     await backupEnd;
 
     await page.goto('/link?target=backups');
@@ -114,14 +114,14 @@ test.describe('Yucca Backups', () => {
     await expect(dialog.getByRole('heading', { name: 'Backup complete' })).toBeVisible({ timeout: 45_000 });
   });
 
-  test('resets immich and restores from the local yucca backup', async ({ context, page }) => {
+  test('resets immich and restores from the local FUTO Backups backup', async ({ context, page }) => {
     test.setTimeout(120_000);
     await utils.setAuthCookies(context, admin.accessToken);
 
     await utils.resetBackups(admin.accessToken);
     await utils.createBackup(admin.accessToken);
 
-    await sdk.yuccaResetOrchestrator({ headers: asBearerAuth(admin.accessToken) });
+    await sdk.futoBackupsResetOrchestrator({ headers: asBearerAuth(admin.accessToken) });
     await utils.resetDatabase();
 
     await page.goto('/');

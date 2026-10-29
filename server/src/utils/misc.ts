@@ -316,14 +316,14 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         operation.parameters = orderBy(operation.parameters, 'name');
       }
 
-      if (!key.startsWith('/yucca')) {
+      if (!key.startsWith('/futo-backups')) {
         continue;
       }
 
       // add FUTO Backups specific metadata
 
       if (operation.operationId) {
-        operation.operationId = `yucca${operation.operationId.charAt(0).toUpperCase()}${operation.operationId.slice(1)}`;
+        operation.operationId = `futoBackups${operation.operationId.charAt(0).toUpperCase()}${operation.operationId.slice(1)}`;
       }
 
       operation.tags = ['Backups'];

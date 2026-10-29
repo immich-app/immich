@@ -1,4 +1,4 @@
-import { controllers as yuccaControllers } from '@futo-org/backups-orchestrator-api';
+import { controllers as futoBackupsControllers } from '@futo-org/backups-orchestrator-api';
 import {
   CanActivate,
   ExecutionContext,
@@ -101,7 +101,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
-    const options = (yuccaControllers as Type[]).includes(context.getClass())
+    const options = (futoBackupsControllers as Type[]).includes(context.getClass())
       ? { sharedLink: false, admin: true, public: false, setup: false, permission: undefined }
       : getAuthenticatedOptions(this.reflector, context.getHandler());
 

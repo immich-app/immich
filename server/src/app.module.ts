@@ -59,9 +59,9 @@ const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: AP
 const configRepository = new ConfigRepository();
 const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
 
-const isYuccaDevelopmentMode = environment !== ImmichEnvironment.Production;
-const yuccaStatePath = getBackupsStatePath(storage.mediaLocation);
-const yuccaCachePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'restic-cache');
+const isFutoBackupsDevelopmentMode = environment !== ImmichEnvironment.Production;
+const futoBackupsStatePath = getBackupsStatePath(storage.mediaLocation);
+const futoBackupsCachePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'restic-cache');
 
 const commonImports = [
   ClsModule.forRoot(cls.config),
@@ -119,16 +119,16 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
       imports: [forwardRef(() => ApiModule)],
       inject: [AuthService],
       useFactory: (authService: AuthService) => ({
-        statePath: yuccaStatePath,
-        cachePath: yuccaCachePath,
+        statePath: futoBackupsStatePath,
+        cachePath: futoBackupsCachePath,
         requireWsAuth: true,
         requireLock: true,
-        developmentMode: isYuccaDevelopmentMode,
+        developmentMode: isFutoBackupsDevelopmentMode,
         authenticate: (client) =>
           authService.authenticate({
             headers: client.request.headers,
             queryParams: {},
-            metadata: { adminRoute: true, sharedLinkRoute: false, uri: '/api/yucca/socket.io' },
+            metadata: { adminRoute: true, sharedLinkRoute: false, uri: '/api/futo-backups/socket.io' },
           }),
       }),
     }),
@@ -146,12 +146,12 @@ export class ApiModule extends BaseModule {}
       imports: [forwardRef(() => MaintenanceModule)],
       inject: [MaintenanceWorkerService],
       useFactory: (maintenanceWorkerService: MaintenanceWorkerService) => ({
-        statePath: yuccaStatePath,
-        cachePath: yuccaCachePath,
+        statePath: futoBackupsStatePath,
+        cachePath: futoBackupsCachePath,
         externalBaseUrl: 'https://my.immich.app',
         requireWsAuth: true,
         requireLock: true,
-        developmentMode: isYuccaDevelopmentMode,
+        developmentMode: isFutoBackupsDevelopmentMode,
         authenticate: async (client) => {
           await maintenanceWorkerService.authenticate(client.request.headers);
           return { user: { isAdmin: true } };

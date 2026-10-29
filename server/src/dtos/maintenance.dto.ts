@@ -34,7 +34,7 @@ const MaintenanceStatusResponseSchema = z
     progress: z.int().optional(),
     task: z.string().optional(),
     error: z.string().optional(),
-    yuccaJobId: z.string().optional().describe('Yucca job ID'),
+    futoBackupsJobId: z.string().optional().describe('FUTO Backups job ID'),
   })
   .meta({ id: 'MaintenanceStatusResponseDto' });
 

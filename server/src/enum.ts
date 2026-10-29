@@ -1019,7 +1019,7 @@ export enum DatabaseLock {
   VersionCheck = 800,
   HlsSessionCleanup = 850,
   FacialRecognition = 900,
-  YuccaModuleConfig = 926,
+  FutoBackupsModuleConfig = 926,
   DuplicateDetection = 1000,
 }
 

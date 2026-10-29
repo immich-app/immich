@@ -1,4 +1,4 @@
-import { controllers as yuccaControllers } from '@futo-org/backups-orchestrator-api';
+import { controllers as futoBackupsControllers } from '@futo-org/backups-orchestrator-api';
 import { CanActivate, ExecutionContext, Injectable, SetMetadata, Type, applyDecorators } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
@@ -35,8 +35,8 @@ export class MaintenanceAuthGuard implements CanActivate {
       targets,
     );
 
-    const isYuccaRoute = (yuccaControllers as Type[]).includes(context.getClass());
-    if (!options && !isYuccaRoute) {
+    const isFutoBackupsRoute = (futoBackupsControllers as Type[]).includes(context.getClass());
+    if (!options && !isFutoBackupsRoute) {
       return true;
     }
 

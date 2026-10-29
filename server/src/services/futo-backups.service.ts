@@ -1,7 +1,4 @@
-import {
-  type ImmichDatabaseDumpConfig,
-  YuccaService as YuccaOrchestratorService,
-} from '@futo-org/backups-orchestrator-api';
+import { type ImmichDatabaseDumpConfig, YuccaService as OrchestratorService } from '@futo-org/backups-orchestrator-api';
 import { Injectable, Optional } from '@nestjs/common';
 import type { SystemConfig } from 'src/dtos/config.dto.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
@@ -16,24 +13,24 @@ import { SystemConfigService } from 'src/services/system-config.service.js';
 import { getExternalDomain } from 'src/utils/misc.js';
 
 @Injectable()
-export class YuccaService {
+export class FutoBackupsService {
   constructor(
     private readonly databaseRepository: DatabaseRepository,
     private readonly libraryRepository: LibraryRepository,
     private readonly databaseBackupService: DatabaseBackupService,
     private readonly systemConfigService: SystemConfigService,
     @Optional() private readonly maintenanceService: MaintenanceService,
-    @Optional() private readonly yuccaService: YuccaOrchestratorService,
+    @Optional() private readonly orchestratorService: OrchestratorService,
   ) {}
 
   private updateSystemConfig({ server }: SystemConfig) {
-    this.yuccaService.setExternalBaseUrl(getExternalDomain(server));
+    this.orchestratorService.setExternalBaseUrl(getExternalDomain(server));
   }
 
   private async updateLibraryConfig() {
     const libraries = await this.libraryRepository.getAll();
 
-    this.yuccaService.setImmichIntegration({
+    this.orchestratorService.setImmichIntegration({
       dataPath: StorageCore.getMediaLocation(),
       dataFolders: Object.values(StorageFolder),
       libraries: libraries
@@ -69,7 +66,7 @@ export class YuccaService {
         rollbackRepositoryId: repositoryId,
         rollbackSnapshotId: snapshotId,
       },
-      'yucca-rollback',
+      'futo-backups-rollback',
     );
   }
 
@@ -78,8 +75,8 @@ export class YuccaService {
     this.updateSystemConfig(newConfig);
     void this.updateLibraryConfig();
 
-    if (await this.databaseRepository.tryLock(DatabaseLock.YuccaModuleConfig)) {
-      this.yuccaService.acquireLock();
+    if (await this.databaseRepository.tryLock(DatabaseLock.FutoBackupsModuleConfig)) {
+      this.orchestratorService.acquireLock();
     }
   }
 

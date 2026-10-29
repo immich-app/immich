@@ -13,6 +13,7 @@ import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 import { DatabaseService } from 'src/services/database.service.js';
 import { DownloadService } from 'src/services/download.service.js';
 import { DuplicateService } from 'src/services/duplicate.service.js';
+import { FutoBackupsService } from 'src/services/futo-backups.service.js';
 import { HlsService } from 'src/services/hls.service.js';
 import { IntegrityService } from 'src/services/integrity.service.js';
 import { JobService } from 'src/services/job.service.js';
@@ -51,7 +52,6 @@ import { VersionService } from 'src/services/version.service.js';
 import { ViewService } from 'src/services/view.service.js';
 import { WorkflowExecutionService } from 'src/services/workflow-execution.service.js';
 import { WorkflowService } from 'src/services/workflow.service.js';
-import { YuccaService } from 'src/services/yucca.service.js';
 
 export const services = [
   ApiKeyService,
@@ -68,6 +68,7 @@ export const services = [
   DatabaseService,
   DownloadService,
   DuplicateService,
+  FutoBackupsService,
   IntegrityService,
   HlsService,
   JobService,
@@ -107,5 +108,4 @@ export const services = [
   ViewService,
   WorkflowExecutionService,
   WorkflowService,
-  YuccaService,
 ];
