@@ -114,12 +114,12 @@ class LoginForm extends HookConsumerWidget {
           return;
         }
 
-        final passkeyEnabled = await ref.read(passkeyServiceProvider).isEnabled();
+        final serverInfo = ref.read(serverInfoProvider);
+        final passkeyEnabled = await ref.read(passkeyServiceProvider).isEnabled(serverInfo.serverVersion.featureLevel);
         if (!context.mounted) {
           return;
         }
 
-        final serverInfo = ref.read(serverInfoProvider);
         final features = serverInfo.serverFeatures;
         final config = serverInfo.serverConfig;
 
@@ -258,6 +258,21 @@ class LoginForm extends HookConsumerWidget {
 
     bool isSyncRemoteDeletionsMode() => Platform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false);
 
+    Future<void> finishLogin() async {
+      await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+      if (isSyncRemoteDeletionsMode()) {
+        await getManageMediaPermission();
+      }
+      unawaited(handleSyncFlow());
+      if (!context.mounted) {
+        return;
+      }
+
+      ref.read(websocketProvider.notifier).connect();
+      unawaited(ref.read(featureMessageServiceProvider).markSeen());
+      unawaited(context.router.replaceAll([const TabShellRoute()]));
+    }
+
     Future<void> login() async {
       TextInput.finishAutofillContext();
 
@@ -275,22 +290,7 @@ class LoginForm extends HookConsumerWidget {
           unawaited(context.pushRoute(const ChangePasswordRoute()));
           passwordController.clear();
         } else {
-          await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-          if (isSyncRemoteDeletionsMode()) {
-            await getManageMediaPermission();
-          }
-          unawaited(handleSyncFlow());
-          if (!context.mounted) {
-            return;
-          }
-
-          ref.read(websocketProvider.notifier).connect();
-          unawaited(ref.read(featureMessageServiceProvider).markSeen());
-          if (!context.mounted) {
-            return;
-          }
-
-          unawaited(context.router.replaceAll([const TabShellRoute()]));
+          await finishLogin();
           return;
         }
       } catch (error) {
@@ -380,17 +380,7 @@ class LoginForm extends HookConsumerWidget {
               .saveAuthInfo(accessToken: loginResponseDto.accessToken);
 
           if (isSuccess && context.mounted) {
-            await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            if (isSyncRemoteDeletionsMode()) {
-              await getManageMediaPermission();
-            }
-            unawaited(handleSyncFlow());
-            if (!context.mounted) {
-              return;
-            }
-
-            unawaited(ref.read(featureMessageServiceProvider).markSeen());
-            unawaited(context.router.replaceAll([const TabShellRoute()]));
+            await finishLogin();
             return;
           }
         } catch (error, stack) {
@@ -437,18 +427,7 @@ class LoginForm extends HookConsumerWidget {
             return;
           }
 
-          await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-          if (isSyncRemoteDeletionsMode()) {
-            await getManageMediaPermission();
-          }
-          unawaited(handleSyncFlow());
-          if (!context.mounted) {
-            return;
-          }
-
-          ref.read(websocketProvider.notifier).connect();
-          unawaited(ref.read(featureMessageServiceProvider).markSeen());
-          unawaited(context.router.replaceAll([const TabShellRoute()]));
+          await finishLogin();
         }
       } catch (error, stack) {
         log.severe('Error logging in with passkey', error, stack);

@@ -12,7 +12,6 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_server.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
-import 'package:immich_mobile/providers/passkey.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -37,7 +36,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final isLoggingOut = useState(false);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
-    final isPasskeyEnabled = ref.watch(passkeyEnabledProvider).valueOrNull ?? false;
 
     useEffect(() {
       unawaited(ref.read(backupServerProvider.notifier).updateDiskInfo());
@@ -99,14 +97,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         Icons.cleaning_services_outlined,
         context.t.free_up_space,
         () => context.pushRoute(SettingsSubRoute(section: SettingSection.freeUpSpace)),
-      );
-    }
-
-    ListTile buildPasskeysButton() {
-      return buildActionButton(
-        Icons.key_outlined,
-        context.t.passkeys(count: 2),
-        () => context.pushRoute(const PasskeysRoute()),
       );
     }
 
@@ -299,7 +289,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 if (isReadonlyModeEnabled) buildReadonlyMessage(),
                 buildAppLogButton(),
                 buildFreeUpSpaceButton(),
-                if (isPasskeyEnabled) buildPasskeysButton(),
                 buildSettingButton(),
                 buildSignOutButton(),
                 buildFooter(),
