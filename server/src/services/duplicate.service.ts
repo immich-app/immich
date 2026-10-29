@@ -112,7 +112,7 @@ export class DuplicateService extends BaseService {
   private async resolveGroup(auth: AuthDto, group: DuplicateResolveGroupDto): Promise<BulkIdResponseDto> {
     const { duplicateId, keepAssetIds, trashAssetIds } = group;
 
-    const duplicateGroup = await this.duplicateRepository.get(duplicateId);
+    const duplicateGroup = await this.duplicateRepository.get(auth.user.id, duplicateId);
     if (!duplicateGroup) {
       return { id: duplicateId, success: false, error: BulkIdErrorReason.NOT_FOUND };
     }

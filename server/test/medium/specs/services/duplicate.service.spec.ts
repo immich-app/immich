@@ -20,6 +20,7 @@ import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   const { sut, ctx } = newMediumService(DuplicateService, {
     database: db || defaultDatabase,
@@ -288,7 +289,7 @@ describe(DuplicateService.name, () => {
       }
     });
 
-    it('should fail without permission to delete an asset owned by someone else', async () => {
+    it('should ignore an asset owned by someone else', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const { user: other } = await ctx.newUser();
@@ -300,16 +301,12 @@ describe(DuplicateService.name, () => {
       const auth = factory.auth({ user: { id: user.id } });
       await expect(
         sut.resolve(auth, { groups: [{ duplicateId, keepAssetIds: [mine.id], trashAssetIds: [theirs.id] }] }),
-      ).resolves.toEqual([
-        {
-          id: duplicateId,
-          success: false,
-          error: BulkIdErrorReason.NO_PERMISSION,
-          errorMessage: 'No permission to delete assets',
-        },
-      ]);
+      ).resolves.toEqual([{ id: duplicateId, success: true }]);
 
-      await expect(ctx.get(AssetRepository).getById(theirs.id)).resolves.toMatchObject({ deletedAt: null });
+      await expect(ctx.get(AssetRepository).getById(theirs.id)).resolves.toMatchObject({
+        deletedAt: null,
+        duplicateId,
+      });
     });
 
     it('should resolve several groups in one request', async () => {
@@ -472,6 +469,28 @@ describe(DuplicateService.name, () => {
 
         const result = await ctx.get(AssetRepository).getById(keeper.id, { exifInfo: true });
         expect(result?.exifInfo?.description?.split('\n').sort()).toEqual(['from keeper', 'from trashed']);
+      });
+
+      it('should not merge metadata into an asset owned by someone else', async () => {
+        const { sut, ctx } = setup();
+        const { user } = await ctx.newUser();
+        const { user: other } = await ctx.newUser();
+        const duplicateId = factory.uuid();
+
+        const theirs = await newDuplicateAsset(ctx, { ownerId: other.id, duplicateId }, { description: 'theirs' });
+        const mine = await newDuplicateAsset(ctx, { ownerId: user.id, duplicateId }, { description: 'mine' });
+
+        const auth = factory.auth({ user: { id: user.id } });
+        expectSuccess(
+          await sut.resolve(auth, {
+            groups: [{ duplicateId, keepAssetIds: [theirs.id], trashAssetIds: [mine.id] }],
+          }),
+          duplicateId,
+        );
+
+        const result = await ctx.get(AssetRepository).getById(theirs.id, { exifInfo: true });
+        expect(result).toMatchObject({ duplicateId, deletedAt: null });
+        expect(result?.exifInfo?.description).toBe('theirs');
       });
 
       it('should merge a location that both assets agree on', async () => {

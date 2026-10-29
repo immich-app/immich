@@ -70,9 +70,7 @@ function currentUrl() {
 }
 
 interface Route {
-  /**
-   * The route to target, or 'current' to stay on current route.
-   */
+  /** The route to target, or 'current' to stay on current route. */
   targetRoute: string | 'current';
 }
 
