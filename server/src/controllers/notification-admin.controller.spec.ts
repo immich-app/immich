@@ -68,18 +68,16 @@ describe(NotificationAdminController.name, () => {
   describe('POST /admin/notifications/test-apprise', () => {
     const apprise = { ...defaults.notifications.apprise, enabled: true, host: 'apprise', configId: 'immich' };
 
-    it('sends a test notification', async () => {
-      const { status } = await request(ctx.getHttpServer())
-        .post('/admin/notifications/test-apprise')
-        .send({ ...apprise, tags: 'family, alice' });
+    it('checks the connection', async () => {
+      const { status } = await request(ctx.getHttpServer()).post('/admin/notifications/test-apprise').send(apprise);
       expect(status).toBe(204);
-      expect(service.sendTestApprise).toHaveBeenCalledWith(expect.objectContaining({ tags: 'family, alice' }));
+      expect(service.sendTestApprise).toHaveBeenCalledWith(expect.objectContaining({ host: 'apprise' }));
     });
 
-    it('rejects tags with unsupported characters', async () => {
+    it('rejects an invalid port', async () => {
       const { status } = await request(ctx.getHttpServer())
         .post('/admin/notifications/test-apprise')
-        .send({ ...apprise, tags: 'family; rm' });
+        .send({ ...apprise, port: 70_000 });
       expect(status).toBe(400);
       expect(service.sendTestApprise).not.toHaveBeenCalled();
     });

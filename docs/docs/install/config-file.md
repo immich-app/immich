@@ -182,7 +182,6 @@ The default configuration looks like this:
       "password": "",
       "port": null,
       "secure": false,
-      "tags": "",
       "timeout": 20,
       "username": ""
     },

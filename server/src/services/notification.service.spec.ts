@@ -506,9 +506,11 @@ describe(NotificationService.name, () => {
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
     });
 
-    it('queues an invite with the admin and user tags combined', async () => {
-      mocks.user.get.mockResolvedValue(withPreferences({ appriseNotifications: { tag: 'alice' } }));
-      mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ tags: 'immich, family' }));
+    it("queues an invite to the user's own URLs", async () => {
+      mocks.user.get.mockResolvedValue(
+        withPreferences({ appriseNotifications: { enabled: true, urls: 'json://alice' } }),
+      );
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
 
       await sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' });
 
@@ -517,13 +519,15 @@ describe(NotificationService.name, () => {
         data: {
           title: 'Shared Album Invitation',
           body: expect.stringContaining('foo shared an album'),
-          tag: 'immich family alice',
+          urls: 'json://alice',
         },
       });
     });
 
-    it('queues an update with an empty tag when no tags are set', async () => {
-      mocks.user.get.mockResolvedValue(withPreferences({}));
+    it("queues an update to the user's own URLs", async () => {
+      mocks.user.get.mockResolvedValue(
+        withPreferences({ appriseNotifications: { enabled: true, urls: 'json://alice' } }),
+      );
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
@@ -531,12 +535,35 @@ describe(NotificationService.name, () => {
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SendApprise,
-        data: expect.objectContaining({ title: 'Shared Album Update', tag: '' }),
+        data: expect.objectContaining({ title: 'Shared Album Update', urls: 'json://alice' }),
       });
     });
 
+    it('does not queue apprise when the user has no URLs', async () => {
+      mocks.user.get.mockResolvedValue(withPreferences({ appriseNotifications: { enabled: true } }));
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
+
+      await sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' });
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.SendApprise }));
+    });
+
+    it('does not queue apprise until the user turns it on', async () => {
+      mocks.user.get.mockResolvedValue(withPreferences({ appriseNotifications: { urls: 'json://alice' } }));
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
+
+      await sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' });
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.SendApprise }));
+    });
+
     it('still queues apprise when email notifications are off', async () => {
-      mocks.user.get.mockResolvedValue(withPreferences({ emailNotifications: { enabled: false } }));
+      mocks.user.get.mockResolvedValue(
+        withPreferences({
+          emailNotifications: { enabled: false },
+          appriseNotifications: { enabled: true, urls: 'json://alice' },
+        }),
+      );
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' })).resolves.toBe(
@@ -547,7 +574,9 @@ describe(NotificationService.name, () => {
     });
 
     it('does not queue apprise when the user turned it off', async () => {
-      mocks.user.get.mockResolvedValue(withPreferences({ appriseNotifications: { albumInvite: false } }));
+      mocks.user.get.mockResolvedValue(
+        withPreferences({ appriseNotifications: { enabled: true, urls: 'json://alice', albumInvite: false } }),
+      );
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
 
       await sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' });
@@ -557,7 +586,9 @@ describe(NotificationService.name, () => {
     });
 
     it('does not queue apprise when it is disabled', async () => {
-      mocks.user.get.mockResolvedValue(withPreferences({}));
+      mocks.user.get.mockResolvedValue(
+        withPreferences({ appriseNotifications: { enabled: true, urls: 'json://alice' } }),
+      );
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ enabled: false }));
 
       await sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' });
@@ -687,7 +718,7 @@ describe(NotificationService.name, () => {
   });
 
   describe('handleSendApprise', () => {
-    const job = { title: 'title', body: 'body', tag: 'family' };
+    const job = { title: 'title', body: 'body', urls: 'json://alice' };
 
     it('skips when apprise is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ enabled: false }));
@@ -696,8 +727,8 @@ describe(NotificationService.name, () => {
       expect(mocks.apprise.notify).not.toHaveBeenCalled();
     });
 
-    it('skips when the config ID is missing', async () => {
-      mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ configId: '' }));
+    it('skips when the host is missing', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ host: '' }));
 
       await expect(sut.handleSendApprise(job)).resolves.toBe(JobStatus.Skipped);
       expect(mocks.apprise.notify).not.toHaveBeenCalled();

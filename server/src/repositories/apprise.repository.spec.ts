@@ -1,9 +1,4 @@
-import {
-  AppriseError,
-  AppriseOptions,
-  AppriseRepository,
-  normalizeAppriseTags,
-} from 'src/repositories/apprise.repository.js';
+import { AppriseError, AppriseOptions, AppriseRepository } from 'src/repositories/apprise.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { automock } from 'test/utils.js';
 
@@ -18,7 +13,7 @@ const options: AppriseOptions = {
   timeout: 5,
 };
 
-const message = { title: 'title', body: 'body', tag: '' };
+const message = { title: 'title', body: 'body', urls: 'json://localhost' };
 
 const respond = (status: number, body: object | string = {}, headers: Record<string, string> = {}) =>
   new Response(typeof body === 'string' ? body : JSON.stringify(body), { status, headers });
@@ -43,59 +38,57 @@ describe(AppriseRepository.name, () => {
     vi.unstubAllGlobals();
   });
 
-  describe('normalizeAppriseTags', () => {
-    it('joins comma and space separated tags with spaces', () => {
-      expect(normalizeAppriseTags('a, b  c', ',c,d')).toBe('a b c d');
-    });
-
-    it('returns an empty string when there are no tags', () => {
-      expect(normalizeAppriseTags('', ' , ')).toBe('');
-    });
-  });
-
   describe('url', () => {
     it('uses port 80 for http by default', async () => {
       await sut.verify(options);
-      // eslint-disable-next-line unicorn/prefer-https
-      expect(lastRequest().url).toBe('http://apprise.local/status/secret-key');
+      expect(lastRequest().url).toBe('http://apprise.local/status');
     });
 
     it('uses port 443 for https by default', async () => {
       await sut.verify({ ...options, secure: true });
-      expect(lastRequest().url).toBe('https://apprise.local/status/secret-key');
+      expect(lastRequest().url).toBe('https://apprise.local/status');
     });
 
     it('uses a custom port and base path', async () => {
       await sut.notify({ ...options, port: 8000, basePath: '/apprise/' }, message);
-      // eslint-disable-next-line unicorn/prefer-https
-      expect(lastRequest().url).toBe('http://apprise.local:8000/apprise/notify/secret-key');
+      expect(lastRequest().url).toBe('http://apprise.local:8000/apprise/notify');
     });
 
     it('supports IPv6 hosts', async () => {
       await sut.verify({ ...options, host: '::1', port: 8000 });
-      expect(lastRequest().url).toBe('http://[::1]:8000/status/secret-key');
+      expect(lastRequest().url).toBe('http://[::1]:8000/status');
     });
 
-    it('requires a host and config ID', async () => {
-      await expect(sut.verify({ ...options, configId: '' })).rejects.toThrow('Host and config ID are required');
+    it('requires a host', async () => {
+      await expect(sut.verify({ ...options, host: '' })).rejects.toThrow('Host is required');
       expect(fetchMock).not.toHaveBeenCalled();
     });
   });
 
   describe('request', () => {
-    it('sends a JSON notification without a tag', async () => {
+    it('sends the URLs and message as JSON', async () => {
       await sut.notify(options, message);
 
       const { init } = lastRequest();
       expect(init.method).toBe('POST');
       expect(init.redirect).toBe('manual');
-      expect(init.headers).toEqual({ Accept: 'application/json', 'Content-Type': 'application/json' });
-      expect(JSON.parse(init.body as string)).toEqual({ title: 'title', body: 'body', type: 'info', format: 'text' });
+      expect(init.headers).toEqual({
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Apprise-Config-ID': 'secret-key',
+      });
+      expect(JSON.parse(init.body as string)).toEqual({
+        urls: 'json://localhost',
+        title: 'title',
+        body: 'body',
+        type: 'info',
+        format: 'text',
+      });
     });
 
-    it('includes the tag when one is set', async () => {
-      await sut.notify(options, { ...message, tag: 'family alice' });
-      expect(JSON.parse(lastRequest().init.body as string)).toMatchObject({ tag: 'family alice' });
+    it('leaves out the config ID header when none is set', async () => {
+      await sut.verify({ ...options, configId: '' });
+      expect(lastRequest().init.headers).not.toHaveProperty('X-Apprise-Config-ID');
     });
 
     it('sends basic auth with a username and password', async () => {
@@ -148,11 +141,6 @@ describe(AppriseRepository.name, () => {
       await expect(sut.notify(options, message)).rejects.toThrow(
         'Some services failed: Failed to send ntfy notification.',
       );
-    });
-
-    it('explains when no services matched the tags', async () => {
-      fetchMock.mockResolvedValue(respond(424, { error: 'One or more notification could not be sent', details: [] }));
-      await expect(sut.notify(options, message)).rejects.toThrow('No services were notified, check the tags');
     });
 
     it('includes Retry-After when the server is busy', async () => {

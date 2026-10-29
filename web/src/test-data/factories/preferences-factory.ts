@@ -12,7 +12,7 @@ export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
     albumInvite: false,
     albumUpdate: false,
     enabled: false,
-    tag: '',
+    urls: '',
   },
   download: {
     archiveSize: 0,

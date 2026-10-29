@@ -289,7 +289,7 @@ export type AdminConfigNightlyTasksDto = {
 export type AdminConfigAppriseDto = {
     /** Path prefix the Apprise API is served under */
     basePath: string;
-    /** Apprise configuration ID (key) to notify */
+    /** Apprise configuration ID the username and password belong to */
     configId: string;
     /** Whether Apprise notifications are enabled */
     enabled: boolean;
@@ -301,8 +301,6 @@ export type AdminConfigAppriseDto = {
     port: number | null;
     /** Whether to use a secure connection (HTTPS) */
     secure: boolean;
-    /** Tags to notify, separated by commas or spaces (all must match) */
-    tags: string;
     /** Request timeout in seconds */
     timeout: number;
     /** Apprise API username */
@@ -688,8 +686,8 @@ export type AppriseNotificationsResponse = {
     albumUpdate: boolean;
     /** Whether Apprise notifications are enabled */
     enabled: boolean;
-    /** Apprise tags that route notifications to this user (all must match) */
-    tag: string;
+    /** Apprise URLs to notify, separated by commas or spaces */
+    urls: string;
 };
 export type CastResponse = {
     /** Whether Google Cast is enabled */
@@ -783,8 +781,8 @@ export type AppriseNotificationsUpdate = {
     albumUpdate?: boolean;
     /** Whether Apprise notifications are enabled */
     enabled?: boolean;
-    /** Apprise tags that route notifications to this user (all must match) */
-    tag?: string;
+    /** Apprise URLs to notify, separated by commas or spaces */
+    urls?: string;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
@@ -4305,7 +4303,7 @@ export function getNotificationTemplateAdmin({ name, templateDto }: {
     })));
 }
 /**
- * Send test Apprise notification
+ * Test Apprise connection
  */
 export function sendTestAppriseAdmin({ adminConfigAppriseDto }: {
     adminConfigAppriseDto: AdminConfigAppriseDto;

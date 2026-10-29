@@ -15,7 +15,7 @@ export type AppriseOptions = {
 export type AppriseNotification = {
   title: string;
   body: string;
-  tag: string;
+  urls: string;
 };
 
 type AppriseResponse = {
@@ -24,14 +24,6 @@ type AppriseResponse = {
 };
 
 const MAX_MESSAGE_LENGTH = 500;
-
-/**
- * Turns tags separated by commas and/or spaces into one space-separated string.
- * - Apprise treats space-separated tags as "all must match" (AND).
- * - An empty result means "notify the URLs that have no tag".
- */
-export const normalizeAppriseTags = (...values: string[]) =>
-  [...new Set(values.flatMap((value) => value.split(/[\s,]+/)).filter(Boolean))].join(' ');
 
 export class AppriseError extends Error {
   constructor(
@@ -85,14 +77,9 @@ const toError = (response: Response, { error, details }: AppriseResponse) => {
       return new AppriseError(`Server problem: ${reason}`, status);
     }
     case 424: {
-      // Apprise also answers 424, with no failure lines, when no services match the tags
       const failures = getFailures(details);
-      return new AppriseError(
-        failures.length > 0
-          ? `Some services failed: ${failures.join('; ')}`
-          : 'No services were notified, check the tags',
-        status,
-      );
+      const suffix = failures.length > 0 ? `: ${failures.join('; ')}` : '';
+      return new AppriseError(`Some services failed${suffix}`, status);
     }
   }
 
@@ -116,20 +103,21 @@ export class AppriseRepository {
     await this.request(options, 'status');
   }
 
-  async notify(options: AppriseOptions, { title, body, tag }: AppriseNotification): Promise<void> {
-    await this.request(options, 'notify', { title, body, type: 'info', format: 'text', ...(tag && { tag }) });
+  /** Sends to the given Apprise URLs (stateless), so each user's notifications go to their own services. */
+  async notify(options: AppriseOptions, { title, body, urls }: AppriseNotification): Promise<void> {
+    await this.request(options, 'notify', { urls, title, body, type: 'info', format: 'text' });
   }
 
   private async request(options: AppriseOptions, route: 'status' | 'notify', payload?: object) {
     const { secure, basePath, configId, username, password, timeout } = options;
-    if (!options.host || !configId) {
-      throw new AppriseError('Host and config ID are required');
+    if (!options.host) {
+      throw new AppriseError('Host is required');
     }
 
     // IPv6 addresses need square brackets inside a URL
     const host = options.host.includes(':') && !options.host.startsWith('[') ? `[${options.host}]` : options.host;
     const port = options.port ?? (secure ? 443 : 80);
-    const path = [basePath.replaceAll(/^\/+|\/+$/g, ''), route, encodeURIComponent(configId)].filter(Boolean).join('/');
+    const path = [basePath.replaceAll(/^\/+|\/+$/g, ''), route].filter(Boolean).join('/');
 
     let url: URL;
     try {
@@ -141,6 +129,10 @@ export class AppriseRepository {
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (payload) {
       headers['Content-Type'] = 'application/json';
+    }
+    // The config ID is sent as a header so Apprise checks the username and password against that configuration
+    if (configId) {
+      headers['X-Apprise-Config-ID'] = configId;
     }
     if (username || password) {
       headers.Authorization = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;

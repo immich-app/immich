@@ -1313,7 +1313,7 @@
     },
     "/admin/notifications/test-apprise": {
       "post": {
-        "description": "Send a test notification using the provided Apprise API configuration.",
+        "description": "Check that the Apprise API server can be reached with the provided login, without sending anything.",
         "operationId": "sendTestAppriseAdmin",
         "parameters": [],
         "requestBody": {
@@ -1342,7 +1342,7 @@
             "api_key": []
           }
         ],
-        "summary": "Send test Apprise notification",
+        "summary": "Test Apprise connection",
         "tags": [
           "Notifications (admin)"
         ],
@@ -1357,6 +1357,7 @@
             "state": "Beta"
           }
         ],
+        "x-immich-permission": "notification.create",
         "x-immich-state": "Beta"
       }
     },
@@ -18965,7 +18966,7 @@
             "type": "string"
           },
           "configId": {
-            "description": "Apprise configuration ID (key) to notify",
+            "description": "Apprise configuration ID the username and password belong to",
             "type": "string"
           },
           "enabled": {
@@ -18991,11 +18992,6 @@
             "description": "Whether to use a secure connection (HTTPS)",
             "type": "boolean"
           },
-          "tags": {
-            "description": "Tags to notify, separated by commas or spaces (all must match)",
-            "pattern": "^[\\w\\s,:+-]*$",
-            "type": "string"
-          },
           "timeout": {
             "description": "Request timeout in seconds",
             "maximum": 300,
@@ -19015,7 +19011,6 @@
           "password",
           "port",
           "secure",
-          "tags",
           "timeout",
           "username"
         ],
@@ -20697,8 +20692,8 @@
             "description": "Whether Apprise notifications are enabled",
             "type": "boolean"
           },
-          "tag": {
-            "description": "Apprise tags that route notifications to this user (all must match)",
+          "urls": {
+            "description": "Apprise URLs to notify, separated by commas or spaces",
             "type": "string"
           }
         },
@@ -20706,7 +20701,7 @@
           "albumInvite",
           "albumUpdate",
           "enabled",
-          "tag"
+          "urls"
         ],
         "type": "object"
       },
@@ -20724,9 +20719,8 @@
             "description": "Whether Apprise notifications are enabled",
             "type": "boolean"
           },
-          "tag": {
-            "description": "Apprise tags that route notifications to this user (all must match)",
-            "pattern": "^[\\w\\s,:+-]*$",
+          "urls": {
+            "description": "Apprise URLs to notify, separated by commas or spaces",
             "type": "string"
           }
         },

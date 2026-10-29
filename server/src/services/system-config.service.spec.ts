@@ -256,7 +256,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
       secure: false,
       basePath: '',
       configId: '',
-      tags: '',
       username: '',
       password: '',
       timeout: 20,

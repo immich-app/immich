@@ -1,8 +1,8 @@
 <script lang="ts">
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import { updateMyPreferences } from '@immich/sdk';
-  import { Button, Field, Heading, Input, Switch, toastManager } from '@immich/ui';
+  import { getUserConfig, updateMyPreferences } from '@immich/sdk';
+  import { Button, Field, Heading, PasswordInput, Switch, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -10,10 +10,10 @@
   let albumInviteNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumInvite ?? true);
   let albumUpdateNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumUpdate ?? true);
 
-  let appriseEnabled = $state(authManager.preferences.appriseNotifications?.enabled ?? true);
+  let appriseEnabled = $state(authManager.preferences.appriseNotifications?.enabled ?? false);
   let appriseAlbumInviteEnabled = $state(authManager.preferences.appriseNotifications?.albumInvite ?? true);
   let appriseAlbumUpdateEnabled = $state(authManager.preferences.appriseNotifications?.albumUpdate ?? true);
-  let appriseTag = $state(authManager.preferences.appriseNotifications?.tag ?? '');
+  let appriseUrls = $state(authManager.preferences.appriseNotifications?.urls ?? '');
 
   const handleSave = async () => {
     try {
@@ -28,7 +28,7 @@
             enabled: appriseEnabled,
             albumInvite: appriseEnabled && appriseAlbumInviteEnabled,
             albumUpdate: appriseEnabled && appriseAlbumUpdateEnabled,
-            tag: appriseTag,
+            urls: appriseUrls,
           },
         },
       });
@@ -63,27 +63,36 @@
           <Switch bind:checked={albumUpdateNotificationEnabled} />
         </Field>
 
-        <Heading size="tiny" class="mt-2">{$t('apprise_notifications')}</Heading>
+        <!-- Only shown when the administrator has turned on Apprise -->
+        {#await getUserConfig() then config}
+          {#if config.notifications.apprise.enabled}
+            <Heading size="tiny" class="mt-2">{$t('apprise_notifications')}</Heading>
 
-        <Field label={$t('enable')} description={$t('apprise_toggle_setting_description')}>
-          <Switch bind:checked={appriseEnabled} />
-        </Field>
+            <Field label={$t('enable')} description={$t('apprise_toggle_setting_description')}>
+              <Switch bind:checked={appriseEnabled} />
+            </Field>
 
-        <Field label={$t('album_added')} description={$t('apprise_album_added_description')} disabled={!appriseEnabled}>
-          <Switch bind:checked={appriseAlbumInviteEnabled} />
-        </Field>
+            <Field
+              label={$t('album_added')}
+              description={$t('apprise_album_added_description')}
+              disabled={!appriseEnabled}
+            >
+              <Switch bind:checked={appriseAlbumInviteEnabled} />
+            </Field>
 
-        <Field
-          label={$t('album_updated')}
-          description={$t('apprise_album_updated_description')}
-          disabled={!appriseEnabled}
-        >
-          <Switch bind:checked={appriseAlbumUpdateEnabled} />
-        </Field>
+            <Field
+              label={$t('album_updated')}
+              description={$t('apprise_album_updated_description')}
+              disabled={!appriseEnabled}
+            >
+              <Switch bind:checked={appriseAlbumUpdateEnabled} />
+            </Field>
 
-        <Field label={$t('apprise_tag')} description={$t('apprise_tag_description')} disabled={!appriseEnabled}>
-          <Input bind:value={appriseTag} />
-        </Field>
+            <Field label={$t('apprise_urls')} description={$t('apprise_urls_description')} disabled={!appriseEnabled}>
+              <PasswordInput bind:value={appriseUrls} autocomplete="off" />
+            </Field>
+          {/if}
+        {/await}
       </div>
 
       <div class="mt-4 flex justify-end">

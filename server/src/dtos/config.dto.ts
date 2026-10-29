@@ -73,10 +73,6 @@ const httpsDomain = (label: string) =>
 const emptyOrUrl = (error: string) =>
   z.string().refine((url) => url.length === 0 || z.url().safeParse(url).success, { error });
 
-export const appriseTagsSchema = z
-  .string()
-  .regex(/^[\w\s,:+-]*$/, 'Tags may only contain letters, numbers, _ : + - and be separated by commas or spaces');
-
 const AdminConfigIntegrityJobSchema = z
   .object({
     enabled: z.boolean().describe('Enabled'),
@@ -175,8 +171,7 @@ const AdminConfigAppriseSchema = z
       .describe('Apprise API server port (defaults to 80, or 443 when secure)'),
     secure: configBool.describe('Whether to use a secure connection (HTTPS)'),
     basePath: z.string().describe('Path prefix the Apprise API is served under'),
-    configId: z.string().describe('Apprise configuration ID (key) to notify'),
-    tags: appriseTagsSchema.describe('Tags to notify, separated by commas or spaces (all must match)'),
+    configId: z.string().describe('Apprise configuration ID the username and password belong to'),
     username: z.string().describe('Apprise API username'),
     password: z.string().describe('Apprise API password'),
     timeout: z.int().min(1).max(300).describe('Request timeout in seconds'),
@@ -837,16 +832,15 @@ export const defaults = Object.freeze<SystemConfig>({
       },
     },
     apprise: {
-      enabled: process.env.IMMICH_APPRISE_ENABLED === 'true',
-      host: process.env.IMMICH_APPRISE_HOST || '',
-      port: Number(process.env.IMMICH_APPRISE_PORT) || null,
-      secure: process.env.IMMICH_APPRISE_SECURE === 'true',
-      basePath: process.env.IMMICH_APPRISE_BASE_PATH || '',
-      configId: process.env.IMMICH_APPRISE_CONFIG_ID || '',
-      tags: process.env.IMMICH_APPRISE_TAGS || '',
-      username: process.env.IMMICH_APPRISE_USERNAME || '',
-      password: process.env.IMMICH_APPRISE_PASSWORD || '',
-      timeout: Number(process.env.IMMICH_APPRISE_TIMEOUT) || 20,
+      enabled: false,
+      host: '',
+      port: null,
+      secure: false,
+      basePath: '',
+      configId: '',
+      username: '',
+      password: '',
+      timeout: 20,
     },
   },
   templates: {
