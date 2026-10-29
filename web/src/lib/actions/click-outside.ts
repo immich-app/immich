@@ -1,5 +1,5 @@
+import { matchesShortcut } from '#lib/actions/shortcut.ts';
 import type { ActionReturn } from 'svelte/action';
-import { matchesShortcut } from '$lib/actions/shortcut';
 
 interface Options {
   onOutclick?: () => void;
@@ -7,11 +7,11 @@ interface Options {
 }
 
 /**
- * Calls a function when a click occurs outside of the element, or when the escape key is pressed.
- * @param node
- * @param options Object containing onOutclick and onEscape functions
- * @returns
- */
+Calls a function when a click occurs outside of the element, or when the escape key is pressed.
+@param node
+@param options Object containing onOutclick and onEscape functions
+@returns
+*/
 export function clickOutside(node: HTMLElement, options: Options = {}): ActionReturn<Options> {
   const handleClick = (event: MouseEvent) => {
     const { onOutclick } = options;

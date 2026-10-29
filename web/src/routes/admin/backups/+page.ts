@@ -1,7 +1,7 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { getConfig, updateConfig } from '@immich/sdk';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

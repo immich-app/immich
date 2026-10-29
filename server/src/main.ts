@@ -10,23 +10,15 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { type DB } from 'src/schema/index.js';
 import { getKyselyConfig } from 'src/utils/database.js';
 
-/**
- * Manages worker lifecycle
- */
+/** Manages worker lifecycle */
 class Workers {
-  /**
-   * Currently running workers
-   */
+  /** Currently running workers */
   workers: Partial<Record<ImmichWorker, { kill: (signal: NodeJS.Signals) => Promise<void> | void }>> = {};
 
-  /**
-   * Fail-safe in case anything dies during restart
-   */
+  /** Fail-safe in case anything dies during restart */
   restarting = false;
 
-  /**
-   * Boot all enabled workers
-   */
+  /** Boot all enabled workers */
   async bootstrap() {
     const isMaintenanceMode = await this.isMaintenanceMode();
     const { workers } = new ConfigRepository().getEnv();
@@ -92,9 +84,9 @@ class Workers {
   }
 
   /**
-   * Start an individual worker
-   * @param name Worker
-   */
+  Start an individual worker
+  @param name Worker
+  */
   private startWorker(name: ImmichWorker) {
     console.log(`Starting ${name} worker`);
 

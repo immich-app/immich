@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
+  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
   import LargeAssetData from './LargeAssetData.svelte';
-  import Portal from '$lib/elements/Portal.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { getNextAsset, getPreviousAsset, navigateToAsset } from '$lib/utils/asset-utils';
-  import { navigate } from '$lib/utils/navigation';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { getNextAsset, getPreviousAsset, navigateToAsset } from '#lib/utils/asset-utils.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
   import type { AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -78,7 +78,7 @@
 </UserPageLayout>
 
 {#if assetViewerManager.isViewing}
-  {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+  {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
         cursor={assetCursor}

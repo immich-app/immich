@@ -236,6 +236,8 @@ export class DatabaseBackupService {
     const backupFilePath = path.join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
     const temporaryFilePath = `${backupFilePath}.tmp`;
 
+    const compression = await this.getCompressionCommand();
+
     let pgdump: Duplex | undefined;
     let gzip: Duplex | undefined;
 
@@ -247,7 +249,7 @@ export class DatabaseBackupService {
         },
       });
 
-      gzip = this.processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
+      gzip = this.processRepository.spawnDuplexStream(compression.command, compression.args);
       const fileStream = this.storageRepository.createWriteStream(temporaryFilePath);
 
       await pipeline(pgdump, gzip, fileStream, { signal });
@@ -265,6 +267,15 @@ export class DatabaseBackupService {
 
     this.logger.log(`Database Backup Success`);
     return backupFilePath;
+  }
+
+  private async getCompressionCommand() {
+    if (await this.processRepository.isCommandAvailable('pigz')) {
+      const processes = this.processRepository.availableParallelism();
+      return { command: 'pigz', args: ['--rsyncable', '--processes', processes.toString()] };
+    }
+
+    return { command: 'gzip', args: ['--rsyncable'] };
   }
 
   async uploadBackup(file: Express.Multer.File): Promise<void> {

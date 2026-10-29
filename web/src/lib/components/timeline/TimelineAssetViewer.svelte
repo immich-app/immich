@@ -1,19 +1,19 @@
 <script lang="ts">
-  import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import type { AssetCursor } from '$lib/components/asset-viewer/AssetViewer.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import { AssetAction } from '$lib/constants';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { websocketEvents } from '$lib/stores/websocket';
-  import { handlePromiseError } from '$lib/utils';
-  import { navigateToAsset } from '$lib/utils/asset-utils';
-  import { handleErrorAsync } from '$lib/utils/handle-error';
-  import { navigate } from '$lib/utils/navigation';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
+  import type { AssetCursor } from '#lib/components/asset-viewer/AssetViewer.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import { AssetAction } from '#lib/constants.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { websocketEvents } from '#lib/stores/websocket.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { navigateToAsset } from '#lib/utils/asset-utils.ts';
+  import { handleErrorAsync } from '#lib/utils/handle-error.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -185,7 +185,7 @@
 
 <OnEvents {onAlbumRemoveAssets} />
 
-{#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+{#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
   <AssetViewer
     {withStacked}
     cursor={assetCursor}

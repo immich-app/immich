@@ -312,9 +312,7 @@ describe(MaintenanceWorkerService.name, () => {
 
   describe.skip('setAction'); // just calls setStatus+runAction
 
-  /**
-   * Actions
-   */
+  /** Actions */
 
   describe('action: start', () => {
     it('should not do anything', async () => {

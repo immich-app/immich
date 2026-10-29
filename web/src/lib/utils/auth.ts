@@ -1,7 +1,7 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { Route } from '#lib/route.ts';
 import { redirect } from '@sveltejs/kit';
 import { DateTime } from 'luxon';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { Route } from '$lib/route';
 
 export interface AuthOptions {
   admin?: true;

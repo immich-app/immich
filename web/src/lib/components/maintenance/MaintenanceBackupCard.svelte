@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { BackupFileStatus } from '$lib/constants';
-  import { getDatabaseBackupDateTime } from '$lib/services/database-backups.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getBytesWithUnit } from '$lib/utils/byte-units';
+  import { BackupFileStatus } from '#lib/constants.ts';
+  import { getDatabaseBackupDateTime } from '#lib/services/database-backups.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import { Card, CardBody, Code, HStack, Icon, Stack, Text } from '@immich/ui';
   import { mdiAlertCircle, mdiCheckCircle, mdiDatabaseRefreshOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -25,7 +25,7 @@
     expectedVersion,
     timezone,
     showFullDate = false,
-    class: className,
+    class: className = '',
     actions,
   }: Props = $props();
 
@@ -51,7 +51,7 @@
   });
 </script>
 
-<Card class="dark:bg-dark-900 {className ?? ''}">
+<Card class="dark:bg-dark-900 {className}">
   <CardBody class="px-6 pt-3 pb-4">
     <Stack gap={3} class="min-w-0 grow">
       <div class={actions ? 'flex items-center justify-between gap-3' : ''}>

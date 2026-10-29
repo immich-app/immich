@@ -15,7 +15,9 @@
 <Heading size="large" color="primary" tag="h1">{$t('maintenance_restore_source_title')}</Heading>
 <HStack>
   <Button onclick={end} variant="ghost">{$t('cancel')}</Button>
-  <Button onclick={flowToFutoBackups} trailingIcon={mdiArrowRight}>{$t('maintenance_restore_source_futo_backups')}</Button>
+  <Button onclick={flowToFutoBackups} trailingIcon={mdiArrowRight}
+    >{$t('maintenance_restore_source_futo_backups')}</Button
+  >
   <Button onclick={flowToDatabase} trailingIcon={mdiArrowRight}
     >{$t('maintenance_restore_source_database_backup')}</Button
   >

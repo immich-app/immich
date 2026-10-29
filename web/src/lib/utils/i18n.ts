@@ -1,6 +1,6 @@
+import type { Lang } from '#lib/constants.ts';
 import { locale, t, waitLocale } from 'svelte-i18n';
 import { get, type Unsubscriber } from 'svelte/store';
-import type { Lang } from '$lib/constants';
 
 export const getFormatter = async () => {
   let unsubscribe: Unsubscriber | undefined;
@@ -21,7 +21,7 @@ const aliases: Record<string, string> = {
   'zh-TW': 'zh-Hant',
 };
 
-const modules = import.meta.glob('$i18n/*.json');
+const modules = import.meta.glob('#i18n/*.json');
 
 const fileCodes = Object.keys(modules)
   .map((path) => path.match(/\/(\w+)\.json$/)?.[1])
@@ -137,7 +137,7 @@ export const langs: Lang[] = [
     .map((code) => ({
       name: getLanguageName(convertBCP47(code)),
       code,
-      loader: () => import(`$i18n/${code}.json`),
+      loader: () => import(`#i18n/${code}.json`),
       rtl: rtlCodes.has(code),
     }))
     .sort((a, b) => a.code.localeCompare(b.code)),

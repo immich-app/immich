@@ -2,17 +2,17 @@ import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { writable } from 'svelte/store';
-import { albumFactory } from '@test-data/factories/album-factory';
+import { albumFactory } from '#test-data/factories/album-factory';
 import AlbumSummary from '../AlbumSummary.svelte';
 
-vitest.mock('$lib/stores/preferences.store', () => ({
+vitest.mock('#lib/stores/preferences.store.js', () => ({
   locale: writable('en'),
 }));
 
 describe('AlbumSummary component', () => {
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });
-    register('en-US', () => import('$i18n/en.json'));
+    register('en-US', () => import('#i18n/en.json'));
     await waitLocale('en-US');
   });
 

@@ -1,12 +1,15 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import emptyWorkflows from '$lib/assets/empty-workflows.svg';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import { Route } from '$lib/route';
-  import { getWorkflowActions, getWorkflowsActions, getWorkflowShowSchemaAction } from '$lib/services/workflow.service';
-  import { getWorkflowForShare, type WorkflowResponseDto } from '@immich/sdk';
+  import emptyWorkflows from '#lib/assets/empty-workflows.svg';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { getWorkflowForShareQuery, searchWorkflowsQuery } from '#lib/queries/workflow.query.ts';
+  import { Route } from '#lib/route.ts';
+  import {
+    getWorkflowActions,
+    getWorkflowsActions,
+    getWorkflowShowSchemaAction,
+  } from '#lib/services/workflow.service.ts';
   import {
     Badge,
     Button,
@@ -31,7 +34,8 @@
 
   let { data }: Props = $props();
 
-  let workflows = $state<WorkflowResponseDto[]>(data.workflows);
+  const query = createPreloadedQuery(searchWorkflowsQuery);
+  const workflows = $derived(query.data);
 
   const expandedIds = new SvelteSet<string>();
 
@@ -44,21 +48,7 @@
   };
 
   const { Create, UseTemplate } = $derived(getWorkflowsActions($t));
-
-  const onWorkflowCreate = async (response: WorkflowResponseDto) => {
-    await goto(Route.viewWorkflow(response));
-  };
-
-  const onWorkflowUpdate = (response: WorkflowResponseDto) => {
-    workflows = workflows.map((workflow) => (workflow.id === response.id ? response : workflow));
-  };
-
-  const onWorkflowDelete = (response: WorkflowResponseDto) => {
-    workflows = workflows.filter(({ id }) => id !== response.id);
-  };
 </script>
-
-<OnEvents {onWorkflowCreate} {onWorkflowUpdate} {onWorkflowDelete} />
 
 <UserPageLayout title={data.meta.title} actions={[UseTemplate, Create]} scrollbar={false}>
   <section class="flex place-content-center sm:mx-4">
@@ -75,7 +65,7 @@
       {:else}
         <div class="my-6 flex flex-col gap-3">
           {#each workflows as workflow (workflow.id)}
-            {@const { ToggleEnabled, Duplicate, Logs, Edit, Delete } = getWorkflowActions($t, workflow)}
+            {const { ToggleEnabled, Duplicate, Logs, Edit, Delete } = $derived(getWorkflowActions($t, workflow))}
 
             <Card class="group shadow-none transition-colors hover:border-primary">
               <CardHeader>
@@ -129,7 +119,7 @@
                 </a>
 
                 {#if expandedIds.has(workflow.id)}
-                  {#await getWorkflowForShare({ id: workflow.id }) then result}
+                  {#await queryClient.query(getWorkflowForShareQuery(workflow.id)) then result}
                     <div class="border-t border-gray-200 p-4 dark:border-gray-800">
                       <CodeBlock code={JSON.stringify(result, null, 2)} lineNumbers />
                       <Button

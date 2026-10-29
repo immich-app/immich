@@ -1,12 +1,12 @@
+import { locale } from '#lib/stores/preferences.store.ts';
+import { renderWithTooltips } from '#tests/helpers';
 import { screen } from '@testing-library/svelte';
 import { DateTime } from 'luxon';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { locale } from '$lib/stores/preferences.store';
-import { renderWithTooltips } from '$tests/helpers';
 import MaintenanceBackupEntry from './MaintenanceBackupEntry.svelte';
 
-vi.mock('$lib/services/database-backups.service', async (importOriginal) => {
-  const original = await importOriginal<typeof import('$lib/services/database-backups.service')>();
+vi.mock('#lib/services/database-backups.service.js', async (importOriginal) => {
+  const original = await importOriginal<typeof import('#lib/services/database-backups.service.ts')>();
 
   return {
     ...original,

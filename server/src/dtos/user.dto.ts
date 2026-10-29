@@ -11,11 +11,6 @@ import { isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/
 export const UserUpdateMeSchema = z
   .object({
     email: toEmail.optional().describe('User email'),
-    password: z
-      .string()
-      .optional()
-      .describe('User password (deprecated, use change password endpoint)')
-      .meta({ deprecated: true }),
     name: z.string().optional().describe('User name'),
     avatarColor: UserAvatarColorSchema.nullish(),
   })

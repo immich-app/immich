@@ -1,6 +1,6 @@
+import { OpenQueryParam } from '#lib/constants.ts';
+import { Route } from '#lib/route.ts';
 import { redirect } from '@sveltejs/kit';
-import { OpenQueryParam } from '$lib/constants';
-import { Route } from '$lib/route';
 import type { PageLoad } from './$types';
 
 enum LinkTarget {

@@ -1,4 +1,4 @@
-import type { CommonPosition } from '$lib/utils/layout-utils';
+import type { CommonPosition } from '#lib/utils/layout-utils.ts';
 import type { TimelineAsset } from './types';
 
 export class ViewerAsset {

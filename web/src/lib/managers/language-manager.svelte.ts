@@ -1,7 +1,7 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { lang } from '#lib/stores/preferences.store.ts';
+import { convertBCP47, langs } from '#lib/utils/i18n.ts';
 import { setYuccaLanguage } from '@futo-org/backups-orchestrator-ui';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { lang } from '$lib/stores/preferences.store';
-import { convertBCP47, langs } from '$lib/utils/i18n';
 
 class LanguageManager {
   constructor() {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import type { ComponentProps } from 'svelte';
   import type { Translations } from 'svelte-i18n';
 

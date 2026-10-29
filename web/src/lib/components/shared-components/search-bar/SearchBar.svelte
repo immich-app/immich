@@ -1,16 +1,15 @@
 <script lang="ts">
-  import { focusOutside } from '$lib/actions/focus-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { Route } from '$lib/route';
-  import { searchStore } from '$lib/stores/search.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { generateId } from '$lib/utils/generate-id';
+  import { focusOutside } from '#lib/actions/focus-outside.ts';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { Route } from '#lib/route.ts';
+  import { searchStore } from '#lib/stores/search.svelte.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
   import { IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import SearchFilters from './SearchFilters.svelte';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import { getSearchTypePlaceholder, isPopoverContent } from './search-bar-utils';
 
   type Props = {
@@ -29,8 +28,7 @@
   let showSuggestions = $state(false);
   let selectedId: string | undefined = $state();
 
-  const listboxId = generateId();
-  const searchTypeId = generateId();
+  const listboxId = $props.id();
 
   onDestroy(() => {
     searchStore.isSearchEnabled = false;
@@ -173,7 +171,6 @@
         aria-activedescendant={selectedId ?? ''}
         aria-expanded={showSuggestions}
         aria-autocomplete="list"
-        aria-describedby={searchTypeId}
         use:shortcuts={[
           { shortcut: { key: 'Escape' }, onShortcut: onEscape },
           { shortcut: { key: 'ArrowUp' }, onShortcut: () => onArrow(-1) },

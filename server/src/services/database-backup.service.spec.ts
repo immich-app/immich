@@ -16,6 +16,7 @@ describe(DatabaseBackupService.name, () => {
 
   beforeEach(() => {
     mocks = getMocks();
+    mocks.process.isCommandAvailable.mockResolvedValue(false);
     maintenanceHealthRepositoryMock = automock(MaintenanceHealthRepository, {
       args: [mocks.logger],
       strict: false,
@@ -232,6 +233,19 @@ describe(DatabaseBackupService.name, () => {
       const result = await sut.handleBackupDatabase();
       expect(result).toBe(JobStatus.Success);
       expect(mocks.storage.rename).toHaveBeenCalled();
+    });
+
+    it('should compress with gzip when pigz is not installed', async () => {
+      await sut.handleBackupDatabase();
+      expect(mocks.process.isCommandAvailable).toHaveBeenCalledWith('pigz');
+      expect(mocks.process.spawnDuplexStream).toHaveBeenLastCalledWith('gzip', ['--rsyncable']);
+    });
+
+    it('should compress with pigz on every available core when it is installed', async () => {
+      mocks.process.isCommandAvailable.mockResolvedValue(true);
+      mocks.process.availableParallelism.mockReturnValue(8);
+      await sut.handleBackupDatabase();
+      expect(mocks.process.spawnDuplexStream).toHaveBeenLastCalledWith('pigz', ['--rsyncable', '--processes', '8']);
     });
 
     it('should fail if pg_dump fails', async () => {

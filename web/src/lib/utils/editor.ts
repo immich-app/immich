@@ -1,7 +1,8 @@
+import type { EditActions } from '#lib/managers/edit/edit-manager.svelte.ts';
 import type { MirrorParameters, RotateParameters } from '@immich/sdk';
 import { compose, flipX, flipY, identity, rotate } from 'transformation-matrix';
-import type { EditActions } from '$lib/managers/edit/edit-manager.svelte';
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const isCloseToZero = (x: number, epsilon: number = 1e-15) => Math.abs(x) < epsilon;
 
 export const normalizeTransformEdits = (

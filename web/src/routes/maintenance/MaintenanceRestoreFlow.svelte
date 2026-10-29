@@ -26,7 +26,11 @@
 </script>
 
 {#if stage === 'overview'}
-  <RestoreFlowIntro flowToFutoBackups={() => (stage = 'futo-backups')} flowToDatabase={() => (stage = 'detect-install')} {end} />
+  <RestoreFlowIntro
+    flowToFutoBackups={() => (stage = 'futo-backups')}
+    flowToDatabase={() => (stage = 'detect-install')}
+    {end}
+  />
 {:else if stage === 'futo-backups'}
   <ImmichOnboardingRestoreFlow onExit={() => (stage = 'overview')} onFinish={() => (stage = 'auto-select-backup')} />
 {:else if stage === 'detect-install'}
