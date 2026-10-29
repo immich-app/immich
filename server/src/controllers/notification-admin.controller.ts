@@ -49,7 +49,7 @@ export class NotificationAdminController {
   @Endpoint({
     summary: 'Test Apprise connection',
     description: 'Check that the Apprise API server can be reached with the provided login, without sending anything.',
-    history: new HistoryBuilder().added('v3.3.0').beta('v3.3.0'),
+    history: new HistoryBuilder().added('v4.0.0').beta('v4.0.0'),
   })
   sendTestAppriseAdmin(@Body() dto: SystemConfigAppriseDto): Promise<void> {
     return this.service.sendTestApprise(dto);

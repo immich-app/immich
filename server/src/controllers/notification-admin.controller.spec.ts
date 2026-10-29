@@ -66,18 +66,23 @@ describe(NotificationAdminController.name, () => {
   });
 
   describe('POST /admin/notifications/test-apprise', () => {
-    const apprise = { ...defaults.notifications.apprise, enabled: true, host: 'apprise', configId: 'immich' };
+    const apprise = {
+      ...defaults.notifications.apprise,
+      enabled: true,
+      url: 'http://apprise:8000',
+      configId: 'immich',
+    };
 
     it('checks the connection', async () => {
       const { status } = await request(ctx.getHttpServer()).post('/admin/notifications/test-apprise').send(apprise);
       expect(status).toBe(204);
-      expect(service.sendTestApprise).toHaveBeenCalledWith(expect.objectContaining({ host: 'apprise' }));
+      expect(service.sendTestApprise).toHaveBeenCalledWith(expect.objectContaining({ url: 'http://apprise:8000' }));
     });
 
-    it('rejects an invalid port', async () => {
+    it('rejects an invalid URL', async () => {
       const { status } = await request(ctx.getHttpServer())
         .post('/admin/notifications/test-apprise')
-        .send({ ...apprise, port: 70_000 });
+        .send({ ...apprise, url: 'not a url' });
       expect(status).toBe(400);
       expect(service.sendTestApprise).not.toHaveBeenCalled();
     });

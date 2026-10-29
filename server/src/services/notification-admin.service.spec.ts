@@ -1,5 +1,4 @@
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
-import { AppriseError } from 'src/repositories/apprise.repository.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import { NotificationAdminService } from 'src/services/notification-admin.service.js';
 import { NotificationService } from 'src/services/notification.service.js';
@@ -118,7 +117,7 @@ describe(NotificationAdminService.name, () => {
   let sut: NotificationAdminService;
   let mocks: ServiceMocks;
 
-  const apprise = { ...defaults.notifications.apprise, enabled: true, host: 'apprise', configId: 'immich' };
+  const apprise = { ...defaults.notifications.apprise, enabled: true, url: 'http://apprise:8000', configId: 'immich' };
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(NotificationAdminService));
@@ -130,12 +129,12 @@ describe(NotificationAdminService.name, () => {
 
       await expect(sut.sendTestApprise(apprise)).resolves.toBeUndefined();
 
-      expect(mocks.apprise.verify).toHaveBeenCalledWith(expect.objectContaining({ host: 'apprise' }));
+      expect(mocks.apprise.verify).toHaveBeenCalledWith(expect.objectContaining({ url: 'http://apprise:8000' }));
       expect(mocks.apprise.notify).not.toHaveBeenCalled();
     });
 
     it('reports a failed verification as a bad request', async () => {
-      mocks.apprise.verify.mockRejectedValue(new AppriseError('Authentication failed', 401));
+      mocks.apprise.verify.mockRejectedValue(new Error('Authentication failed'));
 
       await expect(sut.sendTestApprise(apprise)).rejects.toThrow('Apprise check failed: Authentication failed');
     });

@@ -162,15 +162,7 @@ const AdminConfigSmtpSchema = z
 const AdminConfigAppriseSchema = z
   .object({
     enabled: configBool.describe('Whether Apprise notifications are enabled').meta({ visibility: User }),
-    host: z.string().describe('Apprise API server hostname'),
-    port: z
-      .int()
-      .min(1)
-      .max(65_535)
-      .nullable()
-      .describe('Apprise API server port (defaults to 80, or 443 when secure)'),
-    secure: configBool.describe('Whether to use a secure connection (HTTPS)'),
-    basePath: z.string().describe('Path prefix the Apprise API is served under'),
+    url: emptyOrUrl('Apprise URL must be an empty string or a valid URL').describe('Apprise API server URL'),
     configId: z.string().describe('Apprise configuration ID the username and password belong to'),
     username: z.string().describe('Apprise API username'),
     password: z.string().describe('Apprise API password'),
@@ -833,10 +825,7 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     apprise: {
       enabled: false,
-      host: '',
-      port: null,
-      secure: false,
-      basePath: '',
+      url: '',
       configId: '',
       username: '',
       password: '',

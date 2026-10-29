@@ -1349,11 +1349,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v3.3.0",
+            "version": "v4.0.0",
             "state": "Added"
           },
           {
-            "version": "v3.3.0",
+            "version": "v4.0.0",
             "state": "Beta"
           }
         ],
@@ -18961,10 +18961,6 @@
       },
       "AdminConfigAppriseDto": {
         "properties": {
-          "basePath": {
-            "description": "Path prefix the Apprise API is served under",
-            "type": "string"
-          },
           "configId": {
             "description": "Apprise configuration ID the username and password belong to",
             "type": "string"
@@ -18973,24 +18969,9 @@
             "description": "Whether Apprise notifications are enabled",
             "type": "boolean"
           },
-          "host": {
-            "description": "Apprise API server hostname",
-            "type": "string"
-          },
           "password": {
             "description": "Apprise API password",
             "type": "string"
-          },
-          "port": {
-            "description": "Apprise API server port (defaults to 80, or 443 when secure)",
-            "maximum": 65535,
-            "minimum": 1,
-            "nullable": true,
-            "type": "integer"
-          },
-          "secure": {
-            "description": "Whether to use a secure connection (HTTPS)",
-            "type": "boolean"
           },
           "timeout": {
             "description": "Request timeout in seconds",
@@ -18998,20 +18979,21 @@
             "minimum": 1,
             "type": "integer"
           },
+          "url": {
+            "description": "Apprise API server URL",
+            "type": "string"
+          },
           "username": {
             "description": "Apprise API username",
             "type": "string"
           }
         },
         "required": [
-          "basePath",
           "configId",
           "enabled",
-          "host",
           "password",
-          "port",
-          "secure",
           "timeout",
+          "url",
           "username"
         ],
         "type": "object"
@@ -20693,8 +20675,11 @@
             "type": "boolean"
           },
           "urls": {
-            "description": "Apprise URLs to notify, separated by commas or spaces",
-            "type": "string"
+            "description": "Apprise URLs to notify",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -20720,8 +20705,12 @@
             "type": "boolean"
           },
           "urls": {
-            "description": "Apprise URLs to notify, separated by commas or spaces",
-            "type": "string"
+            "description": "Apprise URLs to notify",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"

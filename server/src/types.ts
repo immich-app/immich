@@ -281,7 +281,8 @@ export interface IEmailJob {
 export interface IAppriseJob {
   title: string;
   body: string;
-  urls: string;
+  urls: string[];
+  type?: 'info' | 'success' | 'warning' | 'failure';
 }
 
 export interface INotifySignupJob extends IEntityJob {
@@ -604,7 +605,7 @@ export type UserPreferences = {
     enabled: boolean;
     albumInvite: boolean;
     albumUpdate: boolean;
-    urls: string;
+    urls: string[];
   };
   download: {
     archiveSize: number;

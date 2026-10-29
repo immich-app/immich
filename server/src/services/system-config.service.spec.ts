@@ -251,10 +251,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     apprise: {
       enabled: false,
-      host: '',
-      port: null,
-      secure: false,
-      basePath: '',
+      url: '',
       configId: '',
       username: '',
       password: '',

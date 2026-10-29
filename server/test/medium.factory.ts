@@ -637,7 +637,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
       return automock(CronRepository, { args: [undefined, { setContext: () => {} }], strict: false });
     }
 
-    case AppriseRepository:
+    case AppriseRepository: {
+      return automock(AppriseRepository, { args: [{ setContext: () => {} }] });
+    }
+
     case EmailRepository: {
       return automock(EmailRepository, { args: [{ setContext: () => {} }] });
     }

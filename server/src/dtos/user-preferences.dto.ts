@@ -82,7 +82,7 @@ const AppriseNotificationsUpdateSchema = z
     enabled: z.boolean().optional().describe('Whether Apprise notifications are enabled'),
     albumInvite: z.boolean().optional().describe('Whether to receive Apprise notifications for album invites'),
     albumUpdate: z.boolean().optional().describe('Whether to receive Apprise notifications for album updates'),
-    urls: z.string().optional().describe('Apprise URLs to notify, separated by commas or spaces'),
+    urls: z.array(z.string().min(1)).optional().describe('Apprise URLs to notify'),
   })
   .optional()
   .meta({ id: 'AppriseNotificationsUpdate' });
@@ -199,7 +199,7 @@ const AppriseNotificationsResponseSchema = z
     enabled: z.boolean().describe('Whether Apprise notifications are enabled'),
     albumInvite: z.boolean().describe('Whether to receive Apprise notifications for album invites'),
     albumUpdate: z.boolean().describe('Whether to receive Apprise notifications for album updates'),
-    urls: z.string().describe('Apprise URLs to notify, separated by commas or spaces'),
+    urls: z.array(z.string()).describe('Apprise URLs to notify'),
   })
   .meta({ id: 'AppriseNotificationsResponse' });
 
@@ -257,5 +257,5 @@ export const mapPreferences = (preferences: UserPreferences): UserPreferencesRes
 /** Admins see a user's preferences without their Apprise URLs, which often contain tokens. */
 export const mapAdminPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => ({
   ...mapPreferences(preferences),
-  appriseNotifications: { ...preferences.appriseNotifications, urls: '' },
+  appriseNotifications: { ...preferences.appriseNotifications, urls: [] },
 });

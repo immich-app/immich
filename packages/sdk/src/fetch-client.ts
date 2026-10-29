@@ -287,22 +287,16 @@ export type AdminConfigNightlyTasksDto = {
     syncQuotaUsage: boolean;
 };
 export type AdminConfigAppriseDto = {
-    /** Path prefix the Apprise API is served under */
-    basePath: string;
     /** Apprise configuration ID the username and password belong to */
     configId: string;
     /** Whether Apprise notifications are enabled */
     enabled: boolean;
-    /** Apprise API server hostname */
-    host: string;
     /** Apprise API password */
     password: string;
-    /** Apprise API server port (defaults to 80, or 443 when secure) */
-    port: number | null;
-    /** Whether to use a secure connection (HTTPS) */
-    secure: boolean;
     /** Request timeout in seconds */
     timeout: number;
+    /** Apprise API server URL */
+    url: string;
     /** Apprise API username */
     username: string;
 };
@@ -686,8 +680,8 @@ export type AppriseNotificationsResponse = {
     albumUpdate: boolean;
     /** Whether Apprise notifications are enabled */
     enabled: boolean;
-    /** Apprise URLs to notify, separated by commas or spaces */
-    urls: string;
+    /** Apprise URLs to notify */
+    urls: string[];
 };
 export type CastResponse = {
     /** Whether Google Cast is enabled */
@@ -781,8 +775,8 @@ export type AppriseNotificationsUpdate = {
     albumUpdate?: boolean;
     /** Whether Apprise notifications are enabled */
     enabled?: boolean;
-    /** Apprise URLs to notify, separated by commas or spaces */
-    urls?: string;
+    /** Apprise URLs to notify */
+    urls?: string[];
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;

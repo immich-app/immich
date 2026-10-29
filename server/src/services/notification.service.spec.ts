@@ -1,6 +1,5 @@
 import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum.js';
-import { AppriseError } from 'src/repositories/apprise.repository.js';
 import { NotificationService } from 'src/services/notification.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
@@ -55,13 +54,13 @@ const configs = {
     ...defaults,
     notifications: {
       ...defaults.notifications,
-      apprise: { ...defaults.notifications.apprise, enabled: true, host: 'apprise', configId: 'immich' },
+      apprise: { ...defaults.notifications.apprise, enabled: true, url: 'http://apprise:8000', configId: 'immich' },
     },
   }),
 };
 
 const appriseConfig = (apprise: Partial<SystemConfig['notifications']['apprise']> = {}) => ({
-  notifications: { apprise: { enabled: true, host: 'apprise', configId: 'immich', ...apprise } },
+  notifications: { apprise: { enabled: true, url: 'http://apprise:8000', configId: 'immich', ...apprise } },
 });
 
 const withPreferences = (value: object) => ({
@@ -164,7 +163,7 @@ describe(NotificationService.name, () => {
     });
 
     it('rejects an apprise config that fails verification', async () => {
-      mocks.apprise.verify.mockRejectedValue(new AppriseError('Authentication failed', 401));
+      mocks.apprise.verify.mockRejectedValue(new Error('Authentication failed'));
 
       await expect(sut.onConfigValidate({ oldConfig: defaults, newConfig: configs.appriseEnabled })).rejects.toThrow(
         'Apprise check failed: Authentication failed',
@@ -508,7 +507,7 @@ describe(NotificationService.name, () => {
 
     it("queues an invite to the user's own URLs", async () => {
       mocks.user.get.mockResolvedValue(
-        withPreferences({ appriseNotifications: { enabled: true, urls: 'json://alice' } }),
+        withPreferences({ appriseNotifications: { enabled: true, urls: ['json://alice'] } }),
       );
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
 
@@ -519,14 +518,14 @@ describe(NotificationService.name, () => {
         data: {
           title: 'Shared Album Invitation',
           body: expect.stringContaining('foo shared an album'),
-          urls: 'json://alice',
+          urls: ['json://alice'],
         },
       });
     });
 
     it("queues an update to the user's own URLs", async () => {
       mocks.user.get.mockResolvedValue(
-        withPreferences({ appriseNotifications: { enabled: true, urls: 'json://alice' } }),
+        withPreferences({ appriseNotifications: { enabled: true, urls: ['json://alice'] } }),
       );
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
@@ -535,7 +534,7 @@ describe(NotificationService.name, () => {
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SendApprise,
-        data: expect.objectContaining({ title: 'Shared Album Update', urls: 'json://alice' }),
+        data: expect.objectContaining({ title: 'Shared Album Update', urls: ['json://alice'] }),
       });
     });
 
@@ -549,7 +548,7 @@ describe(NotificationService.name, () => {
     });
 
     it('does not queue apprise until the user turns it on', async () => {
-      mocks.user.get.mockResolvedValue(withPreferences({ appriseNotifications: { urls: 'json://alice' } }));
+      mocks.user.get.mockResolvedValue(withPreferences({ appriseNotifications: { urls: ['json://alice'] } }));
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
 
       await sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' });
@@ -561,7 +560,7 @@ describe(NotificationService.name, () => {
       mocks.user.get.mockResolvedValue(
         withPreferences({
           emailNotifications: { enabled: false },
-          appriseNotifications: { enabled: true, urls: 'json://alice' },
+          appriseNotifications: { enabled: true, urls: ['json://alice'] },
         }),
       );
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
@@ -575,7 +574,7 @@ describe(NotificationService.name, () => {
 
     it('does not queue apprise when the user turned it off', async () => {
       mocks.user.get.mockResolvedValue(
-        withPreferences({ appriseNotifications: { enabled: true, urls: 'json://alice', albumInvite: false } }),
+        withPreferences({ appriseNotifications: { enabled: true, urls: ['json://alice'], albumInvite: false } }),
       );
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
 
@@ -587,7 +586,7 @@ describe(NotificationService.name, () => {
 
     it('does not queue apprise when it is disabled', async () => {
       mocks.user.get.mockResolvedValue(
-        withPreferences({ appriseNotifications: { enabled: true, urls: 'json://alice' } }),
+        withPreferences({ appriseNotifications: { enabled: true, urls: ['json://alice'] } }),
       );
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ enabled: false }));
 
@@ -718,7 +717,7 @@ describe(NotificationService.name, () => {
   });
 
   describe('handleSendApprise', () => {
-    const job = { title: 'title', body: 'body', urls: 'json://alice' };
+    const job = { title: 'title', body: 'body', urls: ['json://alice'] };
 
     it('skips when apprise is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ enabled: false }));
@@ -727,8 +726,8 @@ describe(NotificationService.name, () => {
       expect(mocks.apprise.notify).not.toHaveBeenCalled();
     });
 
-    it('skips when the host is missing', async () => {
-      mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ host: '' }));
+    it('skips when the URL is missing', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(appriseConfig({ url: '' }));
 
       await expect(sut.handleSendApprise(job)).resolves.toBe(JobStatus.Skipped);
       expect(mocks.apprise.notify).not.toHaveBeenCalled();
@@ -739,17 +738,10 @@ describe(NotificationService.name, () => {
       mocks.apprise.notify.mockResolvedValue();
 
       await expect(sut.handleSendApprise(job)).resolves.toBe(JobStatus.Success);
-      expect(mocks.apprise.notify).toHaveBeenCalledWith(expect.objectContaining({ host: 'apprise' }), job);
+      expect(mocks.apprise.notify).toHaveBeenCalledWith(expect.objectContaining({ url: 'http://apprise:8000' }), job);
     });
 
-    it('fails quietly when apprise reports an error', async () => {
-      mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
-      mocks.apprise.notify.mockRejectedValue(new AppriseError('One or more notifications could not be sent', 424));
-
-      await expect(sut.handleSendApprise(job)).resolves.toBe(JobStatus.Failed);
-    });
-
-    it('rethrows unexpected errors', async () => {
+    it('passes errors on to the job queue', async () => {
       mocks.systemMetadata.get.mockResolvedValue(appriseConfig());
       mocks.apprise.notify.mockRejectedValue(new Error('boom'));
 

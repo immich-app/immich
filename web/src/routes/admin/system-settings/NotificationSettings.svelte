@@ -203,38 +203,11 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required
-              label={$t('host')}
-              description={$t('admin.notification_apprise_host_description')}
+              label={$t('url')}
+              description={$t('admin.notification_apprise_url_description')}
               disabled={appriseDisabled}
-              bind:value={configToEdit.notifications.apprise.host}
-              isEdited={configToEdit.notifications.apprise.host !== config.notifications.apprise.host}
-            />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              min={1}
-              max={65_535}
-              label={$t('port')}
-              description={$t('admin.notification_apprise_port_description')}
-              disabled={appriseDisabled}
-              bind:value={configToEdit.notifications.apprise.port}
-              isEdited={configToEdit.notifications.apprise.port !== config.notifications.apprise.port}
-            />
-
-            <SettingSwitch
-              title={$t('admin.notification_apprise_secure')}
-              subtitle={$t('admin.notification_apprise_secure_description')}
-              disabled={appriseDisabled}
-              bind:checked={configToEdit.notifications.apprise.secure}
-            />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              label={$t('admin.notification_apprise_base_path')}
-              description={$t('admin.notification_apprise_base_path_description')}
-              disabled={appriseDisabled}
-              bind:value={configToEdit.notifications.apprise.basePath}
-              isEdited={configToEdit.notifications.apprise.basePath !== config.notifications.apprise.basePath}
+              bind:value={configToEdit.notifications.apprise.url}
+              isEdited={configToEdit.notifications.apprise.url !== config.notifications.apprise.url}
             />
 
             <SettingInputField
