@@ -16,6 +16,10 @@ libc = { workspace = true }
 [target.'cfg(target_os = "android")'.dependencies]
 jni = { workspace = true }
 
+# rav1d needs nightly Rust on 32-bit ARM.
+[target.'cfg(not(target_arch = "arm"))'.dependencies]
+native_core = { path = "../native_core", features = ["avif"] }
+
 [build-dependencies]
 cbindgen = { workspace = true }
 

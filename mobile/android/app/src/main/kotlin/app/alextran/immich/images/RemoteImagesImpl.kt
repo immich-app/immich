@@ -61,6 +61,35 @@ private fun mimeType(contentType: String?) = contentType?.substringBefore(';')?.
 
 private fun isRawMime(contentType: String?) = mimeType(contentType) in RAW_MIME_TYPES
 
+private fun decodeInCore(
+  buffer: NativeByteBuffer,
+  width: Long?,
+  height: Long?,
+  signal: CancellationSignal
+): Map<String, Long>? {
+  val info = IntArray(3)
+  // The fetch is done, so cancelling now stops the decode instead.
+  val cancelled = ByteBuffer.allocateDirect(1)
+  signal.setOnCancelListener { NativeImage.cancel(cancelled) }
+
+  val pointer = if (signal.isCanceled) 0L else NativeImage.decode(
+    buffer.pointer,
+    buffer.offset,
+    width?.toInt() ?: 0,
+    height?.toInt() ?: 0,
+    MAX_PIXEL_SIZE,
+    cancelled,
+    info
+  )
+
+  return if (pointer == 0L) null else mapOf(
+    "pointer" to pointer,
+    "width" to info[0].toLong(),
+    "height" to info[1].toLong(),
+    "rowBytes" to info[2].toLong()
+  )
+}
+
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
 
@@ -97,36 +126,19 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
           return@fetch callback(CANCELLED)
         }
 
-        // Neither Android nor Flutter can decode JPEG XL, so this applies to encoded requests too.
-        if (mimeType(contentType) == "image/jxl") {
+        // Neither Android nor Flutter can decode JPEG XL, or AVIF before Android 12, so this applies to
+        // encoded requests too.
+        val mime = mimeType(contentType)
+        if (mime == "image/jxl" || (mime == "image/avif" && Build.VERSION.SDK_INT < Build.VERSION_CODES.S)) {
           decodeExecutor.execute {
-            val info = IntArray(3)
-            // The fetch is done, so cancelling now stops the decode instead.
-            val cancelled = ByteBuffer.allocateDirect(1)
-            signal.setOnCancelListener { NativeImage.cancel(cancelled) }
-            val pointer = if (signal.isCanceled) 0L else NativeImage.decode(
-              buffer.pointer,
-              buffer.offset,
-              width?.toInt() ?: 0,
-              height?.toInt() ?: 0,
-              MAX_PIXEL_SIZE,
-              cancelled,
-              info
-            )
+            val res = decodeInCore(buffer, width, height, signal)
             buffer.free()
             requestMap.remove(requestId)
             callback(
               when {
-                pointer != 0L -> Result.success(
-                  mapOf(
-                    "pointer" to pointer,
-                    "width" to info[0].toLong(),
-                    "height" to info[1].toLong(),
-                    "rowBytes" to info[2].toLong()
-                  )
-                )
+                res != null -> Result.success(res)
                 signal.isCanceled -> CANCELLED
-                else -> Result.failure(IOException("Failed to decode JPEG XL image"))
+                else -> Result.failure(IOException("Failed to decode $mime"))
               }
             )
           }
@@ -161,6 +173,9 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
               } else {
                 rotateToNativeBuffer(bitmap, orientation)
               }
+            } catch (_: IOException) {
+              // Some Android AV1 decoders stop at 2048x2048, so bigger AVIF images can fail.
+              if (mime == "image/avif") decodeInCore(buffer, width, height, signal) else null
             } catch (_: Throwable) {
               null
             }

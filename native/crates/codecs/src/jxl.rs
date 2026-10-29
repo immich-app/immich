@@ -10,7 +10,9 @@ use moxcms::{Layout, MatrixCoefficients, Transform16BitExecutor};
 use quick_cache::sync::Cache;
 use rayon::prelude::*;
 
-use crate::color::{self, CicpColorPrimaries, CicpProfile, Target, TransferCharacteristics};
+use crate::color::{
+    self, CicpColorPrimaries, CicpProfile, TRANSFORMS, Target, TransferCharacteristics, Transforms,
+};
 use crate::image::{Image, Pixels, Samples};
 use crate::resize;
 
@@ -235,22 +237,15 @@ fn cicp(profile: &JxlColorProfile) -> Option<CicpProfile> {
     })
 }
 
-/// Reuse the transform to sRGB for a given source profile.
-type Transforms<K> = Cache<K, (Arc<Transform16BitExecutor>, Layout)>;
-
 /// [`color::to_srgb`] for `profile`, built once per distinct profile.
 fn srgb_transform(profile: &JxlColorProfile) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
-    const TRANSFORMS: usize = 8;
     static ENCODINGS: LazyLock<Transforms<String>> = LazyLock::new(|| Cache::new(TRANSFORMS));
-    static ICCS: LazyLock<Transforms<Vec<u8>>> = LazyLock::new(|| Cache::new(TRANSFORMS));
     match profile {
         JxlColorProfile::Simple(encoding) => ENCODINGS
             .get_or_insert_with(&encoding.get_color_encoding_description(), || {
                 color::to_srgb(&profile.try_as_icc().ok_or(())?).ok_or(())
-            }),
-        JxlColorProfile::Icc(icc) => {
-            ICCS.get_or_insert_with(icc.as_slice(), || color::to_srgb(icc).ok_or(()))
-        }
+            })
+            .ok(),
+        JxlColorProfile::Icc(icc) => color::icc_to_srgb(icc),
     }
-    .ok()
 }

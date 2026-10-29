@@ -42,8 +42,8 @@ class RemoteImageRequest extends ImageRequest {
     return result?.$1;
   }
 
-  // Android falls back to encoded data if native decoding fails, and JPEG XL arrives decoded even when the encoded image
-  // is requested, so check for both shapes of the response.
+  // Android falls back to encoded data if native decoding fails, and JPEG XL and AVIF the OS can't read arrive decoded
+  // even when the encoded image is requested, so check for both shapes of the response.
   Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromResponse(Map<String, int>? info, {ui.Size? decodeSize}) =>
       switch (info) {
         {'pointer': final int pointer, 'length': final int length} => _codecFromEncodedPlatformImage(

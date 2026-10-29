@@ -5,16 +5,20 @@ edition.workspace = true
 license.workspace = true
 
 [features]
-default = ["jxl"]
+default = ["avif", "jxl"]
+avif = ["dep:mp4parse", "dep:rav1d", "dep:yuv"]
 jxl = ["dep:jxl", "dep:rayon"]
 
 [dependencies]
 jxl = { workspace = true, optional = true }
 libc = { workspace = true }
 moxcms = { workspace = true }
+mp4parse = { workspace = true, optional = true }
 pic-scale = { workspace = true }
 quick_cache = { workspace = true }
+rav1d = { workspace = true, optional = true }
 rayon = { workspace = true, optional = true }
+yuv = { workspace = true, optional = true }
 
 [lints]
 workspace = true

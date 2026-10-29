@@ -1,11 +1,12 @@
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, LazyLock};
 
 pub use moxcms::{CicpColorPrimaries, CicpProfile, TransferCharacteristics};
 use moxcms::{
     ColorProfile, DataColorSpace, Layout, MatrixCoefficients, RenderingIntent,
     Transform16BitExecutor, TransformOptions,
 };
+use quick_cache::sync::Cache;
 
 use crate::image::Pixels;
 
@@ -39,7 +40,24 @@ pub(crate) fn is_hdr(cicp: CicpProfile) -> bool {
 
 /// Builds the transform from an ICC profile to sRGB, and the layout of the 12-bit samples it reads.
 pub(crate) fn to_srgb(icc: &[u8]) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
-    let source = ColorProfile::new_from_slice(icc).ok()?;
+    profile_to_srgb(&ColorProfile::new_from_slice(icc).ok()?)
+}
+
+/// Reuse the transform to sRGB for a given source profile.
+pub(crate) type Transforms<K> = Cache<K, (Arc<Transform16BitExecutor>, Layout)>;
+
+pub(crate) const TRANSFORMS: usize = 8;
+
+/// [`to_srgb`], built once per distinct profile.
+pub(crate) fn icc_to_srgb(icc: &[u8]) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
+    static ICCS: LazyLock<Transforms<Vec<u8>>> = LazyLock::new(|| Cache::new(TRANSFORMS));
+    ICCS.get_or_insert_with(icc, || to_srgb(icc).ok_or(())).ok()
+}
+
+/// [`to_srgb`] for a parsed profile.
+pub(crate) fn profile_to_srgb(
+    source: &ColorProfile,
+) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
     let layout = match source.color_space {
         DataColorSpace::Gray => Layout::GrayAlpha,
         _ => Layout::Rgba,

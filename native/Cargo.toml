@@ -13,9 +13,12 @@ jni = { version = "0.22", default-features = false }
 jxl = { version = "0.8", default-features = false, features = ["neon"] }
 libc = { version = "0.2", default-features = false }
 moxcms = { version = "0.9", default-features = false, features = ["neon_luts", "neon_shaper_paths"] }
+mp4parse = { version = "0.17", default-features = false, features = ["missing-pixi-permitted"] }
 pic-scale = { version = "0.7", default-features = false, features = ["neon", "rdm"] }
 quick_cache = { version = "0.7", default-features = false }
+rav1d = { version = "1.1", default-features = false, features = ["bitdepth_8", "bitdepth_16"] }
 rayon = { version = "1.11", default-features = false }
+yuv = { version = "0.8", default-features = false, features = ["rdm"] }
 
 [workspace.lints.clippy]
 undocumented_unsafe_blocks = "deny"
