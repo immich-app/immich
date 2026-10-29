@@ -7,7 +7,7 @@ import { HelmetOptions } from 'helmet';
 import { RedisOptions } from 'ioredis';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces/index.js';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { VectorExtension } from 'src/types.js';
 import { IWorker, citiesFile } from 'src/constants.js';
@@ -151,7 +151,22 @@ const asSet = <T>(value: string | undefined, defaults: T[]) => {
   return new Set(values.length === 0 ? defaults : (values as T[]));
 };
 
-const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) => {
+type CspOptions = Exclude<NonNullable<HelmetOptions['contentSecurityPolicy']>, boolean>;
+type CspDirectives = NonNullable<CspOptions['directives']>;
+
+export const applyCspHashes = (directives: CspDirectives, manifest: Record<string, string[]>): CspDirectives => {
+  const merged = { ...directives };
+  for (const [directive, hashes] of Object.entries(manifest)) {
+    const sources = merged[directive];
+    if (Array.isArray(sources) && !sources.includes(`'unsafe-inline'`)) {
+      merged[directive] = [...sources, ...hashes];
+    }
+  }
+
+  return merged;
+};
+
+const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined, webRoot: string) => {
   // default is off
   if (!helmetFile || helmetFile === 'false') {
     return;
@@ -159,11 +174,35 @@ const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) =>
 
   helmetFile = helmetFile === 'true' ? join(import.meta.dirname, '..', '..', 'helmet.json') : helmetFile;
 
+  let config: HelmetOptions;
   try {
-    return JSON.parse(readFileSync(helmetFile).toString()) as HelmetOptions;
+    config = JSON.parse(readFileSync(helmetFile).toString()) as HelmetOptions;
   } catch (error) {
     throw new Error(`Failed to read helmet file: ${helmetFile}`, { cause: error });
   }
+
+  const contentSecurityPolicy = config.contentSecurityPolicy;
+  if (!contentSecurityPolicy || typeof contentSecurityPolicy === 'boolean' || !contentSecurityPolicy.directives) {
+    return config;
+  }
+
+  // merge with csp build-time metadata
+  const manifestFile = join(webRoot, '.csp.json');
+
+  if (!existsSync(join(webRoot, 'index.html')) || !existsSync(manifestFile)) {
+    return config;
+  }
+
+  let manifest: Record<string, string[]>;
+  try {
+    manifest = JSON.parse(readFileSync(manifestFile).toString()) as Record<string, string[]>;
+  } catch (error) {
+    throw new Error(`Failed to read CSP manifest: ${manifestFile}`, { cause: error });
+  }
+
+  const directives = applyCspHashes(contentSecurityPolicy.directives, manifest);
+
+  return { ...config, contentSecurityPolicy: { ...contentSecurityPolicy, directives } };
 };
 
 const getEnv = (): EnvData => {
@@ -310,7 +349,7 @@ const getEnv = (): EnvData => {
     },
 
     helmet: {
-      config: resolveHelmetFile(dto.IMMICH_HELMET_FILE),
+      config: resolveHelmetFile(dto.IMMICH_HELMET_FILE, folders.web),
     },
 
     licensePublicKey: isProd ? productionKeys : stagingKeys,

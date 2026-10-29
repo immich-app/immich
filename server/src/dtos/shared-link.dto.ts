@@ -4,6 +4,7 @@ import { SharedLink } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto.js';
 import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum.js';
 import { isoDatetimeToDate } from 'src/validation.js';
 
@@ -100,7 +101,7 @@ export class SharedLinkEditDto extends createZodDto(SharedLinkEditSchema) {}
 export class SharedLinkLoginDto extends createZodDto(SharedLinkLoginSchema) {}
 export class SharedLinkResponseDto extends createZodDto(SharedLinkResponseSchema) {}
 
-export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetadata: boolean }): SharedLinkResponseDto {
+export function mapSharedLink(sharedLink: SharedLink, { auth }: { auth: AuthDto }): SharedLinkResponseDto {
   const assets = sharedLink.assets || [];
 
   const response = {
@@ -112,8 +113,8 @@ export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetad
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: assets.map((asset) => mapAsset(asset, { stripMetadata: options.stripAssetMetadata })),
-    album: sharedLink.album ? mapAlbum(sharedLink.album) : undefined,
+    assets: assets.map((asset) => mapAsset(asset, { auth })),
+    album: sharedLink.album ? mapAlbum(sharedLink.album, { auth }) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,

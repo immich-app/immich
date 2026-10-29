@@ -1,6 +1,8 @@
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 
 import '../repository_context.dart';
@@ -16,6 +18,37 @@ void main() {
 
   tearDown(() async {
     await ctx.dispose();
+  });
+
+  group('getStackChildren', () {
+    test('returns stack children from oldest to newest', () async {
+      final user = await ctx.newUser();
+      const stackId = 'stack';
+      final primary = await ctx.newRemoteAsset(
+        id: 'primary',
+        ownerId: user.id,
+        stackId: stackId,
+        createdAt: DateTime(2026, 1, 2),
+      );
+      final beforePrimary = await ctx.newRemoteAsset(
+        id: 'before-primary',
+        ownerId: user.id,
+        stackId: stackId,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      final afterPrimary = await ctx.newRemoteAsset(
+        id: 'after-primary',
+        ownerId: user.id,
+        stackId: stackId,
+        createdAt: DateTime(2026, 1, 3),
+      );
+      await ctx.newRemoteAsset(ownerId: user.id, stackId: 'other-stack');
+
+      final primaryAsset = await sut.get(primary.id);
+      final stack = await sut.getStackChildren(primaryAsset!);
+
+      expect(stack.map((asset) => asset.id), [beforePrimary.id, afterPrimary.id]);
+    });
   });
 
   group('getByChecksum', () {
@@ -64,6 +97,55 @@ void main() {
 
       expect(result.length, 1);
       expect(result[0].id, remote.id);
+    });
+  });
+
+  group('watchDeletedAssetIds', () {
+    late String userId;
+
+    setUp(() async {
+      final user = await ctx.newUser();
+      userId = user.id;
+      await ctx.newAuthUser(id: userId);
+    });
+
+    test('hides trashed and archived assets but keeps matching and unsynced ones', () async {
+      final timeline = await ctx.newRemoteAsset(ownerId: userId);
+      final trashed = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2020));
+      final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
+
+      final result = await sut.watchDeletedAssetIds([
+        timeline.id,
+        trashed.id,
+        archived.id,
+        'never-synced',
+      ], AssetVisibility.timeline).first;
+
+      expect(result, {trashed.id, archived.id});
+    });
+
+    test('hides assets not matching the requested visibility for archive searches', () async {
+      final timeline = await ctx.newRemoteAsset(ownerId: userId);
+      final archived = await ctx.newRemoteAsset(ownerId: userId, visibility: AssetVisibility.archive);
+
+      final result = await sut.watchDeletedAssetIds([timeline.id, archived.id], AssetVisibility.archive).first;
+
+      expect(result, {timeline.id});
+    });
+
+    test('emits when an asset is trashed and again when it is restored', () async {
+      final asset = await ctx.newRemoteAsset(ownerId: userId);
+      final queue = StreamQueue(sut.watchDeletedAssetIds([asset.id], AssetVisibility.timeline));
+
+      expect(await queue.next, isEmpty);
+
+      await sut.trash([asset.id]);
+      expect(await queue.next, {asset.id});
+
+      await sut.restoreTrash([asset.id]);
+      expect(await queue.next, isEmpty);
+
+      await queue.cancel();
     });
   });
 

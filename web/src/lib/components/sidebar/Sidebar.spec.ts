@@ -1,7 +1,7 @@
+import SideBarSection from '#lib/components/sidebar/Sidebar.svelte';
+import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
 import { render, screen } from '@testing-library/svelte';
 import { vi } from 'vitest';
-import SideBarSection from '$lib/components/sidebar/Sidebar.svelte';
-import { sidebarStore } from '$lib/stores/sidebar.svelte';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -11,11 +11,11 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock('$lib/stores/media-query-manager.svelte', () => ({
+vi.mock('#lib/stores/media-query-manager.svelte.js', () => ({
   mediaQueryManager: mocks.mediaQueryManager,
 }));
 
-vi.mock('$lib/stores/sidebar.svelte', () => ({
+vi.mock('#lib/stores/sidebar.svelte.js', () => ({
   sidebarStore: {
     isOpen: false,
     reset: vi.fn(),

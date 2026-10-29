@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
@@ -62,7 +63,7 @@ List<_Segment> _buildSegments({required List<Segment> layoutSegments, required d
     return [];
   }
 
-  final formatter = DateFormat.yMMM();
+  final formatter = DateFormat.yMMM(resolvedDateTimeLocale());
   DateTime? lastDate;
   double lastOffset = -offsetThreshold;
   for (final layoutSegment in layoutSegments) {

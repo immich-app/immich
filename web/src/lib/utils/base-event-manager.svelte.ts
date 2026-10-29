@@ -15,7 +15,8 @@ const nextId = () => count++;
 const noop = () => {};
 
 export class BaseEventManager<Events extends EventsBase> {
-  #callbacks: EventItem<Events>[] = $state.raw([]);
+  #callbacks: EventItem<Events>[] = [];
+  #changeCount = $state(0); // make hasListeners reactive while keeping #callbacks plain JS
 
   on(subscriptions: EventMap<Events>): () => void {
     const cleanups = Object.entries(subscriptions).map(([event, callback]) =>
@@ -36,11 +37,17 @@ export class BaseEventManager<Events extends EventsBase> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const item = { id: nextId(), event, callback } as EventItem<Events, any>;
-    this.#callbacks = [...this.#callbacks, item];
+    this.#callbacks.push(item);
+    this.markChanged();
 
     return () => {
       this.#callbacks = this.#callbacks.filter((current) => current.id !== item.id);
+      this.markChanged();
     };
+  }
+
+  private markChanged() {
+    this.#changeCount++;
   }
 
   emit<T extends keyof Events>(event: T, ...params: Events[T]) {
@@ -51,6 +58,8 @@ export class BaseEventManager<Events extends EventsBase> {
   }
 
   hasListeners<T extends keyof Events>(event: T) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    this.#changeCount;
     return this.#callbacks.some((item) => item.event === event);
   }
 

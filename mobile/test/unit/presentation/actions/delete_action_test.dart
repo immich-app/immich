@@ -99,6 +99,7 @@ void main() {
       });
 
       testWidgets('trashes a merged asset and removes its device copy', (tester) async {
+        when(() => cleanupService.deleteLocalAssets(['local'])).thenAnswer((_) async => 1);
         final asset = owned(localId: 'local');
 
         await pumpDelete(tester, {asset});
@@ -106,6 +107,35 @@ void main() {
 
         verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
         verify(() => assetService.trash([asset.id])).called(1);
+      });
+
+      testWidgets('does not trash a merged asset when the MANAGE_MEDIA prompt is cancelled', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        await StoreService.I.put(StoreKey.manageLocalMediaAndroid, true);
+        final asset = owned(localId: 'local');
+
+        await pumpDelete(tester, {asset});
+        await respondToDialog(tester, confirm: false);
+
+        verifyNever(() => cleanupService.deleteLocalAssets(any()));
+        verifyNever(() => assetService.trash(any()));
+        verifyNever(() => assetService.delete(any()));
+        debugDefaultTargetPlatformOverride = null;
+      });
+
+      testWidgets('does not trash a merged asset when the Android system prompt is cancelled', (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 30);
+        when(() => cleanupService.deleteLocalAssets(['local'])).thenAnswer((_) async => 0);
+        final asset = owned(localId: 'local');
+
+        await pumpDelete(tester, {asset});
+        await tester.pumpAndSettle();
+
+        verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
+        verifyNever(() => assetService.trash(any()));
+        verifyNever(() => assetService.delete(any()));
+        debugDefaultTargetPlatformOverride = null;
       });
 
       testWidgets('finishes trashing when the action context is disposed during local cleanup', (tester) async {
@@ -315,6 +345,7 @@ void main() {
         when(context.repository.permission.getAndroidSdkVersion).thenAnswer((_) async => 28);
         final backedUp = owned(localId: 'local');
         final localOnly = LocalAssetFactory.create();
+        when(() => cleanupService.deleteLocalAssets(['local', localOnly.id])).thenAnswer((_) async => 1);
 
         await pumpDelete(tester, {backedUp, localOnly});
         await tester.pump(const Duration(milliseconds: 300));

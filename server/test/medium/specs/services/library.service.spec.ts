@@ -31,10 +31,10 @@ let defaultDatabase: Kysely<DB>;
 
 const fileModifiedAt = new Date(1_700_000_000_000);
 
-const createFile = async (filePath: string, modifiedAt: Date = fileModifiedAt) => {
+const createFile = async (filePath: string) => {
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, 'test');
-  await utimes(filePath, modifiedAt, modifiedAt);
+  await utimes(filePath, fileModifiedAt, fileModifiedAt);
   return filePath;
 };
 
@@ -130,6 +130,7 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
   }
 }
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   const ctx = new LibraryTestContext(db || defaultDatabase);
   return { sut: ctx.sut, ctx };

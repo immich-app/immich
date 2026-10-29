@@ -1,3 +1,5 @@
+#![cfg(feature = "convert")]
+
 use native_core::convert::convert_1010102;
 
 #[test]

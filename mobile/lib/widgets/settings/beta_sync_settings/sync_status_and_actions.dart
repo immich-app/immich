@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
@@ -206,12 +207,13 @@ class SyncStatusAndActions extends HookConsumerWidget {
           leading: const Icon(Icons.playlist_remove_rounded),
           onTap: clearFileCache,
         ),
-        ListTile(
-          title: Text(context.t.export_database, style: const TextStyle(fontWeight: FontWeight.w500)),
-          subtitle: Text(context.t.export_database_description),
-          leading: const Icon(Icons.download),
-          onTap: exportDatabase,
-        ),
+        if (!kReleaseMode)
+          ListTile(
+            title: Text(context.t.export_database, style: const TextStyle(fontWeight: FontWeight.w500)),
+            subtitle: Text(context.t.export_database_description),
+            leading: const Icon(Icons.download),
+            onTap: exportDatabase,
+          ),
         ListTile(
           title: Text(
             context.t.reset_sqlite,

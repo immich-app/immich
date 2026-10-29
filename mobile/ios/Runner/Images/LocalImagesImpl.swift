@@ -20,7 +20,6 @@ class LocalImageApiImpl: LocalImageApi {
     requestOptions.version = .current
     return requestOptions
   }()
-  private static let maxPixelSize: CGFloat = 16384
 
   private static let registry = RequestRegistry<ImageRequest>()
 
@@ -112,7 +111,7 @@ class LocalImageApiImpl: LocalImageApi {
 
       let isOriginal = !(width > 0 && height > 0)
       let targetSize = isOriginal
-        ? CGSize(width: Self.maxPixelSize, height: Self.maxPixelSize)
+        ? CGSize(width: ImageProcessing.maxPixelSize, height: ImageProcessing.maxPixelSize)
         : CGSize(width: Double(width), height: Double(height))
       let contentMode: PHImageContentMode = isOriginal ? .aspectFit : .aspectFill
       var image: UIImage?
@@ -137,7 +136,7 @@ class LocalImageApiImpl: LocalImageApi {
       }
 
       // .fast can return larger than the target, so retry with .exact to guarantee the bound.
-      if max(cgImage.width, cgImage.height) > Int(Self.maxPixelSize) {
+      if max(cgImage.width, cgImage.height) > ImageProcessing.maxPixelSize {
         let exactOptions = Self.requestOptions.copy() as! PHImageRequestOptions
         exactOptions.resizeMode = .exact
         image = nil

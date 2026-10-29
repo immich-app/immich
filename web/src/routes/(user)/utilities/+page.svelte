@@ -1,5 +1,5 @@
 <script lang="ts">
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import type { PageData } from './$types';
   import UtilitiesMenu from './UtilitiesMenu.svelte';
 

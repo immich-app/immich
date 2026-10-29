@@ -1,11 +1,11 @@
+import { getAssetMediaUrl } from '#lib/utils.ts';
 import { render, screen } from '@testing-library/svelte';
-import { getAssetMediaUrl } from '$lib/utils';
-import { albumFactory } from '@test-data/factories/album-factory';
-import { assetFactory } from '@test-data/factories/asset-factory';
-import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
+import { albumFactory } from '#test-data/factories/album-factory';
+import { assetFactory } from '#test-data/factories/asset-factory';
+import { sharedLinkFactory } from '#test-data/factories/shared-link-factory';
 import ShareCover from './ShareCover.svelte';
 
-vi.mock('$lib/utils');
+vi.mock('#lib/utils.js');
 
 describe('ShareCover component', () => {
   it('renders an image when the shared link is an album', () => {
