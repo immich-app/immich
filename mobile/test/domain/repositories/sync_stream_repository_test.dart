@@ -472,4 +472,69 @@ void main() {
       expect(keepRows, hasLength(1));
     });
   });
+
+  group('SyncStreamRepository - resetAssetOcrV1()', () {
+    test('removes all OCR rows and leaves remote assets', () async {
+      await sut.updateUsersV1([_createUser()]);
+      final known1 = _createAsset(
+        id: 'known1',
+        checksum: 'AAA',
+        fileName: 'a.jpg',
+        localDateTime: DateTime(2024, 1, 5),
+      );
+      final known2 = _createAsset(
+        id: 'known2',
+        checksum: 'BBB',
+        fileName: 'b.jpg',
+        localDateTime: DateTime(2024, 1, 6),
+      );
+      await sut.updateAssetsV1([known1, known2]);
+
+      await sut.updateAssetOcrV1([
+        SyncAssetOcrV1(
+          assetId: known1.id,
+          boxScore: 0.9,
+          id: 'ocr-1',
+          isVisible: true,
+          text: 'this text',
+          textScore: 0.9,
+          x1: 1,
+          x2: 2,
+          x3: 3,
+          x4: 4,
+          y1: 1,
+          y2: 2,
+          y3: 3,
+          y4: 4,
+        ),
+        SyncAssetOcrV1(
+          assetId: known2.id,
+          boxScore: 0.8,
+          id: 'ocr-2',
+          isVisible: false,
+          text: 'this text again',
+          textScore: 0.8,
+          x1: 1,
+          x2: 2,
+          x3: 3,
+          x4: 4,
+          y1: 1,
+          y2: 2,
+          y3: 3,
+          y4: 4,
+        ),
+      ]);
+      // asset_ocr table has two rows
+      final filledTable = await db.assetOcrEntity.select().get();
+      expect(filledTable, hasLength(2));
+
+      // delete all rows
+      await sut.resetAssetOcrV1();
+      //asset_ocr table is empty
+      final emptyTable = await db.assetOcrEntity.select().get();
+      expect(emptyTable, isEmpty);
+      final remoteAssetRows = await db.remoteAssetEntity.select().get();
+      expect(remoteAssetRows, hasLength(2));
+    });
+  });
 }
