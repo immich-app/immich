@@ -1,6 +1,5 @@
 import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
-import { appriseTagsSchema } from 'src/dtos/config.dto.js';
 import { AssetOrderSchema, PersonUpdateStrategySchema, UserAvatarColorSchema } from 'src/enum.js';
 import type { UserPreferences } from 'src/types.js';
 
@@ -83,7 +82,7 @@ const AppriseNotificationsUpdateSchema = z
     enabled: z.boolean().optional().describe('Whether Apprise notifications are enabled'),
     albumInvite: z.boolean().optional().describe('Whether to receive Apprise notifications for album invites'),
     albumUpdate: z.boolean().optional().describe('Whether to receive Apprise notifications for album updates'),
-    tag: appriseTagsSchema.optional().describe('Apprise tags that route notifications to this user (all must match)'),
+    urls: z.string().optional().describe('Apprise URLs to notify, separated by commas or spaces'),
   })
   .optional()
   .meta({ id: 'AppriseNotificationsUpdate' });
@@ -181,7 +180,7 @@ const AppriseNotificationsResponseSchema = z
     enabled: z.boolean().describe('Whether Apprise notifications are enabled'),
     albumInvite: z.boolean().describe('Whether to receive Apprise notifications for album invites'),
     albumUpdate: z.boolean().describe('Whether to receive Apprise notifications for album updates'),
-    tag: z.string().describe('Apprise tags that route notifications to this user (all must match)'),
+    urls: z.string().describe('Apprise URLs to notify, separated by commas or spaces'),
   })
   .meta({ id: 'AppriseNotificationsResponse' });
 
@@ -247,3 +246,9 @@ export class UserPreferencesResponseDto extends createZodDto({
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {
   return preferences;
 };
+
+/** Admins see a user's preferences without their Apprise URLs, which often contain tokens. */
+export const mapAdminPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => ({
+  ...mapPreferences(preferences),
+  appriseNotifications: { ...preferences.appriseNotifications, urls: '' },
+});

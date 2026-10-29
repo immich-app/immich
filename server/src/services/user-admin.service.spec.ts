@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { describe } from 'vitest';
 import { mapUserAdmin } from 'src/dtos/user.dto.js';
-import { AlbumUserRole, JobName, UserStatus } from 'src/enum.js';
+import { AlbumUserRole, JobName, UserMetadataKey, UserStatus } from 'src/enum.js';
 import { Resource } from 'src/resource-paths.js';
 import { UserAdminService } from 'src/services/user-admin.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
@@ -278,6 +278,18 @@ describe(UserAdminService.name, () => {
         { userIds: adminIds, changed: [Resource.adminUserPreferences(user)] },
         { userIds: [user.id], changed: [Resource.myPreferences()] },
       );
+    });
+  });
+
+  describe('getPreferences', () => {
+    it("should hide the user's apprise urls", async () => {
+      mocks.user.getMetadata.mockResolvedValue([
+        { key: UserMetadataKey.Preferences, value: { appriseNotifications: { enabled: true, urls: 'tgram://token' } } },
+      ]);
+
+      const preferences = await sut.getPreferences(authStub.admin, userStub.user1.id);
+
+      expect(preferences.appriseNotifications).toEqual(expect.objectContaining({ enabled: true, urls: '' }));
     });
   });
 });
