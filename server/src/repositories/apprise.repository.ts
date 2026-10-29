@@ -1,11 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 export type AppriseOptions = {
-  host: string;
-  port: number | null;
-  secure: boolean;
-  basePath: string;
+  url: string;
   configId: string;
   username: string;
   password: string;
@@ -15,25 +12,19 @@ export type AppriseOptions = {
 export type AppriseNotification = {
   title: string;
   body: string;
-  urls: string;
+  urls: string[];
+  type?: 'info' | 'success' | 'warning' | 'failure';
 };
+
+type AppriseRequest = Required<AppriseNotification> & { format: 'text' };
 
 type AppriseResponse = {
   error?: unknown;
   details?: unknown;
+  stateless_enabled?: boolean;
+  privilege?: string;
+  access?: string;
 };
-
-const MAX_MESSAGE_LENGTH = 500;
-
-export class AppriseError extends Error {
-  constructor(
-    message: string,
-    public readonly status?: number,
-  ) {
-    super(message.length > MAX_MESSAGE_LENGTH ? `${message.slice(0, MAX_MESSAGE_LENGTH)}…` : message);
-    this.name = AppriseError.name;
-  }
-}
 
 const parseResponse = (text: string): AppriseResponse => {
   try {
@@ -52,44 +43,44 @@ const getFailures = (details: unknown) =>
         .map((line) => String(line[2]))
     : [];
 
-const toError = (response: Response, { error, details }: AppriseResponse) => {
+const toMessage = (response: Response, { error, details }: AppriseResponse) => {
   const { status } = response;
   const reason = typeof error === 'string' && error ? error : response.statusText;
 
   if (status >= 300 && status < 400) {
-    return new AppriseError('Unexpected redirect, check secure and base path', status);
+    return 'Unexpected redirect, check the URL';
   }
 
   switch (status) {
     case 400: {
-      return new AppriseError(`Request rejected: ${reason}`, status);
+      return `Request rejected: ${reason}`;
     }
     case 401: {
-      return new AppriseError('Wrong username or password', status);
+      return 'Wrong username or password';
     }
     case 403: {
-      return new AppriseError(`Access denied: ${reason}`, status);
+      return `Access denied: ${reason}`;
     }
     case 404: {
-      return new AppriseError('No configuration found for this config ID', status);
+      return 'No configuration found for this config ID';
     }
     case 417: {
-      return new AppriseError(`Server problem: ${reason}`, status);
+      return `Server problem: ${reason}`;
     }
     case 424: {
       const failures = getFailures(details);
       const suffix = failures.length > 0 ? `: ${failures.join('; ')}` : '';
-      return new AppriseError(`Some services failed${suffix}`, status);
+      return `Some services failed${suffix}`;
     }
   }
 
   if (status >= 500) {
     const retryAfter = response.headers.get('retry-after');
     const suffix = retryAfter ? `, retry after ${retryAfter}s` : '';
-    return new AppriseError(`Server error (${status})${suffix}`, status);
+    return `Server error (${status})${suffix}`;
   }
 
-  return new AppriseError(`Unexpected response (${status}): ${reason}`, status);
+  return `Unexpected response (${status}): ${reason}`;
 };
 
 @Injectable()
@@ -100,30 +91,35 @@ export class AppriseRepository {
 
   /** Checks the server is reachable and accepts the credentials, without sending a notification. */
   async verify(options: AppriseOptions): Promise<void> {
-    await this.request(options, 'status');
+    const response = await this.request(options, 'status');
+    if (response.stateless_enabled === false) {
+      throw this.fail('status', 'Stateless notifications are turned off on the Apprise server');
+    }
+
+    // A configuration login (not an admin) can only send to other URLs when its access is "user"
+    if (response.privilege !== 'user') {
+      return;
+    }
+
+    const { access } = await this.request(options, 'auth');
+    if (access && access !== 'user') {
+      throw this.fail('auth', `Stateless notifications are not allowed for this login (access: ${access})`);
+    }
   }
 
   /** Sends to the given Apprise URLs (stateless), so each user's notifications go to their own services. */
-  async notify(options: AppriseOptions, { title, body, urls }: AppriseNotification): Promise<void> {
-    await this.request(options, 'notify', { urls, title, body, type: 'info', format: 'text' });
+  async notify(options: AppriseOptions, { title, body, urls, type = 'info' }: AppriseNotification): Promise<void> {
+    await this.request(options, 'notify', { urls, title, body, type, format: 'text' });
   }
 
-  private async request(options: AppriseOptions, route: 'status' | 'notify', payload?: object) {
-    const { secure, basePath, configId, username, password, timeout } = options;
-    if (!options.host) {
-      throw new AppriseError('Host is required');
-    }
-
-    // IPv6 addresses need square brackets inside a URL
-    const host = options.host.includes(':') && !options.host.startsWith('[') ? `[${options.host}]` : options.host;
-    const port = options.port ?? (secure ? 443 : 80);
-    const path = [basePath.replaceAll(/^\/+|\/+$/g, ''), route].filter(Boolean).join('/');
-
-    let url: URL;
-    try {
-      url = new URL(`${secure ? 'https' : 'http'}://${host}:${port}/${path}`);
-    } catch {
-      throw new AppriseError(`Invalid host: ${options.host}`);
+  private async request(
+    options: AppriseOptions,
+    route: 'status' | 'auth' | 'notify',
+    payload?: AppriseRequest,
+  ): Promise<AppriseResponse> {
+    const { url, configId, username, password, timeout } = options;
+    if (!url) {
+      throw new BadRequestException('URL is required');
     }
 
     const headers: Record<string, string> = { Accept: 'application/json' };
@@ -138,29 +134,36 @@ export class AppriseRepository {
       headers.Authorization = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
     }
 
-    let response: Response;
-    let text: string;
     try {
-      response = await fetch(url, {
+      const response = await fetch(new URL(route, url.endsWith('/') ? url : `${url}/`), {
         method: payload ? 'POST' : 'GET',
         headers,
         body: payload ? JSON.stringify(payload) : undefined,
         redirect: 'manual',
         signal: AbortSignal.timeout(timeout * 1000),
       });
-      text = await response.text();
-    } catch (error: Error | any) {
-      if (error?.name === 'TimeoutError' || error?.name === 'AbortError') {
-        throw new AppriseError(`No response within ${timeout}s`);
+      const body = parseResponse(await response.text());
+      if (!response.ok) {
+        throw this.fail(route, toMessage(response, body));
       }
-      const code = error?.cause?.code ? ` (${error.cause.code})` : '';
-      throw new AppriseError(`Cannot connect to ${host}:${port}${code}`);
-    }
 
-    if (!response.ok) {
-      throw toError(response, parseResponse(text));
+      this.logger.debug(`Apprise ${route} request succeeded with status ${response.status}`);
+      return body;
+    } catch (error: Error | any) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      if (error?.name === 'TimeoutError' || error?.name === 'AbortError') {
+        throw this.fail(route, `No response within ${timeout}s`);
+      }
+      // Only the host is shown, so a username, password or query in the URL never ends up in a message
+      const host = URL.parse(url)?.host ?? 'the Apprise server';
+      throw this.fail(route, `Cannot connect to ${host}${error?.cause?.code ? ` (${error.cause.code})` : ''}`);
     }
+  }
 
-    this.logger.debug(`Apprise ${route} request succeeded with status ${response.status}`);
+  private fail(route: string, message: string) {
+    this.logger.error(`Apprise ${route} request failed: ${message}`);
+    return new BadRequestException(message);
   }
 }

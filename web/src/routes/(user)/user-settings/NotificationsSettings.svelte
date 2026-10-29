@@ -1,7 +1,8 @@
 <script lang="ts">
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { readPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
   import { updateMyPreferencesMutation } from '#lib/queries/user.query.ts';
-  import { getUserConfig } from '@immich/sdk';
   import { Button, Field, Heading, PasswordInput, Switch } from '@immich/ui';
   import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
@@ -14,7 +15,9 @@
   let appriseEnabled = $state(authManager.preferences.appriseNotifications?.enabled ?? false);
   let appriseAlbumInviteEnabled = $state(authManager.preferences.appriseNotifications?.albumInvite ?? true);
   let appriseAlbumUpdateEnabled = $state(authManager.preferences.appriseNotifications?.albumUpdate ?? true);
-  let appriseUrls = $state(authManager.preferences.appriseNotifications?.urls ?? '');
+  let appriseUrls = $state(authManager.preferences.appriseNotifications?.urls.join(' ') ?? '');
+
+  const config = readPreloadedQuery(getUserConfigQuery());
 
   const updatePreferences = createMutation(() => updateMyPreferencesMutation());
 
@@ -31,7 +34,7 @@
             enabled: appriseEnabled,
             albumInvite: appriseEnabled && appriseAlbumInviteEnabled,
             albumUpdate: appriseEnabled && appriseAlbumUpdateEnabled,
-            urls: appriseUrls,
+            urls: appriseUrls.split(/\s+/).filter(Boolean),
           },
         },
       },
@@ -61,35 +64,33 @@
         </Field>
 
         <!-- Only shown when the administrator has turned on Apprise -->
-        {#await getUserConfig() then config}
-          {#if config.notifications.apprise.enabled}
-            <Heading size="tiny" class="mt-2">{$t('apprise_notifications')}</Heading>
+        {#if config.notifications.apprise.enabled}
+          <Heading size="tiny" class="mt-2">{$t('apprise_notifications')}</Heading>
 
-            <Field label={$t('enable')} description={$t('apprise_toggle_setting_description')}>
-              <Switch bind:checked={appriseEnabled} />
-            </Field>
+          <Field label={$t('enable')} description={$t('apprise_toggle_setting_description')}>
+            <Switch bind:checked={appriseEnabled} />
+          </Field>
 
-            <Field
-              label={$t('album_added')}
-              description={$t('apprise_album_added_description')}
-              disabled={!appriseEnabled}
-            >
-              <Switch bind:checked={appriseAlbumInviteEnabled} />
-            </Field>
+          <Field
+            label={$t('album_added')}
+            description={$t('apprise_album_added_description')}
+            disabled={!appriseEnabled}
+          >
+            <Switch bind:checked={appriseAlbumInviteEnabled} />
+          </Field>
 
-            <Field
-              label={$t('album_updated')}
-              description={$t('apprise_album_updated_description')}
-              disabled={!appriseEnabled}
-            >
-              <Switch bind:checked={appriseAlbumUpdateEnabled} />
-            </Field>
+          <Field
+            label={$t('album_updated')}
+            description={$t('apprise_album_updated_description')}
+            disabled={!appriseEnabled}
+          >
+            <Switch bind:checked={appriseAlbumUpdateEnabled} />
+          </Field>
 
-            <Field label={$t('apprise_urls')} description={$t('apprise_urls_description')} disabled={!appriseEnabled}>
-              <PasswordInput bind:value={appriseUrls} autocomplete="off" />
-            </Field>
-          {/if}
-        {/await}
+          <Field label={$t('apprise_urls')} description={$t('apprise_urls_description')} disabled={!appriseEnabled}>
+            <PasswordInput bind:value={appriseUrls} autocomplete="off" />
+          </Field>
+        {/if}
       </div>
 
       <div class="mt-4 flex justify-end">

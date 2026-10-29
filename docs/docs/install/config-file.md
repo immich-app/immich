@@ -178,14 +178,11 @@ The default configuration looks like this:
   },
   "notifications": {
     "apprise": {
-      "basePath": "",
       "configId": "",
       "enabled": false,
-      "host": "",
       "password": "",
-      "port": null,
-      "secure": false,
       "timeout": 20,
+      "url": "",
       "username": ""
     },
     "smtp": {

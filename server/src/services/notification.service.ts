@@ -21,7 +21,6 @@ import {
   Permission,
   QueueName,
 } from 'src/enum.js';
-import { AppriseError } from 'src/repositories/apprise.repository.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { Resource } from 'src/resource-paths.js';
@@ -490,22 +489,14 @@ export class NotificationService extends BaseService {
 
   @OnJob({ name: JobName.SendApprise, queue: QueueName.Notification })
   async handleSendApprise(data: JobOf<JobName.SendApprise>): Promise<JobStatus> {
-    const { notifications } = await this.getConfig({ withCache: false });
-    const { apprise } = notifications;
-    if (!apprise.enabled || !apprise.host) {
+    const {
+      notifications: { apprise },
+    } = await this.getConfig({ withCache: false });
+    if (!apprise.enabled || !apprise.url) {
       return JobStatus.Skipped;
     }
 
-    try {
-      await this.appriseRepository.notify(apprise, data);
-    } catch (error) {
-      if (error instanceof AppriseError) {
-        // A warning is enough here; Apprise problems must never affect other notifications
-        this.logger.warn(`Failed to send Apprise notification: ${error.message}`);
-        return JobStatus.Failed;
-      }
-      throw error;
-    }
+    await this.appriseRepository.notify(apprise, data);
 
     this.logger.log('Sent Apprise notification');
 
@@ -556,7 +547,6 @@ export class NotificationService extends BaseService {
     this.websocketRepository.clientSend('on_notification', userId, mapNotification(item));
   }
 
-  /** Queues an Apprise notification to the recipient's own URLs, with the same wording as the in-app one. */
   private async queueAlbumApprise(
     album: MapAlbumDto,
     recipient: { metadata: UserMetadataItem[] },
@@ -569,7 +559,7 @@ export class NotificationService extends BaseService {
     if (
       !notifications.apprise.enabled ||
       !preferences.enabled ||
-      !preferences.urls ||
+      preferences.urls.length === 0 ||
       !(isInvite ? preferences.albumInvite : preferences.albumUpdate)
     ) {
       return;
