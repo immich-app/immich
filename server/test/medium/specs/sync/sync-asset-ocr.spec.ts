@@ -434,7 +434,7 @@ describe(SyncEntityType.AssetOcrDeleteV1, () => {
     ]);
   });
 
-  it('should sync OCR deletes after deleteAll', async () => {
+  it('should send AssetOcrResetV1 once when deleteAll runs', async () => {
     const { auth, user, ctx } = await setup();
 
     const ocrRepo = ctx.get(OcrRepository);
@@ -480,18 +480,18 @@ describe(SyncEntityType.AssetOcrDeleteV1, () => {
     await ctx.syncAckAll(auth, response);
 
     await ocrRepo.deleteAll();
-    // expect one delete event per asset, even with multiple OCR rows
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetOcrV1])).resolves.toEqual([
+    // expect a single reset event, even with multiple OCR rows
+    const resetResponse = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1]);
+
+    expect(resetResponse).toEqual([
       {
         ack: expect.any(String),
-        data: {
-          assetId: asset.id,
-          deletedAt: expect.any(String),
-          id: expect.any(String),
-        },
-        type: 'AssetOcrDeleteV1',
+        data: {},
+        type: 'AssetOcrResetV1',
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
+    await ctx.syncAckAll(auth, resetResponse);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetOcrV1]);
   });
 });
