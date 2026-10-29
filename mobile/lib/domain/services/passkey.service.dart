@@ -1,6 +1,7 @@
 import 'package:immich_mobile/data/server/passkey.dart';
 import 'package:immich_mobile/platform/passkey_api.g.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 
 class PasskeyService {
   final Logger _log = Logger("PasskeyService");
@@ -9,11 +10,14 @@ class PasskeyService {
 
   PasskeyService(this._apiRepository, this._hostApi);
 
-  Future<bool> isEnabled() async {
+  Future<bool> isEnabled(int featureLevel) async {
+    if (featureLevel < ServerFeatureLevel.Passkeys.toJson()) {
+      return false;
+    }
+
     try {
       return await _hostApi.isSupported() && await _apiRepository.isEnabled();
     } catch (error, stackTrace) {
-      // servers before v3.2.0 have no public config
       _log.warning("Failed to get the passkey config", error, stackTrace);
       return false;
     }
