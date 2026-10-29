@@ -16,7 +16,7 @@ describe('/futo-backups', () => {
   let libraryId: string;
 
   beforeAll(async () => {
-    sdk.defaults.baseUrl = baseUrl;
+    utils.initSdk();
 
     await utils.resetDatabase();
     admin = await utils.adminSetup();

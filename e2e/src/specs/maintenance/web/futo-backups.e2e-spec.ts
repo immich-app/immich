@@ -30,7 +30,6 @@ test.describe('FUTO Backups', () => {
 
   test.beforeAll(async () => {
     utils.initSdk();
-    sdk.defaults.baseUrl = baseUrl;
     await utils.resetDatabase();
     admin = await utils.adminSetup();
 
