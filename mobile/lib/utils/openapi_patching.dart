@@ -27,6 +27,12 @@ final Map<String, Map<String, Object?>> openApiPatches = {
     'cast': CastResponse(gCastEnabled: false).toJson(),
     'albums': {'defaultAssetOrder': 'desc'},
     'recentlyAdded': RecentlyAddedResponse(sidebarWeb: false).toJson(),
+    'appriseNotifications': AppriseNotificationsResponse(
+      enabled: false,
+      albumInvite: true,
+      albumUpdate: true,
+      urls: const [],
+    ).toJson(),
   },
   'PublicConfigDto': {
     'map': PublicConfigMapDto(
@@ -60,9 +66,18 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   },
   'AdminConfigGeneratedImageDto': {'effort': 'medium'},
   'AdminConfigGeneratedFullsizeImageDto': {'effort': 'medium'},
+  'AdminConfigNotificationsDto': {
+    'apprise': {'enabled': false, 'url': '', 'configId': '', 'username': '', 'password': '', 'timeout': 20},
+  },
   'UserConfigDto': {
-    'notifications': UserConfigNotificationsDto(smtp: UserConfigSmtpDto(enabled: false)).toJson(),
+    'notifications': UserConfigNotificationsDto(
+      smtp: UserConfigSmtpDto(enabled: false),
+      apprise: UserConfigAppriseDto(enabled: false),
+    ).toJson(),
     'passkey': {'enabled': false},
+  },
+  'UserConfigNotificationsDto': {
+    'apprise': {'enabled': false},
   },
 };
 
