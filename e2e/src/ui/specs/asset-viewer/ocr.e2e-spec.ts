@@ -242,6 +242,7 @@ test.describe('OCR text interaction', () => {
           return;
         }
 
+        // eslint-disable-next-line unicorn/no-unnecessary-parameters
         const createTouch = (id: number, x: number, y: number) => {
           return new Touch({
             identifier: id,
