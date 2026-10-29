@@ -14,7 +14,8 @@ dependencies = [
     "onnx>=1.22.0",
     "opencv-python-headless>=4.7.0.72,<5.0",
     "orjson>=3.9.5",
-    "pillow>=12.2,<13",
+    "pillow>=13,<14",
+    "pillow-jxl-plugin>=1.3.8,<2.0",
     "pydantic>=2.0.0,<3",
     "pydantic-settings>=2.5.2,<3",
     "python-multipart>=0.0.6,<1.0",
@@ -65,7 +66,7 @@ cuda = [
 ]
 openvino = ["onnxruntime-openvino>=1.24.1,<2"]
 armnn = ["onnxruntime>=1.23.2,<2"]
-rknn = ["onnxruntime>=1.23.2,<2", "rknn-toolkit-lite2>=2.3.0,<3"]
+rknn = ["onnxruntime>=1.23.2,<2"]
 rocm = ["onnxruntime-migraphx>=1.23.2,<2"]
 
 [tool.uv]
@@ -73,7 +74,7 @@ compile-bytecode = true
 override-dependencies = ["opencv-python ; sys_platform == 'never'"] # only install the headless version
 
 [tool.uv.sources]
-immich-model = { git = "https://github.com/immich-app/ml-models.git", rev = "8bf3fd1b44b0c8608f52fb6e50ddff52826576d8" }
+immich-model = { git = "https://github.com/immich-app/ml-models.git", rev = "a1eeff2c2118d76067efecf4cc4630998eac519a" }
 onnxruntime-gpu = { index = "onnxruntime-cuda-12" }
 openvino = { index = "openvino-nightly" }
 

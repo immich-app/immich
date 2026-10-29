@@ -237,6 +237,45 @@ describe(StorageTemplateService.name, () => {
       });
     });
 
+    it('should sanitize the make, model and lensModel variables', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from()
+        .owner(user)
+        .exif({ make: '../../sibling', model: 'a/b', lensModel: 'XF27mm F2.8' })
+        .build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{make}}/{{model}}/{{lensModel}}/{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: `/data/library/${user.id}/....sibling/ab/XF27mm F2.8/${asset.originalFileName}`,
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.Original,
+      });
+    });
+
+    it('should not move an asset to a sibling of the library folder', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from().owner(user).exif().build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '../{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+
     it('should use handlebar else condition for album', async () => {
       const user = UserFactory.create();
       const asset = AssetFactory.from().owner(user).exif().build();

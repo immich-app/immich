@@ -1,12 +1,13 @@
+import { readPreloadedQuery } from '#lib/queries/client.ts';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { Route } from '#lib/route.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { redirect } from '@sveltejs/kit';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-import { Route } from '$lib/route';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ parent }) => {
   await parent();
-  if (serverConfigManager.value.isInitialized) {
+  if (readPreloadedQuery(getServerConfigQuery()).isInitialized) {
     // Admin has been registered, redirect to login
     redirect(307, Route.login());
   }

@@ -1,3 +1,8 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { readPreloadedQuery } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { Route } from '#lib/route.ts';
+import { copyToClipboard } from '#lib/utils.ts';
 import { defaultProvider, screencastManager, themeManager, ThemePreference, type ActionItem } from '@immich/ui';
 import {
   mdiAccountMultipleOutline,
@@ -30,10 +35,6 @@ import {
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-import { Route } from '$lib/route';
-import { copyToClipboard } from '$lib/utils';
 
 export const getPagesProvider = ($t: MessageFormatter) => {
   const adminPages: ActionItem[] = [
@@ -85,14 +86,14 @@ export const getPagesProvider = ($t: MessageFormatter) => {
       title: $t('explore'),
       icon: mdiMagnify,
       onAction: () => goto(Route.explore()),
-      $if: () => authManager.authenticated && featureFlagsManager.value.search,
+      $if: () => authManager.authenticated,
     },
 
     {
       title: $t('map'),
       icon: mdiMapOutline,
       onAction: () => goto(Route.map()),
-      $if: () => authManager.authenticated && featureFlagsManager.value.map,
+      $if: () => authManager.authenticated && readPreloadedQuery(getUserConfigQuery()).map.enabled,
     },
     {
       title: $t('people'),
@@ -173,7 +174,7 @@ export const getPagesProvider = ($t: MessageFormatter) => {
       title: $t('trash'),
       icon: mdiTrashCanOutline,
       onAction: () => goto(Route.trash()),
-      $if: () => authManager.authenticated && featureFlagsManager.value.trash,
+      $if: () => authManager.authenticated && readPreloadedQuery(getUserConfigQuery()).trash.enabled,
     },
     {
       title: $t('admin.user_settings'),

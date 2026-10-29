@@ -11,6 +11,7 @@ const _manifests = [
   '../.cargo/config.toml',
   '../Cargo.toml',
   '../Cargo.lock',
+  '../crates/codecs/Cargo.toml',
   '../crates/native_core/Cargo.toml',
   '$_crate/Cargo.toml',
   '$_crate/rust-toolchain.toml',

@@ -13,16 +13,17 @@
   import NightlyTasksSettings from './NightlyTasksSettings.svelte';
   import NotificationSettings from './NotificationSettings.svelte';
   import ServerSettings from './ServerSettings.svelte';
-  import StorageTemplateSettings from '$lib/components/admin-settings/StorageTemplateSettings.svelte';
+  import StorageTemplateSettings from '#lib/components/admin-settings/StorageTemplateSettings.svelte';
   import ThemeSettings from './ThemeSettings.svelte';
   import TrashSettings from './TrashSettings.svelte';
   import UserSettings from './UserSettings.svelte';
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { getSystemConfigActions } from '$lib/services/system-config.service';
+  import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+  import { getSystemConfigActions } from '#lib/services/system-config.service.ts';
   import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
   import {
     mdiAccountOutline,
@@ -55,6 +56,9 @@
   };
 
   const { data }: Props = $props();
+
+  const query = createPreloadedQuery(getAdminConfigQuery);
+  const config = $derived(query.data);
 
   const settings: Array<{
     component: Component;
@@ -202,14 +206,12 @@
 
   let filteredSettings = $derived(
     settings.filter(({ title, subtitle }) => {
-      const query = searchQuery.toLowerCase();
-      return title.toLowerCase().includes(query) || subtitle.toLowerCase().includes(query);
+      const term = searchQuery.toLowerCase();
+      return title.toLowerCase().includes(term) || subtitle.toLowerCase().includes(term);
     }),
   );
 
-  const { CopyToClipboard, Upload, Download } = $derived(
-    getSystemConfigActions($t, featureFlagsManager.value, systemConfigManager.value),
-  );
+  const { CopyToClipboard, Upload, Download } = $derived(getSystemConfigActions($t, featureFlagsManager.value, config));
 </script>
 
 <CommandPaletteDefaultProvider name={$t('admin.system_settings')} actions={[CopyToClipboard, Upload, Download]} />

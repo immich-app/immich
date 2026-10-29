@@ -1,7 +1,7 @@
 <script lang="ts">
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { deleteProfileImage, updateMyUser, UserAvatarColor } from '@immich/sdk';
   import { Modal, ModalBody, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';

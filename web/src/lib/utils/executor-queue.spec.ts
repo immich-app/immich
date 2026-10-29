@@ -1,4 +1,4 @@
-import { ExecutorQueue } from '$lib/utils/executor-queue';
+import { ExecutorQueue } from '#lib/utils/executor-queue.ts';
 
 describe('Executor Queue test', function () {
   it('should run all promises', async function () {

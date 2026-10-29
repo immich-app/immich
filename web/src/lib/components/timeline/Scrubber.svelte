@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { ScrubberMonth, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { getTabbable } from '$lib/utils/focus-util';
-  import { type ScrubberListener } from '$lib/utils/timeline-util';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type { ScrubberMonth, ViewportTopMonth } from '#lib/managers/timeline-manager/types.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { getTabbable } from '#lib/utils/focus-util.ts';
+  import { type ScrubberListener } from '#lib/utils/timeline-util.ts';
   import { Icon } from '@immich/ui';
   import { mdiPlay } from '@mdi/js';
   import { clamp } from 'lodash-es';
@@ -50,7 +50,7 @@
     onScrubKeyDown = undefined,
     startScrub = undefined,
     stopScrub = undefined,
-    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line no-useless-assignment
     scrubberWidth = $bindable(),
   }: Props = $props();
 

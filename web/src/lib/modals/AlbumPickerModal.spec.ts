@@ -1,9 +1,9 @@
+import { getAnimateMock } from '#lib/__mocks__/animate.mock.ts';
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
+import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.ts';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';
-import { getAnimateMock } from '$lib/__mocks__/animate.mock';
-import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
-import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
 import AlbumPickerModal from './AlbumPickerModal.svelte';
 
 describe('AlbumPickerModal component', () => {
@@ -11,7 +11,7 @@ describe('AlbumPickerModal component', () => {
 
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });
-    register('en-US', () => import('$i18n/en.json'));
+    register('en-US', () => import('#i18n/en.json'));
     await waitLocale('en-US');
   });
 
@@ -34,7 +34,9 @@ describe('AlbumPickerModal component', () => {
 
     render(AlbumPickerModal, { props: { onClose, selectedItemsCount: 1 } });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(await screen.findByText('Add 1 item to album')).toBeInTheDocument();
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('Select albums')).not.toBeInTheDocument();
   });
 
@@ -43,7 +45,9 @@ describe('AlbumPickerModal component', () => {
 
     render(AlbumPickerModal, { props: { onClose, selectedItemsCount: 3 } });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(await screen.findByText('Add 3 items to album')).toBeInTheDocument();
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('Select albums')).not.toBeInTheDocument();
   });
 
@@ -52,7 +56,9 @@ describe('AlbumPickerModal component', () => {
 
     render(AlbumPickerModal, { props: { onClose } });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(await screen.findByText('Select albums')).toBeInTheDocument();
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('Add 1 item to album')).not.toBeInTheDocument();
   });
 });

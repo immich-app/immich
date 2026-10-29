@@ -5,6 +5,12 @@ import { asIntegerEnum } from 'src/utils/helpers.js';
 export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
+  Passkey = 'passkey',
+}
+
+export enum AuthChallengeType {
+  PasskeyRegistration = 'PasskeyRegistration',
+  PasskeyAuthentication = 'PasskeyAuthentication',
 }
 
 export enum ImmichCookie {
@@ -53,9 +59,7 @@ export enum ChecksumAlgorithm {
 }
 
 export enum AssetFileType {
-  /**
-   * An full/large-size image extracted/converted from RAW photos
-   */
+  /** An full/large-size image extracted/converted from RAW photos */
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
@@ -189,6 +193,7 @@ export enum Permission {
 
   ClusterGroupRead = 'clusterGroup.read',
   ClusterGroupLeave = 'clusterGroup.leave',
+  ClusterGroupAdmin = 'clusterGroup.admin',
   ClusterGroupRequestCreate = 'clusterGroupRequest.create',
   ClusterGroupRequestRead = 'clusterGroupRequest.read',
   ClusterGroupRequestDelete = 'clusterGroupRequest.delete',
@@ -243,6 +248,10 @@ export enum Permission {
   PartnerRead = 'partner.read',
   PartnerUpdate = 'partner.update',
   PartnerDelete = 'partner.delete',
+
+  PasskeyRead = 'passkey.read',
+  PasskeyUpdate = 'passkey.update',
+  PasskeyDelete = 'passkey.delete',
 
   PersonCreate = 'person.create',
   PersonRead = 'person.read',
@@ -352,9 +361,9 @@ export enum SharedLinkType {
   Album = 'ALBUM',
 
   /**
-   * Individual asset
-   * or group of assets that are not in an album
-   */
+  Individual asset
+  or group of assets that are not in an album
+  */
   Individual = 'INDIVIDUAL',
 }
 
@@ -600,6 +609,7 @@ export const ColorspaceSchema = z.enum(Colorspace).describe('Colorspace').meta({
 
 export enum ImageFormat {
   Jpeg = 'jpeg',
+  Jxl = 'jxl',
   Webp = 'webp',
 }
 
@@ -807,9 +817,9 @@ export enum DvProfile {
 }
 
 /**
- * Dolby Vision base-layer signal-compatibility ID from the DOVI configuration record.
- * Identifies what the base HEVC/AVC layer renders as on a non-DV decoder.
- */
+Dolby Vision base-layer signal-compatibility ID from the DOVI configuration record.
+Identifies what the base HEVC/AVC layer renders as on a non-DV decoder.
+*/
 export enum DvSignalCompatibility {
   None = 0,
   Hdr10 = 1,
@@ -869,7 +879,6 @@ export enum QueueJobStatus {
   Complete = 'completed',
   Delayed = 'delayed',
   Waiting = 'waiting',
-  Paused = 'paused',
 }
 
 export const QueueJobStatusSchema = z.enum(QueueJobStatus).describe('Queue job status').meta({ id: 'QueueJobStatus' });
@@ -892,6 +901,8 @@ export enum JobName {
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
   AuditTableCleanup = 'AuditTableCleanup',
+
+  AuthChallengeCleanup = 'AuthChallengeCleanup',
 
   DatabaseBackup = 'DatabaseBackup',
 
@@ -1019,6 +1030,8 @@ export enum DatabaseLock {
   IntegrityCheck = 67,
   VersionCheck = 800,
   HlsSessionCleanup = 850,
+  FacialRecognition = 900,
+  DuplicateDetection = 1000,
 }
 
 export enum MaintenanceAction {
@@ -1213,9 +1226,7 @@ export enum AssetVisibility {
   Archive = 'archive',
   Timeline = 'timeline',
 
-  /**
-   * Video part of the LivePhotos and MotionPhotos
-   */
+  /** Video part of the LivePhotos and MotionPhotos */
   Hidden = 'hidden',
   Locked = 'locked',
 }
@@ -1270,6 +1281,7 @@ export enum ApiTag {
   NotificationsAdmin = 'Notifications (admin)',
   ClusterGroups = 'Cluster groups',
   Partners = 'Partners',
+  Passkeys = 'Passkeys',
   People = 'People',
   Plugins = 'Plugins',
   Queues = 'Queues',
@@ -1329,6 +1341,7 @@ export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'Searc
 
 export enum ServerFeatureLevel {
   FeatureLevel = 1,
+  Passkeys = 2,
 }
 
 export const ServerFeatureLevelSchema = z

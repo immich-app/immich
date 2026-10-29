@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { parse } from 'cookie';
+import { parseCookie } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import sanitize from 'sanitize-filename';
@@ -19,7 +19,6 @@ import {
   PinCodeSetupDto,
   SessionUnlockDto,
   SignUpDto,
-  mapLoginResponse,
 } from 'src/dtos/auth.dto.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
@@ -483,17 +482,17 @@ export class AuthService extends BaseService {
   }
 
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
-    const cookies = parse(headers.cookie || '');
+    const cookies = parseCookie(headers.cookie || '');
     return cookies[ImmichCookie.AccessToken] || null;
   }
 
   private getCookieOauthState(headers: IncomingHttpHeaders): string | null {
-    const cookies = parse(headers.cookie || '');
+    const cookies = parseCookie(headers.cookie || '');
     return cookies[ImmichCookie.OAuthState] || null;
   }
 
   private getCookieCodeVerifier(headers: IncomingHttpHeaders): string | null {
-    const cookies = parse(headers.cookie || '');
+    const cookies = parseCookie(headers.cookie || '');
     return cookies[ImmichCookie.OAuthCodeVerifier] || null;
   }
 
@@ -610,28 +609,6 @@ export class AuthService extends BaseService {
     }
 
     await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
-  }
-
-  private async createLoginResponse(
-    user: UserAdmin,
-    loginDetails: LoginDetails,
-    oauthSid?: string,
-    oauthBearerToken?: string,
-  ) {
-    const token = this.cryptoRepository.randomBytesAsText(32);
-    const hashed = this.cryptoRepository.hashSha256(token);
-
-    await this.sessionRepository.create({
-      token: hashed,
-      deviceOS: loginDetails.deviceOS,
-      deviceType: loginDetails.deviceType,
-      appVersion: loginDetails.appVersion,
-      userId: user.id,
-      oauthSid: oauthSid ?? null,
-      oauthBearerToken: oauthBearerToken ?? null,
-    });
-
-    return mapLoginResponse(user, token);
   }
 
   private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T | undefined {

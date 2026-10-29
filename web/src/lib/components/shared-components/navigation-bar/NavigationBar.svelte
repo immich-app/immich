@@ -4,20 +4,19 @@
 
 <script lang="ts">
   import { page } from '$app/state';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import NotificationPanel from '$lib/components/shared-components/navigation-bar/NotificationPanel.svelte';
-  import SearchBar from '$lib/components/shared-components/search-bar/SearchBar.svelte';
-  import SkipLink from '$lib/elements/SkipLink.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { Route } from '$lib/route';
-  import { getGlobalActions } from '$lib/services/app.service';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { notificationManager } from '$lib/stores/notification-manager.svelte';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import NotificationPanel from '#lib/components/shared-components/navigation-bar/NotificationPanel.svelte';
+  import SearchBar from '#lib/components/shared-components/search-bar/SearchBar.svelte';
+  import SkipLink from '#lib/elements/SkipLink.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { getGlobalActions } from '#lib/services/app.service.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
+  import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
   import { ActionButton, Button, IconButton, Logo } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import ThemeButton from '../ThemeButton.svelte';
   import UserAvatar from '../UserAvatar.svelte';
@@ -34,15 +33,9 @@
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
-  const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
-
-  onMount(async () => {
-    try {
-      await notificationManager.refresh();
-    } catch (error) {
-      console.error('Failed to load notifications on mount', error);
-    }
-  });
+  const query = createQuery(getNotificationsQuery);
+  const unreadCount = $derived(query.data?.length ?? 0);
+  const hasUnreadNotifications = $derived(unreadCount > 0);
 
   const { Cast } = $derived(getGlobalActions($t));
 </script>
@@ -82,25 +75,21 @@
     </div>
     <div class="flex justify-between gap-4 pe-6 lg:gap-8">
       <div class="hidden w-full max-w-5xl flex-1 sm:block tall:ps-0">
-        {#if featureFlagsManager.value.search}
-          <SearchBar grayTheme={true} />
-        {/if}
+        <SearchBar grayTheme={true} />
       </div>
 
       <section class="flex w-full place-items-center justify-end gap-1 sm:w-auto md:gap-2">
-        {#if featureFlagsManager.value.search}
-          <IconButton
-            color="secondary"
-            shape="round"
-            variant="ghost"
-            size="medium"
-            icon={mdiMagnify}
-            href={Route.search()}
-            id="search-button"
-            class="sm:hidden"
-            aria-label={$t('go_to_search')}
-          />
-        {/if}
+        <IconButton
+          color="secondary"
+          shape="round"
+          variant="ghost"
+          size="medium"
+          icon={mdiMagnify}
+          href={Route.search()}
+          id="search-button"
+          class="sm:hidden"
+          aria-label={$t('go_to_search')}
+        />
 
         {#if !page.url.pathname.includes('/admin') && onUploadClick}
           <Button
@@ -148,7 +137,7 @@
               <div
                 class="pointer-events-none absolute top-0 right-1 flex size-5 items-center justify-center rounded-full border bg-primary text-[10px] font-bold text-light"
               >
-                {notificationManager.notifications.length}
+                {unreadCount}
               </div>
             {/if}
           </div>
