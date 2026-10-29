@@ -239,7 +239,6 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              required
               label={$t('admin.notification_apprise_config_id')}
               description={$t('admin.notification_apprise_config_id_description')}
               disabled={appriseDisabled}
@@ -263,15 +262,6 @@
               disabled={appriseDisabled}
               bind:value={configToEdit.notifications.apprise.password}
               isEdited={configToEdit.notifications.apprise.password !== config.notifications.apprise.password}
-            />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              label={$t('tags')}
-              description={$t('admin.notification_apprise_tags_description')}
-              disabled={appriseDisabled}
-              bind:value={configToEdit.notifications.apprise.tags}
-              isEdited={configToEdit.notifications.apprise.tags !== config.notifications.apprise.tags}
             />
 
             <SettingInputField

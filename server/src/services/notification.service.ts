@@ -21,7 +21,7 @@ import {
   Permission,
   QueueName,
 } from 'src/enum.js';
-import { AppriseError, normalizeAppriseTags } from 'src/repositories/apprise.repository.js';
+import { AppriseError } from 'src/repositories/apprise.repository.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
@@ -484,7 +484,7 @@ export class NotificationService extends BaseService {
   async handleSendApprise(data: JobOf<JobName.SendApprise>): Promise<JobStatus> {
     const { notifications } = await this.getConfig({ withCache: false });
     const { apprise } = notifications;
-    if (!apprise.enabled || !apprise.host || !apprise.configId) {
+    if (!apprise.enabled || !apprise.host) {
       return JobStatus.Skipped;
     }
 
@@ -548,7 +548,7 @@ export class NotificationService extends BaseService {
     this.websocketRepository.clientSend('on_notification', userId, mapNotification(item));
   }
 
-  /** Queues an Apprise notification with the same wording as the in-app one, if the recipient wants it. */
+  /** Queues an Apprise notification to the recipient's own URLs, with the same wording as the in-app one. */
   private async queueAlbumApprise(
     album: MapAlbumDto,
     recipient: { metadata: UserMetadataItem[] },
@@ -561,6 +561,7 @@ export class NotificationService extends BaseService {
     if (
       !notifications.apprise.enabled ||
       !preferences.enabled ||
+      !preferences.urls ||
       !(isInvite ? preferences.albumInvite : preferences.albumUpdate)
     ) {
       return;
@@ -575,7 +576,7 @@ export class NotificationService extends BaseService {
       data: {
         title: isInvite ? 'Shared Album Invitation' : 'Shared Album Update',
         body: `${description}\n${getExternalDomain(server)}/albums/${album.id}`,
-        tag: normalizeAppriseTags(notifications.apprise.tags, preferences.tag),
+        urls: preferences.urls,
       },
     });
   }

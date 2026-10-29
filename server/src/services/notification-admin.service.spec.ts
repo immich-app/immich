@@ -125,33 +125,19 @@ describe(NotificationAdminService.name, () => {
   });
 
   describe('sendTestApprise', () => {
-    it('verifies the settings and sends a test notification', async () => {
+    it('checks the connection without sending anything', async () => {
       mocks.apprise.verify.mockResolvedValue();
-      mocks.apprise.notify.mockResolvedValue();
 
-      await expect(sut.sendTestApprise({ ...apprise, tags: 'family, alice' })).resolves.toBeUndefined();
+      await expect(sut.sendTestApprise(apprise)).resolves.toBeUndefined();
 
       expect(mocks.apprise.verify).toHaveBeenCalledWith(expect.objectContaining({ host: 'apprise' }));
-      expect(mocks.apprise.notify).toHaveBeenCalledWith(
-        expect.objectContaining({ host: 'apprise' }),
-        expect.objectContaining({ tag: 'family alice' }),
-      );
+      expect(mocks.apprise.notify).not.toHaveBeenCalled();
     });
 
     it('reports a failed verification as a bad request', async () => {
       mocks.apprise.verify.mockRejectedValue(new AppriseError('Authentication failed', 401));
 
       await expect(sut.sendTestApprise(apprise)).rejects.toThrow('Apprise check failed: Authentication failed');
-      expect(mocks.apprise.notify).not.toHaveBeenCalled();
-    });
-
-    it('reports a failed send as a bad request', async () => {
-      mocks.apprise.verify.mockResolvedValue();
-      mocks.apprise.notify.mockRejectedValue(new AppriseError('No configuration found for this config ID', 404));
-
-      await expect(sut.sendTestApprise(apprise)).rejects.toThrow(
-        'Apprise send failed: No configuration found for this config ID',
-      );
     });
   });
 });

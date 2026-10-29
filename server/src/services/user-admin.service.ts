@@ -4,7 +4,11 @@ import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.d
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto.js';
 import { SessionResponseDto, mapSession } from 'src/dtos/session.dto.js';
-import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto.js';
+import {
+  UserPreferencesResponseDto,
+  UserPreferencesUpdateDto,
+  mapAdminPreferences,
+} from 'src/dtos/user-preferences.dto.js';
 import {
   UserAdminCreateDto,
   UserAdminDeleteDto,
@@ -143,7 +147,7 @@ export class UserAdminService extends BaseService {
   async getPreferences(auth: AuthDto, id: string): Promise<UserPreferencesResponseDto> {
     await this.findOrFail(id, { withDeleted: true });
     const metadata = await this.userRepository.getMetadata(id);
-    return mapPreferences(getPreferences(metadata));
+    return mapAdminPreferences(getPreferences(metadata));
   }
 
   async updatePreferences(auth: AuthDto, id: string, dto: UserPreferencesUpdateDto) {
@@ -156,7 +160,7 @@ export class UserAdminService extends BaseService {
       value: getPreferencesPartial(newPreferences),
     });
 
-    return mapPreferences(newPreferences);
+    return mapAdminPreferences(newPreferences);
   }
 
   private findOrFail(id: string, options: UserFindOptions) {

@@ -47,8 +47,8 @@ export class NotificationAdminController {
   @Authenticated({ permission: Permission.NotificationCreate, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
-    summary: 'Send test Apprise notification',
-    description: 'Send a test notification using the provided Apprise API configuration.',
+    summary: 'Test Apprise connection',
+    description: 'Check that the Apprise API server can be reached with the provided login, without sending anything.',
     history: new HistoryBuilder().added('v3.3.0').beta('v3.3.0'),
   })
   sendTestAppriseAdmin(@Body() dto: SystemConfigAppriseDto): Promise<void> {

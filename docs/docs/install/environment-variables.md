@@ -201,23 +201,6 @@ Additional machine learning parameters can be tuned from the admin UI.
 
 :::
 
-## Apprise
-
-These set the default [Apprise notification](/administration/email-notification#apprise-notifications) settings. Values saved in the admin settings take priority.
-
-| Variable                   | Description                                                             | Default | Containers | Workers            |
-| :------------------------- | :---------------------------------------------------------------------- | :-----: | :--------- | :----------------- |
-| `IMMICH_APPRISE_ENABLED`   | Set to `true` to send notifications through Apprise                     | `false` | server     | api, microservices |
-| `IMMICH_APPRISE_HOST`      | Host of the Apprise API server                                          |         | server     | api, microservices |
-| `IMMICH_APPRISE_PORT`      | Port of the Apprise API server (empty means `80`, or `443` when secure) |         | server     | api, microservices |
-| `IMMICH_APPRISE_SECURE`    | Set to `true` to connect over HTTPS                                     | `false` | server     | api, microservices |
-| `IMMICH_APPRISE_BASE_PATH` | Path prefix the Apprise API is served under, for example `/apprise`     |         | server     | api, microservices |
-| `IMMICH_APPRISE_CONFIG_ID` | Key of the saved Apprise configuration to notify                        |         | server     | api, microservices |
-| `IMMICH_APPRISE_TAGS`      | Tags to notify, separated by commas or spaces                           |         | server     | api, microservices |
-| `IMMICH_APPRISE_USERNAME`  | Username for the Apprise API server                                     |         | server     | api, microservices |
-| `IMMICH_APPRISE_PASSWORD`  | Password for the Apprise API server                                     |         | server     | api, microservices |
-| `IMMICH_APPRISE_TIMEOUT`   | Seconds to wait for the Apprise API server                              |  `20`   | server     | api, microservices |
-
 ## Prometheus
 
 | Variable                   | Description                                                                                                           | Default | Containers | Workers            |
