@@ -58,6 +58,13 @@ const commonMiddleware = [
 
 const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
 
+const configRepository = new ConfigRepository();
+const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
+
+const isFutoBackupsDevelopmentMode = environment !== ImmichEnvironment.Production;
+const futoBackupsStatePath = getBackupsStatePath(storage.mediaLocation);
+const futoBackupsCachePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'restic-cache');
+
 const futoBackupsHistory = new HistoryBuilder().added('v3.4.0').internal('v3.4.0').getExtensions();
 
 for (const controller of futoBackupsControllers) {
@@ -67,13 +74,6 @@ for (const controller of futoBackupsControllers) {
     ...Object.entries(futoBackupsHistory).map(([key, value]) => ApiExtension(key, value)),
   )(controller);
 }
-
-const configRepository = new ConfigRepository();
-const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
-
-const isFutoBackupsDevelopmentMode = environment !== ImmichEnvironment.Production;
-const futoBackupsStatePath = getBackupsStatePath(storage.mediaLocation);
-const futoBackupsCachePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'restic-cache');
 
 const commonImports = [
   ClsModule.forRoot(cls.config),

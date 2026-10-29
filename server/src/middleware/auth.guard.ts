@@ -97,10 +97,7 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<AuthRequest>();
-
     const options = getAuthenticatedOptions(this.reflector, [context.getHandler(), context.getClass()]);
-
     if (!options) {
       throw new Error(`Route ${context.getHandler().name} does not declare @Authenticated()`);
     }
@@ -114,6 +111,7 @@ export class AuthGuard implements CanActivate {
     }
 
     const { admin: adminRoute, sharedLink: sharedLinkRoute, permission } = options;
+    const request = context.switchToHttp().getRequest<AuthRequest>();
 
     request.user = await this.authService.authenticate({
       headers: request.headers,
