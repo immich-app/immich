@@ -1,29 +1,25 @@
 <script lang="ts">
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import type { SelectionBBox } from '$lib/components/shared-components/map/types';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import LinkLivePhotoAction from '$lib/components/timeline/actions/LinkLivePhotoAction.svelte';
-  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
-  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import Portal from '$lib/elements/Portal.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { getStackBulkActions } from '$lib/services/stack.service';
-  import { mapSettings } from '$lib/stores/preferences.store';
-  import { type OnLink, type OnUnlink } from '$lib/utils/actions';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import type { SelectionBBox } from '#lib/components/shared-components/map/types.ts';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import LinkLivePhotoAction from '#lib/components/timeline/actions/LinkLivePhotoAction.svelte';
+  import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
+  import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '#lib/components/timeline/Timeline.svelte';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { getStackBulkActions } from '#lib/services/stack.service.ts';
+  import { mapSettings } from '#lib/stores/preferences.store.ts';
+  import { type OnLink, type OnUnlink } from '#lib/utils/actions.ts';
   import { AssetVisibility } from '@immich/sdk';
   import { ActionButton, CloseButton, CommandPaletteDefaultProvider, Icon } from '@immich/ui';
   import { mdiDotsVertical, mdiImageMultiple } from '@mdi/js';
@@ -118,13 +114,13 @@
 </aside>
 
 {#if assetMultiSelectManager.selectionActive}
-  {@const Actions = getAssetBulkActions($t)}
-  {@const StackActions = getStackBulkActions($t)}
+  {const Actions = $derived(getAssetBulkActions($t))}
+  {const StackActions = $derived(getStackBulkActions($t))}
   <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 
   <Portal target="body">
     <AssetSelectControlBar>
-      <CreateSharedLink />
+      <ActionButton action={Actions.CreateSharedLink} />
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       <ActionButton action={Actions.AddToAlbum} />
 
@@ -149,14 +145,9 @@
           <ChangeDate menuItem />
           <ChangeDescription menuItem />
           <ChangeLocation menuItem />
-          <ArchiveAction
-            menuItem
-            unarchive={assetMultiSelectManager.isAllArchived}
-            onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
-          />
-          {#if authManager.preferences.tags.enabled}
-            <TagAction menuItem />
-          {/if}
+          <ActionMenuItem action={Actions.Archive} />
+          <ActionMenuItem action={Actions.Unarchive} />
+          <ActionMenuItem action={Actions.Tag} />
           <DeleteAssets
             menuItem
             onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}

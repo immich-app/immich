@@ -7,7 +7,7 @@ import { HelmetOptions } from 'helmet';
 import { RedisOptions } from 'ioredis';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces/index.js';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { VectorExtension } from 'src/types.js';
 import { IWorker, citiesFile } from 'src/constants.js';
@@ -23,7 +23,6 @@ import {
   LogLevel,
   QueueName,
 } from 'src/enum.js';
-import { setDifference } from 'src/utils/set.js';
 
 export interface EnvData {
   host?: string;
@@ -90,6 +89,7 @@ export interface EnvData {
       admin1: string;
       admin2: string;
       cities500: string;
+      countryInfo: string;
       naturalEarthCountriesPath: string;
     };
     web: {
@@ -151,7 +151,22 @@ const asSet = <T>(value: string | undefined, defaults: T[]) => {
   return new Set(values.length === 0 ? defaults : (values as T[]));
 };
 
-const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) => {
+type CspOptions = Exclude<NonNullable<HelmetOptions['contentSecurityPolicy']>, boolean>;
+type CspDirectives = NonNullable<CspOptions['directives']>;
+
+export const applyCspHashes = (directives: CspDirectives, manifest: Record<string, string[]>): CspDirectives => {
+  const merged = { ...directives };
+  for (const [directive, hashes] of Object.entries(manifest)) {
+    const sources = merged[directive];
+    if (Array.isArray(sources) && !sources.includes(`'unsafe-inline'`)) {
+      merged[directive] = [...sources, ...hashes];
+    }
+  }
+
+  return merged;
+};
+
+const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined, webRoot: string) => {
   // default is off
   if (!helmetFile || helmetFile === 'false') {
     return;
@@ -159,11 +174,35 @@ const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) =>
 
   helmetFile = helmetFile === 'true' ? join(import.meta.dirname, '..', '..', 'helmet.json') : helmetFile;
 
+  let config: HelmetOptions;
   try {
-    return JSON.parse(readFileSync(helmetFile).toString()) as HelmetOptions;
+    config = JSON.parse(readFileSync(helmetFile).toString()) as HelmetOptions;
   } catch (error) {
     throw new Error(`Failed to read helmet file: ${helmetFile}`, { cause: error });
   }
+
+  const contentSecurityPolicy = config.contentSecurityPolicy;
+  if (!contentSecurityPolicy || typeof contentSecurityPolicy === 'boolean' || !contentSecurityPolicy.directives) {
+    return config;
+  }
+
+  // merge with csp build-time metadata
+  const manifestFile = join(webRoot, '.csp.json');
+
+  if (!existsSync(join(webRoot, 'index.html')) || !existsSync(manifestFile)) {
+    return config;
+  }
+
+  let manifest: Record<string, string[]>;
+  try {
+    manifest = JSON.parse(readFileSync(manifestFile).toString()) as Record<string, string[]>;
+  } catch (error) {
+    throw new Error(`Failed to read CSP manifest: ${manifestFile}`, { cause: error });
+  }
+
+  const directives = applyCspHashes(contentSecurityPolicy.directives, manifest);
+
+  return { ...config, contentSecurityPolicy: { ...contentSecurityPolicy, directives } };
 };
 
 const getEnv = (): EnvData => {
@@ -180,7 +219,7 @@ const getEnv = (): EnvData => {
 
   const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.Api, ImmichWorker.Microservices]);
   const excludedWorkers = asSet(dto.IMMICH_WORKERS_EXCLUDE, []);
-  const workers = [...setDifference(includedWorkers, excludedWorkers)];
+  const workers = [...includedWorkers.difference(excludedWorkers)];
   for (const worker of workers) {
     if (!WORKER_TYPES.has(worker)) {
       throw new Error(`Invalid worker(s) found: ${workers.join(',')}`);
@@ -219,7 +258,7 @@ const getEnv = (): EnvData => {
       : asSet<ImmichTelemetry>(dto.IMMICH_TELEMETRY_INCLUDE, []);
 
   const excludedTelemetries = asSet<ImmichTelemetry>(dto.IMMICH_TELEMETRY_EXCLUDE, []);
-  const telemetries = setDifference(includedTelemetries, excludedTelemetries);
+  const telemetries = includedTelemetries.difference(excludedTelemetries);
   for (const telemetry of telemetries) {
     if (!TELEMETRY_TYPES.has(telemetry)) {
       throw new Error(`Invalid telemetry found: ${telemetry}`);
@@ -310,7 +349,7 @@ const getEnv = (): EnvData => {
     },
 
     helmet: {
-      config: resolveHelmetFile(dto.IMMICH_HELMET_FILE),
+      config: resolveHelmetFile(dto.IMMICH_HELMET_FILE, folders.web),
     },
 
     licensePublicKey: isProd ? productionKeys : stagingKeys,
@@ -338,6 +377,7 @@ const getEnv = (): EnvData => {
         admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
         admin2: join(folders.geodata, 'admin2Codes.txt'),
         cities500: join(folders.geodata, citiesFile),
+        countryInfo: join(folders.geodata, 'countryInfo.txt'),
         naturalEarthCountriesPath: join(folders.geodata, 'ne_10m_admin_0_countries.geojson'),
       },
       web: {

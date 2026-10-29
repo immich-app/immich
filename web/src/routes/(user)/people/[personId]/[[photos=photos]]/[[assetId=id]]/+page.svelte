@@ -1,52 +1,57 @@
 <script lang="ts">
-  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
-  import { page } from '$app/stores';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { listNavigation } from '$lib/actions/list-navigation';
-  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
-  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
-  import { Route } from '$lib/route';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { getPersonActions } from '$lib/services/person.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import { listNavigation } from '#lib/actions/list-navigation.ts';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
+  import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '#lib/components/timeline/Timeline.svelte';
+  import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '#lib/constants.ts';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
+  import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { getPersonActions, handleUpdatePersonName } from '#lib/services/person.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { websocketEvents } from '#lib/stores/websocket.ts';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
+  import { afterNavigate, goto, refreshAll } from '$app/navigation';
+  import { page } from '$app/state';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
     CommandPaletteDefaultProvider,
     ContextMenuButton,
+    IconButton,
     LoadingSpinner,
     modalManager,
     toastManager,
     type ActionItem,
   } from '@immich/ui';
-  import { mdiAccountBoxOutline, mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiDotsVertical } from '@mdi/js';
+  import {
+    mdiAccountBoxOutline,
+    mdiAccountMultipleCheckOutline,
+    mdiArrowLeft,
+    mdiDotsVertical,
+    mdiPencilOutline,
+  } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -63,6 +68,9 @@
 
   let numberOfAssets = $derived(data.statistics.assets);
   let person = $derived(data.person);
+  const altNames = $derived([
+    ...new Set(person.otherPeople.map(({ name }) => name).filter((name) => !!name && name !== person.name)),
+  ]);
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -80,20 +88,20 @@
   let suggestedPeople: PersonResponseDto[] = $state([]);
 
   /**
-   * Save the word used to search people name: for example,
-   * if searching 'r' and the server returns 15 people with names starting with 'r',
-   * there's no need to search again people with name starting with 'ri'.
-   * However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
-   * or if the new search word starts with another word / letter
-   **/
+  Save the word used to search people name: for example,
+  if searching 'r' and the server returns 15 people with names starting with 'r',
+  there's no need to search again people with name starting with 'ri'.
+  However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
+  or if the new search word starts with another word / letter
+  */
   let isSearchingPeople = $state(false);
   let suggestionContainer: HTMLElement | undefined = $state();
 
   onMount(() => {
-    const action = $page.url.searchParams.get(QueryParameter.ACTION);
+    const action = page.url.searchParams.get(QueryParameter.ACTION);
+    const fallbackRoute = page.params.assetId ? Route.viewPerson(data.person) : Route.explore();
 
-    const fallbackRoute = $page.params.assetId ? Route.viewPerson(data.person) : Route.explore();
-    previousRoute = Route.continue($page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE), fallbackRoute).toString();
+    previousRoute = Route.continue(page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE), fallbackRoute).toString();
 
     if (action === 'merge') {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
@@ -117,12 +125,14 @@
   };
 
   const updateAssetCount = async () => {
-    await invalidateAll();
+    await refreshAll();
   };
 
-  afterNavigate(({ from }) => {
+  afterNavigate(({ from, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     // Prevent setting previousRoute to the current page.
-    if (from?.url && from.route.id !== $page.route.id) {
+    if (from?.url && from.route.id !== page.route.id) {
       previousRoute = from.url.href;
     }
   });
@@ -208,12 +218,7 @@
       return;
     }
 
-    try {
-      person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
-      toastManager.primary($t('change_name_successfully'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_name'));
-    }
+    person = (await handleUpdatePersonName({ id: person.id, name: personName }, { notify: true })) ?? person;
   };
 
   const handleCancelEditName = () => {
@@ -263,9 +268,10 @@
 
   const handleGoBack = async () => {
     viewMode = PersonPageViewMode.VIEW_ASSETS;
-    if ($page.url.searchParams.has(QueryParameter.ACTION)) {
-      $page.url.searchParams.delete(QueryParameter.ACTION);
-      await goto($page.url);
+    if (page.url.searchParams.has(QueryParameter.ACTION)) {
+      const url = new URL(page.url.href);
+      url.searchParams.delete(QueryParameter.ACTION);
+      await goto(url);
     }
   };
 
@@ -305,7 +311,7 @@
     await updateAssetCount();
   };
 
-  const { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson } = $derived(getPersonActions($t, person));
+  const { Edit, Favorite, Unfavorite, HidePerson, ShowPerson, Access } = $derived(getPersonActions($t, person));
   const SelectFeaturePhoto: ActionItem = {
     title: $t('select_featured_photo'),
     icon: mdiAccountBoxOutline,
@@ -358,7 +364,7 @@
           class="relative w-fit p-4 pt-12 sm:px-6"
           use:clickOutside={{
             onOutclick: handleCancelEditName,
-            onEscape: handleCancelEditName,
+            onEscape: isEditingName ? handleCancelEditName : undefined,
           }}
           use:listNavigation={suggestionContainer}
         >
@@ -373,44 +379,57 @@
                 {thumbnailData}
               />
             {:else}
-              <div class="relative">
-                <button
-                  type="button"
-                  class="flex items-center justify-center"
-                  title={$t('edit_name')}
-                  onclick={() => (isEditingName = true)}
-                >
-                  <ImageThumbnail
-                    circle
-                    shadow
-                    url={thumbnailData}
-                    altText={person.name}
-                    widthStyle="3.375rem"
-                    heightStyle="3.375rem"
-                  />
-                  <div class="flex flex-col justify-center px-4 text-start text-primary">
-                    <p class="w-40 truncate font-medium sm:w-72">{person.name || $t('add_a_name')}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {$t('assets_count', { values: { count: numberOfAssets } })}
-                    </p>
-                    {#if person.birthDate}
-                      <p class="text-sm text-gray-500 dark:text-gray-400">
-                        {$t('person_birthdate', {
-                          values: {
-                            date: DateTime.fromISO(person.birthDate).toLocaleString(
-                              {
-                                month: 'numeric',
-                                day: 'numeric',
-                                year: 'numeric',
-                              },
-                              { locale: $locale },
-                            ),
-                          },
-                        })}
+              <div class="relative flex gap-4">
+                <ImageThumbnail
+                  circle
+                  shadow
+                  url={thumbnailData}
+                  altText={person.name}
+                  widthStyle="3.375rem"
+                  heightStyle="3.375rem"
+                />
+                <div class="flex flex-col text-start text-primary">
+                  <div class="flex gap-2">
+                    <button type="button" title={$t('edit_name')} onclick={() => (isEditingName = true)}>
+                      <p class="w-max-40 sm:w-max-72 truncate text-start font-medium">
+                        {person.name || $t('add_a_name')}
                       </p>
-                    {/if}
+                    </button>
+                    <IconButton
+                      icon={mdiPencilOutline}
+                      shape="round"
+                      size="small"
+                      variant="ghost"
+                      onclick={() => modalManager.show(PersonEditModal, { person })}
+                      aria-label={$t('edit')}
+                    />
                   </div>
-                </button>
+                  {#if altNames.length > 0}
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {$t('also_known_as')}
+                      {new Intl.ListFormat($locale).format(altNames)}
+                    </p>
+                  {/if}
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {$t('assets_count', { values: { count: numberOfAssets } })}
+                  </p>
+                  {#if person.birthDate}
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {$t('person_birthdate', {
+                        values: {
+                          date: DateTime.fromISO(person.birthDate).toLocaleString(
+                            {
+                              month: 'numeric',
+                              day: 'numeric',
+                              year: 'numeric',
+                            },
+                            { locale: $locale },
+                          ),
+                        },
+                      })}
+                    </p>
+                  {/if}
+                </div>
               </div>
             {/if}
           </section>
@@ -459,10 +478,12 @@
 <header>
   {#if assetMultiSelectManager.selectionActive}
     <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t)}
+      {const Actions = $derived(getAssetBulkActions($t))}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
-      <CreateSharedLink />
+      <ActionButton action={Actions.CreateSharedLink} />
+
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
+
       <ActionButton action={Actions.AddToAlbum} />
       <FavoriteAction
         removeFavorite={assetMultiSelectManager.isAllFavorite}
@@ -478,17 +499,9 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction
-          menuItem
-          unarchive={assetMultiSelectManager.isAllArchived}
-          onArchive={(ids, visibility) =>
-            timelineManager.update(ids, (asset) => {
-              asset.visibility = visibility;
-            })}
-        />
-        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.Archive} />
+        <ActionMenuItem action={Actions.Unarchive} />
+        <ActionMenuItem action={Actions.Tag} />
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         <DeleteAssets
           menuItem
@@ -501,8 +514,9 @@
     {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
       <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
+          <ActionButton action={Access} />
           <ContextMenuButton
-            items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}
+            items={[SelectFeaturePhoto, Edit, HidePerson, ShowPerson, Merge, Favorite, Unfavorite]}
             aria-label={$t('open')}
           />
         {/snippet}

@@ -1,34 +1,32 @@
 <script lang="ts">
-  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
-  import TreeBreadcrumbs from '$lib/components/shared-components/tree/TreeBreadcrumbs.svelte';
-  import TreeItemThumbnails from '$lib/components/shared-components/tree/TreeItemThumbnails.svelte';
-  import TreeItems from '$lib/components/shared-components/tree/TreeItems.svelte';
-  import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import SkipLink from '$lib/elements/SkipLink.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { Viewport } from '$lib/managers/timeline-manager/types';
-  import { Route } from '$lib/route';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { foldersStore } from '$lib/stores/folders.svelte';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { joinPaths } from '$lib/utils/tree-utils';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import UserPageLayout, { headerId } from '#lib/components/layouts/UserPageLayout.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import GalleryViewer from '#lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
+  import TreeBreadcrumbs from '#lib/components/shared-components/tree/TreeBreadcrumbs.svelte';
+  import TreeItemThumbnails from '#lib/components/shared-components/tree/TreeItemThumbnails.svelte';
+  import TreeItems from '#lib/components/shared-components/tree/TreeItems.svelte';
+  import Sidebar from '#lib/components/sidebar/Sidebar.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import SkipLink from '#lib/elements/SkipLink.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import type { Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { getAssetsByOriginalPathQuery, getFolderTreeQuery } from '#lib/queries/view.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { isAssetViewerRoute } from '#lib/utils/navigation.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
+  import { joinPaths } from '#lib/utils/tree-utils.ts';
+  import { afterNavigate, beforeNavigate, goto, refreshAll } from '$app/navigation';
   import { ActionButton, CommandPaletteDefaultProvider, IconButton, Text } from '@immich/ui';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -40,26 +38,45 @@
 
   let { data }: Props = $props();
 
+  const query = createPreloadedQuery(getFolderTreeQuery);
+  const root = $derived(query.data);
+
   const viewport: Viewport = $state({ width: 0, height: 0 });
+  let folderScrollContainer: HTMLElement | undefined = $state();
+  let savedScrollTop = 0;
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
   const getLinkForPath = (path: string) => Route.folders({ path });
 
-  afterNavigate(() => {
+  beforeNavigate(({ to, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
+    if (isAssetViewerRoute(to)) {
+      savedScrollTop = folderScrollContainer?.scrollTop ?? 0;
+    }
+  });
+
+  afterNavigate(({ from, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     assetMultiSelectManager.clear();
+
+    if (isAssetViewerRoute(from) && folderScrollContainer) {
+      folderScrollContainer.scrollTop = savedScrollTop;
+    }
   });
 
   const navigateToView = (path: string) => {
-    return goto(getLinkForPath(path), { keepFocus: true, noScroll: true });
+    return goto(getLinkForPath(path), { reset: false });
   };
 
   const triggerAssetUpdate = async () => {
     assetMultiSelectManager.clear();
     if (data.tree.path) {
-      await foldersStore.refreshAssetsByPath(data.tree.path);
+      await queryClient.invalidateQueries({ queryKey: getAssetsByOriginalPathQuery(data.tree.path).queryKey });
     }
-    await invalidateAll();
+    await refreshAll();
   };
 
   const handleSetVisibility = () => {
@@ -84,7 +101,7 @@
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiFolderOutline, active: mdiFolder }}
-            tree={foldersStore.folders!}
+            tree={root}
             active={data.tree.path}
             getLink={getLinkForPath}
           />
@@ -93,11 +110,11 @@
     </Sidebar>
   {/snippet}
 
-  <OnEvents onAssetsDelete={invalidateAll} />
+  <OnEvents onAssetsDelete={refreshAll} onAssetsArchive={triggerAssetUpdate} onAssetsUnarchive={triggerAssetUpdate} />
 
   <TreeBreadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 
-  <section class="mt-2 h-[calc(100%-(--spacing(25)))] immich-scrollbar overflow-auto">
+  <section class="mt-2 h-[calc(100%-(--spacing(25)))] immich-scrollbar overflow-auto" bind:this={folderScrollContainer}>
     <TreeItemThumbnails items={data.tree.children} icon={mdiFolder} onClick={handleNavigateToFolder} />
 
     <!-- Assets -->
@@ -119,9 +136,9 @@
 {#if assetMultiSelectManager.selectionActive}
   <div class="fixed inset-s-0 top-0 w-full">
     <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t)}
+      {const Actions = $derived(getAssetBulkActions($t))}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
-      <CreateSharedLink />
+      <ActionButton action={Actions.CreateSharedLink} />
       <IconButton
         shape="round"
         color="secondary"
@@ -150,11 +167,10 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={triggerAssetUpdate} />
+        <ActionMenuItem action={Actions.Archive} />
+        <ActionMenuItem action={Actions.Unarchive} />
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} onUndoDelete={triggerAssetUpdate} />
         <hr />
 

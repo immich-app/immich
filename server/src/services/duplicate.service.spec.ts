@@ -233,6 +233,28 @@ describe(DuplicateService.name, () => {
       ]);
     });
 
+    it('should only load the assets owned by the user', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset as unknown as MapAsset],
+      });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: ['other-user-asset'], trashAssetIds: [asset.id] }],
+      });
+
+      expect(mocks.duplicateRepository.get).toHaveBeenCalledWith(authStub.admin.user.id, 'group-1');
+      expect(result[0].success).toBe(true);
+      expect(mocks.asset.updateAllExif).not.toHaveBeenCalled();
+      for (const [ids] of mocks.asset.updateAll.mock.calls) {
+        expect(ids).toEqual([asset.id]);
+      }
+    });
+
     it('should skip when keepAssetIds contains non-member', async () => {
       const asset = AssetFactory.create();
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));

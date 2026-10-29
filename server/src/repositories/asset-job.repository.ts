@@ -255,7 +255,7 @@ export class AssetJobRepository {
   getForOcr(id: string) {
     return this.db
       .selectFrom('asset')
-      .select((eb) => ['asset.visibility', withFilePath(eb, AssetFileType.Preview).as('previewFile')])
+      .select((eb) => ['asset.ownerId', 'asset.visibility', withFilePath(eb, AssetFileType.Preview).as('previewFile')])
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -418,11 +418,7 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })
   streamForDeletedJob(trashedBefore: Date) {
-    return this.db
-      .selectFrom('asset')
-      .select(['id', 'isOffline'])
-      .where('asset.deletedAt', '<=', trashedBefore)
-      .stream();
+    return this.db.selectFrom('asset').select(['id']).where('asset.deletedAt', '<=', trashedBefore).stream();
   }
 
   @GenerateSql({ params: [], stream: true })

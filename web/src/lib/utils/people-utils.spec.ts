@@ -1,6 +1,6 @@
-import type { Faces } from '$lib/managers/asset-viewer-manager.svelte';
-import type { Size } from '$lib/utils/container-utils';
-import { getBoundingBox } from '$lib/utils/people-utils';
+import type { Faces } from '#lib/managers/asset-viewer-manager.svelte.ts';
+import type { Size } from '#lib/utils/container-utils.ts';
+import { getBoundingBox } from '#lib/utils/people-utils.ts';
 
 const makeFace = (overrides: Partial<Faces> = {}): Faces => ({
   id: 'face-1',
@@ -27,6 +27,7 @@ describe('getBoundingBox', () => {
       left: 800 * (1000 / 4000),
       width: 800 * (2000 / 4000) - 800 * (1000 / 4000),
       height: 600 * (1500 / 3000) - 600 * (750 / 3000),
+      labelWidth: 800 * (2000 / 4000) - 800 * (1000 / 4000),
     });
   });
 
@@ -49,6 +50,7 @@ describe('getBoundingBox', () => {
       left: 0,
       width: 600,
       height: 600,
+      labelWidth: 600,
     });
   });
 

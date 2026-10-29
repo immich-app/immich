@@ -1,5 +1,5 @@
 <script lang="ts">
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
   import { getClusterGroupUsers, type UserResponseDto } from '@immich/sdk';
   import { Button, HStack, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -18,7 +18,7 @@
   };
 </script>
 
-<Modal title={$t('cluster_group')} {onClose} size="small">
+<Modal title={$t('people_cluster_group')} {onClose} size="small">
   <ModalBody>
     {#await loadUsers()}
       <div class="flex w-full place-content-center place-items-center">

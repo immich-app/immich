@@ -5,7 +5,6 @@ import { chunk, flatten } from 'lodash-es';
 import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
 import { EmitEvent } from 'src/repositories/event.repository.js';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
-import { setUnion } from 'src/utils/set.js';
 
 const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
   Column({ ...options, type: 'uuid', nullable: false, default: () => `${immich_uuid_v7.name}()` });
@@ -32,11 +31,11 @@ export const UpdatedAtTrigger = (name: string) =>
 export const DATABASE_PARAMETER_CHUNK_SIZE = 65_500;
 
 /**
- * Chunks an array or set into smaller collections of the same type and specified size.
- *
- * @param collection The collection to chunk.
- * @param size The size of each chunk.
- */
+Chunks an array or set into smaller collections of the same type and specified size.
+
+@param collection The collection to chunk.
+@param size The size of each chunk.
+*/
 function chunks<T>(collection: Array<T>, size: number): Array<Array<T>>;
 function chunks<T>(collection: Set<T>, size: number): Array<Set<T>>;
 function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>> | Array<Set<T>> {
@@ -60,12 +59,12 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
 }
 
 /**
- * Wraps a method that takes a collection of parameters and sequentially calls it with chunks of the collection,
- * to overcome the maximum number of parameters allowed by the database driver.
- *
- * @param options.paramIndex The index of the function parameter to chunk. Defaults to 0.
- * @param options.flatten Whether to flatten the results. Defaults to false.
- */
+Wraps a method that takes a collection of parameters and sequentially calls it with chunks of the collection,
+to overcome the maximum number of parameters allowed by the database driver.
+
+@param options.paramIndex The index of the function parameter to chunk. Defaults to 0.
+@param options.flatten Whether to flatten the results. Defaults to false.
+*/
 export function Chunked(
   options: { paramIndex?: number; chunkSize?: number; mergeFn?: (results: any) => any } = {},
 ): MethodDecorator {
@@ -105,7 +104,8 @@ export function ChunkedArray(options?: { paramIndex?: number; chunkSize?: number
 }
 
 export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {
-  return Chunked({ ...options, mergeFn: (args: Set<any>[]) => setUnion(...args) });
+  // eslint-disable-next-line unicorn/no-array-reduce
+  return Chunked({ ...options, mergeFn: (args: Set<any>[]) => args.reduce((unionSet, set) => unionSet.union(set)) });
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
@@ -208,6 +208,10 @@ export class HistoryBuilder {
     return new HistoryBuilder().added('v3.0.0');
   }
 
+  static v4() {
+    return new HistoryBuilder().added('v4.0.0');
+  }
+
   added(version: string, description?: string) {
     return this.push({ version, state: 'Added', description });
   }
@@ -236,6 +240,15 @@ export class HistoryBuilder {
     const { replacementId } = options || {};
     this.hasDeprecated = true;
     return this.push({ version, state: ApiState.Deprecated, replacementId });
+  }
+
+  v3PatchMigration() {
+    return this.push({
+      version: 'v3.0.0',
+      state: 'Updated',
+      description:
+        'This endpoint now also supports PATCH, in addition to PUT. PATCH will become the default in v4, and then PUT will be dropped in v5. Please migrate accordingly.',
+    });
   }
 
   isDeprecated(): boolean {

@@ -1,11 +1,11 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { dateFormats } from '$lib/constants';
-  import Portal from '$lib/elements/Portal.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { getAlbumActions } from '$lib/services/album.service';
-  import { locale } from '$lib/stores/preferences.store';
+  import { dateFormats } from '#lib/constants.ts';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAlbumActions } from '#lib/services/album.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import { AlbumUserRole, type AlbumResponseDto } from '@immich/sdk';
   import { Icon, menuManager } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
@@ -19,8 +19,8 @@
 
   let contextMenuAnchor: HTMLDivElement | undefined = $state();
   const items = $derived.by(() => {
-    const { Edit, Share, Download, Delete } = getAlbumActions($t, album);
-    return [Edit, Share, Download, Delete];
+    const { Edit, Share, Download, Leave, Delete } = getAlbumActions($t, album);
+    return [Edit, Share, Download, Leave, Delete];
   });
 
   const dateLocaleString = (dateString: string) => {

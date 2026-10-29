@@ -206,6 +206,13 @@ describe('/shared-links', () => {
       );
     });
 
+    it('should not return album users', async () => {
+      const { status, body } = await request(app).get('/shared-links/me').query({ key: linkWithAlbum.key });
+
+      expect(status).toBe(200);
+      expect(body.album.albumUsers).toEqual([]);
+    });
+
     it('should return unauthorized for incorrect shared link', async () => {
       const { status, body } = await request(app)
         .get('/shared-links/me')

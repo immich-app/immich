@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { ProjectionType } from '$lib/constants';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
-  import { moveFocus } from '$lib/utils/focus-util';
-  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { getAltText } from '$lib/utils/thumbnail-util';
+  import { ProjectionType } from '#lib/constants.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { locale, playVideoThumbnailOnHover } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, getAssetPlaybackUrl } from '#lib/utils.ts';
+  import { moveFocus } from '#lib/utils/focus-util.ts';
+  import { currentUrlReplaceAssetId } from '#lib/utils/navigation.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
   import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import {
@@ -24,7 +24,7 @@
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
-  import Thumbhash from '$lib/components/Thumbhash.svelte';
+  import Thumbhash from '#lib/components/Thumbhash.svelte';
   import ImageThumbnail from './ImageThumbnail.svelte';
   import VideoThumbnail from './VideoThumbnail.svelte';
   interface Props {
@@ -229,9 +229,9 @@
   bind:this={element}
   data-asset={asset.id}
   data-thumbnail-focus-container
-  data-selected={selected ? true : undefined}
-  data-readonly={readonly ? true : undefined}
-  data-disabled={disabled ? true : undefined}
+  data-selected={selected || undefined}
+  data-readonly={readonly || undefined}
+  data-disabled={disabled || undefined}
   tabindex={0}
   role="link"
 >
@@ -395,7 +395,7 @@
       <button
         type="button"
         onclick={onIconClickedHandler}
-        class={['absolute z-2 p-2 focus:outline-none', { 'cursor-not-allowed': disabled }]}
+        class={['group/select absolute z-2 p-2 focus:outline-none', { 'cursor-not-allowed': disabled }]}
         role="checkbox"
         tabindex={-1}
         aria-checked={selected}
@@ -408,7 +408,7 @@
             <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-primary" />
           </div>
         {:else}
-          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 group-hover/select:text-white" />
         {/if}
       </button>
     {/if}

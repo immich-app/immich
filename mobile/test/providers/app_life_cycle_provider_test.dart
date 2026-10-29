@@ -118,6 +118,7 @@ void main() {
     logService = await LogService.init(
       logRepository: logRepository,
       settingsRepository: settingsRepository,
+      storeService: MockStoreService(),
       shouldBuffer: false,
     );
   });
@@ -256,6 +257,17 @@ void main() {
     await lifeCycle.handleAppResume();
 
     verify(() => backgroundSync.syncLocal(full: false)).called(1);
+  });
+
+  test('first resume runs when the splash requested a full resume', () async {
+    websocket.throwOnConnect = false;
+    serverVersion.complete();
+    lifeCycle.requestFullResume();
+    await lifeCycle.handleAppResume();
+
+    expect(serverVersionCount, 1);
+    expect(websocket.connectCount, 1);
+    verify(() => backgroundSync.syncLocal(full: true)).called(1);
   });
 
   test('a background launch does not resume twice without a pause', () async {

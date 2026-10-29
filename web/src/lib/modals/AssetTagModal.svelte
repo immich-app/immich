@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { tagAssets } from '$lib/utils/asset-utils';
+  import { handleTagAssets } from '#lib/services/asset.service.ts';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { mdiTag } from '@mdi/js';
@@ -32,9 +31,9 @@
       return;
     }
 
-    const updatedIds = await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
-    eventManager.emit('AssetsTag', updatedIds);
-    onClose(true);
+    if (await handleTagAssets(assetIds, [...selectedIds])) {
+      onClose(true);
+    }
   };
 
   const handleSelect = async (option?: ComboBoxOption) => {
@@ -80,7 +79,7 @@
 
   <section class="flex flex-wrap gap-1 pt-2">
     {#each selectedIds as tagId (tagId)}
-      {@const tag = tagMap[tagId]}
+      {const tag = $derived(tagMap[tagId])}
       {#if tag}
         <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
       {/if}

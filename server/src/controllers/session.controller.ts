@@ -57,11 +57,7 @@ export class SessionController {
   @Endpoint({
     summary: 'Update a session',
     description: 'Update a specific session identified by id.',
-    history: new HistoryBuilder()
-      .added('v1')
-      .beta('v1')
-      .stable('v2')
-      .deprecated('v3', { replacementId: 'updateSession' }),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
   })
   updateSession(
     @Auth() auth: AuthDto,

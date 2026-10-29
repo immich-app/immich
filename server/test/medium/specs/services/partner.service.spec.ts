@@ -1,7 +1,8 @@
 import { Kysely } from 'kysely';
+import { SharingDirection } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
-import { PartnerDirection, PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { DB } from 'src/schema/index.js';
 import { PartnerService } from 'src/services/partner.service.js';
@@ -11,6 +12,7 @@ import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(PartnerService, {
     database: db || defaultDatabase,
@@ -61,7 +63,7 @@ describe(PartnerService.name, () => {
       const { user: partner } = await ctx.newUser();
       await ctx.newPartner({ sharedById: user.id, sharedWithId: partner.id });
 
-      await expect(sut.search(factory.auth({ user }), { direction: PartnerDirection.SharedBy })).resolves.toEqual([
+      await expect(sut.search(factory.auth({ user }), { direction: SharingDirection.SharedBy })).resolves.toEqual([
         expect.objectContaining({ id: partner.id }),
       ]);
     });
@@ -72,7 +74,7 @@ describe(PartnerService.name, () => {
       const { user: partner } = await ctx.newUser();
       await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
 
-      await expect(sut.search(factory.auth({ user }), { direction: PartnerDirection.SharedWith })).resolves.toEqual([
+      await expect(sut.search(factory.auth({ user }), { direction: SharingDirection.SharedWith })).resolves.toEqual([
         expect.objectContaining({ id: partner.id }),
       ]);
     });
@@ -111,7 +113,7 @@ describe(PartnerService.name, () => {
       await ctx.newPartner({ sharedById: user.id, sharedWithId: partner.id });
 
       await expect(sut.remove(factory.auth({ user }), partner.id)).resolves.toBeUndefined();
-      await expect(sut.search(factory.auth({ user }), { direction: PartnerDirection.SharedBy })).resolves.toEqual([]);
+      await expect(sut.search(factory.auth({ user }), { direction: SharingDirection.SharedBy })).resolves.toEqual([]);
     });
 
     it('should throw when the partner does not exist', async () => {

@@ -1,14 +1,14 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import { getPeople, getSearchPeopleTitle } from './search-bar-utils';
-  import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import SingleGridRow from '#lib/components/shared-components/SingleGridRow.svelte';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
   import { type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, LoadingSpinner, Text } from '@immich/ui';
   import { mdiArrowRight, mdiCheck, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
 
   interface Props {
     title: string | undefined;
@@ -46,13 +46,13 @@
   </div>
 {:then people}
   {#if people && people.length > 0}
-    {@const peopleList = showAllPeople
-      ? filterPeople(people, name)
-      : filterPeople(people, name).slice(0, numberOfPeople)}
-
     <div id="people-selection" class="max-h-80 immich-scrollbar overflow-y-auto">
       <Text class="pb-5">{$t('people_search_description')}</Text>
       <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
+
+      {const peopleList = $derived(
+        showAllPeople ? filterPeople(people, name) : filterPeople(people, name).slice(0, numberOfPeople),
+      )}
 
       <SingleGridRow
         class="space-between grid immich-scrollbar grid-auto-fill-20 gap-5 overflow-y-auto pt-5"

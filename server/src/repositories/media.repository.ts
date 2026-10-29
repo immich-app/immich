@@ -73,10 +73,10 @@ export class MediaRepository {
   }
 
   /**
-   *
-   * @param input file path to the input image
-   * @returns ExtractResult if succeeded, or null if failed
-   */
+  
+  @param input file path to the input image
+  @returns ExtractResult if succeeded, or null if failed
+  */
   async extract(input: string): Promise<ExtractResult | null> {
     for (const { tag, format } of [
       { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
@@ -186,6 +186,7 @@ export class MediaRepository {
         // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
         chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
         progressive: options.progressive,
+        decodingTier: options.decodingTier,
       })
       .toFile(output);
   }
@@ -291,7 +292,7 @@ export class MediaRepository {
           };
         }),
       audioStreams: results.streams
-        .filter((stream) => stream.codec_type === 'audio')
+        .filter((stream) => stream.codec_type === 'audio' && stream.codec_name !== 'unknown')
         .sort((a, b) => this.compareStreams(a, b))
         .map((stream) => ({
           index: stream.index,
@@ -304,9 +305,9 @@ export class MediaRepository {
   }
 
   /**
-   * Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
-   * Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
-   */
+  Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
+  Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
+  */
   probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
     const ffprobe = spawn(
       'ffprobe',
@@ -483,7 +484,9 @@ export class MediaRepository {
   }
 
   private parseEnum<E extends Record<string, number | string>>(enumObj: E, value?: string) {
-    return value ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null) : null;
+    return value && typeof value === 'string'
+      ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null)
+      : null;
   }
 
   /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */

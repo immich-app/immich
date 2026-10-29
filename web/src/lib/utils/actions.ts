@@ -1,9 +1,9 @@
+import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { AssetVisibility, deleteAssets as deleteBulk, restoreAssets, type StackResponseDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { handleError } from './handle-error';
 
 export type OnDelete = (assetIds: string[]) => void;
@@ -56,10 +56,10 @@ const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsse
 };
 
 /**
- * Update the asset stack state in the asset store based on the provided stack response.
- * This function updates the stack information so that the icon is shown for the primary asset
- * and removes the non-primary assets from the timeline.
- */
+Update the asset stack state in the asset store based on the provided stack response.
+This function updates the stack information so that the icon is shown for the primary asset
+and removes the non-primary assets from the timeline.
+*/
 export function updateStackedAssetInTimeline(timelineManager: TimelineManager, stack: StackResponseDto) {
   timelineManager.update([stack.primaryAssetId], (asset) => {
     asset.stack = {

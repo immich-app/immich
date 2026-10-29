@@ -22,6 +22,12 @@
   --font-sans: 'GoogleSans', sans-serif;
   --font-mono: 'GoogleSansCode', monospace;
 
+  --color-logo-red: #fa2921;
+  --color-logo-pink: #ed79b5;
+  --color-logo-yellow: #ffb400;
+  --color-logo-blue: #1e83f7;
+  --color-logo-green: #18c249;
+
   --spacing-18: 4.5rem;
 
   --breakpoint-tall: 800px;
@@ -87,7 +93,7 @@
 @layer utilities {
   @font-face {
     font-family: 'GoogleSans';
-    src: url('$lib/assets/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
+    src: url('#lib/assets/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
     font-weight: 410 900;
     font-style: normal;
     ascent-override: 106.25%;
@@ -96,7 +102,7 @@
 
   @font-face {
     font-family: 'GoogleSansCode';
-    src: url('$lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf') format('truetype-variations');
+    src: url('#lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf') format('truetype-variations');
     font-weight: 1 900;
     font-style: monospace;
   }

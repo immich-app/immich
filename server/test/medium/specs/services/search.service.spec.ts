@@ -18,6 +18,7 @@ let defaultDatabase: Kysely<DB>;
 
 const unitVector = (index: number) => JSON.stringify(Array.from({ length: 512 }, (_, i) => (i === index ? 1 : 0)));
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SearchService, {
     database: db || defaultDatabase,
@@ -65,6 +66,22 @@ describe(SearchService.name, () => {
     ]);
   });
 
+  it('should not return hidden assets', async () => {
+    const { sut, ctx } = setup();
+    const { user } = await ctx.newUser();
+
+    const { asset: visibleAsset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newExif({ assetId: visibleAsset.id, fileSizeInByte: 1000 });
+    const { asset: hiddenAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Hidden });
+    await ctx.newExif({ assetId: hiddenAsset.id, fileSizeInByte: 2000 });
+
+    const auth = factory.auth({ user: { id: user.id } });
+
+    await expect(sut.searchLargeAssets(auth, { size: 250 })).resolves.toEqual([
+      expect.objectContaining({ id: visibleAsset.id }),
+    ]);
+  });
+
   describe('searchStatistics', () => {
     it('should return statistics when filtering by personIds', async () => {
       const { sut, ctx } = setup();
@@ -106,6 +123,31 @@ describe(SearchService.name, () => {
       const result = await sut.searchStatistics(auth, { visibility: AssetVisibility.Locked });
 
       expect(result).toEqual({ total: 0 });
+    });
+
+    it('should not return locked assets of partner in elevated session without a visibility filter', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      await ctx.newAsset({ ownerId: partner.id, visibility: AssetVisibility.Locked });
+      await ctx.newAsset({ ownerId: partner.id });
+
+      const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
+
+      await expect(sut.searchStatistics(auth, {})).resolves.toEqual({ total: 2 });
+
+      const response = await sut.searchMetadata(auth, { size: 250, withStacked: false });
+      expect(response.assets.items.map(({ ownerId, visibility }) => ({ ownerId, visibility }))).toEqual(
+        expect.arrayContaining([
+          { ownerId: user.id, visibility: AssetVisibility.Locked },
+          { ownerId: partner.id, visibility: AssetVisibility.Timeline },
+        ]),
+      );
+      expect(response.assets.items).toHaveLength(2);
     });
   });
 

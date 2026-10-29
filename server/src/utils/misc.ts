@@ -52,9 +52,7 @@ export const getMethodNames = (instance: any) => {
 export const getExternalDomain = (server: SystemConfig['server'], defaultDomain = 'https://my.immich.app') =>
   server.externalDomain || defaultDomain;
 
-/**
- * @returns a list of strings representing the keys of the object in dot notation
- */
+/** @returns a list of strings representing the keys of the object in dot notation */
 export const getKeysDeep = (target: unknown, path: string[] = []) => {
   if (!target || typeof target !== 'object') {
     return [];
@@ -107,6 +105,8 @@ export const isFaceImportEnabled = (metadata: SystemConfig['metadata']) => metad
 export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingRepository): void => {
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
+
+export const hasSomeDefined = (values: unknown[]) => values.some((value) => value !== undefined);
 
 export const findOrFail = async <T>(find: () => Promise<T>, entity: string): Promise<NonNullable<T>> => {
   const value = await find();

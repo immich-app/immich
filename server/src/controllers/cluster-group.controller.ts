@@ -94,7 +94,7 @@ export class ClusterGroupController {
   }
 
   @Post(':id/regenerate-people')
-  @Authenticated({ permission: Permission.ClusterGroupRead })
+  @Authenticated({ permission: Permission.ClusterGroupAdmin })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
     summary: 'Regenerate people of users in cluster group',

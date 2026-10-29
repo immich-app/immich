@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { assetFactory } from '@test-data/factories/asset-factory';
+import { assetFactory } from '#test-data/factories/asset-factory';
 import DetailPanelDescription from './DetailPanelDescription.svelte';
 
 describe('DetailPanelDescription', () => {
@@ -26,6 +26,7 @@ describe('DetailPanelDescription', () => {
 
     const textarea = screen.getByTestId('autogrow-textarea') as HTMLTextAreaElement;
     await user.type(textarea, 'unsaved draft');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(textarea).toHaveValue('unsaved draft');
 
     await rerender({
@@ -33,6 +34,7 @@ describe('DetailPanelDescription', () => {
       isOwner: true,
     });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByTestId('autogrow-textarea')).toHaveValue('');
   });
 
@@ -53,6 +55,7 @@ describe('DetailPanelDescription', () => {
       },
     });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByTestId('autogrow-textarea')).toHaveValue('first description');
 
     await rerender({
@@ -60,6 +63,7 @@ describe('DetailPanelDescription', () => {
       isOwner: true,
     });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByTestId('autogrow-textarea')).toHaveValue('second description');
   });
 });

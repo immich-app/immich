@@ -1,16 +1,15 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { activityManager } from '$lib/managers/activity-manager.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { getAssetType } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { isTenMinutesApart } from '$lib/utils/timesince';
-  import { ReactionType, type ActivityResponseDto, type AlbumUserResponseDto, type AssetTypeEnum } from '@immich/sdk';
+  import { shortcut } from '#lib/actions/shortcut.ts';
+  import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
+  import { activityManager } from '#lib/managers/activity-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { isTenMinutesApart } from '#lib/utils/timesince.ts';
+  import { AssetTypeEnum, ReactionType, type ActivityResponseDto, type AlbumUserResponseDto } from '@immich/sdk';
   import { ContextMenuButton, Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
   import { mdiClose, mdiSend, mdiThumbUp, mdiTrashCanOutline } from '@mdi/js';
   import * as luxon from 'luxon';
@@ -67,9 +66,9 @@
     hour12: false,
   };
 
-  const handleDeleteReaction = async (reaction: ActivityResponseDto, index: number) => {
+  const handleDeleteReaction = async (reaction: ActivityResponseDto) => {
     try {
-      await activityManager.deleteActivity(reaction, index);
+      await activityManager.deleteActivity(reaction);
 
       const deleteMessages: Record<ReactionType, string> = {
         [ReactionType.Comment]: $t('comment_deleted'),
@@ -118,7 +117,7 @@
   };
 </script>
 
-{#snippet reactionMenu(reaction: ActivityResponseDto, index: number, title: string)}
+{#snippet reactionMenu(reaction: ActivityResponseDto, title: string)}
   {#if reaction.user.id === authManager.user.id || isAlbumOwner}
     <ContextMenuButton
       translations={{ open_menu: title }}
@@ -130,7 +129,7 @@
           icon: mdiTrashCanOutline,
           title: $t('remove'),
           color: 'danger',
-          onAction: () => handleDeleteReaction(reaction, index),
+          onAction: () => handleDeleteReaction(reaction),
         },
       ]}
     />
@@ -176,7 +175,7 @@
                   />
                 </a>
               {/if}
-              {@render reactionMenu(reaction, index, $t('comment_options'))}
+              {@render reactionMenu(reaction, $t('comment_options'))}
             </div>
 
             {#if (index !== activityManager.activities.length - 1 && !shouldGroup(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
@@ -188,17 +187,15 @@
               </div>
             {/if}
           {:else if reaction.type === ReactionType.Like}
+            {const type = $derived(
+              assetType === AssetTypeEnum.Image || assetType === AssetTypeEnum.Video ? assetType.toLowerCase() : null,
+            )}
             <div class="relative">
               <div class="mt-3 flex items-center gap-4 p-3 text-sm">
                 <div class="text-primary"><Icon icon={mdiThumbUp} size="20" /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
-                  {$t('user_liked', {
-                    values: {
-                      user: reaction.user.name,
-                      type: assetType ? getAssetType(assetType).toLowerCase() : null,
-                    },
-                  })}
+                  {$t('user_liked', { values: { user: reaction.user.name, type } })}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
                   <a class="aspect-square size-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
@@ -209,7 +206,7 @@
                     />
                   </a>
                 {/if}
-                {@render reactionMenu(reaction, index, $t('reaction_options'))}
+                {@render reactionMenu(reaction, $t('reaction_options'))}
               </div>
               {#if (index !== activityManager.activities.length - 1 && isTenMinutesApart(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
                 <div

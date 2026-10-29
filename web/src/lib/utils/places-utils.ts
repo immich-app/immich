@@ -1,12 +1,12 @@
+import { PlacesGroupBy, placesViewSettings, type PlacesViewSettings } from '#lib/stores/preferences.store.ts';
 import { type AssetResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
-import { PlacesGroupBy, placesViewSettings, type PlacesViewSettings } from '$lib/stores/preferences.store';
 
 /**
- * --------------
- * Places Grouping
- * --------------
- */
+--------------
+Places Grouping
+--------------
+*/
 export interface PlacesGroup {
   id: string;
   name: string;
@@ -14,10 +14,10 @@ export interface PlacesGroup {
 }
 
 /**
- * ----------------------------
- * Places Groups Collapse/Expand
- * ----------------------------
- */
+----------------------------
+Places Groups Collapse/Expand
+----------------------------
+*/
 const getCollapsedPlacesGroups = (settings: PlacesViewSettings) => {
   settings.collapsedGroups ??= {};
   const { collapsedGroups, groupBy } = settings;

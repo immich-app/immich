@@ -10,6 +10,7 @@ import { AssetFace } from 'src/database.js';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
 import { AssetEditActionItem, AssetEditsCreateDto } from 'src/dtos/editing.dto.js';
+import { PersonUserRole } from 'src/dtos/person.dto.js';
 import {
   AlbumUserRole,
   AssetType,
@@ -29,6 +30,7 @@ import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
 import { AssetFileRepository } from 'src/repositories/asset-file.repository.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { AuthChallengeRepository } from 'src/repositories/auth-challenge.repository.js';
 import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
@@ -49,6 +51,8 @@ import { MetadataRepository } from 'src/repositories/metadata.repository.js';
 import { NotificationRepository } from 'src/repositories/notification.repository.js';
 import { OcrRepository } from 'src/repositories/ocr.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PasskeyRepository } from 'src/repositories/passkey.repository.js';
+import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
@@ -64,6 +68,9 @@ import { TagRepository } from 'src/repositories/tag.repository.js';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
+import { ViewRepository } from 'src/repositories/view-repository.js';
+import { WebAuthnRepository } from 'src/repositories/webauthn.repository.js';
+import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
@@ -71,9 +78,12 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table.js';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table.js';
+import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { MemoryTable } from 'src/schema/tables/memory.table.js';
+import { PasskeyTable } from 'src/schema/tables/passkey.table.js';
+import { PersonUserTable } from 'src/schema/tables/person-user.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
 import { SessionTable } from 'src/schema/tables/session.table.js';
 import { StackTable } from 'src/schema/tables/stack.table.js';
@@ -173,6 +183,12 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     return { user, result };
   }
 
+  async newPasskey(dto: Partial<Insertable<PasskeyTable>> & { userId: string }) {
+    const passkey = mediumFactory.passkeyInsert(dto);
+    const result = await this.get(PasskeyRepository).create(passkey);
+    return { passkey, result };
+  }
+
   async newPartner(dto: { sharedById: string; sharedWithId: string; inTimeline?: boolean }) {
     const partner = { inTimeline: true, ...dto };
     const result = await this.get(PartnerRepository).create(partner);
@@ -213,6 +229,28 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     const assetFace = mediumFactory.assetFaceInsert(dto);
     const result = await this.get(PersonRepository).createAssetFace(assetFace);
     return { assetFace, result };
+  }
+
+  async newAssetOcr(
+    dto: (Partial<Insertable<AssetOcrTable>> & { assetId: string; text: string; textScore: number })[],
+  ) {
+    const result = await this.get(OcrRepository).upsert(
+      dto[0].assetId,
+      dto.map((item) => ({
+        ...item,
+        x1: 0,
+        y1: 0,
+        x2: 1,
+        y2: 1,
+        x3: 2,
+        y3: 2,
+        x4: 3,
+        y4: 3,
+        boxScore: item.textScore,
+      })),
+      '',
+    );
+    return { ocr: dto, result };
   }
 
   async newMemory(dto: Partial<Insertable<MemoryTable>> = {}) {
@@ -288,6 +326,14 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     const person = mediumFactory.personInsert({ ...dto, personGroupId });
     const result = await repository.create(person);
     return { person, result };
+  }
+
+  async newPersonUser(
+    dto: Partial<Insertable<PersonUserTable>> & { personGroupId: string; sharedById: string; sharedWithId: string },
+  ) {
+    const personUser = mediumFactory.personUserInsert(dto);
+    const [result] = await this.get(PersonUserRepository).createAll([personUser]);
+    return { personUser, result };
   }
 
   async newSession(dto: Partial<Insertable<SessionTable>> & { userId: string }) {
@@ -482,8 +528,11 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case LibraryRepository:
     case NotificationRepository:
     case OcrRepository:
+    case AuthChallengeRepository:
     case PartnerRepository:
+    case PasskeyRepository:
     case PersonRepository:
+    case PersonUserRepository:
     case SearchRepository:
     case SessionRepository:
     case SharedLinkRepository:
@@ -494,12 +543,14 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case SystemMetadataRepository:
     case UserRepository:
     case VersionHistoryRepository:
+    case ViewRepository:
     case WorkflowRepository: {
       return new key(db) as InstanceType<T>;
     }
 
     case ConfigRepository:
-    case CryptoRepository: {
+    case CryptoRepository:
+    case WebAuthnRepository: {
       return new key() as InstanceType<T>;
     }
 
@@ -544,6 +595,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case AlbumRepository:
     case AssetRepository:
     case AssetJobRepository:
+    case AuthChallengeRepository:
     case ConfigRepository:
     case CryptoRepository:
     case LibraryRepository:
@@ -552,6 +604,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case NotificationRepository:
     case OcrRepository:
     case PartnerRepository:
+    case PasskeyRepository:
     case PersonRepository:
     case SessionRepository:
     case SyncRepository:
@@ -614,6 +667,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
 
     case StorageRepository: {
       return automock(StorageRepository, { args: [{ setContext: () => {} }] });
+    }
+
+    case WebsocketRepository: {
+      return automock(WebsocketRepository, { args: [undefined, { setContext: () => {} }] });
     }
 
     default: {
@@ -727,6 +784,20 @@ const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: stri
   };
 };
 
+const personUserInsert = (
+  personUser: Partial<Insertable<PersonUserTable>> & {
+    personGroupId: string;
+    sharedById: string;
+    sharedWithId: string;
+  },
+) => {
+  const defaults = {
+    role: personUser.role ?? PersonUserRole.Write,
+  };
+
+  return { ...defaults, ...personUser };
+};
+
 const sha256 = (value: string) => createHash('sha256').update(value).digest();
 
 const sessionInsert = ({
@@ -744,6 +815,30 @@ const sessionInsert = ({
   return {
     ...defaults,
     ...session,
+    id,
+  };
+};
+
+const passkeyInsert = ({
+  id = newUuid(),
+  userId,
+  ...passkey
+}: Partial<Insertable<PasskeyTable>> & { userId: string }) => {
+  const defaults: Insertable<PasskeyTable> = {
+    id,
+    userId,
+    name: 'Passkey',
+    credentialId: `credential-${id}`,
+    publicKey: Buffer.from('public-key'),
+    counter: 0,
+    transports: ['internal'],
+    backedUp: false,
+    deviceType: 'singleDevice',
+  };
+
+  return {
+    ...defaults,
+    ...passkey,
     id,
   };
 };
@@ -867,6 +962,8 @@ export const mediumFactory = {
   albumInsert,
   faceInsert,
   personInsert,
+  personUserInsert,
+  passkeyInsert,
   sessionInsert,
   syncStream,
   userInsert,

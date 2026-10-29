@@ -13,6 +13,7 @@ import {
   Selectable,
   ShallowDehydrateObject,
   SqlBool,
+  expressionBuilder,
   sql,
 } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
@@ -122,10 +123,15 @@ export function withExif<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId').select(selectExifInfo);
 }
 
+const selectReturnedExifInfo = (eb: ExpressionBuilder<DB, 'asset'>) =>
+  jsonObjectFrom(eb.selectFrom('asset_exif').select(columns.exif).whereRef('asset_exif.assetId', '=', 'asset.id')).as(
+    'exifInfo',
+  );
+
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb
     .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-    .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo'))
+    .select(selectReturnedExifInfo)
     .$narrowType<{ exifInfo: NotNull }>();
 }
 
@@ -287,7 +293,8 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personGroup
   );
 }
 
-export function inSharedAlbum(eb: ExpressionBuilder<DB, 'asset'>, userId: string) {
+export function inSharedAlbum(userId: string, assetId: 'asset.id' | 'asset_face.assetId') {
+  const eb = expressionBuilder<DB, 'asset' | 'asset_face'>();
   return eb.exists(
     eb
       .selectFrom('album_asset')
@@ -296,9 +303,9 @@ export function inSharedAlbum(eb: ExpressionBuilder<DB, 'asset'>, userId: string
         join.onRef('album.id', '=', 'album_asset.albumId').on('album.deletedAt', 'is', null),
       )
       .innerJoin('album_user', (join) =>
-        join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', asUuid(userId)),
+        join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', userId),
       )
-      .whereRef('album_asset.assetId', '=', 'asset.id'),
+      .whereRef('album_asset.assetId', '=', assetId),
   );
 }
 
@@ -353,8 +360,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt, size?: 'DAY' | 'MONTH') {
-  return sql<O>`date_trunc(${sql.lit(size ?? 'MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt, size: 'DAY' | 'MONTH' = 'MONTH') {
+  return sql<O>`date_trunc(${sql.lit(size)}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {
@@ -433,6 +440,11 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
       options.visibility === 'not-locked'
         ? qb.where('asset.visibility', '!=', AssetVisibility.Locked)
         : qb.where('asset.visibility', '=', options.visibility!),
+    )
+    .$if(!!options.viewingUserId, (qb) =>
+      qb.where((eb) =>
+        eb.or([eb('asset.visibility', '!=', AssetVisibility.Locked), eb('asset.ownerId', '=', options.viewingUserId!)]),
+      ),
     )
     .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
@@ -809,7 +821,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       .selectFrom('asset')
       // postgres eliminates the left join when no exif column is referenced, so unused joins are free
       .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-      .$if(!!options.withExif, (qb) => qb.select(selectExifInfo))
+      .$if(!!options.withExif, (qb) => qb.select(selectReturnedExifInfo))
       .$if(scopeGlobally, (qb) => qb.where(ownershipPredicate))
       .where((eb) =>
         eb.or([eb('asset.visibility', '!=', AssetVisibility.Locked), eb('asset.ownerId', '=', scope.lockedOwnerId)]),
@@ -1099,14 +1111,14 @@ export type ReindexVectorIndexOptions = { indexName: string; lists?: number };
 
 type VectorIndexQueryOptions = { table: string; vectorExtension: VectorExtension } & ReindexVectorIndexOptions;
 
-export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: VectorIndexQueryOptions): string {
+export function vectorIndexQuery({ vectorExtension, table, indexName, lists = 1 }: VectorIndexQueryOptions): string {
   switch (vectorExtension) {
     case DatabaseExtension.VectorChord: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table} USING vchordrq (embedding vector_cosine_ops) WITH (options = $$
         residual_quantization = false
         [build.internal]
-        lists = [${lists ?? 1}]
+        lists = [${lists}]
         spherical_centroids = true
         build_threads = 4
         sampling_factor = 1024

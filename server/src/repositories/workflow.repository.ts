@@ -1,3 +1,4 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { Injectable } from '@nestjs/common';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
@@ -76,6 +77,7 @@ export class WorkflowRepository {
             .innerJoin('plugin_method', 'plugin_method.id', 'workflow_step.pluginMethodId')
             .whereRef('workflow_step.workflowId', '=', 'workflow.id')
             .where('workflow_step.enabled', '=', true)
+            .orderBy('workflow_step.order', 'asc')
             .select([
               'workflow_step.id',
               'workflow_step.config',
@@ -176,7 +178,7 @@ export class WorkflowRepository {
     await this.db.deleteFrom('workflow').where('id', '=', id).execute();
   }
 
-  getForAssetV1(assetId: string) {
+  getForAssetV1(assetId: string, trigger: WorkflowTrigger) {
     return this.db
       .selectFrom('asset')
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
@@ -220,6 +222,17 @@ export class WorkflowRepository {
             ])
             .whereRef('asset_exif.assetId', '=', 'asset.id'),
         ).as('exifInfo'),
+        ...(trigger === WorkflowTrigger.AssetOcrExtraction
+          ? [
+              jsonArrayFrom(
+                eb
+                  .selectFrom('asset_ocr')
+                  .select(['asset_ocr.text', 'asset_ocr.textScore', 'asset_ocr.boxScore'])
+                  .whereRef('asset_ocr.assetId', '=', 'asset.id')
+                  .where('isVisible', '=', true),
+              ).as('ocr'),
+            ]
+          : []),
       ])
       .where('id', '=', assetId)
       .executeTakeFirstOrThrow();

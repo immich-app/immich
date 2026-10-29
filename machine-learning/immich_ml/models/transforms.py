@@ -1,14 +1,19 @@
 import string
 from io import BytesIO
+from typing import Any
 
 import cv2
 import numpy as np
 import orjson
 from numpy.typing import NDArray
 from PIL import Image
+from pillow_jxl import JpegXLImagePlugin
 
 _PIL_RESAMPLING_METHODS = {resampling.name.lower(): resampling for resampling in Image.Resampling}
 _PUNCTUATION_TRANS = str.maketrans("", "", string.punctuation)
+
+# Requests are already decoded in parallel, so don't start a thread per core for each one
+JpegXLImagePlugin.DECODE_THREADS = 0
 
 
 def resize_pil(img: Image.Image, size: int, resample: Image.Resampling = Image.Resampling.BICUBIC) -> Image.Image:
@@ -43,10 +48,6 @@ def get_pil_resampling(resample: str) -> Image.Resampling:
     return _PIL_RESAMPLING_METHODS[resample.lower()]
 
 
-def pil_to_cv2(image: Image.Image) -> NDArray[np.uint8]:
-    return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)  # type: ignore
-
-
 def decode_pil(image_bytes: bytes | Image.Image | NDArray[np.uint8]) -> Image.Image:
     image: Image.Image
     match image_bytes:
@@ -73,6 +74,13 @@ def clean_text(text: str, canonicalize: bool = False) -> str:
 # TODO: use this in a less invasive way
 def serialize_np_array(arr: NDArray[np.float32]) -> str:
     return orjson.dumps(arr, option=orjson.OPT_SERIALIZE_NUMPY).decode()
+
+
+def widen(array: NDArray[Any]) -> NDArray[Any]:
+    """Single precision from half through OpenCV, as numpy converts one value at a time without native half support."""
+    if array.dtype != np.float16 or array.size == 0:
+        return array.astype(np.float32, copy=False)
+    return cv2.convertFp16(array.reshape(-1, array.shape[-1]).view(np.int16)).reshape(array.shape)  # int16 carries half
 
 
 def letterbox(image: NDArray[np.uint8] | Image.Image, size: int) -> tuple[NDArray[np.uint8], float]:

@@ -1,5 +1,5 @@
+import { matchesShortcut } from '#lib/actions/shortcut.ts';
 import type { ActionReturn } from 'svelte/action';
-import { matchesShortcut } from '$lib/actions/shortcut';
 
 interface Options {
   onOutclick?: () => void;
@@ -7,15 +7,14 @@ interface Options {
 }
 
 /**
- * Calls a function when a click occurs outside of the element, or when the escape key is pressed.
- * @param node
- * @param options Object containing onOutclick and onEscape functions
- * @returns
- */
-export function clickOutside(node: HTMLElement, options: Options = {}): ActionReturn {
-  const { onOutclick, onEscape } = options;
-
+Calls a function when a click occurs outside of the element, or when the escape key is pressed.
+@param node
+@param options Object containing onOutclick and onEscape functions
+@returns
+*/
+export function clickOutside(node: HTMLElement, options: Options = {}): ActionReturn<Options> {
   const handleClick = (event: MouseEvent) => {
+    const { onOutclick } = options;
     const targetNode = event.target as Node | null;
     if (node.contains(targetNode)) {
       return;
@@ -25,6 +24,7 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
   };
 
   const handleKey = (event: KeyboardEvent) => {
+    const { onEscape } = options;
     if (!matchesShortcut(event, { key: 'Escape' })) {
       return;
     }
@@ -39,6 +39,9 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
   node.addEventListener('keydown', handleKey, { capture: false });
 
   return {
+    update(newOptions: Options) {
+      options = newOptions;
+    },
     destroy() {
       document.removeEventListener('mousedown', handleClick, false);
       node.removeEventListener('keydown', handleKey, false);

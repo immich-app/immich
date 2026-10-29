@@ -1,7 +1,7 @@
 /**
- * @license Apache-2.0
- * https://github.com/hperrin/svelte-material-ui/blob/master/packages/common/src/internal/useActions.ts
- */
+@license Apache-2.0
+https://github.com/hperrin/svelte-material-ui/blob/master/packages/common/src/internal/useActions.ts
+*/
 
 export type SvelteActionReturnType<P> = void | {
   update?: (newParams?: P) => void;

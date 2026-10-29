@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:background_downloader/background_downloader.dart';
@@ -18,14 +17,11 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
@@ -74,39 +70,22 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   bool _isCleanedUp = false;
 
-  BackgroundWorkerBgService({required this._dataController, required ApiService apiService})
-    : _backgroundHostApi = BackgroundWorkerBgHostApi() {
+  BackgroundWorkerBgService({
+    required this._dataController,
+    required ApiService apiService,
+    List<Override> overrides = const [],
+  }) : _backgroundHostApi = BackgroundWorkerBgHostApi() {
     final ref = ProviderContainer(
-      overrides: Store.overrideWith(dataController: _dataController, apiService: apiService),
+      overrides: [
+        cancellationProvider.overrideWithValue(_cancellationToken),
+        ...Store.overrideWith(dataController: _dataController, apiService: apiService),
+        ...overrides,
+      ],
     );
     _ref = ref;
-    final db = ref.read(driftProvider);
-    _localSyncService = LocalSyncService(
-      localAlbumRepository: db.localAlbumRepository,
-      nativeSyncApi: ref.read(nativeSyncApiProvider),
-      trashedLocalAssetRepository: db.trashedLocalAssetRepository,
-      assetMediaRepository: ref.read(assetMediaRepositoryProvider),
-      permissionRepository: ref.read(permissionRepositoryProvider),
-      cancellation: _cancellationToken,
-    );
-    _remoteSyncService = SyncStreamService(
-      syncApiRepository: ref.read(syncApiRepositoryProvider),
-      syncStreamRepository: db.syncStreamRepository,
-      localAssetRepository: db.localAssetRepository,
-      trashedLocalAssetRepository: db.trashedLocalAssetRepository,
-      assetMediaRepository: ref.read(assetMediaRepositoryProvider),
-      permissionRepository: ref.read(permissionRepositoryProvider),
-      syncMigrationRepository: db.syncMigrationRepository,
-      api: ref.read(apiServiceProvider),
-      cancellation: _cancellationToken,
-    );
-    _hashService = HashService(
-      localAlbumRepository: db.localAlbumRepository,
-      localAssetRepository: db.localAssetRepository,
-      nativeSyncApi: ref.read(nativeSyncApiProvider),
-      trashedLocalAssetRepository: db.trashedLocalAssetRepository,
-      cancellation: _cancellationToken,
-    );
+    _localSyncService = ref.read(localSyncServiceProvider);
+    _remoteSyncService = ref.read(syncStreamServiceProvider);
+    _hashService = ref.read(hashServiceProvider);
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
@@ -169,15 +148,17 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       // Run sync local, sync remote, hash and backup concurrently so the bg
       // refresh task (20s budget) can make progress on all four instead of
-      // racing them sequentially. Phases are independent at the data layer:
-      // hash and handle_backup read drift state and tolerate stale reads
-      // (server-side dedup catches the rare race). The single budget caps the
+      // racing them sequentially. Hash tolerates stale reads, but a new backup
+      // batch waits for the remote sync. The single budget caps the
       // whole batch; no phase needs its own timeout.
+      final remoteSync = _remoteSyncService.sync();
       final all = Future.wait<dynamic>([
         _localSyncService.sync(),
-        _remoteSyncService.sync(),
+        remoteSync,
         _hashService.hashAssets(),
-        _handleBackup(),
+        _handleBackup(
+          remoteSync: remoteSync.then((ok) => ok && !_cancellationToken.isCompleted).catchError((_) => false),
+        ),
       ]);
       if (budget != null) {
         await all.timeout(
@@ -217,7 +198,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         return true;
       }
 
-      final backupFuture = _handleBackup();
+      final backupFuture = _handleBackup(remoteSync: Future.value(true));
       Timer? cancelTimer;
       if (backupTimeout != null) {
         cancelTimer = Timer(backupTimeout, () {
@@ -294,7 +275,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<bool> _handleBackup() async {
+  Future<bool> _handleBackup({required Future<bool> remoteSync}) async {
     final needsRetry = await runZonedGuarded(() async {
       if (_isCleanedUp) {
         return false;
@@ -311,8 +292,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         return false;
       }
 
-      if (Platform.isIOS) {
-        await _ref?.read(backupProvider.notifier).startBackupWithURLSession(currentUser.id);
+      if (CurrentPlatform.isIOS) {
+        await _ref?.read(backupProvider.notifier).startBackupWithURLSession(currentUser.id, remoteSync);
         return false;
       }
 

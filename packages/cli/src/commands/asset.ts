@@ -232,8 +232,14 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
       const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets } });
 
       const results = response.results as AssetBulkUploadCheckResults;
+      const requested = new Set(assets.map(({ id }) => id));
 
       for (const { id: filepath, assetId, action } of results) {
+        if (!requested.has(filepath)) {
+          console.warn(`Ignoring unexpected file in bulk upload check response: ${filepath}`);
+          continue;
+        }
+
         if (action === AssetUploadAction.Accept) {
           newFiles.push(filepath);
         } else {
@@ -445,8 +451,8 @@ export const findSidecar = (filepath: string): string | undefined => {
   const assetPath = path.parse(filepath);
   const noExtension = path.join(assetPath.dir, assetPath.name);
 
-  // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
-  for (const sidecarPath of [`${noExtension}.xmp`, `${filepath}.xmp`]) {
+  // Prefer photo.ext.xmp over photo.xmp, matching the server's sidecar precedence.
+  for (const sidecarPath of [`${filepath}.xmp`, `${noExtension}.xmp`]) {
     if (existsSync(sidecarPath)) {
       return sidecarPath;
     }

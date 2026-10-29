@@ -1,8 +1,8 @@
+import { MediaType } from '#lib/constants.ts';
 import type { QueueResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
-import { MediaType } from '$lib/constants';
 
 export type LatLng = { lng: number; lat: number };
 
@@ -74,6 +74,14 @@ export type SearchFilter = {
   display: SearchDisplayFilters;
   mediaType: MediaType;
   rating?: number | null;
+};
+
+export type PeopleFilter = {
+  sharedById?: string;
+  sharedWithId?: string;
+  isFavorite?: boolean;
+  isHidden?: boolean;
+  name?: string;
 };
 
 export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';

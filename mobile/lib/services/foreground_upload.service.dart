@@ -182,6 +182,7 @@ class ForegroundUploadService {
         if (result.isSuccess) {
           onSuccess?.call(fileId, result.remoteAssetId!);
         } else if (!result.isCancelled && result.errorMessage != null) {
+          _logger.warning("Error(${result.statusCode}) uploading $fileId", result.error ?? result.errorMessage);
           onError?.call(fileId, result.errorMessage!);
         }
       },
@@ -255,6 +256,12 @@ class ForegroundUploadService {
     File? livePhotoFile;
 
     try {
+      final remoteId = (await _assetService.getLocalAsset(asset.id))?.remoteId;
+      if (remoteId != null) {
+        await _handleUploadSuccess(asset, remoteId, callbacks);
+        return;
+      }
+
       final entity = await _storageRepository.getAssetEntityForAsset(asset);
       if (entity == null) {
         callbacks.onError?.call(asset.localId!, assetNotFoundOnDevice);
@@ -383,18 +390,14 @@ class ForegroundUploadService {
       );
 
       if (result.isSuccess && result.remoteAssetId != null) {
-        callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
-        try {
-          await _assetService.stackEditedUpload(asset.localId!, result.remoteAssetId!, asset.checksum);
-        } catch (error) {
-          _logger.warning("Failed to stack the upload of ${asset.localId}: $error");
-        }
+        await _handleUploadSuccess(asset, result.remoteAssetId!, callbacks);
       } else if (result.isCancelled) {
         shouldAbortUpload = true;
       } else if (result.errorMessage != null) {
         _logger.severe(
           () =>
-              "Error(${result.statusCode}) uploading ${asset.localId} | $originalFileName | Created on ${asset.createdAt} | ${result.errorMessage}",
+              "Error(${result.statusCode}) uploading ${asset.localId} | $originalFileName | Created on ${asset.createdAt}",
+          result.error ?? result.errorMessage,
         );
 
         callbacks.onError?.call(asset.localId!, result.errorMessage!);
@@ -415,6 +418,15 @@ class ForegroundUploadService {
           _logger.severe(() => "ERROR deleting file: $error", stackTrace);
         }
       }
+    }
+  }
+
+  Future<void> _handleUploadSuccess(LocalAsset asset, String remoteId, UploadCallbacks callbacks) async {
+    callbacks.onSuccess?.call(asset.localId!, remoteId);
+    try {
+      await _assetService.stackEditedUpload(asset.localId!, remoteId, asset.checksum);
+    } catch (error) {
+      _logger.warning("Failed to stack the upload of ${asset.localId}: $error");
     }
   }
 

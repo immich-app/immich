@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
@@ -13,6 +12,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.drift.dart';
+import 'package:intl/intl.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 @DriftAccessor()
@@ -40,12 +40,12 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   );
 
   Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
-    if (groupBy == GroupAssetsBy.none) {
-      throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");
+    if (groupBy == GroupAssetsBy.none || groupBy == GroupAssetsBy.auto) {
+      throw UnsupportedError("$groupBy is not supported for watchMainBucket");
     }
 
     return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
-      final date = row.bucketDate.truncateDate(groupBy);
+      final date = row.bucketDate!.truncateDate(groupBy);
       return TimeBucket(date: date, assetCount: row.assetCount);
     }).watch();
   }
@@ -430,24 +430,31 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
 
-  Stream<List<Bucket>> _watchPersonBucket(String userId, String personId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
-    final idQuery = _db.assetFaceEntity.selectOnly()
+  Expression<bool> _personAssetFilter(String userId, String personId) {
+    final faceAssetIds = _db.assetFaceEntity.selectOnly()
       ..addColumns([_db.assetFaceEntity.assetId])
       ..where(
         _db.assetFaceEntity.personId.equals(personId) &
             _db.assetFaceEntity.isVisible.equals(true) &
             _db.assetFaceEntity.deletedAt.isNull(),
       );
+    final partnerIds = _db.partnerEntity.selectOnly()
+      ..addColumns([_db.partnerEntity.sharedById])
+      ..where(_db.partnerEntity.sharedWithId.equals(userId));
+    final albumAssetIds = _db.remoteAlbumAssetEntity.selectOnly()..addColumns([_db.remoteAlbumAssetEntity.assetId]);
+    return _db.remoteAssetEntity.id.isInQuery(faceAssetIds) &
+        (_db.remoteAssetEntity.ownerId.equals(userId) |
+            _db.remoteAssetEntity.ownerId.isInQuery(partnerIds) |
+            _db.remoteAssetEntity.id.isInQuery(albumAssetIds)) &
+        _db.remoteAssetEntity.deletedAt.isNull() &
+        _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline);
+  }
 
+  Stream<List<Bucket>> _watchPersonBucket(String userId, String personId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       final query = _db.remoteAssetEntity.selectOnly()
         ..addColumns([_db.remoteAssetEntity.id.count()])
-        ..where(
-          _db.remoteAssetEntity.id.isInQuery(idQuery) &
-              _db.remoteAssetEntity.deletedAt.isNull() &
-              _db.remoteAssetEntity.ownerId.equals(userId) &
-              _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
-        );
+        ..where(_personAssetFilter(userId, personId));
 
       return query.map((row) {
         final count = row.read(_db.remoteAssetEntity.id.count())!;
@@ -460,12 +467,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
-      ..where(
-        _db.remoteAssetEntity.id.isInQuery(idQuery) &
-            _db.remoteAssetEntity.ownerId.equals(userId) &
-            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-            _db.remoteAssetEntity.deletedAt.isNull(),
-      )
+      ..where(_personAssetFilter(userId, personId))
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
@@ -483,22 +485,8 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     required int count,
     GroupAssetsBy groupBy = GroupAssetsBy.day,
   }) {
-    final idQuery = _db.assetFaceEntity.selectOnly()
-      ..addColumns([_db.assetFaceEntity.assetId])
-      ..where(
-        _db.assetFaceEntity.personId.equals(personId) &
-            _db.assetFaceEntity.isVisible.equals(true) &
-            _db.assetFaceEntity.deletedAt.isNull(),
-      );
-
     final query = _db.remoteAssetEntity.select()
-      ..where(
-        (row) =>
-            row.id.isInQuery(idQuery) &
-            row.deletedAt.isNull() &
-            row.ownerId.equals(userId) &
-            row.visibility.equalsValue(AssetVisibility.timeline),
-      )
+      ..where((_) => _personAssetFilter(userId, personId))
       ..orderBy(_assetDateOrder(groupBy))
       ..limit(count, offset: offset);
 

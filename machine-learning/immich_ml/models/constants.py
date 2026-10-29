@@ -86,9 +86,13 @@ _PADDLE_MODELS = {
     "KOREAN__PP-OCRv5_mobile",
     "LATIN__PP-OCRv5_mobile",
     "TH__PP-OCRv5_mobile",
+    "PP-OCRv6_tiny",
+    "PP-OCRv6_small",
+    "PP-OCRv6_medium",
 }
 
 SUPPORTED_PROVIDERS = [
+    "nv_tensorrt_rtx",
     "CUDAExecutionProvider",
     "MIGraphXExecutionProvider",
     "OpenVINOExecutionProvider",
@@ -96,8 +100,7 @@ SUPPORTED_PROVIDERS = [
     "CPUExecutionProvider",
 ]
 
-RKNN_SUPPORTED_SOCS = ["rk3566", "rk3568", "rk3576", "rk3588"]
-RKNN_COREMASK_SUPPORTED_SOCS = ["rk3576", "rk3588"]
+RKNN_NPU_CORES = {"rk3566": 1, "rk3568": 1, "rk3576": 2, "rk3588": 3}
 
 
 WEBLATE_TO_FLORES200 = {

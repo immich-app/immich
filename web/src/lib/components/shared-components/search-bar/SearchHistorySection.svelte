@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { searchManager } from '$lib/managers/search-manager.svelte';
-  import { searchStore } from '$lib/stores/search.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
+  import { searchStore } from '#lib/stores/search.svelte.ts';
   import { Icon, IconButton, Text } from '@immich/ui';
   import { mdiClockOutline, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -100,9 +100,9 @@
     </div>
 
     {#each filteredSearchTerms as savedSearchTerm, i (i)}
-      {@const index = showClearAll ? i + 1 : i}
       <div class="flex w-full items-center justify-between text-black dark:text-gray-300">
         <div class="relative w-full items-center">
+          {const index = $derived(showClearAll ? i + 1 : i)}
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <div
             id={getId(index)}

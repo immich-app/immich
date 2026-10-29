@@ -487,6 +487,7 @@ describe(LibraryService.name, () => {
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
     it('should not touch fileCreatedAt when un-trashing an asset previously marked as offline', async () => {
@@ -940,6 +941,24 @@ describe(LibraryService.name, () => {
         await sut.watchAll();
 
         expect(mocks.storage.watch).toHaveBeenCalledWith(library.importPaths, expect.anything(), expect.anything());
+      });
+
+      it('should exclude paths from the watcher', async () => {
+        const library = factory.library({
+          importPaths: ['/foo', '/bar'],
+          exclusionPatterns: ['**/excluded/**'],
+        });
+
+        mocks.library.get.mockResolvedValue(library);
+        mocks.library.getAll.mockResolvedValue([library]);
+
+        await sut.watchAll();
+
+        expect(mocks.storage.watch).toHaveBeenCalledWith(
+          library.importPaths,
+          expect.objectContaining({ ignored: library.exclusionPatterns }),
+          expect.anything(),
+        );
       });
 
       it('should watch and unwatch library', async () => {

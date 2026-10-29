@@ -35,14 +35,15 @@ const raw = {
 };
 
 /**
- * list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
- * @TODO share with the client
- * @see {@link web/src/lib/utils/asset-utils.ts#L329}
- **/
+list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
+@TODO share with the client
+@see {@link web/src/lib/utils/asset-utils.ts#L329}
+*/
 const webSupportedImage = {
   '.avif': ['image/avif'],
   '.bmp': ['image/bmp'],
   '.gif': ['image/gif'],
+  '.jfif': ['image/jpeg'],
   '.jpeg': ['image/jpeg'],
   '.jpg': ['image/jpeg'],
   '.png': ['image/png', 'image/apng'],
@@ -98,7 +99,18 @@ const transparentCapableExtensions = new Set([
   '.webp',
 ]);
 
-const profileExtensions = new Set(['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp', '.svg']);
+const profileExtensions = new Set([
+  '.avif',
+  '.dng',
+  '.heic',
+  '.heif',
+  '.jfif',
+  '.jpeg',
+  '.jpg',
+  '.png',
+  '.webp',
+  '.svg',
+]);
 const profile: Record<string, string[]> = Object.fromEntries(
   Object.entries(image).filter(([key]) => profileExtensions.has(key)),
 );

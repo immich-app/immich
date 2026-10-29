@@ -40,6 +40,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:immich_mobile/utils/fallback_localizations.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/wm_executor.dart';
@@ -73,6 +74,7 @@ void main() async {
       ),
     );
   } catch (error, stack) {
+    Logger('main').severe('Failed to start', error, stack);
     runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
   }
 }
@@ -215,6 +217,10 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       return DeepLink.none;
     }
 
+    if (deepLink.initial) {
+      return DeepLink([SplashScreenRoute(deepLink: route)]);
+    }
+
     return DeepLink([
       // we need something to segue back to if the app was cold started
       if (isColdStart) const TabShellRoute(children: [MainTimelineRoute()]),
@@ -279,7 +285,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         title: 'Immich',
         debugShowCheckedModeBanner: true,
         scaffoldMessengerKey: scaffoldMessengerKey,
-        localizationsDelegates: context.localizationDelegates,
+        localizationsDelegates: [...context.localizationDelegates, ...fallbackLocalizationDelegates],
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         themeMode: ref.watch(appConfigProvider.select((config) => config.theme.mode)),

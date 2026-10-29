@@ -17,6 +17,7 @@ import { AssetFileType, AssetOrderWithRandom, AssetVisibility } from 'src/enum.j
 import { type YearMonthDay } from 'src/repositories/asset.repository.js';
 import { DB } from 'src/schema/index.js';
 import { MemoryTable } from 'src/schema/tables/memory.table.js';
+import { asLocalTime } from 'src/utils/date.js';
 
 const asMakeDate = (eb: ExpressionBuilder<DB, 'asset'>, { year, month, day }: YearMonthDay) =>
   eb.fn('make_date', [sql`${year}::int`, sql`${month}::int`, sql`${day}::int`]);
@@ -51,7 +52,7 @@ export class MemoryRepository implements IBulkAsset {
           .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
       )
       .$if(dto.isUpcoming !== undefined, (qb) => {
-        const now = DateTime.now().toJSDate();
+        const now = asLocalTime(DateTime.now());
         return dto.isUpcoming
           ? qb.where('showAt', '>', now)
           : qb.where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', now)]));

@@ -1,10 +1,11 @@
 import js from '@eslint/js';
 import tslintPluginCompat from '@koddsson/eslint-plugin-tscompat';
-import prettier from 'eslint-config-prettier';
 import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
 import eslintPluginCompat from 'eslint-plugin-compat';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
@@ -19,14 +20,18 @@ const NAVIGATION_PARAM_READ = [
   " [arguments.0.property.name='PREVIOUS_ROUTE'])",
 ].join('');
 
-export default typescriptEslint.config(
+export default defineConfig(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
-  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
+      compat: eslintPluginCompat,
+    },
+    settings: {
+      polyfills: [],
+      lintAllEsApis: true,
     },
     rules: {
       'tscompat/tscompat': [
@@ -39,6 +44,7 @@ export default typescriptEslint.config(
             .filter((line) => line && !line.startsWith('#')),
         },
       ],
+      'compat/compat': 'error',
     },
     languageOptions: {
       parser,
@@ -47,19 +53,7 @@ export default typescriptEslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    // ignores: ['**/service-worker/**'],
-  },
-  {
-    plugins: {
-      compat: eslintPluginCompat,
-    },
-    settings: {
-      polyfills: [],
-      lintAllEsApis: true,
-    },
-    rules: {
-      'compat/compat': 'error',
-    },
+    ignores: ['**/service-worker/**'],
   },
   {
     ignores: [
@@ -80,6 +74,7 @@ export default typescriptEslint.config(
       'tailwind.config.js',
       'coverage',
       'vite.config.ts',
+      '**/service-worker/**',
     ],
   },
   typescriptEslint.configs.recommended,
@@ -170,6 +165,7 @@ export default typescriptEslint.config(
       '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
       'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
+      'svelte/no-at-const-tags': 'error',
       'svelte/no-navigation-without-resolve': 'off',
       'unicorn/prefer-early-return': 'off',
       'unicorn/prefer-ternary': 'off',
@@ -203,4 +199,5 @@ export default typescriptEslint.config(
       },
     },
   },
+  eslintPluginPrettierRecommended,
 );

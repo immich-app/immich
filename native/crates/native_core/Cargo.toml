@@ -1,0 +1,19 @@
+[package]
+name = "native_core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+convert = []
+rotate = []
+thumbhash = []
+jxl = ["codecs/jxl"]
+# One group per target.
+flutter = ["convert", "rotate", "thumbhash", "jxl"]
+
+[dependencies]
+codecs = { path = "../codecs", default-features = false, optional = true }
+
+[lints]
+workspace = true

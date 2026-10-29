@@ -1,6 +1,15 @@
+import { QueryParameter } from '#lib/constants.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
+import { Route } from '#lib/route.ts';
+import { memoryLaneTitle } from '#lib/utils.ts';
+import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   type AssetResponseDto,
   MemorySearchOrder,
+  MemoryType,
   deleteMemory,
   type MemoryResponseDto,
   removeMemoryAssets,
@@ -16,14 +25,6 @@ import { SvelteMap } from 'svelte/reactivity';
 import { fromStore, get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { QueryParameter } from '$lib/constants';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
-import { Route } from '$lib/route';
-import { memoryLaneTitle } from '$lib/utils';
-import { toTimelineAsset } from '$lib/utils/timeline-util';
 
 type MemoriesSearchDto = Parameters<typeof searchMemories>[0];
 
@@ -89,8 +90,8 @@ class MemoryManager {
     const { showUpcoming, onlyFavorites } = userPreferencesManager.memories;
     this.setFilters({
       order: MemorySearchOrder.Desc,
-      isSaved: onlyFavorites ? true : undefined,
-      isUpcoming: showUpcoming ? undefined : false,
+      isSaved: onlyFavorites || undefined,
+      isUpcoming: showUpcoming && undefined,
     });
 
     return this.refresh();
@@ -271,7 +272,7 @@ class MemoryManager {
   }
 
   #goto(href: string) {
-    return goto(href, { replaceState: true, noScroll: true, keepFocus: true });
+    return goto(href, { replace: true, reset: false });
   }
 
   async #deleteMemory(id: string) {
@@ -349,6 +350,10 @@ class MemoryManager {
       if (!this.#lookup.has(item.id)) {
         this.memories.push(item);
       }
+    }
+
+    if (this.#filters.$for) {
+      this.memories.sort((a, b) => Number(b.type === MemoryType.Birthday) - Number(a.type === MemoryType.Birthday));
     }
 
     if (this.#total === undefined) {
