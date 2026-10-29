@@ -114,12 +114,12 @@ class LoginForm extends HookConsumerWidget {
           return;
         }
 
-        final passkeyEnabled = await ref.read(passkeyServiceProvider).isEnabled();
+        final serverInfo = ref.read(serverInfoProvider);
+        final passkeyEnabled = await ref.read(passkeyServiceProvider).isEnabled(serverInfo.serverVersion.featureLevel);
         if (!context.mounted) {
           return;
         }
 
-        final serverInfo = ref.read(serverInfoProvider);
         final features = serverInfo.serverFeatures;
         final config = serverInfo.serverConfig;
 
