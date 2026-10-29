@@ -39,7 +39,7 @@ describe('/futo-backups', () => {
   afterAll(async () => {
     socket.close();
 
-    // "resetDatabase" does not reinit the module config, trigger an update / clean up
+    // trigger update for orchestrator module config
     if (libraryId) {
       await utils.deleteLibrary(admin.accessToken, libraryId);
     }
@@ -145,7 +145,7 @@ describe('/futo-backups', () => {
           immichState: {
             dataFolders: expect.arrayContaining(Object.values(StorageFolder)),
             dataPath: '/data',
-            // resetDatabase removes other suites' libraries without the LibraryDelete event that refreshes this list
+            // may have stale libraries from other test runs
             libraries: expect.any(Array),
           },
         }),
