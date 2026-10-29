@@ -56,7 +56,7 @@ class _MapViewState extends ConsumerState<MapView> {
   final ValueNotifier<double> bottomSheetOffset = ValueNotifier(0.25);
   final GlobalKey _bottomSheetKey = GlobalKey();
   StreamSubscription? _eventSubscription;
-  List<MapAttribution> _attributions = const [];
+  MapAttribution? _attribution;
 
   @override
   void initState() {
@@ -85,7 +85,7 @@ class _MapViewState extends ConsumerState<MapView> {
     }
 
     // Start the fetch as soon as possible
-    final attributionsLoaded = MapUtils.getAttributions(controller);
+    final attributionLoaded = MapUtils.getAttribution(controller);
 
     await controller.addSource(
       MapUtils.defaultSourceId,
@@ -119,9 +119,9 @@ class _MapViewState extends ConsumerState<MapView> {
     _debouncer.run(() => setBounds(forceReload: true));
     controller.addListener(onMapMoved);
 
-    final attributions = await attributionsLoaded;
+    final attribution = await attributionLoaded;
     if (mounted) {
-      setState(() => _attributions = attributions);
+      setState(() => _attribution = attribution);
     }
   }
 
@@ -203,7 +203,7 @@ class _MapViewState extends ConsumerState<MapView> {
         _DynamicBottomButtons(
           onZoomToLocation: onZoomToLocation,
           bottomSheetOffset: bottomSheetOffset,
-          attributions: _attributions,
+          attribution: _attribution,
         ),
       ],
     );
@@ -271,12 +271,12 @@ class _DynamicBottomButtons extends StatelessWidget {
   const _DynamicBottomButtons({
     required this.onZoomToLocation,
     required this.bottomSheetOffset,
-    required this.attributions,
+    required this.attribution,
   });
 
   final VoidCallback onZoomToLocation;
   final ValueNotifier<double> bottomSheetOffset;
-  final List<MapAttribution> attributions;
+  final MapAttribution? attribution;
 
   @override
   Widget build(BuildContext context) {
@@ -292,7 +292,7 @@ class _DynamicBottomButtons extends StatelessWidget {
             duration: const Duration(milliseconds: 150),
             child: Row(
               children: [
-                if (attributions.isNotEmpty) _AttributionButton(attributions: attributions),
+                if (attribution case final attribution?) _AttributionButton(attribution: attribution),
                 const Spacer(),
                 ElevatedButton(
                   onPressed: onZoomToLocation,
@@ -309,9 +309,9 @@ class _DynamicBottomButtons extends StatelessWidget {
 }
 
 class _AttributionButton extends StatefulWidget {
-  const _AttributionButton({required this.attributions});
+  const _AttributionButton({required this.attribution});
 
-  final List<MapAttribution> attributions;
+  final MapAttribution attribution;
 
   @override
   State<_AttributionButton> createState() => _AttributionButtonState();
@@ -323,6 +323,7 @@ class _AttributionButtonState extends State<_AttributionButton> {
 
   @override
   Widget build(BuildContext context) {
+    final (:text, :url) = widget.attribution;
     return TapRegion(
       // Any interaction outside of the popup causes it to close
       onTapOutside: _expanded ? (_) => setState(() => _expanded = false) : null,
@@ -343,23 +344,19 @@ class _AttributionButtonState extends State<_AttributionButton> {
                     color: context.colorScheme.surfaceContainerLow,
                     elevation: 1,
                     shape: const StadiumBorder(),
-                    child: Container(
-                      constraints: BoxConstraints(minHeight: 40, maxWidth: context.width / 2),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Center(
-                        widthFactor: 1,
-                        child: Wrap(
-                          spacing: 8,
-                          children: [
-                            for (final (:text, :url) in widget.attributions)
-                              GestureDetector(
-                                onTap: url == null
-                                    ? null
-                                    : () => unawaited(launchUrl(url, mode: LaunchMode.externalApplication)),
-                                child: Text(text, style: url == null ? null : TextStyle(color: context.primaryColor)),
-                              ),
-                          ],
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: context.width / 2),
+                      child: TextButton(
+                        onPressed: url == null
+                            ? null
+                            : () => unawaited(launchUrl(url, mode: LaunchMode.externalApplication)),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          minimumSize: const Size(0, 40),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          disabledForegroundColor: context.colorScheme.onSurface,
                         ),
+                        child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
                       ),
                     ),
                   )

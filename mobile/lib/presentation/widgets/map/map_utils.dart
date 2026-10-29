@@ -112,22 +112,20 @@ class MapUtils {
     }
   }
 
-  /// Reads each source's attribution from the loaded style
-  static Future<List<MapAttribution>> getAttributions(MapLibreMapController controller) async {
+  /// Joins every source's attribution from the loaded style into one
+  static Future<MapAttribution?> getAttribution(MapLibreMapController controller) async {
     try {
       final sourceIds = await controller.getSourceIds();
 
       final sources = await Future.wait(sourceIds.map(controller.getSourceProperties));
       final attributions = await Future.wait(sources.nonNulls.map(_getSourceAttribution));
 
-      return attributions.nonNulls
-          .toSet()
-          .map(_parseAttribution)
-          .where((attribution) => attribution.text.isNotEmpty)
-          .toList();
+      // Combine multiple attributions into one (should only occur on custom setups)
+      final attribution = _parseAttribution(attributions.nonNulls.toSet().join(' '));
+      return attribution.text.isEmpty ? null : attribution;
     } catch (error, stack) {
       _logger.warning("Cannot load map attributions", error, stack);
-      return [];
+      return null;
     }
   }
 
