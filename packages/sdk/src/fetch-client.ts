@@ -3613,6 +3613,7 @@ export type SyncAssetOcrDeleteV1 = {
     /** Audit row ID of the deleted OCR entry */
     id: string;
 };
+export type SyncAssetOcrResetV1 = {};
 export type SyncAssetOcrV1 = {
     /** Asset ID */
     assetId: string;
@@ -8720,6 +8721,7 @@ export enum SyncEntityType {
     AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
     AssetOcrV1 = "AssetOcrV1",
     AssetOcrDeleteV1 = "AssetOcrDeleteV1",
+    AssetOcrResetV1 = "AssetOcrResetV1",
     PartnerV1 = "PartnerV1",
     PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",

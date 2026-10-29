@@ -31468,6 +31468,10 @@
         ],
         "type": "object"
       },
+      "SyncAssetOcrResetV1": {
+        "properties": {},
+        "type": "object"
+      },
       "SyncAssetOcrV1": {
         "properties": {
           "assetId": {
@@ -32045,6 +32049,7 @@
           "AssetMetadataDeleteV1",
           "AssetOcrV1",
           "AssetOcrDeleteV1",
+          "AssetOcrResetV1",
           "PartnerV1",
           "PartnerDeleteV1",
           "PartnerAssetV1",
