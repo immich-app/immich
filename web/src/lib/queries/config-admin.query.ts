@@ -12,6 +12,7 @@ export const getAdminConfigQuery = () =>
   queryOptions({
     queryKey: ['config', 'admin'],
     queryFn: ({ signal }) => getAdminConfig({ signal }),
+    gcTime: Infinity,
   });
 
 export const getAdminConfigDefaultsQuery = () =>

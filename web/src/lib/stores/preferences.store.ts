@@ -7,7 +7,7 @@ import { browser } from '$app/env';
 export const locale = persisted('locale', 'default', {
   serializer: {
     parse: (text) => convertBCP47(text) || 'default',
-    stringify: (object) => object ?? '',
+    stringify: (object = '') => object,
   },
 });
 
@@ -15,7 +15,7 @@ const preferredLocale = browser ? getPreferredLocale() : undefined;
 export const lang = persisted<string>('lang', preferredLocale || defaultLang.code, {
   serializer: {
     parse: (text) => convertBCP47(text),
-    stringify: (object) => object ?? '',
+    stringify: (object = '') => object,
   },
 });
 

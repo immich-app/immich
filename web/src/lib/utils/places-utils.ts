@@ -3,10 +3,10 @@ import { type AssetResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 
 /**
- * --------------
- * Places Grouping
- * --------------
- */
+--------------
+Places Grouping
+--------------
+*/
 export interface PlacesGroup {
   id: string;
   name: string;
@@ -14,10 +14,10 @@ export interface PlacesGroup {
 }
 
 /**
- * ----------------------------
- * Places Groups Collapse/Expand
- * ----------------------------
- */
+----------------------------
+Places Groups Collapse/Expand
+----------------------------
+*/
 const getCollapsedPlacesGroups = (settings: PlacesViewSettings) => {
   settings.collapsedGroups ??= {};
   const { collapsedGroups, groupBy } = settings;

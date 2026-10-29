@@ -29,6 +29,7 @@
   import { getAlbumsByAssetQuery } from '#lib/queries/album.query.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+  import { getCameraName } from '#lib/utils/camera-utils.ts';
 
   const query = createPreloadedQuery(getPublicConfigQuery);
   const publicConfig = $derived(query.data);
@@ -203,17 +204,17 @@
 
           <div>
             {#if asset.exifInfo?.make || asset.exifInfo?.model}
+              {const cameraName = getCameraName(asset.exifInfo.make, asset.exifInfo.model)}
               <p>
                 <a
                   href={Route.search({
                     make: asset.exifInfo?.make ?? undefined,
                     model: asset.exifInfo?.model ?? undefined,
                   })}
-                  title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
+                  title="{$t('search_for')} {cameraName}"
                   class="hover:text-primary"
                 >
-                  {asset.exifInfo.make || ''}
-                  {asset.exifInfo.model || ''}
+                  {cameraName}
                 </a>
               </p>
             {/if}
