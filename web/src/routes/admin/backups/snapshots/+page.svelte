@@ -3,12 +3,18 @@
   import { ImmichSnapshotsPage, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { Route } from '$lib/route';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
-  const backToBackups = () => goto(Route.backups());
+  type Props = {
+    data: PageData;
+  };
+
+  const { data }: Props = $props();
 </script>
 
 <YuccaContext>
-  <AdminPageLayout breadcrumbs={[{ title: 'Backups', href: Route.backups() }, { title: 'Snapshots' }]}>
-    <ImmichSnapshotsPage onUnconfigured={backToBackups} />
+  <AdminPageLayout breadcrumbs={[{ title: $t('admin.backups'), href: Route.backups() }, { title: data.meta.title }]}>
+    <ImmichSnapshotsPage onUnconfigured={() => goto(Route.backups())} />
   </AdminPageLayout>
 </YuccaContext>

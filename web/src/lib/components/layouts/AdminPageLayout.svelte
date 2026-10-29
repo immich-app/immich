@@ -13,7 +13,7 @@
   import { t } from 'svelte-i18n';
 
   type Props = {
-    breadcrumbs?: BreadcrumbItem[];
+    breadcrumbs: BreadcrumbItem[];
     actions?: Array<HeaderButtonActionItem | MenuItemType>;
     children?: Snippet;
   };
@@ -47,13 +47,7 @@
     </div>
   </AppShellSidebar>
 
-  {#if breadcrumbs}
-    <BreadcrumbActionPage {breadcrumbs} {actions}>
-      {@render children?.()}
-    </BreadcrumbActionPage>
-  {:else}
-    <div class="flex h-full flex-col">
-      {@render children?.()}
-    </div>
-  {/if}
+  <BreadcrumbActionPage {breadcrumbs} {actions}>
+    {@render children?.()}
+  </BreadcrumbActionPage>
 </AppShell>

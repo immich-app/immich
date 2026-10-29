@@ -5,6 +5,13 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { Route } from '$lib/route';
   import type { ComponentProps } from 'svelte';
+  import type { PageData } from './$types';
+
+  type Props = {
+    data: PageData;
+  };
+
+  const { data }: Props = $props();
 
   const questions: ComponentProps<typeof ImmichBackupsPage>['questions'] = [
     // {
@@ -35,12 +42,16 @@
 {/snippet}
 
 <YuccaContext>
-  <AdminPageLayout>
-    <ImmichBackupsPage
-      questions={[{ title: 'Already back up your library elsewhere?', answer: hideReminder }, ...questions]}
-      onConfigure={() => goto(Route.backupSettings())}
-      onViewAttempts={() => goto(Route.backupAttempts())}
-      onViewSnapshots={() => goto(Route.backupSnapshots())}
-    />
-  </AdminPageLayout>
+  <ImmichBackupsPage
+    questions={[{ title: 'Already back up your library elsewhere?', answer: hideReminder }, ...questions]}
+    onConfigure={() => goto(Route.backupSettings())}
+    onViewAttempts={() => goto(Route.backupAttempts())}
+    onViewSnapshots={() => goto(Route.backupSnapshots())}
+  >
+    {#snippet layout({ actions, children })}
+      <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} {actions}>
+        {@render children()}
+      </AdminPageLayout>
+    {/snippet}
+  </ImmichBackupsPage>
 </YuccaContext>
