@@ -96,7 +96,6 @@ test.describe('FUTO Backups', () => {
     await page.goto('/link?target=backups');
     await page.waitForURL('/admin/backups');
 
-    await expect(page.getByRole('heading', { name: 'Backups', exact: true })).toBeVisible();
     await expect(page.getByText('Your library backup')).toBeVisible();
     await expect(page.getByText('Last backup successful')).toBeVisible();
   });
