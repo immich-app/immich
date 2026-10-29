@@ -86,6 +86,5 @@ export const EnvSchema = z
     REDIS_PASSWORD: z.string().optional(),
     REDIS_SOCKET: z.string().optional(),
     REDIS_URL: z.string().optional(),
-    RESTIC_WALK_CONCURRENCY: z.coerce.number().int().min(1).optional(),
   })
   .meta({ id: 'EnvDto' });

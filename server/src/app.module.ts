@@ -57,7 +57,7 @@ const commonMiddleware = [
 const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
 
 const configRepository = new ConfigRepository();
-const { backups, bull, cls, database, environment, otel, storage } = configRepository.getEnv();
+const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
 
 const isYuccaDevelopmentMode = environment !== ImmichEnvironment.Production;
 const yuccaStatePath = getBackupsStatePath(storage.mediaLocation);
@@ -121,7 +121,6 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
       useFactory: (authService: AuthService) => ({
         statePath: yuccaStatePath,
         cachePath: yuccaCachePath,
-        resticWalkConcurrency: backups.resticWalkConcurrency,
         requireWsAuth: true,
         requireLock: true,
         developmentMode: isYuccaDevelopmentMode,
@@ -149,7 +148,6 @@ export class ApiModule extends BaseModule {}
       useFactory: (maintenanceWorkerService: MaintenanceWorkerService) => ({
         statePath: yuccaStatePath,
         cachePath: yuccaCachePath,
-        resticWalkConcurrency: backups.resticWalkConcurrency,
         externalBaseUrl: 'https://my.immich.app',
         requireWsAuth: true,
         requireLock: true,

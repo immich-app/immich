@@ -48,10 +48,6 @@ export interface EnvData {
     thirdPartySupportUrl?: string;
   };
 
-  backups: {
-    resticWalkConcurrency?: number;
-  };
-
   bull: {
     config: QueueOptions;
     queues: RegisterQueueOptions[];
@@ -278,10 +274,6 @@ const getEnv = (): EnvData => {
       thirdPartyBugFeatureUrl: dto.IMMICH_THIRD_PARTY_BUG_FEATURE_URL,
       thirdPartyDocumentationUrl: dto.IMMICH_THIRD_PARTY_DOCUMENTATION_URL,
       thirdPartySupportUrl: dto.IMMICH_THIRD_PARTY_SUPPORT_URL,
-    },
-
-    backups: {
-      resticWalkConcurrency: dto.RESTIC_WALK_CONCURRENCY,
     },
 
     bull: {

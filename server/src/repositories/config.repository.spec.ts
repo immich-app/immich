@@ -38,8 +38,6 @@ const resetEnv = () => {
     'REDIS_SOCKET',
     'REDIS_URL',
 
-    'RESTIC_WALK_CONCURRENCY',
-
     'NO_COLOR',
   ]) {
     delete process.env[env];
@@ -114,22 +112,6 @@ describe('getEnv', () => {
     it('should throw an error for invalid value', () => {
       process.env.IMMICH_ALLOW_SETUP = 'invalid';
       expect(() => getEnv()).toThrowError('[IMMICH_ALLOW_SETUP] Invalid option: expected one of');
-    });
-  });
-
-  describe('RESTIC_WALK_CONCURRENCY', () => {
-    it('should leave the walk concurrency to restic by default', () => {
-      expect(getEnv().backups).toEqual({ resticWalkConcurrency: undefined });
-    });
-
-    it('should pass the walk concurrency through', () => {
-      process.env.RESTIC_WALK_CONCURRENCY = '16';
-      expect(getEnv().backups).toEqual({ resticWalkConcurrency: 16 });
-    });
-
-    it('should throw an error for a walk concurrency below one', () => {
-      process.env.RESTIC_WALK_CONCURRENCY = '0';
-      expect(() => getEnv()).toThrowError('[RESTIC_WALK_CONCURRENCY]');
     });
   });
 
