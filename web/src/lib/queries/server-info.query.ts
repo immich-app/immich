@@ -23,6 +23,7 @@ export const getServerConfigQuery = () =>
   queryOptions({
     queryKey: ['server', 'config'],
     queryFn: ({ signal }) => getServerConfig({ signal }),
+    gcTime: Infinity,
   });
 
 export const getServerStatisticsQuery = () =>

@@ -13,6 +13,7 @@ describe(OcrService.name, () => {
 
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
     mocks.assetJob.getForOcr.mockResolvedValue({
+      ownerId: 'user-id',
       visibility: AssetVisibility.Timeline,
       previewFile: '/uploads/user-id/thumbs/path.jpg',
     });
@@ -69,16 +70,22 @@ describe(OcrService.name, () => {
 
       expect(mocks.asset.getByIds).not.toHaveBeenCalled();
       expect(mocks.machineLearning.encodeImage).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
     });
 
     it('should skip assets without a resize path', async () => {
       const asset = AssetFactory.create();
-      mocks.assetJob.getForOcr.mockResolvedValue({ visibility: AssetVisibility.Timeline, previewFile: null });
+      mocks.assetJob.getForOcr.mockResolvedValue({
+        ownerId: 'userId',
+        visibility: AssetVisibility.Timeline,
+        previewFile: null,
+      });
 
       expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Failed);
 
       expect(mocks.ocr.upsert).not.toHaveBeenCalled();
       expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
     });
 
     it('should save the returned objects', async () => {
@@ -170,6 +177,7 @@ describe(OcrService.name, () => {
     it('should skip invisible assets', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
       mocks.assetJob.getForOcr.mockResolvedValue({
+        ownerId: 'userId',
         visibility: AssetVisibility.Hidden,
         previewFile: asset.files[0].path,
       });
@@ -178,6 +186,7 @@ describe(OcrService.name, () => {
 
       expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
       expect(mocks.ocr.upsert).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
     });
 
     it('should fail if asset could not be found', async () => {
@@ -187,6 +196,19 @@ describe(OcrService.name, () => {
 
       expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
       expect(mocks.ocr.upsert).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
+
+    it('should emit an event', async () => {
+      const asset = AssetFactory.create();
+      mockOcrResult('Hello World');
+
+      await sut.handleOcr({ id: asset.id });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetOcrExtracted', {
+        userId: 'user-id',
+        assetId: asset.id,
+      });
     });
 
     describe('search tokenization', () => {

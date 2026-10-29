@@ -1,9 +1,7 @@
 export class CancellableTask {
   cancelToken: AbortController | null = null;
   cancellable: boolean = true;
-  /**
-   * A promise that resolves once the bucket is loaded, and rejects if bucket is canceled.
-   */
+  /** A promise that resolves once the bucket is loaded, and rejects if bucket is canceled. */
   complete!: Promise<unknown>;
   executed: boolean = false;
 
