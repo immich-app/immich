@@ -1,8 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/passkey.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
@@ -85,10 +88,12 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-class _MobileLayout extends StatelessWidget {
+class _MobileLayout extends ConsumerWidget {
   const _MobileLayout();
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLoggedIn = ref.watch(authProvider).isAuthenticated;
+    final isPasskeyEnabled = ref.watch(passkeyEnabledProvider).valueOrNull ?? false;
     final List<Widget> settings = SettingSection.values
         .expand(
           (setting) => setting == SettingSection.beta
@@ -110,6 +115,16 @@ class _MobileLayout extends StatelessWidget {
                 ],
         )
         .toList();
+    if (isLoggedIn && isPasskeyEnabled) {
+      settings.add(
+        SettingsCard(
+          icon: Icons.key_outlined,
+          title: context.t.passkeys(count: 2),
+          subtitle: context.t.manage_your_passkeys,
+          onTap: () => context.pushRoute(const PasskeysRoute()),
+        ),
+      );
+    }
     settings.add(
       SettingsCard(
         icon: Icons.auto_awesome_outlined,
@@ -122,11 +137,13 @@ class _MobileLayout extends StatelessWidget {
   }
 }
 
-class _TabletLayout extends HookWidget {
+class _TabletLayout extends HookConsumerWidget {
   const _TabletLayout();
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final selectedSection = useState<SettingSection>(SettingSection.values.first);
+    final isLoggedIn = ref.watch(authProvider).isAuthenticated;
+    final isPasskeyEnabled = ref.watch(passkeyEnabledProvider).valueOrNull ?? false;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -147,6 +164,14 @@ class _TabletLayout extends HookWidget {
                   ),
                 ),
               ),
+              if (isLoggedIn && isPasskeyEnabled)
+                SliverToBoxAdapter(
+                  child: ListTile(
+                    title: Text(context.t.passkeys(count: 2)),
+                    leading: const Icon(Icons.key_outlined),
+                    onTap: () => context.pushRoute(const PasskeysRoute()),
+                  ),
+                ),
               SliverToBoxAdapter(
                 child: ListTile(
                   title: Text(context.t.whats_new),
