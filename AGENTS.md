@@ -4,9 +4,13 @@ Immich monorepo: `server/` (NestJS API + job workers), `web/` (SvelteKit SPA), `
 
 ## Rules
 
+- No PRs of LLM-generated code; the human contributor must understand and be able to explain every change (see `CONTRIBUTING.md`).
+- Do not generate PR titles, descriptions, issue text, review comments or discussion answers. Translating human-written text is fine.
+- Never work on issues labelled `good first issue`; those PRs are closed automatically.
 - Run every build, lint, test and codegen task through mise: `mise //<dir>:<task>`, root tasks as `mise //:<task>`. `mise tasks ls --all` lists them. Each package has `lint`, `format`, `check`, `test` and a `checklist` task that mirrors CI.
 - Never hand-edit generated files: `open-api/immich-openapi-specs.json`, `packages/sdk/src/fetch-client.ts`, `mobile/generated/openapi/`, `server/src/queries/*.sql`, and Dart codegen (`*.g.dart`, `*.drift.dart`, `*.freezed.dart`, `router.gr.dart`, `lib/generated/`, `lib/platform/*.g.dart`).
 - Only edit `i18n/en.json`; the other locale files come from Weblate.
+- Do not add code comments. Make the code self-explanatory through naming and structure instead.
 - PR titles are conventional commits. Keep a PR to one focused change.
 - Sharing/asset ownership and external libraries are feature-frozen: bug fixes only.
 - Renaming or removing a docs page requires an entry in `docs/static/_redirects`.
