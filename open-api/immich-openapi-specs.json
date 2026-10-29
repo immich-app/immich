@@ -7233,21 +7233,6 @@
             "description": ""
           }
         },
-        "summary": "Connect a FUTO Backups account",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7259,7 +7244,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Connect a FUTO Backups account",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/auth/session": {
@@ -7282,21 +7282,6 @@
             "description": ""
           }
         },
-        "summary": "Create session",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7308,7 +7293,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Create session",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/auth/session/device": {
@@ -7328,21 +7328,6 @@
             "description": ""
           }
         },
-        "summary": "Sign in with FUTO Backups account",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7354,7 +7339,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Sign in with FUTO Backups account",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/auth/ticket": {
@@ -7384,21 +7384,6 @@
             "description": ""
           }
         },
-        "summary": "Create a ticket",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7410,7 +7395,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Create a ticket",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/backend": {
@@ -7430,21 +7430,6 @@
             "description": ""
           }
         },
-        "summary": "List backends",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7456,7 +7441,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "List backends",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/backend/local": {
@@ -7486,21 +7486,6 @@
             "description": ""
           }
         },
-        "summary": "Create a local backend",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7512,7 +7497,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Create a local backend",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/config": {
@@ -7532,21 +7532,6 @@
             "description": ""
           }
         },
-        "summary": "Get backups orchestrator configuration",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7558,7 +7543,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Get backups orchestrator configuration",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "put": {
         "description": "Update the backups orchestrator configuration.",
@@ -7586,21 +7586,6 @@
             "description": ""
           }
         },
-        "summary": "Update backups orchestrator configuration",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7612,7 +7597,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Update backups orchestrator configuration",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/debug/reset": {
@@ -7625,21 +7625,6 @@
             "description": ""
           }
         },
-        "summary": "Reset the backups orchestrator",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7651,7 +7636,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Reset the backups orchestrator",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/fs": {
@@ -7680,21 +7680,6 @@
             "description": ""
           }
         },
-        "summary": "List files",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7706,7 +7691,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "List files",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/integrations": {
@@ -7726,21 +7726,6 @@
             "description": ""
           }
         },
-        "summary": "Get backup integrations",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7752,7 +7737,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Get backup integrations",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/integrations/immich": {
@@ -7782,21 +7782,6 @@
             "description": ""
           }
         },
-        "summary": "Configure the Immich backup integration",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7808,7 +7793,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Configure the Immich backup integration",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/integrations/immich/database-dump": {
@@ -7831,21 +7831,6 @@
             "description": ""
           }
         },
-        "summary": "Configure Immich database dumps",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7857,7 +7842,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Configure Immich database dumps",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/integrations/immich/database-dump/ignore-warning": {
@@ -7870,21 +7870,6 @@
             "description": ""
           }
         },
-        "summary": "Ignore the Immich database dump warning",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7896,7 +7881,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Ignore the Immich database dump warning",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/integrations/immich/rollback": {
@@ -7919,21 +7919,6 @@
             "description": ""
           }
         },
-        "summary": "Roll Immich back to a snapshot",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7945,7 +7930,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Roll Immich back to a snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/integrations/immich/status": {
@@ -7965,21 +7965,6 @@
             "description": ""
           }
         },
-        "summary": "Get Immich backup status",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -7991,7 +7976,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Get Immich backup status",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/jobs": {
@@ -8020,21 +8020,6 @@
             "description": ""
           }
         },
-        "summary": "List jobs",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8046,7 +8031,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "List jobs",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/jobs/{id}": {
@@ -8068,21 +8068,6 @@
             "description": ""
           }
         },
-        "summary": "Cancel a job",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8094,7 +8079,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Cancel a job",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "get": {
         "description": "Get the status of a job.",
@@ -8121,21 +8121,6 @@
             "description": ""
           }
         },
-        "summary": "Get a job",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8147,7 +8132,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Get a job",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/jobs/{id}/download": {
@@ -8177,21 +8177,6 @@
             "description": ""
           }
         },
-        "summary": "Download a job log",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8203,7 +8188,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Download a job log",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/jobs/{id}/support-log/download": {
@@ -8233,21 +8233,6 @@
             "description": ""
           }
         },
-        "summary": "Download a job support log",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8259,7 +8244,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Download a job support log",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/onboarding": {
@@ -8279,21 +8279,6 @@
             "description": ""
           }
         },
-        "summary": "Get backup onboarding status",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8305,7 +8290,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Get backup onboarding status",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/onboarding/recovery-key": {
@@ -8325,21 +8325,6 @@
             "description": ""
           }
         },
-        "summary": "Get the backup recovery key",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8351,7 +8336,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Get the backup recovery key",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "post": {
         "description": "Record that the user has saved the recovery key.",
@@ -8362,21 +8362,6 @@
             "description": ""
           }
         },
-        "summary": "Confirm the backup recovery key",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8388,7 +8373,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Confirm the backup recovery key",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "put": {
         "description": "Replace the recovery key with one from an earlier installation.",
@@ -8409,21 +8409,6 @@
             "description": ""
           }
         },
-        "summary": "Import a backup recovery key",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8435,7 +8420,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Import a backup recovery key",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/onboarding/report-error": {
@@ -8448,21 +8448,6 @@
             "description": ""
           }
         },
-        "summary": "Report a startup error",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8474,7 +8459,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Report a startup error",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/onboarding/skip": {
@@ -8487,21 +8487,6 @@
             "description": ""
           }
         },
-        "summary": "Skip optional backup onboarding",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8513,7 +8498,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Skip optional backup onboarding",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/onboarding/telemetry": {
@@ -8526,21 +8526,6 @@
             "description": ""
           }
         },
-        "summary": "Enable FUTO Backups telemetry",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8552,7 +8537,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Enable FUTO Backups telemetry",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository": {
@@ -8572,21 +8572,6 @@
             "description": ""
           }
         },
-        "summary": "List backups",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8598,7 +8583,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "List backups",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "post": {
         "description": "Create a backup repository on a backend.",
@@ -8635,21 +8635,6 @@
             "description": ""
           }
         },
-        "summary": "Create a new backup",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8661,7 +8646,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Create a new backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/inspect": {
@@ -8690,21 +8690,6 @@
             "description": ""
           }
         },
-        "summary": "List remote backups",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8716,7 +8701,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "List remote backups",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/{id}": {
@@ -8738,21 +8738,6 @@
             "description": ""
           }
         },
-        "summary": "Remove a backup",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8764,7 +8749,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Remove a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "patch": {
         "description": "Update the settings of a repository.",
@@ -8809,21 +8809,6 @@
             "description": ""
           }
         },
-        "summary": "Update a backup",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8835,7 +8820,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Update a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "post": {
         "description": "Queue a backup to a repository and return the ID of its job.",
@@ -8862,21 +8862,6 @@
             "description": ""
           }
         },
-        "summary": "Start a backup",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8888,7 +8873,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Start a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/{id}/backend": {
@@ -8927,21 +8927,6 @@
             "description": ""
           }
         },
-        "summary": "Change the primary backend",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -8953,7 +8938,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Change the primary backend",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/{id}/import": {
@@ -8990,21 +8990,6 @@
             "description": ""
           }
         },
-        "summary": "Check a repository import",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9016,7 +9001,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Check a repository import",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "post": {
         "description": "Add an existing repository on a backend to this server.",
@@ -9051,21 +9051,6 @@
             "description": ""
           }
         },
-        "summary": "Import a repository",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9077,7 +9062,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Import a repository",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/{id}/snapshots": {
@@ -9106,21 +9106,6 @@
             "description": ""
           }
         },
-        "summary": "List snapshots",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9132,7 +9117,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "List snapshots",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/{id}/snapshots/prune": {
@@ -9161,21 +9161,6 @@
             "description": ""
           }
         },
-        "summary": "Prune a repository",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9187,7 +9172,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Prune a repository",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/{id}/snapshots/{snapshot}": {
@@ -9224,21 +9224,6 @@
             "description": ""
           }
         },
-        "summary": "Delete a snapshot",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9250,7 +9235,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Delete a snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "post": {
         "description": "Queue a restore of files from a snapshot and return the ID of its job.",
@@ -9295,21 +9295,6 @@
             "description": ""
           }
         },
-        "summary": "Restore a snapshot",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9321,7 +9306,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Restore a snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/{id}/snapshots/{snapshot}/listing": {
@@ -9366,21 +9366,6 @@
             "description": ""
           }
         },
-        "summary": "List snapshot files",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9392,7 +9377,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "List snapshot files",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/{id}/snapshots/{snapshot}/restore-from-point": {
@@ -9447,21 +9447,6 @@
             "description": ""
           }
         },
-        "summary": "Restore from snapshot",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9473,7 +9458,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Restore from snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/repository/{id}/sync-deletion": {
@@ -9502,21 +9502,6 @@
             "description": ""
           }
         },
-        "summary": "Sync a remote deletion",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9528,7 +9513,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Sync a remote deletion",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/schedule": {
@@ -9548,21 +9548,6 @@
             "description": ""
           }
         },
-        "summary": "List schedules",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9574,7 +9559,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "List schedules",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "post": {
         "description": "Create a backup schedule for one or more repositories.",
@@ -9602,21 +9602,6 @@
             "description": ""
           }
         },
-        "summary": "Create a schedule",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9628,7 +9613,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Create a schedule",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/schedule/{id}": {
@@ -9650,21 +9650,6 @@
             "description": ""
           }
         },
-        "summary": "Delete a schedule",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9676,7 +9661,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Delete a schedule",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "patch": {
         "description": "Update a backup schedule.",
@@ -9713,21 +9713,6 @@
             "description": ""
           }
         },
-        "summary": "Update a schedule",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9739,7 +9724,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Update a schedule",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/futo-backups/support-mode": {
@@ -9759,21 +9759,6 @@
             "description": ""
           }
         },
-        "summary": "Get support mode",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9785,7 +9770,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Get support mode",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       },
       "put": {
         "description": "Set how many upcoming runs use verbose restic logging, and whether they stream to FUTO.",
@@ -9813,21 +9813,6 @@
             "description": ""
           }
         },
-        "summary": "Update support mode",
-        "tags": [
-          "Backups"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v3.4.0",
-            "state": "Internal"
-          }
-        ],
-        "x-immich-state": "Internal",
         "security": [
           {
             "bearer": []
@@ -9839,7 +9824,22 @@
             "api_key": []
           }
         ],
-        "x-immich-admin-only": true
+        "summary": "Update support mode",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/jobs": {

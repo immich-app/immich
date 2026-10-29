@@ -13,9 +13,9 @@ import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
 import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants.js';
-import { HistoryBuilder, extraModels } from 'src/decorators.js';
+import { extraModels } from 'src/decorators.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
-import { ApiCustomExtension, ApiTag, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
+import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
@@ -276,9 +276,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
     document.paths[newKey] = value;
   }
 
-  const backupsHistory = new HistoryBuilder().added('v3.4.0').internal('v3.4.0').getExtensions();
-
-  for (const [key, path] of Object.entries(document.paths)) {
+  for (const path of Object.values(document.paths)) {
     const operations = {
       get: path.get,
       put: path.put,
@@ -315,23 +313,6 @@ const patchOpenAPI = (document: OpenAPIObject) => {
       if (operation.parameters) {
         operation.parameters = orderBy(operation.parameters, 'name');
       }
-
-      if (!key.startsWith('/futo-backups')) {
-        continue;
-      }
-
-      // add FUTO Backups specific metadata
-
-      if (operation.operationId) {
-        operation.operationId = `futoBackups${operation.operationId.charAt(0).toUpperCase()}${operation.operationId.slice(1)}`;
-      }
-
-      operation.tags = [ApiTag.Backups];
-      Object.assign(operation, backupsHistory);
-
-      // matches auth.guard.ts#Authenticated() guard
-      operation.security = [{ bearer: [] }, { cookie: [] }, { [MetadataKey.ApiKeySecurity]: [] }];
-      operation[ApiCustomExtension.AdminOnly] = true;
     }
   }
 

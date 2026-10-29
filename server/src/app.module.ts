@@ -1,8 +1,9 @@
-import { OrchestrationApiModule } from '@futo-org/backups-orchestrator-api';
+import { OrchestrationApiModule, controllers as futoBackupsControllers } from '@futo-org/backups-orchestrator-api';
 import { BullModule } from '@nestjs/bullmq';
-import { Inject, Module, OnModuleDestroy, OnModuleInit, forwardRef } from '@nestjs/common';
+import { Inject, Module, OnModuleDestroy, OnModuleInit, applyDecorators, forwardRef } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
+import { ApiExtension, ApiTags } from '@nestjs/swagger';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
@@ -12,13 +13,14 @@ import { join } from 'node:path';
 import { commandsAndQuestions } from 'src/commands/index.js';
 import { IWorker } from 'src/constants.js';
 import { controllers } from 'src/controllers/index.js';
-import { ImmichEnvironment, ImmichWorker } from 'src/enum.js';
+import { HistoryBuilder } from 'src/decorators.js';
+import { ApiTag, ImmichEnvironment, ImmichWorker } from 'src/enum.js';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
 import { MaintenanceWorkerController } from 'src/maintenance/maintenance-worker.controller.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
-import { AuthGuard } from 'src/middleware/auth.guard.js';
+import { AuthGuard, Authenticated } from 'src/middleware/auth.guard.js';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor.js';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor.js';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter.js';
@@ -55,6 +57,16 @@ const commonMiddleware = [
 ];
 
 const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
+
+const futoBackupsHistory = new HistoryBuilder().added('v3.4.0').internal('v3.4.0').getExtensions();
+
+for (const controller of futoBackupsControllers) {
+  applyDecorators(
+    Authenticated({ admin: true }),
+    ApiTags(ApiTag.Backups),
+    ...Object.entries(futoBackupsHistory).map(([key, value]) => ApiExtension(key, value)),
+  )(controller);
+}
 
 const configRepository = new ConfigRepository();
 const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
