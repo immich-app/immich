@@ -15,7 +15,7 @@ import picomatch from 'picomatch';
 import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants.js';
 import { HistoryBuilder, extraModels } from 'src/decorators.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
-import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
+import { ApiCustomExtension, ApiTag, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
@@ -326,7 +326,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         operation.operationId = `futoBackups${operation.operationId.charAt(0).toUpperCase()}${operation.operationId.slice(1)}`;
       }
 
-      operation.tags = ['Backups'];
+      operation.tags = [ApiTag.Backups];
       Object.assign(operation, backupsHistory);
 
       // matches auth.guard.ts#Authenticated() guard
