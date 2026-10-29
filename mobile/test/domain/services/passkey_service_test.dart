@@ -26,21 +26,29 @@ void main() {
       when(() => hostApi.isSupported()).thenAnswer((_) async => true);
       when(() => apiRepository.isEnabled()).thenAnswer((_) async => true);
 
-      expect(await sut.isEnabled(), isTrue);
+      expect(await sut.isEnabled(ServerFeatureLevel.Passkeys.toJson()), isTrue);
     });
 
     test('is false when the OS has no passkeys', () async {
       when(() => hostApi.isSupported()).thenAnswer((_) async => false);
 
-      expect(await sut.isEnabled(), isFalse);
+      expect(await sut.isEnabled(ServerFeatureLevel.Passkeys.toJson()), isFalse);
       verifyNever(() => apiRepository.isEnabled());
     });
 
-    test('is false when the server has no public config', () async {
+    test('is false below the passkeys feature level, without asking the server', () async {
       when(() => hostApi.isSupported()).thenAnswer((_) async => true);
-      when(() => apiRepository.isEnabled()).thenThrow(ApiException(404, 'Not Found'));
+      when(() => apiRepository.isEnabled()).thenAnswer((_) async => true);
 
-      expect(await sut.isEnabled(), isFalse);
+      expect(await sut.isEnabled(ServerFeatureLevel.FeatureLevel.toJson()), isFalse);
+      verifyNever(() => apiRepository.isEnabled());
+    });
+
+    test('is false when the passkey config request fails', () async {
+      when(() => hostApi.isSupported()).thenAnswer((_) async => true);
+      when(() => apiRepository.isEnabled()).thenThrow(ApiException(500, 'Internal Server Error'));
+
+      expect(await sut.isEnabled(ServerFeatureLevel.Passkeys.toJson()), isFalse);
     });
   });
 
