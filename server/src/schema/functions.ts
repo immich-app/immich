@@ -381,6 +381,18 @@ export const asset_edit_audit = registerFunction({
     END`,
 });
 
+export const asset_ocr_reset_audit = registerFunction({
+  name: 'asset_ocr_reset_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO asset_ocr_reset_audit DEFAULT VALUES;
+      TRUNCATE asset_ocr_audit;
+      RETURN NULL;
+    END`,
+});
+
 export const asset_ocr_delete_audit = registerFunction({
   name: 'asset_ocr_delete_audit',
   returnType: 'TRIGGER',

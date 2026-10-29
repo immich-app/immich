@@ -1112,6 +1112,7 @@ export enum SyncEntityType {
   AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',
   AssetOcrV1 = 'AssetOcrV1',
   AssetOcrDeleteV1 = 'AssetOcrDeleteV1',
+  AssetOcrResetV1 = 'AssetOcrResetV1',
 
   PartnerV1 = 'PartnerV1',
   PartnerDeleteV1 = 'PartnerDeleteV1',
