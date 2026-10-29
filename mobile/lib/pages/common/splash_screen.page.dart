@@ -300,10 +300,10 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   @override
   void initState() {
     super.initState();
-    unawaited(resumeSession(ref.read(authProvider.notifier).setOpenApiServiceEndpoint()));
+    unawaited(resumeSession());
   }
 
-  Future<void> resumeSession(Future<String?> endpointResolution) async {
+  Future<void> resumeSession() async {
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);
@@ -315,15 +315,28 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final backupNotifier = ref.read(backupProvider.notifier);
       final lifeCycle = ref.read(appStateProvider.notifier);
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
-
       final authNotifier = ref.read(authProvider.notifier);
 
       unawaited(
-        endpointResolution
-            .catchError((_) => null)
-            .then((_) => authNotifier.saveAuthInfo(accessToken: accessToken))
+        authNotifier
+            .setOpenApiServiceEndpoint()
+            .catchError((Object error, StackTrace stackTrace) {
+              log.warning('Failed to resolve server endpoint', error, stackTrace);
+              return null;
+            })
+            .then((_) async {
+              if (Store.tryGet(StoreKey.accessToken) != accessToken) {
+                return false;
+              }
+              await authNotifier.saveAuthInfo(accessToken: accessToken);
+              return true;
+            })
             .then(
-              (_) async {
+              (sessionResumed) async {
+                if (!sessionResumed) {
+                  return;
+                }
+
                 try {
                   wsProvider.connect();
                   unawaited(infoProvider.getServerInfo());
