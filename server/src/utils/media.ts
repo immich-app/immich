@@ -71,6 +71,7 @@ export class BaseConfig implements VideoCodecSWConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   protected constructor(
     protected config: ConfigFFmpegDto,
+    // eslint-disable-next-line unicorn/no-object-as-default-parameter
     protected tune: VideoTuning = { strictGop: false, lowLatency: false },
   ) {}
 

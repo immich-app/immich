@@ -514,9 +514,7 @@ export class TimelineManager extends VirtualScrollManager {
     return randomDay.viewerAssets[randomAssetIndex - accumulatedCount].asset;
   }
 
-  /**
-   * Executes callback on assets, handling moves between groups and removals due to filter criteria.
-   */
+  /** Executes callback on assets, handling moves between groups and removals due to filter criteria. */
   update(ids: string[], callback: (asset: TimelineAsset) => void) {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     return this.#runAssetCallback(new Set(ids), callback);
@@ -540,11 +538,11 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   /**
-   * Adds assets to existing segments, creating new segments as needed.
-   *
-   * This is an internal method that assumes the provided assets are not already
-   * present in the timeline. For updating existing assets, use updateAssetOperation().
-   */
+  Adds assets to existing segments, creating new segments as needed.
+  
+  This is an internal method that assumes the provided assets are not already
+  present in the timeline. For updating existing assets, use updateAssetOperation().
+  */
   protected addAssetsUpsertSegments(assets: TimelineAsset[]) {
     if (assets.length === 0) {
       return;

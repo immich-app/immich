@@ -23,7 +23,7 @@
         break;
       }
       case CastState.IDLE: {
-        await cast(assetFileUrl, true);
+        await cast(true);
         break;
       }
       default: {
@@ -35,7 +35,7 @@
 
   $effect(() => {
     if (assetFileUrl) {
-      void cast(assetFileUrl);
+      void cast();
     }
   });
 
@@ -47,11 +47,11 @@
     previousPlayerState = castManager.castState;
   });
 
-  const cast = async (url: string, force: boolean = false) => {
-    if (!url || !castManager.isCasting) {
+  const cast = async (force: boolean = false) => {
+    if (!assetFileUrl || !castManager.isCasting) {
       return;
     }
-    const fullUrl = new URL(url, location.href);
+    const fullUrl = new URL(assetFileUrl, location.href);
 
     try {
       await castManager.loadMedia(fullUrl.href, force);
