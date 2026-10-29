@@ -153,7 +153,10 @@ export class UserAdminService extends BaseService {
   async updatePreferences(auth: AuthDto, id: string, dto: UserPreferencesUpdateDto) {
     await this.findOrFail(id, { withDeleted: false });
     const metadata = await this.userRepository.getMetadata(id);
+    const { urls } = getPreferences(metadata).appriseNotifications;
     const newPreferences = mergePreferences(getPreferences(metadata), dto);
+    // Admins never see a user's Apprise URLs, so they can't change them either
+    newPreferences.appriseNotifications.urls = urls;
 
     await this.userRepository.upsertMetadata(id, {
       key: UserMetadataKey.Preferences,

@@ -32,10 +32,7 @@ Apprise sends notifications when a user is added to a shared album and when new 
 
 The administrator sets up the Apprise API server once, under Apprise in `Administration -> Settings -> Notification settings`:
 
-- **Host**: host or IP address of the Apprise API server.
-- **Port**: optional. Leave it empty to use `80`, or `443` when **Secure** is on.
-- **Secure**: connect over HTTPS.
-- **Base path**: optional. Use it when the Apprise API is served under a path prefix, such as `/apprise`.
+- **URL**: address of the Apprise API server, such as `http://apprise:8000` or `https://example.com/apprise`.
 - **Config ID**: optional. The Apprise configuration that the username and password belong to. Not needed for an admin login.
 - **Username** and **Password**: optional, for an Apprise API server that requires a login. A password can be used without a username.
 - **Timeout**: how many seconds to wait for the Apprise API server before giving up.
@@ -44,7 +41,7 @@ The administrator sets up the Apprise API server once, under Apprise in `Adminis
 
 ### User settings
 
-Once Apprise is turned on, each user sees an Apprise section on their account settings page. To receive notifications, a user turns it on and enters their own [Apprise URLs](https://appriseit.com/services/), separated by commas or spaces. Notifications for that user are sent only to those URLs.
+Once Apprise is turned on, each user sees an Apprise section on their account settings page. To receive notifications, a user turns it on and enters their own [Apprise URLs](https://appriseit.com/services/), separated by spaces. Notifications for that user are sent only to those URLs.
 
 Users who leave it off, or enter no URLs, do not receive Apprise notifications. Administrators cannot see the URLs a user enters.
 

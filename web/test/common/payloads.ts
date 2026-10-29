@@ -276,7 +276,7 @@ const adminConfig = (overrides: Partial<ResponseOf<'getAdminConfig'>> = {}): Res
       replyTo: '',
       transport: { ignoreCert: false, host: '', port: 587, secure: false, username: '', password: '' },
     },
-    apprise: { enabled: false, host: '', port: null, secure: false, basePath: '', configId: '', username: '', password: '', timeout: 20 },
+    apprise: { enabled: false, url: '', configId: '', username: '', password: '', timeout: 20 },
   },
   templates: { email: { welcomeTemplate: '', albumInviteTemplate: '', albumUpdateTemplate: '' } },
   user: { deleteDelay: 7 },
