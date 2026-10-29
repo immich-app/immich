@@ -42,10 +42,10 @@ const getDefaultPreferences = (): UserPreferences => {
       albumUpdate: true,
     },
     appriseNotifications: {
-      enabled: true,
+      enabled: false,
       albumInvite: true,
       albumUpdate: true,
-      tag: '',
+      urls: '',
     },
     download: {
       archiveSize: HumanReadableSize.GiB * 4,
