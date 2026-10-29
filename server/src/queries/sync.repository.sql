@@ -643,6 +643,20 @@ where
 order by
   "asset_metadata"."updateId" asc
 
+-- SyncRepository.assetOcr.getReset
+select
+  "asset_ocr_reset_audit"."id",
+  "asset_ocr_reset_audit"."deletedAt"
+from
+  "asset_ocr_reset_audit" as "asset_ocr_reset_audit"
+where
+  "asset_ocr_reset_audit"."id" < $1
+  and "asset_ocr_reset_audit"."id" > $2
+order by
+  "asset_ocr_reset_audit"."id" desc
+limit
+  $3
+
 -- SyncRepository.assetOcr.getDeletes
 select
   "asset_ocr_audit"."id",
