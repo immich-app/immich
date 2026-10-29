@@ -18,6 +18,7 @@ let defaultDatabase: Kysely<DB>;
 
 const unitVector = (index: number) => JSON.stringify(Array.from({ length: 512 }, (_, i) => (i === index ? 1 : 0)));
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SearchService, {
     database: db || defaultDatabase,

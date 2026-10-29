@@ -73,7 +73,7 @@ export class ClusterGroupService extends BaseService {
   }
 
   async regeneratePeople(auth: AuthDto, id: string) {
-    await this.requireAccess({ auth, permission: Permission.ClusterGroupRead, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ClusterGroupAdmin, ids: [id] });
 
     await this.jobRepository.queue({
       name: JobName.FacialRecognitionQueueAll,

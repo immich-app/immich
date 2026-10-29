@@ -16,21 +16,15 @@
   type Props = {
     icon: string;
     title: string;
-    /**
-     * The alignment of the context menu relative to the button.
-     */
+    /** The alignment of the context menu relative to the button. */
     align?: Align;
-    /**
-     * The direction in which the context menu should open.
-     */
+    /** The direction in which the context menu should open. */
     // TODO change to start vs end
     direction?: 'left' | 'right';
     color?: Color;
     size?: Size | undefined;
     variant?: Variants | undefined;
-    /**
-     * Additional classes to apply to the button.
-     */
+    /** Additional classes to apply to the button. */
     buttonClass?: string | undefined;
     hideContent?: boolean;
     children?: Snippet;

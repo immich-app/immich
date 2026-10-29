@@ -2,9 +2,7 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { tick, type Snippet } from 'svelte';
 
-  /**
-   * Usage: <div use:portal={'css selector'}> or <div use:portal={document.body}>
-   */
+  /** Usage: <div use:portal={'css selector'}> or <div use:portal={document.body}> */
   export function portal(element: HTMLElement, target: HTMLElement | string = 'body') {
     let targetElement;
     async function update(newTarget: HTMLElement | string) {
@@ -65,9 +63,7 @@ Used for every occurrence of an HTML tag in a message
 -->
 <script lang="ts">
   interface Props {
-    /**
-     * DOM Element or CSS Selector
-     */
+    /** DOM Element or CSS Selector */
     target?: HTMLElement | string;
     children?: Snippet;
   }

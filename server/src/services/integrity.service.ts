@@ -38,28 +38,28 @@ import { ImmichFileResponse } from 'src/utils/file.js';
 import { batched, handlePromiseError } from 'src/utils/misc.js';
 
 /**
- * Untracked Files:
- *   Files are detected in /data/encoded-video, /data/library, /data/upload
- *     Checked against the asset table
- *   Files are detected in /data/thumbs
- *     Checked against the asset_file table
- *
- *   * Can perform download or delete of files
- *
- * Missing Files:
- *   Paths are queried from asset(originalPath, encodedVideoPath), asset_file(path)
- *     Check whether files exist on disk
- *
- *   * Reports must include origin (asset or asset_file) & ID for further action
- *   * Can perform trash (asset) or delete (asset_file)
- *
- * Checksum Mismatch:
- *   Paths & checksums are queried from asset(originalPath, checksum)
- *     Check whether files match checksum, missing files ignored
- *
- *   * Reports must include origin (as above) for further action
- *   * Can perform download or trash (asset)
- */
+Untracked Files:
+  Files are detected in /data/encoded-video, /data/library, /data/upload
+    Checked against the asset table
+  Files are detected in /data/thumbs
+    Checked against the asset_file table
+
+Can perform download or delete of files
+
+Missing Files:
+  Paths are queried from asset(originalPath, encodedVideoPath), asset_file(path)
+    Check whether files exist on disk
+
+Reports must include origin (asset or asset_file) & ID for further action
+Can perform trash (asset) or delete (asset_file)
+
+Checksum Mismatch:
+  Paths & checksums are queried from asset(originalPath, checksum)
+    Check whether files match checksum, missing files ignored
+
+Reports must include origin (as above) for further action
+Can perform download or trash (asset)
+*/
 
 @Injectable()
 export class IntegrityService extends BaseService {

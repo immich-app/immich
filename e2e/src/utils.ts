@@ -270,13 +270,13 @@ export const utils = {
     }
   },
 
-  waitForWebsocketEvent: ({ event, id, total: count, timeout: ms }: WaitOptions): Promise<void> => {
+  waitForWebsocketEvent: ({ event, id, total: count, timeout: ms = 10_000 }: WaitOptions): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
       if (!id && !count) {
         reject(new Error('id or count must be provided for waitForWebsocketEvent'));
       }
 
-      const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms || 10_000);
+      const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms);
       const type = id ? `id=${id}` : `count=${count}`;
       console.log(`Waiting for ${event} [${type}]`);
       const set = events[event];
@@ -550,7 +550,7 @@ export const utils = {
       {
         headers: asBearerAuth(accessToken),
         fetch: (...args: Parameters<typeof fetch>) =>
-          // eslint-disable-next-line unicorn/no-invalid-argument-count, unicorn/prefer-await
+          // eslint-disable-next-line unicorn/prefer-await
           fetch(...args).then((response) => {
             setCookie = response.headers.getSetCookie();
             return response;
@@ -660,10 +660,10 @@ export const utils = {
     return !jobCounts.active && (!jobCounts.waiting || queues[queue].queueStatus.isPaused);
   },
 
-  waitForQueueFinish: (accessToken: string, queue: keyof QueuesResponseLegacyDto, ms?: number) => {
+  waitForQueueFinish: (accessToken: string, queue: keyof QueuesResponseLegacyDto, ms: number = 15_000) => {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise<void>(async (resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 15_000);
+      const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms);
 
       while (true) {
         const done = await utils.isQueueEmpty(accessToken, queue);
