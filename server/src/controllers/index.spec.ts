@@ -92,7 +92,7 @@ const getRoutes = () => {
         id: `${method} ${path}`,
         label: `${Controller.name}.${name} (${method} /${path})`,
         path,
-        auth: getAuthenticatedOptions(reflector, handler),
+        auth: getAuthenticatedOptions(reflector, [handler]),
       };
     });
   });
