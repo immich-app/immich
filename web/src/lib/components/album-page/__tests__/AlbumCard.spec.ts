@@ -1,8 +1,8 @@
 import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
+import { factory } from '#test/unit/factories.ts';
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';
-import { albumFactory } from '#test-data/factories/album-factory';
 import AlbumCard from '../AlbumCard.svelte';
 
 describe('AlbumCard component', () => {
@@ -16,22 +16,22 @@ describe('AlbumCard component', () => {
 
   it.each([
     {
-      album: albumFactory.build({ albumThumbnailAssetId: null, shared: false, assetCount: 0 }),
+      album: factory.album({ albumThumbnailAssetId: null, shared: false, assetCount: 0 }),
       count: 0,
       shared: false,
     },
     {
-      album: albumFactory.build({ albumThumbnailAssetId: null, shared: true, assetCount: 0 }),
+      album: factory.album({ albumThumbnailAssetId: null, shared: true, assetCount: 0 }),
       count: 0,
       shared: true,
     },
     {
-      album: albumFactory.build({ albumThumbnailAssetId: null, shared: false, assetCount: 5 }),
+      album: factory.album({ albumThumbnailAssetId: null, shared: false, assetCount: 5 }),
       count: 5,
       shared: false,
     },
     {
-      album: albumFactory.build({ albumThumbnailAssetId: null, shared: true, assetCount: 2 }),
+      album: factory.album({ albumThumbnailAssetId: null, shared: true, assetCount: 2 }),
       count: 2,
       shared: true,
     },
@@ -62,7 +62,7 @@ describe('AlbumCard component', () => {
   });
 
   it('shows album data', () => {
-    const album = albumFactory.build({
+    const album = factory.album({
       shared: false,
       albumName: 'some album name',
     });
@@ -84,7 +84,7 @@ describe('AlbumCard component', () => {
   });
 
   it('hides context menu when "contextMenuItems" is undefined', () => {
-    const album = Object.freeze(albumFactory.build({ albumThumbnailAssetId: null }));
+    const album = Object.freeze(factory.album({ albumThumbnailAssetId: null }));
     sut = render(AlbumCard, { album });
 
     const contextButtonParent = sut.queryByTestId('context-button-parent');

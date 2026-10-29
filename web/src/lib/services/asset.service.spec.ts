@@ -4,13 +4,10 @@ import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { getAssetActions, handleDownloadAsset } from '#lib/services/asset.service.ts';
 import { setSharedLink } from '#lib/utils.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
+import { factory } from '#test/unit/factories.ts';
 import { getAssetInfo, type UserConfigDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { vitest } from 'vitest';
-import { assetFactory } from '#test-data/factories/asset-factory';
-import { preferencesFactory } from '#test-data/factories/preferences-factory';
-import { sharedLinkFactory } from '#test-data/factories/shared-link-factory';
-import { userAdminFactory } from '#test-data/factories/user-factory';
 
 vitest.mock('@immich/ui', () => ({
   toastManager: {
@@ -36,7 +33,7 @@ vitest.mock('#lib/utils.js', async () => {
 describe('AssetService', () => {
   describe('getAssetActions', () => {
     beforeEach(() => {
-      authManager.setPreferences(preferencesFactory.build());
+      authManager.setPreferences(factory.preferences());
       queryClient.setQueryData(getUserConfigQuery().queryKey, {
         machineLearning: {
           enabled: false,
@@ -50,27 +47,27 @@ describe('AssetService', () => {
 
     it('should allow shared link downloads if the user owns the asset and shared link downloads are disabled', () => {
       const ownerId = 'owner';
-      const user = userAdminFactory.build({ id: ownerId });
-      const asset = assetFactory.build({ ownerId });
+      const user = factory.user({ id: ownerId });
+      const asset = factory.asset({ ownerId });
       authManager.setUser(user);
-      setSharedLink(sharedLinkFactory.build({ allowDownload: false }));
+      setSharedLink(factory.sharedLink({ allowDownload: false }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(true);
     });
 
     it('should not allow shared link downloads if the user does not own the asset and shared link downloads are disabled', () => {
       const ownerId = 'owner';
-      const user = userAdminFactory.build({ id: 'non-owner' });
-      const asset = assetFactory.build({ ownerId });
+      const user = factory.user({ id: 'non-owner' });
+      const asset = factory.asset({ ownerId });
       authManager.setUser(user);
-      setSharedLink(sharedLinkFactory.build({ allowDownload: false }));
+      setSharedLink(factory.sharedLink({ allowDownload: false }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(false);
     });
 
     it('should allow shared link downloads if shared link downloads are enabled regardless of user', () => {
-      const asset = assetFactory.build();
-      setSharedLink(sharedLinkFactory.build({ allowDownload: true }));
+      const asset = factory.asset();
+      setSharedLink(factory.sharedLink({ allowDownload: true }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(true);
     });
@@ -80,7 +77,7 @@ describe('AssetService', () => {
     it('should use the asset originalFileName when showing toasts', async () => {
       const $t = vitest.fn().mockReturnValue('formatter');
       vitest.mocked(getFormatter).mockResolvedValue($t);
-      const asset = assetFactory.build({ originalFileName: 'asset.heic' });
+      const asset = factory.asset({ originalFileName: 'asset.heic' });
       await handleDownloadAsset(asset, { edited: false });
       expect($t).toHaveBeenNthCalledWith(1, 'downloading_asset_filename', { values: { filename: 'asset.heic' } });
       expect(toastManager.primary).toHaveBeenCalledWith('formatter');
@@ -89,9 +86,9 @@ describe('AssetService', () => {
     it('should use the motion asset originalFileName when showing toasts', async () => {
       const $t = vitest.fn().mockReturnValue('formatter');
       vitest.mocked(getFormatter).mockResolvedValue($t);
-      const motionAsset = assetFactory.build({ originalFileName: 'asset.mov' });
+      const motionAsset = factory.asset({ originalFileName: 'asset.mov' });
       vitest.mocked(getAssetInfo).mockResolvedValue(motionAsset);
-      const asset = assetFactory.build({ originalFileName: 'asset.heic', livePhotoVideoId: '1' });
+      const asset = factory.asset({ originalFileName: 'asset.heic', livePhotoVideoId: '1' });
       await handleDownloadAsset(asset, { edited: false });
       expect($t).toHaveBeenNthCalledWith(1, 'downloading_asset_filename', { values: { filename: 'asset.heic' } });
       expect($t).toHaveBeenNthCalledWith(2, 'downloading_asset_filename', { values: { filename: 'asset-motion.mov' } });

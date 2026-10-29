@@ -3,10 +3,10 @@ import { uploadManager } from '#lib/managers/upload-manager.svelte.ts';
 import { uploadAssetsStore } from '#lib/stores/upload.ts';
 import { UploadState } from '#lib/types.ts';
 import * as utils from '#lib/utils.ts';
+import { factory } from '#test/unit/factories.ts';
 import { AssetMediaStatus, type AssetMediaResponseDto, type UserAdminResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { preferencesFactory } from '#test-data/factories/preferences-factory';
 import { fileUploadHandler } from './file-uploader';
 
 describe('fileUploader error handling', () => {
@@ -57,7 +57,7 @@ describe('fileUploader error handling', () => {
 
   it('should suppress errors on logout', async () => {
     authManager.setUser(mockUserObject);
-    authManager.setPreferences(preferencesFactory.build());
+    authManager.setPreferences(factory.preferences());
     vi.spyOn(utils, 'uploadRequest').mockImplementationOnce(() => {
       authManager.reset();
       return Promise.reject(mockError);

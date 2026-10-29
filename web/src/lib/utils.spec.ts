@@ -1,15 +1,14 @@
 import en from '#i18n/en.json';
 import { getAssetUrl, memoryLaneTitle, semverToName } from '#lib/utils.ts';
+import { factory } from '#test/unit/factories.ts';
 import { AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
 import { addMessages, init } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import { assetFactory } from '#test-data/factories/asset-factory.ts';
-import { sharedLinkFactory } from '#test-data/factories/shared-link-factory.ts';
 
 describe('utils', () => {
   describe(getAssetUrl.name, () => {
     it('should return thumbnail URL for static images', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'image.jpg',
         originalMimeType: 'image/jpeg',
         type: AssetTypeEnum.Image,
@@ -23,7 +22,7 @@ describe('utils', () => {
     });
 
     it('should return thumbnail URL for static gifs', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
@@ -36,7 +35,7 @@ describe('utils', () => {
     });
 
     it('should return thumbnail URL for static webp images', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'image.webp',
         originalMimeType: 'image/webp',
         type: AssetTypeEnum.Image,
@@ -49,7 +48,7 @@ describe('utils', () => {
     });
 
     it('should return original URL for animated gifs', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
@@ -64,7 +63,7 @@ describe('utils', () => {
     });
 
     it('should return original URL for animated webp images', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'image.webp',
         originalMimeType: 'image/webp',
         type: AssetTypeEnum.Image,
@@ -78,7 +77,7 @@ describe('utils', () => {
     });
 
     it('should return original URL for video assets with forceOriginal', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'video.mp4',
         originalMimeType: 'video/mp4',
         type: AssetTypeEnum.Video,
@@ -91,7 +90,7 @@ describe('utils', () => {
     });
 
     it('should return thumbnail URL for video assets without forceOriginal', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'video.mp4',
         originalMimeType: 'video/mp4',
         type: AssetTypeEnum.Video,
@@ -104,12 +103,12 @@ describe('utils', () => {
     });
 
     it('should return thumbnail URL for static images in shared link even with download and showMetadata permissions', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
       });
-      const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
+      const sharedLink = factory.sharedLink({ allowDownload: true, showMetadata: true, assets: [asset] });
 
       const url = getAssetUrl({ asset, sharedLink });
 
@@ -118,13 +117,13 @@ describe('utils', () => {
     });
 
     it('should return original URL for animated images in shared link with download and showMetadata permissions', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
         duration: 2000,
       });
-      const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
+      const sharedLink = factory.sharedLink({ allowDownload: true, showMetadata: true, assets: [asset] });
 
       const url = getAssetUrl({ asset, sharedLink });
 
@@ -133,13 +132,13 @@ describe('utils', () => {
     });
 
     it('should return thumbnail URL (not original) for animated images when shared link download permission is false', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
         duration: 2000,
       });
-      const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
+      const sharedLink = factory.sharedLink({ allowDownload: false, assets: [asset] });
 
       const url = getAssetUrl({ asset, sharedLink });
 
@@ -149,13 +148,13 @@ describe('utils', () => {
     });
 
     it('should return thumbnail URL (not original) for animated images when shared link showMetadata permission is false', () => {
-      const asset = assetFactory.build({
+      const asset = factory.asset({
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
         duration: 2000,
       });
-      const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
+      const sharedLink = factory.sharedLink({ showMetadata: false, assets: [asset] });
 
       const url = getAssetUrl({ asset, sharedLink });
 

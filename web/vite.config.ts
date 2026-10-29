@@ -107,10 +107,6 @@ export default defineConfig({
 
         handler(warning);
       },
-      // TODO remove as this way of doing it is deprecated
-      alias: {
-        'chromecast-caf-sender': './node_modules/@types/chromecast-caf-sender/index.d.ts',
-      },
     }),
     cspManifest(),
 
@@ -130,7 +126,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,ts}'],
     globals: true,
     environment: 'happy-dom',
-    setupFiles: ['./src/test-data/setup.ts'],
+    setupFiles: ['./test/unit/setup.ts'],
     sequence: {
       hooks: 'list',
     },

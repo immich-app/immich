@@ -1,5 +1,5 @@
 import { locale } from '#lib/stores/preferences.store.ts';
-import { renderWithTooltips } from '#tests/helpers';
+import { renderWithTooltips } from '#test/unit/helpers.ts';
 import { screen } from '@testing-library/svelte';
 import { DateTime } from 'luxon';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
