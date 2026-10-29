@@ -88,12 +88,12 @@
   let suggestedPeople: PersonResponseDto[] = $state([]);
 
   /**
-   * Save the word used to search people name: for example,
-   * if searching 'r' and the server returns 15 people with names starting with 'r',
-   * there's no need to search again people with name starting with 'ri'.
-   * However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
-   * or if the new search word starts with another word / letter
-   **/
+  Save the word used to search people name: for example,
+  if searching 'r' and the server returns 15 people with names starting with 'r',
+  there's no need to search again people with name starting with 'ri'.
+  However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
+  or if the new search word starts with another word / letter
+  */
   let isSearchingPeople = $state(false);
   let suggestionContainer: HTMLElement | undefined = $state();
 

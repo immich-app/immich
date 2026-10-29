@@ -302,9 +302,7 @@
     cursor.current = stack.assets[nextIndex];
   };
 
-  /**
-   * Slide show mode
-   */
+  /** Slide show mode */
 
   let assetViewerHtmlElement = $state<HTMLElement>();
 
