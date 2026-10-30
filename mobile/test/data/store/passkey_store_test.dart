@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/passkey.dart';
 import 'package:immich_mobile/data/store.dart';
+import 'package:immich_mobile/domain/models/passkey.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/platform/passkey_api.g.dart';
@@ -71,22 +72,24 @@ void main() {
   });
 
   group('create', () {
+    final passkey = Passkey(id: 'passkey-id', createdAt: DateTime.utc(2026));
+
     setUp(() {
       when(() => api.startRegistration()).thenAnswer((_) async => {'challenge': 'abc'});
-      when(() => api.finishRegistration(any())).thenAnswer((_) async {});
+      when(() => api.finishRegistration(any())).thenAnswer((_) async => passkey);
     });
 
     test('sends the server options to the platform and the credential back to the server', () async {
       when(() => hostApi.register('{"challenge":"abc"}')).thenAnswer((_) async => '{"id":"credential"}');
 
-      expect(await createContainer().read(Store.passkeys).create(), isTrue);
+      expect(await createContainer().read(Store.passkeys).create(), passkey);
       expect(verify(() => api.finishRegistration(captureAny())).captured.single, {'id': 'credential'});
     });
 
     test('does not finish when the user cancels', () async {
       when(() => hostApi.register(any())).thenAnswer((_) async => null);
 
-      expect(await createContainer().read(Store.passkeys).create(), isFalse);
+      expect(await createContainer().read(Store.passkeys).create(), isNull);
       verifyNever(() => api.finishRegistration(any()));
     });
   });
