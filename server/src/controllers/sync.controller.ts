@@ -67,7 +67,7 @@ export class SyncController {
     description: 'Delete specific synchronization acknowledgments.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  deleteSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckDeleteDto) {
+  deleteSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckDeleteDto): Promise<void> {
     return this.service.deleteAcks(auth, dto);
   }
 }
