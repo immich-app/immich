@@ -1,5 +1,6 @@
 import { Command, Option } from 'commander';
 import {
+  FileSystem,
   GitClient,
   GitHubClient,
   type NotesOptions,
@@ -63,10 +64,11 @@ export const cli = (argv: string[]) => {
     .action(async ({ token, ...options }: NotesOptions & { token: string }) => {
       try {
         const service = new NotesService(
+          new FileSystem(),
           new GitClient(),
           new GitHubClient(token),
         );
-        process.stdout.write(await service.handleNotes(options));
+        await service.handleNotes(options);
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exit(1);

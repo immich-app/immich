@@ -88,7 +88,6 @@ url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
-specifiers = ["7.1.3-6"]
 
 [tools."github:jellyfin/jellyfin-ffmpeg".options]
 asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz"
@@ -101,7 +100,6 @@ url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
-specifiers = ["7.1.3-6"]
 
 [tools."github:jellyfin/jellyfin-ffmpeg".options]
 asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz"
@@ -114,7 +112,6 @@ url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
-specifiers = ["7.1.3-6"]
 
 [tools."github:jellyfin/jellyfin-ffmpeg".options]
 asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
@@ -226,31 +223,26 @@ specifiers = ["1.13.2"]
 
 [tools.opentofu."platforms.linux-arm64"]
 checksum = "sha256:88e2d9e3f94f97b76ab2faf55ade87578f56aed19c5e45fa139d70e994366d1f"
-checksum_source = "mise-versions"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.13.2/tofu_1.13.2_linux_arm64.tar.gz"
 url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/662742799"
 
 [tools.opentofu."platforms.linux-x64"]
 checksum = "sha256:ac05d9952662c7db28dd57e93f0a68018837bfdf9342384ec0987977c16a9645"
-checksum_source = "mise-versions"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.13.2/tofu_1.13.2_linux_amd64.tar.gz"
 url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/662742636"
 
 [tools.opentofu."platforms.macos-arm64"]
 checksum = "sha256:0d1cdc85f38992055b48e7fb161304a2ddfe2e5ee0ff68ffec9d0349c8bd1b59"
-checksum_source = "mise-versions"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.13.2/tofu_1.13.2_darwin_arm64.tar.gz"
 url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/662742637"
 
 [tools.opentofu."platforms.macos-x64"]
 checksum = "sha256:dc6e4eb1d3ed6550c2ef052596f933dbcd8c806957665ea83ae7537147cb3074"
-checksum_source = "mise-versions"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.13.2/tofu_1.13.2_darwin_amd64.tar.gz"
 url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/662742982"
 
 [tools.opentofu."platforms.windows-x64"]
 checksum = "sha256:e74fc2bda0c81ce696b6b7016a4d5c1f557638161239e4101e9ee7d8e0faba59"
-checksum_source = "mise-versions"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.13.2/tofu_1.13.2_windows_amd64.tar.gz"
 url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/662742635"
 
@@ -289,6 +281,46 @@ url = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-win32-x64.zi
 url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/662173351"
 provenance = "github-attestations"
 
+[[tools.restic]]
+version = "0.19.0"
+backend = "aqua:restic/restic"
+specifiers = ["0.19.0"]
+
+[tools.restic."platforms.linux-arm64"]
+checksum = "sha256:e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351d91"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897888"
+
+[tools.restic."platforms.linux-arm64-musl"]
+checksum = "sha256:e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351d91"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897888"
+
+[tools.restic."platforms.linux-x64"]
+checksum = "sha256:13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897993"
+
+[tools.restic."platforms.linux-x64-musl"]
+checksum = "sha256:13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897993"
+
+[tools.restic."platforms.macos-arm64"]
+checksum = "sha256:1475397bf759ef4be16a77b19dec650bdbfec00d2cacd82005553411cdd37997"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_darwin_arm64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/442898395"
+
+[tools.restic."platforms.macos-x64"]
+checksum = "sha256:c9d9a71234bc0955fdba6da93cc9375f8793ec1e1cbce77a91014d536a969148"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_darwin_amd64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/442898462"
+
+[tools.restic."platforms.windows-x64"]
+checksum = "sha256:6fa4219a70b1b5d1c429bb106a7f97f3d2a5aab74494db2e490b625edc486d8f"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_windows_amd64.zip"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897166"
+
 [[tools.terragrunt]]
 version = "1.2.0"
 backend = "aqua:gruntwork-io/terragrunt"
@@ -296,30 +328,25 @@ specifiers = ["1.2.0"]
 
 [tools.terragrunt."platforms.linux-arm64"]
 checksum = "sha256:1e13b7f0646fa7962bc6c5bfba14a30d6a589325b82561e21b66be5981d86395"
-checksum_source = "mise-versions"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.2.0/terragrunt_linux_arm64.tar.gz"
 url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/662437526"
 
 [tools.terragrunt."platforms.linux-x64"]
 checksum = "sha256:23b5f2f9203d34919f7fd270a4b635b721b4903beca9762a1e4853b159bc9be8"
-checksum_source = "mise-versions"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.2.0/terragrunt_linux_amd64.tar.gz"
 url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/662437263"
 
 [tools.terragrunt."platforms.macos-arm64"]
 checksum = "sha256:79790d841ce71fe94c689fb6f5034afd31ad53d5904937c7a10934cca9d9734b"
-checksum_source = "mise-versions"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.2.0/terragrunt_darwin_arm64.tar.gz"
 url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/662436516"
 
 [tools.terragrunt."platforms.macos-x64"]
 checksum = "sha256:0b0e63e80509eb1ffb4f89b892bc6fbf7728f27f0a73974400f1bd82a80b8627"
-checksum_source = "mise-versions"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.2.0/terragrunt_darwin_amd64.tar.gz"
 url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/662436142"
 
 [tools.terragrunt."platforms.windows-x64"]
 checksum = "sha256:c9a146b9aad456a289614023ad5778123d819af3cf9efd1c6130f196cfcb1999"
-checksum_source = "mise-versions"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.2.0/terragrunt_windows_amd64.exe.tar.gz"
 url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/662438255"
