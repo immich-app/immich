@@ -3,13 +3,18 @@ use std::sync::atomic::AtomicBool;
 use color::Target;
 use image::Image;
 
+#[cfg(feature = "avif")]
+mod avif;
 pub mod color;
 pub mod image;
 #[cfg(feature = "jxl")]
 pub mod jxl;
 mod resize;
+pub mod rotate;
 
 enum Format {
+    #[cfg(feature = "avif")]
+    Avif,
     #[cfg(feature = "jxl")]
     Jxl,
 }
@@ -25,6 +30,11 @@ pub struct Options {
 }
 
 fn probe(data: &[u8]) -> Option<Format> {
+    #[cfg(feature = "avif")]
+    if avif::is_avif(data) {
+        return Some(Format::Avif);
+    }
+
     #[cfg(feature = "jxl")]
     if matches!(
         ::jxl::api::check_signature(data),
@@ -39,6 +49,8 @@ fn probe(data: &[u8]) -> Option<Format> {
 /// Decodes the first frame of `data` unless cancelled.
 pub fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> Option<Image> {
     match probe(data)? {
+        #[cfg(feature = "avif")]
+        Format::Avif => avif::decode(data, options, cancelled),
         #[cfg(feature = "jxl")]
         Format::Jxl => jxl::Jxl::open(data, options.color_space)?.decode(
             options.target_size,

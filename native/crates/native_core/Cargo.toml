@@ -6,8 +6,10 @@ license.workspace = true
 
 [features]
 convert = []
-rotate = []
+rotate = ["codecs"]
 thumbhash = []
+# native_core_ffi turns this on for every target except 32-bit ARM, where rav1d needs nightly Rust.
+avif = ["codecs/avif"]
 jxl = ["codecs/jxl"]
 # One group per target.
 flutter = ["convert", "rotate", "thumbhash", "jxl"]
