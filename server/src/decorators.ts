@@ -2,6 +2,7 @@ import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
 import { chunk, flatten } from 'lodash-es';
+import type { TransactionHandle } from 'src/database.js';
 import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
 import { EmitEvent } from 'src/repositories/event.repository.js';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
@@ -124,7 +125,7 @@ export const DummyValue = {
   TIME_BUCKET: '2024-01-01T00:00:00.000Z',
   BOOLEAN: true,
   VECTOR: JSON.stringify(Array.from({ length: 512 }, () => 0)),
-  TRANSACTION: Symbol('transaction'),
+  TRANSACTION: {} as Pick<TransactionHandle, 'unwrap'>,
 };
 
 export const GENERATE_SQL_KEY = 'generate-sql-key';
