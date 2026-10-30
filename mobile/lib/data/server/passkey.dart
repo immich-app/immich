@@ -16,15 +16,18 @@ class PasskeyApiRepository extends ApiRepository {
 
   const PasskeyApiRepository(this._api, this._configApi);
 
+  /// Whether the server has passkey login turned on
   Future<bool> isEnabled() async {
     final config = await checkNull(_configApi.getPublicConfig());
     return config.passkey.enabled;
   }
 
-  Future<String> startRegistration() async => jsonEncode(await checkNull(_api.startRegistration()));
+  /// The WebAuthn options for creating a passkey for the current user
+  Future<Map<String, Object>> startRegistration() => checkNull(_api.startRegistration());
 
-  Future<void> finishRegistration(String response) async {
-    await _api.finishRegistration(PasskeyRegistrationFinishDto(response: jsonDecode(response)));
+  /// Save the WebAuthn [credential] created from the [startRegistration] options as a passkey of the current user
+  Future<void> finishRegistration(Map<String, dynamic> credential) async {
+    await _api.finishRegistration(PasskeyRegistrationFinishDto(response: credential));
   }
 
   Future<String> startAuthentication() async => jsonEncode(await checkNull(_api.startAuthentication()));

@@ -17,7 +17,7 @@ void main() {
       ..client = MockClient((_) async => http.Response(jsonEncode(options), 200));
     final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
 
-    expect(jsonDecode(await sut.startRegistration()), options);
+    expect(await sut.startRegistration(), options);
   });
 
   test('finishAuthentication sends the whole credential to the server', () async {

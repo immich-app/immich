@@ -1656,6 +1656,7 @@
   "partners_description": "Share your photos and videos with other users",
   "passkey_added": "Passkey added",
   "passkeys": "{count, plural, one {Passkey} other {Passkeys}}",
+  "passkeys_description": "Log in without a password, using your device's screen lock",
   "passkeys_not_supported": "Passkeys are not supported by this browser",
   "password": "Password",
   "password_does_not_match": "Password does not match",

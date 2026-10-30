@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store/passkey.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -20,7 +21,6 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
-import 'package:immich_mobile/providers/passkey.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -115,7 +115,7 @@ class LoginForm extends HookConsumerWidget {
         }
 
         final serverInfo = ref.read(serverInfoProvider);
-        final passkeyEnabled = await ref.read(passkeyServiceProvider).isEnabled(serverInfo.serverVersion.featureLevel);
+        final passkeyEnabled = await ref.read(PasskeyStore.instance.enabled().future);
         if (!context.mounted) {
           return;
         }
@@ -414,7 +414,7 @@ class LoginForm extends HookConsumerWidget {
 
     Future<void> passkeyLogin() async {
       try {
-        final result = await ref.read(passkeyServiceProvider).login();
+        final result = await ref.read(PasskeyStore.instance).login();
         if (result == null || !context.mounted) {
           return;
         }
