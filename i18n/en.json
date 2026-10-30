@@ -2191,6 +2191,7 @@
   "sunrise_on_the_beach": "Sunrise on the beach",
   "support": "Support",
   "support_and_feedback": "Support & Feedback",
+  "support_ensure_latest": "Before reaching out throught official Immich support channels, please ensure you are using the <link>latest version</link> of Immich.",
   "support_third_party_description": "Your Immich installation was packaged by a third-party. Issues you experience may be caused by that package, so please raise issues with them in the first instance using the links below.",
   "supporter": "Supporter",
   "swap_merge_direction": "Swap merge direction",

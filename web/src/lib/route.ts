@@ -167,3 +167,7 @@ export const Route = {
     return resolved;
   },
 };
+
+export const ExternalRoute = {
+  archivedDocs: (version: string) => `https://docs.${version}.archive.immich.app/overview/introduction`,
+};
