@@ -3636,6 +3636,8 @@ export type UserUpdateMeDto = {
     email?: string;
     /** User name */
     name?: string;
+    /** User password (deprecated, use change password endpoint) */
+    password?: string;
 };
 export type OnboardingResponseDto = {
     /** Is user onboarded */

@@ -38436,6 +38436,11 @@
           "name": {
             "description": "User name",
             "type": "string"
+          },
+          "password": {
+            "deprecated": true,
+            "description": "User password (deprecated, use change password endpoint)",
+            "type": "string"
           }
         },
         "type": "object"
