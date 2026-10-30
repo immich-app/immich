@@ -29,12 +29,37 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immi
 COPY ./packages/plugin-sdk ./packages/plugin-sdk/
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/plugin-sdk build
 
+FROM builder AS native
+
+ARG TARGETPLATFORM
+
+COPY --from=ghcr.io/jdx/mise:2026.10.20@sha256:a3023a390ce9d79343741039d35a36aa41e4fe8198464bf8cc9ffd23ae081a24 /usr/local/bin/mise /usr/local/bin/mise
+
+COPY ./mise.toml ./mise.toml
+COPY ./native/mise.toml ./native/mise.lock ./native/
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml:/usr/src/app/native/mise.toml
+ENV MISE_DATA_DIR=/buildcache/mise
+ENV MISE_ENABLE_TOOLS=rust
+RUN --mount=type=cache,id=mise-native-${TARGETPLATFORM},target=/buildcache/mise \
+  mise --cd native install --locked
+
+COPY ./native/crates/native_core_node/package.json ./native/crates/native_core_node/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/native-core install --frozen-lockfile
+
+COPY ./native ./native/
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
+  --mount=type=cache,id=mise-native-${TARGETPLATFORM},target=/buildcache/mise \
+  --mount=type=cache,id=native-target-${TARGETPLATFORM},target=/usr/src/app/native/target \
+  mise //native:node:build
+
 FROM plugin-sdk AS server
 
 COPY ./server/package.json ./server/package.json
+COPY ./native/crates/native_core_node/package.json ./native/crates/native_core_node/package.json
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich install --frozen-lockfile
 
 COPY ./server ./server/
+COPY --from=native /usr/src/app/native/crates/native_core_node/dist ./native/crates/native_core_node/dist
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   pnpm --filter immich build && \
   pnpm --filter immich --prod --no-optional deploy /output/server-pruned

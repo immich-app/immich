@@ -1,0 +1,32 @@
+{
+  "name": "@immich/native-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "napi": {
+    "binaryName": "native-core",
+    "targets": [
+      "aarch64-apple-darwin",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-unknown-linux-gnu"
+    ]
+  },
+  "scripts": {
+    "build": "napi build --platform --release --esm -o dist"
+  },
+  "license": "GNU Affero General Public License version 3",
+  "devDependencies": {
+    "@napi-rs/cli": "^3.10.9"
+  }
+}

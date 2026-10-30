@@ -17,3 +17,12 @@ run = "cargo fmt --all --check"
 [tasks.lint]
 description = "Run clippy with warnings as errors"
 run = "cargo clippy --workspace --all-targets --locked -- -D warnings"
+
+[tasks."node:install"]
+description = "Install the Node addon's build tooling"
+run = "pnpm --filter @immich/native-core install --frozen-lockfile"
+
+[tasks."node:build"]
+description = "Build the Node addon for the server"
+depends = ["node:install"]
+run = "pnpm --filter @immich/native-core build"
