@@ -3636,6 +3636,8 @@ export type UserUpdateMeDto = {
     email?: string;
     /** User name */
     name?: string;
+    /** User password (deprecated, use change password endpoint) */
+    password?: string;
 };
 export type OnboardingResponseDto = {
     /** Is user onboarded */
@@ -9698,7 +9700,8 @@ export enum QueueJobStatus {
     Failed = "failed",
     Completed = "completed",
     Delayed = "delayed",
-    Waiting = "waiting"
+    Waiting = "waiting",
+    Paused = "paused"
 }
 export enum JobName {
     AssetDelete = "AssetDelete",

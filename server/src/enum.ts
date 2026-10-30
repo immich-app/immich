@@ -879,6 +879,8 @@ export enum QueueJobStatus {
   Complete = 'completed',
   Delayed = 'delayed',
   Waiting = 'waiting',
+  /** @deprecated use `waiting` instead */
+  Paused = 'paused',
 }
 
 export const QueueJobStatusSchema = z.enum(QueueJobStatus).describe('Queue job status').meta({ id: 'QueueJobStatus' });
