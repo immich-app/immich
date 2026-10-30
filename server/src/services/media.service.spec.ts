@@ -1556,6 +1556,50 @@ describe(MediaService.name, () => {
 
       expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ thumbhash: thumbhashBuffer }));
     });
+
+    it('should keep the ocr search text if the edits have no crop', async () => {
+      const asset = AssetFactory.from()
+        .exif()
+        .edit({ action: AssetEditAction.Rotate, parameters: { angle: 90 } })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.ocr.getByAssetId.mockResolvedValue([factory.assetOcr({ assetId: asset.id, text: 'Hello World' })]);
+
+      await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(mocks.ocr.updateOcrVisibilities).toHaveBeenCalledWith(asset.id, [], [], 'Hello World');
+    });
+
+    it('should tokenize the ocr search text inside the crop', async () => {
+      const asset = AssetFactory.from()
+        .exif({ exifImageWidth: 1000, exifImageHeight: 1000 })
+        .edit({ action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 500, height: 500 } })
+        .build();
+      const inside = factory.assetOcr({ assetId: asset.id, text: '東京タワー' });
+      const outside = factory.assetOcr({
+        assetId: asset.id,
+        text: 'World',
+        x1: 0.6,
+        y1: 0.6,
+        x2: 0.8,
+        y2: 0.6,
+        x3: 0.8,
+        y3: 0.8,
+        x4: 0.6,
+        y4: 0.8,
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.ocr.getByAssetId.mockResolvedValue([inside, outside]);
+
+      await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(mocks.ocr.updateOcrVisibilities).toHaveBeenCalledWith(
+        asset.id,
+        [inside],
+        [outside],
+        '東京 京タ タワ ワー',
+      );
+    });
   });
 
   describe('handleGeneratePersonThumbnail', () => {
