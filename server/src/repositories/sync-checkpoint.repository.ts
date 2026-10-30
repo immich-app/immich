@@ -11,16 +11,16 @@ export class SyncCheckpointRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAll(sessionId: string) {
-    return this.db
+  getAll(sessionId: string, db: Kysely<DB> = this.db) {
+    return db
       .selectFrom('session_sync_checkpoint')
       .select(['type', 'ack'])
       .where('sessionId', '=', sessionId)
       .execute();
   }
 
-  upsertAll(items: Insertable<SessionSyncCheckpointTable>[]) {
-    return this.db
+  upsertAll(items: Insertable<SessionSyncCheckpointTable>[], db: Kysely<DB> = this.db) {
+    return db
       .insertInto('session_sync_checkpoint')
       .values(items)
       .onConflict((oc) =>
@@ -41,8 +41,8 @@ export class SyncCheckpointRepository {
   }
 
   @GenerateSql()
-  getNow() {
-    return this.db
+  getNow(db: Kysely<DB> = this.db) {
+    return db
       .selectNoFrom((eb) => [
         eb.fn<string>('immich_uuid_v7', [sql.raw<Date>("now() - interval '1 millisecond'")]).as('nowId'),
       ])

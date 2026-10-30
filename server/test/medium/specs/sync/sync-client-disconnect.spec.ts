@@ -1,7 +1,7 @@
 import { Writable } from 'node:stream';
 import { SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { SyncTestContext } from 'test/medium.factory.js';
-import { getKyselyDB } from 'test/utils.js';
+import { getKyselyDB, wait } from 'test/utils.js';
 
 const ASSET_COUNT = 100;
 
@@ -66,5 +66,26 @@ describe('client disconnect', () => {
     expect(response).toEqual(
       expect.arrayContaining([expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 })]),
     );
+  });
+
+  it('should keep the backfill checkpoint when the client disconnects', async () => {
+    const { auth, ctx } = await setup();
+    const { user: partnerUser } = await ctx.newUser();
+    for (let i = 0; i < 5; i++) {
+      await ctx.newAsset({ ownerId: partnerUser.id });
+    }
+    const { result: partner } = await ctx.newPartner({ sharedById: partnerUser.id, sharedWithId: auth.user.id });
+    await wait(2);
+
+    const stream = new LineAutoClosingStream({ after: 2 });
+    await ctx.sut.stream(auth, stream, { types: [SyncRequestType.PartnerAssetsV2] });
+
+    expect(stream.lines).toHaveLength(2);
+    await expect(ctx.sut.getAcks(auth)).resolves.toEqual([
+      {
+        type: SyncEntityType.PartnerAssetBackfillV2,
+        ack: `${SyncEntityType.PartnerAssetBackfillV2}|${partner.createId}|complete`,
+      },
+    ]);
   });
 });
