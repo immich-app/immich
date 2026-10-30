@@ -1,8 +1,9 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { Insertable, Kysely } from 'kysely';
+import { Insertable } from 'kysely';
 import { DateTime, Duration } from 'luxon';
 import { Writable } from 'node:stream';
 import type { SyncAck } from 'src/types.js';
+import { TransactionHandle } from 'src/database.js';
 import { OnJob } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { SyncAckDeleteDto, SyncAckSetDto, SyncAssetV2, SyncItem, SyncStreamDto } from 'src/dtos/sync.dto.js';
@@ -13,7 +14,6 @@ import { BaseService } from 'src/services/base.service.js';
 import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
 import { ClientDisconnectedError, waitForDrain } from 'src/utils/response.js';
 import { SerializeOptions, fromAck, serialize, toAck } from 'src/utils/sync.js';
-import { DB } from 'src/schema/index.js';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
 type AssetLike = Omit<SyncAssetV2, 'checksum' | 'thumbhash'> & {
@@ -125,7 +125,7 @@ export class SyncService extends BaseService {
     await this.syncCheckpointRepository.upsertAll(Object.values(checkpoints));
   }
 
-  deleteAcks(auth: AuthDto, dto: SyncAckDeleteDto) {
+  deleteAcks(auth: AuthDto, dto: SyncAckDeleteDto): Promise<unknown> {
     return this.syncCheckpointRepository.deleteAll(sessionOrThrow(auth).id, dto.types);
   }
 
@@ -134,9 +134,9 @@ export class SyncService extends BaseService {
       await this.sessionRepository.resetSyncProgress(sessionOrThrow(auth).id);
     }
 
-    await using transaction = await this.databaseRepository.transaction('repeatable read');
+    await using trx = await this.databaseRepository.transaction('repeatable read');
     try {
-      await this.streamInternal(auth, response, dto, transaction);
+      await this.streamInternal(auth, response, dto, trx);
     } catch (error) {
       if (!(error instanceof ClientDisconnectedError)) {
         throw error;
@@ -145,10 +145,10 @@ export class SyncService extends BaseService {
       this.logger.debug('Client closed the connection');
     }
 
-    await transaction.commit().execute();
+    await trx.commit();
   }
 
-  private async streamInternal(auth: AuthDto, response: Writable, dto: SyncStreamDto, trx: Kysely<DB>) {
+  private async streamInternal(auth: AuthDto, response: Writable, dto: SyncStreamDto, trx: TransactionHandle) {
     const sessionId = sessionOrThrow(auth).id;
     const isPendingSyncReset = await this.sessionRepository.isPendingSyncReset(sessionId, trx);
     if (isPendingSyncReset) {
@@ -1014,7 +1014,7 @@ export class SyncService extends BaseService {
   }
 
   private async upsertBackfillCheckpoint(
-    trx: Kysely<DB>,
+    trx: TransactionHandle,
     item: { type: SyncEntityType; sessionId: string; createId: string },
   ) {
     const { type, sessionId, createId } = item;

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { type Insertable, type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import { type TransactionHandle, db } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { SyncEntityType } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
@@ -11,16 +12,16 @@ export class SyncCheckpointRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAll(sessionId: string, db: Kysely<DB> = this.db) {
-    return db
+  getAll(sessionId: string, trx?: TransactionHandle) {
+    return (trx?.[db] ?? this.db)
       .selectFrom('session_sync_checkpoint')
       .select(['type', 'ack'])
       .where('sessionId', '=', sessionId)
       .execute();
   }
 
-  upsertAll(items: Insertable<SessionSyncCheckpointTable>[], db: Kysely<DB> = this.db) {
-    return db
+  upsertAll(items: Insertable<SessionSyncCheckpointTable>[], trx?: TransactionHandle) {
+    return (trx?.[db] ?? this.db)
       .insertInto('session_sync_checkpoint')
       .values(items)
       .onConflict((oc) =>
@@ -41,8 +42,8 @@ export class SyncCheckpointRepository {
   }
 
   @GenerateSql()
-  getNow(db: Kysely<DB> = this.db) {
-    return db
+  getNow(trx: TransactionHandle) {
+    return trx[db]
       .selectNoFrom((eb) => [
         eb.fn<string>('immich_uuid_v7', [sql.raw<Date>("now() - interval '1 millisecond'")]).as('nowId'),
       ])

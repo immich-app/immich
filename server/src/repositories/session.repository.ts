@@ -3,7 +3,7 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import type { Insertable, Kysely, Updateable } from 'kysely';
-import { columns } from 'src/database.js';
+import { type TransactionHandle, columns, db } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { DB } from 'src/schema/index.js';
 import { SessionTable } from 'src/schema/tables/session.table.js';
@@ -36,8 +36,8 @@ export class SessionRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async isPendingSyncReset(id: string, db: Kysely<DB> = this.db) {
-    const result = await db
+  async isPendingSyncReset(id: string, trx: TransactionHandle) {
+    const result = await trx[db]
       .selectFrom('session')
       .select(['isPendingSyncReset'])
       .where('id', '=', id)
