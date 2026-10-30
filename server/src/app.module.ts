@@ -59,7 +59,7 @@ const commonMiddleware = [
 const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
 
 const configRepository = new ConfigRepository();
-const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
+const { backups, bull, cls, database, environment, otel, storage } = configRepository.getEnv();
 
 const isFutoBackupsDevelopmentMode = environment !== ImmichEnvironment.Production;
 const futoBackupsStatePath = getBackupsStatePath(storage.mediaLocation);
@@ -133,6 +133,7 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
       useFactory: (authService: AuthService) => ({
         statePath: futoBackupsStatePath,
         cachePath: futoBackupsCachePath,
+        resticWalkConcurrency: backups.resticWalkConcurrency,
         requireWsAuth: true,
         requireLock: true,
         developmentMode: isFutoBackupsDevelopmentMode,
@@ -160,6 +161,7 @@ export class ApiModule extends BaseModule {}
       useFactory: (maintenanceWorkerService: MaintenanceWorkerService) => ({
         statePath: futoBackupsStatePath,
         cachePath: futoBackupsCachePath,
+        resticWalkConcurrency: backups.resticWalkConcurrency,
         externalBaseUrl: 'https://my.immich.app',
         requireWsAuth: true,
         requireLock: true,

@@ -9,6 +9,7 @@ export const envData: EnvData = {
   logFormat: LogFormat.Console,
 
   buildMetadata: {},
+  backups: {},
   bull: {
     config: {
       connection: {},
