@@ -241,11 +241,19 @@ describe(DatabaseBackupService.name, () => {
       expect(mocks.process.spawnDuplexStream).toHaveBeenLastCalledWith('gzip', ['--rsyncable']);
     });
 
-    it('should compress with pigz on every available core when it is installed', async () => {
+    it.each([
+      { cores: 1, processes: '1' },
+      { cores: 8, processes: '6' },
+      { cores: 72, processes: '32' },
+    ])('should compress with pigz on $processes of $cores cores when it is installed', async ({ cores, processes }) => {
       mocks.process.isCommandAvailable.mockResolvedValue(true);
-      mocks.process.availableParallelism.mockReturnValue(8);
+      mocks.process.availableParallelism.mockReturnValue(cores);
       await sut.handleBackupDatabase();
-      expect(mocks.process.spawnDuplexStream).toHaveBeenLastCalledWith('pigz', ['--rsyncable', '--processes', '8']);
+      expect(mocks.process.spawnDuplexStream).toHaveBeenLastCalledWith('pigz', [
+        '--rsyncable',
+        '--processes',
+        processes,
+      ]);
     });
 
     it('should fail if pg_dump fails', async () => {
