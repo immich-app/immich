@@ -3,14 +3,12 @@ import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
-import { isPlainObject, mapValues } from 'lodash-es';
 import { ClsModule } from 'nestjs-cls';
 import { KYSELY_MODULE_CONNECTION_TOKEN, KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { format } from 'sql-formatter';
-import { TransactionHandle } from 'src/database.js';
 import { DummyValue, GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -51,7 +49,6 @@ type SqlGeneratorOptions = { targetDir: string };
 
 class SqlGenerator {
   private app: INestApplication | null = null;
-  private transaction: Pick<TransactionHandle, 'unwrap'> | null = null;
   private sqlLogger = new SqlLogger();
   private results: Record<string, string[]> = {};
 
@@ -103,7 +100,7 @@ class SqlGenerator {
 
     this.app = await moduleFixture.createNestApplication().init();
     const kysely = this.app.get(KYSELY_MODULE_CONNECTION_TOKEN());
-    this.transaction = { unwrap: () => kysely };
+    DummyValue.TRANSACTION.unwrap = () => kysely;
   }
 
   async process(Repository: Repository) {
@@ -157,10 +154,9 @@ class SqlGenerator {
 
         this.sqlLogger.clear();
 
-        const args = params.map((param) => this.withTransaction(param));
         if (stream) {
           try {
-            const result: AsyncIterableIterator<unknown> = target.apply(instance, args);
+            const result: AsyncIterableIterator<unknown> = target.apply(instance, params);
             for await (const _ of result) {
               break;
             }
@@ -169,7 +165,7 @@ class SqlGenerator {
           }
         } else {
           // errors still generate sql, which is all we care about
-          await target.apply(instance, args).catch((error: Error) => handleError(queryLabel, error));
+          await target.apply(instance, params).catch((error: Error) => handleError(queryLabel, error));
         }
 
         if (this.sqlLogger.queries.length === 0) {
@@ -205,14 +201,6 @@ class SqlGenerator {
     if (this.app) {
       await this.app.close();
     }
-  }
-
-  private withTransaction(value: unknown): unknown {
-    if (value === DummyValue.TRANSACTION) {
-      return this.transaction;
-    }
-
-    return isPlainObject(value) ? mapValues(value as object, (item) => this.withTransaction(item)) : value;
   }
 
   private getPropertyNames(instance: any): string[] {
