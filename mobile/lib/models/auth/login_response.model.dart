@@ -26,13 +26,15 @@ class LoginResponse {
   });
 
   LoginResponse.fromDto(LoginResponseDto dto)
-    : accessToken = dto.accessToken,
-      isAdmin = dto.isAdmin,
-      name = dto.name,
-      profileImagePath = dto.profileImagePath,
-      shouldChangePassword = dto.shouldChangePassword,
-      userEmail = dto.userEmail,
-      userId = dto.userId;
+    : this(
+        accessToken: dto.accessToken,
+        isAdmin: dto.isAdmin,
+        name: dto.name,
+        profileImagePath: dto.profileImagePath,
+        shouldChangePassword: dto.shouldChangePassword,
+        userEmail: dto.userEmail,
+        userId: dto.userId,
+      );
 
   @override
   String toString() {
