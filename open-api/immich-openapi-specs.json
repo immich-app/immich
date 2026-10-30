@@ -23433,7 +23433,8 @@
         "enum": [
           "crop",
           "rotate",
-          "mirror"
+          "mirror",
+          "color"
         ],
         "type": "string"
       },
@@ -23452,9 +23453,12 @@
               },
               {
                 "$ref": "#/components/schemas/MirrorParameters"
+              },
+              {
+                "$ref": "#/components/schemas/ColorParameters"
               }
             ],
-            "description": "List of edit actions to apply (crop, rotate, or mirror)"
+            "description": "Edit parameters for crop, rotate, mirror, or color actions"
           }
         },
         "required": [
@@ -23484,9 +23488,12 @@
               },
               {
                 "$ref": "#/components/schemas/MirrorParameters"
+              },
+              {
+                "$ref": "#/components/schemas/ColorParameters"
               }
             ],
-            "description": "List of edit actions to apply (crop, rotate, or mirror)"
+            "description": "Edit parameters for crop, rotate, mirror, or color actions"
           }
         },
         "required": [
@@ -23499,7 +23506,7 @@
       "AssetEditsCreateDto": {
         "properties": {
           "edits": {
-            "description": "List of edit actions to apply (crop, rotate, or mirror)",
+            "description": "List of edit actions to apply (crop, rotate, mirror, or color)",
             "items": {
               "$ref": "#/components/schemas/AssetEditActionItemDto"
             },
@@ -24914,6 +24921,27 @@
           "createdAt",
           "id",
           "userId"
+        ],
+        "type": "object"
+      },
+      "ColorParameters": {
+        "properties": {
+          "contrast": {
+            "description": "Contrast adjustment from -100 to 100",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "integer"
+          },
+          "exposure": {
+            "description": "Exposure adjustment from -100 to 100",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "contrast",
+          "exposure"
         ],
         "type": "object"
       },
@@ -35089,6 +35117,14 @@
         ],
         "type": "object"
       },
+      "SyncAssetEditActionV1": {
+        "enum": [
+          "crop",
+          "rotate",
+          "mirror"
+        ],
+        "type": "string"
+      },
       "SyncAssetEditDeleteV1": {
         "properties": {
           "editId": {
@@ -35104,6 +35140,44 @@
         "type": "object"
       },
       "SyncAssetEditV1": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/SyncAssetEditActionV1"
+          },
+          "assetId": {
+            "description": "Asset ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Edit ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {},
+            "description": "Edit parameters",
+            "type": "object"
+          },
+          "sequence": {
+            "description": "Edit sequence",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action",
+          "assetId",
+          "id",
+          "parameters",
+          "sequence"
+        ],
+        "type": "object"
+      },
+      "SyncAssetEditV2": {
         "properties": {
           "action": {
             "$ref": "#/components/schemas/AssetEditAction"
@@ -36137,6 +36211,7 @@
           "AssetDeleteV1",
           "AssetExifV1",
           "AssetEditV1",
+          "AssetEditV2",
           "AssetEditDeleteV1",
           "AssetMetadataV1",
           "AssetMetadataDeleteV1",
@@ -36590,6 +36665,7 @@
           "AssetsV2",
           "AssetExifsV1",
           "AssetEditsV1",
+          "AssetEditsV2",
           "AssetMetadataV1",
           "AssetOcrV1",
           "AuthUsersV1",

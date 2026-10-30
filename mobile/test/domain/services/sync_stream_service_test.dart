@@ -180,6 +180,15 @@ void main() {
   }
 
   group("SyncStreamService - _handleEvents", () {
+    test("does not acknowledge unsupported asset edit V2 events", () async {
+      const event = SyncEvent(type: SyncEntityType.assetEditV2, data: {}, ack: 'asset-edit-v2');
+
+      await expectLater(simulateEvents([event]), throwsUnsupportedError);
+
+      verifyNever(() => mockSyncApiRepo.ack(any()));
+      verifyNever(() => mockSyncStreamRepo.updateAssetEditsV1(any()));
+    });
+
     test("processes events and acks successfully when handlers succeed", () async {
       final events = [
         SyncStreamStub.userDeleteV1,

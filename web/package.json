@@ -32,6 +32,7 @@
     "prepare": "svelte-kit sync"
   },
   "dependencies": {
+    "@immich/image-editor": "workspace:*",
     "@formatjs/icu-messageformat-parser": "^3.0.0",
     "@futo-org/backups-orchestrator-ui": "1.11.5",
     "@immich/justified-layout-wasm": "^0.4.3",

@@ -327,6 +327,38 @@ describe(AssetController.name, () => {
       expect(status).toBe(200);
     });
 
+    it('should accept exposure and contrast at their supported limits', async () => {
+      const assetId = factory.uuid();
+      const edits = [{ action: 'color', parameters: { exposure: -100, contrast: 100 } }];
+
+      const { status } = await request(ctx.getHttpServer()).put(`/assets/${assetId}/edits`).send({ edits });
+
+      expect(service.editAsset).toHaveBeenCalledWith(undefined, assetId, { edits });
+      expect(status).toBe(200);
+    });
+
+    it('should reject exposure and contrast values outside their supported limits', async () => {
+      for (const [parameters, errors] of [
+        [
+          { exposure: -101, contrast: 0 },
+          [{ path: ['edits', 0, 'parameters', 'exposure'], message: 'Too small: expected number to be >=-100' }],
+        ],
+        [
+          { exposure: 0, contrast: 101 },
+          [{ path: ['edits', 0, 'parameters', 'contrast'], message: 'Too big: expected number to be <=100' }],
+        ],
+      ] as const) {
+        const { status, body } = await request(ctx.getHttpServer())
+          .put(`/assets/${factory.uuid()}/edits`)
+          .send({ edits: [{ action: 'color', parameters }] });
+
+        expect(status).toBe(400);
+        expect(body).toEqual(factory.responses.validationError(errors));
+      }
+
+      expect(service.editAsset).not.toHaveBeenCalled();
+    });
+
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/assets/123/edits`)
