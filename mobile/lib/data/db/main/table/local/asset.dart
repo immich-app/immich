@@ -11,6 +11,9 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 @TableIndex.sql(
   'CREATE INDEX IF NOT EXISTS idx_local_asset_group ON local_asset_entity (group_date DESC, created_at DESC)',
 )
+@TableIndex.sql(
+  'CREATE INDEX IF NOT EXISTS idx_local_asset_backup_candidate ON local_asset_entity (is_backup_candidate)',
+)
 class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const LocalAssetEntity();
 
@@ -19,6 +22,8 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   // Only used during backup to mirror the favorite status of the asset in the server
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
+
+  BoolColumn get isBackupCandidate => boolean().withDefault(const Constant(false))();
 
   IntColumn get orientation => integer().withDefault(const Constant(0))();
 

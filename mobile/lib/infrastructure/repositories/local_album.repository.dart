@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
@@ -68,12 +70,15 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
     // Remove all assets that are only in this particular album
     // We cannot remove all assets in the album because they might be in other albums in iOS
     // That is not the case on Android since asset <-> album has one:one mapping
-    final assetsToDelete = CurrentPlatform.isIOS ? await _getUniqueAssetsInAlbum(albumId) : await getAssetIds(albumId);
+    final affectedAssetIds = await getAssetIds(albumId);
+    final assetsToDelete = CurrentPlatform.isIOS ? await _getUniqueAssetsInAlbum(albumId) : affectedAssetIds;
     await _deleteAssets(assetsToDelete);
+    await _db.localAlbumAssetEntity.deleteWhere((f) => f.albumId.equals(albumId));
 
     await _db.managers.localAlbumEntity
         .filter((a) => a.id.equals(albumId) & a.backupSelection.equals(BackupSelection.none))
         .delete();
+    await recomputeBackupCandidatesForAssets(affectedAssetIds);
   });
 
   Future<void> syncDeletes(String albumId, Iterable<String> assetIdsToKeep) async {
@@ -133,6 +138,8 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
         );
       }
       await _removeAssets(localAlbum.id, toDelete);
+      await recomputeBackupCandidatesForAlbum(localAlbum.id);
+      await recomputeBackupCandidatesForAssets(toDelete);
     });
   }
 
@@ -184,10 +191,22 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
         await deleteSmt.go();
       }
 
+      final markedAlbumIds = _db.localAlbumEntity.selectOnly()
+        ..addColumns([_db.localAlbumEntity.id])
+        ..where(_db.localAlbumEntity.marker_.isNotNull());
+      final affectedAssetIds =
+          await (_db.localAlbumAssetEntity.selectOnly(distinct: true)
+                ..addColumns([_db.localAlbumAssetEntity.assetId])
+                ..where(_db.localAlbumAssetEntity.albumId.isInQuery(markedAlbumIds)))
+              .map((row) => row.read(_db.localAlbumAssetEntity.assetId)!)
+              .get();
+      await _db.localAlbumAssetEntity.deleteWhere((f) => f.albumId.isInQuery(markedAlbumIds));
+
       // Only remove albums that are not explicitly selected or excluded from backups
       await _db.localAlbumEntity.deleteWhere(
         (f) => f.marker_.isNotNull() & f.backupSelection.equalsValue(BackupSelection.none),
       );
+      await recomputeBackupCandidatesForAssets(affectedAssetIds);
     });
   }
 
@@ -241,6 +260,8 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
           );
         });
       });
+
+      await recomputeBackupCandidatesForAssets(assetAlbums.keys);
     });
   }
 
@@ -249,10 +270,65 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
         _db.localAlbumAssetEntity.select().join([
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
           ])
-          ..where(_db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull())
+          ..where(
+            _db.localAlbumAssetEntity.albumId.equals(albumId) &
+                _db.localAssetEntity.checksum.isNull() &
+                _db.localAssetEntity.isBackupCandidate.equals(true),
+          )
           ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)]);
 
     return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
+  }
+
+  Future<void> recomputeBackupCandidatesForAlbum(String albumId) => _recomputeBackupCandidates(
+    whereClause: 'WHERE id IN (SELECT asset_id FROM local_album_asset_entity WHERE album_id = ?)',
+    extraVariables: [Variable.withString(albumId)],
+  );
+
+  Future<void> recomputeBackupCandidatesForAssets(Iterable<String> assetIds) async {
+    final ids = assetIds.toList(growable: false);
+    if (ids.isEmpty) {
+      return;
+    }
+    for (final slice in ids.slices(kDriftMaxChunk)) {
+      await _recomputeBackupCandidates(
+        whereClause: 'WHERE id IN (${List.filled(slice.length, '?').join(',')})',
+        extraVariables: slice.map(Variable.withString).toList(growable: false),
+      );
+    }
+  }
+
+  Future<void> recomputeAllBackupCandidates() => _recomputeBackupCandidates(whereClause: '', extraVariables: const []);
+
+  Future<void> _recomputeBackupCandidates({
+    required String whereClause,
+    required List<Variable<Object>> extraVariables,
+  }) async {
+    await _db.customUpdate(
+      '''
+      UPDATE local_asset_entity
+      SET is_backup_candidate = (
+        EXISTS (
+          SELECT 1 FROM local_album_asset_entity laa
+          INNER JOIN local_album_entity la ON la.id = laa.album_id
+          WHERE laa.asset_id = local_asset_entity.id AND la.backup_selection = ?
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM local_album_asset_entity laa
+          INNER JOIN local_album_entity la ON la.id = laa.album_id
+          WHERE laa.asset_id = local_asset_entity.id AND la.backup_selection = ?
+        )
+      )
+      $whereClause
+      ''',
+      variables: [
+        Variable.withInt(BackupSelection.selected.index),
+        Variable.withInt(BackupSelection.excluded.index),
+        ...extraVariables,
+      ],
+      updates: {_db.localAssetEntity},
+      updateKind: UpdateKind.update,
+    );
   }
 
   Future<void> updateCloudMapping(Map<String, String> cloudMapping) {

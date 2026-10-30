@@ -207,6 +207,9 @@ class TrashedLocalAssetRepository extends DatabaseAccessor<Drift> with $TrashedL
         orientation: Value(e.orientation),
         playbackStyle: Value(e.playbackStyle),
         groupDate: Value(timelineGroupDate(e.createdAt.toLocal())),
+        // getToRestore only restores assets whose album is selected
+        // TODO: Refactor getToRestore to not assume that and recalculate the backup candidate flag from here
+        isBackupCandidate: const Value(true),
       );
     });
 
