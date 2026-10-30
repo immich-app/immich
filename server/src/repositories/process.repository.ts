@@ -1,10 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { SpawnOptionsWithoutStdio, fork, spawn } from 'node:child_process';
+import { constants } from 'node:fs';
+import { access } from 'node:fs/promises';
+import { availableParallelism } from 'node:os';
+import path from 'node:path';
 import { Duplex } from 'node:stream';
 
 @Injectable()
 export class ProcessRepository {
   spawn = spawn;
+  availableParallelism = availableParallelism;
+
+  async isCommandAvailable(command: string): Promise<boolean> {
+    const directories = (process.env.PATH ?? '').split(path.delimiter).filter(Boolean);
+    const found = await Promise.all(
+      directories.map((directory) =>
+        access(path.join(directory, command), constants.X_OK)
+          .then(() => true)
+          .catch(() => false),
+      ),
+    );
+    return found.includes(true);
+  }
 
   spawnDuplexStream(command: string, args?: readonly string[], options?: SpawnOptionsWithoutStdio): Duplex {
     let isStdinClosed = false;

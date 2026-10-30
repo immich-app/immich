@@ -18,9 +18,7 @@ import {
 } from 'src/utils/maintenance.js';
 import { getExternalDomain } from 'src/utils/misc.js';
 
-/**
- * This service is available outside of maintenance mode to manage maintenance mode
- */
+/** This service is available outside of maintenance mode to manage maintenance mode */
 @Injectable()
 export class MaintenanceService extends BaseService {
   getMaintenanceMode(): Promise<MaintenanceModeState> {

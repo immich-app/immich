@@ -52,9 +52,7 @@ export const getMethodNames = (instance: any) => {
 export const getExternalDomain = (server: SystemConfig['server'], defaultDomain = 'https://my.immich.app') =>
   server.externalDomain || defaultDomain;
 
-/**
- * @returns a list of strings representing the keys of the object in dot notation
- */
+/** @returns a list of strings representing the keys of the object in dot notation */
 export const getKeysDeep = (target: unknown, path: string[] = []) => {
   if (!target || typeof target !== 'object') {
     return [];

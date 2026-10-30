@@ -53,6 +53,7 @@ type EventMap = {
   AssetTrash: [{ assetId: string; userId: string }];
   AssetDelete: [{ assetId: string; userId: string }];
   AssetMetadataExtracted: [{ assetId: string; userId: string; source?: JobSource }];
+  AssetOcrExtracted: [{ assetId: string; userId: string }];
 
   // asset bulk events
   AssetTrashAll: [{ assetIds: string[]; userId: string }];
@@ -69,6 +70,10 @@ type EventMap = {
   JobSuccess: [JobSuccessEvent];
   /** job finishes with error */
   JobError: [JobErrorEvent];
+
+  LibraryCreate: [];
+  LibraryUpdate: [];
+  LibraryDelete: [];
 
   // queue events
   QueueStart: [QueueStartEvent];

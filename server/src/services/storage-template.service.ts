@@ -268,7 +268,7 @@ export class StorageTemplateService extends BaseService {
   private async getTemplatePath(
     asset: StorageAsset,
     metadata: MoveAssetMetadata,
-    stillPhoto?: StorageAsset,
+    stillPhoto: StorageAsset = asset,
   ): Promise<string> {
     const { storageLabel, filename } = metadata;
 
@@ -310,7 +310,7 @@ export class StorageTemplateService extends BaseService {
       let albumName = null;
       let albumStartDate = null;
       let albumEndDate = null;
-      const assetForMetadata = stillPhoto || asset;
+      const assetForMetadata = stillPhoto;
 
       if (this.template.needsAlbum) {
         // For motion videos, use the still photo's album information since motion videos
@@ -360,19 +360,19 @@ export class StorageTemplateService extends BaseService {
       }
 
       /**
-       * In case of migrating duplicate filename to a new path, we need to check if it is already migrated
-       * Due to the mechanism of appending +1, +2, +3, etc to the filename
-       *
-       * Example:
-       * Source = upload/abc/def/FullSizeRender+7.heic
-       * Expected Destination = upload/abc/def/FullSizeRender.heic
-       *
-       * The file is already at the correct location, but since there are other FullSizeRender.heic files in the
-       * destination, it was renamed to FullSizeRender+7.heic.
-       *
-       * The lines below will be used to check if the differences between the source and destination is only the
-       * +7 suffix, and if so, it will be considered as already migrated.
-       */
+      In case of migrating duplicate filename to a new path, we need to check if it is already migrated
+      Due to the mechanism of appending +1, +2, +3, etc to the filename
+
+      Example:
+      Source = upload/abc/def/FullSizeRender+7.heic
+      Expected Destination = upload/abc/def/FullSizeRender.heic
+
+      The file is already at the correct location, but since there are other FullSizeRender.heic files in the
+      destination, it was renamed to FullSizeRender+7.heic.
+
+      The lines below will be used to check if the differences between the source and destination is only the
+      +7 suffix, and if so, it will be considered as already migrated.
+      */
       if (source.startsWith(fullPath) && source.endsWith(`.${extension}`)) {
         const diff = source.replace(fullPath, '').replace(`.${extension}`, '');
         const hasDuplicationAnnotation = /^\+\d+$/.test(diff);

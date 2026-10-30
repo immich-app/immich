@@ -291,21 +291,18 @@
     if (!stack || !withStacked || assetViewerManager.isShowEditor) {
       return;
     }
-    const assets = stack.assets;
-    const currentIndex = assets.findIndex(({ id }) => id === asset.id);
+    const currentIndex = stack.assets.findIndex(({ id }) => id === asset.id);
     if (currentIndex === -1) {
       return;
     }
     const nextIndex = direction === 'previous' ? currentIndex - 1 : currentIndex + 1;
-    if (nextIndex < 0 || nextIndex >= assets.length) {
+    if (nextIndex < 0 || nextIndex >= stack.assets.length) {
       return;
     }
-    cursor.current = assets[nextIndex];
+    cursor.current = stack.assets[nextIndex];
   };
 
-  /**
-   * Slide show mode
-   */
+  /** Slide show mode */
 
   let assetViewerHtmlElement = $state<HTMLElement>();
 
