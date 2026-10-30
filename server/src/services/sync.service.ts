@@ -1,18 +1,11 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { Insertable } from 'kysely';
+import { Insertable, Kysely } from 'kysely';
 import { DateTime, Duration } from 'luxon';
 import { Writable } from 'node:stream';
 import type { SyncAck } from 'src/types.js';
 import { OnJob } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
-import {
-  SyncAckDeleteDto,
-  SyncAckSetDto,
-  SyncAssetV2,
-  SyncItem,
-  SyncStreamDto,
-  syncAlbumV2ToV1,
-} from 'src/dtos/sync.dto.js';
+import { SyncAckDeleteDto, SyncAckSetDto, SyncAssetV2, SyncItem, SyncStreamDto } from 'src/dtos/sync.dto.js';
 import { JobName, MemoryType, QueueName, SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { SyncQueryOptions } from 'src/repositories/sync.repository.js';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table.js';
@@ -20,6 +13,7 @@ import { BaseService } from 'src/services/base.service.js';
 import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
 import { ClientDisconnectedError, waitForDrain } from 'src/utils/response.js';
 import { SerializeOptions, fromAck, serialize, toAck } from 'src/utils/sync.js';
+import { DB } from 'src/schema/index.js';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
 type AssetLike = Omit<SyncAssetV2, 'checksum' | 'thumbhash'> & {
@@ -95,26 +89,22 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.AssetEditsV1,
 ];
 
-const throwSessionRequired = () => {
-  throw new ForbiddenException('Sync endpoints cannot be used with API keys');
+const sessionOrThrow = (auth: AuthDto) => {
+  const session = auth.session;
+  if (!session) {
+    throw new ForbiddenException('Sync endpoints cannot be used with API keys');
+  }
+  return session;
 };
 
 @Injectable()
 export class SyncService extends BaseService {
   getAcks(auth: AuthDto) {
-    const sessionId = auth.session?.id;
-    if (!sessionId) {
-      return throwSessionRequired();
-    }
-
-    return this.syncCheckpointRepository.getAll(sessionId);
+    return this.syncCheckpointRepository.getAll(sessionOrThrow(auth).id);
   }
 
   async setAcks(auth: AuthDto, dto: SyncAckSetDto) {
-    const sessionId = auth.session?.id;
-    if (!sessionId) {
-      return throwSessionRequired();
-    }
+    const sessionId = sessionOrThrow(auth).id;
 
     const checkpoints: Record<string, Insertable<SessionSyncCheckpointTable>> = {};
     for (const ack of dto.acks) {
@@ -135,46 +125,39 @@ export class SyncService extends BaseService {
     await this.syncCheckpointRepository.upsertAll(Object.values(checkpoints));
   }
 
-  async deleteAcks(auth: AuthDto, dto: SyncAckDeleteDto) {
-    const sessionId = auth.session?.id;
-    if (!sessionId) {
-      return throwSessionRequired();
-    }
-
-    await this.syncCheckpointRepository.deleteAll(sessionId, dto.types);
+  deleteAcks(auth: AuthDto, dto: SyncAckDeleteDto) {
+    return this.syncCheckpointRepository.deleteAll(sessionOrThrow(auth).id, dto.types);
   }
 
   async stream(auth: AuthDto, response: Writable, dto: SyncStreamDto) {
+    if (dto.reset) {
+      await this.sessionRepository.resetSyncProgress(sessionOrThrow(auth).id);
+    }
+
+    await using transaction = await this.databaseRepository.transaction('repeatable read');
     try {
-      await this.streamInternal(auth, response, dto);
+      await this.streamInternal(auth, response, dto, transaction);
     } catch (error) {
-      if (error instanceof ClientDisconnectedError) {
-        this.logger.debug('Client closed the connection');
-        return;
+      if (!(error instanceof ClientDisconnectedError)) {
+        throw error;
       }
 
-      throw error;
+      this.logger.debug('Client closed the connection');
     }
+
+    await transaction.commit().execute();
   }
 
-  private async streamInternal(auth: AuthDto, response: Writable, dto: SyncStreamDto) {
-    const session = auth.session;
-    if (!session) {
-      return throwSessionRequired();
-    }
-
-    if (dto.reset) {
-      await this.sessionRepository.resetSyncProgress(session.id);
-    }
-
-    const isPendingSyncReset = await this.sessionRepository.isPendingSyncReset(session.id);
+  private async streamInternal(auth: AuthDto, response: Writable, dto: SyncStreamDto, trx: Kysely<DB>) {
+    const sessionId = sessionOrThrow(auth).id;
+    const isPendingSyncReset = await this.sessionRepository.isPendingSyncReset(sessionId, trx);
     if (isPendingSyncReset) {
       await send(response, { type: SyncEntityType.SyncResetV1, ids: ['reset'], data: {} });
       response.end();
       return;
     }
 
-    const checkpoints = await this.syncCheckpointRepository.getAll(session.id);
+    const checkpoints = await this.syncCheckpointRepository.getAll(sessionId, trx);
     const checkpointMap: CheckpointMap = Object.fromEntries(checkpoints.map(({ type, ack }) => [type, fromAck(ack)]));
 
     if (this.needsFullSync(checkpointMap)) {
@@ -183,8 +166,8 @@ export class SyncService extends BaseService {
       return;
     }
 
-    const { nowId } = await this.syncCheckpointRepository.getNow();
-    const options: SyncQueryOptions = { nowId, userId: auth.user.id };
+    const { nowId } = await this.syncCheckpointRepository.getNow(trx);
+    const options: SyncQueryOptions = { trx, nowId, userId: auth.user.id };
 
     const handlers: Record<SyncRequestType, () => Promise<void>> = {
       // deprecated handlers
@@ -200,23 +183,23 @@ export class SyncService extends BaseService {
       [SyncRequestType.AssetsV2]: () => this.syncAssetsV2(options, response, checkpointMap),
       [SyncRequestType.AssetExifsV1]: () => this.syncAssetExifsV1(options, response, checkpointMap),
       [SyncRequestType.AssetEditsV1]: () => this.syncAssetEditsV1(options, response, checkpointMap),
-      [SyncRequestType.PartnerAssetsV2]: () => this.syncPartnerAssetsV2(options, response, checkpointMap, session.id),
+      [SyncRequestType.PartnerAssetsV2]: () => this.syncPartnerAssetsV2(options, response, checkpointMap, sessionId),
       [SyncRequestType.AssetMetadataV1]: () => this.syncAssetMetadataV1(options, response, checkpointMap, auth),
       [SyncRequestType.PartnerAssetExifsV1]: () =>
-        this.syncPartnerAssetExifsV1(options, response, checkpointMap, session.id),
+        this.syncPartnerAssetExifsV1(options, response, checkpointMap, sessionId),
       [SyncRequestType.AlbumsV1]: () => this.syncAlbumsV1(options, response, checkpointMap),
       [SyncRequestType.AlbumsV2]: () => this.syncAlbumsV2(options, response, checkpointMap),
-      [SyncRequestType.AlbumUsersV1]: () => this.syncAlbumUsersV1(options, response, checkpointMap, session.id),
-      [SyncRequestType.AlbumAssetsV2]: () => this.syncAlbumAssetsV2(options, response, checkpointMap, session.id),
-      [SyncRequestType.AlbumToAssetsV1]: () => this.syncAlbumToAssetsV1(options, response, checkpointMap, session.id),
+      [SyncRequestType.AlbumUsersV1]: () => this.syncAlbumUsersV1(options, response, checkpointMap, sessionId),
+      [SyncRequestType.AlbumAssetsV2]: () => this.syncAlbumAssetsV2(options, response, checkpointMap, sessionId),
+      [SyncRequestType.AlbumToAssetsV1]: () => this.syncAlbumToAssetsV1(options, response, checkpointMap, sessionId),
       [SyncRequestType.AlbumAssetExifsV1]: () =>
-        this.syncAlbumAssetExifsV1(options, response, checkpointMap, session.id),
+        this.syncAlbumAssetExifsV1(options, response, checkpointMap, sessionId),
       [SyncRequestType.MemoriesV1]: () => this.syncMemoriesV1(options, response, checkpointMap),
       [SyncRequestType.MemoriesV2]: () => this.syncMemoriesV2(options, response, checkpointMap),
       [SyncRequestType.MemoryToAssetsV1]: () => this.syncMemoryAssetsV1(options, response, checkpointMap),
       [SyncRequestType.MemoryToAssetsV2]: () => this.syncMemoryAssetsV2(options, response, checkpointMap),
       [SyncRequestType.StacksV1]: () => this.syncStackV1(options, response, checkpointMap),
-      [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(options, response, checkpointMap, session.id),
+      [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(options, response, checkpointMap, sessionId),
       [SyncRequestType.PeopleV1]: () => this.syncPeopleV1(options, response, checkpointMap),
       [SyncRequestType.AssetFacesV2]: () => this.syncAssetFacesV2(options, response, checkpointMap),
       [SyncRequestType.AssetFacesV3]: () => this.syncAssetFacesV3(options, response, checkpointMap),
@@ -397,7 +380,7 @@ export class SyncService extends BaseService {
         await sendEntityBackfillCompleteAck(response, backfillType, createId);
       }
     } else if (partners.length > 0) {
-      await this.upsertBackfillCheckpoint({
+      await this.upsertBackfillCheckpoint(options.trx, {
         type: backfillType,
         sessionId,
         createId: partners.at(-1)!.createId,
@@ -470,7 +453,7 @@ export class SyncService extends BaseService {
         await sendEntityBackfillCompleteAck(response, backfillType, partner.createId);
       }
     } else if (partners.length > 0) {
-      await this.upsertBackfillCheckpoint({
+      await this.upsertBackfillCheckpoint(options.trx, {
         type: backfillType,
         sessionId,
         createId: partners.at(-1)!.createId,
@@ -491,14 +474,13 @@ export class SyncService extends BaseService {
     }
 
     const upsertType = SyncEntityType.AlbumV1;
-    const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    const upserts = this.syncRepository.album.getUpsertsV1({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
-      const albumUsers = await this.syncRepository.album.getAlbumUsers(data.id);
       await send(response, {
         type: upsertType,
         ids: [updateId],
         // TODO: return null instead of '' in v4
-        data: syncAlbumV2ToV1({ ...data, description: data.description ?? '' }, albumUsers),
+        data: { ...data, description: data.description ?? '' },
       });
     }
   }
@@ -564,7 +546,7 @@ export class SyncService extends BaseService {
         await sendEntityBackfillCompleteAck(response, backfillType, createId);
       }
     } else if (albums.length > 0) {
-      await this.upsertBackfillCheckpoint({
+      await this.upsertBackfillCheckpoint(options.trx, {
         type: backfillType,
         sessionId,
         createId: albums.at(-1)!.createId,
@@ -622,7 +604,7 @@ export class SyncService extends BaseService {
         await sendEntityBackfillCompleteAck(response, backfillType, createId);
       }
     } else if (albums.length > 0) {
-      await this.upsertBackfillCheckpoint({
+      await this.upsertBackfillCheckpoint(options.trx, {
         type: backfillType,
         sessionId,
         createId: albums.at(-1)!.createId,
@@ -693,7 +675,7 @@ export class SyncService extends BaseService {
         await sendEntityBackfillCompleteAck(response, backfillType, createId);
       }
     } else if (albums.length > 0) {
-      await this.upsertBackfillCheckpoint({
+      await this.upsertBackfillCheckpoint(options.trx, {
         type: backfillType,
         sessionId,
         createId: albums.at(-1)!.createId,
@@ -768,7 +750,7 @@ export class SyncService extends BaseService {
         await sendEntityBackfillCompleteAck(response, backfillType, createId);
       }
     } else if (albums.length > 0) {
-      await this.upsertBackfillCheckpoint({
+      await this.upsertBackfillCheckpoint(options.trx, {
         type: backfillType,
         sessionId,
         createId: albums.at(-1)!.createId,
@@ -899,7 +881,7 @@ export class SyncService extends BaseService {
         await sendEntityBackfillCompleteAck(response, backfillType, createId);
       }
     } else if (partners.length > 0) {
-      await this.upsertBackfillCheckpoint({
+      await this.upsertBackfillCheckpoint(options.trx, {
         type: backfillType,
         sessionId,
         createId: partners.at(-1)!.createId,
@@ -1031,18 +1013,24 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async upsertBackfillCheckpoint(item: { type: SyncEntityType; sessionId: string; createId: string }) {
+  private async upsertBackfillCheckpoint(
+    trx: Kysely<DB>,
+    item: { type: SyncEntityType; sessionId: string; createId: string },
+  ) {
     const { type, sessionId, createId } = item;
-    await this.syncCheckpointRepository.upsertAll([
-      {
-        type,
-        sessionId,
-        ack: toAck({
+    await this.syncCheckpointRepository.upsertAll(
+      [
+        {
           type,
-          updateId: createId,
-          extraId: COMPLETE_ID,
-        }),
-      },
-    ]);
+          sessionId,
+          ack: toAck({
+            type,
+            updateId: createId,
+            extraId: COMPLETE_ID,
+          }),
+        },
+      ],
+      trx,
+    );
   }
 }

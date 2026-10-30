@@ -36,8 +36,8 @@ export class SessionRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async isPendingSyncReset(id: string) {
-    const result = await this.db
+  async isPendingSyncReset(id: string, db: Kysely<DB> = this.db) {
+    const result = await db
       .selectFrom('session')
       .select(['isPendingSyncReset'])
       .where('id', '=', id)

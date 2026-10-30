@@ -3,7 +3,6 @@ import z from 'zod';
 import { ExtraModel } from 'src/decorators.js';
 import { AssetEditActionSchema } from 'src/dtos/editing.dto.js';
 import {
-  AlbumUserRole,
   AlbumUserRoleSchema,
   AssetOrderSchema,
   AssetTypeSchema,
@@ -278,15 +277,6 @@ class SyncAlbumV2 extends createZodDto(SyncAlbumV2Schema) {}
 class SyncAlbumToAssetV1 extends createZodDto(SyncAlbumToAssetV1Schema) {}
 @ExtraModel()
 class SyncAlbumToAssetDeleteV1 extends createZodDto(SyncAlbumToAssetDeleteV1Schema) {}
-
-export function syncAlbumV2ToV1(
-  albumV2: SyncAlbumV2,
-  albumUsers: { userId: string; role: AlbumUserRole }[],
-): SyncAlbumV1 {
-  const owner = albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
-
-  return { ...albumV2, ownerId: owner.userId };
-}
 
 const SyncMemoryV1Schema = z
   .object({

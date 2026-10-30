@@ -1,7 +1,7 @@
 import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
-import { Kysely, sql } from 'kysely';
+import { IsolationLevel, Kysely, sql } from 'kysely';
 import { FileMigrationProvider, Migrator } from 'kysely/migration';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
@@ -481,6 +481,13 @@ export class DatabaseRepository {
 
   async wait(lock: DatabaseLock): Promise<void> {
     await this.asyncLock.acquire(DatabaseLock[lock], () => {});
+  }
+
+  async transaction(isolationLevel: IsolationLevel) {
+    const trx = await this.db.startTransaction().setIsolationLevel(isolationLevel).execute();
+    return Object.assign(trx, {
+      [Symbol.asyncDispose]: () => (trx.isCommitted || trx.isRolledBack ? Promise.resolve() : trx.rollback().execute()),
+    });
   }
 
   private async acquireLock(lock: DatabaseLock, connection: Kysely<DB>): Promise<void> {
