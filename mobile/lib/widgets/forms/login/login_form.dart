@@ -16,6 +16,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/feature_message.provider.dart';
@@ -273,6 +274,16 @@ class LoginForm extends HookConsumerWidget {
       unawaited(context.router.replaceAll([const TabShellRoute()]));
     }
 
+    Future<void> onLogin(LoginResponse result) async {
+      if (result.shouldChangePassword && !result.isAdmin && isPasswordLoginEnable.value) {
+        unawaited(context.pushRoute(const ChangePasswordRoute()));
+        passwordController.clear();
+        return;
+      }
+
+      await finishLogin();
+    }
+
     Future<void> login() async {
       TextInput.finishAutofillContext();
 
@@ -286,13 +297,7 @@ class LoginForm extends HookConsumerWidget {
           return;
         }
 
-        if (result.shouldChangePassword && !result.isAdmin) {
-          unawaited(context.pushRoute(const ChangePasswordRoute()));
-          passwordController.clear();
-        } else {
-          await finishLogin();
-          return;
-        }
+        await onLogin(result);
       } catch (error) {
         if (!context.mounted) {
           return;
@@ -413,21 +418,12 @@ class LoginForm extends HookConsumerWidget {
     }
 
     Future<void> passkeyLogin() async {
+      invalidateAllApiRepositoryProviders(ref);
+
       try {
-        final result = await ref.read(PasskeyStore.instance).login();
-        if (result == null || !context.mounted) {
-          return;
-        }
-
-        invalidateAllApiRepositoryProviders(ref);
-        final isSuccess = await ref.read(authProvider.notifier).saveAuthInfo(accessToken: result.accessToken);
-        if (isSuccess && context.mounted) {
-          if (result.shouldChangePassword && !result.isAdmin && isPasswordLoginEnable.value) {
-            unawaited(context.pushRoute(const ChangePasswordRoute()));
-            return;
-          }
-
-          await finishLogin();
+        final result = await ref.read(authProvider.notifier).passkeyLogin();
+        if (result != null && context.mounted) {
+          await onLogin(result);
         }
       } catch (error, stack) {
         log.severe('Error logging in with passkey', error, stack);
@@ -545,27 +541,27 @@ class LoginForm extends HookConsumerWidget {
                       ],
                     ),
                   ),
-                if (isPasskeyEnable.value)
-                  ImmichForm(
-                    onSubmit: passkeyLogin,
-                    submitText: context.t.login_with_passkey,
-                    submitIcon: Icons.key_outlined,
-                    builder: (context, _) => isPasswordLoginEnable.value
-                        ? Padding(
-                            padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 12.0),
-                            child: Divider(color: context.colorScheme.onSurface, height: 5),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
                 if (isOauthEnable.value)
                   ImmichForm(
                     onSubmit: oAuthLogin,
                     submitText: oAuthButtonLabel.value,
                     submitIcon: Icons.pin_outlined,
-                    builder: (context, _) => isPasswordLoginEnable.value || isPasskeyEnable.value
+                    builder: (context, _) => isPasswordLoginEnable.value
                         ? Padding(
                             padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 12.0),
                             child: Divider(color: context.isDarkTheme ? Colors.white : Colors.black, height: 5),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                if (isPasskeyEnable.value)
+                  ImmichForm(
+                    onSubmit: passkeyLogin,
+                    submitText: context.t.login_with_passkey,
+                    submitIcon: Icons.key_outlined,
+                    builder: (context, _) => isPasswordLoginEnable.value || isOauthEnable.value
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 12.0),
+                            child: Divider(color: context.colorScheme.onSurface, height: 5),
                           )
                         : const SizedBox.shrink(),
                   ),

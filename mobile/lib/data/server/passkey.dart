@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/api_repository.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:openapi/api.dart';
 
@@ -30,10 +29,12 @@ class PasskeyApiRepository extends ApiRepository {
     await _api.finishRegistration(PasskeyRegistrationFinishDto(response: credential));
   }
 
-  Future<String> startAuthentication() async => jsonEncode(await checkNull(_api.startAuthentication()));
+  /// The WebAuthn options for logging in with a passkey
+  Future<Map<String, Object>> startAuthentication() => checkNull(_api.startAuthentication());
 
-  Future<LoginResponseDto> finishAuthentication(String response) async {
-    final dto = PasskeyAuthenticationFinishDto(response: jsonDecode(response));
-    return checkNull(_api.finishAuthentication(dto));
+  /// Log in with the WebAuthn [credential] signed with the [startAuthentication] options
+  Future<LoginResponse> finishAuthentication(Map<String, dynamic> credential) async {
+    final dto = PasskeyAuthenticationFinishDto(response: credential);
+    return LoginResponse.fromDto(await checkNull(_api.finishAuthentication(dto)));
   }
 }

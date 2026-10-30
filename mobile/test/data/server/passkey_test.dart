@@ -46,7 +46,7 @@ void main() {
       });
     final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
 
-    expect((await sut.finishAuthentication(jsonEncode(credential))).accessToken, 'token');
+    expect((await sut.finishAuthentication(credential)).accessToken, 'token');
     expect(body, {'response': credential});
   });
 }

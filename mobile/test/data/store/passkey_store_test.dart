@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/passkey.dart';
 import 'package:immich_mobile/data/store.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/platform/passkey_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -91,10 +92,9 @@ void main() {
   });
 
   group('login', () {
-    final login = LoginResponseDto(
+    const login = LoginResponse(
       accessToken: 'token',
       isAdmin: false,
-      isOnboarded: true,
       name: 'user',
       profileImagePath: '',
       shouldChangePassword: false,
@@ -103,7 +103,7 @@ void main() {
     );
 
     setUp(() {
-      when(() => api.startAuthentication()).thenAnswer((_) async => '{"challenge":"abc"}');
+      when(() => api.startAuthentication()).thenAnswer((_) async => {'challenge': 'abc'});
       when(() => api.finishAuthentication(any())).thenAnswer((_) async => login);
     });
 
@@ -111,7 +111,7 @@ void main() {
       when(() => hostApi.authenticate('{"challenge":"abc"}')).thenAnswer((_) async => '{"id":"credential"}');
 
       expect(await createContainer().read(Store.passkeys).login(), login);
-      verify(() => api.finishAuthentication('{"id":"credential"}')).called(1);
+      expect(verify(() => api.finishAuthentication(captureAny())).captured.single, {'id': 'credential'});
     });
 
     test('does not finish when the user cancels', () async {

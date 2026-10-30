@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/passkey.dart';
 import 'package:immich_mobile/data/store/util/cache.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 
 final _log = Logger("PasskeyStore");
 
 /// Passkeys the current user can log in with
 ///
-/// All operations directly access the HTTP API, and creating one also shows the system's passkey prompt
+/// All operations directly access the HTTP API, and creating or using one also shows the system's passkey prompt
 extension type const PasskeyStore._(Provider<PasskeyMutations> _provider) implements Provider<PasskeyMutations> {
   static final PasskeyStore instance = PasskeyStore._(Provider((ref) => PasskeyMutations._(ref)));
 
@@ -56,13 +56,21 @@ class PasskeyMutations extends StoreMutations {
     }
   }
 
-  Future<LoginResponseDto?> login() async {
+  /// Log in with a passkey through the system's passkey prompt, returning null if the user cancels
+  Future<LoginResponse?> login() async {
     final apiRepository = read(passkeyApiRepositoryProvider);
-    final response = await read(passkeyHostApiProvider).authenticate(await apiRepository.startAuthentication());
-    if (response == null) {
-      return null;
-    }
 
-    return apiRepository.finishAuthentication(response);
+    try {
+      final options = await apiRepository.startAuthentication();
+      final credential = await read(passkeyHostApiProvider).authenticate(jsonEncode(options));
+      if (credential == null) {
+        return null;
+      }
+
+      return await apiRepository.finishAuthentication(jsonDecode(credential));
+    } catch (error, stack) {
+      _log.severe("Failed to log in with a passkey", error, stack);
+      rethrow;
+    }
   }
 }

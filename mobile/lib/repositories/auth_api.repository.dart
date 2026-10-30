@@ -23,7 +23,7 @@ class AuthApiRepository extends ApiRepository {
       _apiService.authenticationApi.login(LoginCredentialDto(email: email, password: password)),
     );
 
-    return _mapLoginReponse(loginResponseDto);
+    return LoginResponse.fromDto(loginResponseDto);
   }
 
   Future<void> logout() async {
@@ -32,18 +32,6 @@ class AuthApiRepository extends ApiRepository {
     }
 
     await _apiService.authenticationApi.logout().timeout(const Duration(seconds: 7));
-  }
-
-  LoginResponse _mapLoginReponse(LoginResponseDto dto) {
-    return LoginResponse(
-      accessToken: dto.accessToken,
-      isAdmin: dto.isAdmin,
-      name: dto.name,
-      profileImagePath: dto.profileImagePath,
-      shouldChangePassword: dto.shouldChangePassword,
-      userEmail: dto.userEmail,
-      userId: dto.userId,
-    );
   }
 
   Future<bool> unlockPinCode(String pinCode) async {
