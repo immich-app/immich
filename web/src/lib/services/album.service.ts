@@ -1,3 +1,23 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import AddUsersModal from '#lib/modals/AddUsersModal.svelte';
+import AlbumEditModal from '#lib/modals/AlbumEditModal.svelte';
+import AlbumOptionsModal from '#lib/modals/AlbumOptionsModal.svelte';
+import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
+import {
+  addAssetsToAlbumsMutation,
+  addUsersToAlbumMutation,
+  deleteAlbumMutation,
+  removeUserFromAlbumMutation,
+  updateAlbumInfoMutation,
+  updateAlbumUserMutation,
+} from '#lib/queries/album.query.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { Route } from '#lib/route.ts';
+import { createAlbumAndRedirect } from '#lib/utils/album-utils.ts';
+import { downloadArchive } from '#lib/utils/asset-utils.ts';
+import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { AlbumUserRole, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import {
@@ -16,26 +36,6 @@ import {
 import { type MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import AddUsersModal from '$lib/modals/AddUsersModal.svelte';
-import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
-import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
-import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import {
-  addAssetsToAlbumsMutation,
-  addUsersToAlbumMutation,
-  deleteAlbumMutation,
-  removeUserFromAlbumMutation,
-  updateAlbumInfoMutation,
-  updateAlbumUserMutation,
-} from '$lib/queries/album.query';
-import { executeMutation } from '$lib/queries/client';
-import { Route } from '$lib/route';
-import { createAlbumAndRedirect } from '$lib/utils/album-utils';
-import { downloadArchive } from '$lib/utils/asset-utils';
-import { openFileUploadDialog } from '$lib/utils/file-uploader';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const isAlbumOwner = (album: AlbumResponseDto) => album.albumUsers[0].user.id === authManager.user.id;
 export const isAlbumEditor = (album: AlbumResponseDto) =>

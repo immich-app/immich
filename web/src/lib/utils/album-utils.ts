@@ -1,10 +1,6 @@
-import type { AlbumResponseDto } from '@immich/sdk';
-import { orderBy } from 'lodash-es';
-import { get } from 'svelte/store';
-import { goto } from '$app/navigation';
-import { createAlbumMutation } from '$lib/queries/album.query';
-import { executeMutation } from '$lib/queries/client';
-import { Route } from '$lib/route';
+import { createAlbumMutation } from '#lib/queries/album.query.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { Route } from '#lib/route.ts';
 import {
   AlbumFilter,
   AlbumGroupBy,
@@ -13,23 +9,27 @@ import {
   albumViewSettings,
   locale,
   type AlbumViewSettings,
-} from '$lib/stores/preferences.store';
+} from '#lib/stores/preferences.store.ts';
+import type { AlbumResponseDto } from '@immich/sdk';
+import { orderBy } from 'lodash-es';
+import { get } from 'svelte/store';
+import { goto } from '$app/navigation';
 
 /**
- * -------------------------
- * Albums General Management
- * -------------------------
- */
+-------------------------
+Albums General Management
+-------------------------
+*/
 export const createAlbumAndRedirect = (name?: string, assetIds?: string[]) =>
   executeMutation(createAlbumMutation, [{ createAlbumDto: { albumName: name ?? '', assetIds } }], {
     onSuccess: (album) => void goto(Route.viewAlbum(album)),
   });
 
 /**
- * -------------
- * Album Sorting
- * -------------
- */
+-------------
+Album Sorting
+-------------
+*/
 export interface AlbumSortOptionMetadata {
   id: AlbumSortBy;
   defaultOrder: SortOrder;
@@ -82,10 +82,10 @@ export const findFilterOption = (filter: string) => {
 };
 
 /**
- * --------------
- * Album Grouping
- * --------------
- */
+--------------
+Album Grouping
+--------------
+*/
 export interface AlbumGroup {
   id: string;
   name: string;
@@ -136,10 +136,10 @@ export const getSelectedAlbumGroupOption = (settings: AlbumViewSettings) => {
 };
 
 /**
- * ----------------------------
- * Album Groups Collapse/Expand
- * ----------------------------
- */
+----------------------------
+Album Groups Collapse/Expand
+----------------------------
+*/
 const getCollapsedAlbumGroups = (settings: AlbumViewSettings) => {
   settings.collapsedGroups ??= {};
   const { collapsedGroups, groupBy } = settings;

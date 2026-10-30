@@ -1,12 +1,12 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { Route } from '#lib/route.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { createJob, deleteIntegrityReport, IntegrityReport, ManualJobName } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { Route } from '$lib/route';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getIntegrityReportActions = ($t: MessageFormatter, reportType: IntegrityReport) => {
   const Download: ActionItem = {

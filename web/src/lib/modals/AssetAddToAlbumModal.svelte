@@ -1,7 +1,7 @@
 <script lang="ts">
-  import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
-  import { addAssetsToAlbumsMutation } from '$lib/queries/album.query';
-  import { executeMutation } from '$lib/queries/client';
+  import AlbumPickerModal from '#lib/modals/AlbumPickerModal.svelte';
+  import { addAssetsToAlbumsMutation } from '#lib/queries/album.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import { type AlbumResponseDto } from '@immich/sdk';
 
   type Props = {

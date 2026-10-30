@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { executeMutation } from '$lib/queries/client';
-  import { createWorkflowMutation } from '$lib/queries/workflow.query';
-  import { Route } from '$lib/route';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { createWorkflowMutation } from '#lib/queries/workflow.query.ts';
+  import { Route } from '#lib/route.ts';
   import { WorkflowTrigger, type WorkflowResponseDto } from '@immich/sdk';
   import { Field, FormModal, Input, Textarea, VStack } from '@immich/ui';
   import { t } from 'svelte-i18n';

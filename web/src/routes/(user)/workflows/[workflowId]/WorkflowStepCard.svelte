@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { pluginManager } from '$lib/managers/plugin-manager.svelte';
-  import type { JSONSchemaProperty } from '$lib/types';
+  import { pluginManager } from '#lib/managers/plugin-manager.svelte.ts';
+  import type { JSONSchemaProperty } from '#lib/types.ts';
   import { type WorkflowStepDto } from '@immich/sdk';
   import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
   import { getTagById } from '@immich/sdk';
-  import { getAlbumQuery } from '$lib/queries/album.query';
-  import { queryClient } from '$lib/queries/client';
+  import { getAlbumQuery } from '#lib/queries/album.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
   import {
     mdiAutoFix,
     mdiDragVertical,
@@ -51,6 +51,7 @@
   let dragImage = $state<Element>();
   let isDropTarget = $state(false);
 
+  // eslint-disable-next-line unicorn/no-unnecessary-parameters
   const truncate = (input: string, max = 24) => (input.length > max ? input.slice(0, max - 1) + '…' : input);
 
   const formatConfigValue = (value: unknown): string => {

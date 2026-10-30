@@ -1,6 +1,6 @@
 <script lang="ts">
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { getPartners, PartnerDirection, searchUsers, type UserResponseDto } from '@immich/sdk';
   import { Button, ListButton, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';

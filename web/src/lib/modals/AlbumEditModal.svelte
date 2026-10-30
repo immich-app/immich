@@ -1,7 +1,7 @@
 <script lang="ts">
-  import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
-  import { updateAlbumInfoMutation } from '$lib/queries/album.query';
-  import { executeMutation } from '$lib/queries/client';
+  import AlbumCover from '#lib/components/album-page/AlbumCover.svelte';
+  import { updateAlbumInfoMutation } from '#lib/queries/album.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { Field, FormModal, Input, Textarea } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';

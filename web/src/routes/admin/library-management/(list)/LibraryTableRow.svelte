@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { libraryTableClasses } from '$lib/constants';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getLibraryStatisticsQuery } from '$lib/queries/library.query';
-  import { getUserAdminQuery } from '$lib/queries/user-admin.query';
-  import { Route } from '$lib/route';
-  import { getLibraryActions } from '$lib/services/library.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getBytesWithUnit } from '$lib/utils/byte-units';
+  import { libraryTableClasses } from '#lib/constants.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
+  import { getUserAdminQuery } from '#lib/queries/user-admin.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getLibraryActions } from '#lib/services/library.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import type { LibraryResponseDto } from '@immich/sdk';
   import { ContextMenuButton, Link, MenuItemType, TableCell, TableRow } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
@@ -40,7 +40,7 @@
     <Link href={Route.viewUser(owner)}>{owner.name}</Link>
   </TableCell>
   {#if stats}
-    {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(stats.usage, 0)}
+    {const [diskUsage, diskUsageUnit] = $derived(getBytesWithUnit(stats.usage, 0))}
     <TableCell class={libraryTableClasses.column3}>
       {stats.photos.toLocaleString($locale)}
     </TableCell>

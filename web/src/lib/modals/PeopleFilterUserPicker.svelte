@@ -1,6 +1,6 @@
 <script lang="ts">
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import type { UserResponseDto } from '@immich/sdk';
   import { BasicModal, Icon, ListButton, Stack, Text } from '@immich/ui';
   import { mdiFilterOffOutline } from '@mdi/js';

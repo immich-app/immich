@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { getLibraryQuery, updateLibraryMutation } from '$lib/queries/library.query';
-  import { Route } from '$lib/route';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getLibraryQuery, updateLibraryMutation } from '#lib/queries/library.query.ts';
+  import { Route } from '#lib/route.ts';
   import { Field, FormModal, Input } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';

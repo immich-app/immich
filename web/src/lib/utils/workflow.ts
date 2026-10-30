@@ -1,6 +1,6 @@
+import type { JSONSchemaProperty } from '#lib/types.ts';
 import { WorkflowTrigger } from '@immich/sdk';
 import type { MessageFormatter } from 'svelte-i18n';
-import type { JSONSchemaProperty } from '$lib/types';
 
 export const getTriggerName = ($t: MessageFormatter, type: WorkflowTrigger) => {
   switch (type) {
@@ -12,6 +12,9 @@ export const getTriggerName = ($t: MessageFormatter, type: WorkflowTrigger) => {
     // }
     case WorkflowTrigger.AssetMetadataExtraction: {
       return $t('trigger_asset_metadata_extraction');
+    }
+    case WorkflowTrigger.AssetOcrExtraction: {
+      return $t('trigger_asset_ocr_extraction');
     }
     case WorkflowTrigger.AssetTagged: {
       return $t('trigger_asset_tagged');
@@ -32,6 +35,9 @@ export const getTriggerDescription = ($t: MessageFormatter, type: WorkflowTrigge
     // }
     case WorkflowTrigger.AssetMetadataExtraction: {
       return $t('trigger_asset_metadata_extraction_description');
+    }
+    case WorkflowTrigger.AssetOcrExtraction: {
+      return $t('trigger_asset_ocr_extraction_description');
     }
     case WorkflowTrigger.AssetTagged: {
       return $t('trigger_asset_tagged_description');

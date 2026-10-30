@@ -1,11 +1,11 @@
 <script lang="ts">
   import QueueCard from './QueueCard.svelte';
   import QueueStorageMigrationDescription from './QueueStorageMigrationDescription.svelte';
-  import { queueManager } from '$lib/managers/queue-manager.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
-  import { asQueueItem } from '$lib/services/queue.service';
-  import { handleError } from '$lib/utils/handle-error';
+  import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { asQueueItem } from '#lib/services/queue.service.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import {
     QueueCommand,
     type QueueCommandDto,
@@ -127,7 +127,7 @@
 
 <div class="mt-10 flex flex-col gap-7">
   {#each queueList as [queueName, props] (queueName)}
-    {@const queue = queues.find(({ name }) => name === queueName)}
+    {const queue = $derived(queues.find(({ name }) => name === queueName))}
     {#if queue}
       <QueueCard {queue} onCommand={(command) => handleCommand(queueName, command)} {...props} />
     {/if}

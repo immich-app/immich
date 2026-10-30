@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { executeMutation } from '$lib/queries/client';
-  import { removeSharedLinkAssetsMutation } from '$lib/queries/shared-link.query';
+  import { shortcut } from '#lib/actions/shortcut.ts';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { removeSharedLinkAssetsMutation } from '#lib/queries/shared-link.query.ts';
   import { type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteOutline } from '@mdi/js';

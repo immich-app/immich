@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { deleteAllSessionsMutation, deleteSessionMutation, getSessionsQuery } from '$lib/queries/session.query';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { deleteAllSessionsMutation, deleteSessionMutation, getSessionsQuery } from '#lib/queries/session.query.ts';
   import { type SessionResponseDto } from '@immich/sdk';
   import { Button, modalManager, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import DeviceCard from '$lib/components/user-settings-page/DeviceCard.svelte';
+  import DeviceCard from '#lib/components/user-settings-page/DeviceCard.svelte';
 
   const query = createPreloadedQuery(getSessionsQuery);
   const devices = $derived(query.data);

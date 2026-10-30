@@ -1,17 +1,17 @@
+import LibraryExclusionPatternAddModal from '#lib/modals/LibraryExclusionPatternAddModal.svelte';
+import LibraryExclusionPatternEditModal from '#lib/modals/LibraryExclusionPatternEditModal.svelte';
+import LibraryFolderAddModal from '#lib/modals/LibraryFolderAddModal.svelte';
+import LibraryFolderEditModal from '#lib/modals/LibraryFolderEditModal.svelte';
+import { executeMutation } from '#lib/queries/client.ts';
+import { deleteLibraryMutation, scanLibraryMutation, updateLibraryMutation } from '#lib/queries/library.query.ts';
+import { scanAllLibrariesMutation } from '#lib/queries/queue.query.ts';
+import { Route } from '#lib/route.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import type { LibraryResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import { mdiInformationOutline, mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
-import LibraryExclusionPatternAddModal from '$lib/modals/LibraryExclusionPatternAddModal.svelte';
-import LibraryExclusionPatternEditModal from '$lib/modals/LibraryExclusionPatternEditModal.svelte';
-import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
-import LibraryFolderEditModal from '$lib/modals/LibraryFolderEditModal.svelte';
-import { executeMutation } from '$lib/queries/client';
-import { deleteLibraryMutation, scanLibraryMutation, updateLibraryMutation } from '$lib/queries/library.query';
-import { scanAllLibrariesMutation } from '$lib/queries/queue.query';
-import { Route } from '$lib/route';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getLibrariesActions = ($t: MessageFormatter) => {
   const ScanAll: ActionItem = {

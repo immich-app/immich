@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TreeNode } from '$lib/utils/tree-utils';
+  import { TreeNode } from '#lib/utils/tree-utils.ts';
   import { Breadcrumbs, ControlBar, ControlBarHeader, IconButton } from '@immich/ui';
   import { mdiArrowUpLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';

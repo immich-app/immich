@@ -1,11 +1,15 @@
 <script lang="ts">
-  import emptyWorkflows from '$lib/assets/empty-workflows.svg';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import { createPreloadedQuery, queryClient } from '$lib/queries/client';
-  import { getWorkflowForShareQuery, searchWorkflowsQuery } from '$lib/queries/workflow.query';
-  import { Route } from '$lib/route';
-  import { getWorkflowActions, getWorkflowsActions, getWorkflowShowSchemaAction } from '$lib/services/workflow.service';
+  import emptyWorkflows from '#lib/assets/empty-workflows.svg';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { getWorkflowForShareQuery, searchWorkflowsQuery } from '#lib/queries/workflow.query.ts';
+  import { Route } from '#lib/route.ts';
+  import {
+    getWorkflowActions,
+    getWorkflowsActions,
+    getWorkflowShowSchemaAction,
+  } from '#lib/services/workflow.service.ts';
   import {
     Badge,
     Button,
@@ -61,7 +65,7 @@
       {:else}
         <div class="my-6 flex flex-col gap-3">
           {#each workflows as workflow (workflow.id)}
-            {@const { ToggleEnabled, Duplicate, Logs, Edit, Delete } = getWorkflowActions($t, workflow)}
+            {const { ToggleEnabled, Duplicate, Logs, Edit, Delete } = $derived(getWorkflowActions($t, workflow))}
 
             <Card class="group shadow-none transition-colors hover:border-primary">
               <CardHeader>

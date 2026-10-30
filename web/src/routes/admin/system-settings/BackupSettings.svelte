@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getAdminConfigQuery } from '$lib/queries/config-admin.query';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { cloneDeep } from 'lodash-es';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
+  import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSelect from './SettingSelect.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { Link } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -71,7 +71,7 @@
           inputType={SettingInputFieldType.NUMBER}
           required={true}
           label={$t('admin.backup_keep_last_amount')}
-          disabled={disabled || !configToEdit.backup.database.enabled}
+          {disabled}
           bind:value={configToEdit.backup.database.keepLastAmount}
           isEdited={configToEdit.backup.database.keepLastAmount !== config.backup.database.keepLastAmount}
         />

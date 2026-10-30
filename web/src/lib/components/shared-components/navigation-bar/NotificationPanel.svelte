@@ -1,15 +1,15 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { focusTrap } from '$lib/actions/focus-trap';
-  import NotificationItem from '$lib/components/shared-components/navigation-bar/NotificationItem.svelte';
-  import { OpenQueryParam } from '$lib/constants';
-  import { Route } from '$lib/route';
-  import { executeMutation } from '$lib/queries/client';
+  import { focusTrap } from '#lib/actions/focus-trap.ts';
+  import NotificationItem from '#lib/components/shared-components/navigation-bar/NotificationItem.svelte';
+  import { OpenQueryParam } from '#lib/constants.ts';
+  import { Route } from '#lib/route.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import {
     getNotificationsQuery,
     updateNotificationMutation,
     updateNotificationsMutation,
-  } from '$lib/queries/notification.query';
+  } from '#lib/queries/notification.query.ts';
   import { NotificationType, type NotificationDto } from '@immich/sdk';
   import { Button, Icon, Scrollable, Stack, Text } from '@immich/ui';
   import { mdiBellOutline, mdiCheckAll } from '@mdi/js';

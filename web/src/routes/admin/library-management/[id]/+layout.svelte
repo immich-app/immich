@@ -1,20 +1,20 @@
 <script lang="ts">
-  import emptyFoldersUrl from '$lib/assets/empty-folders.svg';
-  import AdminCard from '$lib/components/AdminCard.svelte';
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import TableButton from '$lib/components/TableButton.svelte';
-  import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getLibraryQuery, getLibraryStatisticsQuery } from '$lib/queries/library.query';
-  import { Route } from '$lib/route';
+  import emptyFoldersUrl from '#lib/assets/empty-folders.svg';
+  import AdminCard from '#lib/components/AdminCard.svelte';
+  import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
+  import ServerStatisticsCard from '#lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import TableButton from '#lib/components/TableButton.svelte';
+  import LibraryFolderAddModal from '#lib/modals/LibraryFolderAddModal.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getLibraryQuery, getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
+  import { Route } from '#lib/route.ts';
   import {
     getLibraryActions,
     getLibraryExclusionPatternActions,
     getLibraryFolderActions,
-  } from '$lib/services/library.service';
-  import { getBytesWithUnit } from '$lib/utils/byte-units';
+  } from '#lib/services/library.service.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import { Code, CommandPaletteDefaultProvider, Container, Heading, modalManager } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
@@ -63,7 +63,7 @@
           <table class="w-full">
             <tbody>
               {#each library.importPaths as folder (folder)}
-                {@const { Edit, Delete } = getLibraryFolderActions($t, library, folder)}
+                {const { Edit, Delete } = $derived(getLibraryFolderActions($t, library, folder))}
                 <tr class="h-12">
                   <td>
                     <Code>{folder}</Code>
@@ -83,7 +83,7 @@
         <table class="w-full">
           <tbody>
             {#each library.exclusionPatterns as exclusionPattern (exclusionPattern)}
-              {@const { Edit, Delete } = getLibraryExclusionPatternActions($t, library, exclusionPattern)}
+              {const { Edit, Delete } = $derived(getLibraryExclusionPatternActions($t, library, exclusionPattern))}
               <tr class="h-12">
                 <td>
                   <Code>{exclusionPattern}</Code>

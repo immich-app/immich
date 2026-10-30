@@ -1,10 +1,10 @@
 <script lang="ts">
-  import TableButton from '$lib/components/TableButton.svelte';
-  import { dateFormats } from '$lib/constants';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { searchPasskeysQuery } from '$lib/queries/passkey.query';
-  import { getPasskeyActions, getPasskeysActions } from '$lib/services/passkey.service';
-  import { locale } from '$lib/stores/preferences.store';
+  import TableButton from '#lib/components/TableButton.svelte';
+  import { dateFormats } from '#lib/constants.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { searchPasskeysQuery } from '#lib/queries/passkey.query.ts';
+  import { getPasskeyActions, getPasskeysActions } from '#lib/services/passkey.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import { Button, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -39,7 +39,7 @@
 
         <TableBody>
           {#each passkeys as passkey (passkey.id)}
-            {@const { Update, Delete } = getPasskeyActions($t, passkey)}
+            {const { Update, Delete } = $derived(getPasskeyActions($t, passkey))}
             <TableRow>
               <TableCell>{passkey.name ?? $t('passkeys', { values: { count: 1 } })}</TableCell>
               <TableCell>{new Date(passkey.createdAt).toLocaleDateString($locale, dateFormats.settings)}</TableCell>

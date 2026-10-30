@@ -454,6 +454,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -467,6 +468,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -549,6 +551,30 @@ describe(MediaService.name, () => {
           isTransparent: false,
         },
       ]);
+    });
+
+    it('should generate WebP video thumbnails when JPEG XL is configured', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { preview: { format: ImageFormat.Jxl }, thumbnail: { format: ImageFormat.Jxl } },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...probeStub.videoStream2160p,
+      });
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.stringMatching(/_preview\.webp$/),
+        expect.any(Object),
+      );
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.stringMatching(/_thumbnail\.webp$/),
+        expect.any(Object),
+      );
     });
 
     it('should tonemap thumbnail for hdr video', async () => {
@@ -726,6 +752,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         previewPath,
       );
@@ -739,6 +766,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 4,
         },
         thumbnailPath,
       );
@@ -774,6 +802,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         previewPath,
       );
@@ -787,6 +816,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 4,
         },
         thumbnailPath,
       );
@@ -867,6 +897,24 @@ describe(MediaService.name, () => {
           isProgressive: true,
           isTransparent: false,
         }),
+      ]);
+    });
+
+    it('should never set isProgressive for JPEG XL', async () => {
+      const asset = AssetFactory.from().exif().build();
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: {
+          preview: { format: ImageFormat.Jxl, progressive: true },
+          thumbnail: { format: ImageFormat.Jxl, progressive: true },
+        },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        expect.objectContaining({ type: AssetFileType.Preview, isProgressive: false }),
+        expect.objectContaining({ type: AssetFileType.Thumbnail, isProgressive: false }),
       ]);
     });
 
@@ -1079,6 +1127,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1114,6 +1163,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1127,6 +1177,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1160,6 +1211,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1173,6 +1225,7 @@ describe(MediaService.name, () => {
           size: 1440,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1210,6 +1263,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1274,6 +1328,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1316,6 +1371,7 @@ describe(MediaService.name, () => {
           progressive: false,
           processInvalidImages: false,
           edits: [],
+          decodingTier: 0,
         },
         expect.any(String),
       );
@@ -1621,6 +1677,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1674,6 +1731,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1722,6 +1780,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1766,6 +1825,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1810,6 +1870,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1854,6 +1915,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -1903,6 +1965,7 @@ describe(MediaService.name, () => {
           ],
           processInvalidImages: false,
           size: 250,
+          decodingTier: 4,
         },
         expect.any(String),
       );
@@ -3080,7 +3143,7 @@ describe(MediaService.name, () => {
             '-v',
             'verbose',
             '-vf',
-            'hwupload=extra_hw_frames=64,scale_qsv=-1:720:mode=hq:format=nv12',
+            'format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720:mode=hq:format=nv12',
             '-preset',
             '7',
             '-global_quality:v',
@@ -3093,6 +3156,24 @@ describe(MediaService.name, () => {
             '20000k',
           ]),
           twoPass: false,
+        }),
+      );
+    });
+
+    it('should tone-map to nv12 before upload for sw decode qsv', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStreamHDR });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Qsv, accelDecode: false },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([
+            '-vf',
+            'tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=nv12,hwupload=extra_hw_frames=64',
+          ]),
         }),
       );
     });
@@ -3328,13 +3409,46 @@ describe(MediaService.name, () => {
             '-v',
             'verbose',
             '-vf',
-            'hwupload=extra_hw_frames=64,scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12',
+            'format=nv12,hwupload=extra_hw_frames=64,scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12',
             '-compression_level',
             '7',
             '-rc_mode',
             '1',
           ]),
           twoPass: false,
+        }),
+      );
+    });
+
+    it('should convert to nv12 before upload for sw decode vaapi without scaling', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: false, targetResolution: 'original' },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining(['-vf', 'format=nv12,hwupload=extra_hw_frames=64']),
+        }),
+      );
+    });
+
+    it('should tone-map to nv12 before upload for sw decode vaapi', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStreamHDR });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: false },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([
+            '-vf',
+            'tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=nv12,hwupload=extra_hw_frames=64',
+          ]),
         }),
       );
     });

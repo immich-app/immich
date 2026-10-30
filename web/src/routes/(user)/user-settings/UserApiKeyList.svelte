@@ -1,10 +1,10 @@
 <script lang="ts">
-  import TableButton from '$lib/components/TableButton.svelte';
-  import { dateFormats } from '$lib/constants';
-  import { getApiKeysQuery } from '$lib/queries/api-key.query';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getApiKeyActions, getApiKeysActions } from '$lib/services/api-key.service';
-  import { locale } from '$lib/stores/preferences.store';
+  import TableButton from '#lib/components/TableButton.svelte';
+  import { dateFormats } from '#lib/constants.ts';
+  import { getApiKeysQuery } from '#lib/queries/api-key.query.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getApiKeyActions, getApiKeysActions } from '#lib/services/api-key.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import { Button, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -39,7 +39,7 @@
 
         <TableBody>
           {#each keys as key (key.id)}
-            {@const { Update, Rotate, Delete } = getApiKeyActions($t, key)}
+            {const { Update, Rotate, Delete } = $derived(getApiKeyActions($t, key))}
             <TableRow>
               <TableCell>{key.name}</TableCell>
               <TableCell>

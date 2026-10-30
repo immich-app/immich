@@ -1,9 +1,7 @@
 import { DateTime } from 'luxon';
 import { GENERATION_CONSTANTS, MockTimelineAsset } from 'src/ui/generators/timeline/timeline-config.js';
 
-/**
- * Linear Congruential Generator for deterministic pseudo-random numbers
- */
+/** Linear Congruential Generator for deterministic pseudo-random numbers */
 export class SeededRandom {
   private seed: number;
 
@@ -11,38 +9,32 @@ export class SeededRandom {
     this.seed = seed;
   }
 
-  /**
-   * Generate next random number in range [0, 1)
-   */
+  /** Generate next random number in range [0, 1) */
   next(): number {
     // LCG parameters from Numerical Recipes
     this.seed = (this.seed * 1_664_525 + 1_013_904_223) % 2_147_483_647;
     return this.seed / 2_147_483_647;
   }
 
-  /**
-   * Generate random integer in range [min, max)
-   */
+  /** Generate random integer in range [min, max) */
   nextInt(min: number, max: number): number {
     return Math.floor(this.next() * (max - min)) + min;
   }
 
-  /**
-   * Generate random boolean with given probability
-   */
+  /** Generate random boolean with given probability */
   nextBoolean(probability = 0.5): boolean {
     return this.next() < probability;
   }
 }
 
 /**
- * Select random days using seed variation to avoid collisions.
- *
- * @param daysInMonth - Total number of days in the month
- * @param numDays - Number of days to select
- * @param rng - Random number generator instance
- * @returns Array of selected day numbers, sorted in descending order
- */
+Select random days using seed variation to avoid collisions.
+
+@param daysInMonth - Total number of days in the month
+@param numDays - Number of days to select
+@param rng - Random number generator instance
+@returns Array of selected day numbers, sorted in descending order
+*/
 export function selectRandomDays(daysInMonth: number, numDays: number, rng: SeededRandom): number[] {
   const selectedDays = new Set<number>();
   const maxAttempts = numDays * GENERATION_CONSTANTS.MAX_SELECT_ATTEMPTS; // Safety limit
@@ -64,9 +56,7 @@ export function selectRandomDays(daysInMonth: number, numDays: number, rng: Seed
   return [...selectedDays].toSorted((a, b) => b - a);
 }
 
-/**
- * Select item from array using seeded random
- */
+/** Select item from array using seeded random */
 export function selectRandom<T>(arr: T[], rng: SeededRandom): T {
   if (arr.length === 0) {
     throw new Error('Cannot select from empty array');
@@ -75,9 +65,7 @@ export function selectRandom<T>(arr: T[], rng: SeededRandom): T {
   return arr[index];
 }
 
-/**
- * Select multiple random items from array using seeded random without duplicates
- */
+/** Select multiple random items from array using seeded random without duplicates */
 export function selectRandomMultiple<T>(arr: T[], count: number, rng: SeededRandom): T[] {
   if (arr.length === 0) {
     throw new Error('Cannot select from empty array');
@@ -104,11 +92,11 @@ export function selectRandomMultiple<T>(arr: T[], count: number, rng: SeededRand
 }
 
 /**
- * Parse timeBucket parameter to extract year-month key
- * Handles both formats:
- * - ISO timestamp: "2024-12-01T00:00:00.000Z" -> "2024-12-01"
- * - Simple format: "2024-12-01" -> "2024-12-01"
- */
+Parse timeBucket parameter to extract year-month key
+Handles both formats:
+- ISO timestamp: "2024-12-01T00:00:00.000Z" -> "2024-12-01"
+- Simple format: "2024-12-01" -> "2024-12-01"
+*/
 export function parseTimeBucketKey(timeBucket: string): string {
   if (!timeBucket) {
     throw new Error('timeBucket parameter cannot be empty');
@@ -150,6 +138,7 @@ export function getMockAsset(
     return null;
   }
 
+  // eslint-disable-next-line unicorn/no-unnecessary-parameters
   const isInDifferentPeriod = (date1: DateTime, date2: DateTime): boolean => {
     if (unit === 'day') {
       return !date1.startOf('day').equals(date2.startOf('day'));

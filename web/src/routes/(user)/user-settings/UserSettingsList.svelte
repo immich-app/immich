@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import ChangePinCodeSettings from './PinCodeSettings.svelte';
   import DownloadSettings from './DownloadSettings.svelte';
   import FeatureSettings from './FeatureSettings.svelte';
   import NotificationsSettings from './NotificationsSettings.svelte';
   import UserPurchaseSettings from './UserPurchaseSettings.svelte';
   import UserUsageStatistic from './UserUsageStatistic.svelte';
-  import { OpenQueryParam, QueryParameter } from '$lib/constants';
-  import { oauth } from '$lib/utils';
+  import { OpenQueryParam, QueryParameter } from '#lib/constants.ts';
+  import { oauth } from '#lib/utils.ts';
   import {
     mdiAccountGroupOutline,
     mdiAccountOutline,
@@ -25,7 +25,7 @@
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import AppSettings from './AppSettings.svelte';
   import ChangePasswordSettings from './ChangePasswordSettings.svelte';
   import DeviceList from './DeviceList.svelte';
@@ -34,14 +34,13 @@
   import UserApiKeyList from './UserApiKeyList.svelte';
   import UserPasskeyList from './UserPasskeyList.svelte';
   import UserProfileSettings from './UserProfileSettings.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);
-
   let oauthOpen =
-    oauth.isCallback(location) || $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenQueryParam.OAUTH;
+    oauth.isCallback(location) || page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenQueryParam.OAUTH;
 </script>
 
 <SettingAccordion

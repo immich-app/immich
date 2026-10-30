@@ -1,14 +1,14 @@
 <script lang="ts">
-  import empty2Url from '$lib/assets/empty-2.svg';
-  import Albums from '$lib/components/album-page/AlbumsList.svelte';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { getAllAlbumsQuery } from '$lib/queries/album.query';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { Route } from '$lib/route';
-  import { getAlbumsActions } from '$lib/services/album.service';
-  import { getSharedLinksActions } from '$lib/services/shared-link.service';
+  import empty2Url from '#lib/assets/empty-2.svg';
+  import Albums from '#lib/components/album-page/AlbumsList.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { getAllAlbumsQuery } from '#lib/queries/album.query.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAlbumsActions } from '#lib/services/album.service.ts';
+  import { getSharedLinksActions } from '#lib/services/shared-link.service.ts';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -16,7 +16,7 @@
     AlbumViewMode,
     SortOrder,
     type AlbumViewSettings,
-  } from '$lib/stores/preferences.store';
+  } from '#lib/stores/preferences.store.ts';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { OnboardingRole } from '$lib/types';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { OnboardingRole } from '#lib/types.ts';
   import { Logo } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getServerConfigQuery } from '$lib/queries/server.query';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
 
   const query = createPreloadedQuery(getServerConfigQuery);
   const serverConfig = $derived(query.data);

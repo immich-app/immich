@@ -1,3 +1,4 @@
+import { asMutation, MutationCancelledError, queryClient } from '#lib/queries/client.ts';
 import {
   deletePasskey,
   finishAuthentication,
@@ -14,7 +15,6 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/browser';
 import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
-import { asMutation, MutationCancelledError, queryClient } from '$lib/queries/client';
 
 const isPasskeyCancelled = (error: unknown) => error instanceof Error && error.name === 'NotAllowedError';
 

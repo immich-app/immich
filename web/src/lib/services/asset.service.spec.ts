@@ -1,16 +1,16 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { getAssetActions, handleDownloadAsset } from '#lib/services/asset.service.ts';
+import { setSharedLink } from '#lib/utils.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { getAssetInfo, type UserConfigDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { vitest } from 'vitest';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { queryClient } from '$lib/queries/client';
-import { getUserConfigQuery } from '$lib/queries/config-user.query';
-import { getAssetActions, handleDownloadAsset } from '$lib/services/asset.service';
-import { setSharedLink } from '$lib/utils';
-import { getFormatter } from '$lib/utils/i18n';
-import { assetFactory } from '@test-data/factories/asset-factory';
-import { preferencesFactory } from '@test-data/factories/preferences-factory';
-import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
-import { userAdminFactory } from '@test-data/factories/user-factory';
+import { assetFactory } from '#test-data/factories/asset-factory';
+import { preferencesFactory } from '#test-data/factories/preferences-factory';
+import { sharedLinkFactory } from '#test-data/factories/shared-link-factory';
+import { userAdminFactory } from '#test-data/factories/user-factory';
 
 vitest.mock('@immich/ui', () => ({
   toastManager: {
@@ -18,15 +18,15 @@ vitest.mock('@immich/ui', () => ({
   },
 }));
 
-vitest.mock('$lib/utils/i18n', () => ({
+vitest.mock('#lib/utils/i18n.js', () => ({
   getFormatter: vitest.fn(),
   getPreferredLocale: vitest.fn(),
 }));
 
 vitest.mock('@immich/sdk');
 
-vitest.mock('$lib/utils', async () => {
-  const originalModule = await vitest.importActual('$lib/utils');
+vitest.mock('#lib/utils.js', async () => {
+  const originalModule = await vitest.importActual('#lib/utils.js');
   return {
     ...originalModule,
     sleep: vitest.fn(),
