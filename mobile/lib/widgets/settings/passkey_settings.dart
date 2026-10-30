@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/passkey.action.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class PasskeySettings extends ConsumerWidget {
   const PasskeySettings({super.key});
@@ -27,8 +28,14 @@ class PasskeySettings extends ConsumerWidget {
         ),
         if (passkeys == null)
           const Center(child: CircularProgressIndicator())
-        else
+        else if (passkeys.isNotEmpty) ...[
+          SettingsSubTitle(title: context.t.passkeys_on_server),
+          Padding(
+            padding: const .fromLTRB(20, 4, 20, 0),
+            child: Text(context.t.passkeys_on_server_description, style: context.textTheme.bodySmall),
+          ),
           for (final passkey in passkeys) _PasskeyTile(key: ValueKey(passkey.id), passkey: passkey),
+        ],
       ],
     );
   }

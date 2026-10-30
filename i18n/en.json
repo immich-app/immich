@@ -1658,6 +1658,8 @@
   "passkeys": "{count, plural, one {Passkey} other {Passkeys}}",
   "passkeys_description": "Log in without a password, using your device's screen lock",
   "passkeys_not_supported": "Passkeys are not supported by this browser",
+  "passkeys_on_server": "Passkeys on this server",
+  "passkeys_on_server_description": "Removing one here doesn't delete it from your device",
   "password": "Password",
   "password_does_not_match": "Password does not match",
   "password_required": "Password Required",

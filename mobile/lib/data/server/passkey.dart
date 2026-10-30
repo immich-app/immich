@@ -39,6 +39,7 @@ class PasskeyApiRepository extends ApiRepository {
     return LoginResponse.fromDto(await checkNull(_api.finishAuthentication(dto)));
   }
 
+  /// Every passkey of the current user
   Future<List<Passkey>> getAll() async {
     final response = await checkNull(_api.searchPasskeys());
     return response.map(_toPasskey).toList();
