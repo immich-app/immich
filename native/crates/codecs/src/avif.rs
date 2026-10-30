@@ -6,6 +6,10 @@ use std::slice;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
 
+use jxl::api::{
+    JxlColorEncoding, JxlColorProfile, JxlPrimaries, JxlTransferFunction, JxlWhitePoint,
+    RenderingIntent,
+};
 use moxcms::{ColorProfile, Layout, MatrixCoefficients, Transform16BitExecutor};
 use mp4parse::{ImageMirror, ImageRotation, ParseStrictness};
 use quick_cache::sync::Cache;
@@ -27,6 +31,7 @@ use crate::color::{
     self, CicpColorPrimaries, CicpProfile, TRANSFORMS, Target, TransferCharacteristics, Transforms,
 };
 use crate::image::{Image, Pixels, Sample, Samples};
+use crate::jxl::srgb_transform;
 use crate::resize;
 use crate::rotate::{Orientation, rotate};
 
@@ -49,13 +54,10 @@ pub(crate) fn is_avif(data: &[u8]) -> bool {
             })
 }
 
-/// Decodes the primary image unless cancelled. Grids, essential crops or layers, premultiplied alpha,
-/// gray ICC profiles and HDR bound for sRGB return None.
+/// Decodes the primary image unless cancelled. Grids, essential crops or layers, gray ICC profiles
+/// and HDR outside BT.709, P3 and BT.2020 return None.
 pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> Option<Image> {
     let avif = mp4parse::read_avif(&mut &*data, ParseStrictness::Normal).ok()?;
-    if avif.premultiplied_alpha {
-        return None;
-    }
 
     let color = Picture::decode(avif.primary_item_coded_data()?)?;
     let alpha = match avif.alpha_item_coded_data() {
@@ -105,11 +107,9 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
     };
 
     let icc = avif.icc_colour_information().transpose().ok()?;
-    // An ICC profile describes the samples instead, and moxcms can't tone-map a CICP space to sRGB.
+    // An ICC profile describes the samples instead.
     let hdr = icc.is_none() && color::is_hdr(cicp);
-    if hdr && !(options.color_space == Target::Source && describable(cicp)) {
-        return None;
-    }
+    let keep_space = options.color_space == Target::Source && describable(cicp);
 
     let range = if full_range {
         YuvRange::Full
@@ -128,9 +128,15 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
         .map(|(tw, th)| orientation.dimensions(tw, th));
     let size = resize::cover((w, h), target_size, options.max_pixel_size);
 
-    if hdr {
+    if hdr && keep_space {
         let mut rgba = Pixels::<u16>::zeroed(w, h, 8)?;
-        color.to_rgba12(alpha.as_ref(), rgba.bytes_mut(), range, matrix)?;
+        color.to_rgba12(
+            alpha.as_ref(),
+            avif.premultiplied_alpha,
+            rgba.bytes_mut(),
+            range,
+            matrix,
+        )?;
         // 16 bits in the image's own transfer, like the jxl decoder's HDR output.
         for sample in rgba.pixels_mut().as_flattened_mut() {
             *sample = *sample << 4 | *sample >> 8;
@@ -149,8 +155,7 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
         // yuv narrows deeper YUV samples to 8 bits itself, but not deeper gray or RGB ones.
         None if (color.bpc() == 8
             || matrix.is_some() && color.layout() != DAV1D_PIXEL_LAYOUT_I400)
-            && (color::is_srgb(cicp)
-                || options.color_space == Target::Source && describable(cicp)) =>
+            && (color::is_srgb(cicp) || keep_space) =>
         {
             None
         }
@@ -160,9 +165,21 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
     // The 12-bit samples for the transform need twice the room.
     let mut rgba = Pixels::<u8>::zeroed(w, h, if transform.is_some() { 8 } else { 4 })?;
     match &transform {
-        None => color.to_rgba8(alpha.as_ref(), rgba.bytes_mut(), range, matrix)?,
+        None => color.to_rgba8(
+            alpha.as_ref(),
+            avif.premultiplied_alpha,
+            rgba.bytes_mut(),
+            range,
+            matrix,
+        )?,
         Some(transform) => {
-            color.to_rgba12(alpha.as_ref(), rgba.bytes_mut(), range, matrix)?;
+            color.to_rgba12(
+                alpha.as_ref(),
+                avif.premultiplied_alpha,
+                rgba.bytes_mut(),
+                range,
+                matrix,
+            )?;
             color::convert_bands(transform.as_ref(), &mut rgba, w * 8, cancelled)?;
         }
     }
@@ -202,8 +219,28 @@ fn matrix(mtrx: u32) -> Option<Option<YuvStandardMatrix>> {
     )
 }
 
-/// [`color::profile_to_srgb`] for `cicp`, built once per space.
+/// The transform from `cicp` to sRGB, built once per space.
 fn cicp_transform(cicp: CicpProfile) -> Option<Arc<Transform16BitExecutor>> {
+    if color::is_hdr(cicp) {
+        // jxl-rs writes a tone-mapping table into the profiles it makes for PQ and HLG.
+        let encoding = JxlColorEncoding::RgbColorSpace {
+            white_point: JxlWhitePoint::D65,
+            primaries: match cicp.color_primaries {
+                CicpColorPrimaries::Bt709 => JxlPrimaries::SRGB,
+                CicpColorPrimaries::Smpte432 => JxlPrimaries::P3,
+                CicpColorPrimaries::Bt2020 => JxlPrimaries::BT2100,
+                _ => return None,
+            },
+            transfer_function: match cicp.transfer_characteristics {
+                TransferCharacteristics::Hlg => JxlTransferFunction::HLG,
+                _ => JxlTransferFunction::PQ,
+            },
+            rendering_intent: RenderingIntent::Relative,
+        };
+        let (transform, _) = srgb_transform(&JxlColorProfile::Simple(encoding))?;
+        return Some(transform);
+    }
+
     static SPACES: LazyLock<Transforms<(u8, u8)>> = LazyLock::new(|| Cache::new(TRANSFORMS));
     let key = (
         cicp.color_primaries as u8,
@@ -413,6 +450,7 @@ impl Picture {
     fn to_rgba8(
         &self,
         alpha: Option<&Self>,
+        premultiplied: bool,
         rgba: &mut [u8],
         range: YuvRange,
         matrix: Option<YuvStandardMatrix>,
@@ -452,7 +490,7 @@ impl Picture {
         }
 
         match alpha {
-            Some(alpha) => alpha.put_alpha(rgba.as_chunks_mut().0),
+            Some(alpha) => alpha.put_alpha(rgba.as_chunks_mut().0, premultiplied),
             None => Some(()),
         }
     }
@@ -461,12 +499,13 @@ impl Picture {
     fn to_rgba12(
         &self,
         alpha: Option<&Self>,
+        premultiplied: bool,
         rgba: &mut [u8],
         range: YuvRange,
         matrix: Option<YuvStandardMatrix>,
     ) -> Option<()> {
         if self.bpc() == 8 {
-            self.to_rgba8(None, rgba, range, matrix)?;
+            self.to_rgba8(None, false, rgba, range, matrix)?;
             // Widening from the back only overwrites bytes already read.
             for i in (0..rgba.len() / 2).rev() {
                 let v = u16::from(rgba[i]);
@@ -522,23 +561,29 @@ impl Picture {
         }
 
         match alpha {
-            Some(alpha) => alpha.put_alpha(rgba.as_chunks_mut().0),
+            Some(alpha) => alpha.put_alpha(rgba.as_chunks_mut().0, premultiplied),
             None => Some(()),
         }
     }
 
-    /// Writes this monochrome picture into the alpha of `rgba`, at the depth of its samples.
-    fn put_alpha<T: Sample + TryFrom<u32>>(&self, rgba: &mut [[T; 4]]) -> Option<()> {
+    /// Writes this monochrome picture into the alpha of `rgba`, at the depth of its samples, and
+    /// divides it out of color that was `premultiplied`, as the steps after expect straight color.
+    fn put_alpha<T: Sample + Into<u32> + TryFrom<u32>>(
+        &self,
+        rgba: &mut [[T; 4]],
+        premultiplied: bool,
+    ) -> Option<()> {
         if self.bpc() == 8 {
-            self.put_alpha_from::<u8, T>(rgba)
+            self.put_alpha_from::<u8, T>(rgba, premultiplied)
         } else {
-            self.put_alpha_from::<u16, T>(rgba)
+            self.put_alpha_from::<u16, T>(rgba, premultiplied)
         }
     }
 
-    fn put_alpha_from<S: Copy + Into<u32>, T: Sample + TryFrom<u32>>(
+    fn put_alpha_from<S: Copy + Into<u32>, T: Sample + Into<u32> + TryFrom<u32>>(
         &self,
         rgba: &mut [[T; 4]],
+        premultiplied: bool,
     ) -> Option<()> {
         // 16-bit pixels here hold 12-bit samples.
         let max = if size_of::<T>() == 1 { 255 } else { 4095 };
@@ -553,8 +598,14 @@ impl Picture {
         let w = self.width();
         for (row, px) in plane.chunks(stride as usize).zip(rgba.chunks_exact_mut(w)) {
             for (&a, px) in row.iter().zip(px) {
-                let a = a.into().saturating_sub(low).min(span);
-                px[3] = T::try_from((a * max + span / 2) / span).ok()?;
+                let a = (a.into().saturating_sub(low).min(span) * max + span / 2) / span;
+                px[3] = T::try_from(a).ok()?;
+                if premultiplied {
+                    for c in &mut px[..3] {
+                        let straight = ((*c).into() * max + a / 2).checked_div(a).unwrap_or(0);
+                        *c = T::try_from(straight.min(max)).ok()?;
+                    }
+                }
             }
         }
         Some(())

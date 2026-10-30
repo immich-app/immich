@@ -152,7 +152,9 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         // before.
         if (!preferEncoded && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
           decodeExecutor.execute {
-            val res = if (signal.isCanceled) null else try {
+            // The core decodes AVIF faster than Android, which still gets what the core can't, like grids.
+            val fromCore = if (mime == "image/avif") decodeInCore(buffer, width, height, signal) else null
+            val res = fromCore ?: if (signal.isCanceled) null else try {
               // The embedded preview a raw decodes to has no orientation, so read the container's.
               val orientation = if (isRawMime(contentType)) {
                 readRawOrientation(NativeBuffer.wrap(buffer.pointer, buffer.offset), buffer.offset)
@@ -173,9 +175,6 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
               } else {
                 rotateToNativeBuffer(bitmap, orientation)
               }
-            } catch (_: IOException) {
-              // Some Android AV1 decoders stop at 2048x2048, so bigger AVIF images can fail.
-              if (mime == "image/avif") decodeInCore(buffer, width, height, signal) else null
             } catch (_: Throwable) {
               null
             }

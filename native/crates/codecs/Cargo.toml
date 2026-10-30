@@ -6,7 +6,8 @@ license.workspace = true
 
 [features]
 default = ["avif", "jxl"]
-avif = ["dep:mp4parse", "dep:rav1d", "dep:yuv"]
+# AVIF tone-maps HDR with the profiles jxl-rs makes.
+avif = ["jxl", "dep:mp4parse", "dep:rav1d", "dep:yuv"]
 jxl = ["dep:jxl", "dep:rayon"]
 
 [dependencies]

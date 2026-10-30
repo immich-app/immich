@@ -238,7 +238,9 @@ fn cicp(profile: &JxlColorProfile) -> Option<CicpProfile> {
 }
 
 /// [`color::to_srgb`] for `profile`, built once per distinct profile.
-fn srgb_transform(profile: &JxlColorProfile) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
+pub(crate) fn srgb_transform(
+    profile: &JxlColorProfile,
+) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
     static ENCODINGS: LazyLock<Transforms<String>> = LazyLock::new(|| Cache::new(TRANSFORMS));
     match profile {
         JxlColorProfile::Simple(encoding) => ENCODINGS

@@ -63,6 +63,10 @@ fn decodes_to_premultiplied_srgb() {
             "10-bit alpha",
             include_bytes!("fixtures/alpha_ten_bit.avif"),
         ),
+        (
+            "premultiplied alpha",
+            include_bytes!("fixtures/premultiplied.avif"),
+        ),
     ] {
         let rgba = decode_srgb(data).expect(name);
         assert_eq!(
@@ -141,6 +145,26 @@ fn keeps_hdr_in_its_own_space() {
 }
 
 #[test]
+fn tone_maps_hdr_like_jpeg_xl() {
+    // Gray steps of 4 pixels at 100, 203, 1000 and 4000 nits in PQ, and pq_grays.jxl has the first three.
+    let rgba = decode_srgb(include_bytes!("fixtures/pq_grays.avif")).unwrap();
+    let jxl = decode_srgb(include_bytes!("fixtures/pq_grays.jxl")).unwrap();
+    let levels: Vec<[u8; 4]> = (0..4)
+        .map(|step| rgba.pixels()[2 * 16 + step * 4 + 2])
+        .collect();
+    assert!(
+        levels
+            .iter()
+            .zip(jxl.pixels())
+            .all(|(avif, jxl)| { avif.iter().zip(jxl).all(|(&a, &b)| a.abs_diff(b) <= 2) })
+            && levels[2][1] < levels[3][1]
+            && levels[3][1] < 255,
+        "{levels:?} vs {:?}",
+        jxl.pixels()
+    );
+}
+
+#[test]
 fn turns_as_irot_says() {
     // 4x4 red then 4x4 blue in a row, stored with a quarter turn clockwise.
     let rgba = decode_srgb(include_bytes!("fixtures/rotated.avif")).unwrap();
@@ -181,8 +205,7 @@ fn rejects_what_it_cannot_show() {
     let mut damaged = srgb.to_vec();
     damaged[277] ^= 1;
     for (name, data) in [
-        ("PQ", &include_bytes!("fixtures/pq.avif")[..]),
-        ("grid", include_bytes!("fixtures/grid.avif")),
+        ("grid", &include_bytes!("fixtures/grid.avif")[..]),
         ("truncated", &srgb[..srgb.len() / 2]),
         ("damaged", &damaged),
     ] {
