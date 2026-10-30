@@ -32956,6 +32956,7 @@
             "type": "boolean"
           },
           "allowUpload": {
+            "default": false,
             "description": "Allow uploads",
             "type": "boolean"
           },

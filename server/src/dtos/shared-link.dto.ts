@@ -28,7 +28,7 @@ const SharedLinkCreateSchema = z
     password: z.string().nullable().optional().describe('Link password'),
     slug: z.string().nullable().optional().describe('Custom URL slug'),
     expiresAt: isoDatetimeToDate.nullable().describe('Expiration date').default(null).optional(),
-    allowUpload: z.boolean().optional().describe('Allow uploads'),
+    allowUpload: z.boolean().default(false).optional().describe('Allow uploads'),
     allowDownload: z.boolean().default(true).optional().describe('Allow downloads'),
     showMetadata: z.boolean().default(true).optional().describe('Show metadata'),
   })

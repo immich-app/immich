@@ -99,7 +99,7 @@ export class SharedLinkService extends BaseService {
         description: dto.description || null,
         password: dto.password,
         expiresAt: dto.expiresAt || null,
-        allowUpload: dto.allowUpload ?? true,
+        allowUpload: dto.allowUpload ?? false,
         allowDownload: dto.showMetadata !== false && (dto.allowDownload ?? true),
         showExif: dto.showMetadata ?? true,
         slug: dto.slug || null,
