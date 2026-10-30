@@ -8480,6 +8480,45 @@
         "x-immich-state": "Internal"
       }
     },
+    "/futo-backups/onboarding/restore/continue": {
+      "post": {
+        "description": "Record that the user has moved on from a finished restore, so it is no longer offered on reload.",
+        "operationId": "futoBackupsContinueAfterRestore",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Continue after a restore",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
     "/futo-backups/onboarding/skip": {
       "post": {
         "description": "Skip the optional configuration steps of onboarding.",
@@ -28765,6 +28804,9 @@
           },
           "requiresAuthentication": {
             "type": "boolean"
+          },
+          "restoreJobId": {
+            "type": "string"
           },
           "status": {
             "$ref": "#/components/schemas/BootstrapStatus"
