@@ -236,6 +236,11 @@ describe(IntegrityService.name, () => {
           paths: expect.arrayContaining(['/path/to/file3']),
         },
       });
+
+      expect(job.queue).toHaveBeenLastCalledWith({
+        name: JobName.NotifyIntegrityErrors,
+        data: { type: IntegrityReport.UntrackedFile },
+      });
     });
 
     it('queues jobs to refresh reports', async () => {
@@ -424,6 +429,11 @@ describe(IntegrityService.name, () => {
             { path: '/path/to/file2', assetId: assetId2, fileAssetId: null, reportId },
           ]),
         },
+      });
+
+      expect(job.queue).toHaveBeenLastCalledWith({
+        name: JobName.NotifyIntegrityErrors,
+        data: { type: IntegrityReport.MissingFile },
       });
 
       expect(job.queue).not.toHaveBeenCalledWith(
@@ -654,6 +664,11 @@ describe(IntegrityService.name, () => {
         ],
         nextCursor: undefined,
       });
+
+      expect(job.queue).toHaveBeenCalledWith({
+        name: JobName.NotifyIntegrityErrors,
+        data: { type: IntegrityReport.ChecksumFail },
+      });
     });
 
     it('should skip missing files', async () => {
@@ -686,6 +701,13 @@ describe(IntegrityService.name, () => {
       ).resolves.toEqual({
         items: [],
         nextCursor: undefined,
+      });
+
+      // the notification job is still queued after a clean scan;
+      // the handler sends no email when the check has no errors
+      expect(job.queue).toHaveBeenCalledWith({
+        name: JobName.NotifyIntegrityErrors,
+        data: { type: IntegrityReport.ChecksumFail },
       });
     });
 

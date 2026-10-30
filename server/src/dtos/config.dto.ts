@@ -77,6 +77,7 @@ const AdminConfigIntegrityJobSchema = z
   .object({
     enabled: z.boolean().describe('Enabled'),
     cronExpression: cronExpressionSchema.describe('Cron expression for when the integrity check should run'),
+    notifyOnError: configBool.describe('Send an email notification to admins when the check finds errors'),
   })
   .describe('Integrity job config')
   .meta({ id: 'AdminConfigIntegrityJobDto' });
@@ -429,6 +430,7 @@ const AdminConfigSchemaWithVisibility = z
             welcomeTemplate: z.string().describe('Welcome template'),
             albumInviteTemplate: z.string().describe('Album invite template'),
             albumUpdateTemplate: z.string().describe('Album update template'),
+            integrityTemplate: z.string().describe('Integrity errors template'),
           })
           .meta({ id: 'AdminConfigTemplateEmailsDto' }),
       })
@@ -624,16 +626,19 @@ export const defaults = Object.freeze<SystemConfig>({
     missingFiles: {
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_3AM,
+      notifyOnError: true,
     },
     untrackedFiles: {
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_3AM,
+      notifyOnError: true,
     },
     checksumFiles: {
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_3AM,
       timeLimit: 60 * 60 * 1000, // 1 hour
       percentageLimit: 1, // 100% of assets
+      notifyOnError: true,
     },
   },
   job: {
@@ -813,6 +818,7 @@ export const defaults = Object.freeze<SystemConfig>({
       welcomeTemplate: '',
       albumInviteTemplate: '',
       albumUpdateTemplate: '',
+      integrityTemplate: '',
     },
   },
   user: {

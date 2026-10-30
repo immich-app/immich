@@ -155,6 +155,8 @@ export type AdminConfigIntegrityJobDto = {
     cronExpression: string;
     /** Enabled */
     enabled: boolean;
+    /** Send an email notification to admins when the check finds errors */
+    notifyOnError: boolean;
 };
 export type AdminConfigIntegrityChecksDto = {
     checksumFiles: AdminConfigIntegrityChecksumJobDto;
@@ -396,6 +398,8 @@ export type AdminConfigTemplateEmailsDto = {
     albumInviteTemplate: string;
     /** Album update template */
     albumUpdateTemplate: string;
+    /** Integrity errors template */
+    integrityTemplate: string;
     /** Welcome template */
     welcomeTemplate: string;
 };
@@ -683,6 +687,8 @@ export type EmailNotificationsResponse = {
     albumUpdate: boolean;
     /** Whether email notifications are enabled */
     enabled: boolean;
+    /** Whether to receive email notifications for integrity check errors */
+    integrity: boolean;
 };
 export type FoldersResponse = {
     /** Whether folders are enabled */
@@ -770,6 +776,8 @@ export type EmailNotificationsUpdate = {
     albumUpdate?: boolean;
     /** Whether email notifications are enabled */
     enabled?: boolean;
+    /** Whether to receive email notifications for integrity check errors (admins only) */
+    integrity?: boolean;
 };
 export type FoldersUpdate = {
     /** Whether folders are enabled */

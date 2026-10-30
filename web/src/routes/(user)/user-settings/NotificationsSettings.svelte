@@ -9,6 +9,9 @@
   let emailNotificationsEnabled = $state(authManager.preferences.emailNotifications?.enabled ?? true);
   let albumInviteNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumInvite ?? true);
   let albumUpdateNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumUpdate ?? true);
+  let integrityNotificationEnabled = $state(authManager.preferences.emailNotifications?.integrity ?? true);
+
+  const isAdmin = $derived(authManager.user.isAdmin);
 
   const handleSave = async () => {
     try {
@@ -18,6 +21,7 @@
             enabled: emailNotificationsEnabled,
             albumInvite: emailNotificationsEnabled && albumInviteNotificationEnabled,
             albumUpdate: emailNotificationsEnabled && albumUpdateNotificationEnabled,
+            integrity: emailNotificationsEnabled && integrityNotificationEnabled,
           },
         },
       });
@@ -51,6 +55,16 @@
         <Field label={$t('album_updated')} description={$t('album_updated_setting_description')} {disabled}>
           <Switch bind:checked={albumUpdateNotificationEnabled} />
         </Field>
+
+        {#if isAdmin}
+          <Field
+            label={$t('integrity_check_errors')}
+            description={$t('integrity_errors_notification_setting_description')}
+            {disabled}
+          >
+            <Switch bind:checked={integrityNotificationEnabled} />
+          </Field>
+        {/if}
       </div>
 
       <div class="mt-4 flex justify-end">
