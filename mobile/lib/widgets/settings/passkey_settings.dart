@@ -1,35 +1,42 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/passkey.model.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/passkey.action.dart';
+import 'package:immich_ui/immich_ui.dart';
 
-@RoutePage()
-class PasskeysPage extends ConsumerWidget {
-  const PasskeysPage({super.key});
+class PasskeySettings extends ConsumerWidget {
+  const PasskeySettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final passkeys = ref.watch(Store.passkeys.all()).valueOrNull;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(context.t.passkeys(count: 2)), elevation: 0, centerTitle: false),
-      body: ListView(
-        children: [
-          const Padding(
-            padding: .all(16),
-            child: ActionButton(action: PasskeyCreateAction(), variant: .filled),
+    return ListView(
+      children: [
+        Padding(
+          padding: const .fromLTRB(16, 16, 16, 0),
+          child: Text(context.t.passkeys_description, style: context.textTheme.bodyMedium),
+        ),
+        const Padding(
+          padding: .all(16),
+          child: ActionButton(action: PasskeyCreateAction(), variant: .filled),
+        ),
+        if (passkeys == null)
+          const Center(child: CircularProgressIndicator())
+        else if (passkeys.isNotEmpty) ...[
+          SettingsSubTitle(title: context.t.passkeys_on_server),
+          Padding(
+            padding: const .fromLTRB(20, 4, 20, 0),
+            child: Text(context.t.passkeys_on_server_description, style: context.textTheme.bodySmall),
           ),
-          if (passkeys == null)
-            const Center(child: CircularProgressIndicator())
-          else
-            for (final passkey in passkeys) _PasskeyTile(key: ValueKey(passkey.id), passkey: passkey),
+          for (final passkey in passkeys) _PasskeyTile(key: ValueKey(passkey.id), passkey: passkey),
         ],
-      ),
+      ],
     );
   }
 }

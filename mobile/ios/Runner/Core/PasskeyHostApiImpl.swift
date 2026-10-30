@@ -2,10 +2,8 @@ import AuthenticationServices
 import UIKit
 
 class PasskeyHostApiImpl: PasskeyHostApi {
-  // A platform registration takes excludedCredentials from iOS 17.4. Without it the same device can register the
-  // account again, and the server keeps adding passkeys for it
   func isSupported() throws -> Bool {
-    if #available(iOS 17.4, *) {
+    if #available(iOS 16, *) {
       return true
     }
 
@@ -89,6 +87,8 @@ private final class Passkeys: NSObject, ASAuthorizationControllerDelegate, ASAut
     request.displayName = options.user.displayName
     request.userVerificationPreference = .init(rawValue: options.authenticatorSelection.userVerification)
     request.attestationPreference = .init(rawValue: options.attestation)
+    // A platform registration takes excludedCredentials from iOS 17.4. Without it the same device can register the
+    // account again, and the server keeps adding passkeys for it
     if #available(iOS 17.4, *) {
       request.excludedCredentials = options.excludeCredentials.map {
         ASAuthorizationPlatformPublicKeyCredentialDescriptor(credentialID: $0.id)
