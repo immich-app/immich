@@ -1,7 +1,7 @@
 import { getQueueToken } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
-import { JobsOptions, Queue, Worker } from 'bullmq';
+import { JobType, JobsOptions, Queue, Worker } from 'bullmq';
 import { setTimeout } from 'node:timers/promises';
 import type { JobCounts, JobItem, JobOf } from 'src/types.js';
 import { JobConfig } from 'src/decorators.js';
@@ -246,7 +246,12 @@ export class JobRepository {
   }
 
   async searchJobs(name: QueueName, dto: QueueJobSearchDto): Promise<QueueJobResponseDto[]> {
-    const jobs = await this.getQueue(name).getJobs(dto.status ?? Object.values(QueueJobStatus), 0, 1000);
+    const items = new Set<QueueJobStatus>(dto.status ?? Object.values(QueueJobStatus));
+    if (items.delete(QueueJobStatus.Paused)) {
+      items.add(QueueJobStatus.Waiting);
+    }
+
+    const jobs = await this.getQueue(name).getJobs([...items] as JobType[], 0, 1000);
     return jobs.map((job) => {
       const { id, name, timestamp, data } = job;
       return { id, name: name as JobName, timestamp, data };

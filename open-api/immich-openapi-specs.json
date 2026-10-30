@@ -30269,7 +30269,8 @@
           "failed",
           "completed",
           "delayed",
-          "waiting"
+          "waiting",
+          "paused"
         ],
         "type": "string"
       },

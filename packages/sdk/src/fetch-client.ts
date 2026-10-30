@@ -9700,7 +9700,8 @@ export enum QueueJobStatus {
     Failed = "failed",
     Completed = "completed",
     Delayed = "delayed",
-    Waiting = "waiting"
+    Waiting = "waiting",
+    Paused = "paused"
 }
 export enum JobName {
     AssetDelete = "AssetDelete",
