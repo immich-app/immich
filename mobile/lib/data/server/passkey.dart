@@ -50,6 +50,10 @@ class PasskeyApiRepository extends ApiRepository {
     await _api.updatePasskey(id, PasskeyUpdateDto(name: name));
   }
 
+  Future<void> delete(String id) async {
+    await _api.deletePasskey(id);
+  }
+
   static Passkey _toPasskey(PasskeyResponseDto dto) =>
       .new(id: dto.id, createdAt: dto.createdAt, name: dto.name, usedAt: dto.usedAt);
 }

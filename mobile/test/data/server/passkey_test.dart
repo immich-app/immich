@@ -109,4 +109,18 @@ void main() {
       {'name': null},
     ]);
   });
+
+  test('delete accepts the empty answer of the server', () async {
+    late http.Request sent;
+    final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
+      ..client = MockClient((request) async {
+        sent = request;
+        return http.Response('', 204);
+      });
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+
+    await sut.delete('passkey-id');
+
+    expect((sent.method, sent.url.path), ('DELETE', '/api/passkeys/passkey-id'));
+  });
 }
