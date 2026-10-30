@@ -70,7 +70,7 @@ class TransformManager implements EditToolManager {
   imageRotation = $state(0);
   mirrorHorizontal = $state(false);
   mirrorVertical = $state(false);
-  brightness = $state(0);
+  exposure = $state(0);
   contrast = $state(0);
   normalizedRotation = $derived.by(() => {
     const newAngle = this.imageRotation % 360;
@@ -101,7 +101,7 @@ class TransformManager implements EditToolManager {
       this.mirrorHorizontal ||
       this.mirrorVertical ||
       this.normalizedRotation !== 0 ||
-      this.brightness !== 0 ||
+      this.exposure !== 0 ||
       this.contrast !== 0
     );
   }
@@ -170,17 +170,17 @@ class TransformManager implements EditToolManager {
       });
     }
 
-    if (this.brightness !== 0 || this.contrast !== 0) {
+    if (this.exposure !== 0 || this.contrast !== 0) {
       edits.push({
         action: AssetEditAction.Color,
-        parameters: { brightness: this.brightness, contrast: this.contrast },
+        parameters: { exposure: this.exposure, contrast: this.contrast },
       });
     }
 
     return edits;
   }
 
-  setColorAdjustment(type: 'brightness' | 'contrast', value: number) {
+  setColorAdjustment(type: 'exposure' | 'contrast', value: number) {
     this.hasChanges = true;
     this[type] = clamp(value, -100, 100);
   }
@@ -189,7 +189,7 @@ class TransformManager implements EditToolManager {
     this.imageRotation = 0;
     this.mirrorHorizontal = false;
     this.mirrorVertical = false;
-    this.brightness = 0;
+    this.exposure = 0;
     this.contrast = 0;
     await tick();
 
@@ -229,8 +229,8 @@ class TransformManager implements EditToolManager {
 
     const colorEdit = edits.find((e) => e.action === AssetEditAction.Color);
     if (colorEdit) {
-      const { brightness, contrast } = colorEdit.parameters as ColorParameters;
-      this.brightness = brightness;
+      const { exposure, contrast } = colorEdit.parameters as ColorParameters;
+      this.exposure = exposure;
       this.contrast = contrast;
     }
 
@@ -258,7 +258,7 @@ class TransformManager implements EditToolManager {
     this.imageRotation = 0;
     this.mirrorHorizontal = false;
     this.mirrorVertical = false;
-    this.brightness = 0;
+    this.exposure = 0;
     this.contrast = 0;
     this.region = { x: 0, y: 0, width: 100, height: 100 };
     this.cropImageSize = { width: 1000, height: 1000 };

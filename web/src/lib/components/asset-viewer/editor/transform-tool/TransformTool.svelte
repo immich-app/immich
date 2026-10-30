@@ -67,7 +67,7 @@
     transformManager.mirror(axis);
   }
 
-  function setColorAdjustment(type: 'brightness' | 'contrast', event: Event) {
+  function setColorAdjustment(type: 'exposure' | 'contrast', event: Event) {
     transformManager.setColorAdjustment(type, Number((event.currentTarget as HTMLInputElement).value));
   }
 </script>
@@ -153,16 +153,16 @@
   <div class="mt-6 flex h-10 w-full items-center justify-between text-sm">
     <h2>{$t('editor_adjustments')}</h2>
   </div>
-  <label class="mb-3 block text-sm text-white" for="brightness">
-    {$t('editor_brightness')}: {transformManager.brightness}
+  <label class="mb-3 block text-sm text-white" for="exposure">
+    {$t('editor_exposure')}: {transformManager.exposure}
     <input
       class="mt-2 w-full"
-      id="brightness"
+      id="exposure"
       type="range"
       min="-100"
       max="100"
-      value={transformManager.brightness}
-      oninput={(event) => setColorAdjustment('brightness', event)}
+      value={transformManager.exposure}
+      oninput={(event) => setColorAdjustment('exposure', event)}
     />
   </label>
   <label class="mb-3 block text-sm text-white" for="contrast">

@@ -13,13 +13,13 @@ function validateLayout(length, channels) {
 }
 
 /**
- * Brightness is a linear-light RGB gain. By Oklab's scale invariance it scales L/a/b by its cube root.
+ * Exposure is a linear-light RGB gain. By Oklab's scale invariance it scales L/a/b by its cube root.
  * Contrast scales only lightness about L=0.5; chroma is untouched by contrast.
- * @param {{ brightness: number, contrast: number }} parameters
+ * @param {{ exposure: number, contrast: number }} parameters
  */
-export function getColorAdjustment({ brightness, contrast }) {
+export function getColorAdjustment({ exposure, contrast }) {
   if (
-    ![brightness, contrast].every(
+    ![exposure, contrast].every(
       (value) => Number.isFinite(value) && value >= -100 && value <= 100,
     )
   ) {
@@ -27,7 +27,7 @@ export function getColorAdjustment({ brightness, contrast }) {
       'Color adjustments must be finite and between -100 and 100',
     );
   }
-  const gain = Math.cbrt(1 + brightness / 100);
+  const gain = Math.cbrt(1 + exposure / 100);
   const slope = 1 + contrast / 100;
   return { gain, slope, offset: 0.5 * (1 - slope) };
 }
@@ -37,21 +37,21 @@ export function getColorAdjustment({ brightness, contrast }) {
  * No clipping, gamut conversion or quantization occurs here.
  * @param {Float32Array | Float64Array} data
  * @param {number} channels
- * @param {{ brightness: number, contrast: number }} parameters
+ * @param {{ exposure: number, contrast: number }} parameters
  */
 export function adjustLinearColors(data, channels, parameters) {
   validateLayout(data.length, channels);
   const { gain, slope, offset } = getColorAdjustment(parameters);
-  if (parameters.brightness === 0 && parameters.contrast === 0) {
+  if (parameters.exposure === 0 && parameters.contrast === 0) {
     return;
   }
-  // Brightness alone needs no perceptual round trip, so it also preserves exact RGB ratios.
+  // Exposure alone needs no perceptual round trip, so it also preserves exact RGB ratios.
   if (parameters.contrast === 0) {
-    const brightness = 1 + parameters.brightness / 100;
+    const exposure = 1 + parameters.exposure / 100;
     for (let i = 0; i < data.length; i += channels) {
-      data[i] *= brightness;
-      data[i + 1] *= brightness;
-      data[i + 2] *= brightness;
+      data[i] *= exposure;
+      data[i + 1] *= exposure;
+      data[i + 2] *= exposure;
     }
     return;
   }
@@ -125,12 +125,12 @@ export function encodeLinearColors(data, channels) {
  * Browser adapter: decode sRGB once, run the shared float adjustment, encode only the final result.
  * @param {Uint8Array | Uint8ClampedArray} data
  * @param {number} channels
- * @param {{ brightness: number, contrast: number }} parameters
+ * @param {{ exposure: number, contrast: number }} parameters
  */
 export function adjustColors(data, channels, parameters) {
   validateLayout(data.length, channels);
   getColorAdjustment(parameters);
-  if (parameters.brightness === 0 && parameters.contrast === 0) {
+  if (parameters.exposure === 0 && parameters.contrast === 0) {
     return;
   }
   const pixels = new Float32Array(data.length);

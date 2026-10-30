@@ -1397,10 +1397,10 @@ export type MirrorParameters = {
     axis: MirrorAxis;
 };
 export type ColorParameters = {
-    /** Brightness adjustment from -100 to 100 */
-    brightness: number;
     /** Contrast adjustment from -100 to 100 */
     contrast: number;
+    /** Exposure adjustment from -100 to 100 */
+    exposure: number;
 };
 export type AssetEditActionItemResponseDto = {
     action: AssetEditAction;

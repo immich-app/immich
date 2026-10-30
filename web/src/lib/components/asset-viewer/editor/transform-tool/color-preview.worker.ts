@@ -4,7 +4,7 @@ export type ColorPreviewRequest = {
   src: string;
   width: number;
   height: number;
-  brightness: number;
+  exposure: number;
   contrast: number;
   pixels?: Uint8ClampedArray;
 };

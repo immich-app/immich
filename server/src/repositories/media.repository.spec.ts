@@ -174,7 +174,7 @@ describe(MediaRepository.name, () => {
       const image = await sharp(data, { raw: { width, height, channels: 4 } })
         .raw()
         .toBuffer({ resolveWithObject: true });
-      const parameters = { brightness: 0, contrast: 80 };
+      const parameters = { exposure: 0, contrast: 80 };
       const expected = Uint8ClampedArray.from(data);
       adjustColors(expected, 4, parameters);
       const result = await sut['transform'](image, {
@@ -188,7 +188,7 @@ describe(MediaRepository.name, () => {
         .raw()
         .toBuffer({ resolveWithObject: true });
       const result = await sut['transform'](image, {
-        edits: [{ action: AssetEditAction.Color, parameters: { brightness: 0, contrast: 0 } }],
+        edits: [{ action: AssetEditAction.Color, parameters: { exposure: 0, contrast: 0 } }],
       });
       expect([...result.data]).toEqual([...image.data]);
     });
@@ -206,7 +206,7 @@ describe(MediaRepository.name, () => {
         .toBuffer({ resolveWithObject: true });
 
       const result = await sut['transform'](image, {
-        edits: [{ action: AssetEditAction.Color, parameters: { brightness: 0, contrast: 50 } }],
+        edits: [{ action: AssetEditAction.Color, parameters: { exposure: 0, contrast: 50 } }],
       });
 
       const output = await sharp(result.data, { raw: result.info }).png().toBuffer();
@@ -218,7 +218,7 @@ describe(MediaRepository.name, () => {
       const raw = { width: 1, height: 1, channels: 3 as const };
       const image = await sharp(data, { raw }).raw().toBuffer({ resolveWithObject: true });
       const result = await sut['transform'](image, {
-        edits: [{ action: AssetEditAction.Color, parameters: { brightness: 0, contrast: 25 } }],
+        edits: [{ action: AssetEditAction.Color, parameters: { exposure: 0, contrast: 25 } }],
       });
       const lab = async (buffer: Buffer) => {
         const output = await sharp(buffer, { raw }).toColourspace('oklab').raw({ depth: 'float' }).toBuffer();
@@ -245,7 +245,7 @@ describe(MediaRepository.name, () => {
       const result = await sut['transform'](image, {
         size: 4,
         fit: 'inside',
-        edits: [{ action: AssetEditAction.Color, parameters: { brightness: 0, contrast: -50 } }],
+        edits: [{ action: AssetEditAction.Color, parameters: { exposure: 0, contrast: -50 } }],
       });
       expect(result.info).toEqual({ width: 4, height: 2, channels: 3 });
       // Clipping before the adjustment would turn these edge pixels into 34 and 174 instead.

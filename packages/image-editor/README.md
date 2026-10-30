@@ -8,9 +8,9 @@ highlight overshoot, and fractional samples survive until then. There is no inte
 buffer. Sharp's current `linear()` casts Oklab samples to bytes, so the adjustment uses the shared
 float implementation rather than that operation.
 
-Brightness is a linear-light RGB gain `1 + brightness / 100`. Contrast changes only Oklab lightness:
-`L' = (1 + contrast / 100) * L + 0.5 * (1 - (1 + contrast / 100))`, after brightness. Oklab's a/b
-channels are preserved by contrast. No clamp occurs between brightness and contrast. The matrices
+Exposure is a linear-light RGB gain `1 + exposure / 100`. Contrast changes only Oklab lightness:
+`L' = (1 + contrast / 100) * L + 0.5 * (1 - (1 + contrast / 100))`, after exposure. Oklab's a/b
+channels are preserved by contrast. No clamp occurs between exposure and contrast. The matrices
 come from [Björn Ottosson's Oklab definition](https://bottosson.github.io/posts/oklab/).
 
 `adjustLinearColors` accepts interleaved float RGB/RGBA, with alpha normalized to 0..1. It mutates RGB

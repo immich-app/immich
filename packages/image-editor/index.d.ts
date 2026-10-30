@@ -1,4 +1,4 @@
-export type ColorAdjustment = { brightness: number; contrast: number };
+export type ColorAdjustment = { exposure: number; contrast: number };
 export function getColorAdjustment(parameters: ColorAdjustment): {
   gain: number;
   slope: number;

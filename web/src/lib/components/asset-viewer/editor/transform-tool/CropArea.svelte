@@ -60,7 +60,7 @@
     }
     worker.postMessage(request);
   }
-  const useColorPreview = $derived(transformManager.brightness !== 0 || transformManager.contrast !== 0);
+  const useColorPreview = $derived(transformManager.exposure !== 0 || transformManager.contrast !== 0);
 
   function loadColorPreview(event: Event) {
     const image = event.currentTarget as HTMLImageElement;
@@ -88,7 +88,7 @@
   $effect(() => {
     const source = sourcePixels;
     const src = imageSrc;
-    const brightness = transformManager.brightness;
+    const exposure = transformManager.exposure;
     const contrast = transformManager.contrast;
     if (!source || sourceSrc !== src || !worker || !useColorPreview) {
       previewReady = false;
@@ -97,7 +97,7 @@
     }
     const frame = requestAnimationFrame(() => {
       // At most one running render and one pending render; newer slider values replace pending ones.
-      sendPreview({ src, width: source.width, height: source.height, brightness, contrast });
+      sendPreview({ src, width: source.width, height: source.height, exposure, contrast });
     });
     return () => cancelAnimationFrame(frame);
   });

@@ -24926,22 +24926,22 @@
       },
       "ColorParameters": {
         "properties": {
-          "brightness": {
-            "description": "Brightness adjustment from -100 to 100",
+          "contrast": {
+            "description": "Contrast adjustment from -100 to 100",
             "maximum": 100,
             "minimum": -100,
             "type": "integer"
           },
-          "contrast": {
-            "description": "Contrast adjustment from -100 to 100",
+          "exposure": {
+            "description": "Exposure adjustment from -100 to 100",
             "maximum": 100,
             "minimum": -100,
             "type": "integer"
           }
         },
         "required": [
-          "brightness",
-          "contrast"
+          "contrast",
+          "exposure"
         ],
         "type": "object"
       },

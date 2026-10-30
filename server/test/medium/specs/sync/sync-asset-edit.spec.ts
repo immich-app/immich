@@ -33,7 +33,7 @@ describe(SyncRequestType.AssetEditsV1, () => {
       },
       {
         action: AssetEditAction.Color,
-        parameters: { brightness: 10, contrast: -10 },
+        parameters: { exposure: 10, contrast: -10 },
       },
     ]);
 
@@ -341,7 +341,7 @@ describe(SyncRequestType.AssetEditsV2, () => {
     const [edit] = await assetEditRepo.replaceAll(asset.id, [
       {
         action: AssetEditAction.Color,
-        parameters: { brightness: 10, contrast: -10 },
+        parameters: { exposure: 10, contrast: -10 },
       },
     ]);
 
@@ -353,7 +353,7 @@ describe(SyncRequestType.AssetEditsV2, () => {
           id: expect.any(String),
           assetId: asset.id,
           action: AssetEditAction.Color,
-          parameters: { brightness: 10, contrast: -10 },
+          parameters: { exposure: 10, contrast: -10 },
           sequence: 0,
         },
         type: SyncEntityType.AssetEditV2,

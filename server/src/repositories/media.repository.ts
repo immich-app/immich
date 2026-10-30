@@ -229,7 +229,7 @@ export class MediaRepository {
       fit,
       withoutEnlargement: true,
     });
-    if (!color || (color.parameters.brightness === 0 && color.parameters.contrast === 0)) {
+    if (!color || (color.parameters.exposure === 0 && color.parameters.contrast === 0)) {
       return pipeline.raw().toBuffer({ resolveWithObject: true });
     }
 
