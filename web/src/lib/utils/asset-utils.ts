@@ -19,7 +19,6 @@ import {
   updateAsset,
   updateAssets,
   type AssetResponseDto,
-  type AssetTypeEnum,
   type DownloadInfoDto,
   type ExifResponseDto,
   type UserResponseDto,
@@ -101,18 +100,16 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
 };
 
 /**
- * Returns the lowercase filename extension without a dot (.) and
- * an empty string when not found.
- */
+Returns the lowercase filename extension without a dot (.) and
+an empty string when not found.
+*/
 export function getFilenameExtension(filename: string): string {
   const lastIndex = Math.max(0, filename.lastIndexOf('.'));
   const startIndex = (lastIndex || Infinity) + 1;
   return filename.slice(startIndex).toLowerCase();
 }
 
-/**
- * Returns the filename of an asset including file extension
- */
+/** Returns the filename of an asset including file extension */
 export function getAssetFilename(asset: AssetResponseDto): string {
   const fileExtension = getFilenameExtension(asset.originalPath);
   return `${asset.originalFileName}.${fileExtension}`;
@@ -126,7 +123,7 @@ function isRotated270CW(orientation: number) {
   return [7, 8, -90].includes(orientation);
 }
 
-export function isFlipped(orientation?: string | null) {
+function isFlipped(orientation?: string | null) {
   const value = Number(orientation);
   return value && (isRotated270CW(value) || isRotated90CW(value));
 }
@@ -150,12 +147,10 @@ export function getAssetResolution(asset: AssetResponseDto): string {
     return 'Invalid Data';
   }
 
-  return `${asset.width} x ${asset.height}`;
+  return `${asset.width} × ${asset.height}`;
 }
 
-/**
- * Returns aspect ratio for the asset
- */
+/** Returns aspect ratio for the asset */
 export function getAssetRatio(asset: AssetResponseDto) {
   return asset.width && asset.height ? asset.width / asset.height : null;
 }
@@ -223,9 +218,7 @@ async function addSupportedMimeTypes(): Promise<void> {
 // eslint-disable-next-line unicorn/no-top-level-side-effects
 void addSupportedMimeTypes();
 
-/**
- * Returns true if the asset is an image supported by web browsers, false otherwise
- */
+/** Returns true if the asset is an image supported by web browsers, false otherwise */
 export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
   if (!asset.originalMimeType) {
     return false;
@@ -233,20 +226,6 @@ export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
 
   return supportedImageMimeTypes.has(asset.originalMimeType);
 }
-
-export const getAssetType = (type: AssetTypeEnum) => {
-  switch (type) {
-    case 'IMAGE': {
-      return 'Photo';
-    }
-    case 'VIDEO': {
-      return 'Video';
-    }
-    default: {
-      return 'Asset';
-    }
-  }
-};
 
 export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
@@ -350,32 +329,6 @@ const undoArchiveAssets = async (assets: TimelineAsset[]) => {
   } catch (error) {
     handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
   }
-};
-
-export const archiveAssets = async (assets: TimelineAsset[], visibility: AssetVisibility) => {
-  const ids = assets.map(({ id }) => id);
-  const $t = get(t);
-
-  try {
-    if (ids.length > 0) {
-      await updateAssets({
-        assetBulkUpdateDto: { ids, visibility },
-      });
-    }
-
-    if (visibility === AssetVisibility.Archive) {
-      showUndoArchiveToast($t('archived_count', { values: { count: ids.length } }), assets);
-    } else {
-      toastManager.primary($t('unarchived_count', { values: { count: ids.length } }));
-    }
-  } catch (error) {
-    handleError(
-      error,
-      $t('errors.unable_to_archive_unarchive', { values: { archived: visibility === AssetVisibility.Archive } }),
-    );
-  }
-
-  return ids;
 };
 
 export const delay = async (ms: number) => {

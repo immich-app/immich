@@ -224,7 +224,7 @@ export class DatabaseBackupService {
     };
   }
 
-  async createDatabaseBackup(filenamePrefix: string = ''): Promise<string> {
+  async createDatabaseBackup(filenamePrefix: string = '', signal?: AbortSignal): Promise<string> {
     this.logger.debug(`Database Backup Started`);
 
     const { bin, args, databasePassword, databaseVersion, databaseMajorVersion } =
@@ -235,6 +235,8 @@ export class DatabaseBackupService {
     const filename = `${filenamePrefix}immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ', 1)[0]}.sql.gz`;
     const backupFilePath = path.join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
     const temporaryFilePath = `${backupFilePath}.tmp`;
+
+    const compression = await this.getCompressionCommand();
 
     let pgdump: Duplex | undefined;
     let gzip: Duplex | undefined;
@@ -247,10 +249,10 @@ export class DatabaseBackupService {
         },
       });
 
-      gzip = this.processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
+      gzip = this.processRepository.spawnDuplexStream(compression.command, compression.args);
       const fileStream = this.storageRepository.createWriteStream(temporaryFilePath);
 
-      await pipeline(pgdump, gzip, fileStream);
+      await pipeline(pgdump, gzip, fileStream, { signal });
       await this.storageRepository.rename(temporaryFilePath, backupFilePath);
     } catch (error) {
       this.logger.error(`Database Backup Failure: ${error}`);
@@ -265,6 +267,15 @@ export class DatabaseBackupService {
 
     this.logger.log(`Database Backup Success`);
     return backupFilePath;
+  }
+
+  private async getCompressionCommand() {
+    if (await this.processRepository.isCommandAvailable('pigz')) {
+      const processes = Math.min(Math.max(Math.floor(this.processRepository.availableParallelism() * 0.75), 1), 32);
+      return { command: 'pigz', args: ['--rsyncable', '--processes', processes.toString()] };
+    }
+
+    return { command: 'gzip', args: ['--rsyncable'] };
   }
 
   async uploadBackup(file: Express.Multer.File): Promise<void> {

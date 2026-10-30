@@ -80,7 +80,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
           return request.completion(ImageProcessing.cancelledResult)
         }
 
-        guard let (width, height, pointer) = NativeCore.decodeJxl(data, targetWidth: width, targetHeight: height, maxPixelSize: ImageProcessing.maxPixelSize, cancelled: request.decodeCancelled) else {
+        guard let (width, height, pointer) = NativeCore.decodeImage(data, targetWidth: width, targetHeight: height, maxPixelSize: ImageProcessing.maxPixelSize, cancelled: request.decodeCancelled) else {
           registry.remove(requestId: request.id)
           if request.isCancelled {
             return request.completion(ImageProcessing.cancelledResult)
@@ -148,7 +148,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       }
 
       do {
-        let buffer = try vImage_Buffer(cgImage: cgImage, format: rgbaFormat)
+        let buffer = try ImageProcessing.rgbaBuffer(cgImage, format: rgbaFormat)
 
         if request.isCancelled {
           buffer.free()

@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "3.3.0-rc.0",
+  "version": "3.4.0-rc.0",
   "license": "GNU Affero General Public License version 3",
   "type": "module",
   "imports": {
@@ -33,9 +33,10 @@
   },
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^3.0.0",
+    "@futo-org/backups-orchestrator-ui": "1.12.1",
     "@immich/justified-layout-wasm": "^0.4.3",
     "@immich/sdk": "workspace:*",
-    "@immich/ui": "^0.90.0",
+    "@immich/ui": "^0.91.0",
     "@mdi/js": "^7.4.47",
     "@noble/hashes": "^2.2.0",
     "@photo-sphere-viewer/core": "^5.14.0",
@@ -84,7 +85,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.0",
     "@faker-js/faker": "^10.0.0",
-    "@koddsson/eslint-plugin-tscompat": "^0.2.0",
+    "@koddsson/eslint-plugin-tscompat": "^0.4.0",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^4.0.0",
     "@sveltejs/enhanced-img": "^1.0.0",
@@ -110,10 +111,11 @@
     "eslint-plugin-compat": "^7.0.0",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-svelte": "^3.23.1",
-    "eslint-plugin-unicorn": "^76.0.0",
+    "eslint-plugin-unicorn": "^78.0.0",
     "factory.ts": "^1.4.1",
     "globals": "^17.0.0",
     "happy-dom": "^21.0.0",
+    "parse5": "^8.0.1",
     "prettier": "^3.7.4",
     "prettier-plugin-sort-json": "^4.1.1",
     "prettier-plugin-svelte": "^4.0.0",
@@ -123,7 +125,7 @@
     "svelte-eslint-parser": "^1.8.1",
     "tailwindcss": "^4.2.4",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "8.71.2",
+    "typescript-eslint": "8.72.0",
     "vite": "^8.0.12",
     "vitest": "^5.0.0"
   }

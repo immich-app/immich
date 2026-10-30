@@ -100,7 +100,7 @@ test.describe('OCR with stacked assets', () => {
 
     const stackThumbnails = page.locator('#stack-slideshow [data-asset]');
     await expect(stackThumbnails).toHaveCount(2);
-    await stackThumbnails.nth(1).click();
+    await page.locator(`#stack-slideshow [data-asset="${secondAssetDto.id}"]`).click();
 
     // refreshOcr() clears showOverlay when switching assets, so re-enable it
     await expect(ocrBoxes).toHaveCount(0);
@@ -242,6 +242,7 @@ test.describe('OCR text interaction', () => {
           return;
         }
 
+        // eslint-disable-next-line unicorn/no-unnecessary-parameters
         const createTouch = (id: number, x: number, y: number) => {
           return new Touch({
             identifier: id,

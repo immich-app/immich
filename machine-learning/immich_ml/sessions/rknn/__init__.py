@@ -9,9 +9,10 @@ import orjson
 from numpy.typing import NDArray
 
 from immich_ml.config import log, settings
+from immich_ml.models.constants import RKNN_NPU_CORES
 from immich_ml.schemas import ModelInput, ModelTensor, SessionNode, Shape
 
-from .rknnpool import RknnNode, RknnPoolExecutor, is_available, native_outputs, soc_name
+from .rknnpool import RknnNode, RknnPoolExecutor, is_available, soc_name
 
 is_available = is_available and settings.rknn
 model_prefix = Path("rknpu") / soc_name if is_available and soc_name is not None else None
@@ -19,12 +20,6 @@ model_prefix = Path("rknpu") / soc_name if is_available and soc_name is not None
 
 def model_path(model_dir: Path, variant: str = "") -> Path:
     return (model_dir / model_prefix if model_prefix else model_dir) / variant / "model.rknn"
-
-
-def run_inference(rknn_lite: Any, inputs: list[ModelTensor], data_format: str | None) -> list[NDArray[np.float32]]:
-    rknn_lite.rknn_runtime.set_inputs(inputs, None, data_format)
-    rknn_lite.rknn_runtime.run(False)
-    return native_outputs(rknn_lite)
 
 
 def input_layout(compiled: tuple[int, ...], array: ModelTensor) -> str | None:
@@ -39,11 +34,11 @@ def input_layout(compiled: tuple[int, ...], array: ModelTensor) -> str | None:
 
 class RknnSession:
     def __init__(self, model_path: Path) -> None:
-        self.tpe = settings.rknn_threads
+        self.tpe = settings.rknn_threads or RKNN_NPU_CORES.get(soc_name or "", 1)
 
         log.info(f"Loading RKNN model from {model_path} with {self.tpe} threads.")
-        self.rknnpool = RknnPoolExecutor(model_path=model_path.as_posix(), tpes=self.tpe, func=run_inference)
-        log.info(f"Loaded RKNN model from {model_path} with {self.tpe} threads.")
+        self.rknnpool = RknnPoolExecutor(model_path=model_path.as_posix(), tpes=self.tpe)
+        log.info(f"Loaded RKNN model from {model_path} with {self.tpe} threads sharing its weights.")
         # the shapes the binary was compiled for, among which the runtime routes itself
         batch = self.rknnpool.inputs[0].shape[0]
         declared = orjson.loads(self.rknnpool.custom_string) if self.rknnpool.custom_string else {}
@@ -77,7 +72,7 @@ class RknnSession:
         input_feed: ModelInput,
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
-        inputs = [array if array.flags.c_contiguous else array.copy() for array in input_feed.values()]
+        inputs = list(input_feed.values())
         return self.rknnpool.run(inputs, input_layout(self.rknnpool.inputs[0].shape, inputs[0]))
 
 

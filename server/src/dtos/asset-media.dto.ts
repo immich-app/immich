@@ -8,9 +8,9 @@ import { JsonParsed, isoDatetimeToDate, stringToBool } from 'src/validation.js';
 export enum AssetMediaSize {
   Original = 'original',
   /**
-   * An full-sized image extracted/converted from non-web-friendly formats like RAW/HIF.
-   * or otherwise the original image itself.
-   */
+  An full-sized image extracted/converted from non-web-friendly formats like RAW/HIF.
+  or otherwise the original image itself.
+  */
   FULLSIZE = 'fullsize',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
@@ -41,9 +41,9 @@ const AssetMediaBaseSchema = z.object({
   duration: z.coerce.number().int().min(0).optional().describe('Duration in milliseconds (for videos)'),
   filename: z.string().optional().describe('Filename'),
   /**
-   * The properties below are added to correctly generate the API docs and client SDKs. Validation should be handled
-   * in the controller. File parts never reach the request body, so they must be optional here
-   */
+  The properties below are added to correctly generate the API docs and client SDKs. Validation should be handled
+  in the controller. File parts never reach the request body, so they must be optional here
+  */
   [UploadFieldName.ASSET_DATA]: z
     .any()
     .optional()

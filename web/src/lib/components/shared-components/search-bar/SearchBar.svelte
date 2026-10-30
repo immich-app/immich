@@ -4,7 +4,6 @@
   import { Route } from '#lib/route.ts';
   import { searchStore } from '#lib/stores/search.svelte.ts';
   import { handlePromiseError } from '#lib/utils.ts';
-  import { generateId } from '#lib/utils/generate-id.ts';
   import { IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { onDestroy, tick } from 'svelte';
@@ -29,8 +28,7 @@
   let showSuggestions = $state(false);
   let selectedId: string | undefined = $state();
 
-  const listboxId = generateId();
-  const searchTypeId = generateId();
+  const listboxId = $props.id();
 
   onDestroy(() => {
     searchStore.isSearchEnabled = false;
@@ -173,7 +171,6 @@
         aria-activedescendant={selectedId ?? ''}
         aria-expanded={showSuggestions}
         aria-autocomplete="list"
-        aria-describedby={searchTypeId}
         use:shortcuts={[
           { shortcut: { key: 'Escape' }, onShortcut: onEscape },
           { shortcut: { key: 'ArrowUp' }, onShortcut: () => onArrow(-1) },

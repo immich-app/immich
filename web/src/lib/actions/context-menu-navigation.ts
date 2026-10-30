@@ -3,33 +3,19 @@ import { tick } from 'svelte';
 import type { Action } from 'svelte/action';
 
 interface Options {
-  /**
-   * A function that is called when the dropdown should be closed.
-   */
+  /** A function that is called when the dropdown should be closed. */
   closeDropdown: () => void;
-  /**
-   * The container element that with direct children that should be navigated.
-   */
+  /** The container element that with direct children that should be navigated. */
   container?: HTMLElement;
-  /**
-   * Indicates if the dropdown is open.
-   */
+  /** Indicates if the dropdown is open. */
   isOpen: boolean;
-  /**
-   * Override the default behavior for the escape key.
-   */
+  /** Override the default behavior for the escape key. */
   onEscape?: (event: KeyboardEvent) => void;
-  /**
-   * A function that is called when the dropdown should be opened.
-   */
+  /** A function that is called when the dropdown should be opened. */
   openDropdown?: (event: KeyboardEvent) => void;
-  /**
-   * The id of the currently selected element.
-   */
+  /** The id of the currently selected element. */
   selectedId: string | undefined;
-  /**
-   * A function that is called when the selection changes, to notify consumers of the new selected id.
-   */
+  /** A function that is called when the selection changes, to notify consumers of the new selected id. */
   selectionChanged: (id: string | undefined) => void;
 }
 

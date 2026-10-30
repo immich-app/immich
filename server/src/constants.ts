@@ -64,6 +64,9 @@ export const excludePaths = ['/.well-known/immich', '/.well-known/webauthn', '/c
 
 export const FACE_THUMBNAIL_SIZE = 250;
 
+// The fastest JPEG XL tier skips smoothing filters, which also keeps small thumbnails sharper
+export const THUMBNAIL_DECODING_TIER = 4;
+
 type ModelInfo = { dimSize: number };
 export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   RN101__openai: { dimSize: 512 },
@@ -150,6 +153,7 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.AssetFiles]: 'An asset file is a file associated with an asset, including edited versions, thumbnails, etc.',
   [ApiTag.Authentication]: 'Endpoints related to user authentication, including OAuth.',
   [ApiTag.AuthenticationAdmin]: 'Administrative endpoints related to authentication.',
+  [ApiTag.Backups]: 'FUTO Backups.',
   [ApiTag.ClusterGroups]:
     'A cluster group is a set of users whose faces are clustered together, so that a person can be shared between them.',
   [ApiTag.ConfigUser]: 'The system configuration properties that are visible to logged in users.',
