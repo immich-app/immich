@@ -18,6 +18,7 @@ import {
   VECTOR_VERSION_RANGE,
   serverVersion,
 } from 'src/constants.js';
+import { TransactionHandle } from 'src/database.js';
 import { GenerateSql } from 'src/decorators.js';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -487,10 +488,7 @@ export class DatabaseRepository {
   }
 
   async transaction(isolationLevel: IsolationLevel) {
-    const trx = await this.db.startTransaction().setIsolationLevel(isolationLevel).execute();
-    return Object.assign(trx, {
-      [Symbol.asyncDispose]: () => (trx.isCommitted || trx.isRolledBack ? Promise.resolve() : trx.rollback().execute()),
-    });
+    return new TransactionHandle(await this.db.startTransaction().setIsolationLevel(isolationLevel).execute());
   }
 
   private async acquireLock(lock: DatabaseLock, connection: Kysely<DB>): Promise<void> {
