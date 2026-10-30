@@ -5,7 +5,6 @@ import 'package:immich_mobile/domain/models/passkey.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
-import 'package:immich_mobile/providers/passkey.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -18,11 +17,11 @@ class PasskeyCreateAction extends ActionBuilder {
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final message = context.t.passkey_added;
-    final passkeyService = ref.read(passkeyServiceProvider);
+    final passkeys = ref.read(Store.passkeys);
     final toastService = ref.read(toastServiceProvider);
 
     try {
-      if (await passkeyService.register() case final passkey?) {
+      if (await passkeys.create() case final passkey?) {
         toastService.success(message);
         if (context.mounted) {
           ref.invalidate(Store.passkeys.all());

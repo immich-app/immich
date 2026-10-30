@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/passkey.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
@@ -16,6 +16,7 @@ import 'package:immich_mobile/widgets/settings/free_up_space_settings.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
+import 'package:immich_mobile/widgets/settings/passkey_settings.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -27,6 +28,7 @@ enum SettingSection {
   languages(Icons.language),
   networking(Icons.wifi),
   notifications(Icons.notifications_none_rounded),
+  passkeys(Icons.key_outlined),
   preferences(Icons.interests_outlined),
   timeline(Icons.auto_awesome_mosaic_outlined),
   beta(Icons.sync_outlined);
@@ -41,6 +43,7 @@ enum SettingSection {
     SettingSection.languages => t.language,
     SettingSection.networking => t.networking_settings,
     SettingSection.notifications => t.notifications,
+    SettingSection.passkeys => t.passkeys(count: 2),
     SettingSection.preferences => t.preferences_settings_title,
     SettingSection.timeline => t.asset_list_settings_title,
     SettingSection.beta => t.sync_status,
@@ -54,6 +57,7 @@ enum SettingSection {
     SettingSection.languages => t.setting_languages_subtitle,
     SettingSection.networking => t.networking_subtitle,
     SettingSection.notifications => t.setting_notifications_subtitle,
+    SettingSection.passkeys => t.manage_your_passkeys,
     SettingSection.preferences => t.preferences_settings_subtitle,
     SettingSection.timeline => t.asset_list_settings_subtitle,
     SettingSection.beta => t.sync_status_subtitle,
@@ -67,6 +71,7 @@ enum SettingSection {
     SettingSection.languages => const LanguageSettings(),
     SettingSection.networking => const NetworkingSettings(),
     SettingSection.notifications => const NotificationSetting(),
+    SettingSection.passkeys => const PasskeySettings(),
     SettingSection.preferences => const PreferenceSetting(),
     SettingSection.timeline => const AssetListSettings(),
     SettingSection.beta => const SyncStatusAndActions(),
@@ -93,8 +98,9 @@ class _MobileLayout extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isLoggedIn = ref.watch(authProvider).isAuthenticated;
-    final isPasskeyEnabled = ref.watch(passkeyEnabledProvider).valueOrNull ?? false;
+    final isPasskeyEnabled = ref.watch(Store.passkeys.enabled()).valueOrNull ?? false;
     final List<Widget> settings = SettingSection.values
+        .where((setting) => setting != SettingSection.passkeys || (isLoggedIn && isPasskeyEnabled))
         .expand(
           (setting) => setting == SettingSection.beta
               ? [
@@ -115,16 +121,6 @@ class _MobileLayout extends ConsumerWidget {
                 ],
         )
         .toList();
-    if (isLoggedIn && isPasskeyEnabled) {
-      settings.add(
-        SettingsCard(
-          icon: Icons.key_outlined,
-          title: context.t.passkeys(count: 2),
-          subtitle: context.t.manage_your_passkeys,
-          onTap: () => context.pushRoute(const PasskeysRoute()),
-        ),
-      );
-    }
     settings.add(
       SettingsCard(
         icon: Icons.auto_awesome_outlined,
@@ -143,7 +139,10 @@ class _TabletLayout extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedSection = useState<SettingSection>(SettingSection.values.first);
     final isLoggedIn = ref.watch(authProvider).isAuthenticated;
-    final isPasskeyEnabled = ref.watch(passkeyEnabledProvider).valueOrNull ?? false;
+    final isPasskeyEnabled = ref.watch(Store.passkeys.enabled()).valueOrNull ?? false;
+    final sections = SettingSection.values.where(
+      (s) => s != SettingSection.passkeys || (isLoggedIn && isPasskeyEnabled),
+    );
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -152,7 +151,7 @@ class _TabletLayout extends HookConsumerWidget {
           flex: 2,
           child: CustomScrollView(
             slivers: [
-              ...SettingSection.values.map(
+              ...sections.map(
                 (s) => SliverToBoxAdapter(
                   child: ListTile(
                     title: Text(s.title(context.t)),
@@ -164,14 +163,6 @@ class _TabletLayout extends HookConsumerWidget {
                   ),
                 ),
               ),
-              if (isLoggedIn && isPasskeyEnabled)
-                SliverToBoxAdapter(
-                  child: ListTile(
-                    title: Text(context.t.passkeys(count: 2)),
-                    leading: const Icon(Icons.key_outlined),
-                    onTap: () => context.pushRoute(const PasskeysRoute()),
-                  ),
-                ),
               SliverToBoxAdapter(
                 child: ListTile(
                   title: Text(context.t.whats_new),
