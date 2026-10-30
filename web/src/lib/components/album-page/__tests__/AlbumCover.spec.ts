@@ -1,7 +1,7 @@
 import AlbumCover from '#lib/components/album-page/AlbumCover.svelte';
 import { getAssetMediaUrl } from '#lib/utils.ts';
+import { factory } from '#test/unit/factories.ts';
 import { render } from '@testing-library/svelte';
-import { albumFactory } from '#test-data/factories/album-factory';
 
 vi.mock('#lib/utils.js');
 
@@ -9,7 +9,7 @@ describe('AlbumCover component', () => {
   it('renders an image when the album has a thumbnail', () => {
     vi.mocked(getAssetMediaUrl).mockReturnValue('/asdf');
     const component = render(AlbumCover, {
-      album: albumFactory.build({
+      album: factory.album({
         albumName: 'someName',
         albumThumbnailAssetId: '123',
       }),
@@ -26,7 +26,7 @@ describe('AlbumCover component', () => {
 
   it('renders an image when the album has no thumbnail', () => {
     const component = render(AlbumCover, {
-      album: albumFactory.build({
+      album: factory.album({
         albumName: '',
         albumThumbnailAssetId: null,
       }),

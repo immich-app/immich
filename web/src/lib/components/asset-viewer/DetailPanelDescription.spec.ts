@@ -1,18 +1,18 @@
+import { factory } from '#test/unit/factories.ts';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { assetFactory } from '#test-data/factories/asset-factory';
 import DetailPanelDescription from './DetailPanelDescription.svelte';
 
 describe('DetailPanelDescription', () => {
   it('clears unsaved draft on asset change', async () => {
     const user = userEvent.setup();
 
-    const assetA = assetFactory.build({
+    const assetA = factory.asset({
       id: 'asset-a',
       exifInfo: { description: '' },
     });
-    const assetB = assetFactory.build({
+    const assetB = factory.asset({
       id: 'asset-b',
       exifInfo: { description: '' },
     });
@@ -39,11 +39,11 @@ describe('DetailPanelDescription', () => {
   });
 
   it('updates description on asset switch', async () => {
-    const assetA = assetFactory.build({
+    const assetA = factory.asset({
       id: 'asset-a',
       exifInfo: { description: 'first description' },
     });
-    const assetB = assetFactory.build({
+    const assetB = factory.asset({
       id: 'asset-b',
       exifInfo: { description: 'second description' },
     });

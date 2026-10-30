@@ -4,8 +4,7 @@
     "noImplicitOverride": true,
     "paths": {
       "#i18n/*": ["../i18n/*"],
-      "#test-data/*": ["./src/test-data/*"],
-      "#tests/*": ["./src/../tests/*"]
+      "#test/*": ["./test/*"]
     },
     "rootDir": ".",
     "sourceMap": true,
@@ -15,5 +14,5 @@
   },
   "exclude": ["vite.config.ts", "src/service-worker/*"],
   "extends": "$app/tsconfig",
-  "include": ["src", "vite.config.ts", "tests"]
+  "include": ["src", "test/unit", "vite.config.ts"]
 }
