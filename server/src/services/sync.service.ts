@@ -125,8 +125,8 @@ export class SyncService extends BaseService {
     await this.syncCheckpointRepository.upsertAll(Object.values(checkpoints));
   }
 
-  deleteAcks(auth: AuthDto, dto: SyncAckDeleteDto): Promise<unknown> {
-    return this.syncCheckpointRepository.deleteAll(sessionOrThrow(auth).id, dto.types);
+  async deleteAcks(auth: AuthDto, dto: SyncAckDeleteDto) {
+    await this.syncCheckpointRepository.deleteAll(sessionOrThrow(auth).id, dto.types);
   }
 
   async stream(auth: AuthDto, response: Writable, dto: SyncStreamDto) {
