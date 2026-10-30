@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/passkey.dart';
 import 'package:immich_mobile/data/store/util/cache.dart';
+import 'package:immich_mobile/domain/models/passkey.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -18,6 +19,11 @@ extension type const PasskeyStore._(Provider<PasskeyMutations> _provider) implem
 
   /// Whether the server and this device support passkeys, and the server has them turned on
   AutoDisposeFutureProvider<bool> enabled() => _enabledProvider;
+
+  /// Every passkey of the current user
+  ///
+  /// **NOTE:** This is not reactive to changes, and only hits the HTTP API
+  AutoDisposeFutureProvider<List<Passkey>> all() => _allProvider;
 }
 
 final _enabledProvider = FutureProvider.autoDispose<bool>((ref) async {
@@ -31,6 +37,15 @@ final _enabledProvider = FutureProvider.autoDispose<bool>((ref) async {
   } catch (error, stack) {
     _log.warning("Failed to get the passkey config", error, stack);
     return false;
+  }
+});
+
+final _allProvider = FutureProvider.autoDispose<List<Passkey>>((ref) async {
+  try {
+    return await ref.watch(passkeyApiRepositoryProvider).getAll();
+  } catch (error, stack) {
+    _log.severe("Failed to get all passkeys", error, stack);
+    return const [];
   }
 });
 
