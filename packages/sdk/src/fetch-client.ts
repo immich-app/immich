@@ -2006,6 +2006,7 @@ export type OnboardingStatusResponseDto = {
     hasTelemetry: TelemetryLevel;
     isAuthenticated: boolean;
     requiresAuthentication: boolean;
+    restoreJobId?: string;
     status: BootstrapStatus;
 };
 export type CurrentRecoveryKeyResponse = {
@@ -6293,6 +6294,15 @@ export function futoBackupsImportRecoveryKey({ importRecoveryKeyRequest }: {
  */
 export function futoBackupsReportError(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/futo-backups/onboarding/report-error", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Continue after a restore
+ */
+export function futoBackupsContinueAfterRestore(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/futo-backups/onboarding/restore/continue", {
         ...opts,
         method: "POST"
     }));
