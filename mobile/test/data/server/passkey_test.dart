@@ -19,4 +19,34 @@ void main() {
 
     expect(await sut.startRegistration(), options);
   });
+
+  test('finishAuthentication sends the whole credential to the server', () async {
+    const credential = {
+      'id': 'credential',
+      'rawId': 'credential',
+      'type': 'public-key',
+      'response': {'clientDataJSON': 'data', 'authenticatorData': 'authenticator', 'signature': 'signature'},
+      'clientExtensionResults': <String, dynamic>{},
+    };
+    const login = {
+      'accessToken': 'token',
+      'isAdmin': false,
+      'isOnboarded': true,
+      'name': 'user',
+      'profileImagePath': '',
+      'shouldChangePassword': false,
+      'userEmail': 'user@immich.app',
+      'userId': 'user-id',
+    };
+    Object? body;
+    final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
+      ..client = MockClient((request) async {
+        body = jsonDecode(request.body);
+        return http.Response(jsonEncode(login), 201);
+      });
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+
+    expect((await sut.finishAuthentication(credential)).accessToken, 'token');
+    expect(body, {'response': credential});
+  });
 }

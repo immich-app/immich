@@ -1,3 +1,5 @@
+import 'package:openapi/api.dart';
+
 class LoginResponse {
   final String accessToken;
 
@@ -22,6 +24,17 @@ class LoginResponse {
     required this.userEmail,
     required this.userId,
   });
+
+  LoginResponse.fromDto(LoginResponseDto dto)
+    : this(
+        accessToken: dto.accessToken,
+        isAdmin: dto.isAdmin,
+        name: dto.name,
+        profileImagePath: dto.profileImagePath,
+        shouldChangePassword: dto.shouldChangePassword,
+        userEmail: dto.userEmail,
+        userId: dto.userId,
+      );
 
   @override
   String toString() {
