@@ -22,6 +22,7 @@ import native_video_player
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     let messenger = engineBridge.applicationRegistrar.messenger()
     AppDelegate.registerPlugins(with: engineBridge.pluginRegistry, messenger: messenger)
+    PasskeyHostApiSetup.setUp(binaryMessenger: messenger, api: PasskeyHostApiImpl())
   }
 
   public static func registerPlugins(with registry: FlutterPluginRegistry, messenger: FlutterBinaryMessenger) {
