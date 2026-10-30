@@ -26,6 +26,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository.js';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
 import { AlbumRepository } from 'src/repositories/album.repository.js';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository.js';
+import { AppriseRepository } from 'src/repositories/apprise.repository.js';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
 import { AssetFileRepository } from 'src/repositories/asset-file.repository.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
@@ -558,6 +559,7 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
       return new key(db, LoggingRepository.create(), new ConfigRepository()) as InstanceType<T>;
     }
 
+    case AppriseRepository:
     case EmailRepository: {
       return new key(LoggingRepository.create()) as InstanceType<T>;
     }
@@ -633,6 +635,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
 
     case CronRepository: {
       return automock(CronRepository, { args: [undefined, { setContext: () => {} }], strict: false });
+    }
+
+    case AppriseRepository: {
+      return automock(AppriseRepository, { args: [{ setContext: () => {} }] });
     }
 
     case EmailRepository: {

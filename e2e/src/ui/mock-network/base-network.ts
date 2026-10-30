@@ -72,6 +72,12 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
           albumInvite: true,
           albumUpdate: true,
         },
+        appriseNotifications: {
+          enabled: false,
+          albumInvite: true,
+          albumUpdate: true,
+          urls: [],
+        },
         download: {
           archiveSize: 4_294_967_296,
           includeEmbeddedVideos: false,
