@@ -15,6 +15,7 @@ export type SyncBackfillOptions = {
 };
 
 const dummyBackfillOptions = {
+  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   beforeUpdateId: DummyValue.UUID,
   afterUpdateId: DummyValue.UUID,
@@ -28,6 +29,7 @@ export type SyncCreatedAfterOptions = {
 };
 
 const dummyCreateAfterOptions = {
+  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   userId: DummyValue.UUID,
   afterCreateId: DummyValue.UUID,
@@ -41,6 +43,7 @@ export type SyncQueryOptions = {
 };
 
 const dummyQueryOptions = {
+  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   userId: DummyValue.UUID,
   ack: {

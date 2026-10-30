@@ -124,6 +124,7 @@ export const DummyValue = {
   TIME_BUCKET: '2024-01-01T00:00:00.000Z',
   BOOLEAN: true,
   VECTOR: JSON.stringify(Array.from({ length: 512 }, () => 0)),
+  TRANSACTION: Symbol('transaction'),
 };
 
 export const GENERATE_SQL_KEY = 'generate-sql-key';

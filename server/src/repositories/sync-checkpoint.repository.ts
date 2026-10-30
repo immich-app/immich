@@ -41,7 +41,7 @@ export class SyncCheckpointRepository {
       .execute();
   }
 
-  @GenerateSql()
+  @GenerateSql({ params: [DummyValue.TRANSACTION] })
   getNow(trx: TransactionHandle) {
     return trx[db]
       .selectNoFrom((eb) => [
