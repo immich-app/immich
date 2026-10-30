@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
-import 'package:immich_mobile/providers/passkey.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 
 class PasskeyCreateAction extends ActionBuilder {
@@ -15,11 +15,11 @@ class PasskeyCreateAction extends ActionBuilder {
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final message = context.t.passkey_added;
-    final passkeyService = ref.read(passkeyServiceProvider);
+    final passkeys = ref.read(Store.passkeys);
     final toastService = ref.read(toastServiceProvider);
 
     try {
-      if (await passkeyService.register()) {
+      if (await passkeys.create()) {
         toastService.success(message);
       }
     } catch (error, stack) {
