@@ -1,9 +1,11 @@
 import { Kysely } from 'kysely';
+import { chunk } from 'lodash-es';
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import type { SystemConfig } from 'src/dtos/config.dto.js';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { AssetFileType, AssetStatus, JobName, JobStatus } from 'src/enum.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
@@ -16,11 +18,12 @@ import { JobRepository } from 'src/repositories/job.repository.js';
 import { LibraryRepository } from 'src/repositories/library.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryService } from 'src/services/library.service.js';
 import { MetadataService } from 'src/services/metadata.service.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
-import { MediumTestContext, newMediumService } from 'test/medium.factory.js';
+import { MediumTestContext, mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { newUuid } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
@@ -45,7 +48,14 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     super(LibraryService, {
       database,
       real: [AssetRepository, AssetJobRepository, CryptoRepository, LibraryRepository, StorageRepository],
-      mock: [CronRepository, DatabaseRepository, EventRepository, JobRepository, LoggingRepository],
+      mock: [
+        CronRepository,
+        DatabaseRepository,
+        EventRepository,
+        JobRepository,
+        LoggingRepository,
+        WebsocketRepository,
+      ],
     });
 
     const jobs = this.getMock(JobRepository);
@@ -53,6 +63,7 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     jobs.queueAll.mockResolvedValue();
 
     this.getMock(EventRepository).emit.mockResolvedValue();
+    this.getMock(WebsocketRepository).serverSend.mockReturnValue();
 
     this.metadataService = newMediumService(MetadataService, {
       database,
@@ -592,6 +603,44 @@ describe(LibraryService.name, () => {
       await ctx.scan(library.id);
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([asset1]);
     });
+
+    // Postgres case folding disagreed with picomatch on these: `İ` folds to `i`, but `Σ` does not fold to `ς`
+    it.each([
+      { pattern: '**/İstanbul/**', folder: 'istanbul', isExcluded: false },
+      { pattern: '**/ΚΎΠΡΟΣ/**', folder: 'Κύπρος', isExcluded: true },
+    ])('should apply $pattern to $folder the same way on every scan', async ({ pattern, folder, isExcluded }) => {
+      const { sut, ctx } = setup();
+
+      const asset = await createFile(join(importRoot, folder, 'asset.png'));
+      const library = await ctx.createLibrary({ importPaths: [importRoot] });
+
+      await ctx.scan(library.id);
+      await sut.update(library.id, { exclusionPatterns: [pattern] });
+
+      const expected = isExcluded ? [] : [asset];
+      await ctx.scan(library.id);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual(expected);
+      await ctx.scan(library.id);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual(expected);
+    });
+
+    it('should offline a missing asset when an exclusion pattern is not a valid Postgres regex', async () => {
+      const { ctx } = setup();
+
+      const kept = await createFile(join(importPath, 'kept.png'));
+      const missing = await createFile(join(importPath, 'missing.png'));
+      const library = await ctx.createLibrary({
+        importPaths: [importPath],
+        exclusionPatterns: [String.raw`**/a\k/**`],
+      });
+
+      await ctx.scan(library.id);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([kept, missing]);
+
+      await rm(missing);
+      await ctx.scan(library.id);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([kept]);
+    });
   });
 
   describe('watch', () => {
@@ -664,6 +713,35 @@ describe(LibraryService.name, () => {
       expect(updated).toEqual(expect.objectContaining({ isOffline: true }));
       expect(updated?.deletedAt).toBeInstanceOf(Date);
     });
+
+    it('should not exhaust the database pool when more libraries are checked at once than it has connections', async () => {
+      const { sut, ctx } = setup();
+      const assetRepo = ctx.get(AssetRepository);
+      // the pool has 10 connections, and each library spans more than one batch so it offlines assets mid-read
+      const libraries = await Promise.all(
+        Array.from({ length: 10 }, () => ctx.createLibrary({ importPaths: [importPath] })),
+      );
+      for (const library of libraries) {
+        const assets = Array.from({ length: JOBS_LIBRARY_PAGINATION_SIZE + 1 }, (_, index) =>
+          mediumFactory.assetInsert({
+            ownerId: library.ownerId,
+            libraryId: library.id,
+            originalPath: join(outsidePath, `${index}.jpg`),
+            isExternal: true,
+          }),
+        );
+        for (const batch of chunk(assets, 1000)) {
+          await assetRepo.createAll(batch);
+        }
+      }
+
+      await expect(Promise.all(libraries.map(({ id }) => sut.handleQueueSyncAssets({ id })))).resolves.toEqual(
+        libraries.map(() => JobStatus.Success),
+      );
+      for (const { id } of libraries) {
+        await expect(ctx.getAssetPaths(id)).resolves.toEqual([]);
+      }
+    }, 60_000);
   });
 
   describe('handleSyncAssets', () => {

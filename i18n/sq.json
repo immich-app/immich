@@ -1224,7 +1224,6 @@
   "image_alt_text_date_place_3_people": "{isVideo, select, true {Video} other {Imazh}} i realizuar në {city}, {country} me {person1}, {person2} dhe {person3} më {date}",
   "image_alt_text_date_place_4_or_more_people": "{isVideo, select, true {Video} other {Imazh}} i realizuar në {city}, {country} me {person1}, {person2} dhe {additionalCount, number} të tjerë më {date}",
   "immich_logo": "Logoja e Immich",
-  "immich_web_interface": "Ndërfaqja Web e Immich",
   "import_from_json": "Importo nga JSON",
   "import_path": "Shtegu i importimit",
   "in_albums": "Në {count, plural, one {# album} other {# albume}}",

@@ -77,6 +77,12 @@ enum SettingSection {
     SettingSection.beta => const SyncStatusAndActions(),
   };
 
+  static Iterable<SettingSection> visible(WidgetRef ref) {
+    final isLoggedIn = ref.watch(authProvider).isAuthenticated;
+    final isPasskeyEnabled = ref.watch(Store.passkeys.enabled()).valueOrNull ?? false;
+    return values.where((section) => section != passkeys || (isLoggedIn && isPasskeyEnabled));
+  }
+
   const SettingSection(this.icon);
 }
 
@@ -97,10 +103,7 @@ class _MobileLayout extends ConsumerWidget {
   const _MobileLayout();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoggedIn = ref.watch(authProvider).isAuthenticated;
-    final isPasskeyEnabled = ref.watch(Store.passkeys.enabled()).valueOrNull ?? false;
-    final List<Widget> settings = SettingSection.values
-        .where((setting) => setting != SettingSection.passkeys || (isLoggedIn && isPasskeyEnabled))
+    final List<Widget> settings = SettingSection.visible(ref)
         .expand(
           (setting) => setting == SettingSection.beta
               ? [
@@ -138,11 +141,6 @@ class _TabletLayout extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedSection = useState<SettingSection>(SettingSection.values.first);
-    final isLoggedIn = ref.watch(authProvider).isAuthenticated;
-    final isPasskeyEnabled = ref.watch(Store.passkeys.enabled()).valueOrNull ?? false;
-    final sections = SettingSection.values.where(
-      (s) => s != SettingSection.passkeys || (isLoggedIn && isPasskeyEnabled),
-    );
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -151,7 +149,7 @@ class _TabletLayout extends HookConsumerWidget {
           flex: 2,
           child: CustomScrollView(
             slivers: [
-              ...sections.map(
+              ...SettingSection.visible(ref).map(
                 (s) => SliverToBoxAdapter(
                   child: ListTile(
                     title: Text(s.title(context.t)),
