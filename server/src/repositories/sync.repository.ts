@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { sql, type Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { TransactionHandle, columns, db } from 'src/database.js';
+import { TransactionHandle, TransactionHandle, columns, db } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AlbumUserRole, MemoryType } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import type { SyncAck } from 'src/types.js';
 
 export type SyncBackfillOptions = {
+  trx: TransactionHandle;
   trx: TransactionHandle;
   nowId: string;
   afterUpdateId?: string;
@@ -16,12 +17,14 @@ export type SyncBackfillOptions = {
 
 const dummyBackfillOptions = {
   trx: DummyValue.TRANSACTION,
+  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   beforeUpdateId: DummyValue.UUID,
   afterUpdateId: DummyValue.UUID,
 };
 
 export type SyncCreatedAfterOptions = {
+  trx: TransactionHandle;
   trx: TransactionHandle;
   nowId: string;
   userId: string;
@@ -30,6 +33,7 @@ export type SyncCreatedAfterOptions = {
 
 const dummyCreateAfterOptions = {
   trx: DummyValue.TRANSACTION,
+  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   userId: DummyValue.UUID,
   afterCreateId: DummyValue.UUID,
@@ -37,12 +41,14 @@ const dummyCreateAfterOptions = {
 
 export type SyncQueryOptions = {
   trx: TransactionHandle;
+  trx: TransactionHandle;
   nowId: string;
   userId: string;
   ack?: SyncAck;
 };
 
 const dummyQueryOptions = {
+  trx: DummyValue.TRANSACTION,
   trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   userId: DummyValue.UUID,
@@ -114,7 +120,8 @@ export class BaseSync {
     const { table, ref } = this.db.dynamic;
     const updateIdRef = ref(`${t}.updateId`);
 
-    return trx[db]
+    return trx
+      .unwrap()
       .selectFrom(table(t).as(t))
       .where(updateIdRef, '<', nowId)
       .where(updateIdRef, '<=', beforeUpdateId)
@@ -126,7 +133,8 @@ export class BaseSync {
     const { table, ref } = this.db.dynamic;
     const idRef = ref(`${t}.id`);
 
-    return trx[db]
+    return trx
+      .unwrap()
       .selectFrom(table(t).as(t))
       .where(idRef, '<', nowId)
       .$if(!!ack, (qb) => qb.where(idRef, '>', ack!.updateId))
@@ -146,7 +154,8 @@ export class BaseSync {
     const { table, ref } = this.db.dynamic;
     const updateIdRef = ref(`${t}.updateId`);
 
-    return trx[db]
+    return trx
+      .unwrap()
       .selectFrom(table(t).as(t))
       .where(updateIdRef, '<', nowId)
       .$if(!!ack, (qb) => qb.where(updateIdRef, '>', ack!.updateId))
@@ -157,7 +166,8 @@ export class BaseSync {
 class AlbumSync extends BaseSync {
   @GenerateSql({ params: [dummyCreateAfterOptions] })
   getCreatedAfter({ trx, nowId, userId, afterCreateId }: SyncCreatedAfterOptions) {
-    return trx[db]
+    return trx
+      .unwrap()
       .selectFrom('album_user')
       .select(['albumId as id', 'createId'])
       .where('userId', '=', userId)
@@ -655,7 +665,8 @@ class MemoryToAssetSync extends BaseSync {
 class PartnerSync extends BaseSync {
   @GenerateSql({ params: [dummyCreateAfterOptions] })
   getCreatedAfter({ trx, nowId, userId, afterCreateId }: SyncCreatedAfterOptions) {
-    return trx[db]
+    return trx
+      .unwrap()
       .selectFrom('partner')
       .select(['sharedById', 'createId'])
       .where('sharedWithId', '=', userId)

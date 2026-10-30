@@ -21,8 +21,6 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { PluginTable } from 'src/schema/tables/plugin.table.js';
 import type { UserMetadataItem } from 'src/types.js';
 
-export const db = Symbol('db');
-
 export class TransactionHandle {
   constructor(private trx: ControlledTransaction<DB>) {}
 
@@ -34,7 +32,7 @@ export class TransactionHandle {
     return this.trx.rollback().execute();
   }
 
-  get [db](): Kysely<DB> {
+  unwrap(): Kysely<DB> {
     return this.trx;
   }
 
