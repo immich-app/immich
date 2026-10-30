@@ -1,11 +1,11 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import PeopleSelectionModal from '$lib/modals/PeopleSelectionModal.svelte';
-  import { handleBulkUpsert } from '$lib/services/person-user.service';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import PeopleSelectionModal from '#lib/modals/PeopleSelectionModal.svelte';
+  import { handleBulkUpsert } from '#lib/services/person-user.service.ts';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { getAllPeople, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import {
     ActionButton,

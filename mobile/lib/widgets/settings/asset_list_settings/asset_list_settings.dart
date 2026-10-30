@@ -16,6 +16,7 @@ class AssetListSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storageIndicator = useValueNotifier(ref.watch(appConfigProvider.select((s) => s.timeline.storageIndicator)));
+    final smoothScrubbing = useValueNotifier(ref.watch(appConfigProvider.select((s) => s.timeline.smoothScrubbing)));
 
     final assetListSetting = [
       SettingsSwitchListTile(
@@ -23,6 +24,16 @@ class AssetListSettings extends HookConsumerWidget {
         title: context.t.theme_setting_asset_list_storage_indicator_title,
         onChanged: (value) {
           unawaited(ref.read(settingsProvider).write(.timelineStorageIndicator, value));
+          ref.invalidate(appSettingsServiceProvider);
+          ref.invalidate(settingsProvider);
+        },
+      ),
+      SettingsSwitchListTile(
+        valueNotifier: smoothScrubbing,
+        title: context.t.theme_setting_asset_list_smooth_scrubbing_title,
+        subtitle: context.t.theme_setting_asset_list_smooth_scrubbing_subtitle,
+        onChanged: (value) {
+          unawaited(ref.read(settingsProvider).write(.timelineSmoothScrubbing, value));
           ref.invalidate(appSettingsServiceProvider);
           ref.invalidate(settingsProvider);
         },

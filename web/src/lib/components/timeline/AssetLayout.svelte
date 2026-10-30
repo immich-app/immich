@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
-  import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
-  import { uploadAssetsStore } from '$lib/stores/upload';
-  import type { CommonPosition } from '$lib/utils/layout-utils';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import type { ViewerAsset } from '#lib/managers/timeline-manager/viewer-asset.svelte.ts';
+  import type { VirtualScrollManager } from '#lib/managers/VirtualScrollManager/VirtualScrollManager.svelte.ts';
+  import { uploadAssetsStore } from '#lib/stores/upload.ts';
+  import type { CommonPosition } from '#lib/utils/layout-utils.ts';
   import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
   import { scale } from 'svelte/transition';
@@ -35,8 +35,8 @@
 <!-- Image grid -->
 <div data-image-grid class="relative overflow-clip" style:height={height + 'px'} style:width={width + 'px'}>
   {#each viewerAssets as viewerAsset (viewerAsset.id)}
-    {@const position = viewerAsset.position!}
-    {@const asset = viewerAsset.asset!}
+    {const position = viewerAsset.position!}
+    {const asset = viewerAsset.asset!}
 
     <!-- note: don't remove data-asset-id - its used by web e2e tests -->
     <div

@@ -123,6 +123,21 @@ export class NotificationService extends BaseService {
     this.websocketRepository.serverSend('AppRestart', state);
   }
 
+  @OnEvent({ name: 'LibraryCreate' })
+  onLibraryCreate() {
+    this.websocketRepository.serverSend('LibraryCreate');
+  }
+
+  @OnEvent({ name: 'LibraryUpdate' })
+  onLibraryUpdate() {
+    this.websocketRepository.serverSend('LibraryUpdate');
+  }
+
+  @OnEvent({ name: 'LibraryDelete' })
+  onLibraryDelete() {
+    this.websocketRepository.serverSend('LibraryDelete');
+  }
+
   @OnEvent({ name: 'ConfigValidate', priority: -100 })
   async onConfigValidate({ oldConfig, newConfig }: ArgOf<'ConfigValidate'>) {
     try {
@@ -324,7 +339,7 @@ export class NotificationService extends BaseService {
 
   @OnJob({ name: JobName.NotifyAlbumInvite, queue: QueueName.Notification })
   async handleAlbumInvite({ id, recipientId, senderName }: JobOf<JobName.NotifyAlbumInvite>) {
-    const album = await this.albumRepository.getById(id, { withAssets: false });
+    const album = await this.albumRepository.getById(id);
     if (!album) {
       return JobStatus.Skipped;
     }
@@ -374,7 +389,7 @@ export class NotificationService extends BaseService {
 
   @OnJob({ name: JobName.NotifyAlbumUpdate, queue: QueueName.Notification })
   async handleAlbumUpdate({ id, recipientId }: JobOf<JobName.NotifyAlbumUpdate>) {
-    const album = await this.albumRepository.getById(id, { withAssets: false });
+    const album = await this.albumRepository.getById(id);
 
     if (!album) {
       return JobStatus.Skipped;

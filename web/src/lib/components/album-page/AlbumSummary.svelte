@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAlbumDateRange } from '$lib/utils/date-time';
+  import { getAlbumDateRange } from '#lib/utils/date-time.ts';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 

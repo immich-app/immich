@@ -1,20 +1,20 @@
+import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
 import { render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'svelte';
 import { vi } from 'vitest';
-import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
-import { personFactory } from '@test-data/factories/person-factory';
+import { personFactory } from '#test-data/factories/person-factory';
 import ManagePeoplePage from './+page.svelte';
 import ManagePeoplePageTestWrapper from './ManagePeopleVisibility.test-wrapper.svelte';
 
-vi.mock(import('$lib/managers/feature-flags-manager.svelte'), function () {
+vi.mock(import('#lib/managers/feature-flags-manager.svelte.js'), function () {
   return {
     featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: {} } as never,
   };
 });
 
-vi.mock('$lib/components/layouts/UserPageLayout.svelte', async () => {
-  return await import('@test-data/mocks/UserPageLayout.mock.svelte');
+vi.mock('#lib/components/layouts/UserPageLayout.svelte', async () => {
+  return await import('#test-data/mocks/UserPageLayout.mock.svelte');
 });
 
 const getData = (

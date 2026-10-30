@@ -47,10 +47,11 @@ describe(PersonService.name, () => {
       const [person, hiddenPerson] = [PersonFactory.create(), PersonFactory.create({ isHidden: true })];
 
       mocks.person.getAllForUser.mockResolvedValue({
-        items: [getDehydrated(person), getDehydrated(hiddenPerson)],
+        items: [getDehydrated({ ...person, faceCount: 3 }), getDehydrated({ ...hiddenPerson, faceCount: 3 })],
         hasNextPage: false,
+        total: 2,
+        hidden: 1,
       });
-      mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
       mocks.partner.getAll.mockResolvedValue([]);
       await expect(sut.getAll(auth, { withHidden: true, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
@@ -75,10 +76,11 @@ describe(PersonService.name, () => {
       const [isFavorite, person] = [PersonFactory.create({ isFavorite: true }), PersonFactory.create()];
 
       mocks.person.getAllForUser.mockResolvedValue({
-        items: [getDehydrated(isFavorite), getDehydrated(person)],
+        items: [getDehydrated({ ...isFavorite, faceCount: 3 }), getDehydrated({ ...person, faceCount: 3 })],
         hasNextPage: false,
+        total: 2,
+        hidden: 1,
       });
-      mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
       mocks.partner.getAll.mockResolvedValue([]);
       await expect(sut.getAll(auth, { withHidden: false, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
@@ -97,13 +99,32 @@ describe(PersonService.name, () => {
         partnerIds: [],
       });
     });
+
+    it('should pass the closest person to the query', async () => {
+      const auth = AuthFactory.create();
+      const closestPersonId = newUuid();
+
+      mocks.person.getAllForUser.mockResolvedValue({ items: [], hasNextPage: false, total: 0, hidden: 0 });
+      mocks.partner.getAll.mockResolvedValue([]);
+      await expect(sut.getAll(auth, { closestPersonId, page: 1, size: 10 })).resolves.toEqual({
+        people: [],
+        hasNextPage: false,
+        total: 0,
+        hidden: 0,
+      });
+      expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, auth.user.id, {
+        withHidden: false,
+        partnerIds: [],
+        closestPersonId,
+      });
+    });
   });
 
   describe('getById', () => {
     it('should require person.read permission', async () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
-      mocks.person.getForUser.mockResolvedValue(getDehydrated(person));
+      mocks.person.getByGroupId.mockResolvedValue(person);
       await expect(sut.getById(auth, person.personGroupId)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(
         auth.user.id,
@@ -127,12 +148,12 @@ describe(PersonService.name, () => {
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
       mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
-      mocks.person.getForUser.mockResolvedValue(getDehydrated(person));
+      mocks.person.getByGroupId.mockResolvedValue(person);
       await expect(sut.getById(auth, person.personGroupId)).resolves.toEqual(
         expect.objectContaining({ id: person.personGroupId }),
       );
-      expect(mocks.person.getForUser).toHaveBeenCalledWith({
-        userId: auth.user.id,
+      expect(mocks.person.getByGroupId).toHaveBeenCalledWith({
+        ownerId: auth.user.id,
         personGroupId: person.personGroupId,
       });
       expect(mocks.access.person.checkAccess).toHaveBeenCalledWith(auth.user.id, new Set(ids), PERSON_READ_ROLES);
@@ -898,7 +919,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -915,7 +935,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 1,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -931,7 +950,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -962,7 +980,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -994,7 +1011,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -1049,7 +1065,6 @@ describe(PersonService.name, () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
         waiting: 0,
-        paused: 0,
         completed: 0,
         failed: 0,
         delayed: 0,
@@ -1196,6 +1211,66 @@ describe(PersonService.name, () => {
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.person.reassignFace).not.toHaveBeenCalled();
       expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
+    });
+
+    it('should match metadata face stored at a different resolution', async () => {
+      const face = AssetFaceFactory.create({
+        sourceType: SourceType.Exif,
+        imageWidth: 2736,
+        imageHeight: 3648,
+        boundingBoxX1: 1225,
+        boundingBoxY1: 1453,
+        boundingBoxX2: 1436,
+        boundingBoxY2: 1732,
+      });
+      const asset = AssetFactory.from().face(face).file({ type: AssetFileType.Preview }).exif().build();
+      mocks.machineLearning.detectFaces.mockResolvedValue({
+        imageWidth: 1440,
+        imageHeight: 1920,
+        faces: [{ boundingBox: { x1: 645, y1: 765, x2: 756, y2: 912 }, embedding: '[1, 2, 3, 4]', score: 0.9 }],
+      });
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
+
+      await sut.handleDetectFaces({ id: asset.id });
+
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith([], [], [{ faceId: face.id, embedding: '[1, 2, 3, 4]' }]);
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should prefer metadata face over overlapping machine learning face', async () => {
+      const mlFace = AssetFaceFactory.create({
+        imageWidth: 1440,
+        imageHeight: 1920,
+        boundingBoxX1: 645,
+        boundingBoxY1: 765,
+        boundingBoxX2: 756,
+        boundingBoxY2: 912,
+      });
+      const exifFace = AssetFaceFactory.create({
+        sourceType: SourceType.Exif,
+        imageWidth: 2736,
+        imageHeight: 3648,
+        boundingBoxX1: 1225,
+        boundingBoxY1: 1453,
+        boundingBoxX2: 1436,
+        boundingBoxY2: 1732,
+      });
+      const asset = AssetFactory.from()
+        .face(mlFace)
+        .face(exifFace)
+        .file({ type: AssetFileType.Preview })
+        .exif()
+        .build();
+      mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(mlFace));
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
+
+      await sut.handleDetectFaces({ id: asset.id });
+
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith(
+        [],
+        [mlFace.id],
+        [{ faceId: exifFace.id, embedding: '[1, 2, 3, 4]' }],
+      );
     });
 
     it('should not add embedding to non-matching metadata face', async () => {

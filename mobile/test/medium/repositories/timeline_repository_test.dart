@@ -103,6 +103,22 @@ void main() {
   });
 
   group('person assets', () {
+    test('includes partner assets even when the partner is not shown in the timeline', () async {
+      final user = await ctx.newUser();
+      final partner = await ctx.newUser();
+      final stranger = await ctx.newUser();
+      await ctx.newPartner(sharedById: partner.id, sharedWithId: user.id, inTimeline: false);
+
+      final person = await ctx.newPerson(ownerId: user.id);
+      final partnerAsset = await ctx.newRemoteAsset(ownerId: partner.id);
+      final strangerAsset = await ctx.newRemoteAsset(ownerId: stranger.id);
+      await ctx.newFace(assetId: partnerAsset.id, personId: person.id);
+      await ctx.newFace(assetId: strangerAsset.id, personId: person.id);
+
+      final assets = await sut.person(user.id, person.id, .day).assetSource(0, 10);
+      expect(assets.map((a) => (a as RemoteAsset).id), [partnerAsset.id]);
+    });
+
     test('does not duplicate an asset that has multiple face records for the same person', () async {
       // Regression check for #26723: an INNER JOIN between remote_asset_entity and asset_face_entity
       // fanned out one asset into N rows when N face records pointed at the same (asset, person) pair
@@ -113,7 +129,7 @@ void main() {
       await ctx.newFace(assetId: asset.id, personId: person.id);
       await ctx.newFace(assetId: asset.id, personId: person.id);
 
-      final query = sut.person([user.id], person.id, .day);
+      final query = sut.person(user.id, person.id, .day);
 
       final buckets = await query.bucketSource().first;
       expect(buckets, hasLength(1));
@@ -140,7 +156,7 @@ void main() {
       await ctx.newFace(assetId: shiftedLater.id, personId: person.id);
       await ctx.newFace(assetId: shiftedEarlier.id, personId: person.id);
 
-      final query = sut.person([user.id], person.id, .day);
+      final query = sut.person(user.id, person.id, .day);
 
       final buckets = await query.bucketSource().first;
       expect(buckets, hasLength(2));

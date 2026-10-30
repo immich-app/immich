@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Qrcode from '$lib/components/shared-components/Qrcode.svelte';
-  import { copyToClipboard } from '$lib/utils';
+  import Qrcode from '#lib/components/shared-components/Qrcode.svelte';
+  import { copyToClipboard } from '#lib/utils.ts';
   import { HStack, IconButton, Input, Modal, ModalBody } from '@immich/ui';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
   import { t } from 'svelte-i18n';

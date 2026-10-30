@@ -16,6 +16,7 @@ import { JobRepository } from 'src/repositories/job.repository.js';
 import { LibraryRepository } from 'src/repositories/library.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryService } from 'src/services/library.service.js';
 import { MetadataService } from 'src/services/metadata.service.js';
@@ -31,10 +32,10 @@ let defaultDatabase: Kysely<DB>;
 
 const fileModifiedAt = new Date(1_700_000_000_000);
 
-const createFile = async (filePath: string, modifiedAt: Date = fileModifiedAt) => {
+const createFile = async (filePath: string) => {
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, 'test');
-  await utimes(filePath, modifiedAt, modifiedAt);
+  await utimes(filePath, fileModifiedAt, fileModifiedAt);
   return filePath;
 };
 
@@ -45,7 +46,14 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     super(LibraryService, {
       database,
       real: [AssetRepository, AssetJobRepository, CryptoRepository, LibraryRepository, StorageRepository],
-      mock: [CronRepository, DatabaseRepository, EventRepository, JobRepository, LoggingRepository],
+      mock: [
+        CronRepository,
+        DatabaseRepository,
+        EventRepository,
+        JobRepository,
+        LoggingRepository,
+        WebsocketRepository,
+      ],
     });
 
     const jobs = this.getMock(JobRepository);
@@ -53,6 +61,7 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     jobs.queueAll.mockResolvedValue();
 
     this.getMock(EventRepository).emit.mockResolvedValue();
+    this.getMock(WebsocketRepository).serverSend.mockReturnValue();
 
     this.metadataService = newMediumService(MetadataService, {
       database,
@@ -130,6 +139,7 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
   }
 }
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   const ctx = new LibraryTestContext(db || defaultDatabase);
   return { sut: ctx.sut, ctx };

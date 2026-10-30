@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { ResizeBoundary, transformManager } from '$lib/managers/edit/transform-manager.svelte';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { ResizeBoundary, transformManager } from '#lib/managers/edit/transform-manager.svelte.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import type { ColorPreviewRequest, ColorPreviewResponse } from './color-preview.worker';
+  import type { ColorPreviewRequest, ColorPreviewResponse } from './color-preview.worker.ts';
 
   interface Props {
     asset: AssetResponseDto;
@@ -193,7 +193,7 @@
       ></div>
 
       {#each edges as edge (edge)}
-        {@const rotatedEdge = rotateBoundary(edges, edge, transformManager.normalizedRotation / 90)}
+        {const rotatedEdge = $derived(rotateBoundary(edges, edge, transformManager.normalizedRotation / 90))}
         <button
           class={['absolute', edge]}
           style={`${edge}: -10px`}
@@ -204,7 +204,7 @@
       {/each}
 
       {#each corners as corner (corner)}
-        {@const rotatedCorner = rotateBoundary(corners, corner, transformManager.normalizedRotation / 90)}
+        {const rotatedCorner = $derived(rotateBoundary(corners, corner, transformManager.normalizedRotation / 90))}
         <button
           class={['corner', corner]}
           onmousedown={(e) => transformManager.handleMouseDownOn(e, corner)}

@@ -113,13 +113,15 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     // this must be a do/catch since we need to
     // distinguish between a network fail and an empty search
     do {
+      let targetSize = CGSize(width: context.displaySize.width * UIScreen.main.scale, height: context.displaySize.height * UIScreen.main.scale)
       let search = try await generateRandomEntries(
         api: api,
         now: now,
         count: 12,
         filter: album.filter,
         subtitle: configuration.showAlbumName ? albumName : nil,
-        forceFullColor: configuration.forceFullColor
+        forceFullColor: configuration.forceFullColor,
+        targetSize: targetSize
       )
 
       // Load or save a cached asset for when network conditions are bad

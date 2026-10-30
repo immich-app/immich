@@ -20,7 +20,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
           permission-pull-requests: write
 
-      - uses: immich-app/devtools/actions/sticky-comment@0135acd12ad9f3369b94a2aa3c0ae8c835a4e926 # sticky-comment-action-v1.0.0
+      - uses: immich-app/devtools/actions/sticky-comment@5f79a5a552b30a23aa7984ffa06c3dbfaf4330f6 # sticky-comment-action-v1.1.0
         with:
           id: preview-status
           token: ${{ steps.token.outputs.token }}
@@ -50,14 +50,14 @@ jobs:
               name: 'preview'
             })
 
-      - uses: immich-app/devtools/actions/sticky-comment@0135acd12ad9f3369b94a2aa3c0ae8c835a4e926 # sticky-comment-action-v1.0.0
+      - uses: immich-app/devtools/actions/sticky-comment@5f79a5a552b30a23aa7984ffa06c3dbfaf4330f6 # sticky-comment-action-v1.1.0
         if: ${{ github.event.pull_request.head.repo.fork }}
         with:
           id: preview-status
           token: ${{ steps.token.outputs.token }}
           body: 'PRs from forks cannot have preview environments.'
 
-      - uses: immich-app/devtools/actions/sticky-comment@0135acd12ad9f3369b94a2aa3c0ae8c835a4e926 # sticky-comment-action-v1.0.0
+      - uses: immich-app/devtools/actions/sticky-comment@5f79a5a552b30a23aa7984ffa06c3dbfaf4330f6 # sticky-comment-action-v1.1.0
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           id: preview-status

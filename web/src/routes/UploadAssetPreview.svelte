@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Route } from '$lib/route';
-  import { locale } from '$lib/stores/preferences.store';
-  import { uploadAssetsStore } from '$lib/stores/upload';
-  import type { UploadAsset } from '$lib/types';
-  import { UploadState } from '$lib/types';
-  import { getByteUnitString } from '$lib/utils/byte-units';
-  import { fileUploadHandler } from '$lib/utils/file-uploader';
+  import { Route } from '#lib/route.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { uploadAssetsStore } from '#lib/stores/upload.ts';
+  import type { UploadAsset } from '#lib/types.ts';
+  import { UploadState } from '#lib/types.ts';
+  import { getByteUnitString } from '#lib/utils/byte-units.ts';
+  import { fileUploadHandler } from '#lib/utils/file-uploader.ts';
   import { Icon } from '@immich/ui';
   import {
     mdiAlertCircle,
@@ -26,11 +26,11 @@
 
   let { uploadAsset }: Props = $props();
 
-  const handleDismiss = (uploadAsset: UploadAsset) => {
+  const handleDismiss = () => {
     uploadAssetsStore.removeItem(uploadAsset.id);
   };
 
-  const handleRetry = async (uploadAsset: UploadAsset) => {
+  const handleRetry = async () => {
     uploadAssetsStore.removeItem(uploadAsset.id);
     await fileUploadHandler({ files: [uploadAsset.file], albumId: uploadAsset.albumId });
   };
@@ -76,16 +76,16 @@
         >
           <Icon icon={mdiOpenInNew} size="20" />
         </a>
-        <button type="button" onclick={() => handleDismiss(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
+        <button type="button" onclick={() => handleDismiss()} class="" aria-hidden="true" tabindex={-1}>
           <Icon icon={mdiClose} size="20" />
         </button>
       </div>
     {:else if uploadAsset.state === UploadState.ERROR}
       <div class="flex items-center justify-between gap-1">
-        <button type="button" onclick={() => handleRetry(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
+        <button type="button" onclick={() => handleRetry()} class="" aria-hidden="true" tabindex={-1}>
           <Icon icon={mdiRestart} size="20" />
         </button>
-        <button type="button" onclick={() => handleDismiss(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
+        <button type="button" onclick={() => handleDismiss()} class="" aria-hidden="true" tabindex={-1}>
           <Icon icon={mdiClose} size="20" />
         </button>
       </div>

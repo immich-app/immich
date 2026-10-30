@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
   import DuplicateAsset from './DuplicateAsset.svelte';
-  import Portal from '$lib/elements/Portal.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { getNextAsset, getPreviousAsset } from '#lib/utils/asset-utils.ts';
   import {
     computeDifferingMetadataFields,
     countDifferingMetadataItems,
     type DifferingMetadataFields,
-  } from '$lib/utils/duplicate-utils';
-  import { navigate } from '$lib/utils/navigation';
+  } from '#lib/utils/duplicate-utils.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button, Icon } from '@immich/ui';
   import { mdiCheck, mdiChevronDown, mdiChevronUp, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
@@ -94,7 +94,9 @@
   };
 
   const handleStack = () => {
-    onStack(assets);
+    const selectedAssets = assets.filter(({ id }) => selectedAssetIds.has(id));
+    const unselectedAssets = assets.filter(({ id }) => !selectedAssetIds.has(id));
+    onStack([...selectedAssets, ...unselectedAssets]);
   };
 
   const assetCursor = $derived({
@@ -198,7 +200,7 @@
 </div>
 
 {#if assetViewerManager.isViewing}
-  {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+  {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
         cursor={assetCursor}

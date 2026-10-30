@@ -93,7 +93,7 @@
 @layer utilities {
   @font-face {
     font-family: 'GoogleSans';
-    src: url('$lib/assets/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
+    src: url('#lib/assets/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
     font-weight: 410 900;
     font-style: normal;
     ascent-override: 106.25%;
@@ -102,7 +102,7 @@
 
   @font-face {
     font-family: 'GoogleSansCode';
-    src: url('$lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf') format('truetype-variations');
+    src: url('#lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf') format('truetype-variations');
     font-weight: 1 900;
     font-style: monospace;
   }

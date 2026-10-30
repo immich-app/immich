@@ -5,8 +5,9 @@ Rust code that ships inside the mobile app. Flutter compiles it from source thro
 in `mobile/` sets one up, otherwise install [rustup](https://rustup.rs) once and the build
 fetches the pinned toolchain itself.
 
-- `crates/native_core`: the shared logic
-- `crates/native_core_ffi`: the C ABI, cbindgen writes `include/native_core.h`
+- `crates/codecs`: the image decoders, a feature each, behind one `decode`
+- `crates/native_core`: the shared logic, a feature per part and a group per target
+- `crates/native_core_ffi`: the C ABI on the `flutter` group, cbindgen writes `include/native_core.h`
 - `native_core`: Flutter package with the build hook and the ffigen bindings
   (`NOTICES` carries the licenses of the crates compiled into the core, update it with the dependencies)
 

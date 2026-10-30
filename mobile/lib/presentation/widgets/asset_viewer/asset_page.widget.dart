@@ -51,13 +51,14 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   bool _showingDetails = false;
   bool _isZoomed = false;
+  bool _restoreControlsAfterZoom = false;
   // Frozen during dismiss drag + settle to prevent widget tree swap mid-animation.
   bool _wasMotionPlayingAtDismiss = false;
   bool _isDismissAnimating = false;
 
   final _scrollController = SnapScrollController();
   double _snapOffset = 0.0;
-  static const double _maxScaleMultiplier = 20.0;
+  static const double _maxImagePixelSize = 12.0;
 
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
@@ -268,6 +269,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       return;
     }
 
+    _restoreControlsAfterZoom = false;
+
     final tapToNavigate = ref.read(appConfigProvider).viewer.tapToNavigate;
     if (!tapToNavigate) {
       _viewer.toggleControls();
@@ -299,14 +302,17 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
     if (scaleState != PhotoViewScaleState.initial) {
       if (_dragStart == null) {
+        _restoreControlsAfterZoom |= ref.read(assetViewerProvider).showingControls;
         _viewer.setControls(false);
       }
       return;
     }
 
-    if (!_showingDetails) {
+    if (!_showingDetails && _restoreControlsAfterZoom) {
       _viewer.setControls(true);
     }
+
+    _restoreControlsAfterZoom = false;
   }
 
   void _listenForScaleBoundaries(PhotoViewControllerBase? controller) {
@@ -374,7 +380,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           filterQuality: FilterQuality.high,
           tightMode: true,
           enablePanAlways: true,
-          maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
+          maxScale: _maxImagePixelSize,
           disableScaleGestures: _showingDetails,
           scaleStateChangedCallback: _onScaleStateChanged,
           onPageBuild: _onPageBuild,
@@ -409,7 +415,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       basePosition: Alignment.center,
       disableScaleGestures: _showingDetails,
       minScale: PhotoViewComputedScale.contained,
-      maxScale: PhotoViewComputedScale.contained * _maxScaleMultiplier,
+      maxScale: _maxImagePixelSize,
       initialScale: PhotoViewComputedScale.contained,
       tightMode: true,
       onPageBuild: _onPageBuild,

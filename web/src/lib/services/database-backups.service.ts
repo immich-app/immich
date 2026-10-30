@@ -1,18 +1,45 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { uploadRequest } from '#lib/utils.ts';
+import { openFilePicker } from '#lib/utils/file-uploader.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import {
   deleteDatabaseBackup,
   getBaseUrl,
+  listDatabaseBackups,
   MaintenanceAction,
   setMaintenanceMode,
+  type DatabaseBackupDto,
   type DatabaseBackupUploadDto,
 } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
+import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { uploadRequest } from '$lib/utils';
-import { openFilePicker } from '$lib/utils/file-uploader';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
+
+export const loadDatabaseBackups = async (): Promise<DatabaseBackupDto[]> => {
+  const { backups } = await listDatabaseBackups();
+  return backups;
+};
+
+export const getDatabaseBackupDateTime = (filename: string, zone?: string): DateTime | undefined => {
+  const dateMatch = filename.match(/\d+T\d+/);
+  if (!dateMatch) {
+    return;
+  }
+
+  return DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone });
+};
+
+const getBackupTimestamp = (backup: DatabaseBackupDto): number =>
+  getDatabaseBackupDateTime(backup.filename, backup.timezone)?.toMillis() ?? 0;
+
+export const getLatestBackup = (backups: DatabaseBackupDto[]): DatabaseBackupDto | undefined => {
+  if (backups.length === 0) {
+    return undefined;
+  }
+  return [...backups].sort((a, b) => getBackupTimestamp(b) - getBackupTimestamp(a))[0];
+};
 
 export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string) => {
   const Download: ActionItem = {

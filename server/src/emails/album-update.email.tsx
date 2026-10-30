@@ -1,9 +1,9 @@
-import { Img, Link, Section, Text } from '@react-email/components';
+import { Img, Link, Section, Text } from 'react-email';
 import * as React from 'react';
 import { ImmichButton } from 'src/emails/components/button.component.js';
 import ImmichLayout from 'src/emails/components/immich.layout.js';
 import { AlbumUpdateEmailProps } from 'src/repositories/email.repository.js';
-import { replaceTemplateTags } from 'src/utils/replace-template-tags.js';
+import { replaceTemplateTags, templatePreview } from 'src/utils/replace-template-tags.js';
 
 export const AlbumUpdateEmail = ({
   baseUrl,
@@ -36,7 +36,13 @@ export const AlbumUpdateEmail = ({
   );
 
   return (
-    <ImmichLayout preview={customTemplate ? emailContent.toString() : 'New media has been added to a shared album.'}>
+    <ImmichLayout
+      preview={
+        customTemplate
+          ? templatePreview(customTemplate, usableTemplateVariables)
+          : 'New media has been added to a shared album.'
+      }
+    >
       {customTemplate && (
         <Text className="m-0">
           <div dangerouslySetInnerHTML={{ __html: emailContent }}></div>

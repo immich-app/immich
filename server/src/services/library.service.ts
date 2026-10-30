@@ -247,6 +247,8 @@ export class LibraryService extends BaseService {
         '**/.stfolder/**',
       ],
     });
+
+    await this.eventRepository.emit('LibraryCreate');
     return mapLibrary(library);
   }
 
@@ -358,6 +360,7 @@ export class LibraryService extends BaseService {
     }
 
     const library = await this.libraryRepository.update(id, dto);
+    await this.eventRepository.emit('LibraryUpdate');
     return mapLibrary(library);
   }
 
@@ -370,6 +373,8 @@ export class LibraryService extends BaseService {
 
     await this.libraryRepository.softDelete(id);
     await this.jobRepository.queue({ name: JobName.LibraryDelete, data: { id } });
+
+    await this.eventRepository.emit('LibraryDelete');
   }
 
   @OnJob({ name: JobName.LibraryDelete, queue: QueueName.Library })
