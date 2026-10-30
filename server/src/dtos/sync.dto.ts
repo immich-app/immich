@@ -444,11 +444,17 @@ const SyncAssetOcrDeleteV1Schema = z
   })
   .meta({ id: 'SyncAssetOcrDeleteV1' });
 
+const SyncAssetOcrResetV1Schema = z.object({}).meta({ id: 'SyncAssetOcrResetV1' });
+
 @ExtraModel()
 class SyncAssetOcrV1 extends createZodDto(SyncAssetOcrV1Schema) {}
 
 @ExtraModel()
 class SyncAssetOcrDeleteV1 extends createZodDto(SyncAssetOcrDeleteV1Schema) {}
+
+@ExtraModel()
+class SyncAssetOcrResetV1 extends createZodDto(SyncAssetOcrResetV1Schema) {}
+
 @ExtraModel()
 class SyncStackV1 extends createZodDto(SyncStackV1Schema) {}
 @ExtraModel()
@@ -488,6 +494,7 @@ export type SyncItem = {
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.AssetOcrV1]: SyncAssetOcrV1;
   [SyncEntityType.AssetOcrDeleteV1]: SyncAssetOcrDeleteV1;
+  [SyncEntityType.AssetOcrResetV1]: SyncAssetOcrResetV1;
   [SyncEntityType.AssetEditV1]: SyncAssetEditV1;
   [SyncEntityType.AssetEditDeleteV1]: SyncAssetEditDeleteV1;
   [SyncEntityType.PartnerAssetV2]: SyncAssetV2;

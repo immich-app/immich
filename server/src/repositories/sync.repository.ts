@@ -838,6 +838,16 @@ class AssetMetadataSync extends BaseSync {
 }
 
 class AssetOcrSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions] })
+  getReset(options: SyncQueryOptions) {
+    return this.auditQuery('asset_ocr_reset_audit', options)
+      .select(['asset_ocr_reset_audit.id', 'asset_ocr_reset_audit.deletedAt'])
+      .clearOrderBy()
+      .orderBy('asset_ocr_reset_audit.id', 'desc')
+      .limit(1)
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
   getDeletes(options: SyncQueryOptions, userId: string) {
     return this.auditQuery('asset_ocr_audit', options)
@@ -847,8 +857,9 @@ class AssetOcrSync extends BaseSync {
       .stream();
   }
 
-  cleanupAuditTable(daysAgo: number) {
-    return this.auditCleanup('asset_ocr_audit', daysAgo);
+  async cleanupAuditTable(daysAgo: number) {
+    await this.auditCleanup('asset_ocr_reset_audit', daysAgo);
+    await this.auditCleanup('asset_ocr_audit', daysAgo);
   }
 
   @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
