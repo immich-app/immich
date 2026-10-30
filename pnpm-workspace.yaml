@@ -14,6 +14,7 @@ allowBuilds:
   '@scarf/scarf': false
   '@swc/core': false
   bcrypt: true
+  better-sqlite3: true
   canvas: false
   core-js: false
   cpu-features: false
@@ -72,3 +73,4 @@ minimumReleaseAgeExclude:
   - '@immich/ui'
   - '@immich/sql-tools@0.6.3 || 0.6.6'
   - '@nestjs/cli@12.0.1'
+  - '@futo-org/*'
