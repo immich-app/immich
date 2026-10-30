@@ -6333,7 +6333,7 @@
             "state": "Added"
           }
         ],
-        "x-immich-permission": "clusterGroup.read"
+        "x-immich-permission": "clusterGroup.admin"
       }
     },
     "/cluster-groups/{id}/requests": {
@@ -7217,6 +7217,2671 @@
         ],
         "x-immich-permission": "face.update",
         "x-immich-state": "Stable"
+      }
+    },
+    "/futo-backups/auth/oidc/device": {
+      "get": {
+        "description": "Connect an existing FUTO Backups account to this server.",
+        "operationId": "futoBackupsConnectDeviceFlow",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceFlowEventDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Connect a FUTO Backups account",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/auth/session": {
+      "post": {
+        "description": "Use existing session token to create a session on your device.",
+        "operationId": "futoBackupsCreateSession",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create session",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/auth/session/device": {
+      "get": {
+        "description": "Log into standalone backups app using the associated cloud account.",
+        "operationId": "futoBackupsSessionDeviceFlow",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceFlowEventDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Sign in with FUTO Backups account",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/auth/ticket": {
+      "post": {
+        "description": "Create a ticket to perform a protected repository action.",
+        "operationId": "futoBackupsCreateTicket",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketCreateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a ticket",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/backend": {
+      "get": {
+        "description": "List the storage backends configured on this server.",
+        "operationId": "futoBackupsGetBackends",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List backends",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/backend/local": {
+      "post": {
+        "description": "Add a storage backend that writes to a local path on this server.",
+        "operationId": "futoBackupsCreateLocalBackend",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLocalBackendRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a local backend",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/config": {
+      "get": {
+        "description": "Retrieve the current backups orchestrator configuration.",
+        "operationId": "futoBackupsGetConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get backups orchestrator configuration",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "put": {
+        "description": "Update the backups orchestrator configuration.",
+        "operationId": "futoBackupsUpdateConfig",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update backups orchestrator configuration",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/debug/reset": {
+      "post": {
+        "description": "Delete all orchestrator state. Only available in development mode.",
+        "operationId": "futoBackupsResetOrchestrator",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Reset the backups orchestrator",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/fs": {
+      "get": {
+        "description": "List the files and folders at a path on this server.",
+        "operationId": "futoBackupsGetFileListing",
+        "parameters": [
+          {
+            "name": "path",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesystemListingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List files",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/integrations": {
+      "get": {
+        "description": "Retrieve the configuration and state of each integration.",
+        "operationId": "futoBackupsGetIntegrations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get backup integrations",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/integrations/immich": {
+      "post": {
+        "description": "Set up backups for the Immich backup integration.",
+        "operationId": "futoBackupsConfigureImmichIntegration",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureImmichIntegrationRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigureImmichIntegrationResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Configure the Immich backup integration",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/integrations/immich/database-dump": {
+      "post": {
+        "description": "Configure the Immich database dumps included in backups.",
+        "operationId": "futoBackupsConfigureImmichDatabaseDump",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureImmichDatabaseDumpRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Configure Immich database dumps",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/integrations/immich/database-dump/ignore-warning": {
+      "post": {
+        "description": "Stop warning that Immich database dumps are not configured.",
+        "operationId": "futoBackupsIgnoreImmichDatabaseDumpWarning",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Ignore the Immich database dump warning",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/integrations/immich/rollback": {
+      "post": {
+        "description": "Put Immich into maintenance mode and restore it from a snapshot.",
+        "operationId": "futoBackupsStartImmichRollback",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImmichRollbackRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Roll Immich back to a snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/integrations/immich/status": {
+      "get": {
+        "description": "Retrieve the backup status of the Immich integration.",
+        "operationId": "futoBackupsGetImmichBackupStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImmichBackupStatusDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get Immich backup status",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/jobs": {
+      "get": {
+        "description": "List the jobs for a repository, newest first.",
+        "operationId": "futoBackupsGetJobs",
+        "parameters": [
+          {
+            "name": "repositoryId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List jobs",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/jobs/{id}": {
+      "delete": {
+        "description": "Cancel a queued job, or stop it if it is already running.",
+        "operationId": "futoBackupsCancelJob",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Cancel a job",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "get": {
+        "description": "Get the status of a job.",
+        "operationId": "futoBackupsGetJob",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get a job",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/jobs/{id}/download": {
+      "get": {
+        "description": "Download the full log of a job as JSON lines.",
+        "operationId": "futoBackupsDownloadJobLog",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/jsonl": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download a job log",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/jobs/{id}/support-log/download": {
+      "get": {
+        "description": "Download the verbose restic output recorded while the job ran in support mode, as JSON lines.",
+        "operationId": "futoBackupsDownloadJobSupportLog",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/jsonl": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download a job support log",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/onboarding": {
+      "get": {
+        "description": "Retrieve which onboarding steps this server has completed.",
+        "operationId": "futoBackupsOnboardingStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingStatusResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get backup onboarding status",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/onboarding/recovery-key": {
+      "get": {
+        "description": "Retrieve the recovery key that encrypts the backups of this server.",
+        "operationId": "futoBackupsCurrentRecoveryKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentRecoveryKeyResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get the backup recovery key",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "post": {
+        "description": "Record that the user has saved the recovery key.",
+        "operationId": "futoBackupsConfirmRecoveryKey",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Confirm the backup recovery key",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "put": {
+        "description": "Replace the recovery key with one from an earlier installation.",
+        "operationId": "futoBackupsImportRecoveryKey",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportRecoveryKeyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Import a backup recovery key",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/onboarding/report-error": {
+      "post": {
+        "description": "Send the current startup error to telemetry.",
+        "operationId": "futoBackupsReportError",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Report a startup error",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/onboarding/restore/continue": {
+      "post": {
+        "description": "Record that the user has moved on from a finished restore, so it is no longer offered on reload.",
+        "operationId": "futoBackupsContinueAfterRestore",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Continue after a restore",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/onboarding/skip": {
+      "post": {
+        "description": "Skip the optional configuration steps of onboarding.",
+        "operationId": "futoBackupsSkipOnboardingExtraConfig",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Skip optional backup onboarding",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/onboarding/telemetry": {
+      "post": {
+        "description": "Record that the user consents to sending telemetry.",
+        "operationId": "futoBackupsEnableTelemetry",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Enable FUTO Backups telemetry",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository": {
+      "get": {
+        "description": "List the backup repositories known to this server.",
+        "operationId": "futoBackupsGetRepositories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List backups",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "post": {
+        "description": "Create a backup repository on a backend.",
+        "operationId": "futoBackupsCreateRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryCreateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a new backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/inspect": {
+      "get": {
+        "description": "List repositories on a backend that are not configured on this server.",
+        "operationId": "futoBackupsInspectRepositories",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryInspectResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List remote backups",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/{id}": {
+      "delete": {
+        "description": "Remove a repository from this server.",
+        "operationId": "futoBackupsDeleteRepository",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Remove a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "patch": {
+        "description": "Update the settings of a repository.",
+        "operationId": "futoBackupsUpdateRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryUpdateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "post": {
+        "description": "Queue a backup to a repository and return the ID of its job.",
+        "operationId": "futoBackupsCreateBackup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Start a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/{id}/backend": {
+      "put": {
+        "description": "Create a new empty repository on the selected backend and redirect future backups to it. Existing snapshots are not migrated.",
+        "operationId": "futoBackupsReconfigureRepositoryPrimaryBackend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryPrimaryBackendReconfigureRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Change the primary backend",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/{id}/import": {
+      "get": {
+        "description": "Check that an existing repository on a backend can be opened with the recovery key.",
+        "operationId": "futoBackupsCheckImportRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCheckImportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Check a repository import",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "post": {
+        "description": "Add an existing repository on a backend to this server.",
+        "operationId": "futoBackupsImportRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Import a repository",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/{id}/snapshots": {
+      "get": {
+        "description": "List the snapshots in a repository.",
+        "operationId": "futoBackupsGetSnapshots",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSnapshotsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List snapshots",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/{id}/snapshots/prune": {
+      "post": {
+        "description": "Queue the removal of snapshots outside the retention policy and return the ID of its job.",
+        "operationId": "futoBackupsPruneRepository",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Prune a repository",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/{id}/snapshots/{snapshot}": {
+      "delete": {
+        "description": "Remove a snapshot from a repository.",
+        "operationId": "futoBackupsForgetSnapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSnapshotsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "post": {
+        "description": "Queue a restore of files from a snapshot and return the ID of its job.",
+        "operationId": "futoBackupsRestoreSnapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySnapshotRestoreRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Restore a snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/{id}/snapshots/{snapshot}/listing": {
+      "get": {
+        "description": "List the files and folders at a path in a snapshot.",
+        "operationId": "futoBackupsGetSnapshotListing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesystemListingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List snapshot files",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/{id}/snapshots/{snapshot}/restore-from-point": {
+      "post": {
+        "description": "Restore the orchestrator to a previous state, wiping the current state.",
+        "operationId": "futoBackupsRestoreFromPoint",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySnapshotRestoreFromPointRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Restore from snapshot",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/repository/{id}/sync-deletion": {
+      "post": {
+        "description": "Remove a repository from this server once it has been deleted from its backend.",
+        "operationId": "futoBackupsSyncRepositoryDeletion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositorySyncDeletionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Sync a remote deletion",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/schedule": {
+      "get": {
+        "description": "List the backup schedules.",
+        "operationId": "futoBackupsGetSchedules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List schedules",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "post": {
+        "description": "Create a backup schedule for one or more repositories.",
+        "operationId": "futoBackupsCreateSchedule",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleCreateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a schedule",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/schedule/{id}": {
+      "delete": {
+        "description": "Delete a backup schedule.",
+        "operationId": "futoBackupsRemoveSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a schedule",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "patch": {
+        "description": "Update a backup schedule.",
+        "operationId": "futoBackupsUpdateSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleUpdateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a schedule",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      }
+    },
+    "/futo-backups/support-mode": {
+      "get": {
+        "description": "Retrieve how many upcoming runs use verbose restic logging, and whether they stream to FUTO.",
+        "operationId": "futoBackupsGetSupportMode",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportModeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get support mode",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
+      },
+      "put": {
+        "description": "Set how many upcoming runs use verbose restic logging, and whether they stream to FUTO.",
+        "operationId": "futoBackupsUpdateSupportMode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportModeUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportModeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update support mode",
+        "tags": [
+          "Backups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.4.0",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-state": "Internal"
       }
     },
     "/jobs": {
@@ -18594,7 +21259,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.3.0-rc.0",
+    "version": "3.4.0-rc.0",
     "contact": {}
   },
   "tags": [
@@ -18625,6 +21290,10 @@
     {
       "name": "Authentication (admin)",
       "description": "Administrative endpoints related to authentication."
+    },
+    {
+      "name": "Backups",
+      "description": "FUTO Backups."
     },
     {
       "name": "Cluster groups",
@@ -18911,6 +21580,10 @@
       },
       "AdminConfigBackupsDto": {
         "properties": {
+          "beta": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "database": {
             "$ref": "#/components/schemas/AdminConfigDatabaseBackupDto"
           }
@@ -21962,6 +24635,92 @@
         },
         "type": "object"
       },
+      "BackendDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/BackendType"
+          }
+        },
+        "required": [
+          "description",
+          "id",
+          "isOnline",
+          "type"
+        ],
+        "type": "object"
+      },
+      "BackendResponseDto": {
+        "properties": {
+          "backend": {
+            "$ref": "#/components/schemas/BackendDto"
+          }
+        },
+        "required": [
+          "backend"
+        ],
+        "type": "object"
+      },
+      "BackendType": {
+        "enum": [
+          "yucca",
+          "local",
+          "s3"
+        ],
+        "type": "string"
+      },
+      "BackendsResponseDto": {
+        "properties": {
+          "backends": {
+            "items": {
+              "$ref": "#/components/schemas/BackendDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backends"
+        ],
+        "type": "object"
+      },
+      "BackupStatus": {
+        "enum": [
+          "incomplete",
+          "complete",
+          "warn",
+          "failed",
+          "cancelled"
+        ],
+        "type": "string"
+      },
+      "BandwidthDto": {
+        "properties": {
+          "bytesPerSec": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "quietHours": {
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d-([01]\\d|2[0-3]):[0-5]\\d$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bytesPerSec"
+        ],
+        "type": "object"
+      },
       "BoolFilter": {
         "properties": {
           "eq": {
@@ -21972,6 +24731,14 @@
           "eq"
         ],
         "type": "object"
+      },
+      "BootstrapStatus": {
+        "enum": [
+          "not-ready",
+          "ready",
+          "error"
+        ],
+        "type": "string"
       },
       "BulkIdErrorReason": {
         "description": "Error reason",
@@ -22197,6 +24964,104 @@
         ],
         "type": "string"
       },
+      "ConfigResponseDto": {
+        "properties": {
+          "bandwidth": {
+            "$ref": "#/components/schemas/BandwidthDto"
+          }
+        },
+        "required": [
+          "bandwidth"
+        ],
+        "type": "object"
+      },
+      "ConfigUpdateRequestDto": {
+        "properties": {
+          "bandwidth": {
+            "$ref": "#/components/schemas/BandwidthDto"
+          }
+        },
+        "required": [
+          "bandwidth"
+        ],
+        "type": "object"
+      },
+      "ConfigureImmichDatabaseDumpRequestDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "keepLastAmount": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ConfigureImmichIntegrationRequestDto": {
+        "properties": {
+          "backupConfiguration": {
+            "type": "boolean"
+          },
+          "cron": {
+            "type": "string"
+          },
+          "dataFolders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "libraries": {
+            "description": "IDs of the external libraries to back up. Use [\"all\"] to back up every library, including ones added later.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "backupConfiguration",
+          "cron",
+          "dataFolders",
+          "libraries",
+          "name",
+          "worm"
+        ],
+        "type": "object"
+      },
+      "ConfigureImmichIntegrationResponseDto": {
+        "properties": {
+          "repositoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "repositoryId"
+        ],
+        "type": "object"
+      },
       "ContributorCountResponseDto": {
         "properties": {
           "assetCount": {
@@ -22297,6 +25162,17 @@
         ],
         "type": "object"
       },
+      "CreateLocalBackendRequestDto": {
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
       "CreateProfileImageDto": {
         "properties": {
           "file": {
@@ -22337,6 +25213,17 @@
         ],
         "type": "object"
       },
+      "CreateSessionRequestDto": {
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
       "CropParameters": {
         "properties": {
           "height": {
@@ -22369,6 +25256,17 @@
           "width",
           "x",
           "y"
+        ],
+        "type": "object"
+      },
+      "CurrentRecoveryKeyResponse": {
+        "properties": {
+          "recoveryKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "recoveryKey"
         ],
         "type": "object"
       },
@@ -22519,6 +25417,49 @@
           }
         },
         "type": "object"
+      },
+      "DeviceFlowEventDto": {
+        "properties": {
+          "backendId": {
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/DeviceFlowFailureReason"
+          },
+          "token": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DeviceFlowEventType"
+          },
+          "userCode": {
+            "type": "string"
+          },
+          "verificationUri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "DeviceFlowEventType": {
+        "enum": [
+          "START",
+          "SUCCESS",
+          "FAILURE"
+        ],
+        "type": "string"
+      },
+      "DeviceFlowFailureReason": {
+        "enum": [
+          "NOT_CONNECTED",
+          "DEVICE_FLOW_FAILED",
+          "WRONG_ACCOUNT",
+          "UNKNOWN"
+        ],
+        "type": "string"
       },
       "DownloadArchiveDto": {
         "properties": {
@@ -22995,6 +25936,43 @@
         ],
         "type": "object"
       },
+      "FilesystemListingItemDto": {
+        "properties": {
+          "isDirectory": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "isDirectory",
+          "path"
+        ],
+        "type": "object"
+      },
+      "FilesystemListingResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FilesystemListingItemDto"
+            },
+            "type": "array"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "parent",
+          "path"
+        ],
+        "type": "object"
+      },
       "FoldersResponse": {
         "properties": {
           "enabled": {
@@ -23109,6 +26087,236 @@
         ],
         "type": "string"
       },
+      "ImmichBackupStatusDto": {
+        "properties": {
+          "backend": {
+            "$ref": "#/components/schemas/BackendDto"
+          },
+          "databaseDump": {
+            "$ref": "#/components/schemas/ImmichDatabaseDumpConfigDto"
+          },
+          "databaseDumpWarningIgnored": {
+            "type": "boolean"
+          },
+          "integration": {
+            "$ref": "#/components/schemas/ImmichIntegrationDto"
+          },
+          "latestBackupJob": {
+            "$ref": "#/components/schemas/JobDto"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/LocalRepositoryDto"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "type": "object"
+      },
+      "ImmichDatabaseDumpConfigDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "keepLastAmount": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "keepLastAmount"
+        ],
+        "type": "object"
+      },
+      "ImmichIntegrationConfigurationDto": {
+        "properties": {
+          "backupConfiguration": {
+            "type": "boolean"
+          },
+          "dataFolders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "libraries": {
+            "description": "IDs of the external libraries to back up. Use [\"all\"] to back up every library, including ones added later.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backupConfiguration",
+          "dataFolders",
+          "libraries"
+        ],
+        "type": "object"
+      },
+      "ImmichIntegrationDto": {
+        "properties": {
+          "configuration": {
+            "$ref": "#/components/schemas/ImmichIntegrationConfigurationDto"
+          },
+          "id": {
+            "type": "string"
+          },
+          "scheduleId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "configuration",
+          "id",
+          "scheduleId"
+        ],
+        "type": "object"
+      },
+      "ImmichLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "exclusionPatterns",
+          "id",
+          "importPaths",
+          "name"
+        ],
+        "type": "object"
+      },
+      "ImmichRollbackRequestDto": {
+        "properties": {
+          "backupFileName": {
+            "type": "string"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "snapshotId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "repositoryId",
+          "snapshotId"
+        ],
+        "type": "object"
+      },
+      "ImmichStateDto": {
+        "properties": {
+          "dataFolders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dataPath": {
+            "type": "string"
+          },
+          "libraries": {
+            "items": {
+              "$ref": "#/components/schemas/ImmichLibraryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dataFolders",
+          "dataPath",
+          "libraries"
+        ],
+        "type": "object"
+      },
+      "ImportRecoveryKeyRequest": {
+        "properties": {
+          "recoveryKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "recoveryKey"
+        ],
+        "type": "object"
+      },
+      "InspectedLocalRepositoryDto": {
+        "properties": {
+          "backends": {
+            "$ref": "#/components/schemas/RepositoryBackendsDto"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/RepositoryConfigurationDto"
+          },
+          "id": {
+            "type": "string"
+          },
+          "meter": {
+            "$ref": "#/components/schemas/RepositoryMeterDto"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/RepositoryMetricsDto"
+          },
+          "name": {
+            "type": "string"
+          },
+          "siteCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotDto"
+            },
+            "type": "array"
+          },
+          "storageClusterCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "metrics",
+          "name",
+          "siteCode",
+          "storageClusterCode",
+          "worm"
+        ],
+        "type": "object"
+      },
+      "IntegrationsResponseDto": {
+        "properties": {
+          "immichIntegration": {
+            "$ref": "#/components/schemas/ImmichIntegrationDto"
+          },
+          "immichState": {
+            "$ref": "#/components/schemas/ImmichStateDto"
+          }
+        },
+        "type": "object"
+      },
       "IntegrityReport": {
         "description": "Integrity report type",
         "enum": [
@@ -23191,6 +26399,59 @@
         ],
         "type": "object"
       },
+      "JobDto": {
+        "properties": {
+          "end": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/YuccaJobName"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/JobOutcomeDto"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/JobProgressDto"
+          },
+          "queuedAt": {
+            "type": "string"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/YuccaJobStatus"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "queuedAt",
+          "repositoryId",
+          "status"
+        ],
+        "type": "object"
+      },
+      "JobListResponseDto": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/JobDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "jobs"
+        ],
+        "type": "object"
+      },
       "JobName": {
         "description": "Job name",
         "enum": [
@@ -23263,6 +26524,201 @@
           "IntegrityDeleteReports"
         ],
         "type": "string"
+      },
+      "JobOutcomeDto": {
+        "properties": {
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/JobSummaryDto"
+          },
+          "support": {
+            "$ref": "#/components/schemas/JobSupportDto"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "JobProgressDto": {
+        "properties": {
+          "bytesDone": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "currentFiles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "estimatedEndAt": {
+            "type": "string"
+          },
+          "percentDone": {
+            "format": "double",
+            "type": "number"
+          },
+          "scanning": {
+            "type": "boolean"
+          },
+          "totalBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "currentFiles",
+          "percentDone",
+          "scanning"
+        ],
+        "type": "object"
+      },
+      "JobResponseDto": {
+        "properties": {
+          "jobId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "jobId"
+        ],
+        "type": "object"
+      },
+      "JobSummaryDto": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "backup"
+                ]
+              },
+              "filesNew": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "filesChanged": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "totalFilesProcessed": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "totalBytesProcessed": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "snapshotId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "filesNew",
+              "filesChanged",
+              "totalFilesProcessed",
+              "totalBytesProcessed"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "restore"
+                ]
+              },
+              "filesRestored": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "filesSkipped": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "bytesRestored": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "type",
+              "filesRestored",
+              "filesSkipped",
+              "bytesRestored"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "prune"
+                ]
+              },
+              "kept": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "removed": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "type",
+              "kept",
+              "removed"
+            ]
+          }
+        ]
+      },
+      "JobSupportDto": {
+        "properties": {
+          "droppedLines": {
+            "description": "Log lines that could not be streamed in time",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "localDroppedLines": {
+            "description": "Log lines that could not be written to the local support log",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "sessionId": {
+            "description": "Support code to share with FUTO when the logs were streamed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "droppedLines",
+          "localDroppedLines"
+        ],
+        "type": "object"
       },
       "LibraryResponseDto": {
         "properties": {
@@ -23394,6 +26850,62 @@
       "LicenseResponseDto": {
         "$ref": "#/components/schemas/UserLicense"
       },
+      "ListSnapshotsResponseDto": {
+        "properties": {
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "snapshots"
+        ],
+        "type": "object"
+      },
+      "LocalRepositoryDto": {
+        "properties": {
+          "backends": {
+            "$ref": "#/components/schemas/RepositoryBackendsDto"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/RepositoryConfigurationDto"
+          },
+          "id": {
+            "type": "string"
+          },
+          "meter": {
+            "$ref": "#/components/schemas/RepositoryMeterDto"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/RepositoryMetricsDto"
+          },
+          "name": {
+            "type": "string"
+          },
+          "siteCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "storageClusterCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "metrics",
+          "name",
+          "siteCode",
+          "storageClusterCode",
+          "worm"
+        ],
+        "type": "object"
+      },
       "LogLevel": {
         "description": "Log level",
         "enum": [
@@ -23501,7 +27013,8 @@
           "start",
           "end",
           "select_database_restore",
-          "restore_database"
+          "restore_database",
+          "rollback"
         ],
         "type": "string"
       },
@@ -23577,6 +27090,10 @@
             "type": "boolean"
           },
           "error": {
+            "type": "string"
+          },
+          "futoBackupsJobId": {
+            "description": "FUTO Backups job ID",
             "type": "string"
           },
           "progress": {
@@ -25259,6 +28776,55 @@
         ],
         "type": "object"
       },
+      "OnboardingStatusResponseDto": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "hasBackend": {
+            "type": "boolean"
+          },
+          "hasBackup": {
+            "type": "boolean"
+          },
+          "hasOnboardedKey": {
+            "type": "boolean"
+          },
+          "hasSchedule": {
+            "type": "boolean"
+          },
+          "hasSkippedExtraConfig": {
+            "type": "boolean"
+          },
+          "hasTelemetry": {
+            "$ref": "#/components/schemas/TelemetryLevel"
+          },
+          "isAuthenticated": {
+            "type": "boolean"
+          },
+          "requiresAuthentication": {
+            "type": "boolean"
+          },
+          "restoreJobId": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BootstrapStatus"
+          }
+        },
+        "required": [
+          "hasBackend",
+          "hasBackup",
+          "hasOnboardedKey",
+          "hasSchedule",
+          "hasSkippedExtraConfig",
+          "hasTelemetry",
+          "isAuthenticated",
+          "requiresAuthentication",
+          "status"
+        ],
+        "type": "object"
+      },
       "PartnerCreateDto": {
         "properties": {
           "sharedWithId": {
@@ -25782,6 +29348,7 @@
           "backup.delete",
           "clusterGroup.read",
           "clusterGroup.leave",
+          "clusterGroup.admin",
           "clusterGroupRequest.create",
           "clusterGroupRequest.read",
           "clusterGroupRequest.delete",
@@ -27744,6 +31311,321 @@
         ],
         "type": "string"
       },
+      "RepositoryBackendDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/BackendType"
+          }
+        },
+        "required": [
+          "id",
+          "online",
+          "type"
+        ],
+        "type": "object"
+      },
+      "RepositoryBackendsDto": {
+        "properties": {
+          "primary": {
+            "$ref": "#/components/schemas/RepositoryBackendDto"
+          },
+          "secondary": {
+            "items": {
+              "$ref": "#/components/schemas/RepositoryBackendDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "primary",
+          "secondary"
+        ],
+        "type": "object"
+      },
+      "RepositoryCheckImportResponseDto": {
+        "properties": {
+          "readable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "readable"
+        ],
+        "type": "object"
+      },
+      "RepositoryConfigurationDto": {
+        "properties": {
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "paths"
+        ],
+        "type": "object"
+      },
+      "RepositoryCreateRequestDto": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true
+          },
+          "site": {
+            "description": "Internal site code from environment metadata",
+            "type": "string"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "worm"
+        ],
+        "type": "object"
+      },
+      "RepositoryCreateResponseDto": {
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/LocalRepositoryDto"
+          }
+        },
+        "required": [
+          "repository"
+        ],
+        "type": "object"
+      },
+      "RepositoryInspectResponseDto": {
+        "properties": {
+          "repositories": {
+            "items": {
+              "$ref": "#/components/schemas/InspectedLocalRepositoryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "RepositoryListResponseDto": {
+        "properties": {
+          "repositories": {
+            "items": {
+              "$ref": "#/components/schemas/LocalRepositoryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "RepositoryMeterDto": {
+        "properties": {
+          "lastUpdated": {
+            "nullable": true,
+            "type": "string"
+          },
+          "objectCount": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "sizeBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "objectCount",
+          "sizeBytes"
+        ],
+        "type": "object"
+      },
+      "RepositoryMetricsDto": {
+        "properties": {
+          "lastBackup": {
+            "nullable": true,
+            "type": "string"
+          },
+          "lastBackupDuration": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          },
+          "lastBackupStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BackupStatus"
+              }
+            ],
+            "nullable": true
+          },
+          "lastStarted": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sizeBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sizeBytes"
+        ],
+        "type": "object"
+      },
+      "RepositoryPrimaryBackendReconfigureRequestDto": {
+        "properties": {
+          "backendId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "backendId"
+        ],
+        "type": "object"
+      },
+      "RepositorySnapshotRestoreFromPointRequestDto": {
+        "properties": {
+          "include": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "yuccaConfig": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RepositorySnapshotRestoreRequestDto": {
+        "properties": {
+          "include": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RepositorySyncDeletionResponseDto": {
+        "properties": {
+          "deleted": {
+            "description": "Whether the repository was deleted remotely and removed from this server",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "deleted"
+        ],
+        "type": "object"
+      },
+      "RepositoryUpdateRequestDto": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "RepositoryUpdateResponseDto": {
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/LocalRepositoryDto"
+          }
+        },
+        "required": [
+          "repository"
+        ],
+        "type": "object"
+      },
+      "RetentionPolicyDto": {
+        "properties": {
+          "keepLast": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "keepWithin": {
+            "type": "string"
+          },
+          "keepWithinDaily": {
+            "type": "string"
+          },
+          "keepWithinHourly": {
+            "type": "string"
+          },
+          "keepWithinMonthly": {
+            "type": "string"
+          },
+          "keepWithinWeekly": {
+            "type": "string"
+          },
+          "keepWithinYearly": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
           "lastImportFileName": {
@@ -27774,6 +31656,124 @@
         },
         "required": [
           "angle"
+        ],
+        "type": "object"
+      },
+      "ScheduleCreateRequestDto": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "default": false,
+            "type": "boolean"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "cron",
+          "name",
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "ScheduleCreateResponseDto": {
+        "properties": {
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "required": [
+          "schedule"
+        ],
+        "type": "object"
+      },
+      "ScheduleDto": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastFinished": {
+            "type": "string"
+          },
+          "lastRun": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "cron",
+          "id",
+          "name",
+          "paused",
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "ScheduleListResponseDto": {
+        "properties": {
+          "schedules": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "schedules"
+        ],
+        "type": "object"
+      },
+      "ScheduleUpdateRequestDto": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ScheduleUpdateResponseDto": {
+        "properties": {
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "required": [
+          "schedule"
         ],
         "type": "object"
       },
@@ -28437,15 +32437,21 @@
       "ServerFeatureLevel": {
         "description": "Server feature level",
         "enum": [
-          1
+          1,
+          2
         ],
         "type": "integer",
         "x-enum-varnames": [
-          "FeatureLevel"
+          "FeatureLevel",
+          "Passkeys"
         ]
       },
       "ServerFeaturesDto": {
         "properties": {
+          "backups": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "configFile": {
             "description": "Whether config file is available",
             "type": "boolean"
@@ -28512,6 +32518,7 @@
           }
         },
         "required": [
+          "backups",
           "configFile",
           "duplicateDetection",
           "email",
@@ -28919,6 +32926,14 @@
           },
           "restoreBackupFilename": {
             "description": "Restore backup filename",
+            "type": "string"
+          },
+          "rollbackRepositoryId": {
+            "description": "Rollback repository ID",
+            "type": "string"
+          },
+          "rollbackSnapshotId": {
+            "description": "Rollback snapshot ID",
             "type": "string"
           }
         },
@@ -29888,6 +33903,80 @@
         },
         "type": "object"
       },
+      "SnapshotDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/SnapshotSummaryDto"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "time": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "paths",
+          "time"
+        ],
+        "type": "object"
+      },
+      "SnapshotSummaryDto": {
+        "properties": {
+          "dataAdded": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "filesChanged": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "filesNew": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "filesUnmodified": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "totalBytes": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "totalFiles": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dataAdded",
+          "filesChanged",
+          "filesNew",
+          "filesUnmodified",
+          "totalBytes",
+          "totalFiles"
+        ],
+        "type": "object"
+      },
       "SourceType": {
         "description": "Face detection source type",
         "enum": [
@@ -30705,6 +34794,59 @@
         },
         "required": [
           "matches"
+        ],
+        "type": "object"
+      },
+      "SupportModeResponseDto": {
+        "properties": {
+          "includePaths": {
+            "description": "Send file paths as-is instead of redacted placeholders",
+            "type": "boolean"
+          },
+          "remainingRuns": {
+            "description": "How many more backup, cleanup, restore and delete runs use verbose restic logging",
+            "maximum": 20,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "streamToFuto": {
+            "description": "Stream those runs’ logs to FUTO; requires the support-log-streaming feature",
+            "type": "boolean"
+          },
+          "streamingAvailable": {
+            "description": "Whether this account may stream support logs to FUTO",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "includePaths",
+          "remainingRuns",
+          "streamToFuto",
+          "streamingAvailable"
+        ],
+        "type": "object"
+      },
+      "SupportModeUpdateRequestDto": {
+        "properties": {
+          "includePaths": {
+            "description": "Send file paths as-is instead of redacted placeholders",
+            "type": "boolean"
+          },
+          "remainingRuns": {
+            "description": "How many more backup, cleanup, restore and delete runs use verbose restic logging",
+            "maximum": 20,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "streamToFuto": {
+            "description": "Stream those runs’ logs to FUTO; requires the support-log-streaming feature",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "includePaths",
+          "remainingRuns",
+          "streamToFuto"
         ],
         "type": "object"
       },
@@ -32947,6 +37089,13 @@
         },
         "type": "object"
       },
+      "TelemetryLevel": {
+        "enum": [
+          "full",
+          "none"
+        ],
+        "type": "string"
+      },
       "TemplateDto": {
         "properties": {
           "template": {
@@ -32985,6 +37134,43 @@
         },
         "required": [
           "messageId"
+        ],
+        "type": "object"
+      },
+      "TicketAction": {
+        "enum": [
+          "repository.delete",
+          "repository.disable-worm"
+        ],
+        "type": "string"
+      },
+      "TicketCreateRequestDto": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/TicketAction"
+          },
+          "repositoryId": {
+            "description": "Repository the ticket is bound to",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "repositoryId"
+        ],
+        "type": "object"
+      },
+      "TicketCreateResponseDto": {
+        "properties": {
+          "redirectTo": {
+            "description": "Identity provider URL the browser must be sent to",
+            "type": "string"
+          }
+        },
+        "required": [
+          "redirectTo"
         ],
         "type": "object"
       },
@@ -34641,6 +38827,7 @@
         "enum": [
           "AssetCreate",
           "AssetMetadataExtraction",
+          "AssetOcrExtraction",
           "AssetTagged"
         ],
         "type": "string"
@@ -34704,6 +38891,29 @@
           }
         },
         "type": "object"
+      },
+      "YuccaJobName": {
+        "enum": [
+          "repository-backup",
+          "repository-prune",
+          "repository-restore",
+          "repository-restore-from-point",
+          "repository-snapshot-forget",
+          "repository-sync-metrics"
+        ],
+        "type": "string"
+      },
+      "YuccaJobStatus": {
+        "enum": [
+          "queued",
+          "running",
+          "complete",
+          "warn",
+          "failed",
+          "cancelled",
+          "incomplete"
+        ],
+        "type": "string"
       }
     }
   }

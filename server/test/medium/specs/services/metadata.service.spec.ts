@@ -30,6 +30,7 @@ type TimeZoneTest = {
 
 let defaultDatabase: Kysely<DB>;
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>, { realStorage = false } = {}) => {
   const { sut, ctx } = newMediumService(MetadataService, {
     database: db || defaultDatabase,

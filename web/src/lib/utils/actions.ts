@@ -56,10 +56,10 @@ const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsse
 };
 
 /**
- * Update the asset stack state in the asset store based on the provided stack response.
- * This function updates the stack information so that the icon is shown for the primary asset
- * and removes the non-primary assets from the timeline.
- */
+Update the asset stack state in the asset store based on the provided stack response.
+This function updates the stack information so that the icon is shown for the primary asset
+and removes the non-primary assets from the timeline.
+*/
 export function updateStackedAssetInTimeline(timelineManager: TimelineManager, stack: StackResponseDto) {
   timelineManager.update([stack.primaryAssetId], (asset) => {
     asset.stack = {

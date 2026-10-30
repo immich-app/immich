@@ -54,8 +54,8 @@ class ActivityManager {
     return this.#isLiked;
   }
 
-  #getCacheKey(albumId: string, assetId?: string) {
-    return `${albumId}:${assetId ?? ''}`;
+  #getCacheKey(albumId: string, assetId: string = '') {
+    return `${albumId}:${assetId}`;
   }
 
   async init(albumId: string, assetId?: string) {

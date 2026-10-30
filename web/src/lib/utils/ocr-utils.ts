@@ -31,10 +31,10 @@ const getVerticalMode = (width: number, height: number, text: string): VerticalM
 };
 
 /**
- * Calculate bounding box transform from OCR points. Result matrix can be used as input for css matrix3d.
- * @param points - Array of 4 corner points of the bounding box
- * @returns 4x4 matrix to transform the div with text onto the polygon defined by the corner points, and size to set on the source div.
- */
+Calculate bounding box transform from OCR points. Result matrix can be used as input for css matrix3d.
+@param points - Array of 4 corner points of the bounding box
+@returns 4x4 matrix to transform the div with text onto the polygon defined by the corner points, and size to set on the source div.
+*/
 export const calculateBoundingBoxMatrix = (points: Point[]): Size & { matrix: number[] } => {
   const [topLeft, topRight, bottomRight, bottomLeft] = points;
 
