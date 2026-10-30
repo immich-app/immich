@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/models/ocr.model.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
-class OcrOverlay extends ConsumerStatefulWidget {
+class OcrOverlay extends ConsumerWidget {
   final BaseAsset asset;
   final Size imageSize;
   final Size viewportSize;
@@ -25,91 +25,24 @@ class OcrOverlay extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<OcrOverlay> createState() => _OcrOverlayState();
-}
-
-class _OcrOverlayState extends ConsumerState<OcrOverlay> {
-  // Current transform read from the PhotoView controller.
-  // Null until the controller has emitted at least one real event or until
-  // we can seed a reliable value from controller.value on init.
-  PhotoViewControllerValue? _controllerValue;
-  StreamSubscription<PhotoViewControllerValue>? _controllerSub;
-
-  @override
-  void initState() {
-    super.initState();
-    _attachController(widget.controller);
-  }
-
-  @override
-  void didUpdateWidget(OcrOverlay oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.controller != widget.controller) {
-      _detachController();
-      _attachController(widget.controller);
-    }
-  }
-
-  @override
-  void dispose() {
-    _detachController();
-    super.dispose();
-  }
-
-  void _attachController(PhotoViewControllerBase? controller) {
-    if (controller == null) {
-      return;
-    }
-
-    // Seed with the current value only when scaleBoundaries is already set.
-    // Before the image finishes loading, PhotoView uses childSize = outerSize
-    // (viewport) as a placeholder, which sets scale = 1.0.  That placeholder
-    // is wrong for any image that doesn't exactly fill the viewport.
-    // Once scaleBoundaries is set the value is trustworthy (the image has rendered
-    // at least one frame and setScaleInvisibly has been called with the real
-    // initial/zoomed scale).
-    if (controller.scaleBoundaries != null) {
-      _controllerValue = controller.value;
-    }
-
-    _controllerSub = controller.outputStateStream.listen((value) {
-      if (mounted) {
-        setState(() => _controllerValue = value);
-      }
-    });
-  }
-
-  void _detachController() {
-    unawaited(_controllerSub?.cancel());
-    _controllerSub = null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final asset = widget.asset;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asset = this.asset;
     if (asset is! RemoteAsset) {
       return const SizedBox.shrink();
     }
 
-    final ocrData = ref.watch(Store.ocr.forAsset(asset.id));
+    final ocrData = ref.watch(Store.ocr.forAsset(asset.id)).valueOrNull;
+    if (ocrData == null || ocrData.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-    return ocrData.when(
-      data: (data) {
-        if (data.isEmpty) {
-          return const SizedBox.shrink();
-        }
-        return OcrSelectionLayer(
-          key: ValueKey(asset.id),
-          ocrData: data,
-          controller: widget.controller,
-          imageSize: widget.imageSize,
-          viewportSize: widget.viewportSize,
-          controllerValue: _controllerValue,
-          onSelectionStart: () => ref.read(hapticFeedbackProvider.notifier).selectionClick(),
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
+    return OcrSelectionLayer(
+      key: ValueKey(asset.id),
+      ocrData: ocrData,
+      imageSize: imageSize,
+      viewportSize: viewportSize,
+      controller: controller,
+      onSelectionStart: () => ref.read(hapticFeedbackProvider.notifier).selectionClick(),
     );
   }
 }
@@ -119,10 +52,9 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
 @visibleForTesting
 class OcrSelectionLayer extends StatefulWidget {
   final List<Ocr> ocrData;
-  final PhotoViewControllerBase? controller;
   final Size imageSize;
   final Size viewportSize;
-  final PhotoViewControllerValue? controllerValue;
+  final PhotoViewControllerBase? controller;
   final VoidCallback? onSelectionStart;
 
   const OcrSelectionLayer({
@@ -131,7 +63,6 @@ class OcrSelectionLayer extends StatefulWidget {
     required this.imageSize,
     required this.viewportSize,
     this.controller,
-    this.controllerValue,
     this.onSelectionStart,
   });
 
@@ -150,10 +81,38 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
     ..onLongPressMoveUpdate = _onLongPressMoveUpdate;
   late final _tapRecognizer = TapGestureRecognizer(debugOwner: this)..onTap = _clearSelection;
 
-  List<List<Offset>> _quads = const [];
+  // Zoom and pan of the photo, null until the controller reports a reliable value.
+  final _controllerValue = ValueNotifier<PhotoViewControllerValue?>(null);
+  StreamSubscription<PhotoViewControllerValue>? _controllerSub;
+
+  late Size _imageSize = _resolveImageSize();
+
+  List<Ocr>? _linesData;
+  Size? _linesSize;
+  Path _textArea = Path();
+  Path _scrim = Path();
+  Widget _lines = const SizedBox.shrink();
+
+  @override
+  void initState() {
+    super.initState();
+    _attachController(widget.controller);
+  }
+
+  @override
+  void didUpdateWidget(OcrSelectionLayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      _detachController();
+      _attachController(widget.controller);
+    }
+    _imageSize = _resolveImageSize();
+  }
 
   @override
   void dispose() {
+    _detachController();
+    _controllerValue.dispose();
     _longPressRecognizer.dispose();
     _tapRecognizer.dispose();
     _selectionDelegate.dispose();
@@ -161,9 +120,45 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
     super.dispose();
   }
 
+  // The decoded image may be a downscaled preview, so prefer its size over the asset's.
+  Size _resolveImageSize() => widget.controller?.scaleBoundaries?.childSize ?? widget.imageSize;
+
+  void _attachController(PhotoViewControllerBase? controller) {
+    _controllerValue.value = null;
+    if (controller == null) {
+      return;
+    }
+
+    if (controller.scaleBoundaries != null) {
+      _controllerValue.value = controller.value;
+    }
+
+    _controllerSub = controller.outputStateStream.listen((value) {
+      if (!mounted) {
+        return;
+      }
+      _controllerValue.value = value;
+      final imageSize = _resolveImageSize();
+      if (imageSize != _imageSize) {
+        setState(() => _imageSize = imageSize);
+      }
+    });
+  }
+
+  void _detachController() {
+    unawaited(_controllerSub?.cancel());
+    _controllerSub = null;
+  }
+
   bool get _hasSelection => _selectionDelegate.value.hasSelection;
 
-  bool _isOnText(Offset position) => _quads.any((quad) => (Path()..addPolygon(quad, true)).contains(position));
+  bool _isOnText(Offset viewportPosition) {
+    final viewportToImage = Matrix4.tryInvert(_imageToViewport(_controllerValue.value));
+    if (viewportToImage == null) {
+      return false;
+    }
+    return _textArea.contains(MatrixUtils.transformPoint(viewportToImage, viewportPosition));
+  }
 
   void _onPointerDown(PointerDownEvent event) {
     if (_hasSelection) {
@@ -195,61 +190,37 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
 
   void _clearSelection() => _selectionAreaKey.currentState?.selectableRegion.clearSelection();
 
-  @override
-  Widget build(BuildContext context) {
-    // Use the actual decoded image size from PhotoView's scaleBoundaries when
-    // available. The image provider may serve a downscaled preview (e.g. Immich
-    // serves a ~1440px preview for large originals), so the decoded dimensions
-    // can differ significantly from the stored asset dimensions. Using the wrong
-    // size would scale every coordinate by the ratio between the two resolutions.
-    final resolvedImageSize = widget.controller?.scaleBoundaries?.childSize ?? widget.imageSize;
-    final viewportSize = widget.viewportSize;
+  void _layoutLines() {
+    if (identical(_linesData, widget.ocrData) && _linesSize == _imageSize) {
+      return;
+    }
+    _linesData = widget.ocrData;
+    _linesSize = _imageSize;
 
-    final scale =
-        widget.controllerValue?.scale ??
-        math.min(viewportSize.width / resolvedImageSize.width, viewportSize.height / resolvedImageSize.height);
-    final position = widget.controllerValue?.position ?? Offset.zero;
-
-    final imageWidth = resolvedImageSize.width;
-    final imageHeight = resolvedImageSize.height;
-    final viewportWidth = viewportSize.width;
-    final viewportHeight = viewportSize.height;
-
-    // Image center in viewport space, accounting for pan
-    final cx = viewportWidth / 2 + position.dx;
-    final cy = viewportHeight / 2 + position.dy;
-
-    final quads = <List<Offset>>[];
+    final textArea = Path();
     final lines = <Widget>[];
-
     for (final ocr in widget.ocrData) {
-      // Map normalized image coords (0–1) to viewport space
-      final x1 = cx + (ocr.x1 - 0.5) * imageWidth * scale;
-      final y1 = cy + (ocr.y1 - 0.5) * imageHeight * scale;
-      final x2 = cx + (ocr.x2 - 0.5) * imageWidth * scale;
-      final y2 = cy + (ocr.y2 - 0.5) * imageHeight * scale;
-      final x3 = cx + (ocr.x3 - 0.5) * imageWidth * scale;
-      final y3 = cy + (ocr.y3 - 0.5) * imageHeight * scale;
-      final x4 = cx + (ocr.x4 - 0.5) * imageWidth * scale;
-      final y4 = cy + (ocr.y4 - 0.5) * imageHeight * scale;
-
-      final width = Offset(x2 - x1, y2 - y1).distance;
-      final height = Offset(x4 - x1, y4 - y1).distance;
+      // Map normalized image coords (0–1) to image space
+      final p1 = Offset(ocr.x1 * _imageSize.width, ocr.y1 * _imageSize.height);
+      final p2 = Offset(ocr.x2 * _imageSize.width, ocr.y2 * _imageSize.height);
+      final p3 = Offset(ocr.x3 * _imageSize.width, ocr.y3 * _imageSize.height);
+      final p4 = Offset(ocr.x4 * _imageSize.width, ocr.y4 * _imageSize.height);
+      final width = (p2 - p1).distance;
+      final height = (p4 - p1).distance;
       if (width <= 0 || height <= 0 || ocr.text.isEmpty) {
         continue;
       }
 
-      quads.add([Offset(x1, y1), Offset(x2, y2), Offset(x3, y3), Offset(x4, y4)]);
-
+      textArea.addPolygon([p1, p2, p3, p4], true);
       lines.add(
         Positioned(
           key: ValueKey(ocr.id),
-          left: x1,
-          top: y1,
+          left: p1.dx,
+          top: p1.dy,
           width: width,
           height: height,
           child: Transform.rotate(
-            angle: math.atan2(y2 - y1, x2 - x1),
+            angle: (p2 - p1).direction,
             alignment: Alignment.topLeft,
             child: FittedBox(
               fit: BoxFit.fill,
@@ -266,7 +237,34 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
       );
     }
 
-    _quads = quads;
+    _textArea = textArea;
+    // Dim the image, with the text boxes punched out by the even-odd rule
+    _scrim = Path.from(textArea)
+      ..fillType = PathFillType.evenOdd
+      ..addRect(Offset.zero & _imageSize);
+    _lines = Stack(clipBehavior: Clip.none, children: lines);
+  }
+
+  Matrix4 _imageToViewport(PhotoViewControllerValue? value) {
+    final viewport = widget.viewportSize;
+    final scale = value?.scale ?? math.min(viewport.width / _imageSize.width, viewport.height / _imageSize.height);
+    final position = value?.position ?? Offset.zero;
+
+    // Image center in viewport space, accounting for pan
+    final cx = viewport.width / 2 + position.dx;
+    final cy = viewport.height / 2 + position.dy;
+
+    return Matrix4.identity()
+      ..translateByDouble(cx - _imageSize.width * scale / 2, cy - _imageSize.height * scale / 2, 0, 1.0)
+      ..scaleByDouble(scale, scale, 1.0, 1.0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_imageSize.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    _layoutLines();
 
     return ClipRect(
       // Translucent + ignored child: receive pointers
@@ -280,10 +278,26 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
             focusNode: _focusNode,
             child: SelectionContainer(
               delegate: _selectionDelegate,
-              // Dark scrim with the text boxes punched out
-              child: CustomPaint(
-                painter: _OcrBoxesPainter(quads: quads),
-                child: Stack(children: lines),
+              child: OverflowBox(
+                alignment: Alignment.topLeft,
+                minWidth: _imageSize.width,
+                maxWidth: _imageSize.width,
+                minHeight: _imageSize.height,
+                maxHeight: _imageSize.height,
+                child: ValueListenableBuilder(
+                  valueListenable: _controllerValue,
+                  child: _lines,
+                  builder: (context, value, lines) {
+                    final transform = _imageToViewport(value);
+                    return Transform(
+                      transform: transform,
+                      child: CustomPaint(
+                        painter: _OcrBoxesPainter(scrim: _scrim, boxes: _textArea, scale: transform.storage[0]),
+                        child: lines,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -326,34 +340,25 @@ class _OcrSelectionDelegate extends StaticSelectionContainerDelegate {
 }
 
 class _OcrBoxesPainter extends CustomPainter {
-  final List<List<Offset>> quads;
+  final Path scrim;
+  final Path boxes;
+  final double scale;
 
-  const _OcrBoxesPainter({required this.quads});
+  const _OcrBoxesPainter({required this.scrim, required this.boxes, required this.scale});
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Fill the whole viewport, then subtract each text quad using the even-odd
-    // rule so the original image shows through the boxes.
-    final scrim = Path()
-      ..fillType = PathFillType.evenOdd
-      ..addRect(Offset.zero & size);
-    final boxes = Path();
-
-    for (final quad in quads) {
-      scrim.addPolygon(quad, true);
-      boxes.addPolygon(quad, true);
-    }
-
     canvas.drawPath(scrim, Paint()..color = Colors.black54);
     canvas.drawPath(
       boxes,
       Paint()
         ..color = Colors.white.withValues(alpha: 0.8)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
+        ..strokeWidth = scale > 0 ? 1.5 / scale : 1.5,
     );
   }
 
   @override
-  bool shouldRepaint(_OcrBoxesPainter oldDelegate) => true;
+  bool shouldRepaint(_OcrBoxesPainter oldDelegate) =>
+      oldDelegate.scale != scale || !identical(oldDelegate.scrim, scrim) || !identical(oldDelegate.boxes, boxes);
 }
