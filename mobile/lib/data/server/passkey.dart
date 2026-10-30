@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/api_repository.dart';
 import 'package:immich_mobile/domain/models/passkey.model.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:openapi/api.dart';
 
@@ -17,22 +16,27 @@ class PasskeyApiRepository extends ApiRepository {
 
   const PasskeyApiRepository(this._api, this._configApi);
 
+  /// Whether the server has passkey login turned on
   Future<bool> isEnabled() async {
     final config = await checkNull(_configApi.getPublicConfig());
     return config.passkey.enabled;
   }
 
-  Future<String> startRegistration() async => jsonEncode(await checkNull(_api.startRegistration()));
+  /// The WebAuthn options for creating a passkey for the current user
+  Future<Map<String, Object>> startRegistration() => checkNull(_api.startRegistration());
 
-  Future<void> finishRegistration(String response) async {
-    await _api.finishRegistration(PasskeyRegistrationFinishDto(response: jsonDecode(response)));
+  /// Save the WebAuthn [credential] created from the [startRegistration] options as a passkey of the current user
+  Future<void> finishRegistration(Map<String, dynamic> credential) async {
+    await _api.finishRegistration(PasskeyRegistrationFinishDto(response: credential));
   }
 
-  Future<String> startAuthentication() async => jsonEncode(await checkNull(_api.startAuthentication()));
+  /// The WebAuthn options for logging in with a passkey
+  Future<Map<String, Object>> startAuthentication() => checkNull(_api.startAuthentication());
 
-  Future<LoginResponseDto> finishAuthentication(String response) async {
-    final dto = PasskeyAuthenticationFinishDto(response: jsonDecode(response));
-    return checkNull(_api.finishAuthentication(dto));
+  /// Log in with the WebAuthn [credential] signed with the [startAuthentication] options
+  Future<LoginResponse> finishAuthentication(Map<String, dynamic> credential) async {
+    final dto = PasskeyAuthenticationFinishDto(response: credential);
+    return LoginResponse.fromDto(await checkNull(_api.finishAuthentication(dto)));
   }
 
   Future<List<Passkey>> getAll() async {
