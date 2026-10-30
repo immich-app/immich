@@ -35,7 +35,7 @@ export class SessionRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.TRANSACTION] })
   async isPendingSyncReset(id: string, trx: TransactionHandle) {
     const result = await trx[db]
       .selectFrom('session')
