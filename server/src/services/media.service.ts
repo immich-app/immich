@@ -849,9 +849,7 @@ export class MediaService extends BaseService {
     await this.personRepository.updateVisibility(faceStatuses.visible, faceStatuses.hidden);
 
     const ocrStatuses = checkOcrVisibility(ocrData, originalDimensions, cropBox);
-    const hiddenOcrIds = new Set(ocrStatuses.hidden.map(({ id }) => id));
-    const searchText = ocrData
-      .filter(({ id }) => !hiddenOcrIds.has(id))
+    const searchText = (cropBox ? ocrStatuses.visible : ocrData)
       .flatMap(({ text }) => tokenizeForSearch(text))
       .join(' ');
     await this.ocrRepository.updateOcrVisibilities(asset.id, ocrStatuses.visible, ocrStatuses.hidden, searchText);
