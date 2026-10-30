@@ -3,7 +3,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, applyDecorators, forwardRef } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
-import { ApiExtension, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
@@ -13,8 +13,7 @@ import { join } from 'node:path';
 import { commandsAndQuestions } from 'src/commands/index.js';
 import { IWorker } from 'src/constants.js';
 import { controllers } from 'src/controllers/index.js';
-import { HistoryBuilder } from 'src/decorators.js';
-import { ApiTag, ImmichEnvironment, ImmichWorker } from 'src/enum.js';
+import { ImmichEnvironment, ImmichWorker } from 'src/enum.js';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
@@ -65,14 +64,8 @@ const isFutoBackupsDevelopmentMode = environment !== ImmichEnvironment.Productio
 const futoBackupsStatePath = getBackupsStatePath(storage.mediaLocation);
 const futoBackupsCachePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'restic-cache');
 
-const futoBackupsHistory = new HistoryBuilder().added('v3.4.0').internal('v3.4.0').getExtensions();
-
 for (const controller of futoBackupsControllers) {
-  applyDecorators(
-    Authenticated({ admin: true }),
-    ApiTags(ApiTag.Backups),
-    ...Object.entries(futoBackupsHistory).map(([key, value]) => ApiExtension(key, value)),
-  )(controller);
+  applyDecorators(Authenticated({ admin: true }), ApiExcludeController())(controller);
 }
 
 const commonImports = [
