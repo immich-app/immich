@@ -16,10 +16,10 @@ enum AlbumSortMode {
   const AlbumSortMode(this.storeIndex, this.defaultOrder);
 
   String label(Translations t) => switch (this) {
-    AlbumSortMode.title => t.library_page_sort_title,
-    AlbumSortMode.assetCount => t.library_page_sort_asset_count,
-    AlbumSortMode.lastModified => t.library_page_sort_last_modified,
-    AlbumSortMode.created => t.library_page_sort_created,
+    AlbumSortMode.title => t.sort_title,
+    AlbumSortMode.assetCount => t.sort_items,
+    AlbumSortMode.lastModified => t.sort_modified,
+    AlbumSortMode.created => t.sort_created,
     AlbumSortMode.mostRecent => t.sort_recent,
     AlbumSortMode.mostOldest => t.sort_oldest,
   };
