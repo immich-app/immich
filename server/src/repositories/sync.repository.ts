@@ -186,13 +186,12 @@ class AlbumSync extends BaseSync {
   // TODO(v5) drop when AlbumsV1 is removed
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpsertsV1(options: SyncQueryOptions) {
-    const userId = options.userId;
     return this.upsertQuery('album', options)
-      .distinctOn(['album.id', 'album.updateId'])
-      .leftJoin('album_user as album_users', 'album.id', 'album_users.albumId')
-      .where('album_users.userId', '=', userId)
+      .innerJoin('album_user as album_users', (join) =>
+        join.onRef('album_users.albumId', '=', 'album.id').on('album_users.userId', '=', options.userId),
+      )
       .innerJoin('album_user as album_owner', (join) =>
-        join.onRef('album_owner.albumId', '=', 'album.id').on('album_owner.role', '=', AlbumUserRole.Owner),
+        join.onRef('album_owner.albumId', '=', 'album.id').on('album_owner.role', '=', sql.lit(AlbumUserRole.Owner)),
       )
       .select([
         'album.id',
@@ -211,11 +210,10 @@ class AlbumSync extends BaseSync {
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
-    const userId = options.userId;
     return this.upsertQuery('album', options)
-      .distinctOn(['album.id', 'album.updateId'])
-      .leftJoin('album_user as album_users', 'album.id', 'album_users.albumId')
-      .where('album_users.userId', '=', userId)
+      .innerJoin('album_user as album_users', (join) =>
+        join.onRef('album_users.albumId', '=', 'album.id').on('album_users.userId', '=', options.userId),
+      )
       .select([
         'album.id',
         'album.albumName as name',

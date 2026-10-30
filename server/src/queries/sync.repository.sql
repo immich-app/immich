@@ -27,8 +27,8 @@ order by
   "album_audit"."id" asc
 
 -- SyncRepository.album.getUpsertsV1
-select distinct
-  on ("album"."id", "album"."updateId") "album"."id",
+select
+  "album"."id",
   "album_owner"."userId" as "ownerId",
   "album"."albumName" as "name",
   "album"."description",
@@ -40,19 +40,19 @@ select distinct
   "album"."updateId"
 from
   "album" as "album"
-  left join "album_user" as "album_users" on "album"."id" = "album_users"."albumId"
+  inner join "album_user" as "album_users" on "album_users"."albumId" = "album"."id"
+  and "album_users"."userId" = $1
   inner join "album_user" as "album_owner" on "album_owner"."albumId" = "album"."id"
-  and "album_owner"."role" = $1
+  and "album_owner"."role" = 'owner'
 where
   "album"."updateId" < $2
   and "album"."updateId" > $3
-  and "album_users"."userId" = $4
 order by
   "album"."updateId" asc
 
 -- SyncRepository.album.getUpserts
-select distinct
-  on ("album"."id", "album"."updateId") "album"."id",
+select
+  "album"."id",
   "album"."albumName" as "name",
   "album"."description",
   "album"."createdAt",
@@ -63,11 +63,11 @@ select distinct
   "album"."updateId"
 from
   "album" as "album"
-  left join "album_user" as "album_users" on "album"."id" = "album_users"."albumId"
+  inner join "album_user" as "album_users" on "album_users"."albumId" = "album"."id"
+  and "album_users"."userId" = $1
 where
-  "album"."updateId" < $1
-  and "album"."updateId" > $2
-  and "album_users"."userId" = $3
+  "album"."updateId" < $2
+  and "album"."updateId" > $3
 order by
   "album"."updateId" asc
 
