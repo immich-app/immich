@@ -1,0 +1,24 @@
+# server/AGENTS.md
+
+NestJS + Kysely + PostgreSQL, layered `controllers` → `services` → `repositories`. The process model and job system are described in `docs/docs/developer/architecture.mdx`.
+
+## Rules
+
+- ESM with no relative imports (lint-enforced). Import as `src/...js` and `test/...js`.
+- Every route has `@Authenticated(...)` and `@Endpoint({ summary, description, history })`; the global `AuthGuard` throws otherwise. Controllers only call one service method with `(auth, dto)`.
+- Services `extends BaseService` and declare no constructor; repositories are available as `this.xRepository`. Call `await this.requireAccess({ auth, permission, ids })` before touching a resource.
+- Repositories are the only I/O layer and return rows. Services interpret results and throw `BadRequestException` etc.; repositories never throw HTTP exceptions.
+- DTOs are Zod schemas via `nestjs-zod` (`createZodDto`, `.describe()`, `.meta({ id })`) in `src/dtos/`, with `mapX()` mappers beside them.
+- Enums (`JobName`, `QueueName`, `Permission`, `BootstrapEventPriority`) live in `src/enum.ts`; job payload unions in `src/types.ts`. Admin-editable config and its `defaults` are in `src/dtos/config.dto.ts`; env vars in `src/dtos/env.dto.ts`.
+- Codegen tasks (`migrations`, `sql`, `sync-open-api`) run from `dist/`, so `mise //server:build` first.
+
+## Skills
+
+- **Add an endpoint**: define the request/response DTOs in `src/dtos/` with a mapper, add the service method (call `requireAccess` first), add the controller method with `@Authenticated` and `@Endpoint` whose `history` uses `HistoryBuilder` (`.added('vN')`, `.beta`, `.stable`, `.deprecated`), then add a `*.controller.spec.ts` case and regenerate the API clients (root skill).
+- **Add a repository**: update all of `BaseService` constructor and `BaseService.create()` in `src/services/base.service.ts`, `BASE_SERVICE_DEPENDENCIES`, `src/repositories/index.ts`, and `newTestService`/`getMocks` in `test/utils.ts`. Kysely repos inject `@InjectKysely() db: Kysely<DB>`.
+- **Change the schema**: edit `src/schema/tables/*.table.ts` (`@immich/sql-tools` decorators plus `UpdatedAtTrigger`, `UpdateIdColumn`, `PrimaryGeneratedUuidV7Column` from `src/decorators.ts`). A new table is registered in both `ImmichDatabase` and the `DB` interface in `src/schema/index.ts`. Then, with Postgres reachable at `DB_URL` (default `postgres://postgres:postgres@localhost:5432/immich`): `mise //server:build`, `mise //server:migrations generate <Name>`, review the file, move it into `src/schema/migrations/`, and `mise //server:migrations sync-order`. `ORDER` is append-only. CI jobs "SQL Schema Checks" and "Verify migration ORDER" fail otherwise. `mise //server:migrations revert` moves the file out of `src/`; restore it and rebuild afterwards.
+- **Regenerate SQL snapshots**: repository methods decorated with `@GenerateSql({ params: [DummyValue.UUID] })` have their SQL written to `src/queries/*.sql`. After changing one, run `mise //server:build` then `mise //:sql` with Postgres reachable. Use `@ChunkedArray`/`@ChunkedSet` on methods that take ID lists. CI job "SQL Schema Checks" fails if the snapshots are stale.
+- **Add a background job**: add the `JobName` to `src/enum.ts` and its payload to the `JobItem` union in `src/types.ts`, then exactly one `@OnJob({ name, queue })` handler on a service (startup fails on zero or two). Chaining to follow-up jobs lives in `JobService.onDone`. In-process events use `@OnEvent` with `EventMap` in `src/repositories/event.repository.ts`.
+- **Unit tests**: `src/**/*.spec.ts`. `const { sut, mocks } = newTestService(XService)` from `test/utils.ts` auto-mocks every repository; strict mocks fail when called without an implementation. Fixtures in `test/fixtures/*.stub.ts`, builders in `test/small.factory.ts` (`factory.auth()`, ...) and `test/factories/`. Run one file with `mise //server:test --run src/services/album.service.spec.ts`.
+- **Controller tests**: `src/controllers/*.controller.spec.ts` use `controllerSetup(Controller, [{ provide: Service, useValue: mockBaseService(Service) }])`, which boots Nest with the real validation pipe and `AuthGuard`, and assert with supertest. They cover validation and auth wiring, not business logic.
+- **Medium tests**: `test/medium/specs/{services,repositories,sync,exif,workflow}/`. They need Docker: `globalSetup` starts a Postgres testcontainer, migrates a template database, and each spec file gets a clone. Build `newMediumService(Service, { database, real: [AssetRepository, ...], mock: [JobRepository, ...] })` from `test/medium.factory.ts`; it returns `{ sut, ctx }` where `ctx.newUser()`, `ctx.newAsset()`, `ctx.get(Repo)` create data and reach repositories. Exif specs read from `e2e/test-assets`; workflow specs need `mise //:plugins` first. Run with `mise //server:test-medium --run test/medium/specs/services/album.service.spec.ts`.
