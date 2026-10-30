@@ -10,7 +10,7 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { format } from 'sql-formatter';
-import { TransactionHandle, db } from 'src/database.js';
+import { TransactionHandle } from 'src/database.js';
 import { DummyValue, GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -51,7 +51,7 @@ type SqlGeneratorOptions = { targetDir: string };
 
 class SqlGenerator {
   private app: INestApplication | null = null;
-  private transaction: Pick<TransactionHandle, typeof db> | null = null;
+  private transaction: Pick<TransactionHandle, 'unwrap'> | null = null;
   private sqlLogger = new SqlLogger();
   private results: Record<string, string[]> = {};
 
@@ -102,7 +102,8 @@ class SqlGenerator {
     }).compile();
 
     this.app = await moduleFixture.createNestApplication().init();
-    this.transaction = { [db]: this.app.get(KYSELY_MODULE_CONNECTION_TOKEN()) };
+    const kysely = this.app.get(KYSELY_MODULE_CONNECTION_TOKEN());
+    this.transaction = { unwrap: () => kysely };
   }
 
   async process(Repository: Repository) {
