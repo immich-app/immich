@@ -1,7 +1,7 @@
 import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
-import { Kysely, sql } from 'kysely';
+import { IsolationLevel, Kysely, sql } from 'kysely';
 import { FileMigrationProvider, Migrator } from 'kysely/migration';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
@@ -19,6 +19,7 @@ import {
   VECTOR_VERSION_RANGE,
   serverVersion,
 } from 'src/constants.js';
+import { TransactionHandle } from 'src/database.js';
 import { GenerateSql } from 'src/decorators.js';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -481,6 +482,10 @@ export class DatabaseRepository {
 
   async wait(lock: DatabaseLock): Promise<void> {
     await this.asyncLock.acquire(DatabaseLock[lock], () => {});
+  }
+
+  async transaction(isolationLevel: IsolationLevel) {
+    return new TransactionHandle(await this.db.startTransaction().setIsolationLevel(isolationLevel).execute());
   }
 
   private async acquireLock(lock: DatabaseLock, connection: Kysely<DB>): Promise<void> {

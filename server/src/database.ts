@@ -1,4 +1,4 @@
-import { Selectable, ShallowDehydrateObject } from 'kysely';
+import { ControlledTransaction, Kysely, Selectable, ShallowDehydrateObject } from 'kysely';
 import type { UserMetadataItem } from 'src/types.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
 import { PersonUserRole } from 'src/dtos/person.dto.js';
@@ -15,10 +15,31 @@ import {
   UserAvatarColor,
   UserStatus,
 } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { PluginTable } from 'src/schema/tables/plugin.table.js';
+
+export class TransactionHandle {
+  constructor(private trx: ControlledTransaction<DB>) {}
+
+  commit() {
+    return this.trx.commit().execute();
+  }
+
+  rollback() {
+    return this.trx.rollback().execute();
+  }
+
+  unwrap(): Kysely<DB> {
+    return this.trx;
+  }
+
+  [Symbol.asyncDispose]() {
+    return this.trx.isCommitted || this.trx.isRolledBack ? Promise.resolve() : this.rollback();
+  }
+}
 
 export type AuthUser = {
   id: string;
