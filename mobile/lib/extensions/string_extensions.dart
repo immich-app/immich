@@ -21,8 +21,4 @@ extension DurationExtension on String {
       return null;
     }
   }
-
-  int toInt() {
-    return int.parse(this);
-  }
 }
