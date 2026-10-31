@@ -244,7 +244,7 @@ export class AssetMediaService extends BaseService {
   async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
-    const { originalPath, editedPath } = await this.assetRepository.getForOriginal(id, isEditedOnly(auth, dto.edited));
+    const { editedPath, originalPath } = await this.assetRepository.getForOriginal(id, isEditedOnly(auth, dto.edited));
 
     const path = editedPath ?? originalPath;
 
