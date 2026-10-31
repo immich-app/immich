@@ -29,10 +29,11 @@ class SearchFilterProvider extends Notifier<SearchFilter?> {
 class SearchState {
   final List<BaseAsset> assets;
   final String? nextCursor;
-  final bool hasMore;
   final bool isLoading;
 
-  const SearchState({this.assets = const [], this.nextCursor, this.hasMore = true, this.isLoading = false});
+  const SearchState({this.assets = const [], this.nextCursor, this.isLoading = false});
+
+  bool get hasMore => assets.isEmpty || nextCursor != null;
 }
 
 final paginatedSearchProvider = StateNotifierProvider<PaginatedSearchNotifier, SearchState>(
@@ -49,7 +50,6 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
   StreamSubscription<Set<String>>? _deletedIdsSubscription;
   List<BaseAsset> _results = const [];
   String? _nextCursor;
-  bool _hasMore = true;
 
   PaginatedSearchNotifier(this._searchService, this._remoteAssetRepository, this._ref) : super(const SearchState());
 
@@ -76,7 +76,6 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
 
     _results = [..._results, ...result.assets];
     _nextCursor = result.nextCursor;
-    _hasMore = result.nextCursor != null;
     _watchDeletedIds(filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline);
   }
 
@@ -85,7 +84,6 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
     _deletedIdsSubscription = null;
     _results = const [];
     _nextCursor = null;
-    _hasMore = true;
     _emit(const {});
   }
 
@@ -101,7 +99,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
         ? _results
         : _results.where((asset) => asset is! RemoteAsset || !deletedIds.contains(asset.id)).toList(growable: false);
 
-    state = SearchState(assets: visible, nextCursor: _nextCursor, hasMore: _hasMore);
+    state = SearchState(assets: visible, nextCursor: _nextCursor);
     _assetCountController.add(visible.length);
   }
 

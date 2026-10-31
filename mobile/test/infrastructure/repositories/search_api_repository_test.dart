@@ -59,35 +59,26 @@ void main() {
     registerFallbackValue(MetadataSearchDto());
   });
 
+  Future<SearchResponseDto?> smartCall(SmartSearchDto dto) =>
+      api.searchSmart(dto, abortTrigger: any(named: 'abortTrigger'));
+
+  Future<SearchResponseDto?> metadataCall(MetadataSearchDto dto) => api.searchAssets(
+    dto,
+    key: any(named: 'key'),
+    slug: any(named: 'slug'),
+    abortTrigger: any(named: 'abortTrigger'),
+  );
+
   setUp(() {
     api = _MockSearchApi();
     repository = SearchApiRepository(api);
-    when(
-      () => api.searchSmart(any(), abortTrigger: any(named: 'abortTrigger')),
-    ).thenAnswer((_) async => _response(nextCursor: 'smart-next'));
-    when(
-      () => api.searchAssets(
-        any(),
-        key: any(named: 'key'),
-        slug: any(named: 'slug'),
-        abortTrigger: any(named: 'abortTrigger'),
-      ),
-    ).thenAnswer((_) async => _response(nextCursor: 'metadata-next', nextPage: '2'));
+    when(() => smartCall(any())).thenAnswer((_) async => _response(nextCursor: 'smart-next'));
+    when(() => metadataCall(any())).thenAnswer((_) async => _response(nextCursor: 'metadata-next', nextPage: '2'));
   });
 
-  Map<String, dynamic> capturedSmart() =>
-      _json(verify(() => api.searchSmart(captureAny(), abortTrigger: any(named: 'abortTrigger'))).captured.single);
+  Map<String, dynamic> capturedSmart() => _json(verify(() => smartCall(captureAny())).captured.single);
 
-  Map<String, dynamic> capturedMetadata() => _json(
-    verify(
-      () => api.searchAssets(
-        captureAny(),
-        key: any(named: 'key'),
-        slug: any(named: 'slug'),
-        abortTrigger: any(named: 'abortTrigger'),
-      ),
-    ).captured.single,
-  );
+  Map<String, dynamic> capturedMetadata() => _json(verify(() => metadataCall(captureAny())).captured.single);
 
   group('new search api', () {
     test('maps every filter field onto a smart search', () async {
