@@ -27,10 +27,11 @@ class SearchFilterProvider extends Notifier<SearchFilter?> {
 class SearchState {
   final List<BaseAsset> assets;
   final String? nextCursor;
-  final bool hasMore;
   final bool isLoading;
 
-  const SearchState({this.assets = const [], this.nextCursor, this.hasMore = true, this.isLoading = false});
+  const SearchState({this.assets = const [], this.nextCursor, this.isLoading = false});
+
+  bool get hasMore => assets.isEmpty || nextCursor != null;
 }
 
 final paginatedSearchProvider = StateNotifierProvider<PaginatedSearchNotifier, SearchState>(
@@ -62,7 +63,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
     }
 
     final assets = [...state.assets, ...result.assets];
-    state = SearchState(assets: assets, nextCursor: result.nextCursor, hasMore: result.nextCursor != null);
+    state = SearchState(assets: assets, nextCursor: result.nextCursor);
 
     _assetCountController.add(assets.length);
   }
