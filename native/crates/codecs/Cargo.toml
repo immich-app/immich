@@ -21,5 +21,13 @@ rav1d = { workspace = true, optional = true }
 rayon = { workspace = true, optional = true }
 yuv = { workspace = true, optional = true }
 
+# The C compiler assembles rav1d's arm64 kernels, which MSVC can't.
+[target.'cfg(all(target_arch = "aarch64", not(target_env = "msvc")))'.dependencies]
+rav1d = { workspace = true, optional = true, features = ["asm_arm64_dotprod", "asm_arm64_i8mm", "asm_arm64_sve2"] }
+
+# NASM (native/mise.toml) assembles the x86 ones.
+[target.'cfg(target_arch = "x86_64")'.dependencies]
+rav1d = { workspace = true, optional = true, features = ["asm"] }
+
 [lints]
 workspace = true
