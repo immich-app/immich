@@ -776,7 +776,7 @@ class _SearchResultGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final hasAssets = ref.watch(paginatedSearchProvider.select((s) => s.assets.isNotEmpty));
     final isLoading = ref.watch(paginatedSearchProvider.select((s) => s.isLoading));
-    final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.nextPage != null));
+    final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.hasMore));
 
     if (!hasAssets && !isLoading) {
       return const _SearchNoResults();

@@ -29324,7 +29324,7 @@
             "type": "string",
             "x-immich-history": [
               {
-                "version": "v3.4.0",
+                "version": "v4.0.0",
                 "state": "Added"
               }
             ]

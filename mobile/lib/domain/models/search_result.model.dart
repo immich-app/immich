@@ -7,9 +7,9 @@ part 'search_result.model.freezed.dart';
 abstract class SearchResult with _$SearchResult {
   const SearchResult._();
 
-  const factory SearchResult({required List<BaseAsset> assets, int? nextPage}) = _SearchResult;
+  const factory SearchResult({required List<BaseAsset> assets, String? nextCursor}) = _SearchResult;
 
   // Explicitly don't log results, only attributes
   @override
-  String toString() => 'SearchResult(assets: ${assets.length}, nextPage: $nextPage)';
+  String toString() => 'SearchResult(assets: ${assets.length}, nextCursor: $nextCursor)';
 }
