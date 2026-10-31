@@ -244,16 +244,13 @@ export class AssetMediaService extends BaseService {
   async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
-    const { originalPath, originalFileName, editedPath } = await this.assetRepository.getForOriginal(
-      id,
-      isEditedOnly(auth, dto.edited),
-    );
+    const { originalPath, editedPath } = await this.assetRepository.getForOriginal(id, isEditedOnly(auth, dto.edited));
 
-    const path = editedPath ?? originalPath!;
+    const path = editedPath ?? originalPath;
 
     return new ImmichFileResponse({
       path,
-      fileName: getFileNameWithoutExtension(originalFileName) + getFilenameExtension(path),
+      fileName: sanitize(getFileNameWithoutExtension(path) + getFilenameExtension(path)) || 'unnamed',
       contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
     });
