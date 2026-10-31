@@ -16,7 +16,8 @@ moxcms = { version = "0.9", default-features = false, features = ["neon_luts", "
 mp4parse = { version = "0.17", default-features = false, features = ["missing-pixi-permitted"] }
 pic-scale = { version = "0.7", default-features = false, features = ["neon", "rdm"] }
 quick_cache = { version = "0.7", default-features = false }
-rav1d = { version = "1.1", default-features = false, features = ["bitdepth_8", "bitdepth_16"] }
+# main has the safe API and the fix for memorysafety/rav1d#1497 until 1.1.1 is on crates.io.
+rav1d = { version = "1.1.1", git = "https://github.com/memorysafety/rav1d", rev = "2e7216c20ac2a75de204d6c8d7268b75a45959b4", default-features = false, features = ["bitdepth_8", "bitdepth_16"] }
 rayon = { version = "1.11", default-features = false }
 yuv = { version = "0.8", default-features = false, features = ["rdm"] }
 
@@ -28,3 +29,7 @@ undocumented_unsafe_blocks = "deny"
 lto = true
 codegen-units = 1
 strip = true
+
+# rav1d decodes on the caller's thread, whose stack it overflows on Android when unoptimized.
+[profile.dev.package.rav1d]
+opt-level = 3

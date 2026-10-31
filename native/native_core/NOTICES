@@ -2,8 +2,10 @@ ahash
 array-init
 assert_matches
 atomig
+av-data
 bitflags
 bitreader
+byte-slice-cast
 byteorder
 bytes
 cfg-if
@@ -11,6 +13,7 @@ combine
 crossbeam-deque
 crossbeam-epoch
 crossbeam-utils
+dav1d-rs
 either
 equivalent
 fallible_collections
@@ -21,6 +24,9 @@ libc
 lock_api
 log
 memchr
+num-bigint
+num-integer
+num-rational
 num-traits
 once_cell
 parking_lot
@@ -64,6 +70,9 @@ Copyright (c) 2017 Nikolai Vazquez
 Copyright 2023 The Fuchsia Authors
 Copyright (c) 2015 Gerd Zellweger
 Copyright (c) 2019 Peter Glotfelty
+Copyright (c) 2017 Luca Barbato
+Copyright (c) 2018 Luca Barbato
+Copyright (c) 2017 Sebastian Dröge
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

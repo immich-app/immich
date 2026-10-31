@@ -201,7 +201,7 @@ fn fits_the_target_size_to_the_turned_image() {
 #[test]
 fn rejects_what_it_cannot_show() {
     let srgb = include_bytes!("fixtures/srgb.avif");
-    // A bit flipped in the AV1 data, which aborts the process with one rav1d frame context.
+    // A bit flipped in the AV1 data, which rav1d 1.1.0 aborted the process on with one frame context.
     let mut damaged = srgb.to_vec();
     damaged[277] ^= 1;
     for (name, data) in [

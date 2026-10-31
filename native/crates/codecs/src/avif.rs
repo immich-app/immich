@@ -1,8 +1,3 @@
-use std::ffi::c_int;
-use std::fmt::Debug;
-use std::mem::MaybeUninit;
-use std::ptr::NonNull;
-use std::slice;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
 
@@ -13,17 +8,7 @@ use jxl::api::{
 use moxcms::{ColorProfile, Layout, MatrixCoefficients, Transform16BitExecutor};
 use mp4parse::{ImageMirror, ImageRotation, ParseStrictness};
 use quick_cache::sync::Cache;
-use rav1d::include::dav1d::data::Dav1dData;
-use rav1d::include::dav1d::dav1d::{Dav1dContext, Dav1dSettings};
-use rav1d::include::dav1d::headers::{
-    DAV1D_PIXEL_LAYOUT_I400, DAV1D_PIXEL_LAYOUT_I420, DAV1D_PIXEL_LAYOUT_I422,
-    DAV1D_PIXEL_LAYOUT_I444, Dav1dPixelLayout, Dav1dSequenceHeader,
-};
-use rav1d::include::dav1d::picture::Dav1dPicture;
-use rav1d::src::lib::{
-    dav1d_close, dav1d_data_create, dav1d_data_unref, dav1d_default_settings, dav1d_get_picture,
-    dav1d_open, dav1d_picture_unref, dav1d_send_data,
-};
+use rav1d::{Decoder, PixelLayout, PlanarImageComponent, Settings, pixel};
 use yuv::{YuvGrayImage, YuvPlanarImage, YuvRange, YuvStandardMatrix};
 
 use crate::Options;
@@ -82,23 +67,25 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
             // SAFETY: the pointer points into `avif`, which outlives this read, at mp4parse's repr(C)
             // NclxColourInformation: primaries, transfer, matrix and the full range flag, a byte each.
             let [pri, trc, mtrx, full_range] = unsafe { nclx.ok()?.cast::<[u8; 4]>().read() };
-            (pri.into(), trc.into(), mtrx.into(), full_range != 0)
+            (pri, trc, mtrx, full_range != 0)
         }
-        None => {
-            let seq = color.sequence_header()?;
-            (seq.pri, seq.trc, seq.mtrx, seq.color_range != 0)
-        }
+        // rav1d's enums count by these codes, but fold SMPTE 170M primaries, xvYCC and BT.1361 into
+        // BT.470BG, sRGB and BT.709.
+        None => (
+            color.0.color_primaries() as u8,
+            color.0.transfer_characteristic() as u8,
+            color.0.matrix_coefficients() as u8,
+            color.0.color_range() == pixel::YUVRange::Full,
+        ),
     };
 
     let cicp = CicpProfile {
         // Unspecified primaries and transfer are taken as sRGB.
-        color_primaries: match CicpColorPrimaries::try_from(u8::try_from(pri).ok()?).ok()? {
+        color_primaries: match CicpColorPrimaries::try_from(pri).ok()? {
             CicpColorPrimaries::Unspecified => CicpColorPrimaries::Bt709,
             pri => pri,
         },
-        transfer_characteristics: match TransferCharacteristics::try_from(u8::try_from(trc).ok()?)
-            .ok()?
-        {
+        transfer_characteristics: match TransferCharacteristics::try_from(trc).ok()? {
             TransferCharacteristics::Unspecified => TransferCharacteristics::Srgb,
             trc => trc,
         },
@@ -153,8 +140,7 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
             _ => return None,
         },
         // yuv narrows deeper YUV samples to 8 bits itself, but not deeper gray or RGB ones.
-        None if (color.bpc() == 8
-            || matrix.is_some() && color.layout() != DAV1D_PIXEL_LAYOUT_I400)
+        None if (color.bpc() == 8 || matrix.is_some() && color.layout() != PixelLayout::I400)
             && (color::is_srgb(cicp) || keep_space) =>
         {
             None
@@ -202,21 +188,19 @@ fn describable(cicp: CicpProfile) -> bool {
 }
 
 /// The matrix for YUV samples, or None for RGB ones.
-fn matrix(mtrx: u32) -> Option<Option<YuvStandardMatrix>> {
-    Some(
-        match MatrixCoefficients::try_from(u8::try_from(mtrx).ok()?).ok()? {
-            MatrixCoefficients::Identity => None,
-            MatrixCoefficients::Bt709 => Some(YuvStandardMatrix::Bt709),
-            // Unspecified is taken as BT.601.
-            MatrixCoefficients::Unspecified
-            | MatrixCoefficients::Bt470Bg
-            | MatrixCoefficients::Smpte170m => Some(YuvStandardMatrix::Bt601),
-            MatrixCoefficients::Fcc => Some(YuvStandardMatrix::Fcc),
-            MatrixCoefficients::Smpte240m => Some(YuvStandardMatrix::Smpte240),
-            MatrixCoefficients::Bt2020Ncl => Some(YuvStandardMatrix::Bt2020),
-            _ => return None,
-        },
-    )
+fn matrix(mtrx: u8) -> Option<Option<YuvStandardMatrix>> {
+    Some(match MatrixCoefficients::try_from(mtrx).ok()? {
+        MatrixCoefficients::Identity => None,
+        MatrixCoefficients::Bt709 => Some(YuvStandardMatrix::Bt709),
+        // Unspecified is taken as BT.601.
+        MatrixCoefficients::Unspecified
+        | MatrixCoefficients::Bt470Bg
+        | MatrixCoefficients::Smpte170m => Some(YuvStandardMatrix::Bt601),
+        MatrixCoefficients::Fcc => Some(YuvStandardMatrix::Fcc),
+        MatrixCoefficients::Smpte240m => Some(YuvStandardMatrix::Smpte240),
+        MatrixCoefficients::Bt2020Ncl => Some(YuvStandardMatrix::Bt2020),
+        _ => return None,
+    })
 }
 
 /// The transform from `cicp` to sRGB, built once per space.
@@ -296,131 +280,62 @@ fn finish<T: Sample>(
     Some(out)
 }
 
-struct Picture(Dav1dPicture);
-
-struct Decoder(Dav1dContext);
-
-struct Data(Dav1dData);
-
-impl Drop for Picture {
-    fn drop(&mut self) {
-        // SAFETY: the picture is empty or came from dav1d_get_picture, and is released once.
-        unsafe { dav1d_picture_unref(Some(NonNull::from(&mut self.0))) };
-    }
-}
-
-impl Drop for Decoder {
-    fn drop(&mut self) {
-        // SAFETY: the context came from dav1d_open and is closed once.
-        unsafe { dav1d_close(Some(NonNull::from(&mut Some(self.0)))) };
-    }
-}
-
-impl Drop for Data {
-    fn drop(&mut self) {
-        // SAFETY: the data is empty or came from dav1d_data_create, and unref is a no-op on data
-        // that is empty or was consumed.
-        unsafe { dav1d_data_unref(Some(NonNull::from(&mut self.0))) };
-    }
-}
+struct Picture(rav1d::Picture);
 
 impl Picture {
     fn decode(item: &[u8]) -> Option<Self> {
-        let mut settings = MaybeUninit::<Dav1dSettings>::uninit();
-        // SAFETY: settings is writable.
-        unsafe { dav1d_default_settings(NonNull::from(&mut settings).cast()) };
-        // SAFETY: dav1d_default_settings initialized every field.
-        let mut settings = unsafe { settings.assume_init() };
-        // One frame context makes rav1d 1.1 abort the process on corrupt input
-        // (memorysafety/rav1d#1497), and two take two threads.
-        settings.n_threads = 2;
-        settings.max_frame_delay = 2;
-        // A scalable image comes back as its top layer alone, not one picture per layer.
-        settings.all_layers = 0;
-
-        let mut context = None;
-        // SAFETY: both pointers are valid for the call.
-        unsafe {
-            dav1d_open(
-                Some(NonNull::from(&mut context)),
-                Some(NonNull::from(&mut settings)),
-            )
-        };
-        // An error leaves the context empty.
-        let decoder = Decoder(context?);
-
-        let mut data = Data(Dav1dData::default());
-        // SAFETY: data is writable.
-        let buf = unsafe { dav1d_data_create(Some(NonNull::from(&mut data.0)), item.len()) };
-        if buf.is_null() {
+        // rav1d takes empty data for a caller bug and aborts debug builds on it.
+        if item.is_empty() {
             return None;
         }
-        // SAFETY: rav1d allocated `item.len()` bytes at buf for this data.
-        unsafe { slice::from_raw_parts_mut(buf, item.len()) }.copy_from_slice(item);
-
-        let mut picture = Picture(Dav1dPicture::default());
-        // Once all data is in, the first EAGAIN starts the drain that returns the frame.
-        let mut draining = false;
-        loop {
-            if data.0.sz > 0 {
-                // SAFETY: the context is open and data is valid.
-                let sent =
-                    unsafe { dav1d_send_data(Some(decoder.0), Some(NonNull::from(&mut data.0))) };
-                if sent.0 != 0 && sent.0 != -libc::EAGAIN {
-                    return None;
-                }
-            }
-            // SAFETY: the context is open and picture is writable.
-            match unsafe { dav1d_get_picture(Some(decoder.0), Some(NonNull::from(&mut picture.0))) }
-                .0
-            {
-                0 => return Some(picture),
-                again if again == -libc::EAGAIN && data.0.sz > 0 => {}
-                again if again == -libc::EAGAIN && !draining => draining = true,
-                _ => return None,
-            }
-        }
-    }
-
-    fn sequence_header(&self) -> Option<&Dav1dSequenceHeader> {
-        self.0.seq_hdr.map(|header| {
-            // SAFETY: a picture from rav1d keeps its sequence header for as long as it lives.
-            unsafe { header.as_ref() }
-        })
+        let mut settings = Settings::new();
+        // Images already decode side by side, and a panic on this thread unwinds to the caller where
+        // one on a rav1d worker would leave it waiting. One thread is also one frame context, which
+        // has the frame once its data is in.
+        settings.set_n_threads(1);
+        // A scalable image comes back as its top layer alone, not one picture per layer.
+        settings.set_all_layers(false);
+        let mut decoder = Decoder::with_settings(&settings).ok()?;
+        decoder.send_data(item.into(), None, None, None).ok()?;
+        decoder.get_picture().ok().map(Self)
     }
 
     fn width(&self) -> usize {
-        self.0.p.w as usize
+        self.0.width() as usize
     }
 
     fn height(&self) -> usize {
-        self.0.p.h as usize
+        self.0.height() as usize
     }
 
-    fn bpc(&self) -> c_int {
-        self.0.p.bpc
+    /// The bits per sample, though rav1d documents bit_depth as their storage size.
+    fn bpc(&self) -> usize {
+        self.0.bit_depth()
     }
 
-    fn layout(&self) -> Dav1dPixelLayout {
-        self.0.p.layout
+    fn layout(&self) -> PixelLayout {
+        self.0.pixel_layout()
     }
 
     /// Plane `i` as samples of `T`, and its stride in samples.
-    fn plane<T>(&self, i: usize) -> Option<(&[T], u32)> {
-        let rows = if i > 0 && self.layout() == DAV1D_PIXEL_LAYOUT_I420 {
+    fn plane<T: Sample>(&self, i: usize) -> Option<(&[T], u32)> {
+        let rows = if i > 0 && self.layout() == PixelLayout::I420 {
             self.height().div_ceil(2)
         } else {
             self.height()
         };
-        let stride = usize::try_from(self.0.stride[i.min(1)]).ok()? / size_of::<T>();
-        let samples = self.0.data[i]?.cast::<T>();
-        // SAFETY: rav1d allocates each plane as at least `rows` rows of `stride`, aligned for its
-        // samples, and keeps it until the picture is unreffed.
-        let plane = unsafe { slice::from_raw_parts(samples.as_ptr(), stride * rows) };
-        Some((plane, stride as u32))
+        let component = PlanarImageComponent::try_from(i).ok()?;
+        // rav1d documents the stride in pixels, but gives bytes.
+        let stride = self.0.stride(component) as usize / size_of::<T>();
+        // SAFETY: Sample is u8 or u16, which any bytes are valid as.
+        let ([], plane, []) = (unsafe { self.0.plane(component).align_to::<T>() }) else {
+            return None;
+        };
+        // The plane runs on past the picture's rows.
+        Some((plane.get(..stride * rows)?, stride as u32))
     }
 
-    fn planar<T: Copy + Debug>(&self) -> Option<YuvPlanarImage<'_, T>> {
+    fn planar<T: Sample>(&self) -> Option<YuvPlanarImage<'_, T>> {
         let (y_plane, y_stride) = self.plane(0)?;
         let (u_plane, u_stride) = self.plane(1)?;
         let (v_plane, v_stride) = self.plane(2)?;
@@ -436,7 +351,7 @@ impl Picture {
         })
     }
 
-    fn gray<T: Copy + Debug>(&self) -> Option<YuvGrayImage<'_, T>> {
+    fn gray<T: Sample>(&self) -> Option<YuvGrayImage<'_, T>> {
         let (y_plane, y_stride) = self.plane(0)?;
         Some(YuvGrayImage {
             y_plane,
@@ -458,32 +373,30 @@ impl Picture {
         let stride = self.width() as u32 * 4;
         if self.bpc() > 8 {
             let convert = match (self.layout(), self.bpc() == 10) {
-                (DAV1D_PIXEL_LAYOUT_I420, true) => yuv::i010_to_rgba,
-                (DAV1D_PIXEL_LAYOUT_I420, false) => yuv::i012_to_rgba,
-                (DAV1D_PIXEL_LAYOUT_I422, true) => yuv::i210_to_rgba,
-                (DAV1D_PIXEL_LAYOUT_I422, false) => yuv::i212_to_rgba,
-                (DAV1D_PIXEL_LAYOUT_I444, true) => yuv::i410_to_rgba,
-                (DAV1D_PIXEL_LAYOUT_I444, false) => yuv::i412_to_rgba,
+                (PixelLayout::I420, true) => yuv::i010_to_rgba,
+                (PixelLayout::I420, false) => yuv::i012_to_rgba,
+                (PixelLayout::I422, true) => yuv::i210_to_rgba,
+                (PixelLayout::I422, false) => yuv::i212_to_rgba,
+                (PixelLayout::I444, true) => yuv::i410_to_rgba,
+                (PixelLayout::I444, false) => yuv::i412_to_rgba,
                 _ => return None,
             };
             convert(&self.planar()?, rgba, stride, range, matrix?).ok()?;
         } else {
             match (self.layout(), matrix) {
-                (DAV1D_PIXEL_LAYOUT_I400, Some(matrix)) => {
+                (PixelLayout::I400, Some(matrix)) => {
                     yuv::yuv400_to_rgba(&self.gray()?, rgba, stride, range, matrix)
                 }
-                (DAV1D_PIXEL_LAYOUT_I420, Some(matrix)) => {
+                (PixelLayout::I420, Some(matrix)) => {
                     yuv::yuv420_to_rgba(&self.planar()?, rgba, stride, range, matrix)
                 }
-                (DAV1D_PIXEL_LAYOUT_I422, Some(matrix)) => {
+                (PixelLayout::I422, Some(matrix)) => {
                     yuv::yuv422_to_rgba(&self.planar()?, rgba, stride, range, matrix)
                 }
-                (DAV1D_PIXEL_LAYOUT_I444, Some(matrix)) => {
+                (PixelLayout::I444, Some(matrix)) => {
                     yuv::yuv444_to_rgba(&self.planar()?, rgba, stride, range, matrix)
                 }
-                (DAV1D_PIXEL_LAYOUT_I444, None) => {
-                    yuv::gbr_to_rgba(&self.planar()?, rgba, stride, range)
-                }
+                (PixelLayout::I444, None) => yuv::gbr_to_rgba(&self.planar()?, rgba, stride, range),
                 _ => return None,
             }
             .ok()?;
@@ -522,7 +435,7 @@ impl Picture {
             let stride = self.width() as u32 * 4;
             let ten = self.bpc() == 10;
             match (self.layout(), matrix) {
-                (DAV1D_PIXEL_LAYOUT_I400, Some(matrix)) => {
+                (PixelLayout::I400, Some(matrix)) => {
                     let convert = if ten {
                         yuv::y010_to_rgba10
                     } else {
@@ -532,16 +445,16 @@ impl Picture {
                 }
                 (layout, Some(matrix)) => {
                     let convert = match (layout, ten) {
-                        (DAV1D_PIXEL_LAYOUT_I420, true) => yuv::i010_to_rgba10,
-                        (DAV1D_PIXEL_LAYOUT_I420, false) => yuv::i012_to_rgba12,
-                        (DAV1D_PIXEL_LAYOUT_I422, true) => yuv::i210_to_rgba10,
-                        (DAV1D_PIXEL_LAYOUT_I422, false) => yuv::i212_to_rgba12,
+                        (PixelLayout::I420, true) => yuv::i010_to_rgba10,
+                        (PixelLayout::I420, false) => yuv::i012_to_rgba12,
+                        (PixelLayout::I422, true) => yuv::i210_to_rgba10,
+                        (PixelLayout::I422, false) => yuv::i212_to_rgba12,
                         (_, true) => yuv::i410_to_rgba10,
                         (_, false) => yuv::i412_to_rgba12,
                     };
                     convert(&self.planar()?, rgba, stride, range, matrix)
                 }
-                (DAV1D_PIXEL_LAYOUT_I444, None) => {
+                (PixelLayout::I444, None) => {
                     let convert = if ten {
                         yuv::gb10_to_rgba10
                     } else {
@@ -580,7 +493,7 @@ impl Picture {
         }
     }
 
-    fn put_alpha_from<S: Copy + Into<u32>, T: Sample + Into<u32> + TryFrom<u32>>(
+    fn put_alpha_from<S: Sample + Into<u32>, T: Sample + Into<u32> + TryFrom<u32>>(
         &self,
         rgba: &mut [[T; 4]],
         premultiplied: bool,
@@ -588,7 +501,7 @@ impl Picture {
         // 16-bit pixels here hold 12-bit samples.
         let max = if size_of::<T>() == 1 { 255 } else { 4095 };
         let depth = self.bpc() as u32;
-        let (low, span) = if self.sequence_header()?.color_range == 0 {
+        let (low, span) = if self.0.color_range() == pixel::YUVRange::Limited {
             (16 << (depth - 8), 219 << (depth - 8))
         } else {
             (0, (1 << depth) - 1)
