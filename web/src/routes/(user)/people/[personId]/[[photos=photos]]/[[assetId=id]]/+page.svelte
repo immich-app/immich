@@ -4,6 +4,7 @@
   import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import PersonIndicator from '#lib/components/faces-page/PersonIndicator.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
@@ -40,7 +41,6 @@
     ActionButton,
     CommandPaletteDefaultProvider,
     ContextMenuButton,
-    Icon,
     IconButton,
     LoadingSpinner,
     modalManager,
@@ -52,7 +52,6 @@
     mdiAccountMultipleCheckOutline,
     mdiArrowLeft,
     mdiDotsVertical,
-    mdiHeart,
     mdiPencilOutline,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -332,7 +331,7 @@
     shortcuts: { key: 'm' },
   };
 
-  const enablePersonActions = $derived(!assetViewerManager.isViewing && !assetMultiSelectManager.selectionActive);
+  const personActionsEnabled = $derived(!assetViewerManager.isViewing && !assetMultiSelectManager.selectionActive);
 </script>
 
 <OnEvents
@@ -342,12 +341,10 @@
   onAssetsArchive={updateAssetCount}
   onAssetsUnarchive={updateAssetCount}
 />
-{#if enablePersonActions}
-  <CommandPaletteDefaultProvider
-    name={$t('person')}
-    actions={[SelectFeaturePhoto, Edit, HidePerson, ShowPerson, Merge, Favorite, Unfavorite]}
-  />
-{/if}
+<CommandPaletteDefaultProvider
+  name={$t('person')}
+  actions={personActionsEnabled ? [SelectFeaturePhoto, Edit, HidePerson, ShowPerson, Merge, Favorite, Unfavorite] : []}
+/>
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 pt-(--navbar-height) md:px-6 md:pt-(--navbar-height-md)"
@@ -392,21 +389,16 @@
               />
             {:else}
               <div class="relative flex gap-4">
-                <div class="relative">
+                <div class="@container relative size-[3.375rem]">
                   <ImageThumbnail
                     circle
                     shadow
                     url={thumbnailData}
                     altText={person.name}
-                    widthStyle="3.375rem"
-                    heightStyle="3.375rem"
+                    widthStyle="100%"
                     hidden={person.isHidden}
                   />
-                  {#if person.isFavorite}
-                    <div class="absolute inset-s-1 top-1">
-                      <Icon icon={mdiHeart} size="18" class="text-white drop-shadow-md" />
-                    </div>
-                  {/if}
+                  <PersonIndicator {person} />
                 </div>
                 <div class="flex flex-col text-start text-primary">
                   <div class="flex gap-2">
