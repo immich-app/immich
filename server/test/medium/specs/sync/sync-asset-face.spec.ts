@@ -1,6 +1,7 @@
 import { Kysely } from 'kysely';
 import { AssetVisibility, SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SyncTestContext } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
@@ -299,6 +300,20 @@ describe(SyncEntityType.AssetFaceV3, () => {
 
     await ctx.syncAckAll(auth, response);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV3]);
+  });
+
+  it('should omit private faces from cluster-group sync', async () => {
+    const { auth, user, ctx } = await setup();
+    const { user: owner } = await ctx.newUser({ clusterGroupId: user.clusterGroupId });
+    const { asset } = await ctx.newAsset({ ownerId: owner.id });
+    const { person } = await ctx.newPerson({ ownerId: owner.id });
+    await ctx.newAssetFace({ assetId: asset.id, personGroupId: person.personGroupId });
+    const tag = await ctx.get(TagRepository).create({ userId: owner.id, value: 'private', isPrivate: true });
+    await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+    await expect(ctx.syncStream(auth, [SyncRequestType.AssetFacesV3])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
   });
 
   it('should detect and sync an updated asset face for another user in the same cluster group', async () => {

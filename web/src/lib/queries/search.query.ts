@@ -70,6 +70,20 @@ export const searchAssetsQuery = (dto: MetadataSearchDto) =>
     queryFn: ({ pageParam, signal }) => searchAssets({ metadataSearchDto: { ...dto, page: pageParam } }, { signal }),
   });
 
+export const getPrivateAssetPresenceQuery = (assetIds: string[], tagIds: string[]) => {
+  const dto: MetadataSearchDto = {
+    filter: { or: assetIds.map((id) => ({ id: { eq: id } })), tagIds: { any: tagIds } },
+    size: 1,
+  };
+  return queryOptions({
+    queryKey: QueryKeys.privateAssetPresence(dto),
+    queryFn: ({ signal }) => searchAssets({ metadataSearchDto: dto }, { signal }),
+    select: ({ assets }) => assets.items.length > 0,
+    enabled: assetIds.length > 0 && tagIds.length > 0,
+    staleTime: 0,
+  });
+};
+
 export const searchSmartQuery = (dto: SmartSearchDto) =>
   infiniteQueryOptions({
     ...searchResultsOptions,

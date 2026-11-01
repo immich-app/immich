@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { sql, type Insertable, type Kysely, type NotNull } from 'kysely';
+import { type Insertable, type Kysely, type NotNull } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
-import { AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { ActivityTable } from 'src/schema/tables/activity.table.js';
-import { asUuid, dummy } from 'src/utils/database.js';
+import { asUuid, dummy, isAssetVisible, type PrivateTagAccessOptions } from 'src/utils/database.js';
 
 export interface ActivitySearch {
   albumId?: string;
@@ -21,7 +20,7 @@ export class ActivityRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID }] })
-  search(options: ActivitySearch) {
+  search(options: ActivitySearch, privateAccess: PrivateTagAccessOptions = {}) {
     const { userId, assetId, albumId, isLiked } = options;
 
     return this.db
@@ -42,6 +41,9 @@ export class ActivityRepository {
       .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
       .$if(isLiked !== undefined, (qb) => qb.where('activity.isLiked', '=', isLiked!))
       .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        isAssetVisible(eb.ref('activity.assetId'), { ...privateAccess, albumId: eb.ref('activity.albumId') }),
+      )
       .orderBy('activity.createdAt', 'asc')
       .execute();
   }
@@ -67,13 +69,16 @@ export class ActivityRepository {
   }
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
-  async getStatistics({
-    albumId,
-    assetId,
-  }: {
-    albumId: string;
-    assetId?: string;
-  }): Promise<{ comments: number; likes: number }> {
+  async getStatistics(
+    {
+      albumId,
+      assetId,
+    }: {
+      albumId: string;
+      assetId?: string;
+    },
+    privateAccess: PrivateTagAccessOptions = {},
+  ): Promise<{ comments: number; likes: number }> {
     const result = await this.db
       .selectFrom('activity')
       .select((eb) => [
@@ -84,11 +89,9 @@ export class ActivityRepository {
       .leftJoin('asset', 'asset.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .where('activity.albumId', '=', albumId)
-      .where(({ or, and, eb }) =>
-        or([
-          and([eb('asset.deletedAt', 'is', null), eb('asset.visibility', '!=', sql.lit(AssetVisibility.Locked))]),
-          eb('asset.id', 'is', null),
-        ]),
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        isAssetVisible(eb.ref('activity.assetId'), { ...privateAccess, albumId: eb.ref('activity.albumId') }),
       )
       .executeTakeFirstOrThrow();
 

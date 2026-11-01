@@ -137,6 +137,50 @@ with
           (asset."localDateTime" at time zone 'UTC')::date = today.date
           and "asset"."ownerId" = any ($4::uuid[])
           and "asset"."visibility" = $5
+          and not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "asset"."id"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "asset"."id"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "asset"."id"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
           and exists (
             select
             from
@@ -212,6 +256,8 @@ select
           "tag"."createdAt",
           "tag"."updatedAt",
           "tag"."color",
+          "tag"."isPrivate",
+          "tag"."systemKey",
           "tag"."parentId"
         from
           "tag"
@@ -226,6 +272,106 @@ from
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."id" = any ($1::uuid[])
+
+-- AssetRepository.getByIdsWithAllRelationsButStacks (public)
+select
+  "asset".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_face".*,
+          "person" as "person"
+        from
+          "asset_face"
+          left join lateral (
+            select
+              "person".*
+            from
+              "person"
+            where
+              "person"."personGroupId" = "asset_face"."personGroupId"
+              and "person"."ownerId" = $1
+          ) as "person" on true
+        where
+          "asset_face"."assetId" = "asset"."id"
+          and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" is true
+      ) as agg
+  ) as "faces",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "tag"."id",
+          "tag"."value",
+          "tag"."createdAt",
+          "tag"."updatedAt",
+          "tag"."color",
+          "tag"."isPrivate",
+          "tag"."systemKey",
+          "tag"."parentId"
+        from
+          "tag"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
+        where
+          "asset"."id" = "tag_asset"."assetId"
+      ) as agg
+  ) as "tags",
+  to_json("asset_exif") as "exifInfo"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."id" = any ($2::uuid[])
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
 
 -- AssetRepository.deleteAll
 delete from "asset"
@@ -327,6 +473,50 @@ from
 where
   "ownerId" = $1::uuid
   and "checksum" in ($2)
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
 
 -- AssetRepository.getUploadAssetIdByChecksum
 select
@@ -337,6 +527,50 @@ where
   "ownerId" = $1::uuid
   and "checksum" = $2
   and "libraryId" is null
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
 limit
   $3
 
@@ -351,6 +585,50 @@ where
   and "createdAt" >= $2
   and "createdAt" < $3
   and "deletedAt" is null
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
 group by
   date_trunc('DAY', "asset"."createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
 order by
@@ -366,6 +644,52 @@ with
     where
       "asset"."deletedAt" is null
       and "asset"."visibility" in ('archive', 'timeline')
+      and (
+        not (
+          exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "asset"."id"
+              and tag."isPrivate" = true
+          )
+          or exists (
+            select
+              1
+            from
+              asset as private_asset
+            where
+              private_asset.id = "asset"."id"
+              and private_asset.visibility = 'locked'
+          )
+          or exists (
+            select
+              1
+            from
+              asset as still
+            where
+              still."livePhotoVideoId" = "asset"."id"
+              and (
+                still.visibility = 'locked'
+                or exists (
+                  select
+                    1
+                  from
+                    tag_asset
+                    join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                    join tag on tag.id = tag_closure.id_ancestor
+                  where
+                    tag_asset."assetId" = "still"."id"
+                    and tag."isPrivate" = true
+                )
+              )
+          )
+        )
+      )
   )
 select
   ("timeBucket" AT TIME ZONE 'UTC')::date::text as "timeBucket",
@@ -383,7 +707,21 @@ with
     select
       "asset"."duration",
       "asset"."id",
-      "asset"."visibility",
+      case
+        when "asset"."visibility" != 'hidden'
+        and exists (
+          select
+            1
+          from
+            tag_asset
+            join tag on tag.id = tag_asset."tagId"
+          where
+            tag_asset."assetId" = "asset"."id"
+            and tag."isPrivate"
+            and tag."systemKey" = 'locked'
+        ) then 'locked'
+        else "asset"."visibility"
+      end as "visibility",
       asset."isFavorite"
       and asset."ownerId" = $1 as "isFavorite",
       asset.type = 'IMAGE' as "isImage",
@@ -428,20 +766,213 @@ with
           "stacked"."stackId" = "asset"."stackId"
           and "stacked"."deletedAt" is null
           and "stacked"."visibility" = $2
+          and not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "stacked"."id"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "stacked"."id"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "stacked"."id"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
+          and exists (
+            select
+              1
+            from
+              stack
+              join asset as primary_asset on primary_asset.id = stack."primaryAssetId"
+            where
+              stack.id = "stacked"."stackId"
+              and (
+                not (
+                  exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "primary_asset"."id"
+                      and tag."isPrivate" = true
+                  )
+                  or exists (
+                    select
+                      1
+                    from
+                      asset as private_asset
+                    where
+                      private_asset.id = "primary_asset"."id"
+                      and private_asset.visibility = 'locked'
+                  )
+                  or exists (
+                    select
+                      1
+                    from
+                      asset as still
+                    where
+                      still."livePhotoVideoId" = "primary_asset"."id"
+                      and (
+                        still.visibility = 'locked'
+                        or exists (
+                          select
+                            1
+                          from
+                            tag_asset
+                            join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                            join tag on tag.id = tag_closure.id_ancestor
+                          where
+                            tag_asset."assetId" = "still"."id"
+                            and tag."isPrivate" = true
+                        )
+                      )
+                  )
+                )
+              )
+          )
         group by
           "stacked"."stackId"
       ) as "stacked_assets" on true
     where
       "asset"."deletedAt" is null
       and "asset"."visibility" in ('archive', 'timeline')
+      and (
+        not (
+          exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "asset"."id"
+              and tag."isPrivate" = true
+          )
+          or exists (
+            select
+              1
+            from
+              asset as private_asset
+            where
+              private_asset.id = "asset"."id"
+              and private_asset.visibility = 'locked'
+          )
+          or exists (
+            select
+              1
+            from
+              asset as still
+            where
+              still."livePhotoVideoId" = "asset"."id"
+              and (
+                still.visibility = 'locked'
+                or exists (
+                  select
+                    1
+                  from
+                    tag_asset
+                    join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                    join tag on tag.id = tag_closure.id_ancestor
+                  where
+                    tag_asset."assetId" = "still"."id"
+                    and tag."isPrivate" = true
+                )
+              )
+          )
+        )
+      )
       and date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' = $3
       and not exists (
         select
+          1
         from
-          "stack"
+          stack
+          join asset as primary_asset on primary_asset.id = stack."primaryAssetId"
         where
-          "stack"."id" = "asset"."stackId"
-          and "stack"."primaryAssetId" != "asset"."id"
+          stack.id = "asset"."stackId"
+          and primary_asset.id != "asset"."id"
+          and (
+            not (
+              exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "primary_asset"."id"
+                  and tag."isPrivate" = true
+              )
+              or exists (
+                select
+                  1
+                from
+                  asset as private_asset
+                where
+                  private_asset.id = "primary_asset"."id"
+                  and private_asset.visibility = 'locked'
+              )
+              or exists (
+                select
+                  1
+                from
+                  asset as still
+                where
+                  still."livePhotoVideoId" = "primary_asset"."id"
+                  and (
+                    still.visibility = 'locked'
+                    or exists (
+                      select
+                        1
+                      from
+                        tag_asset
+                        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                        join tag on tag.id = tag_closure.id_ancestor
+                      where
+                        tag_asset."assetId" = "still"."id"
+                        and tag."isPrivate" = true
+                    )
+                  )
+              )
+            )
+          )
       )
     order by
       (asset."localDateTime" AT TIME ZONE 'UTC')::date desc,
@@ -500,6 +1031,50 @@ from
 where
   "ownerId" = $2::uuid
   and "visibility" = $3
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
   and "type" = $4
   and "deletedAt" is null
 limit
@@ -514,6 +1089,50 @@ from
 where
   "ownerId" = $1::uuid
   and "asset"."visibility" = $2
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
   and "type" = $3
   and "deletedAt" is null
 order by
@@ -707,6 +1326,16 @@ select
           inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
         where
           "asset"."id" = "tag_asset"."assetId"
+          and not exists (
+            select
+              1
+            from
+              tag_closure
+              join tag as ancestor on ancestor.id = tag_closure.id_ancestor
+            where
+              tag_closure.id_descendant = "tag"."id"
+              and ancestor."isPrivate" = true
+          )
       ) as agg
   ) as "tags"
 from

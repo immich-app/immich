@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/server/pin.dart';
 import 'package:immich_mobile/data/server/tag.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -21,6 +22,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/private_session.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -37,9 +39,12 @@ import '../../test_utils.dart';
 import '../factories/user_factory.dart';
 import '../mocks.dart';
 
+class _MockPinApi extends Mock implements PinApiRepository {}
+
 class PresentationContext {
-  PresentationContext._({required UserDto user})
+  PresentationContext._({required UserDto user, PinApiRepository? pinApi})
     : currentUser = user,
+      _pinApi = pinApi ?? _MockPinApi(),
       service = ServiceMocks(),
       repository = RepositoryMocks() {
     setup();
@@ -50,6 +55,7 @@ class PresentationContext {
   static Drift? _db;
 
   final UserDto currentUser;
+  final PinApiRepository _pinApi;
   final ServiceMocks service;
   final RepositoryMocks repository;
 
@@ -63,7 +69,8 @@ class PresentationContext {
     partnerServiceProvider.overrideWithValue(service.partner.service),
     gCastServiceProvider.overrideWithValue(service.cast),
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
-    inLockedViewProvider.overrideWithValue(false),
+    inPrivateViewProvider.overrideWithValue(false),
+    privateSessionProvider.overrideWith((ref) => PrivateSession(_pinApi)),
     assetMediaRepositoryProvider.overrideWithValue(repository.assetMedia.api),
     permissionRepositoryProvider.overrideWithValue(repository.permission.repo),
     tagApiRepositoryProvider.overrideWithValue(service.tag.repo),
@@ -81,7 +88,7 @@ class PresentationContext {
     ),
   ];
 
-  static Future<PresentationContext> create() async {
+  static Future<PresentationContext> create({PinApiRepository? pinApi}) async {
     TestUtils.init();
     if (_db == null) {
       final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
@@ -90,7 +97,7 @@ class PresentationContext {
       _db = db;
     }
     await SettingsRepository.ensureInitialized(_db!);
-    return PresentationContext._(user: UserFactory.createDto());
+    return PresentationContext._(user: UserFactory.createDto(), pinApi: pinApi);
   }
 
   void setup() {

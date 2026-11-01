@@ -12313,6 +12313,15 @@
             "x-immich-state": "Deprecated"
           },
           {
+            "description": "Exclude private assets even in an elevated session",
+            "in": "query",
+            "name": "excludePrivate",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "deprecated": true,
             "description": "Filter by encoded status",
             "in": "query",
@@ -20493,6 +20502,10 @@
             "format": "date-time",
             "type": "string"
           },
+          "hasPrivateAssets": {
+            "description": "Whether the album contains private assets owned by the viewer",
+            "type": "boolean"
+          },
           "hasSharedLink": {
             "description": "Has shared link",
             "type": "boolean"
@@ -20502,6 +20515,10 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
+          },
+          "includePrivateAssets": {
+            "description": "Share album-owner private assets with album members",
+            "type": "boolean"
           },
           "isActivityEnabled": {
             "description": "Activity feed enabled",
@@ -20920,6 +20937,10 @@
             "minimum": -180,
             "type": "number"
           },
+          "preserveLockedTag": {
+            "deprecated": true,
+            "type": "boolean"
+          },
           "rating": {
             "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
@@ -20949,6 +20970,10 @@
             "description": "Time zone (IANA timezone)",
             "type": "string"
           },
+          "unlockLockedFolder": {
+            "description": "Explicitly remove the system private tag when moving to the timeline",
+            "type": "boolean"
+          },
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"
           }
@@ -20966,6 +20991,10 @@
               "$ref": "#/components/schemas/AssetBulkUploadCheckItem"
             },
             "type": "array"
+          },
+          "presenceOnly": {
+            "description": "Check for matching uploads without returning asset IDs or metadata",
+            "type": "boolean"
           }
         },
         "required": [
@@ -21571,6 +21600,16 @@
               "$ref": "#/components/schemas/AssetMetadataUpsertItemDto"
             },
             "type": "array"
+          },
+          "privateLivePhotoMotion": {
+            "description": "Upload the motion component of a private Live Photo",
+            "type": "boolean"
+          },
+          "privateTagId": {
+            "description": "Private tag to apply when saving the asset",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
           },
           "sidecarData": {
             "description": "Sidecar file data",
@@ -23824,6 +23863,27 @@
       "LicenseResponseDto": {
         "$ref": "#/components/schemas/UserLicense"
       },
+      "LockedFolderResponse": {
+        "properties": {
+          "sidebarWeb": {
+            "description": "Whether the legacy Locked Folder appears in the web sidebar",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "LockedFolderUpdate": {
+        "properties": {
+          "sidebarWeb": {
+            "description": "Whether the legacy Locked Folder appears in the web sidebar",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "LogLevel": {
         "description": "Log level",
         "enum": [
@@ -24656,6 +24716,10 @@
               }
             ],
             "x-immich-state": "Deprecated"
+          },
+          "excludePrivate": {
+            "description": "Exclude private assets even in an elevated session",
+            "type": "boolean"
           },
           "filter": {
             "$ref": "#/components/schemas/SearchFilter",
@@ -27750,6 +27814,10 @@
             ],
             "x-immich-state": "Deprecated"
           },
+          "excludePrivate": {
+            "description": "Exclude private assets even in an elevated session",
+            "type": "boolean"
+          },
           "filter": {
             "$ref": "#/components/schemas/SearchFilter",
             "x-immich-history": [
@@ -29721,6 +29789,11 @@
               "null"
             ]
           },
+          "includePrivateAssets": {
+            "default": false,
+            "description": "Include link-owner private assets",
+            "type": "boolean"
+          },
           "password": {
             "description": "Link password",
             "type": [
@@ -29775,6 +29848,10 @@
               "string",
               "null"
             ]
+          },
+          "includePrivateAssets": {
+            "description": "Include link-owner private assets",
+            "type": "boolean"
           },
           "password": {
             "description": "Link password",
@@ -29859,6 +29936,10 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
+          },
+          "includePrivateAssets": {
+            "description": "Include link-owner private assets",
+            "type": "boolean"
           },
           "key": {
             "description": "Encryption key (base64url)",
@@ -30110,6 +30191,10 @@
               }
             ],
             "x-immich-state": "Deprecated"
+          },
+          "excludePrivate": {
+            "description": "Exclude private assets even in an elevated session",
+            "type": "boolean"
           },
           "filter": {
             "$ref": "#/components/schemas/SearchFilter",
@@ -30896,6 +30981,10 @@
               }
             ],
             "x-immich-state": "Deprecated"
+          },
+          "excludePrivate": {
+            "description": "Exclude private assets even in an elevated session",
+            "type": "boolean"
           },
           "filter": {
             "$ref": "#/components/schemas/SearchFilter",
@@ -33945,6 +34034,10 @@
               "null"
             ]
           },
+          "isPrivate": {
+            "description": "Whether this tag hides its assets behind private mode",
+            "type": "boolean"
+          },
           "name": {
             "description": "Tag name",
             "pattern": "^[^/]*$",
@@ -33982,6 +34075,10 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "isPrivate": {
+            "description": "Whether this tag hides its assets behind private mode",
+            "type": "boolean"
+          },
           "name": {
             "description": "Tag name",
             "type": "string"
@@ -34018,6 +34115,10 @@
               "string",
               "null"
             ]
+          },
+          "isPrivate": {
+            "description": "Whether this tag hides its assets behind private mode",
+            "type": "boolean"
           },
           "name": {
             "description": "Tag name",
@@ -34407,6 +34508,10 @@
               }
             ]
           },
+          "includePrivateAssets": {
+            "description": "Share album-owner private assets with album members",
+            "type": "boolean"
+          },
           "isActivityEnabled": {
             "description": "Enable activity feed",
             "type": "boolean"
@@ -34475,6 +34580,10 @@
             "minimum": -180,
             "type": "number"
           },
+          "preserveLockedTag": {
+            "deprecated": true,
+            "type": "boolean"
+          },
           "rating": {
             "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
@@ -34499,6 +34608,10 @@
               }
             ],
             "x-immich-state": "Stable"
+          },
+          "unlockLockedFolder": {
+            "description": "Explicitly remove the system private tag when moving to the timeline",
+            "type": "boolean"
           },
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"
@@ -35383,6 +35496,9 @@
           "folders": {
             "$ref": "#/components/schemas/FoldersResponse"
           },
+          "lockedFolder": {
+            "$ref": "#/components/schemas/LockedFolderResponse"
+          },
           "memories": {
             "$ref": "#/components/schemas/MemoriesResponse"
           },
@@ -35440,6 +35556,9 @@
           },
           "folders": {
             "$ref": "#/components/schemas/FoldersUpdate"
+          },
+          "lockedFolder": {
+            "$ref": "#/components/schemas/LockedFolderUpdate"
           },
           "memories": {
             "$ref": "#/components/schemas/MemoriesUpdate"

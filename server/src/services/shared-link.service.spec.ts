@@ -173,6 +173,7 @@ describe(SharedLinkService.name, () => {
 
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set([album.id]));
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
+        includePrivateAssets: false,
         type: SharedLinkType.Album,
         userId: authStub.admin.user.id,
         albumId: album.id,
@@ -208,6 +209,7 @@ describe(SharedLinkService.name, () => {
         false,
       );
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
+        includePrivateAssets: false,
         type: SharedLinkType.Individual,
         userId: authStub.admin.user.id,
         albumId: null,
@@ -244,6 +246,7 @@ describe(SharedLinkService.name, () => {
         false,
       );
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
+        includePrivateAssets: false,
         type: SharedLinkType.Individual,
         userId: authStub.admin.user.id,
         albumId: null,
@@ -419,8 +422,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledTimes(1);
       expect(mocks.sharedLink.update).toHaveBeenCalled();
       expect(mocks.sharedLink.update).toHaveBeenCalledWith({
-        ...getForSharedLink(sharedLink),
-        slug: null,
+        id: sharedLink.id,
         assetIds: [newAsset.id],
       });
     });
@@ -483,7 +485,7 @@ describe(SharedLinkService.name, () => {
       ]);
 
       expect(mocks.sharedLinkAsset.remove).toHaveBeenCalledWith(sharedLink.id, [asset.id, 'asset-2']);
-      expect(mocks.sharedLink.update).toHaveBeenCalledWith(expect.objectContaining({ assets: [] }));
+      expect(mocks.sharedLink.update).toHaveBeenCalledWith({ id: sharedLink.id });
     });
 
     it('should tell only the link owner', async () => {
@@ -516,6 +518,28 @@ describe(SharedLinkService.name, () => {
   });
 
   describe('getMetadataTags', () => {
+    it('should count private album photos using the link grant', async () => {
+      const sharedLink = SharedLinkFactory.from({ description: null, includePrivateAssets: true }).album().build();
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+      mocks.album.getMetadataForIds.mockResolvedValue([
+        {
+          albumId: sharedLink.album!.id,
+          assetCount: 2,
+          startDate: null,
+          endDate: null,
+          lastModifiedAssetTimestamp: null,
+        },
+      ]);
+
+      await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toMatchObject({
+        description: '2 shared photos & videos',
+      });
+
+      expect(mocks.album.getMetadataForIds).toHaveBeenCalledWith([sharedLink.album!.id], {
+        sharedLinkId: sharedLink.id,
+      });
+    });
+
     it('should return null when auth is not a shared link', async () => {
       await expect(sut.getMetadataTags(authStub.admin)).resolves.toBe(null);
 

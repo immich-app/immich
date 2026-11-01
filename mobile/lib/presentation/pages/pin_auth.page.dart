@@ -7,7 +7,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/local_auth.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/forms/pin_registration_form.dart';
 import 'package:immich_mobile/widgets/forms/pin_verification_form.dart';
 
@@ -37,7 +36,7 @@ class PinAuthPage extends HookConsumerWidget {
         ),
       );
 
-      unawaited(context.replaceRoute(const LockedFolderRoute()));
+      unawaited(context.router.maybePop(true));
     }
 
     Future<void> enableBiometricAuth() {
@@ -71,7 +70,7 @@ class PinAuthPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.t.locked_folder)),
+      appBar: AppBar(title: Text(context.t.unlock_private_content)),
       body: ListView(
         shrinkWrap: true,
         children: [
@@ -85,7 +84,9 @@ class PinAuthPage extends HookConsumerWidget {
                         child: PinVerificationForm(
                           autoFocus: true,
                           onSuccess: (_) {
-                            unawaited(context.replaceRoute(const LockedFolderRoute()));
+                            if (context.mounted) {
+                              unawaited(context.router.maybePop(true));
+                            }
                           },
                         ),
                       ),

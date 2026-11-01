@@ -4,14 +4,22 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/sync_stream.service.dart';
 import 'package:immich_mobile/domain/utils/cloud_id_resolver.dart';
 import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../service.mocks.dart';
 import '../repository_context.dart';
+
+class _MockSyncStreamService extends Mock implements SyncStreamService {}
 
 void main() {
   late MediumRepositoryContext ctx;
@@ -42,6 +50,29 @@ void main() {
           .toList(),
     );
   }
+
+  test('cloud-ID synchronization forwards a remote privacy reset even if the sync later fails', () async {
+    final sync = _MockSyncStreamService();
+    when(() => sync.sync(onAssetAccessChanged: any(named: 'onAssetAccessChanged'))).thenAnswer((invocation) async {
+      final notify = invocation.namedArguments[#onAssetAccessChanged] as void Function()?;
+      notify?.call();
+      throw StateError('Remote sync interrupted after privacy reset');
+    });
+    final ref = ProviderContainer(
+      overrides: [
+        driftProvider.overrideWithValue(ctx.db),
+        nativeSyncApiProvider.overrideWithValue(mockNativeSyncApi),
+        cancellationProvider.overrideWithValue(Completer<void>()),
+        syncStreamServiceProvider.overrideWithValue(sync),
+      ],
+    );
+    addTearDown(ref.dispose);
+    var notifications = 0;
+
+    await syncCloudIds(ref, onAssetAccessChanged: () => notifications++);
+
+    expect(notifications, 1);
+  });
 
   group('populateCloudIds', () {
     test('writes the cloud ID resolved for each asset', () async {

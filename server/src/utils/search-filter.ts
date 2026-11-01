@@ -36,10 +36,6 @@ const decidingConditions = <F extends EnumField>(filter: SearchFilter, field: F)
     .filter((condition) => condition !== undefined);
 };
 
-/**
-Keeps locked assets out of search results unless the session is elevated: a filter that asks for
-them is rejected with 401, and any other filter gets `visibility != locked` ANDed in.
-*/
 export const applyLockedVisibilityPolicy = (auth: AuthDto, filter: SearchFilter): SearchFilter => {
   if (auth.session?.hasElevatedPermission) {
     return filter;
@@ -49,11 +45,7 @@ export const applyLockedVisibilityPolicy = (auth: AuthDto, filter: SearchFilter)
     requireElevatedPermission(auth);
   }
 
-  if (filter.visibility !== undefined) {
-    return filter;
-  }
-
-  return { ...filter, visibility: { ne: AssetVisibility.Locked } };
+  return filter;
 };
 
 export const collectFilterIds = (filter: SearchFilter, field: IdsFilterField): string[] => {

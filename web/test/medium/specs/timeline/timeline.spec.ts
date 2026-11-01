@@ -472,6 +472,7 @@ test.describe('timeline', () => {
 
     test('moves assets to the locked folder', async ({ page, data, api, app }) => {
       const [asset, next] = data.addTimeline({ years: 1 });
+      data.setAuthStatus({ pinCode: true, isElevated: true });
       await page.goto(Route.photos());
 
       await app.timeline.select(asset);
@@ -553,6 +554,9 @@ test.describe('timeline', () => {
     for (const { action, operation, toast, act } of failedActions) {
       test(`${action} shows its error toast`, async ({ page, data, api, logger, app }) => {
         const assets = addLivePhotoCandidates(data);
+        if (action === 'lock') {
+          data.setAuthStatus({ pinCode: true, isElevated: true });
+        }
         api.on({ [operation]: () => ({ networkError: true }) });
         await page.goto(Route.photos());
 
@@ -823,7 +827,7 @@ test.describe('timeline', () => {
       await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
       await expect(app.timeline.thumbnail(other)).toBeVisible();
       expect(api.updateAssets).toHaveBeenCalledWith({
-        body: { ids: [asset.id], visibility: AssetVisibility.Timeline },
+        body: { ids: [asset.id], visibility: AssetVisibility.Timeline, unlockLockedFolder: true },
       });
     });
   });

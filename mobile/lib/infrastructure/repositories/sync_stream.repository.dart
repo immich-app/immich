@@ -7,6 +7,7 @@ import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/asset/edit.drift.dart';
 import 'package:immich_mobile/data/db/main/table/asset/ocr.drift.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset_presence.drift.dart';
 import 'package:immich_mobile/data/db/main/table/memory/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/memory/memory.drift.dart';
 import 'package:immich_mobile/data/db/main/table/people/asset_face.drift.dart';
@@ -23,6 +24,9 @@ import 'package:immich_mobile/data/db/main/table/user/metadata.drift.dart';
 import 'package:immich_mobile/data/db/main/table/user/partner.drift.dart';
 import 'package:immich_mobile/data/db/main/table/user/user.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/asset_presence.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as asset_model;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
@@ -44,7 +48,93 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
 
   Drift get _db => attachedDatabase;
 
-  Future<void> reset() async {
+  Future<List<String>> getBackupChecksums(String ownerId, {required bool includeSynced}) {
+    final local = _db.localAssetEntity;
+    final remote = _db.remoteAssetEntity;
+    final query = local.selectOnly(distinct: true)
+      ..addColumns([local.checksum])
+      ..where(local.checksum.isNotNull() & _isBackupAsset(local.id));
+    if (!includeSynced) {
+      query.where(
+        notExistsQuery(
+          remote.selectOnly()
+            ..addColumns([remote.checksum])
+            ..where(remote.ownerId.equals(ownerId) & remote.checksum.equalsExp(local.checksum)),
+        ),
+      );
+    }
+    return query.map((row) => row.read(local.checksum)!).get();
+  }
+
+  Future<List<String>> getEligibleBackupHashes(Map<String, String> hashes) async {
+    final local = _db.localAssetEntity;
+    final query = local.selectOnly()
+      ..addColumns([local.id])
+      ..where(local.id.isIn(hashes.keys) & _isBackupAsset(local.id));
+    return query.map((row) => hashes[row.read(local.id)!]!).get();
+  }
+
+  Expression<bool> _isBackupAsset(Expression<String> assetId) {
+    final album = _db.localAlbumEntity;
+    final albumAsset = _db.localAlbumAssetEntity;
+    JoinedSelectStatement<HasResultSet, dynamic> assetsInAlbums(BackupSelection selection) =>
+        _db.selectOnly(albumAsset).join([innerJoin(album, album.id.equalsExp(albumAsset.albumId), useColumns: false)])
+          ..addColumns([albumAsset.assetId])
+          ..where(album.backupSelection.equalsValue(selection));
+
+    return assetId.isInQuery(assetsInAlbums(BackupSelection.selected)) &
+        assetId.isNotInQuery(assetsInAlbums(BackupSelection.excluded));
+  }
+
+  Future<void> _insertLocalAssetPresence(String ownerId, Iterable<String> checksums) async {
+    if (checksums.isEmpty) {
+      return;
+    }
+    await _db.batch((batch) {
+      batch.insertAll(
+        _db.localAssetPresenceEntity,
+        checksums.map((checksum) => LocalAssetPresenceEntityData(ownerId: ownerId, checksum: checksum)).toList(),
+        mode: InsertMode.insertOrIgnore,
+      );
+    });
+  }
+
+  Future<void> updateLocalAssetPresence(String ownerId, BackupPresence presence) async {
+    final table = _db.localAssetPresenceEntity;
+    final checked = presence.checked.toSet();
+    final matches = presence.matches.toSet();
+    await transaction(() async {
+      final query = table.selectOnly()
+        ..addColumns([table.checksum])
+        ..where(table.ownerId.equals(ownerId));
+      final current = (await query.map((row) => row.read(table.checksum)!).get()).toSet();
+
+      final noLongerBackedUp = current.intersection(checked).difference(matches);
+      for (final chunk in noLongerBackedUp.slices(kDriftMaxChunk)) {
+        await (table.delete()..where((row) => row.ownerId.equals(ownerId) & row.checksum.isIn(chunk))).go();
+      }
+
+      await _insertLocalAssetPresence(ownerId, matches.difference(current));
+    });
+  }
+
+  Future<int> pruneUnsharedPrivateAssets() {
+    final asset = _db.remoteAssetEntity;
+    final membership = _db.remoteAlbumAssetEntity;
+    final owners = _db.authUserEntity.selectOnly()..addColumns([_db.authUserEntity.id]);
+    final albums = membership.selectOnly()
+      ..addColumns([membership.assetId])
+      ..where(membership.assetId.equalsExp(asset.id));
+    return (asset.delete()..where(
+          (row) =>
+              row.visibility.equalsValue(asset_model.AssetVisibility.locked) &
+              row.ownerId.isNotInQuery(owners) &
+              notExistsQuery(albums),
+        ))
+        .go();
+  }
+
+  Future<void> reset({String? ownerId, BackupPresence? localAssetPresence}) async {
     _logger.fine("SyncResetV1 received. Resetting remote entities");
     try {
       await _db.exclusively(() async {
@@ -53,6 +143,13 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
         await _db.customStatement('PRAGMA foreign_keys = OFF');
         try {
           await transaction(() async {
+            if (ownerId != null) {
+              if (localAssetPresence == null) {
+                await _preserveSyncedBackupMatches(ownerId);
+              } else {
+                await updateLocalAssetPresence(ownerId, localAssetPresence);
+              }
+            }
             // FK cascade (ON DELETE SET NULL) does not fire while foreign_keys = OFF,
             // so null linkedRemoteAlbumId manually to avoid dangling pointers in local_album_entity.
             await _db.localAlbumEntity.update().write(
@@ -86,6 +183,20 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
       _logger.severe('Error: SyncResetV1', error, stack);
       rethrow;
     }
+  }
+
+  Future<void> _preserveSyncedBackupMatches(String ownerId) async {
+    await _db.customInsert(
+      """
+      INSERT OR IGNORE INTO local_asset_presence_entity (owner_id, checksum)
+      SELECT DISTINCT rae.owner_id, rae.checksum
+      FROM remote_asset_entity rae
+      INNER JOIN local_asset_entity lae ON lae.checksum = rae.checksum
+      WHERE rae.owner_id = ?
+      """,
+      variables: [Variable.withString(ownerId)],
+      updates: {_db.localAssetPresenceEntity},
+    );
   }
 
   Future<void> updateAuthUsersV1(Iterable<SyncAuthUserV1> data) async {

@@ -23,11 +23,13 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/private_session.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 @RoutePage()
-class AssetViewerPage extends StatelessWidget {
+class AssetViewerPage extends ConsumerWidget {
   final int initialIndex;
   final TimelineService timelineService;
   final int? heroOffset;
@@ -42,13 +44,25 @@ class AssetViewerPage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPrivate = timelineService.origin == TimelineOrigin.privateTag;
+    if (isPrivate) {
+      ref.listen(privateSessionProvider, (_, unlocked) {
+        if (!unlocked && (ModalRoute.of(context)?.isCurrent ?? false)) {
+          unawaited(context.router.maybePop());
+        }
+      });
+      if (!ref.watch(privateContentVisibleProvider)) {
+        return const Scaffold();
+      }
+    }
     // This is necessary to ensure that the timeline service is available
     // since the Timeline and AssetViewer are on different routes / Widget subtrees.
     return ProviderScope(
       overrides: [
         timelineServiceProvider.overrideWithValue(timelineService),
         currentRemoteAlbumScopedProvider.overrideWithValue(currentAlbum),
+        inPrivateViewProvider.overrideWithValue(isPrivate),
       ],
       child: AssetViewer(initialIndex: initialIndex, heroOffset: heroOffset),
     );
@@ -90,6 +104,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   late int _currentPage = widget.initialIndex;
   late int _totalAssets = ref.read(timelineServiceProvider).totalAssets;
+  bool _accessInvalidated = false;
 
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
@@ -159,6 +174,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetInit(Duration timeStamp) {
+    if (!mounted || _accessInvalidated) {
+      return;
+    }
     _preloader.preload(
       widget.initialIndex,
       context.sizeData,
@@ -175,6 +193,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   Future<void> _onAssetChanged(int index) async {
+    if (!mounted || _accessInvalidated) {
+      return;
+    }
     _currentPage = index;
 
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
@@ -184,7 +205,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     // The viewer is closing; don't flip the current asset now. Flipping it swaps
     // the grid tile hero keys mid pop and animates the close on two tiles (#23779).
-    if (!mounted || !(ModalRoute.of(context)?.isActive ?? true)) {
+    if (!mounted || _accessInvalidated || !(ModalRoute.of(context)?.isActive ?? true)) {
       return;
     }
 
@@ -197,6 +218,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _handleCasting() {
     if (!ref.read(castProvider).isCasting) {
+      return;
+    }
+
+    if (ref.read(inPrivateViewProvider)) {
+      ref.read(castProvider.notifier).stop();
       return;
     }
     final asset = ref.read(assetViewerProvider).currentAsset;
@@ -225,6 +251,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onEvent(Event event) {
     switch (event) {
+      case AssetAccessChangedEvent():
+        final origin = ref.read(timelineServiceProvider).origin;
+        if (!_accessInvalidated && origin != TimelineOrigin.localAlbum) {
+          setState(() => _accessInvalidated = true);
+          _preloader.dispose();
+          PaintingBinding.instance.imageCache.clear();
+          PaintingBinding.instance.imageCache.clearLiveImages();
+          context.router.removeWhere((route) => route.name == context.routeData.name);
+        }
       case TimelineReloadEvent():
         _onTimelineReloadEvent();
       default:
@@ -232,6 +267,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onTimelineReloadEvent() {
+    if (_accessInvalidated) {
+      return;
+    }
     final timelineService = ref.read(timelineServiceProvider);
     final totalAssets = timelineService.totalAssets;
 
@@ -270,6 +308,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   @override
   Widget build(BuildContext context) {
+    if (_accessInvalidated) {
+      return const Scaffold();
+    }
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isZoomed = ref.watch(assetViewerProvider.select((s) => s.isZoomed));

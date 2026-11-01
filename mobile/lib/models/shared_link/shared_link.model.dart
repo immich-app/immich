@@ -21,6 +21,8 @@ abstract class SharedLink with _$SharedLink {
     required bool showMetadata,
     required SharedLinkSource type,
     required String? slug,
+    @Default(false) bool includePrivateAssets,
+    String? albumId,
   }) = _SharedLink;
 
   factory SharedLink.fromDto(SharedLinkResponseDto dto) {
@@ -34,6 +36,8 @@ abstract class SharedLink with _$SharedLink {
       expiresAt: dto.expiresAt,
       key: dto.key,
       showMetadata: dto.showMetadata,
+      includePrivateAssets: dto.includePrivateAssets.orElse(false) ?? false,
+      albumId: dto.album.orElse(null)?.id,
       slug: dto.slug,
       type: isAlbum ? SharedLinkSource.album : SharedLinkSource.individual,
       title: isAlbum ? dto.album.orElse(null)?.albumName.toUpperCase() ?? "UNKNOWN SHARE" : "INDIVIDUAL SHARE",

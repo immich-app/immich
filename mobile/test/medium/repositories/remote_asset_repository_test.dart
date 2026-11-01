@@ -43,6 +43,7 @@ void main() {
         createdAt: DateTime(2026, 1, 3),
       );
       await ctx.newRemoteAsset(ownerId: user.id, stackId: 'other-stack');
+      await ctx.newRemoteAsset(ownerId: user.id, stackId: stackId, visibility: AssetVisibility.locked);
 
       final primaryAsset = await sut.get(primary.id);
       final stack = await sut.getStackChildren(primaryAsset!);
@@ -131,6 +132,21 @@ void main() {
       final result = await sut.watchDeletedAssetIds([timeline.id, archived.id], AssetVisibility.archive).first;
 
       expect(result, {timeline.id});
+    });
+
+    test('keeps hiding a private asset after it leaves the local index', () async {
+      final asset = await ctx.newRemoteAsset(ownerId: userId);
+      final queue = StreamQueue(sut.watchDeletedAssetIds([asset.id, 'not-synced'], AssetVisibility.timeline));
+
+      expect(await queue.next, isEmpty);
+      await (ctx.db.update(ctx.db.remoteAssetEntity)..where((row) => row.id.equals(asset.id))).write(
+        const RemoteAssetEntityCompanion(visibility: Value(AssetVisibility.locked)),
+      );
+      expect(await queue.next, {asset.id});
+      await ctx.db.syncStreamRepository.reset();
+      expect(await queue.next, {asset.id});
+
+      await queue.cancel();
     });
 
     test('emits when an asset is trashed and again when it is restored', () async {

@@ -7,7 +7,8 @@ from
   "video_stream_session"
 where
   "id" = $1
-  and "expiresAt" > $2
+  and "assetId" = $2
+  and "expiresAt" > $3
 
 -- VideoStreamRepository.getVariant
 select

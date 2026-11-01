@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { TreeNode } from '#lib/utils/tree-utils.ts';
   import { Icon } from '@immich/ui';
+  import { mdiLockOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     items: TreeNode[];
@@ -23,10 +25,11 @@
         title={item.value}
         type="button"
       >
-        <Icon {icon} class="text-primary" size="64" />
+        <Icon icon={item.isEffectivelyPrivate ? mdiLockOutline : icon} class="text-primary" size="64" />
         <p class="w-full overflow-clip text-sm text-nowrap text-ellipsis whitespace-pre-wrap dark:text-gray-200">
           {item.value}
         </p>
+        {#if item.isEffectivelyPrivate}<span class="sr-only">{$t('private_tag')}</span>{/if}
       </button>
     {/each}
   </div>

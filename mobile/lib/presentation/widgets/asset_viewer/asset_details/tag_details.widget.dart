@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -10,8 +8,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/tag.action.dart';
-import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/private_session.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -29,27 +26,6 @@ class TagDetails extends ConsumerStatefulWidget {
 class _TagDetailsState extends ConsumerState<TagDetails> {
   bool _isExpanded = false;
   bool _hasOverflow = false;
-
-  void _openTag(Tag tag) {
-    ref.invalidate(assetViewerProvider);
-    ref.invalidate(paginatedSearchProvider);
-    ref.read(searchPreFilterProvider.notifier)
-      ..clear()
-      ..setFilter(
-        .new(
-          tags: {tag},
-          people: {},
-          location: const .new(),
-          camera: const .new(),
-          date: const .new(),
-          display: const .new(isNotInAlbum: false, isArchive: false, isFavorite: false),
-          rating: const .new(),
-          mediaType: .other,
-        ),
-      );
-
-    unawaited(context.navigateTo(const SearchRoute()));
-  }
 
   bool _onTagsMetrics(ScrollMetricsNotification notification) {
     final hasOverflow =
@@ -69,7 +45,10 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
       return const SizedBox.shrink();
     }
 
-    final tags = ref.watch(Store.tags.forAsset(asset.id)).valueOrNull ?? const <Tag>[];
+    final result = ref.watch(Store.tags.forAsset(asset.id));
+    final tags = result.isLoading ? const <Tag>[] : result.valueOrNull ?? const <Tag>[];
+    final allTags = ref.watch(Store.tags.all()).valueOrNull ?? tags;
+    final showPrivate = ref.watch(privateContentVisibleProvider);
     final tagAction = const TagAction(source: .viewer).create(context, ref);
     final tagBackground = context.primaryColor.withAlpha(25);
     final tagBorder = context.colorScheme.outlineVariant;
@@ -88,9 +67,11 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
         spacing: 8,
         runSpacing: 8,
         children: [
-          for (final tag in tags)
+          for (final tag in tags.where((tag) => showPrivate || !allTags.isEffectivelyPrivate(tag)))
             InputChip(
-              onPressed: () => _openTag(tag),
+              onPressed: () =>
+                  context.pushRoute(TagAssetsRoute(tagId: tag.id, isPrivate: allTags.isEffectivelyPrivate(tag))),
+              avatar: allTags.isEffectivelyPrivate(tag) ? const Icon(Icons.lock_outline, size: 16) : null,
               tooltip: context.t.view_all,
               label: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: context.width * 0.6),
@@ -101,7 +82,11 @@ class _TagDetailsState extends ConsumerState<TagDetails> {
               shape: const StadiumBorder(),
               side: BorderSide(color: tagBorder),
               deleteIcon: Icon(Icons.close, size: 16, color: tagText),
-              onDeleted: switch (UntagAction(source: .viewer, tagId: tag.id).create(context, ref)) {
+              onDeleted: switch (UntagAction(
+                source: .viewer,
+                tagId: tag.id,
+                isPrivate: allTags.isEffectivelyPrivate(tag),
+              ).create(context, ref)) {
                 final action? => () async => await action.onAction(),
                 null => null,
               },

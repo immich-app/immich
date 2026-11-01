@@ -1,9 +1,13 @@
 <script lang="ts">
+  import { QueryParameter } from '#lib/constants.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getAllTagsQuery } from '#lib/queries/tag.query.ts';
   import { dragAndDropFilesStore } from '#lib/stores/drag-and-drop-files.store.ts';
   import { fileUploadHandler } from '#lib/utils/file-uploader.ts';
   import { isAlbumsRoute, isLockedFolderRoute } from '#lib/utils/navigation.ts';
-  import { Logo, shouldIgnoreEvent } from '@immich/ui';
+  import { TreeNode } from '#lib/utils/tree-utils.ts';
+  import { Logo, shouldIgnoreEvent, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { page } from '$app/state';
@@ -127,7 +131,18 @@
     if (authManager.isSharedLink) {
       dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
     } else {
-      await fileUploadHandler({ files: filesArray, albumId, isLockedAssets: isInLockedFolder });
+      let privateTagId: string | undefined;
+      const path = page.route.id?.startsWith('/(user)/tags/') && page.url.searchParams.get(QueryParameter.PATH);
+      if (path) {
+        const tags = await queryClient.fetchQuery(getAllTagsQuery()).catch(() => undefined);
+        const tag = tags && TreeNode.fromTags(tags).traverse(path);
+        if (!tag?.id || tag.path !== path) {
+          toastManager.danger($t('errors.unable_to_upload_file'));
+          return;
+        }
+        privateTagId = tag.isEffectivelyPrivate ? tag.id : undefined;
+      }
+      await fileUploadHandler({ files: filesArray, albumId, privateTagId, isLockedAssets: isInLockedFolder });
     }
   };
 

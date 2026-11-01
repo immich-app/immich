@@ -68,9 +68,10 @@ export const QueryKeys = {
   apiKeys: () => ['api-keys'],
 
   // assets
-  assetStatistics: (params: Parameters<typeof getAssetStatistics>[0]) => ['assets', 'statistics', params],
-  assetOcr: ({ id }: IdParams) => ['assets', id, 'ocr'],
-  assetEdits: ({ id }: IdParams) => ['assets', id, 'edits'],
+  assets: () => ['assets'],
+  assetStatistics: (params: Parameters<typeof getAssetStatistics>[0]) => [...QueryKeys.assets(), 'statistics', params],
+  assetOcr: ({ id }: IdParams) => [...QueryKeys.assets(), id, 'ocr'],
+  assetEdits: ({ id }: IdParams) => [...QueryKeys.assets(), id, 'edits'],
 
   // auth
   authStatus: () => ['auth', 'status'],
@@ -98,7 +99,8 @@ export const QueryKeys = {
   libraryStatistics: ({ id }: IdParams) => [...QueryKeys.libraries(), id, 'statistics'],
 
   // map
-  mapMarkers: (...params: [Parameters<typeof getMapMarkers>[0]?]) => ['map', 'markers', ...params],
+  map: () => ['map'],
+  mapMarkers: (...params: [Parameters<typeof getMapMarkers>[0]?]) => [...QueryKeys.map(), 'markers', ...params],
 
   // memories
   memories: (...params: [MemoryParams?]) => ['memories', ...params],
@@ -132,14 +134,20 @@ export const QueryKeys = {
   queues: () => ['queues'],
 
   // search
-  searchCities: () => ['search', 'cities'],
-  searchExplore: () => ['search', 'explore'],
-  searchLargeAssets: () => ['search', 'large-assets'],
-  searchMetadata: (dto: MetadataSearchDto) => ['search', 'metadata', dto],
-  searchPerson: (...params: [Parameters<typeof searchPerson>[0]?]) => ['search', 'person', ...params],
-  searchPlaces: (params: Parameters<typeof searchPlaces>[0]) => ['search', 'places', params],
-  searchSmart: (dto: SmartSearchDto) => ['search', 'smart', dto],
-  searchSuggestions: (params: Parameters<typeof getSearchSuggestions>[0]) => ['search', 'suggestions', params],
+  search: () => ['search'],
+  searchCities: () => [...QueryKeys.search(), 'cities'],
+  searchExplore: () => [...QueryKeys.search(), 'explore'],
+  searchLargeAssets: () => [...QueryKeys.search(), 'large-assets'],
+  searchMetadata: (dto: MetadataSearchDto) => [...QueryKeys.search(), 'metadata', dto],
+  privateAssetPresence: (dto: MetadataSearchDto) => [...QueryKeys.searchMetadata(dto), 'private-presence'],
+  searchPerson: (...params: [Parameters<typeof searchPerson>[0]?]) => [...QueryKeys.search(), 'person', ...params],
+  searchPlaces: (params: Parameters<typeof searchPlaces>[0]) => [...QueryKeys.search(), 'places', params],
+  searchSmart: (dto: SmartSearchDto) => [...QueryKeys.search(), 'smart', dto],
+  searchSuggestions: (params: Parameters<typeof getSearchSuggestions>[0]) => [
+    ...QueryKeys.search(),
+    'suggestions',
+    params,
+  ],
 
   // server
   server: () => ['server'],
@@ -161,14 +169,16 @@ export const QueryKeys = {
   mySharedLink: (params: Parameters<typeof getMySharedLink>[0]) => [...QueryKeys.sharedLinks(), 'me', params],
 
   // stacks
-  stack: ({ id }: IdParams) => ['stacks', id],
+  stacks: () => ['stacks'],
+  stack: ({ id }: IdParams) => [...QueryKeys.stacks(), id],
 
   // tags
   tags: () => ['tags'],
 
   // timeline
-  timeBuckets: (params: Parameters<typeof getTimeBuckets>[0]) => ['timeline', 'buckets', params],
-  timeBucket: (params: Parameters<typeof getTimeBucket>[0]) => ['timeline', 'bucket', params],
+  timeline: () => ['timeline'],
+  timeBuckets: (params: Parameters<typeof getTimeBuckets>[0]) => [...QueryKeys.timeline(), 'buckets', params],
+  timeBucket: (params: Parameters<typeof getTimeBucket>[0]) => [...QueryKeys.timeline(), 'bucket', params],
 
   // users
   users: () => ['users'],

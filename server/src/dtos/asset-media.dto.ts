@@ -42,6 +42,8 @@ const AssetMediaBaseSchema = z.object({
 const AssetMediaCreateSchema = AssetMediaBaseSchema.extend({
   isFavorite: stringToBool.optional().describe('Mark as favorite'),
   visibility: AssetVisibilitySchema.optional(),
+  privateTagId: z.uuidv4().optional().describe('Private tag to apply when saving the asset'),
+  privateLivePhotoMotion: stringToBool.optional().describe('Upload the motion component of a private Live Photo'),
   livePhotoVideoId: z.uuidv4().optional().describe('Live photo video ID'),
   metadata: JsonParsed.pipe(z.array(AssetMetadataUpsertItemSchema)).optional().describe('Asset metadata items'),
   [UploadFieldName.SIDECAR_DATA]: z
@@ -71,4 +73,5 @@ export class AssetMediaCreateDto extends createZodDto(AssetMediaCreateSchema) {}
 
 export class AssetBulkUploadCheckDto extends createZodDto({
   assets: z.array(AssetBulkUploadCheckItemSchema).describe('Assets to check'),
+  presenceOnly: z.boolean().optional().describe('Check for matching uploads without returning asset IDs or metadata'),
 }) {}

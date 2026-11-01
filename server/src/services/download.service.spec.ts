@@ -314,7 +314,11 @@ describe(DownloadService.name, () => {
 
       await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual(downloadResponse);
 
-      expect(mocks.downloadRepository.downloadAssetIds).toHaveBeenCalledWith(['asset-1', 'asset-2']);
+      expect(mocks.downloadRepository.downloadAssetIds).toHaveBeenCalledWith(
+        ['asset-1', 'asset-2'],
+        undefined,
+        expect.objectContaining({ albumUserId: authStub.admin.user.id }),
+      );
     });
 
     it('should return a list of archives (albumId)', async () => {
@@ -330,7 +334,11 @@ describe(DownloadService.name, () => {
       await expect(sut.getDownloadInfo(authStub.admin, { albumId: 'album-1' })).resolves.toEqual(downloadResponse);
 
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-1']));
-      expect(mocks.downloadRepository.downloadAlbumId).toHaveBeenCalledWith('album-1');
+      expect(mocks.downloadRepository.downloadAlbumId).toHaveBeenCalledWith(
+        'album-1',
+        undefined,
+        expect.objectContaining({ albumUserId: authStub.admin.user.id }),
+      );
     });
 
     it('should return a list of archives (userId)', async () => {
@@ -346,7 +354,7 @@ describe(DownloadService.name, () => {
         downloadResponse,
       );
 
-      expect(mocks.downloadRepository.downloadUserId).toHaveBeenCalledWith(authStub.admin.user.id);
+      expect(mocks.downloadRepository.downloadUserId).toHaveBeenCalledWith(authStub.admin.user.id, undefined);
     });
 
     it('should split archives by size', async () => {

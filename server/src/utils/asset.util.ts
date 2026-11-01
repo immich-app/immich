@@ -4,7 +4,7 @@ import { AssetFile } from 'src/database.js';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto.js';
 import { UploadFieldName } from 'src/dtos/asset-media.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
-import { AssetFileType, AssetType, AssetVisibility, Permission } from 'src/enum.js';
+import { AssetFileType, AssetType, AssetVisibility, CacheControl, Permission } from 'src/enum.js';
 import { AuthRequest } from 'src/middleware/auth.guard.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
@@ -12,6 +12,18 @@ import { EventRepository } from 'src/repositories/event.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
 import type { IBulkAsset, ImmichFile, UploadFile, UploadRequest } from 'src/types.js';
 import { checkAccess } from 'src/utils/access.js';
+import { updateLockedColumns } from 'src/utils/database.js';
+
+export const writeAssetTagsToExif = async (repo: AssetRepository, assetId: string) => {
+  const { tags } = await repo.getForUpdateTags(assetId);
+  await repo.upsertExif({
+    exif: updateLockedColumns({ assetId, tags: tags.map(({ value }) => value) }),
+    lockedPropertiesBehavior: 'append',
+  });
+};
+
+export const getAssetCacheControl = (auth: AuthDto) =>
+  auth.session?.hasElevatedPermission ? CacheControl.PrivateNoStore : CacheControl.PrivateWithoutCache;
 
 export const getAssetFile = (files: AssetFile[], type: AssetFileType, { isEdited }: { isEdited: boolean }) => {
   return files.find((file) => file.type === type && file.isEdited === isEdited);

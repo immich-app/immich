@@ -9,7 +9,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
-import 'package:immich_mobile/presentation/actions/lock.action.dart';
+import 'package:immich_mobile/presentation/actions/tag.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
@@ -67,7 +67,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
           child: Text(context.t.move_to, style: context.textTheme.labelMedium),
         ),
         const ActionMenuItem(action: ArchiveAction(source: .viewer)),
-        const ActionMenuItem(action: LockAction(source: .viewer)),
+        const ActionMenuItem(action: PrivateTagAction(source: .viewer)),
       ],
     ];
   }

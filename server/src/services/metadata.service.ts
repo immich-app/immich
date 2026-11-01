@@ -34,7 +34,7 @@ import { isAssetChecksumConstraint } from 'src/utils/database.js';
 import { mergeTimeZone } from 'src/utils/date.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, isFaceImportEnabled } from 'src/utils/misc.js';
-import { upsertTags } from 'src/utils/tag.js';
+import { tagPaths, upsertTags } from 'src/utils/tag.js';
 import { Tasks } from 'src/utils/tasks.js';
 
 const POSTGRES_INT_MAX = 2_147_483_647;
@@ -657,9 +657,15 @@ export class MetadataService extends BaseService {
 
   private async applyTagList({ id, ownerId }: { id: string; ownerId: string }) {
     const asset = await this.assetRepository.getForMetadataExtractionTags(id);
+    const tags: string[] = [];
+    for (const tag of asset?.tags ?? []) {
+      if (!(await this.tagRepository.hasPrivatePath(ownerId, tagPaths([tag])))) {
+        tags.push(tag);
+      }
+    }
     const results = await upsertTags(this.tagRepository, {
       userId: ownerId,
-      tags: asset?.tags ?? [],
+      tags,
     });
     await this.tagRepository.replaceAssetTags(
       id,

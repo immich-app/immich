@@ -3,6 +3,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetStatus } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
+import { isPrivateAsset } from 'src/utils/database.js';
 
 export class TrashRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -12,11 +13,12 @@ export class TrashRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async restore(userId: string): Promise<number> {
+  async restore(userId: string, includePrivate = false): Promise<number> {
     const { numUpdatedRows } = await this.db
       .updateTable('asset')
       .where('ownerId', '=', userId)
       .where('status', '=', AssetStatus.Trashed)
+      .$if(!includePrivate, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id')))))
       .set({ status: AssetStatus.Active, deletedAt: null })
       .executeTakeFirst();
 
@@ -24,11 +26,12 @@ export class TrashRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async empty(userId: string): Promise<number> {
+  async empty(userId: string, includePrivate = false): Promise<number> {
     const { numUpdatedRows } = await this.db
       .updateTable('asset')
       .where('ownerId', '=', userId)
       .where('status', '=', AssetStatus.Trashed)
+      .$if(!includePrivate, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id')))))
       .set({ status: AssetStatus.Deleted })
       .executeTakeFirst();
 

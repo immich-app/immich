@@ -1,6 +1,7 @@
 import { Kysely } from 'kysely';
 import { SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SyncTestContext } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
@@ -45,6 +46,23 @@ describe(SyncEntityType.PersonV1, () => {
 
     await ctx.syncAckAll(auth, response);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.PeopleV1]);
+  });
+
+  it('should remove face references to private assets from sync', async () => {
+    const { auth, user, ctx } = await setup();
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+    const { assetFace } = await ctx.newAssetFace({ assetId: asset.id });
+    const { person } = await ctx.newPerson({ ownerId: user.id, faceAssetId: assetFace.id });
+    const tag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+    await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.PeopleV1]);
+    ctx.assertSyncResponse(response, [
+      expect.objectContaining({
+        type: SyncEntityType.PersonV1,
+        data: expect.objectContaining({ id: person.personGroupId, faceAssetId: null }),
+      }),
+    ]);
   });
 
   it('should detect and sync a deleted person', async () => {

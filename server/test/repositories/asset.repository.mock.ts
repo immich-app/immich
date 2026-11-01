@@ -5,6 +5,9 @@ import type { RepositoryInterface } from 'src/types.js';
 export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetRepository>> => {
   return {
     create: vitest.fn(),
+    isPrivate: vitest.fn().mockResolvedValue(false),
+    createWithPrivateTag: vitest.fn(),
+    addExistingAssetToPrivateTag: vitest.fn(),
     createAll: vitest.fn(),
     upsertExif: vitest.fn(),
     updateAllExif: vitest.fn(),
@@ -14,6 +17,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getForCopy: vitest.fn(),
     getByDayOfYear: vitest.fn(),
     getByIds: vitest.fn().mockResolvedValue([]),
+    getPublicByIds: vitest.fn().mockResolvedValue([]),
     getByIdsWithAllRelationsButStacks: vitest.fn().mockResolvedValue([]),
     getById: vitest.fn(),
     getByChecksum: vitest.fn(),

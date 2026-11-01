@@ -64,6 +64,8 @@ export type Events = {
   SessionLocked: [];
   SessionDelete: [];
 
+  TimelineRefresh: [];
+
   ReleaseEvent: [ReleaseEventV1];
 
   WebsocketConnect: [];

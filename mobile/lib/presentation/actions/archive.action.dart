@@ -11,7 +11,7 @@ import 'package:immich_mobile/utils/error_handler.dart';
 typedef _State = ({bool shouldArchive, List<String> assetIds});
 
 final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, source) {
-  if (ref.watch(inLockedViewProvider)) {
+  if (ref.watch(inPrivateViewProvider)) {
     return null;
   }
 
@@ -22,7 +22,7 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
       .map((asset) => asset.id)
       .toList(growable: false);
   return assetIds.isEmpty ? null : (shouldArchive: shouldArchive, assetIds: assetIds);
-}, dependencies: [ownedAssetsActionProvider]);
+}, dependencies: [ownedAssetsActionProvider, inPrivateViewProvider]);
 
 class ArchiveAction extends AssetActionBuilder {
   const ArchiveAction({required super.source});

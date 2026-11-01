@@ -1,5 +1,6 @@
 <script lang="ts">
   import { setupPinCodeMutation } from '#lib/queries/auth.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
   import { Button, Field, Heading, PinInput } from '@immich/ui';
   import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
@@ -14,7 +15,7 @@
   let confirmPinCode = $state('');
   let canSubmit = $derived(confirmPinCode.length === 6 && newPinCode === confirmPinCode);
 
-  const setupPinCode = createMutation(setupPinCodeMutation);
+  const setupPinCode = createMutation(setupPinCodeMutation, () => queryClient);
 
   const handleSubmit = (event: Event) => {
     event.preventDefault();

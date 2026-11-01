@@ -59,6 +59,21 @@ describe(NotificationService.name, () => {
     ({ sut, mocks } = newTestService(NotificationService));
   });
 
+  it('should invalidate without broadcasting private sidecar data', async () => {
+    const userId = newUuid();
+    const assetId = newUuid();
+    mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([]);
+
+    await sut.onAssetMetadataExtracted({ assetId, userId, source: 'sidecar-write' });
+
+    expect(mocks.asset.getByIdsWithAllRelationsButStacks).toHaveBeenCalledWith([assetId], userId, true);
+    expect(mocks.websocket.clientSend).not.toHaveBeenCalled();
+    expectResourceEvents(mocks, {
+      userIds: [userId],
+      changed: [Resource.assets(), Resource.tags(), Resource.timeline()],
+    });
+  });
+
   it('should work', () => {
     expect(sut).toBeDefined();
   });

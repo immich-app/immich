@@ -680,6 +680,7 @@ export enum RouteKey {
 export enum CacheControl {
   PrivateWithCache = 'private_with_cache',
   PrivateWithoutCache = 'private_without_cache',
+  PrivateNoStore = 'private_no_store',
   None = 'none',
 }
 

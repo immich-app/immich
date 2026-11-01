@@ -8,7 +8,15 @@ import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto.js';
 import { AlbumUserRole } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
-import { asUuid, dummy, withDefaultVisibility } from 'src/utils/database.js';
+import {
+  asUuid,
+  dummy,
+  isAssetVisible,
+  isPrivateAsset,
+  visibleAlbumThumbnail,
+  withDefaultVisibility,
+  type PrivateTagAccessOptions,
+} from 'src/utils/database.js';
 
 export interface AlbumAssetCount {
   albumId: string;
@@ -38,6 +46,16 @@ const withSharedLink = (eb: ExpressionBuilder<DB, 'album'>) =>
     eb.selectFrom('shared_link').selectAll('shared_link').whereRef('shared_link.albumId', '=', 'album.id'),
   ).as('sharedLinks');
 
+const withPrivateAssetPresence = (authUserId?: string) =>
+  sql<boolean>`exists (
+    select 1 from album_asset as private_membership
+    join asset as private_asset on private_asset.id = private_membership."assetId"
+    where private_membership."albumId" = album.id
+      and private_asset."ownerId" = ${authUserId ?? null}
+      and private_asset."deletedAt" is null
+      and ${isPrivateAsset(sql.ref('private_asset.id'))}
+  )`.as('hasPrivateAssets');
+
 const isAlbumOwned = (ownerId: string) => (eb: ExpressionBuilder<DB, 'album'>) =>
   eb.exists(
     eb
@@ -52,13 +70,20 @@ export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  getById(id: string, authUserId?: string) {
+  getById(id: string, authUserId?: string, options: PrivateTagAccessOptions = {}) {
     return this.db
       .with('album_user', (qb) => qb.selectFrom('album_user').selectAll().where('album_user.albumId', '=', id))
       .selectFrom('album')
       .selectAll('album')
       .where('album.id', '=', id)
       .where('album.deletedAt', 'is', null)
+      .select((eb) =>
+        visibleAlbumThumbnail(eb.ref('album.id'), eb.ref('album.albumThumbnailAssetId'), {
+          albumUserId: authUserId,
+          ...options,
+        }).as('visibleThumbnailAssetId'),
+      )
+      .select(withPrivateAssetPresence(authUserId))
       .select(withAlbumUsers(authUserId))
       .select(withSharedLink)
       .executeTakeFirst();
@@ -78,7 +103,7 @@ export class AlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  getByAssetId(ownerId: string, assetId: string) {
+  getByAssetId(ownerId: string, assetId: string, privateAccess: PrivateTagAccessOptions = {}) {
     return this.db
       .selectFrom('album')
       .selectAll('album')
@@ -92,8 +117,16 @@ export class AlbumRepository {
         ),
       )
       .where('album_asset.assetId', '=', assetId)
+      .where((eb) => isAssetVisible(eb.ref('album_asset.assetId'), { ...privateAccess, albumId: eb.ref('album.id') }))
       .where('album.deletedAt', 'is', null)
+      .select(withPrivateAssetPresence(ownerId))
       .select(withAlbumUsers(ownerId))
+      .select((eb) =>
+        visibleAlbumThumbnail(eb.ref('album.id'), eb.ref('album.albumThumbnailAssetId'), {
+          ...privateAccess,
+          albumUserId: ownerId,
+        }).as('visibleThumbnailAssetId'),
+      )
       .orderBy('album.createdAt', 'desc')
       .execute();
   }
@@ -135,7 +168,7 @@ export class AlbumRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
-  async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
+  async getMetadataForIds(ids: string[], options: PrivateTagAccessOptions = {}): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (ids.length === 0) {
       return [];
@@ -144,7 +177,7 @@ export class AlbumRepository {
     return (
       this.db
         .selectFrom('asset')
-        .$call(withDefaultVisibility)
+        .$call((qb) => withDefaultVisibility(qb, { ...options, albumId: sql.ref('album_asset.albumId') }))
         .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
         .select('album_asset.albumId as albumId')
         .select((eb) => eb.fn.min(sql<Date>`("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
@@ -191,6 +224,12 @@ export class AlbumRepository {
   ): Promise<MapAlbumDto[]> {
     return this.buildAlbumBaseQuery(ownerId, options)
       .selectAll('album')
+      .select((eb) =>
+        visibleAlbumThumbnail(eb.ref('album.id'), eb.ref('album.albumThumbnailAssetId'), { albumUserId: ownerId }).as(
+          'visibleThumbnailAssetId',
+        ),
+      )
+      .select(withPrivateAssetPresence(ownerId))
       .select(withAlbumUsers(ownerId))
       .select(withSharedLink)
       .$if(!!options.id, (qb) => qb.where('album.id', '=', options.id!))
@@ -248,7 +287,11 @@ export class AlbumRepository {
   */
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @ChunkedSet({ paramIndex: 1 })
-  async getAssetIds(albumId: string, assetIds: string[]): Promise<Set<string>> {
+  async getAssetIds(
+    albumId: string,
+    assetIds: string[],
+    privateAccess?: PrivateTagAccessOptions,
+  ): Promise<Set<string>> {
     if (assetIds.length === 0) {
       return new Set();
     }
@@ -258,6 +301,9 @@ export class AlbumRepository {
       .selectAll()
       .where('album_asset.albumId', '=', albumId)
       .where('album_asset.assetId', 'in', assetIds)
+      .$if(!!privateAccess, (qb) =>
+        qb.where((eb) => isAssetVisible(eb.ref('album_asset.assetId'), { ...privateAccess, albumId: asUuid(albumId) })),
+      )
       .execute()
       .then((results) => new Set(results.map(({ assetId }) => assetId)));
   }
@@ -332,15 +378,29 @@ export class AlbumRepository {
     return result;
   }
 
-  update(id: string, album: Updateable<AlbumTable>, authUserId: string) {
-    return this.db
-      .updateTable('album')
-      .set(album)
-      .where('album.id', '=', id)
-      .returningAll('album')
-      .returning(withSharedLink)
-      .returning(withAlbumUsers(authUserId))
-      .executeTakeFirstOrThrow();
+  async update(id: string, album: Updateable<AlbumTable>, authUserId: string) {
+    return this.db.transaction().execute(async (tx) => {
+      if (album.includePrivateAssets !== undefined) {
+        await tx
+          .updateTable('session')
+          .set({ isPendingSyncReset: true })
+          .where('userId', 'in', tx.selectFrom('album_user').select('userId').where('albumId', '=', id))
+          .execute();
+      }
+      return tx
+        .updateTable('album')
+        .set(album)
+        .where('album.id', '=', id)
+        .returningAll('album')
+        .returning((eb) =>
+          visibleAlbumThumbnail(eb.ref('album.id'), eb.ref('album.albumThumbnailAssetId'), {
+            albumUserId: authUserId,
+          }).as('visibleThumbnailAssetId'),
+        )
+        .returning(withSharedLink)
+        .returning(withAlbumUsers(authUserId))
+        .executeTakeFirstOrThrow();
+    });
   }
 
   async delete(id: string): Promise<void> {
@@ -389,7 +449,7 @@ export class AlbumRepository {
             eb('albumThumbnailAssetId', 'is not', null),
             eb.not(
               eb.exists(
-                this.updateThumbnailBuilder(eb)
+                this.updateThumbnailBuilder(eb, { includePrivate: true })
                   .select(sql`1`.as('1'))
                   .whereRef('album.albumThumbnailAssetId', '=', 'album_asset.assetId'), // Has invalid assets
               ),
@@ -402,13 +462,14 @@ export class AlbumRepository {
     return Number(result[0].numUpdatedRows);
   }
 
-  private updateThumbnailBuilder(eb: ExpressionBuilder<DB, 'album'>) {
+  private updateThumbnailBuilder(eb: ExpressionBuilder<DB, 'album'>, { includePrivate = false } = {}) {
     return eb
       .selectFrom('album_asset')
       .innerJoin('asset', (join) =>
         join.onRef('album_asset.assetId', '=', 'asset.id').on('asset.deletedAt', 'is', null),
       )
-      .whereRef('album_asset.albumId', '=', 'album.id');
+      .whereRef('album_asset.albumId', '=', 'album.id')
+      .$if(!includePrivate, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id')))));
   }
 
   /**
@@ -416,11 +477,12 @@ export class AlbumRepository {
   Excludes deleted assets, orders by count desc.
   */
   @GenerateSql({ params: [DummyValue.UUID] })
-  getContributorCounts(id: string) {
+  getContributorCounts(id: string, options: PrivateTagAccessOptions = {}) {
     return this.db
       .selectFrom('album_asset')
       .innerJoin('asset', 'asset.id', 'assetId')
       .where('asset.deletedAt', 'is', sql.lit(null))
+      .where((eb) => isAssetVisible(eb.ref('asset.id'), { ...options, albumId: eb.ref('album_asset.albumId') }))
       .where('album_asset.albumId', '=', id)
       .select('asset.ownerId as userId')
       .select((eb) => eb.fn.countAll<number>().as('assetCount'))

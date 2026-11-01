@@ -14,6 +14,8 @@
   const config = $derived(query.data);
   const updatePreferences = createMutation(() => updateMyPreferencesMutation());
 
+  let lockedFolderSidebar = $state(authManager.preferences.lockedFolder?.sidebarWeb ?? true);
+
   // Albums
   let defaultAssetOrder = $state(authManager.preferences.albums?.defaultAssetOrder ?? AssetOrder.Desc);
 
@@ -67,6 +69,7 @@
           ratings: { enabled: ratingsEnabled },
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
+          lockedFolder: { sidebarWeb: lockedFolderSidebar },
           cast: { gCastEnabled },
           recentlyAdded: { sidebarWeb: recentlyAddedSidebar },
         },
@@ -107,6 +110,18 @@
                 <Switch bind:checked={foldersSidebar} />
               </Field>
             {/if}
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion
+          key="locked-folder"
+          title={$t('locked_folder')}
+          subtitle={$t('locked_folder_feature_description')}
+        >
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
+            <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
+              <Switch bind:checked={lockedFolderSidebar} />
+            </Field>
           </div>
         </SettingAccordion>
 

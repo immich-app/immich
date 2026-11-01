@@ -23,8 +23,12 @@ void main() {
 
   // the timeline pairs headers to assets by running offset into one flat list
   Future<List<(String, String)>> headerForEachAsset(GroupAssetsBy groupBy) async {
-    final buckets = await ctx.db.mergedAssetDrift.mergedBucket(groupBy: groupBy.index, userIds: [userId]).get();
-    final assets = await ctx.db.mergedAssetDrift.mergedAsset(userIds: [userId], limit: (_) => Limit(1000, 0)).get();
+    final buckets = await ctx.db.mergedAssetDrift
+        .mergedBucket(groupBy: groupBy.index, ownerId: userId, userIds: [userId])
+        .get();
+    final assets = await ctx.db.mergedAssetDrift
+        .mergedAsset(ownerId: userId, userIds: [userId], limit: (_) => Limit(1000, 0))
+        .get();
 
     final pairs = <(String, String)>[];
     var offset = 0;
@@ -50,7 +54,7 @@ void main() {
 
     await ctx.db.remoteAssetEntity.deleteWhere((row) => row.id.equals('ghost'));
     final buckets = await ctx.db.mergedAssetDrift
-        .mergedBucket(groupBy: GroupAssetsBy.day.index, userIds: [userId])
+        .mergedBucket(groupBy: GroupAssetsBy.day.index, ownerId: userId, userIds: [userId])
         .get();
     expect(buckets.map((b) => b.bucketDate), ['2026-04-26']);
     expect(buckets.single.assetCount, 2);
@@ -86,6 +90,48 @@ void main() {
       ('remote', '2024-04-26'),
       ('older', '2024-04-25'),
     ]);
+  });
+
+  test('a private upload stays out of Photos after a remote sync reset', () async {
+    final date = DateTime(2024, 4, 26, 12);
+    const checksum = 'matched-checksum';
+    await ctx.newRemoteAsset(id: 'remote', ownerId: userId, checksum: checksum, createdAt: date);
+    await ctx.newLocalAlbum(id: 'album', backupSelection: .selected);
+    await ctx.newLocalAsset(id: 'match', createdAt: date, checksum: checksum);
+    await ctx.newLocalAsset(id: 'unrelated', createdAt: date);
+    for (final id in ['match', 'unrelated']) {
+      await ctx.newLocalAlbumAsset(albumId: 'album', assetId: id);
+    }
+    await ctx.db.syncStreamRepository.reset(
+      ownerId: userId,
+      localAssetPresence: (checked: [checksum], matches: [checksum]),
+    );
+    expect(await headerForEachAsset(GroupAssetsBy.day), [('unrelated', '2024-04-26')]);
+    expect((await ctx.db.backupRepository.getCandidates(userId)).map((asset) => asset.id), ['unrelated']);
+    expect((await ctx.db.backupRepository.getAllCounts(userId)).remainder, 1);
+
+    await ctx.db.syncStreamRepository.reset();
+    expect(await headerForEachAsset(GroupAssetsBy.day), [('unrelated', '2024-04-26')]);
+
+    await ctx.db.syncStreamRepository.updateLocalAssetPresence(userId, (checked: [checksum], matches: []));
+    expect(
+      await headerForEachAsset(GroupAssetsBy.day),
+      unorderedEquals([('unrelated', '2024-04-26'), ('match', '2024-04-26')]),
+    );
+  });
+
+  test('a reset preserves known backup matches when the server check fails', () async {
+    final date = DateTime(2024, 4, 26, 12);
+    const checksum = 'matched-checksum';
+    await ctx.newRemoteAsset(id: 'remote', ownerId: userId, checksum: checksum, createdAt: date);
+    await ctx.newLocalAlbum(id: 'album', backupSelection: .selected);
+    await ctx.newLocalAsset(id: 'match', createdAt: date, checksum: checksum);
+    await ctx.newLocalAlbumAsset(albumId: 'album', assetId: 'match');
+
+    await ctx.db.syncStreamRepository.reset(ownerId: userId);
+
+    expect(await headerForEachAsset(GroupAssetsBy.day), isEmpty);
+    expect(await ctx.db.backupRepository.getCandidates(userId), isEmpty);
   });
 
   test('month grouping keeps every asset under its own month header', () async {

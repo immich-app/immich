@@ -20,6 +20,7 @@
     sidebar?: Snippet;
     buttons?: Snippet;
     children?: Snippet;
+    onUploadClick?: () => void;
   }
 
   let {
@@ -31,6 +32,7 @@
     sidebar,
     buttons,
     children,
+    onUploadClick = () => openFileUploadDialog(),
     ...rest
   }: Props = $props();
 
@@ -46,7 +48,7 @@
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar onUploadClick={() => openFileUploadDialog()} />
+    <NavigationBar {onUploadClick} />
   {/if}
 </header>
 <div

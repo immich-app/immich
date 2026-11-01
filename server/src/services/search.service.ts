@@ -104,6 +104,7 @@ export class SearchService extends BaseService {
         ...dto,
         checksum,
         visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+        ...this.getPrivateSearchOptions(auth, dto.excludePrivate),
         userIds,
         viewingUserId: auth.user.id,
         orderDirection: dto.order ?? AssetOrder.Desc,
@@ -126,6 +127,7 @@ export class SearchService extends BaseService {
     return await this.searchRepository.searchStatistics({
       ...dto,
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      ...this.getPrivateSearchOptions(auth, dto.excludePrivate),
       userIds,
       viewingUserId: auth.user.id,
     });
@@ -144,6 +146,7 @@ export class SearchService extends BaseService {
     const items = await this.searchRepository.searchRandom(dto.size, {
       ...dto,
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      ...this.getPrivateSearchOptions(auth, dto.excludePrivate),
       userIds,
       viewingUserId: auth.user.id,
     });
@@ -159,6 +162,7 @@ export class SearchService extends BaseService {
     const items = await this.searchRepository.searchLargeAssets(dto.size, {
       ...dto,
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      ...this.getPrivateSearchOptions(auth),
       userIds,
       viewingUserId: auth.user.id,
     });
@@ -191,6 +195,7 @@ export class SearchService extends BaseService {
         viewingUserId: auth.user.id,
         embedding,
         visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+        ...this.getPrivateSearchOptions(auth, dto.excludePrivate),
       },
     );
 
@@ -301,7 +306,7 @@ export class SearchService extends BaseService {
 
   private async resolveSearchScopeV3(
     auth: AuthDto,
-    dto: { filter?: SearchFilter },
+    dto: { filter?: SearchFilter; excludePrivate?: boolean },
   ): Promise<{ filter: SearchFilter; scope: AssetSearchScope }> {
     const filter = dto.filter ?? {};
     const effectiveFilter = applyLockedVisibilityPolicy(auth, filter);
@@ -319,7 +324,17 @@ export class SearchService extends BaseService {
       albumIds.length > 0 ? this.requireAccess({ auth, ids: albumIds, permission: Permission.AlbumRead }) : undefined,
     ]);
 
-    return { filter: effectiveFilter, scope: { userIds, lockedOwnerId: auth.user.id, viewingUserId: auth.user.id } };
+    return {
+      filter: effectiveFilter,
+      scope: {
+        userIds,
+        lockedOwnerId: auth.user.id,
+        includePrivate: !dto.excludePrivate && auth.session?.hasElevatedPermission === true,
+        viewingUserId: auth.user.id,
+        sharedLinkId: dto.excludePrivate ? undefined : auth.sharedLink?.id,
+        albumIds: dto.excludePrivate ? [] : albumIds,
+      },
+    };
   }
 
   private async resolveEmbedding(
@@ -364,6 +379,15 @@ export class SearchService extends BaseService {
       timelineEnabled: true,
     });
     return [auth.user.id, ...partnerIds];
+  }
+
+  private getPrivateSearchOptions(auth: AuthDto, excludePrivate = false) {
+    return {
+      includePrivate: !excludePrivate && auth.session?.hasElevatedPermission === true,
+      privateOwnerId: auth.user.id,
+      albumUserId: auth.sharedLink || excludePrivate ? undefined : auth.user.id,
+      sharedLinkId: excludePrivate ? undefined : auth.sharedLink?.id,
+    };
   }
 
   private mapResponse(

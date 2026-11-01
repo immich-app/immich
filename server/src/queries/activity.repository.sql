@@ -26,6 +26,52 @@ from
 where
   "activity"."albumId" = $1
   and "asset"."deletedAt" is null
+  and (
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "activity"."assetId"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "activity"."assetId"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "activity"."assetId"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
+  )
 order by
   "activity"."createdAt" asc
 
@@ -80,10 +126,50 @@ from
 where
   "activity"."assetId" = $3
   and "activity"."albumId" = $4
+  and "asset"."deletedAt" is null
   and (
-    (
-      "asset"."deletedAt" is null
-      and "asset"."visibility" != 'locked'
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "activity"."assetId"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "activity"."assetId"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "activity"."assetId"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
     )
-    or "asset"."id" is null
   )

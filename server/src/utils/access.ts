@@ -335,7 +335,7 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     case Permission.TagRead:
     case Permission.TagUpdate:
     case Permission.TagDelete: {
-      return await access.tag.checkOwnerAccess(auth.user.id, ids);
+      return await access.tag.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.TimelineRead: {
@@ -410,16 +410,10 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.session.checkOwnerAccess(auth.user.id, ids);
     }
 
-    case Permission.StackRead: {
-      return access.stack.checkOwnerAccess(auth.user.id, ids);
-    }
-
-    case Permission.StackUpdate: {
-      return access.stack.checkOwnerAccess(auth.user.id, ids);
-    }
-
+    case Permission.StackRead:
+    case Permission.StackUpdate:
     case Permission.StackDelete: {
-      return access.stack.checkOwnerAccess(auth.user.id, ids);
+      return access.stack.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.WorkflowRead:

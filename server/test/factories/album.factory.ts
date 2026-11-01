@@ -31,6 +31,7 @@ export class AlbumFactory {
       deletedAt: null,
       description: 'Album description',
       isActivityEnabled: false,
+      includePrivateAssets: false,
       order: AssetOrder.Desc,
       updatedAt: newDate(),
       updateId: newUuidV7(),
@@ -84,6 +85,7 @@ export class AlbumFactory {
 
   build() {
     return {
+      hasPrivateAssets: false,
       ...this.value,
       assets: this.#assets.map((asset) => asset.build()),
       albumUsers: this.#albumUsers.map((albumUser) => albumUser.build()),

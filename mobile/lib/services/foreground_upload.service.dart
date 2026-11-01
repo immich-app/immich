@@ -143,6 +143,7 @@ class ForegroundUploadService {
     List<LocalAsset> localAssets, {
     Completer<void>? cancelToken,
     UploadCallbacks callbacks = const UploadCallbacks(),
+    String? privateTagId,
   }) async {
     if (localAssets.isEmpty) {
       return;
@@ -151,7 +152,7 @@ class ForegroundUploadService {
     await _executeWithWorkerPool<LocalAsset>(
       items: localAssets,
       cancelToken: cancelToken,
-      processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+      processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks, privateTagId: privateTagId),
     );
   }
 
@@ -247,6 +248,7 @@ class ForegroundUploadService {
     LocalAsset asset,
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,
+    String? privateTagId,
   }) async {
     final t = StaticTranslations.instance;
     final assetNotFoundOnDevice = CurrentPlatform.isAndroid
@@ -254,10 +256,11 @@ class ForegroundUploadService {
         : t.asset_not_found_on_device_ios;
     File? file;
     File? livePhotoFile;
+    final privateOwnerId = privateTagId == null ? null : Store.get(StoreKey.currentUser).id;
 
     try {
       final remoteId = (await _assetService.getLocalAsset(asset.id))?.remoteId;
-      if (remoteId != null) {
+      if (remoteId != null && privateTagId == null) {
         await _handleUploadSuccess(asset, remoteId, callbacks);
         return;
       }
@@ -338,6 +341,7 @@ class ForegroundUploadService {
         'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
         'isFavorite': asset.isFavorite.toString(),
         'duration': (asset.durationMs ?? 0).toString(),
+        'privateTagId': ?privateTagId,
       };
 
       // Upload live photo video first if available
@@ -350,7 +354,11 @@ class ForegroundUploadService {
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
           // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
-          fields: {...fields, 'visibility': AssetVisibility.hidden.toString()},
+          fields: {
+            ...fields,
+            'visibility': AssetVisibility.hidden.toString(),
+            if (privateTagId != null) 'privateLivePhotoMotion': 'true',
+          },
           cancelToken: cancelToken,
           onProgress: onProgress != null
               ? (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes)
@@ -383,6 +391,7 @@ class ForegroundUploadService {
         ]);
       }
 
+      final privateChecksum = privateTagId == null ? null : await _storageRepository.getFileChecksum(file);
       final onProgress = callbacks.onProgress;
       final result = await _uploadRepository.uploadFile(
         file: file,
@@ -396,7 +405,14 @@ class ForegroundUploadService {
       );
 
       if (result.isSuccess && result.remoteAssetId != null) {
-        await _handleUploadSuccess(asset, result.remoteAssetId!, callbacks);
+        if (privateOwnerId != null && privateChecksum != null) {
+          await _assetService.rememberPrivateUpload(privateOwnerId, asset.id, result.remoteAssetId!, privateChecksum);
+        }
+        await _handleUploadSuccess(
+          privateChecksum == null ? asset : asset.copyWith(checksum: privateChecksum),
+          result.remoteAssetId!,
+          callbacks,
+        );
       } else if (result.isCancelled) {
         shouldAbortUpload = true;
       } else if (result.errorMessage != null) {

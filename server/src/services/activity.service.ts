@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Activity } from 'src/database.js';
 import {
   ActivityCreateDto,
@@ -15,28 +15,41 @@ import { AuthDto } from 'src/dtos/auth.dto.js';
 import { Permission } from 'src/enum.js';
 import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
+import { getPrivateAccessOptions } from 'src/utils/private-access.js';
 
 @Injectable()
 export class ActivityService extends BaseService {
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
-    const activities = await this.activityRepository.search({
-      userId: dto.userId,
-      albumId: dto.albumId,
-      assetId: dto.level === ReactionLevel.ALBUM ? null : dto.assetId,
-      isLiked: dto.type && dto.type === ReactionType.LIKE,
-    });
+    const activities = await this.activityRepository.search(
+      {
+        userId: dto.userId,
+        albumId: dto.albumId,
+        assetId: dto.level === ReactionLevel.ALBUM ? null : dto.assetId,
+        isLiked: dto.type && dto.type === ReactionType.LIKE,
+      },
+      getPrivateAccessOptions(auth),
+    );
 
     return activities.map((activity) => mapActivity(activity));
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
-    return await this.activityRepository.getStatistics({ albumId: dto.albumId, assetId: dto.assetId });
+    return await this.activityRepository.getStatistics(
+      { albumId: dto.albumId, assetId: dto.assetId },
+      getPrivateAccessOptions(auth),
+    );
   }
 
   async create(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
     await this.requireAccess({ auth, permission: Permission.ActivityCreate, ids: [dto.albumId] });
+    if (dto.assetId) {
+      const visible = await this.albumRepository.getAssetIds(dto.albumId, [dto.assetId], getPrivateAccessOptions(auth));
+      if (!visible.has(dto.assetId)) {
+        throw new BadRequestException('Not found or no asset access in this album');
+      }
+    }
 
     const common = {
       userId: auth.user.id,
@@ -49,12 +62,15 @@ export class ActivityService extends BaseService {
 
     if (dto.type === ReactionType.LIKE) {
       delete dto.comment;
-      [activity] = await this.activityRepository.search({
-        ...common,
-        // `null` will search for an album like
-        assetId: dto.assetId ?? null,
-        isLiked: true,
-      });
+      [activity] = await this.activityRepository.search(
+        {
+          ...common,
+          // `null` will search for an album like
+          assetId: dto.assetId ?? null,
+          isLiked: true,
+        },
+        getPrivateAccessOptions(auth),
+      );
       isDuplicate = !!activity;
     }
 

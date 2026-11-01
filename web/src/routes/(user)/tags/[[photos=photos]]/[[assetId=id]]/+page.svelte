@@ -1,5 +1,6 @@
 <script lang="ts">
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
   import UserPageLayout, { headerId } from '#lib/components/layouts/UserPageLayout.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import TreeBreadcrumbs from '#lib/components/shared-components/tree/TreeBreadcrumbs.svelte';
@@ -19,14 +20,17 @@
   import SkipLink from '#lib/elements/SkipLink.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { getAuthStatusQuery } from '#lib/queries/auth.query.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAllTagsQuery } from '#lib/queries/tag.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { getTagActions } from '#lib/services/tag.service.ts';
-  import { TreeNode, joinPaths } from '#lib/utils/tree-utils.ts';
+  import { getUserActions } from '#lib/services/user.service.ts';
+  import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
+  import { TreeNode, joinPaths, publicTags } from '#lib/utils/tree-utils.ts';
   import { ActionButton, CommandPaletteDefaultProvider, Text } from '@immich/ui';
-  import { mdiDotsVertical, mdiTag, mdiTagMultiple } from '@mdi/js';
+  import { mdiDotsVertical, mdiLockOutline, mdiTag, mdiTagMultiple } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
   import type { PageData } from './$types';
@@ -38,8 +42,23 @@
   let { data }: Props = $props();
 
   const query = createPreloadedQuery(getAllTagsQuery);
-  const tree = $derived(TreeNode.fromTags(query.data));
+  const session = createPreloadedQuery(getAuthStatusQuery);
+  const tree = $derived(TreeNode.fromTags(session.data.isElevated ? query.data : publicTags(query.data)));
   const tag = $derived(tree.traverse(data.path));
+
+  let privatePath = $state<string>();
+
+  $effect(() => {
+    if (session.data.isElevated) {
+      privatePath = tag.isEffectivelyPrivate ? data.path : undefined;
+    }
+  });
+
+  const onSessionLocked = () => {
+    if (privatePath === data.path) {
+      void goto(Route.tags(), { replaceState: true });
+    }
+  };
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived({ deferInit: !tag, tagId: tag?.id });
@@ -56,9 +75,20 @@
   };
 
   const { Create, Update, Delete } = $derived(getTagActions($t, tag));
+  const { LockSession, UnlockSession, ManagePinCode } = $derived(getUserActions($t));
+  const onUploadClick = () => {
+    if (!data.path || tag.id) {
+      return openFileUploadDialog({ privateTagId: tag.isEffectivelyPrivate ? tag.id : undefined });
+    }
+  };
 </script>
 
-<UserPageLayout title={data.meta.title} actions={[Create, Update, Delete]}>
+<OnEvents {onSessionLocked} />
+<UserPageLayout
+  title={data.meta.title}
+  actions={[session.data.isElevated ? LockSession : UnlockSession, ManagePinCode, Create, Update, Delete]}
+  {onUploadClick}
+>
   {#snippet sidebar()}
     <Sidebar>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} breakpoint="md" />
@@ -71,7 +101,12 @@
     </Sidebar>
   {/snippet}
 
-  <TreeBreadcrumbs node={tag} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
+  <TreeBreadcrumbs
+    node={tag}
+    icon={tag.isEffectivelyPrivate ? mdiLockOutline : mdiTagMultiple}
+    title={$t('tags')}
+    {getLink}
+  />
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] immich-scrollbar overflow-auto">
     {#if tag.hasAssets}

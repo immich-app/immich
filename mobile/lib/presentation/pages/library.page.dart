@@ -443,9 +443,9 @@ class _QuickAccessButtonList extends ConsumerWidget {
         onTap: () => context.pushRoute(FolderRoute()),
       ),
       _QuickAccessItem(
-        leading: const Icon(Icons.lock_outline_rounded, size: 26),
-        title: context.t.locked_folder,
-        onTap: () => context.pushRoute(const LockedFolderRoute()),
+        leading: const Icon(Icons.sell_outlined, size: 26),
+        title: context.t.tags,
+        onTap: () => context.pushRoute(const TagsRoute()),
       ),
       _QuickAccessItem(
         leading: const Icon(Icons.group_outlined, size: 26),

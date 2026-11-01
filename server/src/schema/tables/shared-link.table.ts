@@ -43,6 +43,9 @@ export class SharedLinkTable {
   @Column({ type: 'boolean', default: true })
   allowDownload!: Generated<boolean>;
 
+  @Column({ type: 'boolean', default: false })
+  includePrivateAssets!: Generated<boolean>;
+
   @Column({ type: 'boolean', default: true })
   showExif!: Generated<boolean>;
 

@@ -10,6 +10,7 @@ export class TreeNode extends Map<string, TreeNode> {
   hasAssets: boolean;
   id: string | undefined;
   color: string | undefined;
+  isPrivate: boolean;
   private _parents: TreeNode[] | undefined;
   private _children: TreeNode[] | undefined;
 
@@ -19,6 +20,7 @@ export class TreeNode extends Map<string, TreeNode> {
     this.parent = parent;
     this.path = path;
     this.hasAssets = false;
+    this.isPrivate = false;
   }
 
   static fromPaths(paths: string[]) {
@@ -37,6 +39,7 @@ export class TreeNode extends Map<string, TreeNode> {
       current.hasAssets = true;
       current.id = tag.id;
       current.color = tag.color;
+      current.isPrivate = tag.isPrivate ?? false;
     }
     return root;
   }
@@ -110,7 +113,23 @@ export class TreeNode extends Map<string, TreeNode> {
   get children(): TreeNode[] {
     return (this._children ??= Array.from(this.values()));
   }
+
+  get isEffectivelyPrivate(): boolean {
+    return this.isPrivate || this.parents.some((tag) => tag.isPrivate);
+  }
 }
+
+export const publicTags = (tags: TagResponseDto[]) => {
+  const privatePaths = new Set(tags.filter(({ isPrivate }) => isPrivate).map(({ value }) => value));
+  return tags.filter(({ value }) => {
+    for (let path = value; path; path = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '') {
+      if (privatePaths.has(path)) {
+        return false;
+      }
+    }
+    return true;
+  });
+};
 
 export const normalizeTreePath = (path: string) =>
   path.length > 1 && path[path.length - 1] === '/' ? path.slice(0, -1) : path;

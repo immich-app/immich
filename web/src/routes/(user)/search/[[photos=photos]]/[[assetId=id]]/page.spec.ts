@@ -198,7 +198,9 @@ test('unarchiving removes the assets from archive results', async ({ data, route
   await settle();
 
   await expectResults(app, [kept]);
-  expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [unarchived.id], visibility: 'timeline' } });
+  expect(api.updateAssets).toHaveBeenCalledWith({
+    body: { ids: [unarchived.id], visibility: 'timeline' },
+  });
 });
 
 test('archiving removes the assets from timeline results', async ({ data, router, render, settle, api, app }) => {

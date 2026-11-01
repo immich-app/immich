@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import {
   AddUsersDto,
   AlbumResponseDto,
@@ -23,6 +23,7 @@ import { addAssets, removeAssets } from 'src/utils/asset.util.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { findOrFail } from 'src/utils/misc.js';
 import { getPreferences } from 'src/utils/preferences.js';
+import { getPrivateAccessOptions } from 'src/utils/private-access.js';
 
 const getUserIds = (album: { albumUsers: { user: { id: string } }[] }) => album.albumUsers.map(({ user }) => user.id);
 
@@ -50,11 +51,12 @@ export class AlbumService extends BaseService {
     };
   }
 
-  async getAll({ user: { id: ownerId } }: AuthDto, { assetId, ...rest }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+  async getAll(auth: AuthDto, { assetId, ...rest }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+    const ownerId = auth.user.id;
     await this.albumRepository.updateThumbnails();
 
     const albums = assetId
-      ? await this.albumRepository.getByAssetId(ownerId, assetId)
+      ? await this.albumRepository.getByAssetId(ownerId, assetId, getPrivateAccessOptions(auth))
       : await this.albumRepository.getAll(ownerId, rest);
 
     if (albums.length === 0) {
@@ -63,7 +65,10 @@ export class AlbumService extends BaseService {
 
     // Get asset count for each album. Then map the result to an object:
     // { [albumId]: assetCount }
-    const results = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
+    const results = await this.albumRepository.getMetadataForIds(
+      albums.map((album) => album.id),
+      getPrivateAccessOptions(auth),
+    );
     const albumMetadata: Record<string, AlbumAssetCount> = {};
     for (const metadata of results) {
       albumMetadata[metadata.albumId] = metadata;
@@ -79,7 +84,10 @@ export class AlbumService extends BaseService {
   async get(auth: AuthDto, id: string): Promise<AlbumResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
     await this.albumRepository.updateThumbnails();
-    const album = await this.findOrFail(id, auth.user.id);
+    const album = await findOrFail(
+      () => this.albumRepository.getById(id, auth.user.id, getPrivateAccessOptions(auth)),
+      'Album',
+    );
 
     const hasSharedUsers = album.albumUsers && album.albumUsers.length > 1;
     const hasSharedLink = album.sharedLinks && album.sharedLinks.length > 0;
@@ -88,7 +96,9 @@ export class AlbumService extends BaseService {
     return {
       ...(await this.mapWithMetadata(album, auth)),
       contributorCounts:
-        isShared && !auth.sharedLink ? await this.albumRepository.getContributorCounts(album.id) : undefined,
+        isShared && !auth.sharedLink
+          ? await this.albumRepository.getContributorCounts(album.id, getPrivateAccessOptions(auth))
+          : undefined,
     };
   }
 
@@ -99,7 +109,7 @@ export class AlbumService extends BaseService {
       return [];
     }
 
-    return this.mapRepository.getAlbumMapMarkers(id);
+    return this.mapRepository.getAlbumMapMarkers(id, getPrivateAccessOptions(auth));
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
@@ -115,7 +125,7 @@ export class AlbumService extends BaseService {
 
     const allowedAssetIdsSet = await this.checkAccess({
       auth,
-      permission: Permission.AssetShare,
+      permission: Permission.AssetRead,
       ids: dto.assetIds || [],
     });
     const assetIds = [...allowedAssetIdsSet].map((id) => id);
@@ -142,13 +152,23 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id: album.id, userId, senderName: auth.user.name });
     }
 
-    return this.mapWithMetadata(album);
+    return this.mapWithMetadata(album, auth);
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [id] });
 
     const album = await this.findOrFail(id, auth.user.id);
+
+    if (dto.includePrivateAssets !== undefined) {
+      const owner = album.albumUsers?.find(({ role }) => role === AlbumUserRole.Owner);
+      if (owner?.user.id !== auth.user.id) {
+        throw new ForbiddenException('Only the album owner can change private photo sharing');
+      }
+      if (dto.includePrivateAssets && !auth.session?.hasElevatedPermission) {
+        throw new ForbiddenException('Unlock private content before sharing private photos');
+      }
+    }
 
     if (dto.albumThumbnailAssetId) {
       const results = await this.albumRepository.getAssetIds(id, [dto.albumThumbnailAssetId]);
@@ -164,13 +184,19 @@ export class AlbumService extends BaseService {
         description: dto.description,
         albumThumbnailAssetId: dto.albumThumbnailAssetId,
         isActivityEnabled: dto.isActivityEnabled,
+        includePrivateAssets: dto.includePrivateAssets,
         order: dto.order,
       },
       auth.user.id,
     );
-    this.resourceRepository.send({ userIds: getUserIds(album), changed: [Resource.album({ id })] });
+    const userIds = getUserIds(album);
+    if (dto.includePrivateAssets === undefined) {
+      this.resourceRepository.send({ userIds, changed: [Resource.album({ id })] });
+    } else {
+      this.notifyAssetPrivacy(userIds);
+    }
 
-    return this.mapWithMetadata(updatedAlbum);
+    return this.mapWithMetadata(updatedAlbum, auth);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
@@ -198,7 +224,7 @@ export class AlbumService extends BaseService {
     const results = await addAssets(
       auth,
       { access: this.accessRepository, bulk: this.albumRepository },
-      { parentId: id, assetIds: dto.ids, permission: Permission.AssetShare },
+      { parentId: id, assetIds: dto.ids, permission: Permission.AssetRead },
     );
 
     const { id: firstNewAssetId } = results.find(({ success }) => success) || {};
@@ -238,7 +264,7 @@ export class AlbumService extends BaseService {
       return results;
     }
 
-    const allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
+    const allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetRead, ids: dto.assetIds });
     if (allowedAssetIds.size === 0) {
       results.error = BulkIdErrorReason.NO_PERMISSION;
       return results;
@@ -393,7 +419,7 @@ export class AlbumService extends BaseService {
   }
 
   private async mapWithMetadata(album: MapAlbumDto, auth?: AuthDto): Promise<AlbumResponseDto> {
-    const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
+    const [metadata] = await this.albumRepository.getMetadataForIds([album.id], getPrivateAccessOptions(auth));
     return { ...mapAlbum(album, { auth }), ...mapAlbumMetadata(metadata) };
   }
 }

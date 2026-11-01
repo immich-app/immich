@@ -10,10 +10,12 @@ import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
+import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
@@ -40,10 +42,11 @@ class WorkflowTestContext extends MediumTestContext<typeof WorkflowExecutionServ
         LoggingRepository,
         PluginRepository,
         StorageRepository,
+        TagRepository,
         UserRepository,
         WorkflowRepository,
       ],
-      mock: [ResourceRepository, ConfigRepository, EventRepository, WebsocketRepository],
+      mock: [ResourceRepository, ConfigRepository, EventRepository, JobRepository, WebsocketRepository],
     });
   }
 
@@ -57,6 +60,7 @@ class WorkflowTestContext extends MediumTestContext<typeof WorkflowExecutionServ
     mockData.plugins.external.allow = false;
     this.getMock(ConfigRepository).getEnv.mockReturnValue(mockData);
     this.getMock(EventRepository).emit.mockResolvedValue();
+    this.getMock(JobRepository).queue.mockResolvedValue();
     this.getMock(WebsocketRepository).clientSend.mockReturnValue();
     this.get(LoggingRepository).setLogLevel(LogLevel.Verbose);
 
@@ -203,14 +207,23 @@ describe('core plugin', () => {
         }),
       ).resolves.toBeUndefined();
 
-      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({
+      await expect(
+        ctx.get(WorkflowRepository).getForAssetV1(asset.id, WorkflowTrigger.AssetCreate),
+      ).resolves.toMatchObject({
         visibility: AssetVisibility.Locked,
       });
     });
 
     it('should unlock an asset', async () => {
       const { user } = await ctx.newUser();
-      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const tag = await ctx.get(TagRepository).getOrCreateSystemTag({
+        userId: user.id,
+        value: 'locked',
+        systemKey: 'locked',
+        isPrivate: true,
+      });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
 
       const workflow = await createWorkflow({
         ownerId: user.id,
@@ -226,9 +239,7 @@ describe('core plugin', () => {
         }),
       ).resolves.toBeUndefined();
 
-      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({
-        visibility: AssetVisibility.Timeline,
-      });
+      await expect(ctx.get(TagRepository).getAssetIds(tag.id, [asset.id])).resolves.toEqual(new Set());
     });
   });
 

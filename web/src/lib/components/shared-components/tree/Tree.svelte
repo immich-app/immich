@@ -2,7 +2,8 @@
   import TreeItems from '#lib/components/shared-components/tree/TreeItems.svelte';
   import { TreeNode } from '#lib/utils/tree-utils.ts';
   import { Icon } from '@immich/ui';
-  import { mdiChevronDown, mdiChevronRight } from '@mdi/js';
+  import { mdiChevronDown, mdiChevronRight, mdiLockOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     node: TreeNode;
@@ -36,13 +37,14 @@
   {/if}
   <div class={node.size === 0 ? 'ml-[1.5em]' : ''}>
     <Icon
-      icon={isActive ? icons.active : icons.default}
+      icon={node.isEffectivelyPrivate ? mdiLockOutline : isActive ? icons.active : icons.default}
       class={isActive ? 'text-primary' : 'text-gray-400'}
       color={node.color}
       size="20"
     />
   </div>
   <span class="overflow-hidden ps-1 pt-1 font-mono text-nowrap text-ellipsis whitespace-pre-wrap">{node.value}</span>
+  {#if node.isEffectivelyPrivate}<span class="sr-only">{$t('private_tag')}</span>{/if}
 </a>
 
 {#if isOpen}

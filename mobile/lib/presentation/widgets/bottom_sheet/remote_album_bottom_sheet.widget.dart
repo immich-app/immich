@@ -11,12 +11,12 @@ import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
-import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
 import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
+import 'package:immich_mobile/presentation/actions/tag.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -94,7 +94,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           .new(action: DeleteAction(source: .timeline)),
           .new(action: EditDateTimeAction(source: .timeline)),
           .new(action: EditLocationAction(source: .timeline)),
-          .new(action: LockAction(source: .timeline)),
+          .new(action: PrivateTagAction(source: .timeline)),
           .new(action: StackAction(source: .timeline)),
         ],
         const .new(action: CleanupLocalAction(source: .timeline)),

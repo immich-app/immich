@@ -42,10 +42,12 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
         SELECT
         COUNT(*) AS total_count,
         COUNT(*) FILTER (WHERE lae.checksum IS NULL) AS processing_count,
-        COUNT(*) FILTER (WHERE rae.id IS NULL) AS remainder_count
+        COUNT(*) FILTER (WHERE rae.id IS NULL AND presence.checksum IS NULL) AS remainder_count
         FROM local_asset_entity lae
         LEFT JOIN main.remote_asset_entity rae
             ON lae.checksum = rae.checksum AND rae.owner_id = ?1
+        LEFT JOIN local_asset_presence_entity presence
+            ON lae.checksum = presence.checksum AND presence.owner_id = ?1
         WHERE EXISTS (
             SELECT 1
             FROM local_album_asset_entity laa
@@ -53,7 +55,7 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
             WHERE laa.asset_id = lae.id
                 AND la.backup_selection = ?2
         )
-        AND (lae.unsupported = 0 OR rae.id IS NOT NULL)
+        AND (lae.unsupported = 0 OR rae.id IS NOT NULL OR presence.checksum IS NOT NULL)
         AND NOT EXISTS (
             SELECT 1
             FROM local_album_asset_entity laa
@@ -71,7 +73,13 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
             Variable.withInt(BackupSelection.selected.index),
             Variable.withInt(BackupSelection.excluded.index),
           ],
-          readsFrom: {_db.localAlbumAssetEntity, _db.localAlbumEntity, _db.localAssetEntity, _db.remoteAssetEntity},
+          readsFrom: {
+            _db.localAlbumAssetEntity,
+            _db.localAlbumEntity,
+            _db.localAssetEntity,
+            _db.remoteAssetEntity,
+            _db.localAssetPresenceEntity,
+          },
         )
         .getSingle();
 
@@ -104,6 +112,14 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
                 ..addColumns([_db.remoteAssetEntity.checksum])
                 ..where(
                   _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) & _db.remoteAssetEntity.ownerId.equals(userId),
+                ),
+            ) &
+            notExistsQuery(
+              _db.localAssetPresenceEntity.selectOnly()
+                ..addColumns([_db.localAssetPresenceEntity.checksum])
+                ..where(
+                  _db.localAssetPresenceEntity.checksum.equalsExp(lae.checksum) &
+                      _db.localAssetPresenceEntity.ownerId.equals(userId),
                 ),
             ) &
             lae.id.isNotInQuery(_getExcludedSubquery()),

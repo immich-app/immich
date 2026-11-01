@@ -1,6 +1,7 @@
 <script lang="ts">
   import PinCodeResetModal from '#lib/modals/PinCodeResetModal.svelte';
   import { changePinCodeMutation } from '#lib/queries/auth.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
   import { Button, Field, Heading, PinInput, Text, modalManager } from '@immich/ui';
   import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
@@ -10,7 +11,7 @@
   let confirmPinCode = $state('');
   let canSubmit = $derived(currentPinCode.length === 6 && confirmPinCode.length === 6 && newPinCode === confirmPinCode);
 
-  const changePinCode = createMutation(changePinCodeMutation);
+  const changePinCode = createMutation(changePinCodeMutation, () => queryClient);
 
   const handleSubmit = (event: Event) => {
     event.preventDefault();

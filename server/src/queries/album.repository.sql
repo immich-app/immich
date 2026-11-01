@@ -12,6 +12,347 @@ with
   )
 select
   "album".*,
+  case
+    when "album"."albumThumbnailAssetId" is null
+    or not (
+      not (
+        exists (
+          select
+            1
+          from
+            tag_asset
+            join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+            join tag on tag.id = tag_closure.id_ancestor
+          where
+            tag_asset."assetId" = "album"."albumThumbnailAssetId"
+            and tag."isPrivate" = true
+        )
+        or exists (
+          select
+            1
+          from
+            asset as private_asset
+          where
+            private_asset.id = "album"."albumThumbnailAssetId"
+            and private_asset.visibility = 'locked'
+        )
+        or exists (
+          select
+            1
+          from
+            asset as still
+          where
+            still."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+            and (
+              still.visibility = 'locked'
+              or exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "still"."id"
+                  and tag."isPrivate" = true
+              )
+            )
+        )
+      )
+      or exists (
+        select
+          1
+        from
+          asset as granted_asset
+          join asset as granted_target on granted_target.id = "album"."albumThumbnailAssetId"
+          and granted_target."ownerId" = granted_asset."ownerId"
+          join album_asset as granted_membership on granted_membership."assetId" = granted_asset.id
+          join album as granted_album on granted_album.id = granted_membership."albumId"
+          join album_user as granted_owner on granted_owner."albumId" = granted_album.id
+          and granted_owner.role = 'owner'
+          and granted_owner."userId" = granted_asset."ownerId"
+          join album_user as granted_viewer on granted_viewer."albumId" = granted_album.id
+          and granted_viewer."userId" = $2
+        where
+          granted_album."includePrivateAssets"
+          and granted_album."deletedAt" is null
+          and granted_asset."deletedAt" is null
+          and granted_target."deletedAt" is null
+          and granted_asset."ownerId" != $3
+          and (
+            granted_asset.id = "album"."albumThumbnailAssetId"
+            or granted_asset."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+          )
+          and granted_album.id = "album"."id"
+      )
+    ) then (
+      select
+        candidate.id
+      from
+        album_asset
+        join asset as candidate on candidate.id = album_asset."assetId"
+      where
+        album_asset."albumId" = "album"."id"
+        and candidate."deletedAt" is null
+        and (
+          not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "candidate"."id"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "candidate"."id"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "candidate"."id"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
+          or exists (
+            select
+              1
+            from
+              asset as granted_asset
+              join asset as granted_target on granted_target.id = "candidate"."id"
+              and granted_target."ownerId" = granted_asset."ownerId"
+              join album_asset as granted_membership on granted_membership."assetId" = granted_asset.id
+              join album as granted_album on granted_album.id = granted_membership."albumId"
+              join album_user as granted_owner on granted_owner."albumId" = granted_album.id
+              and granted_owner.role = 'owner'
+              and granted_owner."userId" = granted_asset."ownerId"
+              join album_user as granted_viewer on granted_viewer."albumId" = granted_album.id
+              and granted_viewer."userId" = $4
+            where
+              granted_album."includePrivateAssets"
+              and granted_album."deletedAt" is null
+              and granted_asset."deletedAt" is null
+              and granted_target."deletedAt" is null
+              and granted_asset."ownerId" != $5
+              and (
+                granted_asset.id = "candidate"."id"
+                or granted_asset."livePhotoVideoId" = "candidate"."id"
+              )
+              and granted_album.id = "album"."id"
+          )
+        )
+      order by
+        candidate."fileCreatedAt" desc,
+        candidate.id
+      limit
+        1
+    )
+    else "album"."albumThumbnailAssetId"
+  end as "visibleThumbnailAssetId",
+  exists (
+    select
+      1
+    from
+      album_asset as private_membership
+      join asset as private_asset on private_asset.id = private_membership."assetId"
+    where
+      private_membership."albumId" = album.id
+      and private_asset."ownerId" = $6
+      and private_asset."deletedAt" is null
+      and (
+        exists (
+          select
+            1
+          from
+            tag_asset
+            join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+            join tag on tag.id = tag_closure.id_ancestor
+          where
+            tag_asset."assetId" = "private_asset"."id"
+            and tag."isPrivate" = true
+        )
+        or exists (
+          select
+            1
+          from
+            asset as private_asset
+          where
+            private_asset.id = "private_asset"."id"
+            and private_asset.visibility = 'locked'
+        )
+        or exists (
+          select
+            1
+          from
+            asset as still
+          where
+            still."livePhotoVideoId" = "private_asset"."id"
+            and (
+              still.visibility = 'locked'
+              or exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "still"."id"
+                  and tag."isPrivate" = true
+              )
+            )
+        )
+      )
+  ) as "hasPrivateAssets",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "album_user"."role",
+          (
+            select
+              to_json(obj)
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt"
+                from
+                  (
+                    select
+                      1
+                  ) as "dummy"
+              ) as obj
+          ) as "user"
+        from
+          "album_user"
+          inner join "user" on "user"."id" = "album_user"."userId"
+        where
+          "album_user"."albumId" = "album"."id"
+        order by
+          "album_user"."role",
+          "album_user"."userId" = $7 desc,
+          "user"."name" asc
+      ) as agg
+  ) as "albumUsers",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "shared_link".*
+        from
+          "shared_link"
+        where
+          "shared_link"."albumId" = "album"."id"
+      ) as agg
+  ) as "sharedLinks"
+from
+  "album"
+where
+  "album"."id" = $8
+  and "album"."deletedAt" is null
+
+-- AlbumRepository.getUserIds
+select
+  "album_user"."userId"
+from
+  "album_user"
+  inner join "album" on "album"."id" = "album_user"."albumId"
+where
+  "album_user"."albumId" = $1
+  and "album"."deletedAt" is null
+
+-- AlbumRepository.getByAssetId
+select
+  "album".*,
+  exists (
+    select
+      1
+    from
+      album_asset as private_membership
+      join asset as private_asset on private_asset.id = private_membership."assetId"
+    where
+      private_membership."albumId" = album.id
+      and private_asset."ownerId" = $1
+      and private_asset."deletedAt" is null
+      and (
+        exists (
+          select
+            1
+          from
+            tag_asset
+            join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+            join tag on tag.id = tag_closure.id_ancestor
+          where
+            tag_asset."assetId" = "private_asset"."id"
+            and tag."isPrivate" = true
+        )
+        or exists (
+          select
+            1
+          from
+            asset as private_asset
+          where
+            private_asset.id = "private_asset"."id"
+            and private_asset.visibility = 'locked'
+        )
+        or exists (
+          select
+            1
+          from
+            asset as still
+          where
+            still."livePhotoVideoId" = "private_asset"."id"
+            and (
+              still.visibility = 'locked'
+              or exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "still"."id"
+                  and tag."isPrivate" = true
+              )
+            )
+        )
+      )
+  ) as "hasPrivateAssets",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -49,75 +390,168 @@ select
           "user"."name" asc
       ) as agg
   ) as "albumUsers",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "shared_link".*
-        from
-          "shared_link"
-        where
-          "shared_link"."albumId" = "album"."id"
-      ) as agg
-  ) as "sharedLinks"
-from
-  "album"
-where
-  "album"."id" = $3
-  and "album"."deletedAt" is null
-
--- AlbumRepository.getUserIds
-select
-  "album_user"."userId"
-from
-  "album_user"
-  inner join "album" on "album"."id" = "album_user"."albumId"
-where
-  "album_user"."albumId" = $1
-  and "album"."deletedAt" is null
-
--- AlbumRepository.getByAssetId
-select
-  "album".*,
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "album_user"."role",
-          (
-            select
-              to_json(obj)
-            from
-              (
+  case
+    when "album"."albumThumbnailAssetId" is null
+    or not (
+      not (
+        exists (
+          select
+            1
+          from
+            tag_asset
+            join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+            join tag on tag.id = tag_closure.id_ancestor
+          where
+            tag_asset."assetId" = "album"."albumThumbnailAssetId"
+            and tag."isPrivate" = true
+        )
+        or exists (
+          select
+            1
+          from
+            asset as private_asset
+          where
+            private_asset.id = "album"."albumThumbnailAssetId"
+            and private_asset.visibility = 'locked'
+        )
+        or exists (
+          select
+            1
+          from
+            asset as still
+          where
+            still."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+            and (
+              still.visibility = 'locked'
+              or exists (
                 select
-                  "id",
-                  "name",
-                  "email",
-                  "avatarColor",
-                  "profileImagePath",
-                  "profileChangedAt"
+                  1
                 from
-                  (
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "still"."id"
+                  and tag."isPrivate" = true
+              )
+            )
+        )
+      )
+      or exists (
+        select
+          1
+        from
+          asset as granted_asset
+          join asset as granted_target on granted_target.id = "album"."albumThumbnailAssetId"
+          and granted_target."ownerId" = granted_asset."ownerId"
+          join album_asset as granted_membership on granted_membership."assetId" = granted_asset.id
+          join album as granted_album on granted_album.id = granted_membership."albumId"
+          join album_user as granted_owner on granted_owner."albumId" = granted_album.id
+          and granted_owner.role = 'owner'
+          and granted_owner."userId" = granted_asset."ownerId"
+          join album_user as granted_viewer on granted_viewer."albumId" = granted_album.id
+          and granted_viewer."userId" = $3
+        where
+          granted_album."includePrivateAssets"
+          and granted_album."deletedAt" is null
+          and granted_asset."deletedAt" is null
+          and granted_target."deletedAt" is null
+          and granted_asset."ownerId" != $4
+          and (
+            granted_asset.id = "album"."albumThumbnailAssetId"
+            or granted_asset."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+          )
+          and granted_album.id = "album"."id"
+      )
+    ) then (
+      select
+        candidate.id
+      from
+        album_asset
+        join asset as candidate on candidate.id = album_asset."assetId"
+      where
+        album_asset."albumId" = "album"."id"
+        and candidate."deletedAt" is null
+        and (
+          not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "candidate"."id"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "candidate"."id"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "candidate"."id"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
                     select
                       1
-                  ) as "dummy"
-              ) as obj
-          ) as "user"
-        from
-          "album_user"
-          inner join "user" on "user"."id" = "album_user"."userId"
-        where
-          "album_user"."albumId" = "album"."id"
-        order by
-          "album_user"."role",
-          "album_user"."userId" = $1 desc,
-          "user"."name" asc
-      ) as agg
-  ) as "albumUsers"
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
+          or exists (
+            select
+              1
+            from
+              asset as granted_asset
+              join asset as granted_target on granted_target.id = "candidate"."id"
+              and granted_target."ownerId" = granted_asset."ownerId"
+              join album_asset as granted_membership on granted_membership."assetId" = granted_asset.id
+              join album as granted_album on granted_album.id = granted_membership."albumId"
+              join album_user as granted_owner on granted_owner."albumId" = granted_album.id
+              and granted_owner.role = 'owner'
+              and granted_owner."userId" = granted_asset."ownerId"
+              join album_user as granted_viewer on granted_viewer."albumId" = granted_album.id
+              and granted_viewer."userId" = $5
+            where
+              granted_album."includePrivateAssets"
+              and granted_album."deletedAt" is null
+              and granted_asset."deletedAt" is null
+              and granted_target."deletedAt" is null
+              and granted_asset."ownerId" != $6
+              and (
+                granted_asset.id = "candidate"."id"
+                or granted_asset."livePhotoVideoId" = "candidate"."id"
+              )
+              and granted_album.id = "album"."id"
+          )
+        )
+      order by
+        candidate."fileCreatedAt" desc,
+        candidate.id
+      limit
+        1
+    )
+    else "album"."albumThumbnailAssetId"
+  end as "visibleThumbnailAssetId"
 from
   "album"
   inner join "album_asset" on "album_asset"."albumId" = "album"."id"
@@ -128,9 +562,55 @@ where
       "album_user"
     where
       "album_user"."albumId" = "album"."id"
-      and "album_user"."userId" = $2
+      and "album_user"."userId" = $7
   )
-  and "album_asset"."assetId" = $3
+  and "album_asset"."assetId" = $8
+  and (
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "album_asset"."assetId"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "album_asset"."assetId"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "album_asset"."assetId"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
+  )
   and "album"."deletedAt" is null
 order by
   "album"."createdAt" desc
@@ -170,6 +650,52 @@ from
   inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
 where
   "asset"."visibility" in ('archive', 'timeline')
+  and (
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
+  )
   and "album_asset"."albumId" in ($1)
   and "asset"."deletedAt" is null
 group by
@@ -178,6 +704,223 @@ group by
 -- AlbumRepository.getAll
 select
   "album".*,
+  case
+    when "album"."albumThumbnailAssetId" is null
+    or not (
+      not (
+        exists (
+          select
+            1
+          from
+            tag_asset
+            join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+            join tag on tag.id = tag_closure.id_ancestor
+          where
+            tag_asset."assetId" = "album"."albumThumbnailAssetId"
+            and tag."isPrivate" = true
+        )
+        or exists (
+          select
+            1
+          from
+            asset as private_asset
+          where
+            private_asset.id = "album"."albumThumbnailAssetId"
+            and private_asset.visibility = 'locked'
+        )
+        or exists (
+          select
+            1
+          from
+            asset as still
+          where
+            still."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+            and (
+              still.visibility = 'locked'
+              or exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "still"."id"
+                  and tag."isPrivate" = true
+              )
+            )
+        )
+      )
+      or exists (
+        select
+          1
+        from
+          asset as granted_asset
+          join asset as granted_target on granted_target.id = "album"."albumThumbnailAssetId"
+          and granted_target."ownerId" = granted_asset."ownerId"
+          join album_asset as granted_membership on granted_membership."assetId" = granted_asset.id
+          join album as granted_album on granted_album.id = granted_membership."albumId"
+          join album_user as granted_owner on granted_owner."albumId" = granted_album.id
+          and granted_owner.role = 'owner'
+          and granted_owner."userId" = granted_asset."ownerId"
+          join album_user as granted_viewer on granted_viewer."albumId" = granted_album.id
+          and granted_viewer."userId" = $1
+        where
+          granted_album."includePrivateAssets"
+          and granted_album."deletedAt" is null
+          and granted_asset."deletedAt" is null
+          and granted_target."deletedAt" is null
+          and granted_asset."ownerId" != $2
+          and (
+            granted_asset.id = "album"."albumThumbnailAssetId"
+            or granted_asset."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+          )
+          and granted_album.id = "album"."id"
+      )
+    ) then (
+      select
+        candidate.id
+      from
+        album_asset
+        join asset as candidate on candidate.id = album_asset."assetId"
+      where
+        album_asset."albumId" = "album"."id"
+        and candidate."deletedAt" is null
+        and (
+          not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "candidate"."id"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "candidate"."id"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "candidate"."id"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
+          or exists (
+            select
+              1
+            from
+              asset as granted_asset
+              join asset as granted_target on granted_target.id = "candidate"."id"
+              and granted_target."ownerId" = granted_asset."ownerId"
+              join album_asset as granted_membership on granted_membership."assetId" = granted_asset.id
+              join album as granted_album on granted_album.id = granted_membership."albumId"
+              join album_user as granted_owner on granted_owner."albumId" = granted_album.id
+              and granted_owner.role = 'owner'
+              and granted_owner."userId" = granted_asset."ownerId"
+              join album_user as granted_viewer on granted_viewer."albumId" = granted_album.id
+              and granted_viewer."userId" = $3
+            where
+              granted_album."includePrivateAssets"
+              and granted_album."deletedAt" is null
+              and granted_asset."deletedAt" is null
+              and granted_target."deletedAt" is null
+              and granted_asset."ownerId" != $4
+              and (
+                granted_asset.id = "candidate"."id"
+                or granted_asset."livePhotoVideoId" = "candidate"."id"
+              )
+              and granted_album.id = "album"."id"
+          )
+        )
+      order by
+        candidate."fileCreatedAt" desc,
+        candidate.id
+      limit
+        1
+    )
+    else "album"."albumThumbnailAssetId"
+  end as "visibleThumbnailAssetId",
+  exists (
+    select
+      1
+    from
+      album_asset as private_membership
+      join asset as private_asset on private_asset.id = private_membership."assetId"
+    where
+      private_membership."albumId" = album.id
+      and private_asset."ownerId" = $5
+      and private_asset."deletedAt" is null
+      and (
+        exists (
+          select
+            1
+          from
+            tag_asset
+            join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+            join tag on tag.id = tag_closure.id_ancestor
+          where
+            tag_asset."assetId" = "private_asset"."id"
+            and tag."isPrivate" = true
+        )
+        or exists (
+          select
+            1
+          from
+            asset as private_asset
+          where
+            private_asset.id = "private_asset"."id"
+            and private_asset.visibility = 'locked'
+        )
+        or exists (
+          select
+            1
+          from
+            asset as still
+          where
+            still."livePhotoVideoId" = "private_asset"."id"
+            and (
+              still.visibility = 'locked'
+              or exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "still"."id"
+                  and tag."isPrivate" = true
+              )
+            )
+        )
+      )
+  ) as "hasPrivateAssets",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -211,7 +954,7 @@ select
           "album_user"."albumId" = "album"."id"
         order by
           "album_user"."role",
-          "album_user"."userId" = $1 desc,
+          "album_user"."userId" = $6 desc,
           "user"."name" asc
       ) as agg
   ) as "albumUsers",
@@ -231,7 +974,7 @@ select
 from
   "album"
   inner join "album_user" on "album_user"."albumId" = "album"."id"
-  and "album_user"."userId" = $2
+  and "album_user"."userId" = $7
 where
   "album"."deletedAt" is null
   and "album_user"."role" = 'owner'
@@ -399,6 +1142,52 @@ from
   inner join "asset" on "asset"."id" = "assetId"
 where
   "asset"."deletedAt" is null
+  and (
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
+  )
   and "album_asset"."albumId" = $1
 group by
   "asset"."ownerId"

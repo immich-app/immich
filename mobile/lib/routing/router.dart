@@ -26,7 +26,6 @@ import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/pages/common/tab_shell.page.dart';
 import 'package:immich_mobile/pages/library/folder/folder.page.dart';
-import 'package:immich_mobile/pages/library/locked/pin_auth.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner.page.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link.page.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link_edit.page.dart';
@@ -52,13 +51,13 @@ import 'package:immich_mobile/presentation/pages/feature_message/whats_new.page.
 import 'package:immich_mobile/presentation/pages/library.page.dart';
 import 'package:immich_mobile/presentation/pages/local_album.page.dart';
 import 'package:immich_mobile/presentation/pages/local_timeline.page.dart';
-import 'package:immich_mobile/presentation/pages/locked_folder.page.dart';
 import 'package:immich_mobile/presentation/pages/map.page.dart';
 import 'package:immich_mobile/presentation/pages/memory.page.dart';
 import 'package:immich_mobile/presentation/pages/memory_list.page.dart';
 import 'package:immich_mobile/presentation/pages/partner_detail.page.dart';
 import 'package:immich_mobile/presentation/pages/people_collection.page.dart';
 import 'package:immich_mobile/presentation/pages/person.page.dart';
+import 'package:immich_mobile/presentation/pages/pin_auth.page.dart';
 import 'package:immich_mobile/presentation/pages/place.page.dart';
 import 'package:immich_mobile/presentation/pages/place_detail.page.dart';
 import 'package:immich_mobile/presentation/pages/profile/profile_picture_crop.page.dart';
@@ -67,6 +66,7 @@ import 'package:immich_mobile/presentation/pages/recently_taken.page.dart';
 import 'package:immich_mobile/presentation/pages/remote_album.page.dart';
 import 'package:immich_mobile/presentation/pages/search/search.page.dart';
 import 'package:immich_mobile/presentation/pages/slideshow.page.dart';
+import 'package:immich_mobile/presentation/pages/tags.page.dart';
 import 'package:immich_mobile/presentation/pages/trash.page.dart';
 import 'package:immich_mobile/presentation/pages/user_selection.page.dart';
 import 'package:immich_mobile/presentation/pages/video.page.dart';
@@ -74,40 +74,25 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.pag
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
-import 'package:immich_mobile/routing/locked_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
-import 'package:immich_mobile/services/local_auth.service.dart';
-import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 part 'router.gr.dart';
 
 final appRouterProvider = Provider(
   // ignore: dispose-provided-instances
-  (ref) => AppRouter(
-    ref.watch(apiServiceProvider),
-    ref.watch(authServiceProvider),
-    ref.watch(secureStorageServiceProvider),
-    ref.watch(localAuthServiceProvider),
-  ),
+  (ref) => AppRouter(ref.watch(apiServiceProvider), ref.watch(authServiceProvider)),
 );
 
 @AutoRouterConfig(replaceInRouteName: 'Page,Route')
 class AppRouter extends RootStackRouter {
   late final AuthGuard _authGuard;
   late final DuplicateGuard _duplicateGuard;
-  late final LockedGuard _lockedGuard;
 
-  AppRouter(
-    ApiService apiService,
-    AuthService authService,
-    SecureStorageService secureStorageService,
-    LocalAuthService localAuthService,
-  ) {
+  AppRouter(ApiService apiService, AuthService authService) {
     _authGuard = AuthGuard(apiService, authService);
     _duplicateGuard = const DuplicateGuard();
-    _lockedGuard = LockedGuard(apiService, secureStorageService, localAuthService);
   }
 
   @override
@@ -165,7 +150,8 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: FavoriteRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: TrashRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: ArchiveRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: LockedFolderRoute.page, guards: [_authGuard, _lockedGuard, _duplicateGuard]),
+    AutoRoute(page: TagsRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: TagAssetsRoute.page, guards: [_authGuard]),
     AutoRoute(page: VideoRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: LibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AssetSelectionTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),

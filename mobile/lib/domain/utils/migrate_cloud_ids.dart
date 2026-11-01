@@ -26,7 +26,7 @@ const _kDbPageSize = 20000;
 
 const _kUploadBatchSize = 5000;
 
-Future<void> syncCloudIds(ProviderContainer ref) async {
+Future<void> syncCloudIds(ProviderContainer ref, {void Function()? onAssetAccessChanged}) async {
   if (!CurrentPlatform.isIOS) {
     return;
   }
@@ -40,7 +40,7 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
 
   // Wait for remote sync to complete, so we have up-to-date asset metadata entries
   try {
-    await ref.read(syncStreamServiceProvider).sync();
+    await ref.read(syncStreamServiceProvider).sync(onAssetAccessChanged: onAssetAccessChanged);
   } catch (e, s) {
     logger.fine('Failed to complete remote sync before cloudId migration.', e, s);
     return;

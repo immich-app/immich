@@ -9,7 +9,9 @@
     getAlbumActions,
     handleRemoveUserFromAlbum,
     handleUpdateUserAlbumRole,
+    isAlbumOwner,
   } from '#lib/services/album.service.ts';
+  import { ensurePrivateSession } from '#lib/utils/private-session.ts';
   import {
     AlbumUserRole,
     AssetOrder,
@@ -49,6 +51,13 @@
   const updateAlbum = (updateAlbumDto: UpdateAlbumDto) =>
     executeMutation(updateAlbumInfoMutation, [{ id: album.id, updateAlbumDto }]);
 
+  const updatePrivateSharing = async (includePrivateAssets: boolean) => {
+    if (includePrivateAssets && !(await ensurePrivateSession())) {
+      return;
+    }
+    await updateAlbum({ includePrivateAssets });
+  };
+
   const sharedLinksQuery = createQuery(
     () => getAllSharedLinksQuery({ albumId: album.id }),
     () => queryClient,
@@ -80,6 +89,11 @@
               onCheckedChange={(checked) => updateAlbum({ isActivityEnabled: checked })}
             />
           </Field>
+          {#if !readOnly && isAlbumOwner(album) && album.hasPrivateAssets}
+            <Field label={$t('include_private_photos')} description={$t('include_private_photos_description')}>
+              <Switch checked={album.includePrivateAssets ?? false} onCheckedChange={updatePrivateSharing} />
+            </Field>
+          {/if}
         </div>
       </div>
 

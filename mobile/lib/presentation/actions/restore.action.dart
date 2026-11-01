@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -33,12 +34,26 @@ class RestoreAction extends AssetActionBuilder {
 
     final message = context.t.assets_restored_count(count: assetIds.length);
     final assetService = ref.read(assetServiceProvider);
+    final tags = ref.read(Store.tags);
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
 
     try {
       await assetService.restoreTrash(assetIds);
-      toastService.success(message, toast: .new(onUndo: () => assetService.trash(assetIds)));
+      if (context.mounted) {
+        tags.refresh();
+      }
+      toastService.success(
+        message,
+        toast: .new(
+          onUndo: () async {
+            await assetService.trash(assetIds);
+            if (context.mounted) {
+              tags.refresh();
+            }
+          },
+        ),
+      );
       clearSelection();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to restore assets");

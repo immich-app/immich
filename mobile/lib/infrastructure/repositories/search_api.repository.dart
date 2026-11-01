@@ -41,6 +41,7 @@ class SearchApiRepository extends ApiRepository {
           takenBefore: filter.date.takenBefore == null
               ? const Optional.absent()
               : Optional.present(filter.date.takenBefore),
+          excludePrivate: const Optional.present(true),
           visibility: Optional.present(filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline),
           rating: filter.rating.rating.toOptional(),
           isFavorite: filter.display.isFavorite ? const Optional.present(true) : const Optional.absent(),
@@ -72,6 +73,7 @@ class SearchApiRepository extends ApiRepository {
         takenBefore: filter.date.takenBefore == null
             ? const Optional.absent()
             : Optional.present(filter.date.takenBefore),
+        excludePrivate: const Optional.present(true),
         visibility: Optional.present(filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline),
         rating: filter.rating.rating.toOptional(),
         isFavorite: filter.display.isFavorite ? const Optional.present(true) : const Optional.absent(),

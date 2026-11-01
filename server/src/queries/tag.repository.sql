@@ -7,6 +7,8 @@ select
   "tag"."createdAt",
   "tag"."updatedAt",
   "tag"."color",
+  "tag"."isPrivate",
+  "tag"."systemKey",
   "tag"."parentId"
 from
   "tag"
@@ -20,6 +22,8 @@ select
   "tag"."createdAt",
   "tag"."updatedAt",
   "tag"."color",
+  "tag"."isPrivate",
+  "tag"."systemKey",
   "tag"."parentId"
 from
   "tag"
@@ -78,13 +82,41 @@ select
   "tag"."createdAt",
   "tag"."updatedAt",
   "tag"."color",
+  "tag"."isPrivate",
+  "tag"."systemKey",
   "tag"."parentId"
 from
   "tag"
 where
   "userId" = $1
+  and not exists (
+    select
+      1
+    from
+      tag_closure
+      join tag as ancestor on ancestor.id = tag_closure.id_ancestor
+    where
+      tag_closure.id_descendant = "tag"."id"
+      and ancestor."isPrivate" = true
+  )
 order by
   "value"
+
+-- TagRepository.getBySystemKey
+select
+  "tag"."id",
+  "tag"."value",
+  "tag"."createdAt",
+  "tag"."updatedAt",
+  "tag"."color",
+  "tag"."isPrivate",
+  "tag"."systemKey",
+  "tag"."parentId"
+from
+  "tag"
+where
+  "userId" = $1
+  and "systemKey" = $2
 
 -- TagRepository.create
 with
@@ -121,7 +153,8 @@ from
 -- TagRepository.update
 begin
 select
-  "value"
+  "value",
+  "isPrivate"
 from
   "tag"
 where
@@ -137,21 +170,87 @@ returning
 rollback
 
 -- TagRepository.delete
+begin
+select
+  "id"
+from
+  "tag"
+where
+  "id" in (
+    select
+      "id_descendant"
+    from
+      "tag_closure"
+    where
+      "id_ancestor" = $1
+  )
+order by
+  "id"
+for update
+select
+  "tag"."id",
+  exists (
+    select
+    from
+      "tag_asset"
+    where
+      "tag_asset"."tagId" = "tag"."id"
+  ) as "hasAssets"
+from
+  "tag_closure"
+  inner join "tag" on "tag"."id" = "tag_closure"."id_descendant"
+where
+  "tag_closure"."id_ancestor" = $1
+  and exists (
+    select
+      1
+    from
+      tag_closure
+      join tag as ancestor on ancestor.id = tag_closure.id_ancestor
+    where
+      tag_closure.id_descendant = "tag"."id"
+      and ancestor."isPrivate" = true
+  )
+select distinct
+  "tag_asset"."assetId"
+from
+  "tag_closure"
+  inner join "tag_asset" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+where
+  "tag_closure"."id_ancestor" = $1
 delete from "tag"
 where
   "id" = $1
+commit
 
--- TagRepository.addAssetIds
-insert into
-  "tag_asset" ("tagId", "assetId")
-values
-  ($1, $2)
+-- TagRepository.getAssetCount
+select
+  count(distinct "tag_asset"."assetId") as "count"
+from
+  "tag_asset"
+  inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+where
+  "tag_closure"."id_ancestor" = $1
+
+-- TagRepository.getAssetIds
+select
+  "assetId"
+from
+  "tag_asset"
+where
+  "tagId" = $1
+  and "assetId" = any ($2::uuid[])
 
 -- TagRepository.removeAssetIds
+begin
 delete from "tag_asset"
 where
   "tagId" = $1
-  and "assetId" in ($2)
+  and "assetId" = any ($2::uuid[])
+returning
+  "assetId",
+  "tagId"
+commit
 
 -- TagRepository.upsertAssetIds
 insert into
@@ -160,18 +259,69 @@ values
   ($1, $2)
 on conflict do nothing
 returning
-  *
+  "assetId",
+  "tagId"
 
 -- TagRepository.replaceAssetTags
 begin
+select
+  "tagId"
+from
+  "tag_asset"
+where
+  "assetId" = $1
+select
+  "id"
+from
+  "tag"
+where
+  "id" in (
+    select
+      "id_ancestor"
+    from
+      "tag_closure"
+    where
+      "id_descendant" = any ($1::uuid[])
+  )
+order by
+  "id"
+for share
 delete from "tag_asset"
 where
   "assetId" = $1
+  and "tagId" = any ($2::uuid[])
+  and not exists (
+    select
+      1
+    from
+      tag_closure
+      join tag as ancestor on ancestor.id = tag_closure.id_ancestor
+    where
+      tag_closure.id_descendant = "tag_asset"."tagId"
+      and ancestor."isPrivate" = true
+  )
+select
+  "id"
+from
+  "tag"
+where
+  "tag"."id" = any ($1::uuid[])
+  and exists (
+    select
+      1
+    from
+      tag_closure
+      join tag as ancestor on ancestor.id = tag_closure.id_ancestor
+    where
+      tag_closure.id_descendant = "tag"."id"
+      and ancestor."isPrivate" = true
+  )
 insert into
   "tag_asset" ("tagId", "assetId")
 values
   ($1, $2)
 on conflict do nothing
 returning
-  *
+  "assetId",
+  "tagId"
 rollback

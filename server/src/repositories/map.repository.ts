@@ -13,6 +13,7 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { DB } from 'src/schema/index.js';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table.js';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table.js';
+import { asUuid, isAssetVisible, type PrivateTagAccessOptions } from 'src/utils/database.js';
 
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
@@ -77,8 +78,8 @@ export class MapRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAlbumMapMarkers(albumId: string) {
-    return this.mapMarkersQuery()
+  getAlbumMapMarkers(albumId: string, options: PrivateTagAccessOptions = {}) {
+    return this.mapMarkersQuery({ ...options, albumId: asUuid(albumId) })
       .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
       .where('album_asset.albumId', '=', albumId)
       .execute();
@@ -129,7 +130,7 @@ export class MapRepository {
       .execute();
   }
 
-  private mapMarkersQuery() {
+  private mapMarkersQuery(options: PrivateTagAccessOptions = {}) {
     return this.db
       .selectFrom('asset')
       .innerJoin('asset_exif', (builder) =>
@@ -139,6 +140,7 @@ export class MapRepository {
           .on('asset_exif.longitude', 'is not', null),
       )
       .where('asset.deletedAt', 'is', null)
+      .where((eb) => isAssetVisible(eb.ref('asset.id'), options))
       .orderBy('fileCreatedAt', 'desc')
       .select([
         'id',

@@ -461,7 +461,7 @@ void main() {
       });
     });
 
-    group('moveToLockFolder button', () {
+    group('addToPrivateTag button', () {
       test('should show when owner, not locked, and has remote', () {
         final remoteAsset = createRemoteAsset();
         final context = ActionButtonContext(
@@ -475,7 +475,7 @@ void main() {
           source: ActionSource.timeline,
         );
 
-        expect(ActionButtonType.moveToLockFolder.shouldShow(context), isTrue);
+        expect(ActionButtonType.addToPrivateTag.shouldShow(context), isTrue);
       });
     });
 

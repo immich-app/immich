@@ -1,6 +1,7 @@
 import { Kysely } from 'kysely';
-import { AlbumUserRole, SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { AlbumUserRole, AssetVisibility, SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SyncTestContext } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
@@ -32,6 +33,38 @@ beforeAll(async () => {
 });
 
 describe(SyncRequestType.AlbumAssetsV2, () => {
+  it.each([false, true])(
+    'should sync private album photos only with explicit sharing: %s',
+    async (includePrivateAssets) => {
+      const { auth, ctx } = await setup();
+      const { user: owner } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: owner.id });
+      await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+      const { album } = await ctx.newAlbum({ ownerId: owner.id, includePrivateAssets }, [asset.id]);
+      await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id });
+      const tag = await ctx.get(TagRepository).create({ userId: owner.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+      const response = await ctx.syncStream(auth, [
+        SyncRequestType.AlbumAssetsV2,
+        SyncRequestType.AlbumAssetExifsV1,
+        SyncRequestType.AlbumToAssetsV1,
+      ]);
+      for (const type of [
+        SyncEntityType.AlbumAssetCreateV2,
+        SyncEntityType.AlbumAssetExifCreateV1,
+        SyncEntityType.AlbumToAssetV1,
+      ]) {
+        expect(response.filter((item) => item.type === type)).toHaveLength(includePrivateAssets ? 1 : 0);
+      }
+      if (includePrivateAssets) {
+        expect(response.find((item) => item.type === SyncEntityType.AlbumAssetCreateV2)?.data).toMatchObject({
+          visibility: AssetVisibility.Locked,
+        });
+      }
+    },
+  );
+
   it('should detect and sync the first album asset', async () => {
     const originalFileName = 'firstAsset';
     const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';

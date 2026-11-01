@@ -188,10 +188,7 @@ describe(StackService.name, () => {
       await sut.update(auth, stack.id, { primaryAssetId: asset.id });
 
       expect(mocks.stack.getById).toHaveBeenCalledWith(stack.id);
-      expect(mocks.stack.update).toHaveBeenCalledWith(stack.id, {
-        id: stack.id,
-        primaryAssetId: asset.id,
-      });
+      expect(mocks.stack.update).toHaveBeenCalledWith(stack.id, { id: stack.id, primaryAssetId: asset.id }, undefined);
       expect(mocks.event.emit).toHaveBeenCalledWith('StackUpdate', {
         stackId: stack.id,
         userId: auth.user.id,
@@ -297,10 +294,12 @@ describe(StackService.name, () => {
     });
 
     it('should fail if the asset is not in the stack', async () => {
+      const assetId = newUuid();
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
       mocks.stack.getForAssetRemoval.mockResolvedValue({ id: null, primaryAssetId: null });
 
-      await expect(sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: newUuid() })).rejects.toBeInstanceOf(
+      await expect(sut.removeAsset(authStub.admin, { id: 'stack-id', assetId })).rejects.toBeInstanceOf(
         BadRequestException,
       );
 
@@ -312,6 +311,7 @@ describe(StackService.name, () => {
     it('should fail if the assetId is the primaryAssetId', async () => {
       const asset = AssetFactory.create();
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: asset.id });
 
       await expect(sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: asset.id })).rejects.toBeInstanceOf(
@@ -326,6 +326,7 @@ describe(StackService.name, () => {
     it("should update the asset to nullify it's stack-id", async () => {
       const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: primaryAsset.id });
 
       await sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: asset.id });
@@ -342,6 +343,7 @@ describe(StackService.name, () => {
       const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
       const stackId = newUuid();
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set([stackId]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.stack.getForAssetRemoval.mockResolvedValue({ id: stackId, primaryAssetId: primaryAsset.id });
 
       await sut.removeAsset(auth, { id: stackId, assetId: asset.id });

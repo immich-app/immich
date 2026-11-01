@@ -18,7 +18,7 @@ import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table.js';
-import { anyUuid, dummy } from 'src/utils/database.js';
+import { anyUuid, dummy, isAssetVisible, visibleAlbumThumbnail } from 'src/utils/database.js';
 
 export type SharedLinkSearchOptions = {
   userId: string;
@@ -32,6 +32,7 @@ const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
     .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
     .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
     .where('asset.deletedAt', 'is', null)
+    .where((eb) => isAssetVisible(eb.ref('asset.id'), { sharedLinkId: eb.ref('shared_link_asset.sharedLinkId') }))
     .selectAll('asset')
     .orderBy('asset.fileCreatedAt', 'asc');
 };
@@ -61,6 +62,11 @@ const withSharedLinkAlbum = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
   return eb
     .selectFrom('album')
     .selectAll('album')
+    .select((eb) =>
+      visibleAlbumThumbnail(eb.ref('album.id'), eb.ref('album.albumThumbnailAssetId'), {
+        sharedLinkId: eb.ref('shared_link.id'),
+      }).as('visibleThumbnailAssetId'),
+    )
     .whereRef('album.id', '=', 'shared_link.albumId')
     .where('album.deletedAt', 'is', null);
 };
@@ -120,6 +126,9 @@ export class SharedLinkRepository {
                 .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
                 .where('shared_link_asset.sharedLinkId', '=', anyUuid(individualLinks.map(({ id }) => id)))
                 .where('asset.deletedAt', 'is', null)
+                .where((eb) =>
+                  isAssetVisible(eb.ref('asset.id'), { sharedLinkId: eb.ref('shared_link_asset.sharedLinkId') }),
+                )
                 .select((eb) => [
                   'shared_link_asset.sharedLinkId',
                   eb.fn.min('asset.fileCreatedAt').as('fileCreatedAt'),
@@ -136,6 +145,9 @@ export class SharedLinkRepository {
                 .whereRef('shared_link_asset.sharedLinkId', '=', 'shared_link.id')
                 .whereRef('asset.fileCreatedAt', '=', 'cover.fileCreatedAt')
                 .where('asset.deletedAt', 'is', null)
+                .where((eb) =>
+                  isAssetVisible(eb.ref('asset.id'), { sharedLinkId: eb.ref('shared_link_asset.sharedLinkId') }),
+                )
                 .selectAll('asset')
                 .limit(sql.lit(1)),
             ).as('assets'),
@@ -179,6 +191,7 @@ export class SharedLinkRepository {
         'shared_link.showExif',
         'shared_link.allowUpload',
         'shared_link.allowDownload',
+        'shared_link.includePrivateAssets',
         'shared_link.password',
         jsonObjectFrom(
           eb.selectFrom('user').select(columns.authUser).whereRef('user.id', '=', 'shared_link.userId'),
@@ -252,6 +265,9 @@ export class SharedLinkRepository {
           eb
             .selectFrom('asset')
             .whereRef('asset.id', '=', 'shared_link_asset.assetId')
+            .where((eb) =>
+              isAssetVisible(eb.ref('asset.id'), { sharedLinkId: eb.ref('shared_link_asset.sharedLinkId') }),
+            )
             .selectAll('asset')
             .innerJoinLateral(withExifInfo, (join) => join.onTrue())
             .as('assets'),

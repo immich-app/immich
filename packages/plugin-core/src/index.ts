@@ -200,7 +200,7 @@ const methods = wrapper<Manifest>({
     }
 
     if (config.inverse && data.asset.visibility === AssetVisibility.Locked) {
-      return { changes: { asset: { visibility: AssetVisibility.Timeline } } };
+      return { changes: { asset: { visibility: AssetVisibility.Timeline, unlockLockedFolder: true } } };
     }
 
     return {};

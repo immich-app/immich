@@ -4,6 +4,7 @@
   import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
   import { executeMutation } from '#lib/queries/client.ts';
   import type { OnSetVisibility } from '#lib/utils/actions.ts';
+  import { ensurePrivateSession } from '#lib/utils/private-session.ts';
   import { AssetVisibility } from '@immich/sdk';
   import { Button, modalManager } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline } from '@mdi/js';
@@ -31,11 +32,23 @@
       return;
     }
 
-    loading = true;
     const ids = assetMultiSelectManager.assets.map(({ id }) => id);
+    if (!(await ensurePrivateSession())) {
+      return;
+    }
+
+    loading = true;
     await executeMutation(
       () => updateAssetsMutation({ error: { toast: 'errors.unable_to_save_settings' } }),
-      [{ assetBulkUpdateDto: { ids, visibility: unlock ? AssetVisibility.Timeline : AssetVisibility.Locked } }],
+      [
+        {
+          assetBulkUpdateDto: {
+            ids,
+            visibility: unlock ? AssetVisibility.Timeline : AssetVisibility.Locked,
+            ...(unlock && { unlockLockedFolder: true }),
+          },
+        },
+      ],
       { onSuccess: () => onVisibilitySet(ids) },
     );
     loading = false;

@@ -6,7 +6,7 @@ import { PersonUserRole } from 'src/dtos/person.dto.js';
 import { AlbumUserRole, AssetVisibility } from 'src/enum.js';
 import { PersonId } from 'src/repositories/person.repository.js';
 import { DB } from 'src/schema/index.js';
-import { asUuid } from 'src/utils/database.js';
+import { asUuid, hasPrivateTagAncestor, isAssetVisible, isPrivateAsset } from 'src/utils/database.js';
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
@@ -161,6 +161,11 @@ class AssetAccess {
       .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.userId').on('user.deletedAt', 'is', null))
       .crossJoin('target')
       .select(['asset.id', 'asset.livePhotoVideoId'])
+      .select((eb) =>
+        eb
+          .not(isAssetVisible(eb.ref('asset.livePhotoVideoId'), { albumUserId: userId, albumId: eb.ref('album.id') }))
+          .as('isMotionPrivate'),
+      )
       .where((eb) =>
         eb.or([
           eb('asset.id', '=', sql<string>`any(target.ids)`),
@@ -169,6 +174,7 @@ class AssetAccess {
       )
       .where('user.id', '=', userId)
       .where('album.deletedAt', 'is', null)
+      .where((eb) => isAssetVisible(eb.ref('asset.id'), { albumUserId: userId, albumId: eb.ref('album.id') }))
       .execute()
       .then((assets) => {
         const allowedIds = new Set<string>();
@@ -176,7 +182,7 @@ class AssetAccess {
           if (asset.id && assetIds.has(asset.id)) {
             allowedIds.add(asset.id);
           }
-          if (asset.livePhotoVideoId && assetIds.has(asset.livePhotoVideoId)) {
+          if (!asset.isMotionPrivate && asset.livePhotoVideoId && assetIds.has(asset.livePhotoVideoId)) {
             allowedIds.add(asset.livePhotoVideoId);
           }
         }
@@ -196,7 +202,7 @@ class AssetAccess {
       .select('asset.id')
       .where('asset.id', 'in', [...assetIds])
       .where('asset.ownerId', '=', userId)
-      .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
+      .$if(!hasElevatedPermission, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id')))))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
@@ -222,7 +228,7 @@ class AssetAccess {
           eb('asset.visibility', '=', sql.lit(AssetVisibility.Hidden)),
         ]),
       )
-
+      .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
       .where('asset.id', 'in', [...assetIds])
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
@@ -267,7 +273,9 @@ class AssetAccess {
         (join) => join.onTrue(),
       )
       .select(['asset.id', 'asset.livePhotoVideoId'])
+      .select((eb) => eb.not(isAssetVisible(eb.ref('asset.livePhotoVideoId'), { sharedLinkId })).as('isMotionPrivate'))
       .where('asset.deletedAt', 'is', null)
+      .where((eb) => isAssetVisible(eb.ref('asset.id'), { sharedLinkId }))
       .where((eb) =>
         eb.or([
           eb('asset.id', '=', eb.fn.any('target.ids')),
@@ -281,7 +289,7 @@ class AssetAccess {
           if (assetIds.has(row.id)) {
             allowedIds.add(row.id);
           }
-          if (row.livePhotoVideoId && assetIds.has(row.livePhotoVideoId)) {
+          if (!row.isMotionPrivate && row.livePhotoVideoId && assetIds.has(row.livePhotoVideoId)) {
             allowedIds.add(row.livePhotoVideoId);
           }
         }
@@ -304,7 +312,7 @@ class AssetFileAccess {
       .selectFrom('asset_file')
       .select('asset_file.id')
       .innerJoin('asset', 'asset.id', 'asset_file.assetId')
-      .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
+      .$if(!hasElevatedPermission, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id')))))
       .where('asset.ownerId', '=', userId)
       .where('asset_file.id', 'in', [...fileIds])
       .execute()
@@ -398,7 +406,7 @@ class StackAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, stackIds: Set<string>) {
+  async checkOwnerAccess(userId: string, stackIds: Set<string>, hasElevatedPermission?: boolean) {
     if (stackIds.size === 0) {
       return new Set<string>();
     }
@@ -408,6 +416,7 @@ class StackAccess {
       .select('stack.id')
       .where('stack.id', 'in', [...stackIds])
       .where('stack.ownerId', '=', userId)
+      .$if(!hasElevatedPermission, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('stack.primaryAssetId')))))
       .execute()
       .then((stacks) => new Set(stacks.map((stack) => stack.id)));
   }
@@ -644,7 +653,7 @@ class TagAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, tagIds: Set<string>) {
+  async checkOwnerAccess(userId: string, tagIds: Set<string>, hasElevatedPermission: boolean | undefined) {
     if (tagIds.size === 0) {
       return new Set<string>();
     }
@@ -654,6 +663,7 @@ class TagAccess {
       .select('tag.id')
       .where('tag.id', 'in', [...tagIds])
       .where('tag.userId', '=', userId)
+      .$if(!hasElevatedPermission, (qb) => qb.where((eb) => eb.not(hasPrivateTagAncestor(eb.ref('tag.id')))))
       .execute()
       .then((tags) => new Set(tags.map((tag) => tag.id)));
   }

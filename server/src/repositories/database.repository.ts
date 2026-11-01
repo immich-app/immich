@@ -282,6 +282,18 @@ export class DatabaseRepository {
     });
     const { database } = this.configRepository.getEnv();
     const target = await schemaFromDatabase({ connection: database.config });
+    const { rows: enums } = await sql<{ name: string; values: string[] }>`
+      select pg_type.typname as name, json_agg(pg_enum.enumlabel order by pg_enum.enumsortorder) as values
+      from pg_type
+      join pg_namespace on pg_namespace.oid = pg_type.typnamespace
+      join pg_enum on pg_enum.enumtypid = pg_type.oid
+      where pg_namespace.nspname = 'public'
+      group by pg_type.typname
+    `.execute(this.db);
+    const orderedValues = new Map(enums.map(({ name, values }) => [name, values]));
+    for (const item of target.enums) {
+      item.values = orderedValues.get(item.name) ?? item.values;
+    }
 
     const drift = schemaDiff(source, target, {
       tables: { ignoreExtra: true },

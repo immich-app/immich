@@ -15,6 +15,7 @@ import { AuthDto } from 'src/dtos/auth.dto.js';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto.js';
 import { TagBulkAssetsDto } from 'src/dtos/tag.dto.js';
 import {
+  AssetVisibility,
   BootstrapEventPriority,
   DatabaseLock,
   ImmichEnvironment,
@@ -361,6 +362,8 @@ export class WorkflowExecutionService extends BaseService {
               await assetService.update(auth, assetId, {
                 isFavorite: asset.isFavorite,
                 visibility: asset.visibility,
+                ...(asset.visibility === AssetVisibility.Timeline &&
+                  asset.unlockLockedFolder && { unlockLockedFolder: true }),
                 dateTimeOriginal: asset.exifInfo?.dateTimeOriginal ?? undefined,
                 // TODO allow setting to null
                 longitude: asset.exifInfo?.longitude ?? undefined,

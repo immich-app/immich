@@ -4,13 +4,20 @@ import { AssetVisibility } from '@immich/sdk';
 
 test('moves an asset to the locked folder from the viewer', async ({ page, data, api, app }) => {
   const [asset, next] = data.addTimeline({ years: 1 });
+  data.setAuthStatus({ pinCode: true });
   await page.goto(Route.photos());
 
   await app.timeline.thumbnail(asset).click();
   await app.viewer.waitForAsset(asset);
   await app.viewer.moveToLockedFolder();
 
+  const pin = page.getByRole('dialog').filter({ hasText: 'unlock_private_content' }).getByRole('textbox');
+  await expect(pin).toBeVisible();
+  expect(api.updateAssets).not.toHaveBeenCalled();
+  await pin.pressSequentially('123456');
+
   await app.viewer.waitForAsset(next);
+  expect(api.unlockAuthSession).toHaveBeenCalledWith({ body: { pinCode: '123456' } });
   expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], visibility: AssetVisibility.Locked } });
 
   await app.viewer.backButton.click();
@@ -29,7 +36,9 @@ test('moves an asset off the locked folder from the viewer', async ({ page, data
   await app.viewer.moveOffLockedFolder();
 
   await app.viewer.waitForAsset(next);
-  expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], visibility: AssetVisibility.Timeline } });
+  expect(api.updateAssets).toHaveBeenCalledWith({
+    body: { ids: [asset.id], visibility: AssetVisibility.Timeline, unlockLockedFolder: true },
+  });
   await app.viewer.backButton.click();
   await expect(app.timeline.thumbnail(next)).toBeVisible();
   await expect(app.timeline.thumbnail(asset)).toHaveCount(0);

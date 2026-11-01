@@ -7,6 +7,7 @@ import { AlbumRepository } from 'src/repositories/album.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ResourceRepository } from 'src/repositories/resource.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { DB } from 'src/schema/index.js';
@@ -21,7 +22,15 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(ActivityService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, ActivityRepository, AlbumRepository, AlbumUserRepository, AssetRepository, UserRepository],
+    real: [
+      AccessRepository,
+      ActivityRepository,
+      AlbumRepository,
+      AlbumUserRepository,
+      AssetRepository,
+      UserRepository,
+      TagRepository,
+    ],
     mock: [LoggingRepository, ResourceRepository],
   });
 };
@@ -31,6 +40,50 @@ beforeAll(async () => {
 });
 
 describe(ActivityService.name, () => {
+  it('should scope private comments and likes to PIN elevation or the current album grant', async () => {
+    const { sut, ctx } = setup();
+    const { album, asset, owner, sharedWith } = await ctx.newSharedAlbum();
+    const { album: excluded } = await ctx.newAlbum({ ownerId: owner.id }, [asset.id]);
+    await ctx.newAlbumUser({ albumId: excluded.id, userId: sharedWith.id });
+    const locked = factory.auth({ user: owner });
+    const elevated = factory.auth({ user: owner, session: { hasElevatedPermission: true } });
+    const member = factory.auth({ user: sharedWith });
+    await sut.create(locked, { albumId: album.id, assetId: asset.id, type: ReactionType.COMMENT, comment: 'Secret' });
+    await sut.create(locked, { albumId: album.id, assetId: asset.id, type: ReactionType.LIKE });
+    await sut.create(locked, {
+      albumId: excluded.id,
+      assetId: asset.id,
+      type: ReactionType.COMMENT,
+      comment: 'Excluded',
+    });
+    const tag = await ctx.get(TagRepository).create({ userId: owner.id, value: 'private', isPrivate: true });
+    await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+    await expect(sut.getAll(locked, { albumId: album.id })).resolves.toEqual([]);
+    await expect(sut.create(locked, { albumId: album.id, assetId: asset.id, type: ReactionType.LIKE })).rejects.toThrow(
+      'asset access',
+    );
+    await expect(sut.getAll(elevated, { albumId: album.id })).resolves.toHaveLength(2);
+    await expect(sut.getStatistics(elevated, { albumId: album.id })).resolves.toEqual({ comments: 1, likes: 1 });
+    await expect(sut.getAll(member, { albumId: album.id })).resolves.toEqual([]);
+    await ctx.database.updateTable('album').set({ includePrivateAssets: true }).where('id', '=', album.id).execute();
+    await expect(sut.getAll(member, { albumId: album.id })).resolves.toHaveLength(2);
+    await expect(sut.getStatistics(member, { albumId: album.id })).resolves.toEqual({ comments: 1, likes: 1 });
+    await expect(
+      sut.create(member, { albumId: excluded.id, assetId: asset.id, type: ReactionType.LIKE }),
+    ).rejects.toThrow('asset access');
+    await expect(
+      sut.create(member, { albumId: album.id, assetId: asset.id, type: ReactionType.LIKE }),
+    ).resolves.toMatchObject({ duplicate: false });
+    await expect(
+      sut.create(member, { albumId: album.id, assetId: asset.id, type: ReactionType.LIKE }),
+    ).resolves.toMatchObject({ duplicate: true });
+    await expect(sut.getAll(member, { albumId: excluded.id })).resolves.toEqual([]);
+    await ctx.database.updateTable('album').set({ includePrivateAssets: false }).where('id', '=', album.id).execute();
+    await expect(sut.getAll(member, { albumId: album.id })).resolves.toEqual([]);
+    await expect(sut.getStatistics(member, { albumId: album.id })).resolves.toEqual({ comments: 0, likes: 0 });
+  });
+
   describe('getAll', () => {
     it('should start off empty', async () => {
       const { sut, ctx } = setup();

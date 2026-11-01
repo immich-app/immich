@@ -66,7 +66,9 @@ test('undo from the archive toast reopens the asset in the viewer', async ({ pag
     params: { id: asset.id },
     body: { visibility: AssetVisibility.Archive },
   });
-  expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], visibility: AssetVisibility.Timeline } });
+  expect(api.updateAssets).toHaveBeenCalledWith({
+    body: { ids: [asset.id], visibility: AssetVisibility.Timeline },
+  });
   await app.viewer.backButton.click();
   await expect(app.timeline.thumbnail(asset)).toBeVisible();
 });
@@ -126,7 +128,10 @@ for (const { name, route, from, to, toast } of shiftA) {
     await page.keyboard.press('Shift+A');
 
     await expect(app.toast(toast)).toBeVisible();
-    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { visibility: to } });
+    expect(api.updateAsset).toHaveBeenCalledWith({
+      params: { id: asset.id },
+      body: { visibility: to },
+    });
   });
 }
 

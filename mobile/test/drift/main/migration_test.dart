@@ -41,6 +41,34 @@ void main() {
     }
   });
 
+  test(
+    'v37 keeps a device asset available for backup matching after migration',
+    () async {
+      final schema = await verifier.schemaAt(36);
+      schema.rawDatabase.execute("""
+      INSERT INTO local_asset_entity (id, name, type, checksum, created_at, updated_at)
+      VALUES ('local', 'file.jpg', 1, 'checksum', '2026-07-24T10:00:00.000Z', '2026-07-24T10:00:00.000Z');
+      INSERT INTO local_album_entity (id, name, backup_selection) VALUES ('album', 'Camera', 0);
+      INSERT INTO local_album_asset_entity (asset_id, album_id) VALUES ('local', 'album');
+    """);
+
+      final db = Drift(schema.newConnection());
+      await verifier.migrateAndValidate(db, 37);
+      expect(
+        await db.syncStreamRepository.getBackupChecksums(
+          'user-1',
+          includeSynced: true,
+        ),
+        ['checksum'],
+      );
+      await db.syncStreamRepository.updateLocalAssetPresence('user-1', (
+        checked: ['checksum'],
+        matches: ['checksum'],
+      ));
+      await db.close();
+    },
+  );
+
   group('v35 group_date backfill', () {
     Future<List<Bucket>> loadBuckets(Drift db) => TimelineRepository(
       db,
@@ -57,7 +85,7 @@ void main() {
         ''');
 
         final db = Drift(schema.newConnection());
-        await verifier.migrateAndValidate(db, 35);
+        await verifier.migrateAndValidate(db, db.schemaVersion);
         await backfillAssetGroupDates(db);
 
         final result = await loadBuckets(db);
@@ -77,7 +105,7 @@ void main() {
         ''');
 
         final db = Drift(schema.newConnection());
-        await verifier.migrateAndValidate(db, 35);
+        await verifier.migrateAndValidate(db, db.schemaVersion);
 
         await db.customStatement(
           "UPDATE local_asset_entity SET created_at = updated_at WHERE julianday(created_at) > julianday(updated_at)",

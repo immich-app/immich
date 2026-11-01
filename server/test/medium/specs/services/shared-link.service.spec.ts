@@ -1,14 +1,16 @@
 import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
-import { AlbumUserRole, SharedLinkType } from 'src/enum.js';
+import { AlbumUserRole, AssetType, AssetVisibility, SharedLinkType } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AlbumRepository } from 'src/repositories/album.repository.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository.js';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SharedLinkService } from 'src/services/shared-link.service.js';
 import { newMediumService } from 'test/medium.factory.js';
@@ -21,7 +23,15 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SharedLinkService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, AlbumRepository, DatabaseRepository, SharedLinkRepository, SharedLinkAssetRepository],
+    real: [
+      AccessRepository,
+      AlbumRepository,
+      CryptoRepository,
+      DatabaseRepository,
+      SharedLinkRepository,
+      SharedLinkAssetRepository,
+      TagRepository,
+    ],
     mock: [LoggingRepository, StorageRepository, ResourceRepository],
   });
 };
@@ -31,6 +41,110 @@ beforeAll(async () => {
 });
 
 describe(SharedLinkService.name, () => {
+  it.each(['add', 'remove'] as const)(
+    'should preserve a concurrent private-sharing revocation during %s',
+    async (action) => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: secret } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: publicPhoto } = await ctx.newAsset({ ownerId: user.id });
+      for (const assetId of [secret.id, publicPhoto.id]) {
+        await ctx.newExif({ assetId, make: 'Canon' });
+      }
+      const tag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [secret.id] });
+      const link = await sut.create(factory.auth({ user, session: { hasElevatedPermission: true } }), {
+        type: SharedLinkType.Individual,
+        assetIds: action === 'remove' ? [secret.id, publicPhoto.id] : [secret.id],
+        includePrivateAssets: true,
+      });
+      const repository = ctx.get(SharedLinkRepository);
+      const get = repository.get.bind(repository);
+      const pendingRead = vi.spyOn(repository, 'get').mockImplementationOnce(async (userId, id) => {
+        const snapshot = await get(userId, id);
+        await repository.update({ id, includePrivateAssets: false });
+        return snapshot;
+      });
+      try {
+        const auth = factory.auth({ user });
+        const dto = { assetIds: [publicPhoto.id] };
+        await (action === 'add' ? sut.addAssets(auth, link.id, dto) : sut.removeAssets(auth, link.id, dto));
+      } finally {
+        pendingRead.mockRestore();
+      }
+      await expect(get(user.id, link.id)).resolves.toMatchObject({ includePrivateAssets: false });
+      await expect(
+        ctx.get(AccessRepository).asset.checkSharedLinkAccess(link.id, new Set([secret.id])),
+      ).resolves.toEqual(new Set());
+    },
+  );
+
+  it('should require an unlocked owner to add private photos to an opted-in individual link', async () => {
+    const { sut, ctx } = setup();
+    const { user } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+    const tag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+    await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+    const elevated = factory.auth({ user, session: { hasElevatedPermission: true } });
+    const { asset: cover } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newExif({ assetId: cover.id, make: 'Canon' });
+    const link = await sut.create(elevated, {
+      type: SharedLinkType.Individual,
+      assetIds: [cover.id],
+      includePrivateAssets: true,
+    });
+    await expect(sut.addAssets(factory.auth({ user }), link.id, { assetIds: [asset.id] })).resolves.toEqual([
+      { assetId: asset.id, success: false, error: 'no_permission' },
+    ]);
+    await expect(sut.addAssets(elevated, link.id, { assetIds: [asset.id] })).resolves.toEqual([
+      { assetId: asset.id, success: true },
+    ]);
+  });
+
+  it('should independently opt public links into private photos and include later additions', async () => {
+    const { sut, ctx } = setup();
+    const { album, asset, owner } = await ctx.newSharedAlbum();
+    const { asset: motion } = await ctx.newAsset({
+      ownerId: owner.id,
+      type: AssetType.Video,
+      visibility: AssetVisibility.Hidden,
+    });
+    await ctx.database.updateTable('asset').set({ livePhotoVideoId: motion.id }).where('id', '=', asset.id).execute();
+    const tag = await ctx.get(TagRepository).create({ userId: owner.id, value: 'private', isPrivate: true });
+    await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+    const locked = factory.auth({ user: owner });
+    const elevated = factory.auth({ user: owner, session: { hasElevatedPermission: true } });
+    const excluded = await sut.create(locked, { type: SharedLinkType.Album, albumId: album.id });
+    await expect(
+      sut.create(locked, {
+        type: SharedLinkType.Album,
+        albumId: album.id,
+        includePrivateAssets: true,
+      }),
+    ).rejects.toThrow('Unlock private');
+    const included = await sut.create(elevated, {
+      type: SharedLinkType.Album,
+      albumId: album.id,
+      includePrivateAssets: true,
+    });
+    await expect(sut.update(locked, included.id, { includePrivateAssets: true })).rejects.toThrow('Unlock private');
+    const access = ctx.get(AccessRepository).asset;
+    await expect(access.checkSharedLinkAccess(excluded.id, new Set([asset.id]))).resolves.toEqual(new Set());
+    await expect(access.checkSharedLinkAccess(included.id, new Set([asset.id]))).resolves.toEqual(new Set([asset.id]));
+    await expect(access.checkSharedLinkAccess(included.id, new Set([motion.id]))).resolves.toEqual(
+      new Set([motion.id]),
+    );
+    await expect(access.checkSharedLinkAccess(excluded.id, new Set([motion.id]))).resolves.toEqual(new Set());
+    await expect(sut.get(locked, included.id)).resolves.toMatchObject({ album: { assetCount: 1 } });
+    const { asset: later } = await ctx.newAsset({ ownerId: owner.id });
+    await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [later.id] });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: later.id });
+    await expect(sut.get(locked, included.id)).resolves.toMatchObject({ album: { assetCount: 2 } });
+    await sut.update(locked, included.id, { includePrivateAssets: false });
+    await expect(access.checkSharedLinkAccess(included.id, new Set([asset.id, later.id]))).resolves.toEqual(new Set());
+  });
+
   describe('get', () => {
     it('should return the correct dates on the shared link album', async () => {
       const { sut, ctx } = setup();
@@ -99,6 +213,26 @@ describe(SharedLinkService.name, () => {
   });
 
   describe('getAll', () => {
+    it('should hide the cover of an individual shared link after its asset becomes private', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+      const sharedLink = await ctx.get(SharedLinkRepository).create({
+        key: randomBytes(16),
+        id: factory.uuid(),
+        userId: user.id,
+        allowUpload: false,
+        type: SharedLinkType.Individual,
+        assetIds: [asset.id],
+      });
+      const tag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+      await expect(sut.getAll(factory.auth({ user }), {})).resolves.toMatchObject([{ id: sharedLink.id, assets: [] }]);
+      await expect(sut.getMine({ user, sharedLink }, [])).resolves.toMatchObject({ assets: [] });
+    });
+
     it('should return all shared links even when they share the same createdAt', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();

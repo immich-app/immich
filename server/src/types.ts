@@ -549,6 +549,9 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
 }
 
 export type UserPreferences = {
+  lockedFolder: {
+    sidebarWeb: boolean;
+  };
   albums: {
     defaultAssetOrder: AssetOrder;
   };

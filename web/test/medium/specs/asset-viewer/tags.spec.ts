@@ -55,4 +55,32 @@ test.describe('detail panel tags', () => {
     await expect(app.viewer.tag('Travel')).not.toBeVisible();
     expect(api.untagAssets).toHaveBeenCalledWith({ params: { id: travel.id }, body: { ids: [asset.id] } });
   });
+
+  for (const inherited of [false, true]) {
+    test(`confirms removal of a ${inherited ? 'child of a private' : 'private'} tag`, async ({
+      page,
+      data,
+      api,
+      app,
+    }) => {
+      data.setAuthStatus({ pinCode: true, isElevated: true });
+      const parent = factory.tag({ name: 'Secret', isPrivate: true });
+      const tag = inherited ? factory.tag({ name: 'Family', value: 'Secret/Family', parentId: parent.id }) : parent;
+      const asset = factory.asset({ tags: [tag] });
+      data.addTags([parent, tag]).addAssets(asset);
+      await page.goto(Route.viewAsset({ id: asset.id }));
+      await app.viewer.waitForAsset(asset);
+      await app.viewer.openDetailPanel();
+      await app.viewer.removeTagButton.click();
+      await expect(page.getByText('remove_private_tag_confirmation', { exact: true })).toBeVisible();
+      expect(api.untagAssets).not.toHaveBeenCalled();
+      await app.dialogButton('cancel').click();
+      await expect(app.viewer.tag(tag.value)).toBeVisible();
+      expect(api.untagAssets).not.toHaveBeenCalled();
+      await app.viewer.removeTagButton.click();
+      await app.dialogButton('remove').click();
+      await expect(app.viewer.tag(tag.value)).not.toBeVisible();
+      expect(api.untagAssets).toHaveBeenCalledWith({ params: { id: tag.id }, body: { ids: [asset.id] } });
+    });
+  }
 });

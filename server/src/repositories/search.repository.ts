@@ -12,6 +12,9 @@ import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import {
   anyUuid,
+  compatibilityVisibility,
+  hasLockedFolderTag,
+  isPrivateAsset,
   searchAssetBuilder,
   searchAssetBuilderLegacy,
   searchMetadataV3Examples,
@@ -22,6 +25,11 @@ import {
   withSearchOrder,
 } from 'src/utils/database.js';
 import { paginationHelper, type PaginationOptions } from 'src/utils/pagination.js';
+
+const searchAssetColumns = [
+  ...columns.searchAsset.filter((column) => column !== 'asset.visibility'),
+  compatibilityVisibility(sql.ref('asset.visibility'), hasLockedFolderTag(sql.ref('asset.id'))).as('visibility'),
+];
 
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
@@ -133,13 +141,22 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchOcrOptions;
 
 export type AssetSearchOptions = Omit<BaseAssetSearchOptions, 'visibility'> &
-  SearchRelationOptions & { visibility?: AssetVisibility | 'not-locked' };
+  SearchRelationOptions & {
+    includePrivate?: boolean;
+    privateOwnerId?: string;
+    albumUserId?: string;
+    sharedLinkId?: string;
+    visibility?: AssetVisibility | 'not-locked';
+  };
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
 export interface AssetSearchScope {
   userIds: string[];
   lockedOwnerId: string;
+  sharedLinkId?: string;
+  albumIds?: string[];
+  includePrivate: boolean;
   /** whose version of the people to select, required when selecting faces or people */
   viewingUserId?: string;
 }
@@ -161,7 +178,14 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions & { visibility?: AssetVisibility | 'not-locked'; viewingUserId?: string };
+  SearchOcrOptions & {
+    includePrivate?: boolean;
+    privateOwnerId?: string;
+    albumUserId?: string;
+    sharedLinkId?: string;
+    visibility?: AssetVisibility | 'not-locked';
+    viewingUserId?: string;
+  };
 
 export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
 
@@ -228,7 +252,7 @@ export class SearchRepository {
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     const items = await searchAssetBuilderLegacy(this.db, options)
-      .select(columns.searchAsset)
+      .select(searchAssetColumns)
       .orderBy('asset.fileCreatedAt', orderDirection)
       .orderBy('asset.id', orderDirection)
       .limit(pagination.size + 1)
@@ -270,7 +294,7 @@ export class SearchRepository {
   })
   async searchRandom(size: number, options: AssetSearchOptions) {
     return searchAssetBuilderLegacy(this.db, options)
-      .select(columns.searchAsset)
+      .select(searchAssetColumns)
       .orderBy(sql`random()`)
       .limit(size)
       .execute();
@@ -292,7 +316,7 @@ export class SearchRepository {
   searchLargeAssets(size: number, options: LargeAssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     return searchAssetBuilderLegacy(this.db, options)
-      .select(columns.searchAsset)
+      .select(searchAssetColumns)
       .$call(withExifInner)
       .$if(options.visibility !== AssetVisibility.Hidden, (qb) =>
         qb.where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
@@ -325,7 +349,7 @@ export class SearchRepository {
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
       const items = await searchAssetBuilderLegacy(trx, options)
-        .select(columns.searchAsset)
+        .select(searchAssetColumns)
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
         .orderBy('asset.id', 'asc')
@@ -436,6 +460,7 @@ export class SearchRepository {
           .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
           .where('asset.ownerId', '=', anyUuid(userIds))
           .where('asset.visibility', '=', AssetVisibility.Timeline)
+          .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
           .where('asset.type', '=', AssetType.Image)
           .where('asset.deletedAt', 'is', null)
           .orderBy('city')
@@ -452,6 +477,7 @@ export class SearchRepository {
                 .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
                 .where('asset.ownerId', '=', anyUuid(userIds))
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
+                .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
                 .where('asset.type', '=', AssetType.Image)
                 .where('asset.deletedAt', 'is', null)
                 .whereRef('asset_exif.city', '>', 'cte.city')
@@ -466,7 +492,7 @@ export class SearchRepository {
       .selectFrom('asset')
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .innerJoin('cte', 'asset.id', 'cte.assetId')
-      .select(columns.searchAsset)
+      .select(searchAssetColumns)
       .select((eb) =>
         eb
           .fn('to_jsonb', [eb.table('asset_exif')])
@@ -543,7 +569,7 @@ export class SearchRepository {
   @GenerateSql(...searchMetadataV3Examples)
   async searchMetadataV3(pagination: PaginationOptions, options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
     const items = await withSearchOrder(searchAssetBuilder(this.db, options, scope), options.order)
-      .select(columns.searchAsset)
+      .select(searchAssetColumns)
       .limit(pagination.take + 1)
       .offset(pagination.skip ?? 0)
       .execute();
@@ -558,7 +584,7 @@ export class SearchRepository {
     scope: AssetSearchScope,
   ): Promise<MapAsset[]> {
     return searchAssetBuilder(this.db, options, scope)
-      .select(columns.searchAsset)
+      .select(searchAssetColumns)
       .orderBy(sql`random()`)
       .limit(size)
       .execute();
@@ -574,7 +600,7 @@ export class SearchRepository {
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
       const items = await searchAssetBuilder(trx, options, scope)
-        .select(columns.searchAsset)
+        .select(searchAssetColumns)
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
         .orderBy('asset.id', 'asc')
@@ -601,6 +627,7 @@ export class SearchRepository {
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
       .where('visibility', '=', AssetVisibility.Timeline)
+      .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null)
       .where(field, '!=', '');

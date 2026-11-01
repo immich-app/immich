@@ -1,4 +1,5 @@
-import { ForeignKeyColumn, Index, Table } from '@immich/sql-tools';
+import { Column, ForeignKeyColumn, Index, Table } from '@immich/sql-tools';
+import type { Generated } from 'kysely';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { TagTable } from 'src/schema/tables/tag.table.js';
 
@@ -10,4 +11,7 @@ export class TagAssetTable {
 
   @ForeignKeyColumn(() => TagTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE', primary: true, index: true })
   tagId!: string;
+
+  @Column({ type: 'boolean', default: false })
+  isLivePhotoCompanion!: Generated<boolean>;
 }

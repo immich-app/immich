@@ -108,8 +108,39 @@ export const isAssetChecksumConstraint = (error: unknown) =>
 export const isVideoStreamSessionPkConstraint = (error: unknown) =>
   (error as PostgresError)?.constraint_name === VIDEO_STREAM_SESSION_PK_CONSTRAINT;
 
-export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
-  return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
+export type PrivateTagAccessOptions = {
+  includePrivate?: boolean;
+  privateOwnerId?: string;
+  albumUserId?: string;
+  albumId?: Expression<unknown>;
+  albumIds?: string[];
+  sharedLinkId?: string | Expression<unknown>;
+};
+
+export function withPrivateTagAccess<O>(qb: SelectQueryBuilder<DB, 'asset', O>, options: PrivateTagAccessOptions = {}) {
+  return qb.where((eb) => isAssetVisible(eb.ref('asset.id'), options));
+}
+
+export function withDefaultVisibility<O>(
+  qb: SelectQueryBuilder<DB, 'asset', O>,
+  options: PrivateTagAccessOptions = {},
+) {
+  return qb
+    .where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)])
+    .$call((qb) => withPrivateTagAccess(qb, options));
+}
+
+export function withLockedVisibilityCompatibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>, ownerId?: string) {
+  if (!ownerId) {
+    return qb.where((eb) => eb.lit(false));
+  }
+
+  return qb
+    .where('asset.ownerId', '=', asUuid(ownerId))
+    .where('asset.visibility', '!=', AssetVisibility.Hidden)
+    .where((eb) =>
+      eb.or([eb('asset.visibility', '=', AssetVisibility.Locked), hasLockedFolderTag(eb.ref('asset.id'))]),
+    );
 }
 
 const selectExifInfo = (eb: AssetExpressionBuilder) =>
@@ -356,15 +387,201 @@ export function withLibrary(eb: ExpressionBuilder<DB, 'asset'>) {
   ).as('library');
 }
 
-export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
+export function withTags(eb: ExpressionBuilder<DB, 'asset'>, privateOwnerId?: string | null) {
   return jsonArrayFrom(
     eb
       .selectFrom('tag')
       .select(columns.tag)
       .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+      .$if(privateOwnerId !== undefined, (qb) =>
+        qb.where((eb) =>
+          privateOwnerId
+            ? eb.or([eb.not(hasPrivateTagAncestor(eb.ref('tag.id'))), eb('tag.userId', '=', privateOwnerId)])
+            : eb.not(hasPrivateTagAncestor(eb.ref('tag.id'))),
+        ),
+      )
       .whereRef('asset.id', '=', 'tag_asset.assetId'),
   ).as('tags');
 }
+
+export const hasPrivateAssetTag = (assetId: Expression<unknown>) => sql<SqlBool>`
+  exists (
+    select 1 from tag_asset
+    join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+    join tag on tag.id = tag_closure.id_ancestor
+    where tag_asset."assetId" = ${assetId}
+      and tag."isPrivate" = true
+  )
+`;
+
+export const hasPrivateTagAncestor = (tagId: Expression<unknown>) => sql<SqlBool>`
+  exists (
+    select 1 from tag_closure
+    join tag as ancestor on ancestor.id = tag_closure.id_ancestor
+    where tag_closure.id_descendant = ${tagId} and ancestor."isPrivate" = true
+  )
+`;
+
+export const hasLockedFolderTag = (assetId: Expression<unknown>) => sql<SqlBool>`
+  exists (
+    select 1 from tag_asset
+    join tag on tag.id = tag_asset."tagId"
+    where tag_asset."assetId" = ${assetId}
+      and tag."isPrivate" and tag."systemKey" = 'locked'
+  )
+`;
+
+export const isPrivateAsset = (assetId: Expression<unknown>) => sql<boolean>`
+  (${hasPrivateAssetTag(assetId)} or exists (
+    select 1 from asset as private_asset
+    where private_asset.id = ${assetId} and private_asset.visibility = 'locked'
+  ) or exists (
+    select 1 from asset as still
+    where still."livePhotoVideoId" = ${assetId}
+      and (still.visibility = 'locked' or ${hasPrivateAssetTag(sql.ref('still.id'))})
+  ))
+`;
+
+export const hasAccessibleStackPrimary = (
+  stackId: Expression<string | null>,
+  excludedId: Expression<string> | null,
+  { includePrivate, privateOwnerId }: { includePrivate?: boolean; privateOwnerId?: string },
+) => sql<SqlBool>`
+  exists (
+    select 1 from stack
+    join asset as primary_asset on primary_asset.id = stack."primaryAssetId"
+    where stack.id = ${stackId}
+      ${excludedId ? sql`and primary_asset.id != ${excludedId}` : sql``}
+      and (not ${isPrivateAsset(sql.ref('primary_asset.id'))}
+        ${includePrivate && privateOwnerId ? sql`or primary_asset."ownerId" = ${asUuid(privateOwnerId)}` : sql``})
+  )
+`;
+
+export const hasPrivateAlbumAccess = (
+  assetId: Expression<unknown>,
+  userId: string,
+  albumId?: Expression<unknown>,
+  albumIds?: string[],
+) =>
+  sql<boolean>`exists (
+    select 1
+    from asset as granted_asset
+    join asset as granted_target on granted_target.id = ${assetId}
+      and granted_target."ownerId" = granted_asset."ownerId"
+    join album_asset as granted_membership on granted_membership."assetId" = granted_asset.id
+    join album as granted_album on granted_album.id = granted_membership."albumId"
+    join album_user as granted_owner on granted_owner."albumId" = granted_album.id
+      and granted_owner.role = 'owner' and granted_owner."userId" = granted_asset."ownerId"
+    join album_user as granted_viewer on granted_viewer."albumId" = granted_album.id
+      and granted_viewer."userId" = ${userId}
+    where granted_album."includePrivateAssets" and granted_album."deletedAt" is null
+      and granted_asset."deletedAt" is null and granted_target."deletedAt" is null
+      and granted_asset."ownerId" != ${userId}
+      and (granted_asset.id = ${assetId} or granted_asset."livePhotoVideoId" = ${assetId})
+      ${albumId ? sql`and granted_album.id = ${albumId}` : sql``}
+      ${albumIds ? sql`and granted_album.id = any(${albumIds}::uuid[])` : sql``}
+  )`;
+
+export const hasPrivateSharedLinkAccess = (assetId: Expression<unknown>, sharedLinkId: string | Expression<unknown>) =>
+  sql<boolean>`exists (
+    select 1 from shared_link as granted_link
+    join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+    join asset as granted_target on granted_target.id = ${assetId}
+      and granted_target."ownerId" = granted_asset."ownerId"
+    where granted_link.id = ${sharedLinkId} and granted_link."includePrivateAssets"
+      and (granted_link."expiresAt" is null or granted_link."expiresAt" > now())
+      and granted_asset."deletedAt" is null and granted_target."deletedAt" is null
+      and (granted_asset.id = ${assetId} or granted_asset."livePhotoVideoId" = ${assetId})
+      and (exists (
+        select 1 from shared_link_asset as granted_membership
+        where granted_membership."sharedLinkId" = granted_link.id
+          and granted_membership."assetId" = granted_asset.id
+      ) or exists (
+        select 1 from album_asset as granted_membership
+        join album as granted_album on granted_album.id = granted_membership."albumId"
+        where granted_membership."albumId" = granted_link."albumId"
+          and granted_membership."assetId" = granted_asset.id and granted_album."deletedAt" is null
+      ))
+  )`;
+
+export const isAssetVisible = (assetId: Expression<unknown>, options: PrivateTagAccessOptions = {}) => {
+  const grants: Expression<boolean>[] = [sql<boolean>`not ${isPrivateAsset(assetId)}`];
+  if (options.includePrivate && options.privateOwnerId) {
+    grants.push(sql<boolean>`exists (
+      select 1 from asset as owned_asset
+      where owned_asset.id = ${assetId} and owned_asset."ownerId" = ${options.privateOwnerId}
+    )`);
+  }
+  if (options.sharedLinkId) {
+    grants.push(hasPrivateSharedLinkAccess(assetId, options.sharedLinkId));
+  } else if (options.albumUserId) {
+    grants.push(hasPrivateAlbumAccess(assetId, options.albumUserId, options.albumId, options.albumIds));
+  }
+  return sql<boolean>`(${sql.join(grants, sql` or `)})`;
+};
+
+export const visibleAlbumThumbnail = (
+  albumId: Expression<string>,
+  assetId: Expression<string | null>,
+  options: PrivateTagAccessOptions = {},
+) =>
+  sql<string | null>`
+    case when ${assetId} is null or not ${isAssetVisible(assetId, { ...options, albumId })} then (
+      select candidate.id
+      from album_asset
+      join asset as candidate on candidate.id = album_asset."assetId"
+      where album_asset."albumId" = ${albumId}
+        and candidate."deletedAt" is null
+        and ${isAssetVisible(sql.ref('candidate.id'), { ...options, albumId })}
+      order by candidate."fileCreatedAt" desc, candidate.id
+      limit 1
+    ) else ${assetId} end
+  `;
+
+export async function resetAssetPrivacySync(tx: Kysely<DB>, ownerId: string, assetIds: string[]) {
+  if (assetIds.length === 0) {
+    return [];
+  }
+
+  const viewers = await tx
+    .selectFrom('album_asset')
+    .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
+    .select('album_user.userId')
+    .where((eb) =>
+      eb.or([
+        eb('album_asset.assetId', '=', anyUuid(assetIds)),
+        eb(
+          'album_asset.assetId',
+          'in',
+          eb.selectFrom('asset').select('asset.livePhotoVideoId').where('asset.id', '=', anyUuid(assetIds)),
+        ),
+      ]),
+    )
+    .union(tx.selectFrom('partner').select('partner.sharedWithId as userId').where('sharedById', '=', ownerId))
+    .union(
+      tx
+        .selectFrom('user')
+        .select('user.id as userId')
+        .where('clusterGroupId', '=', (eb) =>
+          eb.selectFrom('user as owner').select('clusterGroupId').where('id', '=', ownerId),
+        )
+        .where((eb) => eb.exists(eb.selectFrom('asset_face').select('id').where('assetId', '=', anyUuid(assetIds)))),
+    )
+    .union(
+      tx
+        .selectFrom('shared_link_asset')
+        .innerJoin('shared_link', 'shared_link.id', 'shared_link_asset.sharedLinkId')
+        .select('shared_link.userId')
+        .where('shared_link_asset.assetId', '=', anyUuid(assetIds)),
+    )
+    .execute();
+  const userIds = [...new Set([ownerId, ...viewers.map(({ userId }) => userId)])];
+  await tx.updateTable('session').set({ isPendingSyncReset: true }).where('userId', '=', anyUuid(userIds)).execute();
+  return userIds;
+}
+
+export const compatibilityVisibility = (visibility: Expression<AssetVisibility>, locked: Expression<SqlBool>) =>
+  sql<AssetVisibility>`case when ${visibility} != 'hidden' and ${locked} then 'locked' else ${visibility} end`;
 
 export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt, size: 'DAY' | 'MONTH' = 'MONTH') {
   return sql<O>`date_trunc(${sql.lit(size)}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
@@ -457,10 +674,26 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('asset')
+    .$if(options.visibility === undefined, (qb) =>
+      withPrivateTagAccess(qb, {
+        ...options,
+        albumUserId: options.albumIds?.length ? options.albumUserId : undefined,
+      }),
+    )
     .$if(!!options.visibility, (qb) =>
       options.visibility === 'not-locked'
-        ? qb.where('asset.visibility', '!=', AssetVisibility.Locked)
-        : qb.where('asset.visibility', '=', options.visibility!),
+        ? withPrivateTagAccess(qb, {
+            ...options,
+            includePrivate: false,
+            albumUserId: options.albumIds?.length ? options.albumUserId : undefined,
+          })
+        : options.visibility === AssetVisibility.Locked
+          ? withLockedVisibilityCompatibility(qb, options.privateOwnerId)
+          : qb.where('asset.visibility', '=', options.visibility!).$call((qb) =>
+              withPrivateTagAccess(qb, {
+                ...options,
+              }),
+            ),
     )
     .$if(!!options.viewingUserId, (qb) =>
       qb.where((eb) =>
@@ -776,7 +1009,11 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
     ...comparisonPredicates(eb, 'asset.id', branch.id),
     ...comparisonPredicates(eb, 'asset.libraryId', branch.libraryId),
     ...comparisonPredicates(eb, 'asset.type', branch.type),
-    ...comparisonPredicates(eb, 'asset.visibility', branch.visibility),
+    ...comparisonPredicates(
+      eb,
+      compatibilityVisibility(eb.ref('asset.visibility'), hasLockedFolderTag(eb.ref('asset.id'))),
+      branch.visibility,
+    ),
     ...(branch.isFavorite ? [eb('asset.isFavorite', '=', branch.isFavorite.eq)] : []),
     ...(branch.isOffline ? [eb('asset.isOffline', '=', branch.isOffline.eq)] : []),
     ...(branch.isMotion ? [eb('asset.livePhotoVideoId', branch.isMotion.eq ? 'is not' : 'is', null)] : []),
@@ -849,7 +1086,13 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       .$if(!!options.withExif, (qb) => qb.select(selectReturnedExifInfo))
       .$if(scopeGlobally, (qb) => qb.where(ownershipPredicate))
       .where((eb) =>
-        eb.or([eb('asset.visibility', '!=', AssetVisibility.Locked), eb('asset.ownerId', '=', scope.lockedOwnerId)]),
+        isAssetVisible(eb.ref('asset.id'), {
+          includePrivate: scope.includePrivate,
+          privateOwnerId: scope.lockedOwnerId,
+          albumUserId: scope.albumIds?.length ? scope.viewingUserId : undefined,
+          albumIds: scope.albumIds,
+          sharedLinkId: scope.sharedLinkId,
+        }),
       )
       .$if(!!(options.withFaces || options.withPeople), (qb) =>
         qb.select(withFacesAndPeople({ viewingUserId: scope.viewingUserId! })),
@@ -896,7 +1139,11 @@ export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order
   );
 }
 
-const scopeExample: AssetSearchScope = { userIds: [DummyValue.UUID], lockedOwnerId: DummyValue.UUID };
+const scopeExample: AssetSearchScope = {
+  userIds: [DummyValue.UUID],
+  lockedOwnerId: DummyValue.UUID,
+  includePrivate: false,
+};
 
 export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   { name: 'baseline', params: [{ take: 100 }, {}, scopeExample] },

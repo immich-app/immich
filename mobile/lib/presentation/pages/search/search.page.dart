@@ -17,6 +17,7 @@ import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/search/quick_date_picker.dart';
+import 'package:immich_mobile/presentation/widgets/tags/tag_picker.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
@@ -24,7 +25,6 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/feature_check.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
-import 'package:immich_mobile/widgets/common/tag_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/filter_bottom_sheet_scaffold.dart';
@@ -198,6 +198,7 @@ class SearchPage extends HookConsumerWidget {
               child: TagPicker(
                 onSelectExistingTag: handleOnSelect,
                 initialSelection: tags.map((tag) => tag.id).toSet(),
+                includePrivate: false,
               ),
             ),
           ),

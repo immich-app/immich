@@ -2,6 +2,7 @@ import { Kysely } from 'kysely';
 import { SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SyncTestContext } from 'test/medium.factory.js';
@@ -22,6 +23,17 @@ beforeAll(async () => {
 });
 
 describe(SyncRequestType.PartnerAssetsV2, () => {
+  it('should exclude private assets from partner sync', async () => {
+    const { auth, ctx } = await setup();
+    const { user: owner } = await ctx.newUser();
+    await ctx.newPartner({ sharedById: owner.id, sharedWithId: auth.user.id });
+    const { asset } = await ctx.newAsset({ ownerId: owner.id });
+    const tag = await ctx.get(TagRepository).create({ userId: owner.id, value: 'private', isPrivate: true });
+    await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
+  });
+
   it('should detect and sync the first partner asset', async () => {
     const { auth, ctx } = await setup();
 

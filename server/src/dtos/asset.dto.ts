@@ -2,7 +2,7 @@ import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { HistoryBuilder } from 'src/decorators.js';
 import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto.js';
-import { AssetType, AssetVisibilitySchema } from 'src/enum.js';
+import { AssetType, AssetVisibility, AssetVisibilitySchema } from 'src/enum.js';
 import { AssetStats } from 'src/repositories/asset.repository.js';
 import {
   IsNotSiblingOf,
@@ -17,6 +17,11 @@ const UpdateAssetBaseSchema = z
   .object({
     isFavorite: z.boolean().optional().describe('Mark as favorite'),
     visibility: AssetVisibilitySchema.optional(),
+    preserveLockedTag: z.boolean().optional().meta({ deprecated: true }),
+    unlockLockedFolder: z
+      .boolean()
+      .optional()
+      .describe('Explicitly remove the system private tag when moving to the timeline'),
     dateTimeOriginal: z.string().optional().describe('Original date and time'),
     latitude: latitudeSchema.optional().describe('Latitude coordinate'),
     longitude: longitudeSchema.optional().describe('Longitude coordinate'),
@@ -46,6 +51,11 @@ const UpdateAssetBaseSchema = z
       (data.latitude === undefined && data.longitude === undefined) ||
       (data.latitude !== undefined && data.longitude !== undefined),
     { message: 'Latitude and longitude must be provided together' },
+  )
+  .refine(
+    ({ unlockLockedFolder, preserveLockedTag, visibility }) =>
+      !unlockLockedFolder || (visibility === AssetVisibility.Timeline && !preserveLockedTag),
+    { message: 'Unlocking the locked folder requires timeline visibility', path: ['unlockLockedFolder'] },
   );
 
 const AssetBulkUpdateBaseSchema = UpdateAssetBaseSchema.extend({

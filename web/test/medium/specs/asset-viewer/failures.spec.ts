@@ -113,6 +113,9 @@ test.describe('asset viewer failures', () => {
   for (const row of rows) {
     test(`a failed ${row.action} shows ${row.toast}`, async ({ page, data, api, logger, app }) => {
       const asset = setup(data, row);
+      if (row.action === 'lock') {
+        data.setAuthStatus({ pinCode: true, isElevated: true });
+      }
       api.on({ [row.operation]: () => ({ networkError: true }) });
       await page.goto(viewRoute(asset, row));
       await app.viewer.waitForAsset(asset);

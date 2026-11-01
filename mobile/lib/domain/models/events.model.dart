@@ -6,6 +6,10 @@ class TimelineReloadEvent extends Event {
   const TimelineReloadEvent();
 }
 
+class AssetAccessChangedEvent extends Event {
+  const AssetAccessChangedEvent();
+}
+
 class ScrollToTopEvent extends Event {
   const ScrollToTopEvent();
 }

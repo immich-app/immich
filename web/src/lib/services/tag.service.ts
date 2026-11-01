@@ -36,7 +36,9 @@ export const getTagActions = ($t: MessageFormatter, tag: TreeNode) => {
       await executeMutation(deleteTagMutation, [{ id: tagId }], {
         confirm: {
           title: $t('delete_tag'),
-          prompt: $t('delete_tag_confirmation_prompt', { values: { tagName: tag.value } }),
+          prompt: $t('delete_tag_confirmation_prompt', {
+            values: { tagName: tag.isEffectivelyPrivate ? $t('private_tag') : tag.value },
+          }),
           confirmText: $t('delete'),
         },
         onSuccess: () => void goto(Route.tags({ path: tag.parent?.path ?? '' })),

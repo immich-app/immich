@@ -24,7 +24,7 @@ import { handleError } from './handle-error';
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 
 type FilePickerParam = { multiple?: boolean; extensions?: string[] };
-type FileUploadParam = { multiple?: boolean; albumId?: string };
+type FileUploadParam = { multiple?: boolean; albumId?: string; privateTagId?: string };
 
 export const openFilePicker = async (options: FilePickerParam = {}) => {
   const { multiple = true, extensions } = options;
@@ -70,14 +70,14 @@ export const openFilePicker = async (options: FilePickerParam = {}) => {
 };
 
 export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
-  const { albumId, multiple = true } = options;
+  const { albumId, privateTagId, multiple = true } = options;
   const extensions = uploadManager.getExtensions();
   const files = await openFilePicker({
     multiple,
     extensions,
   });
 
-  return fileUploadHandler({ files, albumId });
+  return fileUploadHandler({ files, albumId, privateTagId });
 };
 
 type FileUploadHandlerParams = Omit<FileUploaderParams, 'deviceAssetId' | 'assetFile'> & {
@@ -87,6 +87,7 @@ type FileUploadHandlerParams = Omit<FileUploaderParams, 'deviceAssetId' | 'asset
 export const fileUploadHandler = async ({
   files,
   albumId,
+  privateTagId,
   isLockedAssets = false,
 }: FileUploadHandlerParams): Promise<string[]> => {
   const extensions = uploadManager.getExtensions();
@@ -97,7 +98,9 @@ export const fileUploadHandler = async ({
       const deviceAssetId = getDeviceAssetId(file);
       uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId });
       promises.push(
-        uploadExecutionQueue.addTask(() => fileUploader({ deviceAssetId, assetFile: file, albumId, isLockedAssets })),
+        uploadExecutionQueue.addTask(() =>
+          fileUploader({ deviceAssetId, assetFile: file, albumId, privateTagId, isLockedAssets }),
+        ),
       );
     } else {
       toastManager.warning(get(t)('unsupported_file_type', { values: { file: file.name, type: file.type } }), {
@@ -141,6 +144,7 @@ function hashFile(file: File): Promise<string> {
 type FileUploaderParams = {
   assetFile: File;
   albumId?: string;
+  privateTagId?: string;
   replaceAssetId?: string;
   isLockedAssets?: boolean;
   // TODO rework the asset uploader and remove this
@@ -152,6 +156,7 @@ async function fileUploader({
   assetFile,
   deviceAssetId,
   albumId,
+  privateTagId,
   isLockedAssets = false,
 }: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
@@ -174,9 +179,12 @@ async function fileUploader({
     if (isLockedAssets) {
       formData.append('visibility', AssetVisibility.Locked);
     }
+    if (privateTagId) {
+      formData.append('privateTagId', privateTagId);
+    }
 
     let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean } | undefined;
-    if (!authManager.isSharedLink) {
+    if (!authManager.isSharedLink && !privateTagId && !isLockedAssets) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
       const onError = (error: unknown) => console.error(`Error calculating sha1 file=${assetFile.name})`, error);

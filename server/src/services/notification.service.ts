@@ -192,13 +192,18 @@ export class NotificationService extends BaseService {
       return;
     }
 
-    const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId], userId);
+    const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId], userId, true);
     if (asset) {
       this.websocketRepository.clientSend(
         'on_asset_update',
         userId,
         mapAsset(asset, { auth: { user: { id: userId } } as AuthDto }),
       );
+    } else {
+      this.resourceRepository.send({
+        userIds: [userId],
+        changed: [Resource.assets(), Resource.tags(), Resource.timeline()],
+      });
     }
   }
 

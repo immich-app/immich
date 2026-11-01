@@ -68,6 +68,13 @@ const TagsUpdateSchema = z
   .optional()
   .meta({ id: 'TagsUpdate' });
 
+const LockedFolderUpdateSchema = z
+  .object({
+    sidebarWeb: z.boolean().optional().describe('Whether the legacy Locked Folder appears in the web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'LockedFolderUpdate' });
+
 const EmailNotificationsUpdateSchema = z
   .object({
     enabled: z.boolean().optional().describe('Whether email notifications are enabled'),
@@ -157,6 +164,12 @@ const TagsResponseSchema = z
   })
   .meta({ id: 'TagsResponse' });
 
+const LockedFolderResponseSchema = z
+  .object({
+    sidebarWeb: z.boolean().describe('Whether the legacy Locked Folder appears in the web sidebar'),
+  })
+  .meta({ id: 'LockedFolderResponse' });
+
 const EmailNotificationsResponseSchema = z
   .object({
     enabled: z.boolean().describe('Whether email notifications are enabled'),
@@ -204,6 +217,7 @@ export class UserPreferencesUpdateDto extends createZodDto({
   ratings: RatingsUpdateSchema,
   sharedLinks: SharedLinksUpdateSchema,
   tags: TagsUpdateSchema,
+  lockedFolder: LockedFolderUpdateSchema,
   recentlyAdded: RecentlyAddedUpdateSchema,
 }) {}
 
@@ -215,6 +229,7 @@ export class UserPreferencesResponseDto extends createZodDto({
   ratings: RatingsResponseSchema,
   sharedLinks: SharedLinksResponseSchema,
   tags: TagsResponseSchema,
+  lockedFolder: LockedFolderResponseSchema.optional(),
   emailNotifications: EmailNotificationsResponseSchema,
   download: DownloadResponseSchema,
   purchase: PurchaseResponseSchema,

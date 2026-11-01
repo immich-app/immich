@@ -1,5 +1,7 @@
 import { correlationIdHeader, resourceUpdateBatchDelay } from '#lib/constants.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import type { QueryKey } from '@tanstack/svelte-query';
 import type { Socket } from 'socket.io-client';
 
@@ -7,7 +9,7 @@ type ResourceEvent = { changed: string[]; deleted: string[]; correlationId?: str
 type DeleteListener = { path: string[]; onDelete: () => void };
 
 class ResourceManager {
-  #clientId = crypto.randomUUID().split('-', 1)[0];
+  #clientId = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).padStart(8, '0');
   #requestCount = 0;
   #pendingPaths = new Set<string>();
   #flushTimer?: ReturnType<typeof setTimeout>;
@@ -23,6 +25,10 @@ class ResourceManager {
   }
 
   handleEvent({ changed, deleted, correlationId }: ResourceEvent) {
+    if (changed.includes('/timeline')) {
+      void queryClient.resetQueries({ queryKey: QueryKeys.timeline() });
+      eventManager.emit('TimelineRefresh');
+    }
     if (this.#isFromThisTab(correlationId)) {
       return;
     }

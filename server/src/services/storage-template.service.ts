@@ -332,17 +332,22 @@ export class StorageTemplateService extends BaseService {
       let albumStartDate = null;
       let albumEndDate = null;
       const assetForMetadata = stillPhoto;
+      const privateAccess = { includePrivate: true, privateOwnerId: assetForMetadata.ownerId };
 
       if (this.template.needsAlbum) {
         // For motion videos, use the still photo's album information since motion videos
         // don't have album metadata attached directly
-        const albums = await this.albumRepository.getByAssetId(assetForMetadata.ownerId, assetForMetadata.id);
+        const albums = await this.albumRepository.getByAssetId(
+          assetForMetadata.ownerId,
+          assetForMetadata.id,
+          privateAccess,
+        );
         const album = albums?.[0];
         if (album) {
           albumName = album.albumName || null;
 
           if (this.template.needsAlbumMetadata) {
-            const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
+            const [metadata] = await this.albumRepository.getMetadataForIds([album.id], privateAccess);
             albumStartDate = metadata?.startDate || null;
             albumEndDate = metadata?.endDate || null;
           }

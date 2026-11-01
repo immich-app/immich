@@ -1,5 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { HlsVideoResolution, VideoCodec } from 'src/enum.js';
+import { CacheControl, HlsVideoResolution, VideoCodec } from 'src/enum.js';
 import { HlsService } from 'src/services/hls.service.js';
 import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub.js';
 import { factory } from 'test/small.factory.js';
@@ -319,6 +319,14 @@ describe(HlsService.name, () => {
       mocks.storage.checkFileExists.mockResolvedValue(true);
     });
 
+    it('should look up segments for the authorized asset and disable caching during PIN elevation', async () => {
+      const elevated = factory.auth({ session: { hasElevatedPermission: true } });
+      const result = await sut.getSegment(elevated, assetId, sessionId, variantIndex, 'init.mp4');
+
+      expect(mocks.videoStream.getSession).toHaveBeenCalledWith(sessionId, assetId);
+      expect(result.cacheControl).toBe(CacheControl.PrivateNoStore);
+    });
+
     it('emits HlsHeartbeat with segmentIndex 0 for the first init.mp4 request', async () => {
       await sut.getSegment(auth, assetId, sessionId, variantIndex, 'init.mp4');
       expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsHeartbeat', {
@@ -430,6 +438,7 @@ describe(HlsService.name, () => {
       const auth = factory.auth();
       const assetId = 'asset-1';
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.videoStream.getSession.mockResolvedValue({ id: sessionId, assetId } as never);
       await sut.endSession(auth, assetId, sessionId);
       expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsSessionEnd', { sessionId });
     });

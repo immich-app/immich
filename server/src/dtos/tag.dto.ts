@@ -16,6 +16,7 @@ export const TagResponseSchema = z
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     updatedAt: z.string().meta({ format: 'date-time' }).describe('Last update date'),
     color: z.string().optional().describe('Tag color (hex)'),
+    isPrivate: z.boolean().optional().describe('Whether this tag hides its assets behind private mode'),
   })
   .meta({ id: 'TagResponseDto' });
 
@@ -26,6 +27,7 @@ export class TagCreateDto extends createZodDto({
     .describe('Tag name'),
   parentId: z.uuidv4().nullish().describe('Parent tag ID'),
   color: hexColor.nullable().optional().describe('Tag color (hex)'),
+  isPrivate: z.boolean().optional().describe('Whether this tag hides its assets behind private mode'),
 }) {}
 
 export class TagUpdateDto extends createZodDto({
@@ -35,6 +37,7 @@ export class TagUpdateDto extends createZodDto({
     .optional()
     .describe('Tag name'),
   color: hexColor.nullable().optional().describe('Tag color (hex)'),
+  isPrivate: z.boolean().optional().describe('Whether this tag hides its assets behind private mode'),
 }) {}
 
 export class TagUpsertDto extends createZodDto({
@@ -61,5 +64,6 @@ export function mapTag(entity: MaybeDehydrated<Tag>): TagResponseDto {
     createdAt: asDateTimeString(entity.createdAt),
     updatedAt: asDateTimeString(entity.updatedAt),
     color: entity.color ?? undefined,
+    isPrivate: entity.isPrivate,
   };
 }

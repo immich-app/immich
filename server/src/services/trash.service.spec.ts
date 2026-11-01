@@ -80,7 +80,7 @@ describe(TrashService.name, () => {
       mocks.trash.getDeletedIds.mockResolvedValue(makeAssetIdStream(0));
       mocks.trash.restore.mockResolvedValue(0);
       await expect(sut.restore(authStub.user1)).resolves.toEqual({ count: 0 });
-      expect(mocks.trash.restore).toHaveBeenCalledWith('user-id');
+      expect(mocks.trash.restore).toHaveBeenCalledWith('user-id', false);
       expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
@@ -97,7 +97,7 @@ describe(TrashService.name, () => {
       mocks.trash.getDeletedIds.mockResolvedValue(makeAssetIdStream(1));
       mocks.trash.restore.mockResolvedValue(1);
       await expect(sut.restore(authStub.user1)).resolves.toEqual({ count: 1 });
-      expect(mocks.trash.restore).toHaveBeenCalledWith('user-id');
+      expect(mocks.trash.restore).toHaveBeenCalledWith('user-id', false);
     });
   });
 
@@ -123,7 +123,7 @@ describe(TrashService.name, () => {
       mocks.trash.getDeletedIds.mockResolvedValue(makeAssetIdStream(1));
       mocks.trash.empty.mockResolvedValue(1);
       await expect(sut.empty(authStub.user1)).resolves.toEqual({ count: 1 });
-      expect(mocks.trash.empty).toHaveBeenCalledWith('user-id');
+      expect(mocks.trash.empty).toHaveBeenCalledWith('user-id', false);
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetEmptyTrash, data: {} });
     });
   });

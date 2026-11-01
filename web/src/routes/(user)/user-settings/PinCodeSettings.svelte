@@ -1,9 +1,9 @@
 <script lang="ts">
+  import PinCodeChangeForm from '#lib/components/user-settings-page/PinCodeChangeForm.svelte';
   import PinCodeCreateForm from '#lib/components/user-settings-page/PinCodeCreateForm.svelte';
   import { getAuthStatusQuery } from '#lib/queries/auth.query.ts';
   import { createQuery } from '@tanstack/svelte-query';
   import { fade } from 'svelte/transition';
-  import PinCodeChangeForm from './PinCodeChangeForm.svelte';
 
   const query = createQuery(getAuthStatusQuery);
   const hasPinCode = $derived(query.data?.pinCode ?? false);

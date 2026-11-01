@@ -70,6 +70,9 @@ export class SharedLinkService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
+    if (dto.includePrivateAssets && !auth.session?.hasElevatedPermission) {
+      throw new ForbiddenException('Unlock private content before sharing private photos');
+    }
     switch (dto.type) {
       case SharedLinkType.Album: {
         if (!dto.albumId) {
@@ -84,7 +87,11 @@ export class SharedLinkService extends BaseService {
           throw new BadRequestException('Invalid assetIds');
         }
 
-        await this.requireAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
+        await this.requireAccess({
+          auth,
+          permission: dto.includePrivateAssets ? Permission.AssetRead : Permission.AssetShare,
+          ids: dto.assetIds,
+        });
 
         break;
       }
@@ -103,6 +110,7 @@ export class SharedLinkService extends BaseService {
         allowUpload: dto.allowUpload ?? false,
         allowDownload: dto.showMetadata !== false && (dto.allowDownload ?? true),
         showExif: dto.showMetadata ?? true,
+        includePrivateAssets: dto.includePrivateAssets ?? false,
         slug: dto.slug || null,
       });
       this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sharedLinks()] });
@@ -130,6 +138,9 @@ export class SharedLinkService extends BaseService {
 
   async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
     await this.findOrFail(auth.user.id, id);
+    if (dto.includePrivateAssets && !auth.session?.hasElevatedPermission) {
+      throw new ForbiddenException('Unlock private content before sharing private photos');
+    }
     try {
       const sharedLink = await this.sharedLinkRepository.update({
         id,
@@ -140,6 +151,7 @@ export class SharedLinkService extends BaseService {
         allowUpload: dto.allowUpload,
         allowDownload: dto.allowDownload,
         showExif: dto.showMetadata,
+        includePrivateAssets: dto.includePrivateAssets,
         slug: dto.slug || null,
       });
       this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sharedLink({ id })] });
@@ -179,7 +191,7 @@ export class SharedLinkService extends BaseService {
     const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
     const allowedAssetIds = await this.checkAccess({
       auth,
-      permission: Permission.AssetShare,
+      permission: sharedLink.includePrivateAssets ? Permission.AssetRead : Permission.AssetShare,
       ids: notPresentAssetIds,
     });
 
@@ -201,8 +213,8 @@ export class SharedLinkService extends BaseService {
     }
 
     const addedAssetIds = results.filter(({ success }) => success).map(({ assetId }) => assetId);
-    await this.sharedLinkRepository.update({ ...sharedLink, assetIds: addedAssetIds });
     if (addedAssetIds.length > 0) {
+      await this.sharedLinkRepository.update({ id, assetIds: addedAssetIds });
       this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sharedLink({ id })] });
     }
 
@@ -227,11 +239,10 @@ export class SharedLinkService extends BaseService {
       }
 
       results.push({ assetId, success: true });
-      sharedLink.assets = sharedLink.assets.filter((asset) => asset.id !== assetId);
     }
 
-    await this.sharedLinkRepository.update(sharedLink);
     if (removedAssetIds.length > 0) {
+      await this.sharedLinkRepository.update({ id });
       this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sharedLink({ id })] });
     }
 
@@ -245,8 +256,13 @@ export class SharedLinkService extends BaseService {
 
     const config = await this.getConfig({ withCache: true });
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
-    const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const [albumMetadata] = sharedLink.album ? await this.albumRepository.getMetadataForIds([sharedLink.album.id]) : [];
+    const { album } = sharedLink;
+    const albumThumbnailId =
+      album?.visibleThumbnailAssetId === undefined ? album?.albumThumbnailAssetId : album.visibleThumbnailAssetId;
+    const assetId = albumThumbnailId || sharedLink.assets[0]?.id;
+    const [albumMetadata] = sharedLink.album
+      ? await this.albumRepository.getMetadataForIds([sharedLink.album.id], { sharedLinkId: sharedLink.id })
+      : [];
     const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : albumMetadata?.assetCount || 0;
     const imagePath = assetId
       ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
@@ -262,7 +278,9 @@ export class SharedLinkService extends BaseService {
   private async mapWithAlbumMetadata(sharedLink: SharedLink, { auth }: { auth: AuthDto }) {
     const response = mapSharedLink(sharedLink, { auth });
     if (response.album) {
-      const [metadata] = await this.albumRepository.getMetadataForIds([response.album.id]);
+      const [metadata] = await this.albumRepository.getMetadataForIds([response.album.id], {
+        sharedLinkId: sharedLink.id,
+      });
       response.album.startDate = asDateTimeString(metadata?.startDate ?? undefined);
       response.album.endDate = asDateTimeString(metadata?.endDate ?? undefined);
       response.album.assetCount = metadata?.assetCount ?? 0;

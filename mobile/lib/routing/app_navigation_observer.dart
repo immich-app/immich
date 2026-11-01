@@ -13,7 +13,6 @@ class AppNavigationObserver extends AutoRouterObserver {
 
   @override
   void didPush(Route route, Route? previousRoute) {
-    ref.invalidate(inLockedViewProvider);
     ref.invalidate(isAssetViewerOpenProvider);
     unawaited(
       Future(() {
@@ -26,7 +25,6 @@ class AppNavigationObserver extends AutoRouterObserver {
 
   @override
   void didPop(Route route, Route? previousRoute) {
-    ref.invalidate(inLockedViewProvider);
     ref.invalidate(isAssetViewerOpenProvider);
   }
 }

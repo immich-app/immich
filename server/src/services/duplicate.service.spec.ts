@@ -454,6 +454,9 @@ describe(DuplicateService.name, () => {
         ] as any,
       });
 
+      mocks.tag.replaceAssetTags.mockResolvedValue([]);
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'Work' }, { value: 'Travel' }] });
+
       const result = await sut.resolve(authStub.admin, {
         groups: [{ duplicateId: 'group-1', keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
       });
@@ -461,10 +464,13 @@ describe(DuplicateService.name, () => {
       expect(result[0].success).toBe(true);
 
       // Verify tags were applied to tag_asset table
-      expect(mocks.tag.replaceAssetTags).toHaveBeenCalledWith(asset1.id, ['tag-1', 'tag-2']);
+      expect(mocks.tag.replaceAssetTags).toHaveBeenCalledWith(asset1.id, ['tag-1', 'tag-2'], false);
 
       // Verify merged tag values were written to asset_exif.tags so SidecarWrite preserves them
-      expect(mocks.asset.updateAllExif).toHaveBeenCalledWith([asset1.id], { tags: ['Work', 'Travel'] });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({
+        exif: { assetId: asset1.id, tags: ['Work', 'Travel'], lockedProperties: ['tags'] },
+        lockedPropertiesBehavior: 'append',
+      });
 
       // Verify SidecarWrite was queued (to write tags to sidecar)
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: asset1.id } }]);
@@ -481,6 +487,9 @@ describe(DuplicateService.name, () => {
         duplicateId: 'group-1',
         assets: [keep, { ...trash, tags: [tag] }] as unknown as MapAsset[],
       });
+
+      mocks.tag.replaceAssetTags.mockResolvedValue([]);
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: tag.value }] });
 
       await sut.resolve(auth, {
         groups: [{ duplicateId: 'group-1', keepAssetIds: [keep.id], trashAssetIds: [trash.id] }],

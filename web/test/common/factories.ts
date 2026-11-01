@@ -62,6 +62,7 @@ const preferences = (overrides: Partial<UserPreferencesResponseDto> = {}): UserP
   download: { archiveSize: 4_294_967_296, includeEmbeddedVideos: false },
   emailNotifications: { albumInvite: true, albumUpdate: true, enabled: true },
   folders: { enabled: false, sidebarWeb: false },
+  lockedFolder: { sidebarWeb: true },
   memories: { enabled: true, duration: 5, sidebarWeb: false },
   people: { enabled: true, sidebarWeb: false, updateStrategy: PersonUpdateStrategy.Everyone },
   purchase: { hideBuyButtonUntil: '2100-02-12T00:00:00.000Z', showSupportBadge: false },
@@ -301,6 +302,7 @@ const tag = (overrides: Partial<TagResponseDto> = {}): TagResponseDto => {
   const name = overrides.name ?? `tag-${tagIndex++}`;
   return {
     id: crypto.randomUUID(),
+    isPrivate: false,
     name,
     value: name,
     createdAt: now,

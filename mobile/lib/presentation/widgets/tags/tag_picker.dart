@@ -6,26 +6,39 @@ import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/providers/private_session.provider.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 String _trimSlashes(String s) => s.replaceAll(RegExp(r'^/+|/+$'), '');
 
-Future<(Set<String>, Set<String>)?> showTagPickerModal({required BuildContext context, Set<String>? initialSelection}) {
+Future<(Set<String>, Set<String>)?> showTagPickerModal({
+  required BuildContext context,
+  Set<String>? initialSelection,
+  bool privateOnly = false,
+}) {
   return showDialog<(Set<String>, Set<String>)?>(
     context: context,
-    builder: (context) => _TagPickerModal(initialSelection: initialSelection),
+    builder: (context) => _TagPickerModal(initialSelection: initialSelection, privateOnly: privateOnly),
   );
 }
 
-class _TagPickerModal extends HookWidget {
+class _TagPickerModal extends HookConsumerWidget {
   final Set<String>? initialSelection;
+  final bool privateOnly;
 
-  const _TagPickerModal({this.initialSelection});
+  const _TagPickerModal({this.initialSelection, required this.privateOnly});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final selectedTagIds = useState<Set<String>>(initialSelection ?? {});
     final newTagValues = useState<Set<String>>({});
+    final unlocked = ref.watch(privateContentVisibleProvider);
+    ref.listen(privateSessionProvider, (_, unlocked) {
+      if (!unlocked) {
+        selectedTagIds.value = {};
+        newTagValues.value = {};
+      }
+    });
 
     void onSelectExistingTag(Iterable<Tag> tags) {
       selectedTagIds.value = tags.map((tag) => tag.id).toSet();
@@ -49,7 +62,7 @@ class _TagPickerModal extends HookWidget {
           ),
         ),
         TextButton(
-          onPressed: () => context.pop((selectedTagIds.value, newTagValues.value)),
+          onPressed: privateOnly && !unlocked ? null : () => context.pop((selectedTagIds.value, newTagValues.value)),
           child: Text(
             context.t.action_common_update,
             style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
@@ -62,7 +75,8 @@ class _TagPickerModal extends HookWidget {
         child: TagPicker(
           onSelectExistingTag: onSelectExistingTag,
           initialSelection: selectedTagIds.value,
-          onSelectNewTag: onSelectNewTag,
+          onSelectNewTag: privateOnly ? null : onSelectNewTag,
+          privateOnly: privateOnly,
         ),
       ),
     );
@@ -70,9 +84,18 @@ class _TagPickerModal extends HookWidget {
 }
 
 class TagPicker extends HookConsumerWidget {
-  const TagPicker({super.key, required this.onSelectExistingTag, required this.initialSelection, this.onSelectNewTag});
+  const TagPicker({
+    super.key,
+    required this.onSelectExistingTag,
+    required this.initialSelection,
+    this.onSelectNewTag,
+    this.privateOnly = false,
+    this.includePrivate = true,
+  });
 
   final Set<String> initialSelection;
+  final bool privateOnly;
+  final bool includePrivate;
 
   /// Callback when existing tags are selected/deselected.
   final Function(Iterable<Tag>) onSelectExistingTag;
@@ -85,6 +108,7 @@ class TagPicker extends HookConsumerWidget {
     final formFocus = useFocusNode();
     final searchQuery = useState('');
     final tags = ref.watch(Store.tags.all());
+    final showPrivate = includePrivate && ref.watch(privateContentVisibleProvider);
     final selectedTagIds = useState<Set<String>>(initialSelection);
     const borderRadius = BorderRadius.all(Radius.circular(20));
     final selectedNewTagValues = useState<Set<String>>({});
@@ -107,9 +131,14 @@ class TagPicker extends HookConsumerWidget {
         ),
         Expanded(
           child: tags.widgetWhen(
+            skipLoadingOnRefresh: false,
             onData: (tags) {
               final trimmedQuery = _trimSlashes(searchQuery.value);
-              final queryResult = tags
+              final available = tags.where((tag) {
+                final private = tags.isEffectivelyPrivate(tag);
+                return privateOnly ? showPrivate && private : showPrivate || !private;
+              });
+              final queryResult = available
                   .where((t) => t.value.toLowerCase().contains(trimmedQuery.toLowerCase()))
                   .toList();
               final showCreateTile =
@@ -167,6 +196,7 @@ class TagPicker extends HookConsumerWidget {
                         selected: isSelected,
                         selectedTileColor: context.primaryColor,
                         tileColor: context.primaryColor.withAlpha(25),
+                        leading: tags.isEffectivelyPrivate(tag) ? const Icon(Icons.lock_outline) : null,
                         title: Text(
                           tag.value,
                           style: context.textTheme.bodyLarge?.copyWith(
@@ -181,7 +211,7 @@ class TagPicker extends HookConsumerWidget {
                             newSelected.add(tag.id);
                           }
                           selectedTagIds.value = newSelected;
-                          onSelectExistingTag(tags.where((t) => newSelected.contains(t.id)));
+                          onSelectExistingTag(available.where((t) => newSelected.contains(t.id)));
                         },
                       ),
                     );

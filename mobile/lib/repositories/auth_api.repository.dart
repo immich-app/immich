@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/server/pin.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -34,20 +35,11 @@ class AuthApiRepository extends ApiRepository {
     await _apiService.authenticationApi.logout().timeout(const Duration(seconds: 7));
   }
 
-  Future<bool> unlockPinCode(String pinCode) async {
-    try {
-      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: Optional.present(pinCode)));
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
+  Future<bool> unlockPinCode(String pinCode) => PinApiRepository(_apiService.authenticationApi).unlockPinCode(pinCode);
 
   Future<void> setupPinCode(String pinCode) {
     return _apiService.authenticationApi.setupPinCode(PinCodeSetupDto(pinCode: pinCode));
   }
 
-  Future<void> lockPinCode() {
-    return _apiService.authenticationApi.lockAuthSession();
-  }
+  Future<void> lockPinCode() => PinApiRepository(_apiService.authenticationApi).lockPinCode();
 }

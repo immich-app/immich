@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import type { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto.js';
 import { AssetEditAction } from 'src/dtos/editing.dto.js';
@@ -11,8 +12,10 @@ import {
   JobName,
   JobStatus,
 } from 'src/enum.js';
+import type { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetStats } from 'src/repositories/asset.repository.js';
 import { Resource } from 'src/resource-paths.js';
+import type { DB } from 'src/schema/index.js';
 import { AssetService } from 'src/services/asset.service.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
@@ -54,6 +57,14 @@ describe(AssetService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AssetService));
+    mocks.tag.changeAssetLinks.mockImplementation(async (ownerId, _tagIds, write) => {
+      const { result, links } = await write(
+        mocks.tag,
+        mocks.access as unknown as AccessRepository,
+        undefined as unknown as Kysely<DB>,
+      );
+      return { result, privacyUserIds: links.length > 0 ? [ownerId] : [] };
+    });
   });
 
   describe('getStatistics', () => {
@@ -478,7 +489,7 @@ describe(AssetService.name, () => {
       const asset1 = AssetFactory.from().owner(auth.user).build();
       const asset2 = AssetFactory.from().owner(auth.user).build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
-      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
+      mocks.asset.getPublicByIds.mockResolvedValue([asset1, asset2]);
 
       await sut.updateAll(auth, { ids: [asset1.id, asset2.id], visibility: AssetVisibility.Archive });
 
@@ -519,6 +530,89 @@ describe(AssetService.name, () => {
       expect(mocks.asset.updateAll).toHaveBeenCalled();
       expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], { latitude: 0, longitude: 0 });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
+    });
+
+    it('should require a PIN for bulk locking', async () => {
+      const auth = factory.auth();
+      await expect(sut.updateAll(auth, { ids: ['asset-1'], visibility: AssetVisibility.Locked })).rejects.toThrow(
+        'Elevated permission is required',
+      );
+      expect(mocks.tag.changeAssetLinks).not.toHaveBeenCalled();
+    });
+
+    it('should keep the system tag when restoring timeline visibility from archive', async () => {
+      const auth = factory.auth({ session: { hasElevatedPermission: true } });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.updateAll(auth, { ids: ['asset-1'], visibility: AssetVisibility.Timeline });
+      await sut.updateAll(auth, { ids: ['asset-1'], visibility: AssetVisibility.Timeline });
+
+      expect(mocks.tag.changeAssetLinks).not.toHaveBeenCalled();
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1'], { visibility: AssetVisibility.Timeline });
+    });
+
+    it('should move assets to the locked private tag for locked visibility requests', async () => {
+      const auth = factory.auth({ session: { hasElevatedPermission: true } });
+      const lockedTag = { id: 'tag-locked', value: 'locked', isPrivate: true, systemKey: 'locked' };
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.tag.getOrCreateSystemTag.mockResolvedValue(lockedTag as any);
+      mocks.tag.upsertAssetIds.mockResolvedValue([
+        { assetId: 'asset-1', tagId: 'tag-locked' },
+        { assetId: 'asset-2', tagId: 'tag-locked' },
+      ]);
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'locked' }] } as any);
+
+      await sut.updateAll(auth, { ids: ['asset-1', 'asset-2'], visibility: AssetVisibility.Locked });
+
+      expect(mocks.tag.getOrCreateSystemTag).toHaveBeenCalledWith({
+        userId: auth.user.id,
+        value: 'locked',
+        systemKey: 'locked',
+        isPrivate: true,
+      });
+      expect(mocks.tag.upsertAssetIds).toHaveBeenCalledWith([
+        { assetId: 'asset-1', tagId: 'tag-locked' },
+        { assetId: 'asset-2', tagId: 'tag-locked' },
+      ]);
+      expect(mocks.album.removeAssetsFromAll).not.toHaveBeenCalled();
+      expect(mocks.asset.updateAll).toHaveBeenCalledBefore(mocks.resource.send);
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], {
+        visibility: AssetVisibility.Timeline,
+      });
+    });
+
+    it('should remove the locked private tag for explicit unlock requests', async () => {
+      const auth = factory.auth({ session: { hasElevatedPermission: true } });
+      const lockedTag = { id: 'tag-locked', value: 'locked', isPrivate: true, systemKey: 'locked' };
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.tag.getBySystemKey.mockResolvedValue(lockedTag as any);
+      mocks.tag.removeAssetIds.mockResolvedValue([{ tagId: 'tag-locked', assetId: 'asset-1' }]);
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [] } as any);
+
+      await sut.updateAll(auth, { ids: ['asset-1'], visibility: AssetVisibility.Timeline, unlockLockedFolder: true });
+
+      expect(mocks.tag.getBySystemKey).toHaveBeenCalledWith(auth.user.id, 'locked');
+      expect(mocks.tag.removeAssetIds).toHaveBeenCalledWith('tag-locked', ['asset-1']);
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1'], { visibility: AssetVisibility.Timeline });
+    });
+
+    it('should leave the system tag attached if the legacy unlock write fails', async () => {
+      const auth = factory.auth({ session: { hasElevatedPermission: true } });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.tag.getBySystemKey.mockResolvedValue({ id: 'tag-locked' } as any);
+      mocks.tag.removeAssetIds.mockResolvedValue([{ tagId: 'tag-locked', assetId: 'asset-1' }]);
+      mocks.asset.updateAll.mockRejectedValue(new Error('Asset update failed'));
+
+      await expect(
+        sut.updateAll(auth, {
+          ids: ['asset-1'],
+          visibility: AssetVisibility.Timeline,
+          unlockLockedFolder: true,
+        }),
+      ).rejects.toThrow('Asset update failed');
+
+      expect(mocks.tag.removeAssetIds).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should update exif table if latitude field is provided', async () => {

@@ -17,6 +17,7 @@ import { type YearMonthDay } from 'src/repositories/asset.repository.js';
 import { DB } from 'src/schema/index.js';
 import { MemoryTable } from 'src/schema/tables/memory.table.js';
 import type { IBulkAsset } from 'src/types.js';
+import { isPrivateAsset } from 'src/utils/database.js';
 import { asLocalTime } from 'src/utils/date.js';
 
 const asMakeDate = (eb: ExpressionBuilder<DB, 'asset'>, { year, month, day }: YearMonthDay) =>
@@ -88,6 +89,7 @@ export class MemoryRepository implements IBulkAsset {
             .whereRef('memory_asset.memoriesId', '=', 'memory.id')
             .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
             .where('asset.deletedAt', 'is', null)
+            .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
             .where((eb) =>
               eb.not(
                 eb.exists(
@@ -130,6 +132,7 @@ export class MemoryRepository implements IBulkAsset {
       .where('asset.ownerId', '=', ownerId)
       .where('asset.visibility', '=', AssetVisibility.Timeline)
       .where('asset.deletedAt', 'is', null)
+      .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
       .where((eb) =>
         eb.exists((qb) =>
           qb
@@ -265,7 +268,8 @@ export class MemoryRepository implements IBulkAsset {
             .whereRef('memory_asset.memoriesId', '=', 'memory.id')
             .orderBy('asset.fileCreatedAt', 'asc')
             .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-            .where('asset.deletedAt', 'is', null),
+            .where('asset.deletedAt', 'is', null)
+            .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id')))),
         ).as('assets'),
       )
       .where('id', '=', id)

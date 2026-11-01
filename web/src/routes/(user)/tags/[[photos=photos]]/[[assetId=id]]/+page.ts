@@ -1,4 +1,5 @@
 import { QueryParameter } from '#lib/constants.ts';
+import { getAuthStatusQuery } from '#lib/queries/auth.query.ts';
 import { queryClient } from '#lib/queries/client.ts';
 import { getAllTagsQuery } from '#lib/queries/tag.query.ts';
 import { authenticate } from '#lib/utils/auth.ts';
@@ -9,7 +10,7 @@ export const load = (async ({ url }) => {
   await authenticate(url);
   const $t = await getFormatter();
 
-  await queryClient.query(getAllTagsQuery());
+  await Promise.all([queryClient.query(getAllTagsQuery()), queryClient.query(getAuthStatusQuery())]);
 
   return {
     path: url.searchParams.get(QueryParameter.PATH) ?? '',

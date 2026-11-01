@@ -73,6 +73,7 @@ void main() {
 
   setUp(() async {
     mockSyncStreamRepo = MockSyncStreamRepository();
+    when(() => mockSyncStreamRepo.pruneUnsharedPrivateAssets()).thenAnswer((_) async => 0);
     mockSyncApiRepo = MockSyncApiRepository();
     mockLocalAssetRepo = MockLocalAssetRepository();
     mockTrashedLocalAssetRepo = MockTrashedLocalAssetRepository();
@@ -85,6 +86,7 @@ void main() {
     mockSyncMigrationRepo = MockSyncMigrationRepository();
 
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
+    when(() => mockResetCallbackWrapper()).thenReturn(false);
 
     when(
       () => mockSyncApiRepo.streamChanges(
@@ -174,12 +176,26 @@ void main() {
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
   });
 
-  Future<void> simulateEvents(List<SyncEvent> events) async {
-    await sut.sync();
+  Future<void> simulateEvents(List<SyncEvent> events, {void Function()? onAssetAccessChanged}) async {
+    await sut.sync(onAssetAccessChanged: onAssetAccessChanged);
     await handleEventsCallback(events, mockAbortCallbackWrapper.call, mockResetCallbackWrapper.call);
   }
 
   group("SyncStreamService - _handleEvents", () {
+    for (final type in [SyncEntityType.syncCompleteV1, SyncEntityType.syncResetV1]) {
+      test('notifies the foreground when private access is revoked through $type', () async {
+        when(() => mockSyncStreamRepo.pruneUnsharedPrivateAssets()).thenAnswer((_) async => 1);
+        when(() => mockSyncStreamRepo.reset()).thenAnswer((_) async {});
+        var notifications = 0;
+
+        await simulateEvents([
+          SyncEvent(type: type, data: const {}, ack: 'privacy'),
+        ], onAssetAccessChanged: () => notifications++);
+
+        expect(notifications, 1);
+      });
+    }
+
     test("processes events and acks successfully when handlers succeed", () async {
       final events = [
         SyncStreamStub.userDeleteV1,
@@ -405,8 +421,11 @@ void main() {
   });
 
   group("SyncStreamService - pending reset", () {
-    SyncEvent pendingReset(SyncRequestType type, String ack) =>
-        SyncEvent(type: SyncEntityType.syncPendingResetV1, data: SyncPendingResetV1(type: type), ack: ack);
+    SyncEvent pendingReset(SyncRequestType type, String ack) => SyncEvent(
+      type: SyncEntityType.syncPendingResetV1,
+      data: SyncPendingResetV1(type: type),
+      ack: ack,
+    );
 
     setUp(() {
       when(() => mockSyncStreamRepo.resetAssetOcrV1()).thenAnswer((_) async {});
@@ -415,7 +434,10 @@ void main() {
     test("resets OCR and acks the event", () async {
       await simulateEvents([pendingReset(SyncRequestType.assetOcrV1, "1")]);
 
-      verifyInOrder([() => mockSyncStreamRepo.resetAssetOcrV1(), () => mockSyncApiRepo.ack(["1"])]);
+      verifyInOrder([
+        () => mockSyncStreamRepo.resetAssetOcrV1(),
+        () => mockSyncApiRepo.ack(["1"]),
+      ]);
     });
 
     test("acks each reset individually", () async {
@@ -433,10 +455,7 @@ void main() {
     });
 
     test("throws and does not ack an unsupported reset", () async {
-      await expectLater(
-        simulateEvents([pendingReset(SyncRequestType.usersV1, "1")]),
-        throwsA(isA<UnsupportedError>()),
-      );
+      await expectLater(simulateEvents([pendingReset(SyncRequestType.usersV1, "1")]), throwsA(isA<UnsupportedError>()));
 
       verifyNever(() => mockSyncStreamRepo.resetAssetOcrV1());
       verifyNever(() => mockSyncApiRepo.ack(any()));

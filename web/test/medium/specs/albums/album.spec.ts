@@ -2,6 +2,89 @@ import { Route } from '#lib/route.ts';
 import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
 
+for (const hasPrivateAssets of [false, true]) {
+  test(`private sharing option is ${hasPrivateAssets ? 'shown' : 'hidden'} based on album contents`, async ({
+    page,
+    data,
+    app,
+  }) => {
+    const asset = factory.asset();
+    const album = factory.album({ hasPrivateAssets, albumUsers: factory.albumUsers({ owner: data.user }) });
+    data.addAssets(asset).addAlbums(album).addToAlbum(album.id, [asset]);
+    await page.goto(Route.viewAlbum({ id: album.id }));
+    await app.album.optionsMenuButton.click();
+    await app.album.optionsMenuItem.click();
+
+    await expect(app.dialog.getByRole('switch', { name: 'include_private_photos', exact: true })).toHaveCount(
+      hasPrivateAssets ? 1 : 0,
+    );
+    await app.dialog.getByRole('button', { name: 'create_link', exact: true }).click();
+    const link = page.getByRole('dialog').filter({ hasText: 'create_link_to_share' });
+    await expect(link.getByRole('switch', { name: 'include_private_photos', exact: true })).toHaveCount(
+      hasPrivateAssets ? 1 : 0,
+    );
+  });
+}
+
+test('sharing private photos with album members requires unlocking and can be disabled while locked', async ({
+  page,
+  data,
+  api,
+  app,
+}) => {
+  const asset = factory.asset();
+  const album = factory.album({ hasPrivateAssets: true, albumUsers: factory.albumUsers({ owner: data.user }) });
+  data.addAssets(asset).addAlbums(album).addToAlbum(album.id, [asset]);
+  data.setAuthStatus({ pinCode: true });
+  await page.goto(Route.viewAlbum({ id: album.id }));
+  await app.album.optionsMenuButton.click();
+  await app.album.optionsMenuItem.click();
+  const options = page.getByRole('dialog').filter({ hasText: 'comments_and_likes' });
+  const toggle = options.getByRole('switch', { name: 'include_private_photos', exact: true });
+  await toggle.click();
+
+  const unlock = page.getByRole('dialog').filter({ hasText: 'unlock_private_content' });
+  await expect(unlock).toBeVisible();
+  expect(api.updateAlbumInfo).not.toHaveBeenCalled();
+  await unlock.getByRole('textbox').pressSequentially('123456');
+  await expect(toggle).toBeChecked();
+  expect(api.updateAlbumInfo).toHaveBeenCalledWith({ params: { id: album.id }, body: { includePrivateAssets: true } });
+  expect(api.unlockAuthSession).toHaveBeenCalledWith({ body: { pinCode: '123456' } });
+
+  data.setAuthStatus({ pinCode: true, isElevated: false });
+  await toggle.click();
+  await expect(toggle).not.toBeChecked();
+  await expect(unlock).toHaveCount(0);
+  expect(api.updateAlbumInfo).toHaveBeenCalledWith({ params: { id: album.id }, body: { includePrivateAssets: false } });
+});
+
+test('including private photos in an album link requires PIN verification', async ({ page, data, api, app }) => {
+  const asset = factory.asset();
+  const album = factory.album({ hasPrivateAssets: true, albumUsers: factory.albumUsers({ owner: data.user }) });
+  api.on({
+    createSharedLink: () => ({ status: 201, json: factory.sharedLink({ album, includePrivateAssets: true }) }),
+  });
+  data.addAssets(asset).addAlbums(album).addToAlbum(album.id, [asset]);
+  data.setAuthStatus({ pinCode: true });
+  await page.goto(Route.viewAlbum({ id: album.id }));
+  await app.album.optionsMenuButton.click();
+  await app.album.optionsMenuItem.click();
+  await app.dialog.getByRole('button', { name: 'create_link', exact: true }).click();
+  const link = page.getByRole('dialog').filter({ hasText: 'create_link_to_share' });
+  await link.getByRole('switch', { name: 'include_private_photos', exact: true }).click();
+  await link.getByRole('button', { name: 'create_link', exact: true }).click();
+
+  const unlock = page.getByRole('dialog').filter({ hasText: 'unlock_private_content' });
+  await expect(unlock).toBeVisible();
+  expect(api.createSharedLink).not.toHaveBeenCalled();
+  await unlock.getByRole('textbox').pressSequentially('123456');
+  await expect(link).toHaveCount(0);
+  expect(api.unlockAuthSession).toHaveBeenCalledWith({ body: { pinCode: '123456' } });
+  expect(api.createSharedLink).toHaveBeenCalledWith({
+    body: expect.objectContaining({ albumId: album.id, includePrivateAssets: true }),
+  });
+});
+
 test('cancelling the asset picker keeps the new album', async ({ page, data, api, app }) => {
   data.addTimeline({ years: 1 });
   await page.goto(Route.albums());

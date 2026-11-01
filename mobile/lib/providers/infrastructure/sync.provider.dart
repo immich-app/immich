@@ -47,5 +47,6 @@ final hashServiceProvider = Provider((ref) {
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
     trashedLocalAssetRepository: db.trashedLocalAssetRepository,
     cancellation: ref.watch(cancellationProvider),
+    rememberBackedUpHashes: ref.watch(syncStreamServiceProvider).rememberBackedUpHashes,
   );
 });

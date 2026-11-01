@@ -14,6 +14,7 @@ export class StackService extends BaseService {
     const stacks = await this.stackRepository.search({
       ownerId: auth.user.id,
       primaryAssetId: dto.primaryAssetId,
+      ...(auth.session?.hasElevatedPermission && { includePrivate: true }),
     });
 
     return stacks.map((stack) => mapStack(stack, { auth }));
@@ -22,7 +23,11 @@ export class StackService extends BaseService {
   async create(auth: AuthDto, dto: StackCreateDto): Promise<StackResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds });
 
-    const stack = await this.stackRepository.create({ ownerId: auth.user.id }, dto.assetIds);
+    const stack = await this.stackRepository.create(
+      { ownerId: auth.user.id },
+      dto.assetIds,
+      auth.session?.hasElevatedPermission === true,
+    );
     this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.stacks()] });
 
     await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: auth.user.id });
@@ -32,18 +37,22 @@ export class StackService extends BaseService {
 
   async get(auth: AuthDto, id: string): Promise<StackResponseDto> {
     await this.requireAccess({ auth, permission: Permission.StackRead, ids: [id] });
-    const stack = await this.findOrFail(id);
+    const stack = await this.findOrFail(auth, id);
     return mapStack(stack, { auth });
   }
 
   async update(auth: AuthDto, id: string, dto: StackUpdateDto): Promise<StackResponseDto> {
     await this.requireAccess({ auth, permission: Permission.StackUpdate, ids: [id] });
-    const stack = await this.findOrFail(id);
+    const stack = await this.findOrFail(auth, id);
     if (dto.primaryAssetId && stack.assets.every(({ id }) => id !== dto.primaryAssetId)) {
       throw new BadRequestException('Primary asset must be in the stack');
     }
 
-    const updatedStack = await this.stackRepository.update(id, { id, primaryAssetId: dto.primaryAssetId });
+    const updatedStack = await this.stackRepository.update(
+      id,
+      { id, primaryAssetId: dto.primaryAssetId },
+      auth.session?.hasElevatedPermission ? auth.user.id : undefined,
+    );
     this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.stack({ id })] });
 
     await this.eventRepository.emit('StackUpdate', { stackId: id, userId: auth.user.id });
@@ -68,6 +77,7 @@ export class StackService extends BaseService {
   async removeAsset(auth: AuthDto, dto: UUIDAssetIDParamDto): Promise<void> {
     const { id: stackId, assetId } = dto;
     await this.requireAccess({ auth, permission: Permission.StackUpdate, ids: [stackId] });
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [assetId] });
 
     const stack = await this.stackRepository.getForAssetRemoval(assetId);
 
@@ -84,7 +94,13 @@ export class StackService extends BaseService {
     await this.eventRepository.emit('StackUpdate', { stackId, userId: auth.user.id });
   }
 
-  private findOrFail(id: string) {
-    return findOrFail(() => this.stackRepository.getById(id), 'Asset stack');
+  private findOrFail(auth: AuthDto, id: string) {
+    return findOrFail(
+      () =>
+        auth.session?.hasElevatedPermission
+          ? this.stackRepository.getById(id, auth.user.id)
+          : this.stackRepository.getById(id),
+      'Asset stack',
+    );
   }
 }

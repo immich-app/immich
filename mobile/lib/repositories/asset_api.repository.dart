@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/server/tag.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart' hide AssetEditAction;
 import 'package:immich_mobile/domain/models/stack.model.dart';
@@ -69,7 +70,7 @@ class AssetApiRepository extends ApiRepository {
 
   Future<List<Tag>> getAssetTags(String assetId) async {
     final response = await checkNull(_api.getAssetInfo(assetId));
-    return response.tags.orElse(null)?.map((tag) => Tag(id: tag.id, value: tag.value)).toList() ?? const [];
+    return response.tags.orElse(null)?.map(TagApiRepository.tagFromDto).toList() ?? const [];
   }
 
   Future<String> getChecksum(String id) async {

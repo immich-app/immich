@@ -26,12 +26,13 @@ export class VideoStreamRepository {
     await this.db.insertInto('video_stream_segment').values(segment).execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getSession(id: string) {
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  getSession(id: string, assetId: string) {
     return this.db
       .selectFrom('video_stream_session')
       .selectAll()
       .where('id', '=', id)
+      .where('assetId', '=', assetId)
       .where('expiresAt', '>', new Date())
       .executeTakeFirst();
   }

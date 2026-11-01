@@ -3,6 +3,7 @@
   import { executeMutation } from '#lib/queries/client.ts';
   import { createSharedLinkMutation } from '#lib/queries/shared-link.query.ts';
   import { showSharedLinkQrCode } from '#lib/services/shared-link.service.ts';
+  import { ensurePrivateSession } from '#lib/utils/private-session.ts';
   import { SharedLinkType } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
@@ -20,6 +21,7 @@
   let allowDownload = $state(true);
   let allowUpload = $state(false);
   let showMetadata = $state(true);
+  let includePrivateAssets = $state(false);
   let password = $state('');
   let slug = $state('');
   let expiresAt = $state<string | null>(null);
@@ -27,6 +29,9 @@
   let type = $derived(albumId ? SharedLinkType.Album : SharedLinkType.Individual);
 
   const onSubmit = async () => {
+    if (includePrivateAssets && !(await ensurePrivateSession())) {
+      return;
+    }
     const sharedLinkCreateDto = {
       type,
       albumId,
@@ -38,6 +43,7 @@
       allowDownload,
       showMetadata,
       slug,
+      ...(includePrivateAssets && { includePrivateAssets }),
     };
     await executeMutation(createSharedLinkMutation, [{ sharedLinkCreateDto }], {
       onSuccess: (sharedLink) => {
@@ -72,5 +78,8 @@
     bind:allowUpload
     bind:showMetadata
     bind:expiresAt
+    bind:includePrivateAssets
+    {albumId}
+    {assetIds}
   />
 </FormModal>

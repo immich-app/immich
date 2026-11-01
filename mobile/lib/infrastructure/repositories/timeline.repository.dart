@@ -44,15 +44,18 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
       throw UnsupportedError("$groupBy is not supported for watchMainBucket");
     }
 
-    return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
-      final date = row.bucketDate!.truncateDate(groupBy);
-      return TimeBucket(date: date, assetCount: row.assetCount);
-    }).watch();
+    return _db.mergedAssetDrift
+        .mergedBucket(ownerId: userIds.lastOrNull ?? '', userIds: userIds, groupBy: groupBy.index)
+        .map((row) {
+          final date = row.bucketDate!.truncateDate(groupBy);
+          return TimeBucket(date: date, assetCount: row.assetCount);
+        })
+        .watch();
   }
 
   Future<List<BaseAsset>> _getMainBucketAssets(List<String> userIds, {required int offset, required int count}) {
     return _db.mergedAssetDrift
-        .mergedAsset(userIds: userIds, limit: (_) => Limit(count, offset))
+        .mergedAsset(ownerId: userIds.lastOrNull ?? '', userIds: userIds, limit: (_) => Limit(count, offset))
         .map(
           (row) => row.remoteId != null && row.ownerId != null
               ? RemoteAsset(
@@ -329,7 +332,10 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   );
 
   TimelineQuery trash(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-    filter: (row) => row.deletedAt.isNotNull() & row.ownerId.equals(userId),
+    filter: (row) =>
+        row.deletedAt.isNotNull() &
+        row.ownerId.equals(userId) &
+        row.visibility.isNotValue(AssetVisibility.locked.index),
     groupBy: groupBy,
     origin: TimelineOrigin.trash,
     joinLocal: true,
@@ -341,13 +347,6 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     groupBy: groupBy,
     origin: TimelineOrigin.archive,
     joinLocal: true,
-  );
-
-  TimelineQuery locked(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-    filter: (row) =>
-        row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.locked) & row.ownerId.equals(userId),
-    origin: TimelineOrigin.lockedFolder,
-    groupBy: groupBy,
   );
 
   TimelineQuery video(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(

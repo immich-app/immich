@@ -49,16 +49,13 @@ describe(applyLockedVisibilityPolicy.name, () => {
     expect(() => applyLockedVisibilityPolicy(unelevatedAuth(), filter)).toThrow(UnauthorizedException);
   });
 
-  it('should otherwise inject visibility != locked without mutating the input', () => {
+  it('should leave implicit visibility to the private-access scope so album grants can apply', () => {
     const filter = { city: { eq: 'Oslo' }, visibility: undefined };
-    expect(applyLockedVisibilityPolicy(unelevatedAuth(), filter)).toEqual({
-      city: { eq: 'Oslo' },
-      visibility: { ne: AssetVisibility.Locked },
-    });
+    expect(applyLockedVisibilityPolicy(unelevatedAuth(), filter)).toBe(filter);
     expect(filter.visibility).toBeUndefined();
 
     const branched = { or: [{ isFavorite: { eq: true } }, { visibility: { eq: AssetVisibility.Timeline } }] };
-    expect(applyLockedVisibilityPolicy(unelevatedAuth(), branched).visibility).toEqual({ ne: AssetVisibility.Locked });
+    expect(applyLockedVisibilityPolicy(unelevatedAuth(), branched)).toBe(branched);
   });
 });
 

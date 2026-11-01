@@ -82,6 +82,8 @@ export const Resource = {
   tags: () => '/tags',
   tag: ({ id }: IdParams) => `/tags/${id}`,
 
+  timeline: () => '/timeline',
+
   myUser: () => '/users/me',
   myPreferences: () => '/users/me/preferences',
   myLicense: () => '/users/me/license',

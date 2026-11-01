@@ -58,7 +58,7 @@ void main() {
         assetServiceProvider.overrideWithValue(assetService),
         assetsActionProvider(ActionSource.viewer).overrideWithValue(const AssetFilter<BaseAsset>({})),
         gCastServiceProvider.overrideWithValue(MockGCastService()),
-        inLockedViewProvider.overrideWithValue(true),
+        inPrivateViewProvider.overrideWithValue(true),
         ownedAssetsActionProvider(ActionSource.viewer).overrideWithValue(const AssetFilter<RemoteAsset>({})),
         readonlyModeProvider.overrideWith(TestReadOnlyModeNotifier.new),
         timelineServiceProvider.overrideWithValue(timeline),

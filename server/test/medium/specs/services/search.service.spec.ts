@@ -8,6 +8,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SearchService } from 'src/services/search.service.js';
 import { newMediumService } from 'test/medium.factory.js';
@@ -29,6 +30,7 @@ const setup = (db?: Kysely<DB>) => {
       SearchRepository,
       PartnerRepository,
       PersonRepository,
+      TagRepository,
     ],
     mock: [LoggingRepository],
   });
@@ -39,6 +41,30 @@ beforeAll(async () => {
 });
 
 describe(SearchService.name, () => {
+  it.each([null, 'locked'] as const)(
+    'should apply private sharing to the requested album in both search APIs: %s',
+    async (systemKey) => {
+      const { sut, ctx } = setup();
+      const { album, asset, owner, sharedWith } = await ctx.newSharedAlbum();
+      const { album: excluded } = await ctx.newAlbum({ ownerId: owner.id }, [asset.id]);
+      await ctx.newAlbumUser({ albumId: excluded.id, userId: sharedWith.id, role: AlbumUserRole.Viewer });
+      await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+      const tag = await ctx
+        .get(TagRepository)
+        .create({ userId: owner.id, value: 'private', isPrivate: true, systemKey });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+      await ctx.database.updateTable('album').set({ includePrivateAssets: true }).where('id', '=', album.id).execute();
+      const viewer = factory.auth({ user: sharedWith });
+
+      for (const id of [album.id, excluded.id]) {
+        for (const filter of [{ albumIds: [id] }, { filter: { albumIds: { any: [id] } } }]) {
+          const response = await sut.searchMetadata(viewer, { size: 100, ...filter });
+          expect(response.assets.items.map(({ id }) => id)).toEqual(id === album.id ? [asset.id] : []);
+        }
+      }
+    },
+  );
+
   it('should work', () => {
     const { sut } = setup();
     expect(sut).toBeDefined();
@@ -94,6 +120,79 @@ describe(SearchService.name, () => {
   });
 
   describe('searchStatistics', () => {
+    it('should match only the system private tag for legacy locked visibility', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: locked } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: custom } = await ctx.newAsset({ ownerId: user.id });
+      const tags = ctx.get(TagRepository);
+      const lockedTag = await tags.getOrCreateSystemTag({
+        userId: user.id,
+        value: 'locked',
+        isPrivate: true,
+        systemKey: 'locked',
+      });
+      const customTag = await tags.create({ userId: user.id, value: 'custom', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [lockedTag.id], assetIds: [locked.id] });
+      await ctx.newTagAsset({ tagIds: [customTag.id], assetIds: [custom.id] });
+
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+      const filter = { visibility: AssetVisibility.Locked };
+      await expect(sut.searchStatistics(auth, filter)).resolves.toEqual({ total: 1 });
+      const response = await sut.searchMetadata(auth, { ...filter, size: 250, withStacked: false });
+      expect(response.assets.items).toEqual([
+        expect.objectContaining({ id: locked.id, visibility: AssetVisibility.Locked }),
+      ]);
+    });
+
+    it('should separate the active private tag gallery from its trash', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: active } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: trashed } = await ctx.newAsset({ ownerId: user.id, deletedAt: new Date() });
+      const tag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [active.id, trashed.id] });
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+      const tagIds = { all: [tag.id] };
+      const visibility = { in: [AssetVisibility.Timeline, AssetVisibility.Archive, AssetVisibility.Locked] };
+
+      await expect(
+        sut.searchMetadata(auth, { size: 200, filter: { tagIds, visibility, trashedAt: { eq: null } } }),
+      ).resolves.toMatchObject({ assets: { items: [expect.objectContaining({ id: active.id })] } });
+      await expect(
+        sut.searchMetadata(auth, { size: 200, filter: { tagIds, visibility, trashedAt: { ne: null } } }),
+      ).resolves.toMatchObject({ assets: { items: [expect.objectContaining({ id: trashed.id })] } });
+    });
+
+    it('should confine legacy locked album searches to the elevated owner', async () => {
+      const { sut, ctx } = setup();
+      const { album, owner, sharedWith, asset } = await ctx.newSharedAlbum();
+      const tag = await ctx.get(TagRepository).getOrCreateSystemTag({
+        userId: owner.id,
+        value: 'locked',
+        systemKey: 'locked',
+        isPrivate: true,
+      });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+      const ownerAuth = factory.auth({ user: owner, session: { hasElevatedPermission: true } });
+      const viewer = factory.auth({ user: sharedWith, session: { hasElevatedPermission: true } });
+      const legacyFilter = { albumIds: [album.id], visibility: AssetVisibility.Locked, size: 200 };
+
+      await expect(sut.searchMetadata(viewer, legacyFilter)).resolves.toMatchObject({ assets: { items: [] } });
+      await expect(sut.searchMetadata(ownerAuth, legacyFilter)).resolves.toMatchObject({
+        assets: { items: [expect.objectContaining({ id: asset.id })] },
+      });
+      await expect(
+        sut.searchMetadata(ownerAuth, {
+          size: 200,
+          filter: {
+            tagIds: { all: [tag.id] },
+            visibility: { in: [AssetVisibility.Timeline, AssetVisibility.Archive, AssetVisibility.Locked] },
+          },
+        }),
+      ).resolves.toMatchObject({ assets: { items: [expect.objectContaining({ id: asset.id })] } });
+    });
+
     it('should return statistics when filtering by personIds', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
@@ -491,7 +590,7 @@ describe(SearchService.name, () => {
       }
 
       const options = { filter: {}, embedding: unitVector(0) };
-      const scope = { userIds: [user.id], lockedOwnerId: user.id };
+      const scope = { userIds: [user.id], lockedOwnerId: user.id, includePrivate: false };
       const firstPage = await searchRepository.searchSmartV3({ take: 2 }, options, scope);
       expect(firstPage.items.length).toBe(2);
       expect(firstPage.items[0].id).toBe(assetIds[0]);

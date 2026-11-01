@@ -3,6 +3,7 @@ import { asMutation, queryClient } from '#lib/queries/client.ts';
 import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   bulkTagAssets,
+  createTag,
   deleteTag,
   getAllTags,
   untagAssets,
@@ -37,6 +38,8 @@ export const getTagByIdQuery = (id: string) =>
   });
 
 export const upsertTagsMutation = () => asMutation(upsertTags, { onSuccess: invalidateTags });
+
+export const createTagMutation = () => asMutation(createTag, { onSuccess: invalidateTags });
 
 export const updateTagMutation = () => asMutation(updateTag, { onSuccess: invalidateTags });
 

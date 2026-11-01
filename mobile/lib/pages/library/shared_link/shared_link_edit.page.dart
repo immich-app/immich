@@ -5,10 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/server/album_sharing.dart';
+import 'package:immich_mobile/data/server/private_sharing.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
+import 'package:immich_mobile/presentation/widgets/tags/private_content_auth.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
@@ -54,6 +57,17 @@ class SharedLinkEditPage extends HookConsumerWidget {
     final showMetadata = useState(existingLink?.showMetadata ?? true);
     final allowDownload = useState(existingLink?.allowDownload ?? true);
     final allowUpload = useState(existingLink?.allowUpload ?? false);
+    final includePrivateAssets = useState(existingLink?.includePrivateAssets ?? false);
+    final sharingAlbumId = albumId ?? existingLink?.albumId;
+    final sharingOptions = sharingAlbumId == null
+        ? null
+        : ref.watch(albumSharingOptionsProvider(sharingAlbumId)).asData?.value;
+    final privateSelection = sharingAlbumId == null
+        ? ref.watch(privateSharingPresenceProvider((assetIds: assetsList, linkId: existingLink?.id)))
+        : null;
+    final hasPrivateAssets = sharingAlbumId != null
+        ? sharingOptions?.hasPrivateAssets == true
+        : existingLink?.includePrivateAssets == true || privateSelection?.asData?.value == true;
     final expiryAfter = useState<DateTime?>(existingLink?.expiresAt?.toLocal());
     final selectedPresetIndex = useState<int?>(existingLink?.expiresAt == null ? 0 : null);
     final newShareLink = useState("");
@@ -324,6 +338,12 @@ class SharedLinkEditPage extends HookConsumerWidget {
     DateTime? calculateExpiry() => expiryAfter.value;
 
     Future<void> handleNewLink() async {
+      if (includePrivateAssets.value && !await unlockPrivateContent(context, ref)) {
+        return;
+      }
+      if (!context.mounted) {
+        return;
+      }
       final newLink = await ref
           .read(sharedLinkServiceProvider)
           .createSharedLink(
@@ -332,6 +352,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             showMeta: showMetadata.value,
             allowDownload: allowDownload.value,
             allowUpload: allowUpload.value,
+            includePrivateAssets: includePrivateAssets.value,
             description: descriptionController.text.isEmpty ? null : descriptionController.text,
             password: passwordController.text.isEmpty ? null : passwordController.text,
             slug: slugController.text.isEmpty ? null : slugController.text,
@@ -405,6 +426,14 @@ class SharedLinkEditPage extends HookConsumerWidget {
         expiry = newExpiry == null ? const Option.some(null) : Option.some(newExpiry.toUtc());
       }
 
+      if (includePrivateAssets.value &&
+          !existingLink!.includePrivateAssets &&
+          !await unlockPrivateContent(context, ref)) {
+        return;
+      }
+      if (!context.mounted) {
+        return;
+      }
       await ref
           .read(sharedLinkServiceProvider)
           .updateSharedLink(
@@ -412,6 +441,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
             showMeta: meta,
             allowDownload: download,
             allowUpload: upload,
+            includePrivateAssets: includePrivateAssets.value == existingLink!.includePrivateAssets
+                ? null
+                : includePrivateAssets.value,
             description: description,
             password: password,
             slug: slug,
@@ -485,6 +517,16 @@ class SharedLinkEditPage extends HookConsumerWidget {
                     buildAllowDownloadButton(),
                     const SizedBox(height: 16),
                     buildAllowUploadButton(),
+                    if (hasPrivateAssets) ...[
+                      const SizedBox(height: 16),
+                      SwitchListTile.adaptive(
+                        value: includePrivateAssets.value,
+                        onChanged: (value) => includePrivateAssets.value = value,
+                        dense: true,
+                        title: Text(context.t.include_private_photos),
+                        subtitle: Text(context.t.include_private_photos_description),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     buildExpiryAfterButton(),
                     const SizedBox(height: 24),

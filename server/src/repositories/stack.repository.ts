@@ -6,14 +6,15 @@ import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { DB } from 'src/schema/index.js';
 import { StackTable } from 'src/schema/tables/stack.table.js';
-import { asUuid, withDefaultVisibility } from 'src/utils/database.js';
+import { asUuid, isPrivateAsset, withDefaultVisibility } from 'src/utils/database.js';
 
 export interface StackSearch {
   ownerId: string;
   primaryAssetId?: string;
+  includePrivate?: boolean;
 }
 
-const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
+const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false, privateOwnerId?: string) => {
   return jsonArrayFrom(
     eb
       .selectFrom('asset')
@@ -41,7 +42,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
       .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
       .where('asset.deletedAt', 'is', null)
       .whereRef('asset.stackId', '=', 'stack.id')
-      .$call(withDefaultVisibility)
+      .$call((qb) => withDefaultVisibility(qb, { includePrivate: !!privateOwnerId, privateOwnerId }))
       .orderBy('asset.fileCreatedAt', 'asc'),
   ).as('assets');
 };
@@ -55,13 +56,14 @@ export class StackRepository {
     return this.db
       .selectFrom('stack')
       .selectAll('stack')
-      .select(withAssets)
+      .select((eb) => withAssets(eb, false, query.includePrivate ? query.ownerId : undefined))
       .where('stack.ownerId', '=', query.ownerId)
+      .$if(!query.includePrivate, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('stack.primaryAssetId')))))
       .$if(!!query.primaryAssetId, (eb) => eb.where('stack.primaryAssetId', '=', query.primaryAssetId!))
       .execute();
   }
 
-  async create(entity: Omit<Insertable<StackTable>, 'primaryAssetId'>, assetIds: string[]) {
+  async create(entity: Omit<Insertable<StackTable>, 'primaryAssetId'>, assetIds: string[], includePrivate = false) {
     return this.db.transaction().execute(async (tx) => {
       const stacks = await tx
         .selectFrom('stack')
@@ -119,7 +121,7 @@ export class StackRepository {
       return tx
         .selectFrom('stack')
         .selectAll('stack')
-        .select(withAssets)
+        .select((eb) => withAssets(eb, false, includePrivate ? entity.ownerId : undefined))
         .where('id', '=', newRecord.id)
         .executeTakeFirstOrThrow();
     });
@@ -134,23 +136,28 @@ export class StackRepository {
     await this.db.deleteFrom('stack').where('id', 'in', ids).execute();
   }
 
-  update(id: string, entity: Updateable<StackTable>) {
+  update(id: string, entity: Updateable<StackTable>, privateOwnerId?: string) {
     return this.db
       .updateTable('stack')
       .set(entity)
       .where('id', '=', asUuid(id))
       .returningAll('stack')
-      .returning((eb) => withAssets(eb, true))
+      .returning((eb) => withAssets(eb, true, privateOwnerId))
       .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string) {
+  getById(id: string, privateOwnerId?: string) {
     return this.db
       .selectFrom('stack')
       .selectAll()
-      .select((eb) => withAssets(eb, true))
+      .select((eb) => withAssets(eb, true, privateOwnerId))
       .where('id', '=', asUuid(id))
+      .where((eb) =>
+        privateOwnerId
+          ? eb.or([eb('stack.ownerId', '=', privateOwnerId), eb.not(isPrivateAsset(eb.ref('stack.primaryAssetId')))])
+          : eb.not(isPrivateAsset(eb.ref('stack.primaryAssetId'))),
+      )
       .executeTakeFirst();
   }
 

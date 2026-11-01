@@ -1,7 +1,9 @@
 // ignore_for_file: avoid_slow_async_io
 
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:logging/logging.dart';
@@ -11,6 +13,8 @@ class StorageRepository {
   final log = Logger('StorageRepository');
 
   StorageRepository();
+
+  Future<String> getFileChecksum(File file) async => base64Encode((await sha1.bind(file.openRead()).first).bytes);
 
   Future<File?> getFileForAsset(String assetId) async {
     File? file;

@@ -54,6 +54,96 @@ select
         where
           "shared_link"."id" = "shared_link_asset"."sharedLinkId"
           and "asset"."deletedAt" is null
+          and (
+            not (
+              exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "asset"."id"
+                  and tag."isPrivate" = true
+              )
+              or exists (
+                select
+                  1
+                from
+                  asset as private_asset
+                where
+                  private_asset.id = "asset"."id"
+                  and private_asset.visibility = 'locked'
+              )
+              or exists (
+                select
+                  1
+                from
+                  asset as still
+                where
+                  still."livePhotoVideoId" = "asset"."id"
+                  and (
+                    still.visibility = 'locked'
+                    or exists (
+                      select
+                        1
+                      from
+                        tag_asset
+                        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                        join tag on tag.id = tag_closure.id_ancestor
+                      where
+                        tag_asset."assetId" = "still"."id"
+                        and tag."isPrivate" = true
+                    )
+                  )
+              )
+            )
+            or exists (
+              select
+                1
+              from
+                shared_link as granted_link
+                join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+                join asset as granted_target on granted_target.id = "asset"."id"
+                and granted_target."ownerId" = granted_asset."ownerId"
+              where
+                granted_link.id = "shared_link_asset"."sharedLinkId"
+                and granted_link."includePrivateAssets"
+                and (
+                  granted_link."expiresAt" is null
+                  or granted_link."expiresAt" > now()
+                )
+                and granted_asset."deletedAt" is null
+                and granted_target."deletedAt" is null
+                and (
+                  granted_asset.id = "asset"."id"
+                  or granted_asset."livePhotoVideoId" = "asset"."id"
+                )
+                and (
+                  exists (
+                    select
+                      1
+                    from
+                      shared_link_asset as granted_membership
+                    where
+                      granted_membership."sharedLinkId" = granted_link.id
+                      and granted_membership."assetId" = granted_asset.id
+                  )
+                  or exists (
+                    select
+                      1
+                    from
+                      album_asset as granted_membership
+                      join album as granted_album on granted_album.id = granted_membership."albumId"
+                    where
+                      granted_membership."albumId" = granted_link."albumId"
+                      and granted_membership."assetId" = granted_asset.id
+                      and granted_album."deletedAt" is null
+                  )
+                )
+            )
+          )
         order by
           "asset"."fileCreatedAt" asc
       ) as agg
@@ -64,6 +154,204 @@ from
   left join lateral (
     select
       "album".*,
+      case
+        when "album"."albumThumbnailAssetId" is null
+        or not (
+          not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "album"."albumThumbnailAssetId"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "album"."albumThumbnailAssetId"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
+          or exists (
+            select
+              1
+            from
+              shared_link as granted_link
+              join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+              join asset as granted_target on granted_target.id = "album"."albumThumbnailAssetId"
+              and granted_target."ownerId" = granted_asset."ownerId"
+            where
+              granted_link.id = "shared_link"."id"
+              and granted_link."includePrivateAssets"
+              and (
+                granted_link."expiresAt" is null
+                or granted_link."expiresAt" > now()
+              )
+              and granted_asset."deletedAt" is null
+              and granted_target."deletedAt" is null
+              and (
+                granted_asset.id = "album"."albumThumbnailAssetId"
+                or granted_asset."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+              )
+              and (
+                exists (
+                  select
+                    1
+                  from
+                    shared_link_asset as granted_membership
+                  where
+                    granted_membership."sharedLinkId" = granted_link.id
+                    and granted_membership."assetId" = granted_asset.id
+                )
+                or exists (
+                  select
+                    1
+                  from
+                    album_asset as granted_membership
+                    join album as granted_album on granted_album.id = granted_membership."albumId"
+                  where
+                    granted_membership."albumId" = granted_link."albumId"
+                    and granted_membership."assetId" = granted_asset.id
+                    and granted_album."deletedAt" is null
+                )
+              )
+          )
+        ) then (
+          select
+            candidate.id
+          from
+            album_asset
+            join asset as candidate on candidate.id = album_asset."assetId"
+          where
+            album_asset."albumId" = "album"."id"
+            and candidate."deletedAt" is null
+            and (
+              not (
+                exists (
+                  select
+                    1
+                  from
+                    tag_asset
+                    join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                    join tag on tag.id = tag_closure.id_ancestor
+                  where
+                    tag_asset."assetId" = "candidate"."id"
+                    and tag."isPrivate" = true
+                )
+                or exists (
+                  select
+                    1
+                  from
+                    asset as private_asset
+                  where
+                    private_asset.id = "candidate"."id"
+                    and private_asset.visibility = 'locked'
+                )
+                or exists (
+                  select
+                    1
+                  from
+                    asset as still
+                  where
+                    still."livePhotoVideoId" = "candidate"."id"
+                    and (
+                      still.visibility = 'locked'
+                      or exists (
+                        select
+                          1
+                        from
+                          tag_asset
+                          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                          join tag on tag.id = tag_closure.id_ancestor
+                        where
+                          tag_asset."assetId" = "still"."id"
+                          and tag."isPrivate" = true
+                      )
+                    )
+                )
+              )
+              or exists (
+                select
+                  1
+                from
+                  shared_link as granted_link
+                  join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+                  join asset as granted_target on granted_target.id = "candidate"."id"
+                  and granted_target."ownerId" = granted_asset."ownerId"
+                where
+                  granted_link.id = "shared_link"."id"
+                  and granted_link."includePrivateAssets"
+                  and (
+                    granted_link."expiresAt" is null
+                    or granted_link."expiresAt" > now()
+                  )
+                  and granted_asset."deletedAt" is null
+                  and granted_target."deletedAt" is null
+                  and (
+                    granted_asset.id = "candidate"."id"
+                    or granted_asset."livePhotoVideoId" = "candidate"."id"
+                  )
+                  and (
+                    exists (
+                      select
+                        1
+                      from
+                        shared_link_asset as granted_membership
+                      where
+                        granted_membership."sharedLinkId" = granted_link.id
+                        and granted_membership."assetId" = granted_asset.id
+                    )
+                    or exists (
+                      select
+                        1
+                      from
+                        album_asset as granted_membership
+                        join album as granted_album on granted_album.id = granted_membership."albumId"
+                      where
+                        granted_membership."albumId" = granted_link."albumId"
+                        and granted_membership."assetId" = granted_asset.id
+                        and granted_album."deletedAt" is null
+                    )
+                  )
+              )
+            )
+          order by
+            candidate."fileCreatedAt" desc,
+            candidate.id
+          limit
+            1
+        )
+        else "album"."albumThumbnailAssetId"
+      end as "visibleThumbnailAssetId",
       (
         select
           coalesce(json_agg(agg), '[]')
@@ -138,6 +426,96 @@ select
           "shared_link_asset"."sharedLinkId" = "shared_link"."id"
           and "asset"."fileCreatedAt" = "cover"."fileCreatedAt"
           and "asset"."deletedAt" is null
+          and (
+            not (
+              exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "asset"."id"
+                  and tag."isPrivate" = true
+              )
+              or exists (
+                select
+                  1
+                from
+                  asset as private_asset
+                where
+                  private_asset.id = "asset"."id"
+                  and private_asset.visibility = 'locked'
+              )
+              or exists (
+                select
+                  1
+                from
+                  asset as still
+                where
+                  still."livePhotoVideoId" = "asset"."id"
+                  and (
+                    still.visibility = 'locked'
+                    or exists (
+                      select
+                        1
+                      from
+                        tag_asset
+                        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                        join tag on tag.id = tag_closure.id_ancestor
+                      where
+                        tag_asset."assetId" = "still"."id"
+                        and tag."isPrivate" = true
+                    )
+                  )
+              )
+            )
+            or exists (
+              select
+                1
+              from
+                shared_link as granted_link
+                join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+                join asset as granted_target on granted_target.id = "asset"."id"
+                and granted_target."ownerId" = granted_asset."ownerId"
+              where
+                granted_link.id = "shared_link_asset"."sharedLinkId"
+                and granted_link."includePrivateAssets"
+                and (
+                  granted_link."expiresAt" is null
+                  or granted_link."expiresAt" > now()
+                )
+                and granted_asset."deletedAt" is null
+                and granted_target."deletedAt" is null
+                and (
+                  granted_asset.id = "asset"."id"
+                  or granted_asset."livePhotoVideoId" = "asset"."id"
+                )
+                and (
+                  exists (
+                    select
+                      1
+                    from
+                      shared_link_asset as granted_membership
+                    where
+                      granted_membership."sharedLinkId" = granted_link.id
+                      and granted_membership."assetId" = granted_asset.id
+                  )
+                  or exists (
+                    select
+                      1
+                    from
+                      album_asset as granted_membership
+                      join album as granted_album on granted_album.id = granted_membership."albumId"
+                    where
+                      granted_membership."albumId" = granted_link."albumId"
+                      and granted_membership."assetId" = granted_asset.id
+                      and granted_album."deletedAt" is null
+                  )
+                )
+            )
+          )
         limit
           1
       ) as agg
@@ -155,12 +533,300 @@ from
     where
       "shared_link_asset"."sharedLinkId" = any ($1::uuid[])
       and "asset"."deletedAt" is null
+      and (
+        not (
+          exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "asset"."id"
+              and tag."isPrivate" = true
+          )
+          or exists (
+            select
+              1
+            from
+              asset as private_asset
+            where
+              private_asset.id = "asset"."id"
+              and private_asset.visibility = 'locked'
+          )
+          or exists (
+            select
+              1
+            from
+              asset as still
+            where
+              still."livePhotoVideoId" = "asset"."id"
+              and (
+                still.visibility = 'locked'
+                or exists (
+                  select
+                    1
+                  from
+                    tag_asset
+                    join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                    join tag on tag.id = tag_closure.id_ancestor
+                  where
+                    tag_asset."assetId" = "still"."id"
+                    and tag."isPrivate" = true
+                )
+              )
+          )
+        )
+        or exists (
+          select
+            1
+          from
+            shared_link as granted_link
+            join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+            join asset as granted_target on granted_target.id = "asset"."id"
+            and granted_target."ownerId" = granted_asset."ownerId"
+          where
+            granted_link.id = "shared_link_asset"."sharedLinkId"
+            and granted_link."includePrivateAssets"
+            and (
+              granted_link."expiresAt" is null
+              or granted_link."expiresAt" > now()
+            )
+            and granted_asset."deletedAt" is null
+            and granted_target."deletedAt" is null
+            and (
+              granted_asset.id = "asset"."id"
+              or granted_asset."livePhotoVideoId" = "asset"."id"
+            )
+            and (
+              exists (
+                select
+                  1
+                from
+                  shared_link_asset as granted_membership
+                where
+                  granted_membership."sharedLinkId" = granted_link.id
+                  and granted_membership."assetId" = granted_asset.id
+              )
+              or exists (
+                select
+                  1
+                from
+                  album_asset as granted_membership
+                  join album as granted_album on granted_album.id = granted_membership."albumId"
+                where
+                  granted_membership."albumId" = granted_link."albumId"
+                  and granted_membership."assetId" = granted_asset.id
+                  and granted_album."deletedAt" is null
+              )
+            )
+        )
+      )
     group by
       "shared_link_asset"."sharedLinkId"
   ) as "cover" on "cover"."sharedLinkId" = "shared_link"."id"
   left join lateral (
     select
       "album".*,
+      case
+        when "album"."albumThumbnailAssetId" is null
+        or not (
+          not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "album"."albumThumbnailAssetId"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "album"."albumThumbnailAssetId"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
+          or exists (
+            select
+              1
+            from
+              shared_link as granted_link
+              join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+              join asset as granted_target on granted_target.id = "album"."albumThumbnailAssetId"
+              and granted_target."ownerId" = granted_asset."ownerId"
+            where
+              granted_link.id = "shared_link"."id"
+              and granted_link."includePrivateAssets"
+              and (
+                granted_link."expiresAt" is null
+                or granted_link."expiresAt" > now()
+              )
+              and granted_asset."deletedAt" is null
+              and granted_target."deletedAt" is null
+              and (
+                granted_asset.id = "album"."albumThumbnailAssetId"
+                or granted_asset."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+              )
+              and (
+                exists (
+                  select
+                    1
+                  from
+                    shared_link_asset as granted_membership
+                  where
+                    granted_membership."sharedLinkId" = granted_link.id
+                    and granted_membership."assetId" = granted_asset.id
+                )
+                or exists (
+                  select
+                    1
+                  from
+                    album_asset as granted_membership
+                    join album as granted_album on granted_album.id = granted_membership."albumId"
+                  where
+                    granted_membership."albumId" = granted_link."albumId"
+                    and granted_membership."assetId" = granted_asset.id
+                    and granted_album."deletedAt" is null
+                )
+              )
+          )
+        ) then (
+          select
+            candidate.id
+          from
+            album_asset
+            join asset as candidate on candidate.id = album_asset."assetId"
+          where
+            album_asset."albumId" = "album"."id"
+            and candidate."deletedAt" is null
+            and (
+              not (
+                exists (
+                  select
+                    1
+                  from
+                    tag_asset
+                    join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                    join tag on tag.id = tag_closure.id_ancestor
+                  where
+                    tag_asset."assetId" = "candidate"."id"
+                    and tag."isPrivate" = true
+                )
+                or exists (
+                  select
+                    1
+                  from
+                    asset as private_asset
+                  where
+                    private_asset.id = "candidate"."id"
+                    and private_asset.visibility = 'locked'
+                )
+                or exists (
+                  select
+                    1
+                  from
+                    asset as still
+                  where
+                    still."livePhotoVideoId" = "candidate"."id"
+                    and (
+                      still.visibility = 'locked'
+                      or exists (
+                        select
+                          1
+                        from
+                          tag_asset
+                          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                          join tag on tag.id = tag_closure.id_ancestor
+                        where
+                          tag_asset."assetId" = "still"."id"
+                          and tag."isPrivate" = true
+                      )
+                    )
+                )
+              )
+              or exists (
+                select
+                  1
+                from
+                  shared_link as granted_link
+                  join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+                  join asset as granted_target on granted_target.id = "candidate"."id"
+                  and granted_target."ownerId" = granted_asset."ownerId"
+                where
+                  granted_link.id = "shared_link"."id"
+                  and granted_link."includePrivateAssets"
+                  and (
+                    granted_link."expiresAt" is null
+                    or granted_link."expiresAt" > now()
+                  )
+                  and granted_asset."deletedAt" is null
+                  and granted_target."deletedAt" is null
+                  and (
+                    granted_asset.id = "candidate"."id"
+                    or granted_asset."livePhotoVideoId" = "candidate"."id"
+                  )
+                  and (
+                    exists (
+                      select
+                        1
+                      from
+                        shared_link_asset as granted_membership
+                      where
+                        granted_membership."sharedLinkId" = granted_link.id
+                        and granted_membership."assetId" = granted_asset.id
+                    )
+                    or exists (
+                      select
+                        1
+                      from
+                        album_asset as granted_membership
+                        join album as granted_album on granted_album.id = granted_membership."albumId"
+                      where
+                        granted_membership."albumId" = granted_link."albumId"
+                        and granted_membership."assetId" = granted_asset.id
+                        and granted_album."deletedAt" is null
+                    )
+                  )
+              )
+            )
+          order by
+            candidate."fileCreatedAt" desc,
+            candidate.id
+          limit
+            1
+        )
+        else "album"."albumThumbnailAssetId"
+      end as "visibleThumbnailAssetId",
       (
         select
           coalesce(json_agg(agg), '[]')
@@ -219,6 +885,204 @@ from
   left join lateral (
     select
       "album".*,
+      case
+        when "album"."albumThumbnailAssetId" is null
+        or not (
+          not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "album"."albumThumbnailAssetId"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "album"."albumThumbnailAssetId"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
+          or exists (
+            select
+              1
+            from
+              shared_link as granted_link
+              join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+              join asset as granted_target on granted_target.id = "album"."albumThumbnailAssetId"
+              and granted_target."ownerId" = granted_asset."ownerId"
+            where
+              granted_link.id = "shared_link"."id"
+              and granted_link."includePrivateAssets"
+              and (
+                granted_link."expiresAt" is null
+                or granted_link."expiresAt" > now()
+              )
+              and granted_asset."deletedAt" is null
+              and granted_target."deletedAt" is null
+              and (
+                granted_asset.id = "album"."albumThumbnailAssetId"
+                or granted_asset."livePhotoVideoId" = "album"."albumThumbnailAssetId"
+              )
+              and (
+                exists (
+                  select
+                    1
+                  from
+                    shared_link_asset as granted_membership
+                  where
+                    granted_membership."sharedLinkId" = granted_link.id
+                    and granted_membership."assetId" = granted_asset.id
+                )
+                or exists (
+                  select
+                    1
+                  from
+                    album_asset as granted_membership
+                    join album as granted_album on granted_album.id = granted_membership."albumId"
+                  where
+                    granted_membership."albumId" = granted_link."albumId"
+                    and granted_membership."assetId" = granted_asset.id
+                    and granted_album."deletedAt" is null
+                )
+              )
+          )
+        ) then (
+          select
+            candidate.id
+          from
+            album_asset
+            join asset as candidate on candidate.id = album_asset."assetId"
+          where
+            album_asset."albumId" = "album"."id"
+            and candidate."deletedAt" is null
+            and (
+              not (
+                exists (
+                  select
+                    1
+                  from
+                    tag_asset
+                    join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                    join tag on tag.id = tag_closure.id_ancestor
+                  where
+                    tag_asset."assetId" = "candidate"."id"
+                    and tag."isPrivate" = true
+                )
+                or exists (
+                  select
+                    1
+                  from
+                    asset as private_asset
+                  where
+                    private_asset.id = "candidate"."id"
+                    and private_asset.visibility = 'locked'
+                )
+                or exists (
+                  select
+                    1
+                  from
+                    asset as still
+                  where
+                    still."livePhotoVideoId" = "candidate"."id"
+                    and (
+                      still.visibility = 'locked'
+                      or exists (
+                        select
+                          1
+                        from
+                          tag_asset
+                          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                          join tag on tag.id = tag_closure.id_ancestor
+                        where
+                          tag_asset."assetId" = "still"."id"
+                          and tag."isPrivate" = true
+                      )
+                    )
+                )
+              )
+              or exists (
+                select
+                  1
+                from
+                  shared_link as granted_link
+                  join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+                  join asset as granted_target on granted_target.id = "candidate"."id"
+                  and granted_target."ownerId" = granted_asset."ownerId"
+                where
+                  granted_link.id = "shared_link"."id"
+                  and granted_link."includePrivateAssets"
+                  and (
+                    granted_link."expiresAt" is null
+                    or granted_link."expiresAt" > now()
+                  )
+                  and granted_asset."deletedAt" is null
+                  and granted_target."deletedAt" is null
+                  and (
+                    granted_asset.id = "candidate"."id"
+                    or granted_asset."livePhotoVideoId" = "candidate"."id"
+                  )
+                  and (
+                    exists (
+                      select
+                        1
+                      from
+                        shared_link_asset as granted_membership
+                      where
+                        granted_membership."sharedLinkId" = granted_link.id
+                        and granted_membership."assetId" = granted_asset.id
+                    )
+                    or exists (
+                      select
+                        1
+                      from
+                        album_asset as granted_membership
+                        join album as granted_album on granted_album.id = granted_membership."albumId"
+                      where
+                        granted_membership."albumId" = granted_link."albumId"
+                        and granted_membership."assetId" = granted_asset.id
+                        and granted_album."deletedAt" is null
+                    )
+                  )
+              )
+            )
+          order by
+            candidate."fileCreatedAt" desc,
+            candidate.id
+          limit
+            1
+        )
+        else "album"."albumThumbnailAssetId"
+      end as "visibleThumbnailAssetId",
       (
         select
           coalesce(json_agg(agg), '[]')
@@ -278,6 +1142,7 @@ select
   "shared_link"."showExif",
   "shared_link"."allowUpload",
   "shared_link"."allowDownload",
+  "shared_link"."includePrivateAssets",
   "shared_link"."password",
   (
     select
@@ -317,6 +1182,7 @@ select
   "shared_link"."showExif",
   "shared_link"."allowUpload",
   "shared_link"."allowDownload",
+  "shared_link"."includePrivateAssets",
   "shared_link"."password",
   (
     select
@@ -404,6 +1270,96 @@ from
       ) as "exifInfo" on true
     where
       "asset"."id" = "shared_link_asset"."assetId"
+      and (
+        not (
+          exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "asset"."id"
+              and tag."isPrivate" = true
+          )
+          or exists (
+            select
+              1
+            from
+              asset as private_asset
+            where
+              private_asset.id = "asset"."id"
+              and private_asset.visibility = 'locked'
+          )
+          or exists (
+            select
+              1
+            from
+              asset as still
+            where
+              still."livePhotoVideoId" = "asset"."id"
+              and (
+                still.visibility = 'locked'
+                or exists (
+                  select
+                    1
+                  from
+                    tag_asset
+                    join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                    join tag on tag.id = tag_closure.id_ancestor
+                  where
+                    tag_asset."assetId" = "still"."id"
+                    and tag."isPrivate" = true
+                )
+              )
+          )
+        )
+        or exists (
+          select
+            1
+          from
+            shared_link as granted_link
+            join asset as granted_asset on granted_asset."ownerId" = granted_link."userId"
+            join asset as granted_target on granted_target.id = "asset"."id"
+            and granted_target."ownerId" = granted_asset."ownerId"
+          where
+            granted_link.id = "shared_link_asset"."sharedLinkId"
+            and granted_link."includePrivateAssets"
+            and (
+              granted_link."expiresAt" is null
+              or granted_link."expiresAt" > now()
+            )
+            and granted_asset."deletedAt" is null
+            and granted_target."deletedAt" is null
+            and (
+              granted_asset.id = "asset"."id"
+              or granted_asset."livePhotoVideoId" = "asset"."id"
+            )
+            and (
+              exists (
+                select
+                  1
+                from
+                  shared_link_asset as granted_membership
+                where
+                  granted_membership."sharedLinkId" = granted_link.id
+                  and granted_membership."assetId" = granted_asset.id
+              )
+              or exists (
+                select
+                  1
+                from
+                  album_asset as granted_membership
+                  join album as granted_album on granted_album.id = granted_membership."albumId"
+                where
+                  granted_membership."albumId" = granted_link."albumId"
+                  and granted_membership."assetId" = granted_asset.id
+                  and granted_album."deletedAt" is null
+              )
+            )
+        )
+      )
   ) as "assets" on true
 where
   "shared_link"."id" = $1

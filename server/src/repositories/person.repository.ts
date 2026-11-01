@@ -20,7 +20,14 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
-import { anyUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database.js';
+import {
+  anyUuid,
+  dummy,
+  inSharedAlbum,
+  isPrivateAsset,
+  removeUndefinedKeys,
+  withFilePath,
+} from 'src/utils/database.js';
 import { isLeapDayObserved } from 'src/utils/date.js';
 import { paginationHelper, type PaginationOptions } from 'src/utils/pagination.js';
 
@@ -164,7 +171,16 @@ const visibleFaces = selectFrom('asset_face')
   .where('asset_face.deletedAt', 'is', null)
   .where('asset_face.isVisible', 'is', true)
   .where('asset_face.assetVisibility', '=', sql.lit(AssetVisibility.Timeline))
-  .where('asset_face.assetDeletedAt', 'is', null);
+  .where('asset_face.assetDeletedAt', 'is', null)
+  .where((eb) => eb.not(isPrivateAsset(eb.ref('asset_face.assetId'))));
+
+const hasPrivateThumbnail = (eb: ExpressionBuilder<DB, 'person' | 'person_group'>) =>
+  eb.exists(
+    eb
+      .selectFrom('asset_face')
+      .whereRef('asset_face.id', '=', 'person.faceAssetId')
+      .where((eb) => isPrivateAsset(eb.ref('asset_face.assetId'))),
+  );
 
 const withPerson = ({ viewingUserId }: WithPersonOptions) => {
   return (eb: ExpressionBuilder<DB, 'asset_face'>) =>
@@ -613,6 +629,7 @@ export class PersonRepository {
           .select('person.thumbnailPath')
           .whereRef('person.personGroupId', '=', 'person_group.id')
           .where('person.ownerId', '=', ownerId)
+          .where((eb) => eb.not(hasPrivateThumbnail(eb)))
           .as('thumbnailPath'),
         selectFrom('person')
           .innerJoin('person_user', (join) =>
@@ -624,6 +641,7 @@ export class PersonRepository {
           .select('person.thumbnailPath')
           .whereRef('person.personGroupId', '=', 'person_group.id')
           .where('person.thumbnailPath', '!=', '')
+          .where((eb) => eb.not(hasPrivateThumbnail(eb)))
           .limit(1)
           .as('sharedThumbnailPath'),
       ])

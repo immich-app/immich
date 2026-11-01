@@ -27,6 +27,7 @@ import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.
 import type { OnFavorite } from '#lib/utils/actions.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
+import { ensurePrivateSession } from '#lib/utils/private-session.ts';
 import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetJobName,
@@ -659,15 +660,15 @@ const handleToggleLocked = async (asset: AssetResponseDto) => {
     confirmColor: isLocked ? 'danger' : 'primary',
     icon: isLocked ? mdiLockOpenVariantOutline : mdiLockOutline,
   });
-  if (!isConfirmed) {
+  if (!isConfirmed || !(await ensurePrivateSession())) {
     return;
   }
 
   const visibility = isLocked ? AssetVisibility.Timeline : AssetVisibility.Locked;
-  assetViewerManager.emit('AssetLeave', { asset, reason: isLocked ? 'unlock' : 'lock' });
   await executeMutation(
     () => updateAssetsMutation({ error: { toast: 'errors.unable_to_save_settings' } }),
-    [{ assetBulkUpdateDto: { ids: [asset.id], visibility } }],
+    [{ assetBulkUpdateDto: { ids: [asset.id], visibility, ...(isLocked && { unlockLockedFolder: true }) } }],
+    { onSuccess: () => assetViewerManager.emit('AssetLeave', { asset, reason: isLocked ? 'unlock' : 'lock' }) },
   );
 };
 
@@ -764,7 +765,14 @@ const undoArchiveAssets = async (assets: TimelineAsset[]) => {
 
   await executeMutation(
     () => updateAssetsMutation({ error: { toast: 'errors.unable_to_archive_unarchive', values: { archived: false } } }),
-    [{ assetBulkUpdateDto: { ids: assets.map((a) => a.id), visibility: AssetVisibility.Timeline } }],
+    [
+      {
+        assetBulkUpdateDto: {
+          ids: assets.map((a) => a.id),
+          visibility: AssetVisibility.Timeline,
+        },
+      },
+    ],
     {
       onSuccess: () => {
         for (const asset of assets) {

@@ -26,7 +26,9 @@ const actions = {
     run: (app) => app.timeline.selectionBar.unarchive(),
     applied: (app) => expect(app.toast('unarchived_count')).toBeVisible(),
     sent: (api, { id }) =>
-      expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [id], visibility: AssetVisibility.Timeline } }),
+      expect(api.updateAssets).toHaveBeenCalledWith({
+        body: { ids: [id], visibility: AssetVisibility.Timeline },
+      }),
   },
   trash: {
     run: (app) => app.timeline.selectionBar.trash(),
@@ -68,6 +70,9 @@ const rows: Array<{ page: FilteredPage; action: keyof typeof actions; expected: 
 for (const { page: name, action, expected } of rows) {
   test(`${action} from a selection on ${name} ${expected}`, async ({ page, data, api, app }) => {
     const { route, assets } = filteredPages[name](data);
+    if (action === 'lock') {
+      data.setAuthStatus({ pinCode: true, isElevated: true });
+    }
     const [asset, other] = assets;
     await page.goto(route);
     await app.timeline.select(asset);

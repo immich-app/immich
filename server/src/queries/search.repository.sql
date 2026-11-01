@@ -18,7 +18,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -29,12 +28,73 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."fileCreatedAt" >= $1
+  (
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
+  )
+  and "asset"."fileCreatedAt" >= $1
   and "asset_exif"."lensModel" = $2
   and "asset"."ownerId" = any ($3::uuid[])
   and "asset"."isFavorite" = $4
@@ -54,7 +114,53 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."fileCreatedAt" >= $1
+  (
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
+  )
+  and "asset"."fileCreatedAt" >= $1
   and "asset_exif"."lensModel" = $2
   and "asset"."ownerId" = any ($3::uuid[])
   and "asset"."isFavorite" = $4
@@ -78,7 +184,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -89,12 +194,73 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."fileCreatedAt" >= $1
+  (
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
+  )
+  and "asset"."fileCreatedAt" >= $1
   and "asset_exif"."lensModel" = $2
   and "asset"."ownerId" = any ($3::uuid[])
   and "asset"."isFavorite" = $4
@@ -122,7 +288,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -134,6 +299,21 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility",
   (
     select
       to_json(obj)
@@ -180,7 +360,53 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."fileCreatedAt" >= $1
+  (
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
+  )
+  and "asset"."fileCreatedAt" >= $1
   and "asset_exif"."lensModel" = $2
   and "asset"."ownerId" = any ($3::uuid[])
   and "asset"."isFavorite" = $4
@@ -213,7 +439,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -224,13 +449,74 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
 where
-  "asset"."fileCreatedAt" >= $1
+  (
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
+  )
+  and "asset"."fileCreatedAt" >= $1
   and "asset_exif"."lensModel" = $2
   and "asset"."ownerId" = any ($3::uuid[])
   and "asset"."isFavorite" = $4
@@ -326,6 +612,50 @@ with recursive
       where
         "asset"."ownerId" = any ($1::uuid[])
         and "asset"."visibility" = $2
+        and not (
+          exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "asset"."id"
+              and tag."isPrivate" = true
+          )
+          or exists (
+            select
+              1
+            from
+              asset as private_asset
+            where
+              private_asset.id = "asset"."id"
+              and private_asset.visibility = 'locked'
+          )
+          or exists (
+            select
+              1
+            from
+              asset as still
+            where
+              still."livePhotoVideoId" = "asset"."id"
+              and (
+                still.visibility = 'locked'
+                or exists (
+                  select
+                    1
+                  from
+                    tag_asset
+                    join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                    join tag on tag.id = tag_closure.id_ancestor
+                  where
+                    tag_asset."assetId" = "still"."id"
+                    and tag."isPrivate" = true
+                )
+              )
+          )
+        )
         and "asset"."type" = $3
         and "asset"."deletedAt" is null
       order by
@@ -350,6 +680,50 @@ with recursive
           where
             "asset"."ownerId" = any ($5::uuid[])
             and "asset"."visibility" = $6
+            and not (
+              exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "asset"."id"
+                  and tag."isPrivate" = true
+              )
+              or exists (
+                select
+                  1
+                from
+                  asset as private_asset
+                where
+                  private_asset.id = "asset"."id"
+                  and private_asset.visibility = 'locked'
+              )
+              or exists (
+                select
+                  1
+                from
+                  asset as still
+                where
+                  still."livePhotoVideoId" = "asset"."id"
+                  and (
+                    still.visibility = 'locked'
+                    or exists (
+                      select
+                        1
+                      from
+                        tag_asset
+                        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                        join tag on tag.id = tag_closure.id_ancestor
+                      where
+                        tag_asset."assetId" = "still"."id"
+                        and tag."isPrivate" = true
+                    )
+                  )
+              )
+            )
             and "asset"."type" = $7
             and "asset"."deletedAt" is null
             and "asset_exif"."city" > "cte"."city"
@@ -377,7 +751,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -389,6 +762,21 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility",
   to_jsonb("asset_exif") as "exifInfo"
 from
   "asset"
@@ -406,6 +794,50 @@ from
 where
   "ownerId" = any ($1::uuid[])
   and "visibility" = $2
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
   and "deletedAt" is null
   and "state" is not null
   and "state" != $3
@@ -419,6 +851,50 @@ from
 where
   "ownerId" = any ($1::uuid[])
   and "visibility" = $2
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
   and "deletedAt" is null
   and "city" is not null
   and "city" != $3
@@ -432,6 +908,50 @@ from
 where
   "ownerId" = any ($1::uuid[])
   and "visibility" = $2
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
   and "deletedAt" is null
   and "make" is not null
   and "make" != $3
@@ -445,6 +965,50 @@ from
 where
   "ownerId" = any ($1::uuid[])
   and "visibility" = $2
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
   and "deletedAt" is null
   and "model" is not null
   and "model" != $3
@@ -458,6 +1022,50 @@ from
 where
   "ownerId" = any ($1::uuid[])
   and "visibility" = $2
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
   and "deletedAt" is null
   and "lensModel" is not null
   and "lensModel" != $3
@@ -480,7 +1088,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -491,24 +1098,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and true
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $4
+  $2
 offset
-  $5
+  $3
 
 -- SearchRepository.searchMetadataV3 (or-mixed-scope)
 select
@@ -528,7 +1192,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -539,14 +1202,71 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   (
-    "asset"."visibility" != $1
-    or "asset"."ownerId" = $2
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and (
     exists (
@@ -555,20 +1275,20 @@ where
         "album_asset"
       where
         "album_asset"."assetId" = "asset"."id"
-        and "album_asset"."albumId" = any ($3::uuid[])
+        and "album_asset"."albumId" = any ($1::uuid[])
     )
     or (
-      "asset_exif"."city" = $4
-      and "asset"."ownerId" = any ($5::uuid[])
+      "asset_exif"."city" = $2
+      and "asset"."ownerId" = any ($3::uuid[])
     )
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $6
+  $4
 offset
-  $7
+  $5
 
 -- SearchRepository.searchMetadataV3 (or-exif-only)
 select
@@ -588,7 +1308,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -599,24 +1318,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
-  and "asset_exif"."city" = $4
+  and "asset_exif"."city" = $2
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 
 -- SearchRepository.searchMetadataV3 (string-eq-null)
 select
@@ -636,7 +1412,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -647,24 +1422,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and "asset_exif"."city" is null
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $4
+  $2
 offset
-  $5
+  $3
 
 -- SearchRepository.searchMetadataV3 (string-pattern-like)
 select
@@ -684,7 +1516,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -695,24 +1526,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
-  and f_unaccent ("asset_exif"."description") ilike ('%' || f_unaccent ($4) || '%')
+  and f_unaccent ("asset_exif"."description") ilike ('%' || f_unaccent ($2) || '%')
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 
 -- SearchRepository.searchMetadataV3 (string-pattern-notLike)
 select
@@ -732,7 +1620,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -743,24 +1630,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
-  and f_unaccent ("asset_exif"."description") not ilike ('%' || f_unaccent ($4) || '%')
+  and f_unaccent ("asset_exif"."description") not ilike ('%' || f_unaccent ($2) || '%')
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 
 -- SearchRepository.searchMetadataV3 (string-pattern-startsWith)
 select
@@ -780,7 +1724,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -791,24 +1734,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
-  and f_unaccent ("asset"."originalFileName") ilike (f_unaccent ($4) || '%')
+  and f_unaccent ("asset"."originalFileName") ilike (f_unaccent ($2) || '%')
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 
 -- SearchRepository.searchMetadataV3 (string-similarity-ocr)
 select
@@ -828,7 +1828,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -839,15 +1838,72 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and exists (
     select
@@ -855,15 +1911,15 @@ where
       "ocr_search"
     where
       "ocr_search"."assetId" = "asset"."id"
-      and f_unaccent (ocr_search.text) %>> f_unaccent ($4)
+      and f_unaccent (ocr_search.text) %>> f_unaccent ($2)
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 
 -- SearchRepository.searchMetadataV3 (ids-any)
 select
@@ -883,7 +1939,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -894,14 +1949,71 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   (
-    "asset"."visibility" != $1
-    or "asset"."ownerId" = $2
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and exists (
     select
@@ -909,15 +2021,15 @@ where
       "album_asset"
     where
       "album_asset"."assetId" = "asset"."id"
-      and "album_asset"."albumId" = any ($3::uuid[])
+      and "album_asset"."albumId" = any ($1::uuid[])
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $4
+  $2
 offset
-  $5
+  $3
 
 -- SearchRepository.searchMetadataV3 (ids-all)
 select
@@ -937,7 +2049,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -948,15 +2059,72 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and exists (
     select
@@ -966,20 +2134,20 @@ where
     where
       "asset_face"."assetId" = "asset"."id"
       and "asset_face"."deletedAt" is null
-      and "asset_face"."isVisible" = $4
-      and "asset_face"."personGroupId" = any ($5::uuid[])
+      and "asset_face"."isVisible" = $2
+      and "asset_face"."personGroupId" = any ($3::uuid[])
     group by
       "asset_face"."assetId"
     having
-      count(distinct "asset_face"."personGroupId") = $6
+      count(distinct "asset_face"."personGroupId") = $4
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $7
+  $5
 offset
-  $8
+  $6
 
 -- SearchRepository.searchMetadataV3 (ids-all-single)
 select
@@ -999,7 +2167,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1010,14 +2177,71 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   (
-    "asset"."visibility" != $1
-    or "asset"."ownerId" = $2
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and exists (
     select
@@ -1025,15 +2249,15 @@ where
       "album_asset"
     where
       "album_asset"."assetId" = "asset"."id"
-      and "album_asset"."albumId" = any ($3::uuid[])
+      and "album_asset"."albumId" = any ($1::uuid[])
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $4
+  $2
 offset
-  $5
+  $3
 
 -- SearchRepository.searchMetadataV3 (ids-none)
 select
@@ -1053,7 +2277,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1064,15 +2287,72 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and not exists (
     select
@@ -1081,15 +2361,15 @@ where
       inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
     where
       "tag_asset"."assetId" = "asset"."id"
-      and "tag_closure"."id_ancestor" = any ($4::uuid[])
+      and "tag_closure"."id_ancestor" = any ($2::uuid[])
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 
 -- SearchRepository.searchMetadataV3 (ids-tags-all)
 select
@@ -1109,7 +2389,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1120,15 +2399,72 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and exists (
     select
@@ -1138,19 +2474,19 @@ where
       inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
     where
       "tag_asset"."assetId" = "asset"."id"
-      and "tag_closure"."id_ancestor" = any ($4::uuid[])
+      and "tag_closure"."id_ancestor" = any ($2::uuid[])
     group by
       "tag_asset"."assetId"
     having
-      count(distinct "tag_closure"."id_ancestor") = $5
+      count(distinct "tag_closure"."id_ancestor") = $3
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $6
+  $4
 offset
-  $7
+  $5
 
 -- SearchRepository.searchMetadataV3 (has-albums-false)
 select
@@ -1170,7 +2506,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1181,15 +2516,72 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and not exists (
     select
@@ -1202,9 +2594,9 @@ order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $4
+  $2
 offset
-  $5
+  $3
 
 -- SearchRepository.searchMetadataV3 (is-encoded)
 select
@@ -1224,7 +2616,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1235,15 +2626,72 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and exists (
     select
@@ -1251,15 +2699,15 @@ where
       "asset_file"
     where
       "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = $4
+      and "asset_file"."type" = $2
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 
 -- SearchRepository.searchMetadataV3 (number-range)
 select
@@ -1279,7 +2727,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1290,27 +2737,84 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and (
-    "asset_exif"."fileSizeInByte" <= $4
-    and "asset_exif"."fileSizeInByte" >= $5
+    "asset_exif"."fileSizeInByte" <= $2
+    and "asset_exif"."fileSizeInByte" >= $3
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $6
+  $4
 offset
-  $7
+  $5
 
 -- SearchRepository.searchMetadataV3 (date-eq)
 select
@@ -1330,7 +2834,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1341,24 +2844,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
-  and "asset"."fileCreatedAt" = $4
+  and "asset"."fileCreatedAt" = $2
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 
 -- SearchRepository.searchMetadataV3 (date-range)
 select
@@ -1378,7 +2938,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1389,27 +2948,84 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and (
-    "asset"."fileCreatedAt" < $4
-    and "asset"."fileCreatedAt" >= $5
+    "asset"."fileCreatedAt" < $2
+    and "asset"."fileCreatedAt" >= $3
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $6
+  $4
 offset
-  $7
+  $5
 
 -- SearchRepository.searchMetadataV3 (order-fileSize-noExif)
 select
@@ -1429,7 +3045,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1440,24 +3055,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and true
 order by
   "asset_exif"."fileSizeInByte" desc nulls last,
   "asset"."id" desc
 limit
-  $4
+  $2
 offset
-  $5
+  $3
 
 -- SearchRepository.searchMetadataV3 (order-rating-withExif)
 select
@@ -1519,7 +3191,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1530,24 +3201,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and true
 order by
   "asset_exif"."rating" asc nulls last,
   "asset"."id" asc
 limit
-  $4
+  $2
 offset
-  $5
+  $3
 
 -- SearchRepository.searchMetadataV3 (or-branches)
 select
@@ -1567,7 +3295,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1578,18 +3305,75 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and (
-    "asset"."isFavorite" = $4
+    "asset"."isFavorite" = $2
     or exists (
       select
       from
@@ -1597,17 +3381,17 @@ where
       where
         "asset_face"."assetId" = "asset"."id"
         and "asset_face"."deletedAt" is null
-        and "asset_face"."isVisible" = $5
-        and "asset_face"."personGroupId" = any ($6::uuid[])
+        and "asset_face"."isVisible" = $3
+        and "asset_face"."personGroupId" = any ($4::uuid[])
     )
   )
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $7
+  $5
 offset
-  $8
+  $6
 
 -- SearchRepository.searchMetadataV3 (or-with-top-level)
 select
@@ -1627,7 +3411,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1638,22 +3421,79 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   (
-    "asset"."visibility" != $1
-    or "asset"."ownerId" = $2
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and (
-    "asset"."fileCreatedAt" < $3
-    and "asset"."fileCreatedAt" >= $4
+    "asset"."fileCreatedAt" < $1
+    and "asset"."fileCreatedAt" >= $2
     and (
       (
-        "asset"."isFavorite" = $5
-        and "asset"."ownerId" = any ($6::uuid[])
+        "asset"."isFavorite" = $3
+        and "asset"."ownerId" = any ($4::uuid[])
       )
       or exists (
         select
@@ -1661,7 +3501,7 @@ where
           "album_asset"
         where
           "album_asset"."assetId" = "asset"."id"
-          and "album_asset"."albumId" = any ($7::uuid[])
+          and "album_asset"."albumId" = any ($5::uuid[])
       )
     )
   )
@@ -1669,9 +3509,9 @@ order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $8
+  $6
 offset
-  $9
+  $7
 
 -- SearchRepository.searchMetadataV3 (cursor-offset)
 select
@@ -1691,7 +3531,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1702,24 +3541,81 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
-  and "asset"."isFavorite" = $4
+  and "asset"."isFavorite" = $2
 order by
   "asset"."fileCreatedAt" desc,
   "asset"."id" desc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 
 -- SearchRepository.searchRandomV3 (baseline)
 select
@@ -1739,7 +3635,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1750,21 +3645,78 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and true
 order by
   random()
 limit
-  $4
+  $2
 
 -- SearchRepository.searchRandomV3 (with-filter)
 select
@@ -1784,7 +3736,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1795,21 +3746,78 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
-  and "asset"."isFavorite" = $4
+  and "asset"."isFavorite" = $2
 order by
   random()
 limit
-  $5
+  $3
 
 -- SearchRepository.searchSmartV3 (baseline)
 begin
@@ -1832,7 +3840,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1843,7 +3850,22 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1851,17 +3873,59 @@ from
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and true
 order by
-  smart_search.embedding <=> $4,
+  smart_search.embedding <=> $2,
   "asset"."id" asc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 commit
 
 -- SearchRepository.searchSmartV3 (with-filter)
@@ -1885,7 +3949,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1896,7 +3959,22 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1904,20 +3982,62 @@ from
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and (
-    "asset"."fileCreatedAt" < $4
-    and "asset"."fileCreatedAt" >= $5
+    "asset"."fileCreatedAt" < $2
+    and "asset"."fileCreatedAt" >= $3
   )
 order by
-  smart_search.embedding <=> $6,
+  smart_search.embedding <=> $4,
   "asset"."id" asc
 limit
-  $7
+  $5
 offset
-  $8
+  $6
 commit
 
 -- SearchRepository.searchSmartV3 (cursor-offset)
@@ -1941,7 +4061,6 @@ select
   "asset"."isFavorite",
   "asset"."isOffline",
   "asset"."isEdited",
-  "asset"."visibility",
   "asset"."libraryId",
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
@@ -1952,7 +4071,22 @@ select
   "asset"."thumbhash",
   "asset"."type",
   "asset"."width",
-  "asset"."height"
+  "asset"."height",
+  case
+    when "asset"."visibility" != 'hidden'
+    and exists (
+      select
+        1
+      from
+        tag_asset
+        join tag on tag.id = tag_asset."tagId"
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate"
+        and tag."systemKey" = 'locked'
+    ) then 'locked'
+    else "asset"."visibility"
+  end as "visibility"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1960,17 +4094,59 @@ from
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and true
 order by
-  smart_search.embedding <=> $4,
+  smart_search.embedding <=> $2,
   "asset"."id" asc
 limit
-  $5
+  $3
 offset
-  $6
+  $4
 commit
 
 -- SearchRepository.searchStatisticsV3 (baseline)
@@ -1982,8 +4158,50 @@ from
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and true
 
@@ -1996,13 +4214,55 @@ from
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and (
-    "asset_exif"."fileSizeInByte" >= $4
-    and "asset"."fileCreatedAt" < $5
-    and "asset"."fileCreatedAt" >= $6
+    "asset_exif"."fileSizeInByte" >= $2
+    and "asset"."fileCreatedAt" < $3
+    and "asset"."fileCreatedAt" >= $4
   )
 
 -- SearchRepository.searchStatisticsV3 (with-or)
@@ -2014,11 +4274,53 @@ from
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."visibility" != $2
-    or "asset"."ownerId" = $3
+    not (
+      exists (
+        select
+          1
+        from
+          tag_asset
+          join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+          join tag on tag.id = tag_closure.id_ancestor
+        where
+          tag_asset."assetId" = "asset"."id"
+          and tag."isPrivate" = true
+      )
+      or exists (
+        select
+          1
+        from
+          asset as private_asset
+        where
+          private_asset.id = "asset"."id"
+          and private_asset.visibility = 'locked'
+      )
+      or exists (
+        select
+          1
+        from
+          asset as still
+        where
+          still."livePhotoVideoId" = "asset"."id"
+          and (
+            still.visibility = 'locked'
+            or exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "still"."id"
+                and tag."isPrivate" = true
+            )
+          )
+      )
+    )
   )
   and (
-    "asset"."isFavorite" = $4
+    "asset"."isFavorite" = $2
     or not exists (
       select
       from

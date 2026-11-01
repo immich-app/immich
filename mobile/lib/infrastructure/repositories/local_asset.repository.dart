@@ -8,6 +8,7 @@ import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset_presence.drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.drift.dart';
@@ -24,6 +25,16 @@ class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepos
   LocalAssetRepository(super.attachedDatabase);
 
   Drift get _db => attachedDatabase;
+
+  Future<void> rememberUploadedAsset(String ownerId, String localId, String checksum) => transaction(() async {
+    await (_db.localAssetEntity.update()..where((asset) => asset.id.equals(localId))).write(
+      LocalAssetEntityCompanion(checksum: Value(checksum)),
+    );
+    await _db.localAssetPresenceEntity.insertOne(
+      LocalAssetPresenceEntityData(ownerId: ownerId, checksum: checksum),
+      mode: InsertMode.insertOrIgnore,
+    );
+  });
 
   SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
     final query =

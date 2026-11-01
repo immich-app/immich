@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
-import { asUuid, withExif } from 'src/utils/database.js';
+import { asUuid, isPrivateAsset, withExif } from 'src/utils/database.js';
 
 const escapeLikePattern = (value: string) => value.replaceAll(/[\\%_]/g, String.raw`\$&`);
 
@@ -19,6 +19,7 @@ export class ViewRepository {
       .distinct()
       .where('ownerId', '=', asUuid(userId))
       .where('visibility', '=', AssetVisibility.Timeline)
+      .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
       .where('deletedAt', 'is', null)
       .where('fileCreatedAt', 'is not', null)
       .where('fileModifiedAt', 'is not', null)
@@ -40,6 +41,7 @@ export class ViewRepository {
       .$call(withExif)
       .where('ownerId', '=', asUuid(userId))
       .where('visibility', '=', AssetVisibility.Timeline)
+      .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
       .where('deletedAt', 'is', null)
       .where('fileCreatedAt', 'is not', null)
       .where('fileModifiedAt', 'is not', null)

@@ -1,6 +1,7 @@
 import { Kysely } from 'kysely';
-import { SyncEntityType, SyncRequestType } from 'src/enum.js';
+import { AssetVisibility, SyncEntityType, SyncRequestType } from 'src/enum.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
 import { SyncTestContext } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
@@ -20,6 +21,18 @@ beforeAll(async () => {
 });
 
 describe(SyncEntityType.AssetV2, () => {
+  it('should keep private asset and EXIF data out of background sync', async () => {
+    const { auth, user, ctx } = await setup();
+    const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+    await ctx.newExif({ assetId: asset.id, city: 'Private location' });
+    const tag = await ctx.get(TagRepository).create({ userId: user.id, value: 'custom', isPrivate: true });
+    await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+    await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV2, SyncRequestType.AssetExifsV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  });
+
   it('should detect and sync the first asset', async () => {
     const originalFileName = 'firstAsset';
     const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';

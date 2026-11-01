@@ -1060,6 +1060,8 @@ const tagInsert = (tag: Partial<Insertable<TagTable>>) => {
     createdAt: newDate(),
     updatedAt: newDate(),
     color: '',
+    isPrivate: false,
+    systemKey: null,
     parentId: null,
     updateId: newUuid(),
   };

@@ -522,6 +522,7 @@ test('saves the feature settings', async ({ router, render, settle, api, app }) 
     body: {
       albums: { defaultAssetOrder: AssetOrder.Desc },
       folders: { enabled: false, sidebarWeb: false },
+      lockedFolder: { sidebarWeb: true },
       memories: { enabled: true, duration: 5, sidebarWeb: false },
       people: { enabled: true, sidebarWeb: false, minimumFaces: 3, updateStrategy: PersonUpdateStrategy.Everyone },
       ratings: { enabled: true },

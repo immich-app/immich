@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -38,9 +39,7 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
   }
 
   final trashEnabled = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
-  // Assets already in the trash or in the locked folder are deleted outright, irrespective of the server setting.
-  final trash =
-      ownedRemote.isEmpty || (trashEnabled && !ownedRemote.every((asset) => asset.isTrashed || asset.isLocked));
+  final trash = ownedRemote.isEmpty || (trashEnabled && !ownedRemote.every((asset) => asset.isTrashed));
   final remoteIds = ownedRemote.map((asset) => asset.id).toList(growable: false);
   final isLocalOnly = assets.any((asset) => asset.isLocalOnly);
 
@@ -72,6 +71,7 @@ class DeleteAction extends AssetActionBuilder {
 
     final (:localIds, :remoteIds, :trash, :isLocalOnly) = state;
     final assetService = ref.read(assetServiceProvider);
+    final tags = ref.read(Store.tags);
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
 
@@ -83,7 +83,14 @@ class DeleteAction extends AssetActionBuilder {
         message = await _removeLocalAssets(context, ref, localIds, isLocalOnly: isLocalOnly);
       } else if (trash) {
         message = await _moveToTrash(context, ref, remoteIds, localIds, isLocalOnly: isLocalOnly);
-        undo = .new(onUndo: () => assetService.restoreTrash(remoteIds));
+        undo = .new(
+          onUndo: () async {
+            await assetService.restoreTrash(remoteIds);
+            if (context.mounted) {
+              tags.refresh();
+            }
+          },
+        );
       } else {
         message = await _deletePermanently(context, ref, remoteIds, localIds);
       }
@@ -92,6 +99,9 @@ class DeleteAction extends AssetActionBuilder {
         return;
       }
 
+      if (context.mounted && remoteIds.isNotEmpty) {
+        tags.refresh();
+      }
       toastService.success(message, toast: undo);
       clearSelection();
     } catch (error, stack) {

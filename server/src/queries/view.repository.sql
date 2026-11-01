@@ -8,6 +8,50 @@ from
 where
   "ownerId" = $2::uuid
   and "visibility" = $3
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
   and "deletedAt" is null
   and "fileCreatedAt" is not null
   and "fileModifiedAt" is not null
@@ -25,6 +69,50 @@ from
 where
   "ownerId" = $1::uuid
   and "visibility" = $2
+  and not (
+    exists (
+      select
+        1
+      from
+        tag_asset
+        join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+        join tag on tag.id = tag_closure.id_ancestor
+      where
+        tag_asset."assetId" = "asset"."id"
+        and tag."isPrivate" = true
+    )
+    or exists (
+      select
+        1
+      from
+        asset as private_asset
+      where
+        private_asset.id = "asset"."id"
+        and private_asset.visibility = 'locked'
+    )
+    or exists (
+      select
+        1
+      from
+        asset as still
+      where
+        still."livePhotoVideoId" = "asset"."id"
+        and (
+          still.visibility = 'locked'
+          or exists (
+            select
+              1
+            from
+              tag_asset
+              join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+              join tag on tag.id = tag_closure.id_ancestor
+            where
+              tag_asset."assetId" = "still"."id"
+              and tag."isPrivate" = true
+          )
+        )
+    )
+  )
   and "deletedAt" is null
   and "fileCreatedAt" is not null
   and "fileModifiedAt" is not null

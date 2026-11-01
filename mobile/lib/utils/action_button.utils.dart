@@ -13,7 +13,6 @@ import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/cast.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/download.action.dart';
-import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/open_in_browser.action.dart';
 import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
@@ -24,6 +23,7 @@ import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/similar_photos.action.dart';
 import 'package:immich_mobile/presentation/actions/slideshow.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
+import 'package:immich_mobile/presentation/actions/tag.action.dart';
 import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
@@ -74,8 +74,7 @@ enum ActionButtonType {
   unstack,
   archive,
   unarchive,
-  moveToLockFolder,
-  removeFromLockFolder,
+  addToPrivateTag,
   removeFromAlbum,
   restoreTrash,
   deleteLocal,
@@ -109,13 +108,9 @@ enum ActionButtonType {
             context.asset.hasRemote && //
             context.timelineOrigin == TimelineOrigin.trash,
       ActionButtonType.delete => true,
-      ActionButtonType.moveToLockFolder =>
+      ActionButtonType.addToPrivateTag =>
         context.isOwner && //
             !context.isInLockedView && //
-            context.asset.hasRemote,
-      ActionButtonType.removeFromLockFolder =>
-        context.isOwner && //
-            context.isInLockedView && //
             context.asset.hasRemote,
       ActionButtonType.deleteLocal =>
         !context.isInLockedView && //
@@ -153,12 +148,12 @@ enum ActionButtonType {
       ActionButtonType.viewInTimeline =>
         context.timelineOrigin != TimelineOrigin.main &&
             context.timelineOrigin != TimelineOrigin.trash &&
-            context.timelineOrigin != TimelineOrigin.lockedFolder &&
+            context.timelineOrigin != TimelineOrigin.privateTag &&
             context.timelineOrigin != TimelineOrigin.archive &&
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
-      ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
-      ActionButtonType.slideshow => true,
+      ActionButtonType.cast => !context.isInLockedView && (context.isCasting || context.asset.hasRemote),
+      ActionButtonType.slideshow => !context.isInLockedView,
     };
   }
 
@@ -178,8 +173,7 @@ enum ActionButtonType {
       ActionButtonType.download => ActionMenuItem(action: DownloadAction(source: context.source)),
       ActionButtonType.restoreTrash => ActionMenuItem(action: RestoreAction(source: context.source)),
       ActionButtonType.delete => ActionMenuItem(action: DeleteAction(source: context.source)),
-      ActionButtonType.moveToLockFolder ||
-      ActionButtonType.removeFromLockFolder => ActionMenuItem(action: LockAction(source: context.source)),
+      ActionButtonType.addToPrivateTag => ActionMenuItem(action: PrivateTagAction(source: context.source)),
       ActionButtonType.deleteLocal => ActionMenuItem(action: CleanupLocalAction(source: context.source)),
       ActionButtonType.upload => ActionMenuItem(
         action: UploadAction(source: context.source, showProgress: context.source == ActionSource.viewer),
@@ -228,12 +222,11 @@ enum ActionButtonType {
     // 0: info
     ActionButtonType.openInfo => 0,
     // 10: move, remove, and delete
-    ActionButtonType.removeFromLockFolder => 10,
     ActionButtonType.removeFromAlbum => 10,
     ActionButtonType.unstack => 10,
     ActionButtonType.archive => 10,
     ActionButtonType.unarchive => 10,
-    ActionButtonType.moveToLockFolder => 10,
+    ActionButtonType.addToPrivateTag => 10,
     ActionButtonType.deleteLocal => 10,
     ActionButtonType.delete => 10,
     ActionButtonType.restoreTrash => 10,
@@ -249,7 +242,7 @@ class ActionButtonBuilder {
   static const List<ActionButtonType> defaultViewerKebabMenuOrder = _actionTypes;
   static const Set<ActionButtonType> defaultViewerBottomBarButtons = {
     ActionButtonType.share,
-    ActionButtonType.moveToLockFolder,
+    ActionButtonType.addToPrivateTag,
     ActionButtonType.upload,
     ActionButtonType.delete,
     ActionButtonType.archive,

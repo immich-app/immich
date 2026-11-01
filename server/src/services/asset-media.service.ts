@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import type { Insertable } from 'kysely';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { Asset, AuthSharedLink } from 'src/database.js';
@@ -20,18 +21,19 @@ import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto.js';
 import { AuthDto, isEditedOnly, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import {
   AssetFileType,
+  AssetType,
   AssetVisibility,
-  CacheControl,
   ChecksumAlgorithm,
   JobName,
   Permission,
   StorageFolder,
 } from 'src/enum.js';
 import { AuthRequest } from 'src/middleware/auth.guard.js';
+import type { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { UploadFile, UploadRequest } from 'src/types.js';
-import { requireUploadAccess } from 'src/utils/access.js';
-import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util.js';
+import { requireElevatedPermission, requireUploadAccess } from 'src/utils/access.js';
+import { asUploadRequest, getAssetCacheControl, onBeforeLink } from 'src/utils/asset.util.js';
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
 import {
   ImmichFileResponse,
@@ -49,7 +51,7 @@ export interface AssetMediaRedirectResponse {
 @Injectable()
 export class AssetMediaService extends BaseService {
   async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetMediaResponseDto | undefined> {
-    if (!checksum) {
+    if (!checksum || auth.session?.hasElevatedPermission) {
       return;
     }
 
@@ -136,6 +138,7 @@ export class AssetMediaService extends BaseService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     let asset: Asset | undefined;
+    let privateTagId = dto.privateTagId;
     try {
       await this.requireAccess({
         auth,
@@ -145,6 +148,33 @@ export class AssetMediaService extends BaseService {
       });
 
       this.requireQuota(auth, file.size);
+
+      const isLegacyLockedUpload = dto.visibility === AssetVisibility.Locked;
+      if (privateTagId || isLegacyLockedUpload) {
+        requireElevatedPermission(auth);
+        if (auth.sharedLink) {
+          throw new BadRequestException('Private uploads cannot be shared');
+        }
+        if (privateTagId) {
+          await this.requireAccess({ auth, permission: Permission.TagAsset, ids: [privateTagId] });
+        } else {
+          const tag = await this.tagRepository.getOrCreateSystemTag({
+            userId: auth.user.id,
+            value: 'locked',
+            systemKey: 'locked',
+            isPrivate: true,
+          });
+          privateTagId = tag.id;
+        }
+      }
+
+      const type = mimeTypes.assetType(file.originalPath);
+      if (
+        dto.privateLivePhotoMotion &&
+        (!privateTagId || type !== AssetType.Video || dto.visibility !== AssetVisibility.Hidden || dto.livePhotoVideoId)
+      ) {
+        throw new BadRequestException('Invalid private Live Photo motion upload');
+      }
 
       if (dto.livePhotoVideoId) {
         if (auth.sharedLink) {
@@ -166,7 +196,7 @@ export class AssetMediaService extends BaseService {
         );
       }
 
-      asset = await this.assetRepository.create({
+      const input: Insertable<AssetTable> = {
         ownerId: auth.user.id,
         libraryId: null,
 
@@ -178,13 +208,19 @@ export class AssetMediaService extends BaseService {
         fileModifiedAt: dto.fileModifiedAt,
         localDateTime: dto.fileCreatedAt,
 
-        type: mimeTypes.assetType(file.originalPath),
+        type,
         isFavorite: dto.isFavorite,
         duration: dto.duration || null,
-        visibility: dto.visibility ?? AssetVisibility.Timeline,
+        visibility: isLegacyLockedUpload ? AssetVisibility.Timeline : (dto.visibility ?? AssetVisibility.Timeline),
         livePhotoVideoId: dto.livePhotoVideoId,
         originalFileName: dto.filename || file.originalName,
-      });
+      };
+      asset = privateTagId
+        ? await this.assetRepository.createWithPrivateTag(input, privateTagId, dto.privateLivePhotoMotion)
+        : await this.assetRepository.create(input);
+      if (!asset) {
+        throw new BadRequestException('Not found or no private tag access');
+      }
 
       if (dto.metadata?.length) {
         await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
@@ -211,7 +247,6 @@ export class AssetMediaService extends BaseService {
       }
 
       await this.eventRepository.emit('AssetCreate', { asset, file });
-
       return { id: asset.id, status: AssetMediaStatus.CREATED };
     } catch (error: any) {
       // clean up files
@@ -222,10 +257,28 @@ export class AssetMediaService extends BaseService {
 
       // handle duplicates with a success response
       if (isAssetChecksumConstraint(error)) {
-        const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
+        const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(
+          auth.user.id,
+          file.checksum,
+          auth.session?.hasElevatedPermission,
+        );
         if (!duplicateId) {
-          this.logger.error(`Error locating duplicate for checksum constraint`);
-          throw new InternalServerErrorException();
+          throw new BadRequestException('Unable to upload this asset');
+        }
+
+        if (privateTagId) {
+          const privacyUserIds = await this.assetRepository.addExistingAssetToPrivateTag(
+            auth.user.id,
+            duplicateId,
+            privateTagId,
+            { livePhotoVideoId: dto.livePhotoVideoId, isLivePhotoCompanion: dto.privateLivePhotoMotion },
+          );
+          if (privacyUserIds === undefined) {
+            throw new BadRequestException('Not found or no private tag access');
+          }
+          if (this.notifyAssetPrivacy(privacyUserIds)) {
+            await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: duplicateId } });
+          }
         }
 
         if (auth.sharedLink) {
@@ -258,7 +311,7 @@ export class AssetMediaService extends BaseService {
       path,
       fileName: name + extension,
       contentType: mimeTypes.lookup(path),
-      cacheControl: CacheControl.PrivateWithCache,
+      cacheControl: getAssetCacheControl(auth),
     });
   }
 
@@ -295,7 +348,7 @@ export class AssetMediaService extends BaseService {
       fileName,
       path,
       contentType: mimeTypes.lookup(path),
-      cacheControl: CacheControl.PrivateWithCache,
+      cacheControl: getAssetCacheControl(auth),
     });
   }
 
@@ -313,13 +366,17 @@ export class AssetMediaService extends BaseService {
     return new ImmichFileResponse({
       path: filepath,
       contentType: mimeTypes.lookup(filepath),
-      cacheControl: CacheControl.PrivateWithCache,
+      cacheControl: getAssetCacheControl(auth),
     });
   }
 
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
     const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
-    const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);
+    const results = await this.assetRepository.getByChecksums(
+      auth.user.id,
+      checksums,
+      dto.presenceOnly === true || auth.session?.hasElevatedPermission === true,
+    );
     const checksumMap: Record<string, { id: string; isTrashed: boolean }> = {};
 
     for (const { id, deletedAt, checksum } of results) {
@@ -334,8 +391,7 @@ export class AssetMediaService extends BaseService {
             id,
             action: AssetUploadAction.REJECT,
             reason: AssetRejectReason.DUPLICATE,
-            assetId: duplicate.id,
-            isTrashed: duplicate.isTrashed,
+            ...(!dto.presenceOnly && { assetId: duplicate.id, isTrashed: duplicate.isTrashed }),
           };
         }
 

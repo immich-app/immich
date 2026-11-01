@@ -116,6 +116,7 @@ export class TimelineManager extends VirtualScrollManager {
 
     this.#unsubscribes.push(
       eventManager.on({
+        TimelineRefresh: () => this.updateOptions(this.#options, { force: true }),
         AssetUpdate: (asset: AssetResponseDto) => {
           const timelineAsset = toTimelineAsset(asset);
           if (this.#options.albumId || this.#options.personId) {
@@ -312,11 +313,11 @@ export class TimelineManager extends VirtualScrollManager {
     this.updateViewportGeometry(false);
   }
 
-  async updateOptions(options: TimelineManagerOptions) {
+  async updateOptions(options: TimelineManagerOptions, { force = false } = {}) {
     if (options.deferInit) {
       return;
     }
-    if (this.#options !== TimelineManager.#INIT_OPTIONS && isEqual(this.#options, options)) {
+    if (!force && this.#options !== TimelineManager.#INIT_OPTIONS && isEqual(this.#options, options)) {
       return;
     }
 

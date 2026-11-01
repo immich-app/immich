@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:immich_mobile/data/server/asset_presence.dart';
+import 'package:immich_mobile/domain/models/asset/asset_presence.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
@@ -54,8 +56,10 @@ class SyncStreamService {
   });
 
   bool get isCancelled => _cancellation?.isCompleted ?? false;
+  void Function()? _onAssetAccessChanged;
 
-  Future<bool> sync() async {
+  Future<bool> sync({void Function()? onAssetAccessChanged}) async {
+    _onAssetAccessChanged = onAssetAccessChanged;
     _logger.info("Remote sync request for user");
     final serverVersionDto = await _api.serverInfoApi.getServerVersion();
     if (serverVersionDto == null) {
@@ -182,8 +186,43 @@ class SyncStreamService {
 
     final type = batch.first.type;
     await _handleSyncData(type, batch.map((e) => e.data));
-    await _syncApiRepository.ack([batch.last.ack]);
+    if (type != SyncEntityType.syncResetV1 || !isCancelled) {
+      await _syncApiRepository.ack([batch.last.ack]);
+    }
     batch.clear();
+  }
+
+  Future<void> rememberBackedUpHashes(Map<String, String> hashes) async {
+    final user = Store.tryGet(StoreKey.currentUser);
+    if (user == null || hashes.isEmpty) {
+      return;
+    }
+    final checksums = await _syncStreamRepository.getEligibleBackupHashes(hashes);
+    final matches = await _checkPresence(checksums);
+    if (matches != null && !isCancelled) {
+      await _syncStreamRepository.updateLocalAssetPresence(user.id, (checked: checksums, matches: matches));
+    }
+  }
+
+  Future<BackupPresence?> _checkLocalAssetPresence(String ownerId, {required bool includeSynced}) async {
+    final checksums = await _syncStreamRepository.getBackupChecksums(ownerId, includeSynced: includeSynced);
+    final matches = await _checkPresence(checksums);
+    return matches == null ? null : (checked: checksums, matches: matches);
+  }
+
+  Future<List<String>?> _checkPresence(Iterable<String> checksums) async {
+    if (checksums.isEmpty) {
+      return const [];
+    }
+    if (isCancelled) {
+      return null;
+    }
+    try {
+      return await AssetPresenceApi(_api.assetsApi).check(checksums, abortSignal: _cancellation?.future);
+    } on Exception catch (error, stack) {
+      _logger.warning('Could not check the device backup matches', error, stack);
+      return null;
+    }
   }
 
   Future<void> _handleSyncData(SyncEntityType type, Iterable<Object> data) async {
@@ -287,11 +326,28 @@ class SyncStreamService {
         return;
       // SyncCompleteV1 is used to signal the completion of the sync process. Cleanup stale assets and signal completion
       case SyncEntityType.syncCompleteV1:
+        if (await _syncStreamRepository.pruneUnsharedPrivateAssets() > 0) {
+          _onAssetAccessChanged?.call();
+        }
+        final user = Store.tryGet(StoreKey.currentUser);
+        if (user != null) {
+          final presence = await _checkLocalAssetPresence(user.id, includeSynced: false);
+          if (presence != null && !isCancelled) {
+            await _syncStreamRepository.updateLocalAssetPresence(user.id, presence);
+          }
+        }
         return;
-      // return _syncStreamRepository.pruneAssets();
-      // Request to reset the client state. Clear everything related to remote entities
       case SyncEntityType.syncResetV1:
-        return _syncStreamRepository.reset();
+        _onAssetAccessChanged?.call();
+        final user = Store.tryGet(StoreKey.currentUser);
+        if (user == null) {
+          return _syncStreamRepository.reset();
+        }
+        final presence = await _checkLocalAssetPresence(user.id, includeSynced: true);
+        if (!isCancelled) {
+          await _syncStreamRepository.reset(ownerId: user.id, localAssetPresence: presence);
+        }
+        return;
       case SyncEntityType.syncPendingResetV1:
         final requestType = data.cast<SyncPendingResetV1>().single.type;
         return switch (requestType) {

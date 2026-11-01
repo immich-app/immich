@@ -88,6 +88,16 @@ void main() {
         verifyNever(() => cleanupService.deleteLocalAssets(any()));
       });
 
+      testWidgets('trashes a migrated locked asset when trash is enabled', (tester) async {
+        final asset = owned(visibility: .locked);
+
+        await pumpDelete(tester, {asset});
+        await tester.pumpAndSettle();
+
+        verify(() => assetService.trash([asset.id])).called(1);
+        verifyNever(() => assetService.delete(any()));
+      });
+
       testWidgets('ignores assets owned by someone else', (tester) async {
         final mine = owned();
         final theirs = RemoteAssetFactory.create();
@@ -220,20 +230,10 @@ void main() {
         verifyNever(() => assetService.trash(any()));
       });
 
-      testWidgets('permanently deletes locked folder assets even with trash enabled', (tester) async {
-        final asset = owned(visibility: .locked, localId: 'local');
-
-        await pumpDelete(tester, {asset});
-        await respondToDialog(tester, confirm: true);
-
-        verify(() => assetService.delete([asset.id])).called(1);
-        verify(() => cleanupService.deleteLocalAssets(['local'])).called(1);
-      });
-
       testWidgets('does nothing when the confirmation is cancelled', (tester) async {
-        final asset = owned(visibility: .locked, localId: 'local');
+        final asset = owned(localId: 'local');
 
-        await pumpDelete(tester, {asset});
+        await pumpDelete(tester, {asset}, trashEnabled: false);
         await respondToDialog(tester, confirm: false);
 
         verifyNever(() => assetService.delete(any()));

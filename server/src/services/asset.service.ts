@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import type { Kysely } from 'kysely';
 import { isUndefined, omitBy } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
 import { ASSET_VISIBILITY_DEPENDENT_PATHS } from 'src/constants.js';
@@ -39,9 +40,10 @@ import {
   QueueName,
 } from 'src/enum.js';
 import { Resource } from 'src/resource-paths.js';
+import type { DB } from 'src/schema/index.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { JobItem, JobOf } from 'src/types.js';
-import { requireElevatedPermission } from 'src/utils/access.js';
+import { requireAccess, requireElevatedPermission } from 'src/utils/access.js';
 import {
   getAssetFiles,
   getDimensions,
@@ -49,6 +51,7 @@ import {
   onAfterUnlink,
   onBeforeLink,
   onBeforeUnlink,
+  writeAssetTagsToExif,
 } from 'src/utils/asset.util.js';
 import { updateLockedColumns } from 'src/utils/database.js';
 import { extractTimeZone } from 'src/utils/date.js';
@@ -73,9 +76,12 @@ export class AssetService extends BaseService {
       exifInfo: true,
       owner: true,
       faces: { person: true, viewingUserId: auth.user.id },
-      stack: { assets: true },
+      stack: {
+        assets: true,
+        ...(auth.session?.hasElevatedPermission && !auth.sharedLink && { privateOwnerId: auth.user.id }),
+      },
       edits: true,
-      tags: true,
+      tags: { privateOwnerId: auth.session?.hasElevatedPermission && !auth.sharedLink ? auth.user.id : null },
     });
 
     if (!asset) {
@@ -86,9 +92,21 @@ export class AssetService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+    if (dto.visibility === AssetVisibility.Locked || dto.unlockLockedFolder) {
+      requireElevatedPermission(auth);
+    }
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
 
-    const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
+    const {
+      description,
+      dateTimeOriginal,
+      latitude,
+      longitude,
+      rating,
+      preserveLockedTag: _,
+      unlockLockedFolder,
+      ...rest
+    } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
 
     let previousMotion: { id: string } | null = null;
@@ -104,9 +122,24 @@ export class AssetService extends BaseService {
 
     const wroteMetadata = await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
-    const asset = await this.assetRepository.update({ id, ...rest });
+    const legacyLock = await this.writeWithLegacyLock(auth, [id], rest.visibility, unlockLockedFolder, async (db) => {
+      const updates = {
+        id,
+        ...rest,
+        ...(rest.visibility === AssetVisibility.Locked && { visibility: AssetVisibility.Timeline }),
+      };
+      const asset = await (db ? this.assetRepository.update(updates, db) : this.assetRepository.update(updates));
+      if (!asset) {
+        throw new BadRequestException('Asset not found');
+      }
+      return asset;
+    });
 
-    if (previousMotion && asset) {
+    const { updated: asset } = legacyLock;
+    const lockedTagChanged = await this.finishLegacyLock(auth.user.id, rest.visibility, legacyLock);
+    const motionPrivacyChanged = this.notifyAssetPrivacy(asset.privacyUserIds ?? []);
+    const privacyChanged = lockedTagChanged || motionPrivacyChanged;
+    if (previousMotion) {
       await onAfterUnlink(repos, {
         userId: auth.user.id,
         livePhotoVideoId: previousMotion.id,
@@ -114,11 +147,10 @@ export class AssetService extends BaseService {
       });
     }
 
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
+    if (lockedTagChanged && !wroteMetadata) {
+      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
     }
-
-    if (Object.values(dto).some((value) => value !== undefined)) {
+    if (!privacyChanged && Object.values(dto).some((value) => value !== undefined)) {
       const { isFavorite, visibility, livePhotoVideoId } = rest;
       const changesVisibility = visibility !== undefined || livePhotoVideoId !== undefined;
       this.resourceRepository.send({
@@ -132,7 +164,7 @@ export class AssetService extends BaseService {
       });
     }
 
-    if (!wroteMetadata) {
+    if (!wroteMetadata && !privacyChanged && !(await this.assetRepository.isPrivate(id))) {
       this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
     }
 
@@ -144,6 +176,7 @@ export class AssetService extends BaseService {
       ids,
       isFavorite,
       visibility,
+      unlockLockedFolder,
       dateTimeOriginal,
       latitude,
       longitude,
@@ -153,9 +186,19 @@ export class AssetService extends BaseService {
       dateTimeRelative,
       timeZone,
     } = dto;
+    if (visibility === AssetVisibility.Locked || unlockLockedFolder) {
+      requireElevatedPermission(auth);
+    }
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
-    const assetDto = omitBy({ isFavorite, visibility, duplicateId }, isUndefined);
+    const assetDto = omitBy(
+      {
+        isFavorite,
+        visibility: visibility === AssetVisibility.Locked ? AssetVisibility.Timeline : visibility,
+        duplicateId,
+      },
+      isUndefined,
+    );
     const exifDto = omitBy(
       {
         latitude,
@@ -184,15 +227,16 @@ export class AssetService extends BaseService {
       shouldWriteSidecar = true;
     }
 
-    if (Object.keys(assetDto).length > 0) {
-      await this.assetRepository.updateAll(ids, assetDto);
-    }
+    const legacyLock = await this.writeWithLegacyLock(auth, ids, visibility, unlockLockedFolder, async (db) => {
+      if (Object.keys(assetDto).length > 0) {
+        await (db ? this.assetRepository.updateAll(ids, assetDto, db) : this.assetRepository.updateAll(ids, assetDto));
+      }
+    });
 
-    if (visibility === AssetVisibility.Locked) {
-      await this.albumRepository.removeAssetsFromAll(ids);
-    }
+    const privacyChanged = await this.finishLegacyLock(auth.user.id, visibility, legacyLock);
+    shouldWriteSidecar ||= privacyChanged;
 
-    if (shouldWriteSidecar || Object.keys(assetDto).length > 0) {
+    if (!privacyChanged && (shouldWriteSidecar || Object.keys(assetDto).length > 0)) {
       this.resourceRepository.send({
         userIds: [auth.user.id],
         changed: [
@@ -207,7 +251,7 @@ export class AssetService extends BaseService {
     if (shouldWriteSidecar) {
       await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
     } else {
-      const assets = await this.assetRepository.getByIds(ids);
+      const assets = await this.assetRepository.getPublicByIds(ids);
       for (const asset of assets) {
         this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
       }
@@ -573,6 +617,72 @@ export class AssetService extends BaseService {
       lockedPropertiesBehavior: 'append',
     });
     await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
+    return true;
+  }
+
+  private async writeWithLegacyLock<T>(
+    auth: AuthDto,
+    assetIds: string[],
+    visibility: AssetVisibility | undefined,
+    unlockLockedFolder: boolean | undefined,
+    write: (db?: Kysely<DB>) => Promise<T>,
+  ) {
+    const locking = visibility === AssetVisibility.Locked;
+    const userId = auth.user.id;
+    const tag =
+      assetIds.length === 0 || (!locking && !unlockLockedFolder)
+        ? undefined
+        : locking
+          ? await this.tagRepository.getOrCreateSystemTag({
+              userId,
+              value: 'locked',
+              systemKey: 'locked',
+              isPrivate: true,
+            })
+          : await this.tagRepository.getBySystemKey(userId, 'locked');
+
+    if (!tag) {
+      return { updated: await write(), changedIds: [], privacyUserIds: [] };
+    }
+
+    const { result, privacyUserIds } = await this.tagRepository.changeAssetLinks(
+      userId,
+      [tag.id],
+      async (bulk, access, tx) => {
+        await requireAccess(access, { auth, permission: Permission.AssetUpdate, ids: assetIds });
+        if (locking) {
+          const updated = await write(tx);
+          const links = await bulk.upsertAssetIds(
+            [...new Set(assetIds)].sort().map((assetId) => ({ assetId, tagId: tag.id })),
+          );
+          return { result: { updated, changedIds: links.map(({ assetId }) => assetId) }, links };
+        }
+
+        const updated = await write(tx);
+        const links = await bulk.removeAssetIds(tag.id, assetIds);
+        return { result: { updated, changedIds: links.map(({ assetId }) => assetId) }, links };
+      },
+    );
+    return { ...result, privacyUserIds };
+  }
+
+  private async finishLegacyLock(
+    userId: string,
+    visibility: AssetVisibility | undefined,
+    { changedIds, privacyUserIds }: { changedIds: string[]; privacyUserIds: string[] },
+  ) {
+    if (changedIds.length === 0) {
+      return false;
+    }
+    this.notifyAssetPrivacy(privacyUserIds);
+    for (const assetId of changedIds) {
+      await writeAssetTagsToExif(this.assetRepository, assetId);
+      if (visibility === AssetVisibility.Locked) {
+        await this.eventRepository.emit('AssetTag', { assetId, userId });
+      } else {
+        await this.eventRepository.emit('AssetUntag', { assetId });
+      }
+    }
     return true;
   }
 

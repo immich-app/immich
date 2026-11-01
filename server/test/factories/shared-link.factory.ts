@@ -35,6 +35,7 @@ export class SharedLinkFactory {
       albumId,
       createdAt: newDate(),
       expiresAt: null,
+      includePrivateAssets: false,
       allowUpload: true,
       allowDownload: true,
       showExif: true,

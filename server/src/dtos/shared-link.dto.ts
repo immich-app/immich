@@ -20,6 +20,7 @@ const SharedLinkCreateSchema = z
     allowUpload: z.boolean().default(false).optional().describe('Allow uploads'),
     allowDownload: z.boolean().default(true).optional().describe('Allow downloads'),
     showMetadata: z.boolean().default(true).optional().describe('Show metadata'),
+    includePrivateAssets: z.boolean().default(false).optional().describe('Include link-owner private assets'),
   })
   .superRefine(({ type, albumId, assetIds }, ctx) => {
     switch (type) {
@@ -61,6 +62,7 @@ const SharedLinkResponseSchema = z
     allowUpload: z.boolean().describe('Allow uploads'),
     allowDownload: z.boolean().describe('Allow downloads'),
     showMetadata: z.boolean().describe('Show metadata'),
+    includePrivateAssets: z.boolean().optional().describe('Include link-owner private assets'),
     slug: z.string().nullable().describe('Custom URL slug'),
   })
   .describe('Shared link response')
@@ -85,6 +87,7 @@ export class SharedLinkEditDto extends createZodDto({
   allowUpload: z.boolean().optional().describe('Allow uploads'),
   allowDownload: z.boolean().optional().describe('Allow downloads'),
   showMetadata: z.boolean().optional().describe('Show metadata'),
+  includePrivateAssets: z.boolean().optional().describe('Include link-owner private assets'),
 }) {}
 
 export class SharedLinkLoginDto extends createZodDto({
@@ -113,6 +116,7 @@ export function mapSharedLink(
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    includePrivateAssets: sharedLink.includePrivateAssets ?? false,
     slug: sharedLink.slug,
   };
 

@@ -159,6 +159,14 @@ class AssetService {
     await _remoteRepository.trash(remoteIds);
   }
 
+  Future<void> hidePrivateAssets(List<String> remoteIds) =>
+      _remoteRepository.updateAssets(remoteIds, visibility: const .some(AssetVisibility.locked));
+
+  Future<void> rememberPrivateUpload(String ownerId, String localId, String remoteId, String checksum) async {
+    await _localRepository.rememberUploadedAsset(ownerId, localId, checksum);
+    await hidePrivateAssets([remoteId]);
+  }
+
   Future<void> delete(List<String> remoteIds) async {
     if (remoteIds.isEmpty) {
       return;

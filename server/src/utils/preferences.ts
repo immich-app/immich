@@ -7,6 +7,9 @@ import { getKeysDeep } from 'src/utils/misc.js';
 
 const getDefaultPreferences = (): UserPreferences => {
   return {
+    lockedFolder: {
+      sidebarWeb: true,
+    },
     albums: {
       defaultAssetOrder: AssetOrder.Desc,
     },

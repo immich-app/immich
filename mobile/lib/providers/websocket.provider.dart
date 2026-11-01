@@ -3,13 +3,17 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/store.dart' as data;
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/private_session.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
@@ -91,6 +95,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('AssetUploadReadyV2', _handleSyncAssetUploadReadyV2);
         socket.on('AssetEditReadyV1', _handleSyncAssetEditReadyV1);
         socket.on('AssetEditReadyV2', _handleSyncAssetEditReadyV2);
+        socket.on('ResourceEventV1', _handleResourceEvent);
         socket.on('on_album_update', _handleRemoteChange);
         socket.on('on_asset_stack_update', _handleRemoteChange);
         socket.on('on_asset_delete', _handleRemoteChange);
@@ -181,6 +186,29 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   void _handleRemoteChange(dynamic _) {
     unawaited(_ref.read(backgroundSyncProvider).syncRemote(enqueue: true));
+  }
+
+  void _handleResourceEvent(dynamic payload) {
+    if (payload is! Map) {
+      return;
+    }
+
+    final paths = <String>{
+      if (payload['changed'] case final List changed) ...changed.whereType<String>(),
+      if (payload['deleted'] case final List deleted) ...deleted.whereType<String>(),
+    };
+    if (paths.any((path) => path == '/tags' || path.startsWith('/tags/'))) {
+      _ref.read(data.Store.tags).refresh();
+    }
+    if (paths.contains('/timeline')) {
+      if (paths.contains('/assets')) {
+        EventStream.shared.emit(const AssetAccessChangedEvent());
+      }
+      _handleRemoteChange(null);
+    }
+    if (paths.contains('/auth/status')) {
+      unawaited(_ref.read(privateSessionProvider.notifier).revalidate());
+    }
   }
 
   void _handleSyncAssetEditReadyV2(dynamic data) {

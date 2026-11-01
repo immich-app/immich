@@ -1,4 +1,4 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { privateSessionManager } from '#lib/managers/private-session-manager.svelte.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
 import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
@@ -19,9 +19,16 @@ import { queryOptions } from '@tanstack/svelte-query';
 export const getAuthStatusQuery = () =>
   queryOptions({
     queryKey: QueryKeys.authStatus(),
-    queryFn: ({ signal }) => getAuthStatus({ signal }),
+    queryFn: async ({ signal }) => {
+      const status = await getAuthStatus({ signal });
+      return status.pinExpiresAt && Date.parse(status.pinExpiresAt) <= Date.now()
+        ? { ...status, isElevated: false, pinExpiresAt: undefined }
+        : status;
+    },
     staleTime: 0,
   });
+
+export const fetchAuthStatus = () => queryClient.fetchQuery(getAuthStatusQuery());
 
 export const loginMutation = () => asMutation(login, { meta: { error: { toast: false } } });
 
@@ -34,7 +41,17 @@ export const signUpAdminMutation = () =>
   });
 
 export const unlockAuthSessionMutation = () =>
-  asMutation(unlockAuthSession, { meta: { error: { toast: 'wrong_pin_code' } } });
+  asMutation(unlockAuthSession, {
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QueryKeys.authStatus() }),
+        queryClient.invalidateQueries({ queryKey: QueryKeys.tags() }),
+        queryClient.invalidateQueries({ queryKey: QueryKeys.albums() }),
+        queryClient.invalidateQueries({ queryKey: QueryKeys.activities() }),
+      ]);
+    },
+    meta: { error: { toast: 'wrong_pin_code' } },
+  });
 
 export const changePasswordMutation = () =>
   asMutation(changePassword, {
@@ -43,7 +60,10 @@ export const changePasswordMutation = () =>
 
 export const lockAuthSessionMutation = () =>
   asMutation(lockAuthSession, {
-    onSuccess: () => eventManager.emit('SessionLocked'),
+    onSuccess: () => {
+      updateAuthStatusCache({ isElevated: false, pinExpiresAt: undefined });
+      return privateSessionManager.clear();
+    },
   });
 
 export const setupPinCodeMutation = () =>
@@ -59,7 +79,7 @@ export const changePinCodeMutation = () =>
 
 export const resetPinCodeMutation = () =>
   asMutation(resetPinCode, {
-    onSuccess: () => updateAuthStatusCache({ pinCode: false }),
+    onSuccess: () => updateAuthStatusCache({ pinCode: false, isElevated: false, pinExpiresAt: undefined }),
     meta: { success: { toast: 'pin_code_reset_successfully' }, error: { toast: 'errors.failed_to_reset_pin_code' } },
   });
 

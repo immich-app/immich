@@ -9,6 +9,7 @@ import { AssetDuplicateResult } from 'src/repositories/search.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { JobOf } from 'src/types.js';
+import { writeAssetTagsToExif } from 'src/utils/asset.util.js';
 import { suggestDuplicateKeepAssetIds } from 'src/utils/duplicate.js';
 import { batched, isDuplicateDetectionEnabled } from 'src/utils/misc.js';
 
@@ -28,8 +29,6 @@ type ResolveRequest = {
   mergedAlbumIds: string[];
 
   mergedTagIds: string[];
-
-  mergedTagValues: string[];
 };
 
 const uniqueNonEmptyLines = (values: Array<string | null | undefined>): string[] => {
@@ -166,7 +165,7 @@ export class DuplicateService extends BaseService {
     if (idsToKeep.length === 1 && idsToTrash.length > 0) {
       const assetAlbumMap = await this.albumRepository.getByAssetIds(auth.user.id, [...groupAssetIds]);
 
-      const { assetUpdate, exifUpdate, mergedAlbumIds, mergedTagIds, mergedTagValues } = this.getSyncMergeResult(
+      const { assetUpdate, exifUpdate, mergedAlbumIds, mergedTagIds } = this.getSyncMergeResult(
         duplicateGroup.assets,
         assetAlbumMap,
       );
@@ -205,11 +204,14 @@ export class DuplicateService extends BaseService {
         });
 
         if (allowedTagIds.size > 0) {
-          await Promise.all(
-            idsToKeep.map((assetId) => this.tagRepository.replaceAssetTags(assetId, [...allowedTagIds])),
+          const [assetId] = idsToKeep;
+          const privacyUserIds = await this.tagRepository.replaceAssetTags(
+            assetId,
+            [...allowedTagIds],
+            auth.session?.hasElevatedPermission === true,
           );
-
-          await this.assetRepository.updateAllExif(idsToKeep, { tags: mergedTagValues });
+          this.notifyAssetPrivacy(privacyUserIds);
+          await writeAssetTagsToExif(this.assetRepository, assetId);
           this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tags()] });
         }
       }
@@ -254,7 +256,6 @@ export class DuplicateService extends BaseService {
     const response: ResolveRequest = {
       mergedAlbumIds: [],
       mergedTagIds: [],
-      mergedTagValues: [],
       assetUpdate: {},
       exifUpdate: {},
     };
@@ -304,10 +305,8 @@ export class DuplicateService extends BaseService {
 
     const allTags = assets.flatMap((asset) => asset.tags ?? []);
     const tagIds = [...new Set(allTags.map((tag) => tag.id).filter((id): id is string => !!id))];
-    const tagValues = [...new Set(allTags.map((tag) => tag.value).filter((v): v is string => !!v))];
     if (tagIds.length > 0) {
       response.mergedTagIds = tagIds;
-      response.mergedTagValues = tagValues;
     }
 
     return response;

@@ -17,6 +17,7 @@ describe(ActivityService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(ActivityService));
+    mocks.album.getAssetIds.mockImplementation((_, ids) => Promise.resolve(new Set(ids)));
   });
 
   it('should work', () => {
@@ -32,7 +33,10 @@ describe(ActivityService.name, () => {
 
       await expect(sut.getAll(AuthFactory.create({ id: userId }), { assetId, albumId })).resolves.toEqual([]);
 
-      expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: undefined });
+      expect(mocks.activity.search).toHaveBeenCalledWith(
+        { assetId, albumId, isLiked: undefined },
+        expect.objectContaining({ privateOwnerId: userId }),
+      );
     });
 
     it('should filter by type=like', async () => {
@@ -45,7 +49,10 @@ describe(ActivityService.name, () => {
         sut.getAll(AuthFactory.create({ id: userId }), { assetId, albumId, type: ReactionType.LIKE }),
       ).resolves.toEqual([]);
 
-      expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: true });
+      expect(mocks.activity.search).toHaveBeenCalledWith(
+        { assetId, albumId, isLiked: true },
+        expect.objectContaining({ privateOwnerId: userId }),
+      );
     });
 
     it('should filter by type=comment', async () => {
@@ -58,7 +65,10 @@ describe(ActivityService.name, () => {
         [],
       );
 
-      expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: false });
+      expect(mocks.activity.search).toHaveBeenCalledWith(
+        { assetId, albumId, isLiked: false },
+        expect.objectContaining({ includePrivate: undefined }),
+      );
     });
   });
 

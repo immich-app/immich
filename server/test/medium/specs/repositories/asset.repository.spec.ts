@@ -1,10 +1,21 @@
 import { Insertable, Kysely } from 'kysely';
 import { chunk } from 'lodash-es';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
-import { AssetFileType, AssetOrder, AssetOrderBy, AssetStatus, AssetType, AssetVisibility } from 'src/enum.js';
+import {
+  AssetFileType,
+  AssetOrder,
+  AssetOrderBy,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  CalendarHeatmapType,
+} from 'src/enum.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { DownloadRepository } from 'src/repositories/download.repository.js';
 import { LibraryRepository } from 'src/repositories/library.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
+import { TrashRepository } from 'src/repositories/trash.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
@@ -84,6 +95,62 @@ const keyframeRow = (assetId: string, n: number) => ({
 });
 
 describe(AssetRepository.name, () => {
+  describe('private asset visibility', () => {
+    it('should filter private assets from collection downloads and the calendar heatmap', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const date = new Date('2026-01-01T12:00:00Z');
+      const { asset: visible } = await ctx.newAsset({ ownerId: user.id, createdAt: date });
+      const { asset: hidden } = await ctx.newAsset({ ownerId: user.id, createdAt: date });
+      await ctx.newExif({ assetId: visible.id, fileSizeInByte: 10 });
+      await ctx.newExif({ assetId: hidden.id, fileSizeInByte: 20 });
+      const { album } = await ctx.newAlbum({ ownerId: user.id }, [visible.id, hidden.id]);
+      const tag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [hidden.id] });
+
+      const downloads = new DownloadRepository(ctx.database);
+      const albumDownload = await Array.fromAsync(downloads.downloadAlbumId(album.id));
+      const timelineDownload = await Array.fromAsync(downloads.downloadUserId(user.id));
+      expect(albumDownload.map(({ id }) => id)).toEqual([visible.id]);
+      expect(timelineDownload.map(({ id }) => id)).toEqual([visible.id]);
+      await expect(Array.fromAsync(downloads.downloadMotionAssetIds([hidden.id]))).resolves.toEqual([]);
+      await expect(
+        sut.getCalendarHeatmap(user.id, {
+          from: new Date('2026-01-01'),
+          to: new Date('2026-01-02'),
+          type: CalendarHeatmapType.Upload,
+        }),
+      ).resolves.toEqual([expect.objectContaining({ count: 1 })]);
+    });
+
+    it('should exclude private assets from unelevated bulk trash actions', async () => {
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: visible } = await ctx.newAsset({
+        ownerId: user.id,
+        status: AssetStatus.Trashed,
+        deletedAt: new Date(),
+      });
+      const { asset: hidden } = await ctx.newAsset({
+        ownerId: user.id,
+        status: AssetStatus.Trashed,
+        deletedAt: new Date(),
+      });
+      const tag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [hidden.id] });
+      const trash = new TrashRepository(ctx.database);
+
+      await expect(trash.restore(user.id)).resolves.toBe(1);
+      await ctx.database
+        .updateTable('asset')
+        .set({ status: AssetStatus.Trashed, deletedAt: new Date() })
+        .where('id', '=', visible.id)
+        .execute();
+      await expect(trash.empty(user.id)).resolves.toBe(1);
+      await expect(trash.restore(user.id, true)).resolves.toBe(1);
+    });
+  });
+
   describe('deleteFile', () => {
     it('should delete only the requested asset and file type', async () => {
       const { ctx, sut } = setup();

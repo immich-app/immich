@@ -17,20 +17,25 @@ import { getPreferences } from 'src/utils/preferences.js';
 @Injectable()
 export class DownloadService extends BaseService {
   async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
+    const privateOwnerId = auth.session?.hasElevatedPermission && !auth.sharedLink ? auth.user.id : undefined;
+    const privateAccess = {
+      albumUserId: auth.sharedLink ? undefined : auth.user.id,
+      sharedLinkId: auth.sharedLink?.id,
+    };
     let assets;
 
     if (dto.assetIds) {
       const assetIds = dto.assetIds;
       await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: assetIds });
-      assets = this.downloadRepository.downloadAssetIds(assetIds);
+      assets = this.downloadRepository.downloadAssetIds(assetIds, privateOwnerId, privateAccess);
     } else if (dto.albumId) {
       const albumId = dto.albumId;
       await this.requireAccess({ auth, permission: Permission.AlbumDownload, ids: [albumId] });
-      assets = this.downloadRepository.downloadAlbumId(albumId);
+      assets = this.downloadRepository.downloadAlbumId(albumId, privateOwnerId, privateAccess);
     } else if (dto.userId) {
       const userId = dto.userId;
       await this.requireAccess({ auth, permission: Permission.TimelineDownload, ids: [userId] });
-      assets = this.downloadRepository.downloadUserId(userId);
+      assets = this.downloadRepository.downloadUserId(userId, privateOwnerId);
     } else {
       throw new BadRequestException('assetIds, albumId, or userId is required');
     }
@@ -64,7 +69,11 @@ export class DownloadService extends BaseService {
     }
 
     if (motionIds.size > 0) {
-      const motionAssets = this.downloadRepository.downloadMotionAssetIds([...motionIds]);
+      const motionAssets = this.downloadRepository.downloadMotionAssetIds(
+        [...motionIds],
+        privateOwnerId,
+        privateAccess,
+      );
       for await (const motionAsset of motionAssets) {
         if (StorageCore.isAndroidMotionPath(motionAsset.originalPath) && !preferences.download.includeEmbeddedVideos) {
           continue;

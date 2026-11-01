@@ -46,7 +46,7 @@ export type WorkflowEventPayload<
 
 export type WorkflowChanges<T extends WorkflowType> = DeepPartial<
   WorkflowEventData<T>
->;
+> & (T extends WorkflowType.AssetV1 ? { asset?: { unlockLockedFolder?: boolean } } : unknown);
 
 export type WorkflowResponse<T extends WorkflowType> = {
   workflow?: {

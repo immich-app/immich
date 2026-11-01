@@ -53,6 +53,7 @@ import {
 import {
   getAssetsByCityQuery,
   getExploreDataQuery,
+  getPrivateAssetPresenceQuery,
   getSearchSuggestionsQuery,
   searchAssetsQuery,
   searchLargeAssetsQuery,
@@ -172,6 +173,7 @@ const queries: Record<string, QueryFactory> = {
   searchPersonQuery: () => searchPersonQuery({ name: 'name' }),
   searchPlacesQuery: () => searchPlacesQuery({ name: 'name' }),
   searchAssetsQuery: () => searchAssetsQuery({ isFavorite: true }),
+  getPrivateAssetPresenceQuery: () => getPrivateAssetPresenceQuery([id], [id]),
   searchSmartQuery: () => searchSmartQuery({ query: 'beach' }),
   searchLargeAssetsQuery: () => searchLargeAssetsQuery(),
   getExploreDataQuery: () => getExploreDataQuery(),
@@ -219,6 +221,7 @@ const clientOnlyQueries = new Set(['getQueueSnapshotsQuery']);
 const nonGetQueries = new Set([
   'getStorageTemplatePreviewQuery',
   'searchAssetsQuery',
+  'getPrivateAssetPresenceQuery',
   'searchLargeAssetsQuery',
   'searchSmartQuery',
 ]);

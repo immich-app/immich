@@ -64,6 +64,9 @@ for (const { name, act, operation, request, listed } of actionsThatStay) {
   test(`${name} keeps the viewer open on the large file`, async ({ page, data, api, app }) => {
     const [asset] = setup();
     data.addAssets(asset);
+    if (name === 'locking') {
+      data.setAuthStatus({ pinCode: true, isElevated: true });
+    }
     await page.goto(largeFileUrl(asset));
     await app.viewer.waitForAsset(asset);
 

@@ -31,12 +31,17 @@ class PinVerificationForm extends HookConsumerWidget {
 
     Future<void> verifyPin(String pinCode) async {
       final isUnlocked = await ref.read(authProvider.notifier).unlockPinCode(pinCode);
+      if (!context.mounted) {
+        return;
+      }
 
       if (isUnlocked) {
         isVerified.value = true;
 
         await Future.delayed(const Duration(seconds: 1));
-        onSuccess(pinCode);
+        if (context.mounted) {
+          onSuccess(pinCode);
+        }
       } else {
         hasError.value = true;
         onError?.call();

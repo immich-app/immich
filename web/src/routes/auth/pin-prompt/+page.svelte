@@ -1,10 +1,8 @@
 <script lang="ts">
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
-  import PinCodeCreateForm from '#lib/components/user-settings-page/PinCodeCreateForm.svelte';
-  import { getAuthStatusQuery, unlockAuthSessionMutation } from '#lib/queries/auth.query.ts';
-  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import PinCodeUnlockForm from '#lib/components/user-settings-page/PinCodeUnlockForm.svelte';
   import { Route } from '#lib/route.ts';
-  import { Button, Icon, PinInput } from '@immich/ui';
+  import { Button, Icon } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline, mdiLockSmart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -17,52 +15,40 @@
 
   let { data }: Props = $props();
 
-  let isVerified = $state(false);
-  let isBadPinCode = $state(false);
-  const query = createPreloadedQuery(getAuthStatusQuery);
-  const hasPinCode = $derived(query.data.pinCode);
-  let pinCode = $state('');
-
-  const handleUnlockSession = (code: string) =>
-    executeMutation(unlockAuthSessionMutation, [{ sessionUnlockDto: { pinCode: code } }], {
-      onSuccess: () => {
-        isVerified = true;
-        setTimeout(() => void goto(data.continueUrl), 1000);
-      },
-      onError: () => (isBadPinCode = true),
-    });
+  const navigateAfterVerification = () => setTimeout(() => void goto(data.continueUrl), 1000);
 </script>
 
 <AuthPageLayout withHeader={false}>
   <div class="flex items-center justify-center">
     <div class="flex w-96 flex-col items-center justify-center gap-6">
-      {#if hasPinCode}
-        {#if isVerified}
-          <div in:fade={{ duration: 200 }}>
-            <Icon icon={mdiLockOpenVariantOutline} size="64" class="text-success/90" />
+      <PinCodeUnlockForm onVerified={navigateAfterVerification} showSetupLabel={false}>
+        {#snippet prompt(isVerified, isBadPinCode)}
+          {#if isVerified}
+            <div in:fade={{ duration: 200 }}>
+              <Icon icon={mdiLockOpenVariantOutline} size="64" class="text-success/90" />
+            </div>
+          {:else}
+            <div class:text-danger={isBadPinCode} class:text-primary={!isBadPinCode}>
+              <Icon icon={mdiLockOutline} size="64" />
+            </div>
+          {/if}
+
+          <p class="text-center text-sm" style="text-wrap: pretty;">{$t('enter_your_pin_code_subtitle')}</p>
+        {/snippet}
+        {#snippet setup()}
+          <div class="text-primary">
+            <Icon icon={mdiLockSmart} size="64" />
           </div>
-        {:else}
-          <div class:text-danger={isBadPinCode} class:text-primary={!isBadPinCode}>
-            <Icon icon={mdiLockOutline} size="64" />
+          <p class="mb-4 text-center text-sm" style="text-wrap: pretty;">
+            {$t('new_pin_code_subtitle')}
+          </p>
+        {/snippet}
+        {#snippet footer(hasPinCode)}
+          <div class={hasPinCode ? '' : 'flex w-full items-start'}>
+            <Button type="button" color="secondary" onclick={() => goto(Route.photos())}>{$t('cancel')}</Button>
           </div>
-        {/if}
-
-        <p class="text-center text-sm" style="text-wrap: pretty;">{$t('enter_your_pin_code_subtitle')}</p>
-
-        <PinInput password autofocus bind:value={pinCode} onComplete={handleUnlockSession} />
-      {:else}
-        <div class="text-primary">
-          <Icon icon={mdiLockSmart} size="64" />
-        </div>
-        <p class="mb-4 text-center text-sm" style="text-wrap: pretty;">
-          {$t('new_pin_code_subtitle')}
-        </p>
-        <PinCodeCreateForm showLabel={false} />
-      {/if}
-
-      <div class={hasPinCode ? '' : 'flex w-full items-start'}>
-        <Button type="button" color="secondary" onclick={() => goto(Route.photos())}>{$t('cancel')}</Button>
-      </div>
+        {/snippet}
+      </PinCodeUnlockForm>
     </div>
   </div>
 </AuthPageLayout>

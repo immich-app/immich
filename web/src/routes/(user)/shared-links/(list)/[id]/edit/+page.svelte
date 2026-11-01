@@ -4,6 +4,7 @@
   import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getSharedLinkQuery, updateSharedLinkMutation } from '#lib/queries/shared-link.query.ts';
   import { Route } from '#lib/route.ts';
+  import { ensurePrivateSession } from '#lib/utils/private-session.ts';
   import { SharedLinkType } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
@@ -20,6 +21,7 @@
   let allowDownload = $state(sharedLink.allowDownload);
   let allowUpload = $state(sharedLink.allowUpload);
   let showMetadata = $state(sharedLink.showMetadata);
+  let includePrivateAssets = $state(sharedLink.includePrivateAssets ?? false);
   let password = $state(sharedLink.password ?? '');
   let slug = $state(sharedLink.slug ?? '');
   let shareType = sharedLink.album ? SharedLinkType.Album : SharedLinkType.Individual;
@@ -28,6 +30,9 @@
   const onClose = () => void goto(Route.sharedLinks());
   onResourceDelete(() => `/shared-links/${sharedLink.id}`, onClose);
   const onSubmit = async () => {
+    if (includePrivateAssets && !sharedLink.includePrivateAssets && !(await ensurePrivateSession())) {
+      return;
+    }
     const sharedLinkEditDto = {
       description: description || null,
       password: password || null,
@@ -36,6 +41,7 @@
       allowDownload,
       showMetadata,
       slug: slug.trim() ?? null,
+      ...(includePrivateAssets !== (sharedLink.includePrivateAssets ?? false) && { includePrivateAssets }),
     };
     await executeMutation(updateSharedLinkMutation, [{ id: sharedLink.id, sharedLinkEditDto }], { onSuccess: onClose });
   };
@@ -66,5 +72,9 @@
     bind:allowUpload
     bind:showMetadata
     bind:expiresAt
+    bind:includePrivateAssets
+    albumId={sharedLink.album?.id}
+    assetIds={sharedLink.assets.map(({ id }) => id)}
+    hasPrivateAssets={sharedLink.includePrivateAssets}
   />
 </FormModal>

@@ -1,6 +1,6 @@
 {
   "name": "immich-plugin-core",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "title": "Immich Core Plugin",
   "description": "Core workflow capabilities for Immich",
   "author": "Immich Team",

@@ -36,9 +36,15 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
 import {
   anyUuid,
   asUuid,
+  compatibilityVisibility,
+  hasAccessibleStackPrimary,
+  hasLockedFolderTag,
   hasPeople,
+  hasPrivateTagAncestor,
   inSharedAlbum,
+  isPrivateAsset,
   removeUndefinedKeys,
+  resetAssetPrivacySync,
   truncatedDate,
   withCoordinatesFilter,
   withDefaultVisibility,
@@ -49,7 +55,9 @@ import {
   withFilePath,
   withFiles,
   withLibrary,
+  withLockedVisibilityCompatibility,
   withOwner,
+  withPrivateTagAccess,
   withSmartSearch,
   withTagId,
   withTags,
@@ -130,8 +138,8 @@ interface GetByIdsRelations {
   library?: boolean;
   owner?: boolean;
   smartSearch?: boolean;
-  stack?: { assets?: boolean };
-  tags?: boolean;
+  stack?: { assets?: boolean; privateOwnerId?: string };
+  tags?: boolean | { privateOwnerId: string | null };
   edits?: boolean;
 }
 
@@ -451,6 +459,64 @@ export class AssetRepository {
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
+  async isPrivate(id: string, db = this.db) {
+    const asset = await db.selectNoFrom(isPrivateAsset(asUuid(id)).as('isPrivate')).executeTakeFirstOrThrow();
+    return asset.isPrivate;
+  }
+
+  async createWithPrivateTag(asset: Insertable<AssetTable>, tagId: string, isLivePhotoCompanion = false) {
+    return this.db.transaction().execute(async (tx) => {
+      if (!(await this.getPrivateUploadTag(tx, asset.ownerId, tagId))) {
+        return;
+      }
+      const created = await tx.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
+      await tx.insertInto('tag_asset').values({ assetId: created.id, tagId, isLivePhotoCompanion }).execute();
+      if (created.livePhotoVideoId) {
+        await resetAssetPrivacySync(tx, created.ownerId, [created.livePhotoVideoId]);
+      }
+      return created;
+    });
+  }
+
+  async addExistingAssetToPrivateTag(
+    ownerId: string,
+    assetId: string,
+    tagId: string,
+    {
+      livePhotoVideoId,
+      isLivePhotoCompanion = false,
+    }: { livePhotoVideoId?: string; isLivePhotoCompanion?: boolean } = {},
+  ) {
+    return this.db.transaction().execute(async (tx) => {
+      const tag = await this.getPrivateUploadTag(tx, ownerId, tagId);
+      if (!tag) {
+        return;
+      }
+      const result = await tx
+        .insertInto('tag_asset')
+        .values({ assetId, tagId, isLivePhotoCompanion })
+        .onConflict((oc) => oc.columns(['assetId', 'tagId']).doNothing())
+        .executeTakeFirst();
+      const updated = livePhotoVideoId ? await this.update({ id: assetId, livePhotoVideoId }, tx) : undefined;
+      const motionViewers = updated?.privacyUserIds ?? [];
+      const tagViewers =
+        result.numInsertedOrUpdatedRows === 1n ? await resetAssetPrivacySync(tx, ownerId, [assetId]) : [];
+      return [...new Set([...motionViewers, ...tagViewers])];
+    });
+  }
+
+  private getPrivateUploadTag(tx: Kysely<DB>, ownerId: string, tagId: string) {
+    return tx
+      .selectFrom('tag')
+      .select('id')
+      .where('id', 'in', (eb) => eb.selectFrom('tag_closure').select('id_ancestor').where('id_descendant', '=', tagId))
+      .where('userId', '=', ownerId)
+      .where('isPrivate', '=', true)
+      .orderBy('id')
+      .forShare()
+      .executeTakeFirst();
+  }
+
   @ChunkedArray({ chunkSize: 4000 })
   async createAll(assets: Insertable<AssetTable>[]) {
     if (assets.length === 0) {
@@ -494,6 +560,7 @@ export class AssetRepository {
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('asset.ownerId', '=', anyUuid(ownerIds))
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
+                .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
                 .where((eb) =>
                   eb.exists((qb) =>
                     qb
@@ -524,9 +591,18 @@ export class AssetRepository {
     return this.db.selectFrom('asset').selectAll('asset').where('asset.id', '=', anyUuid(ids)).execute();
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID]] })
+  getPublicByIds(ids: string[]) {
+    return this.db
+      .selectFrom('asset')
+      .selectAll('asset')
+      .where('asset.id', '=', anyUuid(ids))
+      .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
+      .execute();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] }, { params: [[DummyValue.UUID], DummyValue.UUID, true], name: 'public' })
   @ChunkedArray({ paramIndex: 0 })
-  getByIdsWithAllRelationsButStacks(ids: string[], viewingUserId?: string) {
+  getByIdsWithAllRelationsButStacks(ids: string[], viewingUserId?: string, publicOnly = false) {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
@@ -534,6 +610,7 @@ export class AssetRepository {
       .select(withTags)
       .$call(withExif)
       .where('asset.id', '=', anyUuid(ids))
+      .$if(publicOnly, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id')))))
       .execute();
   }
 
@@ -599,7 +676,14 @@ export class AssetRepository {
       .$if(!!smartSearch, withSmartSearch)
       .$if(!!stack, (qb) =>
         qb
-          .leftJoin('stack', 'stack.id', 'asset.stackId')
+          .leftJoin('stack', (join) =>
+            join.onRef('stack.id', '=', 'asset.stackId').on((eb) =>
+              hasAccessibleStackPrimary(eb.ref('asset.stackId'), null, {
+                includePrivate: !!stack?.privateOwnerId,
+                privateOwnerId: stack?.privateOwnerId,
+              }),
+            ),
+          )
           .$if(!stack!.assets, (qb) =>
             qb.select((eb) => eb.fn.toJson(eb.table('stack')).$castTo<Stack | null>().as('stack')),
           )
@@ -619,6 +703,14 @@ export class AssetRepository {
                     .whereRef('stacked.id', '!=', 'stack.primaryAssetId')
                     .where('stacked.deletedAt', 'is', null)
                     .where('stacked.visibility', '=', AssetVisibility.Timeline)
+                    .where((eb) =>
+                      stack?.privateOwnerId
+                        ? eb.or([
+                            eb('stacked.ownerId', '=', stack.privateOwnerId),
+                            eb.not(isPrivateAsset(eb.ref('stacked.id'))),
+                          ])
+                        : eb.not(isPrivateAsset(eb.ref('stacked.id'))),
+                    )
                     .groupBy('stack.id')
                     .as('stacked_assets'),
                 (join) => join.on('stack.id', 'is not', null),
@@ -627,7 +719,7 @@ export class AssetRepository {
           ),
       )
       .$if(!!files, (qb) => qb.select(withFiles))
-      .$if(!!tags, (qb) => qb.select(withTags))
+      .$if(!!tags, (qb) => qb.select((eb) => withTags(eb, typeof tags === 'object' ? tags.privateOwnerId : undefined)))
       .$if(!!edits, (qb) => qb.select(withEdits))
       .limit(1)
       .executeTakeFirst();
@@ -635,22 +727,38 @@ export class AssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], {}] })
   @Chunked()
-  async updateAll(ids: string[], options: Updateable<AssetTable>): Promise<void> {
+  async updateAll(ids: string[], options: Updateable<AssetTable>, db = this.db): Promise<void> {
     if (ids.length === 0) {
       return;
     }
-    await this.db.updateTable('asset').set(options).where('id', '=', anyUuid(ids)).execute();
+    await db.updateTable('asset').set(options).where('id', '=', anyUuid(ids)).execute();
   }
 
   async updateByLibraryId(libraryId: string, options: Updateable<AssetTable>): Promise<void> {
     await this.db.updateTable('asset').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
 
-  async update(asset: Updateable<AssetTable> & { id: string }) {
+  update(asset: Updateable<AssetTable> & { id: string }, db = this.db) {
+    return asset.livePhotoVideoId !== undefined && db === this.db
+      ? this.db.transaction().execute((tx) => this.updateInTransaction(asset, tx))
+      : this.updateInTransaction(asset, db);
+  }
+
+  private async updateInTransaction(
+    asset: Updateable<AssetTable> & { id: string },
+    db: Kysely<DB>,
+  ): Promise<
+    (NonNullable<Awaited<ReturnType<AssetRepository['getById']>>> & { privacyUserIds?: string[] }) | undefined
+  > {
+    let privacyUserIds: string[] = [];
+    const previousLink =
+      asset.livePhotoVideoId === undefined
+        ? undefined
+        : await this.preservePreviousMotion(db, asset.id, asset.livePhotoVideoId);
     const value = omitBy(asset, isUndefined);
     delete value.id;
     if (!isEmpty(value)) {
-      return this.db
+      const updated = await db
         .with('asset', (qb) => qb.updateTable('asset').set(asset).where('id', '=', asUuid(asset.id)).returningAll())
         .selectFrom('asset')
         .selectAll('asset')
@@ -658,13 +766,71 @@ export class AssetRepository {
         .$call((qb) => qb.select(withFaces))
         .$call((qb) => qb.select(withEdits))
         .executeTakeFirst();
+      if (updated && previousLink && asset.livePhotoVideoId && (await this.isPrivate(updated.id, db))) {
+        const motionIds = previousLink.motionId
+          ? [asset.livePhotoVideoId, previousLink.motionId]
+          : [asset.livePhotoVideoId];
+        privacyUserIds = await resetAssetPrivacySync(db, updated.ownerId, motionIds);
+      }
+      return updated && { ...updated, privacyUserIds };
     }
 
-    return this.getById(asset.id, { exifInfo: true, faces: {}, edits: true });
+    const existing = await this.getById(asset.id, { exifInfo: true, faces: {}, edits: true });
+    return existing && { ...existing, privacyUserIds };
   }
 
   async remove(asset: { id: string }): Promise<void> {
     await this.db.deleteFrom('asset').where('id', '=', asUuid(asset.id)).execute();
+  }
+
+  private async preservePreviousMotion(db: Kysely<DB>, stillId: string, nextMotionId: string | null) {
+    const still = await db
+      .selectFrom('asset')
+      .select(['asset.livePhotoVideoId', 'asset.visibility'])
+      .where('asset.id', '=', stillId)
+      .forUpdate()
+      .executeTakeFirst();
+
+    if (!still || still.livePhotoVideoId === nextMotionId) {
+      return;
+    }
+
+    const motionId = still.livePhotoVideoId;
+    if (!motionId) {
+      return { motionId };
+    }
+    await db
+      .insertInto('tag_asset')
+      .columns(['tagId', 'assetId'])
+      .expression(
+        db
+          .selectFrom('tag_asset')
+          .select('tag_asset.tagId')
+          .select(asUuid(motionId).as('assetId'))
+          .where('tag_asset.assetId', '=', stillId)
+          .where((eb) => hasPrivateTagAncestor(eb.ref('tag_asset.tagId'))),
+      )
+      .onConflict((oc) => oc.columns(['assetId', 'tagId']).doUpdateSet({ isLivePhotoCompanion: false }))
+      .execute();
+    if (nextMotionId) {
+      await db
+        .updateTable('asset')
+        .set({ visibility: still.visibility })
+        .where('id', '=', motionId)
+        .where('visibility', '=', AssetVisibility.Hidden)
+        .where((eb) =>
+          eb.not(
+            eb.exists(
+              eb
+                .selectFrom('asset as remaining_still')
+                .where('remaining_still.livePhotoVideoId', '=', motionId)
+                .where('remaining_still.id', '!=', stillId),
+            ),
+          ),
+        )
+        .execute();
+    }
+    return { motionId };
   }
 
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID, libraryId: DummyValue.UUID, checksum: DummyValue.BUFFER }] })
@@ -680,23 +846,29 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.BUFFER]] })
-  getByChecksums(userId: string, checksums: Buffer[]) {
+  getByChecksums(userId: string, checksums: Buffer[], includePrivate?: boolean) {
     return this.db
       .selectFrom('asset')
       .select(['id', 'checksum', 'deletedAt'])
       .where('ownerId', '=', asUuid(userId))
       .where('checksum', 'in', checksums)
+      .$if(!includePrivate, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id')))))
       .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  async getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined> {
+  async getUploadAssetIdByChecksum(
+    ownerId: string,
+    checksum: Buffer,
+    includePrivate?: boolean,
+  ): Promise<string | undefined> {
     const asset = await this.db
       .selectFrom('asset')
       .select('id')
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
       .where('libraryId', 'is', null)
+      .$if(!includePrivate, (qb) => qb.where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id')))))
       .limit(1)
       .executeTakeFirst();
 
@@ -727,7 +899,10 @@ export class AssetRepository {
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.Other).as(AssetType.Other))
       .where('ownerId', '=', asUuid(ownerId))
       .$if(visibility === undefined, withDefaultVisibility)
-      .$if(!!visibility, (qb) => qb.where('asset.visibility', '=', visibility!))
+      .$if(visibility === AssetVisibility.Locked, (qb) => withLockedVisibilityCompatibility(qb, ownerId))
+      .$if(!!visibility && visibility !== AssetVisibility.Locked, (qb) =>
+        qb.where('asset.visibility', '=', visibility!).$call(withPrivateTagAccess),
+      )
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
@@ -755,6 +930,7 @@ export class AssetRepository {
       .where(column, '>=', dto.from)
       .where(column, '<', dto.to)
       .where('deletedAt', 'is', null)
+      .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
       .groupBy(date)
       .orderBy('date', 'asc')
       .execute();
@@ -762,6 +938,13 @@ export class AssetRepository {
 
   @GenerateSql({ params: [{}, { user: { id: DummyValue.UUID } }] })
   async getTimeBuckets(options: TimeBucketOptions, auth: AuthDto): Promise<TimeBucketItem[]> {
+    const privateTagAccess = {
+      includePrivate: auth.session?.hasElevatedPermission,
+      privateOwnerId: auth.user.id,
+      albumUserId: options.albumId && !auth.sharedLink ? auth.user.id : undefined,
+      sharedLinkId: auth.sharedLink?.id,
+      albumId: options.albumId ? asUuid(options.albumId) : undefined,
+    };
     return this.db
       .with('asset', (qb) =>
         qb
@@ -783,8 +966,15 @@ export class AssetRepository {
 
             return withBoundingBox(withBoundingCircle, bbox);
           })
-          .$if(options.visibility === undefined, withDefaultVisibility)
-          .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(options.visibility === undefined, (qb) => withDefaultVisibility(qb, privateTagAccess))
+          .$if(options.visibility === AssetVisibility.Locked, (qb) =>
+            withLockedVisibilityCompatibility(qb, auth.user.id),
+          )
+          .$if(!!options.visibility && options.visibility !== AssetVisibility.Locked, (qb) =>
+            qb
+              .where('asset.visibility', '=', options.visibility!)
+              .$call((qb) => withPrivateTagAccess(qb, privateTagAccess)),
+          )
           .$if(!!options.albumId, (qb) =>
             qb
               .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
@@ -792,11 +982,9 @@ export class AssetRepository {
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.withStacked, (qb) =>
-            qb
-              .leftJoin('stack', (join) =>
-                join.onRef('stack.id', '=', 'asset.stackId').onRef('stack.primaryAssetId', '=', 'asset.id'),
-              )
-              .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
+            qb.where((eb) =>
+              eb.not(hasAccessibleStackPrimary(eb.ref('asset.stackId'), eb.ref('asset.id'), privateTagAccess)),
+            ),
           )
           .$if(!!options.userIds, (qb) =>
             qb.where((eb) => {
@@ -826,6 +1014,13 @@ export class AssetRepository {
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const order = options.order ?? 'desc';
+    const privateTagAccess = {
+      includePrivate: auth.session?.hasElevatedPermission,
+      privateOwnerId: auth.user.id,
+      albumUserId: options.albumId && !auth.sharedLink ? auth.user.id : undefined,
+      sharedLinkId: auth.sharedLink?.id,
+      albumId: options.albumId ? asUuid(options.albumId) : undefined,
+    };
     const bucket = timeBucket.replace(/^[+-]/, '');
     const query = this.db
       .with('cte', (qb) =>
@@ -835,7 +1030,9 @@ export class AssetRepository {
           .select((eb) => [
             'asset.duration',
             'asset.id',
-            'asset.visibility',
+            compatibilityVisibility(eb.ref('asset.visibility'), hasLockedFolderTag(eb.ref('asset.id'))).as(
+              'visibility',
+            ),
             sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
@@ -864,8 +1061,15 @@ export class AssetRepository {
           .$if(!isMetadataHidden(auth), (qb) => qb.select(['asset_exif.city', 'asset_exif.country']))
           .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-          .$if(options.visibility === undefined, withDefaultVisibility)
-          .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(options.visibility === undefined, (qb) => withDefaultVisibility(qb, privateTagAccess))
+          .$if(options.visibility === AssetVisibility.Locked, (qb) =>
+            withLockedVisibilityCompatibility(qb, auth.user.id),
+          )
+          .$if(!!options.visibility && options.visibility !== AssetVisibility.Locked, (qb) =>
+            qb
+              .where('asset.visibility', '=', options.visibility!)
+              .$call((qb) => withPrivateTagAccess(qb, privateTagAccess)),
+          )
           .$if(!!options.bbox, (qb) => {
             const bbox = options.bbox!;
             const circle = getBoundingCircle(bbox);
@@ -908,14 +1112,7 @@ export class AssetRepository {
           .$if(!!options.withStacked, (qb) =>
             qb
               .where((eb) =>
-                eb.not(
-                  eb.exists(
-                    eb
-                      .selectFrom('stack')
-                      .whereRef('stack.id', '=', 'asset.stackId')
-                      .whereRef('stack.primaryAssetId', '!=', 'asset.id'),
-                  ),
-                ),
+                eb.not(hasAccessibleStackPrimary(eb.ref('asset.stackId'), eb.ref('asset.id'), privateTagAccess)),
               )
               .leftJoinLateral(
                 (eb) =>
@@ -925,6 +1122,8 @@ export class AssetRepository {
                     .whereRef('stacked.stackId', '=', 'asset.stackId')
                     .where('stacked.deletedAt', 'is', null)
                     .where('stacked.visibility', '=', AssetVisibility.Timeline)
+                    .where((eb) => eb.not(isPrivateAsset(eb.ref('stacked.id'))))
+                    .where((eb) => hasAccessibleStackPrimary(eb.ref('stacked.stackId'), null, privateTagAccess))
                     .groupBy('stacked.stackId')
                     .as('stacked_assets'),
                 (join) => join.onTrue(),
@@ -1008,6 +1207,7 @@ export class AssetRepository {
       .$narrowType<{ value: NotNull }>()
       .where('ownerId', '=', asUuid(ownerId))
       .where('visibility', '=', AssetVisibility.Timeline)
+      .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
       .where('type', '=', AssetType.Image)
       .where('deletedAt', 'is', null)
       .limit(maxFields)
@@ -1023,6 +1223,7 @@ export class AssetRepository {
       .select(['id as data', 'createdAt as value'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where((eb) => eb.not(isPrivateAsset(eb.ref('asset.id'))))
       .where('type', '=', AssetType.Image)
       .where('deletedAt', 'is', null)
       .orderBy('value', 'desc')
@@ -1259,7 +1460,8 @@ export class AssetRepository {
             .selectFrom('tag')
             .select('tag.value')
             .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
-            .whereRef('asset.id', '=', 'tag_asset.assetId'),
+            .whereRef('asset.id', '=', 'tag_asset.assetId')
+            .where((eb) => eb.not(hasPrivateTagAncestor(eb.ref('tag.id')))),
         ).as('tags'),
       )
       .where('asset.id', '=', id)

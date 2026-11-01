@@ -163,6 +163,50 @@ with
           and "asset_face"."isVisible" is true
           and "asset_face"."assetVisibility" = 'timeline'
           and "asset_face"."assetDeletedAt" is null
+          and not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "asset_face"."assetId"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "asset_face"."assetId"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "asset_face"."assetId"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
           and "asset_face"."personGroupId" in (
             select
               "person"."personGroupId"
@@ -182,6 +226,50 @@ with
           and "asset_face"."isVisible" is true
           and "asset_face"."assetVisibility" = 'timeline'
           and "asset_face"."assetDeletedAt" is null
+          and not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "asset_face"."assetId"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "asset_face"."assetId"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "asset_face"."assetId"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
           and "asset_face"."personGroupId" in (
             select
               "person"."personGroupId"
@@ -362,6 +450,50 @@ with
           and "asset_face"."isVisible" is true
           and "asset_face"."assetVisibility" = 'timeline'
           and "asset_face"."assetDeletedAt" is null
+          and not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "asset_face"."assetId"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "asset_face"."assetId"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "asset_face"."assetId"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
           and "asset_face"."personGroupId" in (
             select
               "person"."personGroupId"
@@ -381,6 +513,50 @@ with
           and "asset_face"."isVisible" is true
           and "asset_face"."assetVisibility" = 'timeline'
           and "asset_face"."assetDeletedAt" is null
+          and not (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "asset_face"."assetId"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "asset_face"."assetId"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "asset_face"."assetId"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
           and "asset_face"."personGroupId" in (
             select
               "person"."personGroupId"
@@ -929,6 +1105,57 @@ select
     where
       "person"."personGroupId" = "person_group"."id"
       and "person"."ownerId" = $1
+      and not exists (
+        select
+        from
+          "asset_face"
+        where
+          "asset_face"."id" = "person"."faceAssetId"
+          and (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "asset_face"."assetId"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "asset_face"."assetId"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "asset_face"."assetId"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
+      )
   ) as "thumbnailPath",
   (
     select
@@ -941,6 +1168,57 @@ select
     where
       "person"."personGroupId" = "person_group"."id"
       and "person"."thumbnailPath" != $3
+      and not exists (
+        select
+        from
+          "asset_face"
+        where
+          "asset_face"."id" = "person"."faceAssetId"
+          and (
+            exists (
+              select
+                1
+              from
+                tag_asset
+                join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                join tag on tag.id = tag_closure.id_ancestor
+              where
+                tag_asset."assetId" = "asset_face"."assetId"
+                and tag."isPrivate" = true
+            )
+            or exists (
+              select
+                1
+              from
+                asset as private_asset
+              where
+                private_asset.id = "asset_face"."assetId"
+                and private_asset.visibility = 'locked'
+            )
+            or exists (
+              select
+                1
+              from
+                asset as still
+              where
+                still."livePhotoVideoId" = "asset_face"."assetId"
+                and (
+                  still.visibility = 'locked'
+                  or exists (
+                    select
+                      1
+                    from
+                      tag_asset
+                      join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                      join tag on tag.id = tag_closure.id_ancestor
+                    where
+                      tag_asset."assetId" = "still"."id"
+                      and tag."isPrivate" = true
+                  )
+                )
+            )
+          )
+      )
     limit
       $4
   ) as "sharedThumbnailPath"
@@ -1060,6 +1338,50 @@ from
       and "asset_face"."isVisible" is true
       and "asset_face"."assetVisibility" = 'timeline'
       and "asset_face"."assetDeletedAt" is null
+      and not (
+        exists (
+          select
+            1
+          from
+            tag_asset
+            join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+            join tag on tag.id = tag_closure.id_ancestor
+          where
+            tag_asset."assetId" = "asset_face"."assetId"
+            and tag."isPrivate" = true
+        )
+        or exists (
+          select
+            1
+          from
+            asset as private_asset
+          where
+            private_asset.id = "asset_face"."assetId"
+            and private_asset.visibility = 'locked'
+        )
+        or exists (
+          select
+            1
+          from
+            asset as still
+          where
+            still."livePhotoVideoId" = "asset_face"."assetId"
+            and (
+              still.visibility = 'locked'
+              or exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "still"."id"
+                  and tag."isPrivate" = true
+              )
+            )
+        )
+      )
       and "asset_face"."personGroupId" = $1
       and "asset_face"."ownerId" = any ($2::uuid[])
     union all
@@ -1072,6 +1394,50 @@ from
       and "asset_face"."isVisible" is true
       and "asset_face"."assetVisibility" = 'timeline'
       and "asset_face"."assetDeletedAt" is null
+      and not (
+        exists (
+          select
+            1
+          from
+            tag_asset
+            join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+            join tag on tag.id = tag_closure.id_ancestor
+          where
+            tag_asset."assetId" = "asset_face"."assetId"
+            and tag."isPrivate" = true
+        )
+        or exists (
+          select
+            1
+          from
+            asset as private_asset
+          where
+            private_asset.id = "asset_face"."assetId"
+            and private_asset.visibility = 'locked'
+        )
+        or exists (
+          select
+            1
+          from
+            asset as still
+          where
+            still."livePhotoVideoId" = "asset_face"."assetId"
+            and (
+              still.visibility = 'locked'
+              or exists (
+                select
+                  1
+                from
+                  tag_asset
+                  join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+                  join tag on tag.id = tag_closure.id_ancestor
+                where
+                  tag_asset."assetId" = "still"."id"
+                  and tag."isPrivate" = true
+              )
+            )
+        )
+      )
       and "asset_face"."personGroupId" = $3
       and not "asset_face"."ownerId" = any ($4::uuid[])
       and exists (

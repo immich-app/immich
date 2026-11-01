@@ -6,10 +6,11 @@ import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { ConfigFFmpegDto } from 'src/dtos/config.dto.js';
-import { CacheControl, ImmichWorker, Permission } from 'src/enum.js';
+import { ImmichWorker, Permission } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { VideoPacketInfo, VideoStreamInfo } from 'src/types.js';
+import { getAssetCacheControl } from 'src/utils/asset.util.js';
 import { PendingEvents } from 'src/utils/event.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { getCodecString, getOutputSize } from 'src/utils/media.js';
@@ -93,7 +94,7 @@ export class HlsService extends BaseService {
   ) {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [assetId] });
 
-    const session = await this.videoStreamRepository.getSession(sessionId);
+    const session = await this.videoStreamRepository.getSession(sessionId, assetId);
     if (!session) {
       throw new NotFoundException('Session not found');
     }
@@ -103,7 +104,7 @@ export class HlsService extends BaseService {
     const response = new ImmichFileResponse({
       path,
       contentType: 'video/mp4',
-      cacheControl: CacheControl.PrivateWithCache,
+      cacheControl: getAssetCacheControl(auth),
     });
 
     const apiSession = this.trackSession(sessionId, variantIndex);
@@ -123,7 +124,9 @@ export class HlsService extends BaseService {
   async endSession(auth: AuthDto, assetId: string, sessionId: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [assetId] });
 
-    this.websocketRepository.serverSend('HlsSessionEnd', { sessionId });
+    if (await this.videoStreamRepository.getSession(sessionId, assetId)) {
+      this.websocketRepository.serverSend('HlsSessionEnd', { sessionId });
+    }
   }
 
   private generateMainPlaylist(sessionId: string, ffmpeg: ConfigFFmpegDto, asset: AssetWithStreamInfo) {

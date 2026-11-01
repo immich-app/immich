@@ -91,6 +91,7 @@ export const getDehydrated = <T extends Record<string, unknown>>(entity: T) => {
 
 export const getForAlbum = (album: ReturnType<AlbumFactory['build']>) => ({
   ...album,
+  visibleThumbnailAssetId: album.albumThumbnailAssetId,
   assets: album.assets.map((asset) =>
     getDehydrated({ ...getForAsset(asset), exifInfo: getDehydrated(asset.exifInfo) }),
   ),

@@ -186,6 +186,11 @@ const mapStack = (entity: { stack?: Stack | null }) => {
 
 export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOptions = {}): AssetResponseDto {
   const { withStack = false, auth } = options;
+  const visibility =
+    entity.visibility !== AssetVisibility.Hidden &&
+    entity.tags?.some(({ isPrivate, systemKey }) => isPrivate && systemKey === 'locked')
+      ? AssetVisibility.Locked
+      : entity.visibility;
 
   if (isMetadataHidden(auth)) {
     const sanitizedAssetResponse: SanitizedAssetResponseDto = {
@@ -219,9 +224,9 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     localDateTime: asDateTimeString(entity.localDateTime),
     updatedAt: asDateTimeString(entity.updatedAt),
     isFavorite: options.auth?.user.id === entity.ownerId && entity.isFavorite,
-    isArchived: entity.visibility === AssetVisibility.Archive,
+    isArchived: visibility === AssetVisibility.Archive,
     isTrashed: !!entity.deletedAt,
-    visibility: entity.visibility,
+    visibility,
     duration: entity.duration,
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,

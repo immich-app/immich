@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:openapi/api.dart' as api;
 
 import '../repository_context.dart';
 
@@ -20,6 +23,52 @@ void main() {
 
   tearDown(() async {
     await ctx.dispose();
+  });
+
+  test('hides a confirmed private upload from Photos before sync, preserving the device album', () async {
+    final user = await ctx.newUser();
+    final other = await ctx.newUser();
+    await ctx.newAuthUser(id: user.id);
+    final album = await ctx.newLocalAlbum(backupSelection: .selected);
+    final local = await ctx.newLocalAsset();
+    await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+    final timeline = sut.main([user.id], .day);
+    expect(await timeline.assetSource(0, 10), hasLength(1));
+
+    await LocalAssetRepository(ctx.db).rememberUploadedAsset(user.id, local.id, 'private-checksum');
+
+    expect(await timeline.assetSource(0, 10), isEmpty);
+    expect(await timeline.bucketSource().first, isEmpty);
+    expect((await LocalAssetRepository(ctx.db).get(local.id))?.checksum, 'private-checksum');
+    expect(await sut.localAlbum(album.id, .day).assetSource(0, 10), hasLength(1));
+    expect(await sut.main([other.id], .day).assetSource(0, 10), hasLength(1));
+  });
+
+  test('keeps album-granted private photos out of the partner timeline and prunes the last revoked grant', () async {
+    final viewer = await ctx.newUser();
+    final owner = await ctx.newUser();
+    await ctx.newAuthUser(id: viewer.id);
+    final secret = await ctx.newRemoteAsset(ownerId: owner.id, visibility: AssetVisibility.locked);
+    final public = await ctx.newRemoteAsset(ownerId: owner.id);
+    final own = await ctx.newRemoteAsset(ownerId: viewer.id, visibility: AssetVisibility.locked);
+    final first = await ctx.newRemoteAlbum(ownerId: owner.id);
+    final second = await ctx.newRemoteAlbum(ownerId: owner.id);
+    for (final album in [first, second]) {
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: secret.id);
+    }
+    final sync = SyncStreamRepository(ctx.db);
+    expect(await sut.remoteAlbum(first.id, .day).assetSource(0, 10), hasLength(1));
+    expect((await sut.main([owner.id, viewer.id], .day).assetSource(0, 10)).map((asset) => asset.id), [public.id]);
+
+    await sync.deleteAlbumToAssetsV1([api.SyncAlbumToAssetDeleteV1(albumId: first.id, assetId: secret.id)]);
+    expect(await sync.pruneUnsharedPrivateAssets(), 0);
+    expect(await sut.remoteAlbum(second.id, .day).assetSource(0, 10), hasLength(1));
+    await sync.deleteAlbumToAssetsV1([api.SyncAlbumToAssetDeleteV1(albumId: second.id, assetId: secret.id)]);
+    expect(await sync.pruneUnsharedPrivateAssets(), 1);
+    expect(
+      (await ctx.db.select(ctx.db.remoteAssetEntity).get()).map((asset) => asset.id),
+      unorderedEquals([own.id, public.id]),
+    );
   });
 
   group('remoteAlbum assets', () {

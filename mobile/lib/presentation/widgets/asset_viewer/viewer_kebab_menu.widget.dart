@@ -29,7 +29,7 @@ class ViewerKebabMenu extends ConsumerWidget {
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final timelineOrigin = ref.watch(timelineServiceProvider).origin;
-    final isInLockedView = ref.watch(inLockedViewProvider);
+    final isInLockedView = ref.watch(inPrivateViewProvider);
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);

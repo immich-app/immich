@@ -60,6 +60,9 @@ const rows: Array<{ page: FilteredPage; action: keyof typeof actions; expected: 
 for (const { page: name, action, expected } of rows) {
   test(`${action} in the viewer on ${name} ${expected}`, async ({ page, data, api, app }) => {
     const { route, assets } = filteredPages[name](data);
+    if (action === 'lock') {
+      data.setAuthStatus({ pinCode: true, isElevated: true });
+    }
     const [asset, other] = assets;
     await page.goto(route);
     await app.timeline.thumbnail(asset).click();

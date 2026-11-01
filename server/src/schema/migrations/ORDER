@@ -106,3 +106,8 @@
 1795460399401-AddSessionSyncCheckpointIsPendingReset
 1795463242422-AddAuthChallengeCodeChallenge
 1795654396198-AssetOriginalPathByteOrder
+1795654396199-PrivateTags
+1795654396200-ResetPrivateAssetSync
+1795654396201-ResetCachedPrivateAssets
+1795656557101-PrivateLivePhotoCompanions
+1795668085567-SharedPrivateAssets

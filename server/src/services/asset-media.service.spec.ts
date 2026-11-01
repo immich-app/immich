@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  InternalServerErrorException,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AssetFile } from 'src/database.js';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto.js';
 import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto.js';
@@ -406,9 +401,7 @@ describe(AssetMediaService.name, () => {
 
       mocks.asset.create.mockRejectedValue(error);
 
-      await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toBeInstanceOf(
-        InternalServerErrorException,
-      );
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow('Unable to upload this asset');
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
@@ -557,7 +550,7 @@ describe(AssetMediaService.name, () => {
           path: asset.originalPath,
           fileName: asset.originalFileName,
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
         }),
       );
     });
@@ -577,7 +570,7 @@ describe(AssetMediaService.name, () => {
           path: editedAsset.files[3].path,
           fileName: editedAsset.originalFileName,
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
         }),
       );
     });
@@ -597,7 +590,7 @@ describe(AssetMediaService.name, () => {
           path: editedAsset.files[3].path,
           fileName: editedAsset.originalFileName,
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
         }),
       );
     });
@@ -616,7 +609,7 @@ describe(AssetMediaService.name, () => {
           path: '/data/library/admin/2024/IMG_1234.jpg',
           fileName: 'IMG_1234.jpg',
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
         }),
       );
     });
@@ -643,7 +636,7 @@ describe(AssetMediaService.name, () => {
           path: '/data/thumbs/admin/ab/cd/asset-1_fullsize_edited.jpeg',
           fileName: 'IMG_1234.jpeg',
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
         }),
       );
     });
@@ -662,7 +655,7 @@ describe(AssetMediaService.name, () => {
           path: fullsizeEdited.path,
           fileName: editedAsset.originalFileName,
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
         }),
       );
     });
@@ -682,7 +675,7 @@ describe(AssetMediaService.name, () => {
           path: editedAsset.originalPath,
           fileName: editedAsset.originalFileName,
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
         }),
       );
     });
@@ -705,7 +698,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL })).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'image/jpeg',
           fileName: `IMG_${asset.id}_thumbnail.jpg`,
         }),
@@ -719,7 +712,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.PREVIEW })).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'image/jpeg',
           fileName: `IMG_${asset.id}_preview.jpg`,
         }),
@@ -735,7 +728,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL })).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'application/octet-stream',
           fileName: `IMG_${asset.id}_thumbnail.ext`,
         }),
@@ -750,7 +743,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL })).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'image/jpeg',
           fileName: `IMG_${asset.id}_thumbnail.jpg`,
         }),
@@ -767,7 +760,7 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'image/jpeg',
           fileName: `IMG_${asset.id}_thumbnail.jpg`,
         }),
@@ -784,7 +777,7 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'image/jpeg',
           fileName: `IMG_${asset.id}_thumbnail.jpg`,
         }),
@@ -804,7 +797,7 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'image/jpeg',
           fileName: `IMG_${asset.id}_thumbnail.jpg`,
         }),
@@ -823,7 +816,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.viewThumbnail(auth, asset.id, { size: AssetMediaSize.PREVIEW })).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.files[0].path,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'image/jpeg',
           fileName: `${asset.id}_preview.jpg`,
         }),
@@ -860,7 +853,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
         new ImmichFileResponse({
           path: '/path/to/encoded/video.mp4',
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'video/mp4',
         }),
       );
@@ -877,7 +870,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.originalPath,
-          cacheControl: CacheControl.PrivateWithCache,
+          cacheControl: CacheControl.PrivateWithoutCache,
           contentType: 'application/octet-stream',
         }),
       );
@@ -920,7 +913,7 @@ describe(AssetMediaService.name, () => {
         ],
       });
 
-      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
+      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2], false);
     });
 
     it('should return non-duplicates as well', async () => {
@@ -952,7 +945,7 @@ describe(AssetMediaService.name, () => {
         ],
       });
 
-      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
+      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2], false);
     });
   });
 

@@ -114,13 +114,13 @@ void main() {
       verify(() => assetService.update([asset.id], visibility: const .some(.archive))).called(1);
     });
 
-    testWidgets('is hidden inside the locked folder view', (tester) async {
+    testWidgets('is hidden inside the private tag view', (tester) async {
       await tester.pumpTestWidget(
         context,
         const ActionIconButton(action: ArchiveAction(source: .timeline)),
         overrides: [
           ...context.selected({owned()}),
-          inLockedViewProvider.overrideWithValue(true),
+          inPrivateViewProvider.overrideWithValue(true),
         ],
       );
 

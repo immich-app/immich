@@ -91,6 +91,8 @@ export const AlbumResponseSchema = z
       .optional()
       .describe('UTC representation of (local) end date (latest asset)'),
     isActivityEnabled: z.boolean().describe('Activity feed enabled'),
+    includePrivateAssets: z.boolean().optional().describe('Share album-owner private assets with album members'),
+    hasPrivateAssets: z.boolean().optional().describe('Whether the album contains private assets owned by the viewer'),
     order: AssetOrderSchema.optional(),
     contributorCounts: z.array(ContributorCountResponseSchema).optional(),
   })
@@ -160,6 +162,7 @@ export class UpdateAlbumDto extends createZodDto({
     ),
   albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
   isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
+  includePrivateAssets: z.boolean().optional().describe('Share album-owner private assets with album members'),
   order: AssetOrderSchema.optional(),
 }) {}
 
@@ -196,10 +199,13 @@ export type MapAlbumDto = {
   albumName: string;
   description: string | null;
   albumThumbnailAssetId: string | null;
+  visibleThumbnailAssetId?: string | null;
   createdAt: Date;
   updatedAt: Date;
   id: string;
   isActivityEnabled: boolean;
+  includePrivateAssets?: boolean;
+  hasPrivateAssets?: boolean;
   order: AssetOrder;
 };
 
@@ -231,7 +237,8 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>, { auth }: { auth?
   return {
     albumName: entity.albumName,
     description: nullToEmptyString(entity.description),
-    albumThumbnailAssetId: entity.albumThumbnailAssetId,
+    albumThumbnailAssetId:
+      entity.visibleThumbnailAssetId === undefined ? entity.albumThumbnailAssetId : entity.visibleThumbnailAssetId,
     createdAt: asDateTimeString(entity.createdAt),
     updatedAt: asDateTimeString(entity.updatedAt),
     id: entity.id,
@@ -242,6 +249,8 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>, { auth }: { auth?
     endDate: asDateTimeString(endDate),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
+    includePrivateAssets: entity.includePrivateAssets ?? false,
+    hasPrivateAssets: entity.hasPrivateAssets,
     order: entity.order,
   };
 };

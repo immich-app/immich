@@ -6,18 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/data/server/album_sharing.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/user_selection.page.dart';
+import 'package:immich_mobile/presentation/widgets/tags/private_content_auth.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
@@ -32,8 +36,34 @@ class AlbumOptionsPage extends HookConsumerWidget {
     final userId = ref.watch(authProvider).userId;
     final activityEnabled = useState(album.isActivityEnabled);
     final isOwner = album.ownerId == userId;
+    final sharingOptions = isOwner ? ref.watch(albumSharingOptionsProvider(album.id)).asData?.value : null;
+    final sharingPending = useState(false);
     final owner = isOwner ? ref.watch(currentUserProvider) : null;
     final allUsers = isOwner ? null : ref.watch(usersProvider);
+
+    Future<void> updatePrivateSharing(bool includePrivateAssets) async {
+      sharingPending.value = true;
+      try {
+        if (includePrivateAssets && !await unlockPrivateContent(context, ref)) {
+          return;
+        }
+        if (!context.mounted) {
+          return;
+        }
+        await ref.read(albumSharingApiRepositoryProvider).update(album.id, includePrivateAssets);
+        if (!context.mounted) {
+          return;
+        }
+        ref.invalidate(albumSharingOptionsProvider(album.id));
+        unawaited(ref.read(backgroundSyncProvider).syncRemote(enqueue: true));
+      } catch (error, stack) {
+        handleError(error, stack: stack);
+      } finally {
+        if (context.mounted) {
+          sharingPending.value = false;
+        }
+      }
+    }
 
     void showErrorMessage() {
       ContextHelper(context).pop();
@@ -235,6 +265,13 @@ class AlbumOptionsPage extends HookConsumerWidget {
                 ),
               ),
             buildSectionTitle(context.t.shared_album_section_people_title),
+            if (sharingOptions?.hasPrivateAssets == true)
+              SwitchListTile.adaptive(
+                value: sharingOptions!.includePrivateAssets,
+                onChanged: sharingPending.value ? null : updatePrivateSharing,
+                title: Text(context.t.include_private_photos),
+                subtitle: Text(context.t.include_private_photos_description),
+              ),
             if (isOwner) ...[
               ListTile(
                 leading: const Icon(Icons.person_add_rounded),

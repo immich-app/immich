@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:immich_mobile/domain/utils/asset_access_change_relay.dart';
 import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart' as m;
 import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
@@ -165,10 +166,8 @@ class BackgroundSyncManager {
 
     onRemoteSyncStart?.call();
 
-    final task = _syncTask = runInIsolateGentle(
-      computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
-      debugLabel: 'remote-sync',
-    );
+    final accessChanges = AssetAccessChangeRelay();
+    final task = _syncTask = _startRemoteSync(accessChanges.sendPort);
     return task
         .then((result) {
           final success = result ?? false;
@@ -185,7 +184,8 @@ class BackgroundSyncManager {
         })
         // A task clears only its own slot: one that was cancelled and superseded by a
         // fresh task (see cancelResumeSyncs) must not null the new task's slot.
-        .whenComplete(() {
+        .whenComplete(() async {
+          await accessChanges.close();
           if (identical(_syncTask, task)) {
             _syncTask = null;
             if (_syncQueued) {
@@ -195,6 +195,12 @@ class BackgroundSyncManager {
           }
         });
   }
+
+  static Cancelable<bool?> _startRemoteSync(SendPort notifications) => runInIsolateGentle(
+    computation: (ref) =>
+        ref.read(syncStreamServiceProvider).sync(onAssetAccessChanged: () => notifications.send(null)),
+    debugLabel: 'remote-sync',
+  );
 
   Future<void> syncWebsocketBatchV1(List<dynamic> batchData) {
     if (_syncWebsocketTask != null) {
@@ -262,17 +268,25 @@ class BackgroundSyncManager {
 
     onCloudIdSyncStart?.call();
 
-    _cloudIdSyncTask = runInIsolateGentle(computation: m.syncCloudIds);
-    return _cloudIdSyncTask!
-        .whenComplete(() {
+    final accessChanges = AssetAccessChangeRelay();
+    final task = _cloudIdSyncTask = _startCloudIdSync(accessChanges.sendPort);
+    return task
+        .whenComplete(() async {
+          await accessChanges.close();
           onCloudIdSyncComplete?.call();
-          _cloudIdSyncTask = null;
+          if (identical(_cloudIdSyncTask, task)) {
+            _cloudIdSyncTask = null;
+          }
         })
         .catchError((error) {
           onCloudIdSyncError?.call(error.toString());
-          _cloudIdSyncTask = null;
         });
   }
+
+  static Cancelable<void> _startCloudIdSync(SendPort notifications) => runInIsolateGentle(
+    computation: (ref) => m.syncCloudIds(ref, onAssetAccessChanged: () => notifications.send(null)),
+    debugLabel: 'cloud-id-sync',
+  );
 }
 
 Cancelable<void> _handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) => runInIsolateGentle(

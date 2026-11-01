@@ -32,7 +32,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final album = ref.watch(currentRemoteAlbumProvider);
 
-    final isInLockedView = ref.watch(inLockedViewProvider);
+    final isInLockedView = ref.watch(inPrivateViewProvider);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));

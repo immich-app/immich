@@ -19,6 +19,7 @@ import 'package:immich_mobile/data/db/main/table/local/album.dart';
 import 'package:immich_mobile/data/db/main/table/local/album_asset.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset_presence.dart';
 import 'package:immich_mobile/data/db/main/table/local/trashed_asset.dart';
 import 'package:immich_mobile/data/db/main/table/local/trashed_asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/memory/asset.dart';
@@ -71,6 +72,7 @@ import 'package:sqlite_async/sqlite_async.dart';
     LocalAlbumAssetEntity,
     RemoteAssetEntity,
     RemoteExifEntity,
+    LocalAssetPresenceEntity,
     RemoteAlbumEntity,
     RemoteAlbumAssetEntity,
     RemoteAlbumUserEntity,
@@ -160,7 +162,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 36;
+  int get schemaVersion => 37;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -382,6 +384,9 @@ class Drift extends $Drift {
               },
               from35To36: (m, v36) async {
                 await m.addColumn(v36.localAssetEntity, v36.localAssetEntity.unsupported);
+              },
+              from36To37: (m, v37) async {
+                await m.createTable(v37.localAssetPresenceEntity);
               },
             ),
           );

@@ -36,6 +36,7 @@ class SharedLinkService {
     required bool showMeta,
     required bool allowDownload,
     required bool allowUpload,
+    bool includePrivateAssets = false,
     String? description,
     String? password,
     String? slug,
@@ -49,6 +50,7 @@ class SharedLinkService {
       if (type == SharedLinkType.ALBUM) {
         dto = SharedLinkCreateDto(
           type: type,
+          includePrivateAssets: Optional.present(includePrivateAssets),
           albumId: albumId == null ? const Optional.absent() : Optional.present(albumId),
           showMetadata: Optional.present(showMeta),
           allowDownload: Optional.present(allowDownload),
@@ -61,6 +63,7 @@ class SharedLinkService {
       } else if (assetIds != null) {
         dto = SharedLinkCreateDto(
           type: type,
+          includePrivateAssets: Optional.present(includePrivateAssets),
           showMetadata: Optional.present(showMeta),
           allowDownload: Optional.present(allowDownload),
           allowUpload: Optional.present(allowUpload),
@@ -89,6 +92,7 @@ class SharedLinkService {
     required bool? showMeta,
     required bool? allowDownload,
     required bool? allowUpload,
+    bool? includePrivateAssets,
     Option<String?> password = const Option.none(),
     Option<String?> description = const Option.none(),
     String? slug,
@@ -98,6 +102,9 @@ class SharedLinkService {
       final responseDto = await _apiService.sharedLinksApi.updateSharedLink(
         id,
         SharedLinkEditDto(
+          includePrivateAssets: includePrivateAssets == null
+              ? const Optional.absent()
+              : Optional.present(includePrivateAssets),
           showMetadata: showMeta == null ? const Optional.absent() : Optional.present(showMeta),
           allowDownload: allowDownload == null ? const Optional.absent() : Optional.present(allowDownload),
           allowUpload: allowUpload == null ? const Optional.absent() : Optional.present(allowUpload),

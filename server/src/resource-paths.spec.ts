@@ -8,7 +8,7 @@ import { newUuid } from 'test/small.factory.js';
 
 type ResourceName = keyof typeof Resource;
 
-const prefixOnly = new Set<ResourceName>(['assets', 'clusterGroup', 'search', 'view']);
+const prefixOnly = new Set<ResourceName>(['assets', 'clusterGroup', 'search', 'timeline', 'view']);
 
 const params = { id: newUuid(), name: QueueName.MetadataExtraction };
 

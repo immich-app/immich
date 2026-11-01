@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
-import { JobName, JobStatus } from 'src/enum.js';
+import { AssetFileType, AssetVisibility, JobName, JobStatus } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
@@ -9,10 +9,14 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
+import {
+  up as migratePrivateTags,
+  down as rollbackPrivateTags,
+} from 'src/schema/migrations/1795654396199-PrivateTags.js';
 import { TagService } from 'src/services/tag.service.js';
 import { upsertTags } from 'src/utils/tag.js';
 import { newMediumService } from 'test/medium.factory.js';
-import { factory } from 'test/small.factory.js';
+import { factory, newUuid } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
@@ -106,6 +110,257 @@ describe(TagService.name, () => {
 
       await expect(sut.remove(otherAuth, tag.id)).rejects.toThrow('Not found or no tag.delete access');
       await expect(sut.get(auth, tag.id)).resolves.toEqual(expect.objectContaining({ id: tag.id }));
+    });
+  });
+
+  describe('private tags', () => {
+    it('should create one default private locked tag for a new user', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      await sut.onUserCreate(user);
+      await sut.onUserCreate(user);
+
+      await expect(sut.getAll(factory.auth({ user }))).resolves.toEqual([]);
+      const elevated = factory.auth({ user, session: { hasElevatedPermission: true } });
+      await expect(sut.getAll(elevated)).resolves.toEqual([
+        expect.objectContaining({ name: 'locked', isPrivate: true }),
+      ]);
+    });
+
+    it('should migrate legacy locked assets once even if the migration is rerun', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      await sut.create(factory.auth({ user }), { name: 'locked' });
+
+      await migratePrivateTags(ctx.database);
+      await migratePrivateTags(ctx.database);
+
+      const tag = await ctx.get(TagRepository).getBySystemKey(user.id, 'locked');
+      expect(tag).toMatchObject({ isPrivate: true });
+      await expect(ctx.get(TagRepository).getAssetIds(tag!.id, [asset.id])).resolves.toEqual(new Set([asset.id]));
+      await expect(
+        ctx.get(AssetRepository).getStatistics(user.id, { visibility: AssetVisibility.Locked }),
+      ).resolves.toMatchObject({ [asset.type]: 1 });
+    });
+
+    it('should restore legacy locked visibility for descendants of the system tag on rollback', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await sut.onUserCreate(user);
+      const tags = ctx.get(TagRepository);
+      const locked = (await tags.getBySystemKey(user.id, 'locked'))!;
+      const child = await tags.create({ userId: user.id, parentId: locked.id, value: 'locked/descendant' });
+      await ctx.newTagAsset({ tagIds: [child.id], assetIds: [asset.id] });
+
+      const rollback = new Error('Discard the rollback test transaction');
+      await expect(
+        ctx.database.transaction().execute(async (tx) => {
+          await tx.updateTable('tag').set({ isPrivate: false }).where('systemKey', 'is', null).execute();
+          await rollbackPrivateTags(tx);
+          const restored = await tx
+            .selectFrom('asset')
+            .select('visibility')
+            .where('id', '=', asset.id)
+            .executeTakeFirst();
+          expect(restored?.visibility).toBe(AssetVisibility.Locked);
+          throw rollback;
+        }),
+      ).rejects.toBe(rollback);
+    });
+
+    it('should keep private descendants and their assets when deleting a public parent', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const auth = factory.auth({ user });
+      const elevated = factory.auth({ user, session: { hasElevatedPermission: true } });
+      const parent = await sut.create(auth, { name: 'public' });
+      const child = await sut.create(elevated, { name: 'private', parentId: parent.id, isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [child.id], assetIds: [asset.id] });
+
+      await expect(sut.remove(auth, parent.id)).rejects.toThrow('Elevated permission is required');
+      await expect(sut.get(elevated, child.id)).resolves.toMatchObject({ isPrivate: true });
+    });
+
+    it('should reject upserting a private tag path without elevation', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const elevated = factory.auth({ user, session: { hasElevatedPermission: true } });
+      await sut.create(elevated, { name: 'private', isPrivate: true });
+
+      await expect(sut.upsert(factory.auth({ user }), { tags: ['private/new-child'] })).rejects.toThrow('tag.create');
+      await expect(sut.getAll(elevated)).resolves.toEqual([expect.objectContaining({ name: 'private' })]);
+    });
+
+    it('should hide private tag metadata unless the session is elevated', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const publicTag = await ctx.get(TagRepository).create({ userId: user.id, value: 'public' });
+      const privateTag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      const auth = factory.auth({ user });
+      const elevatedAuth = factory.auth({ user, session: { hasElevatedPermission: true } });
+
+      await expect(sut.getAll(auth)).resolves.toEqual([expect.objectContaining({ id: publicTag.id })]);
+      await expect(sut.get(auth, privateTag.id)).rejects.toThrow('Not found or no tag.read access');
+      await expect(sut.get(elevatedAuth, privateTag.id)).resolves.toEqual(
+        expect.objectContaining({ id: privateTag.id, isPrivate: true }),
+      );
+    });
+
+    it('should inherit privacy from a private parent tag', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+      const parent = await sut.create(auth, { name: 'private', isPrivate: true });
+
+      const child = await sut.create(auth, { name: 'child', parentId: parent.id, isPrivate: false });
+
+      expect(child).toEqual(expect.objectContaining({ value: 'private/child', isPrivate: false }));
+      await expect(sut.get(factory.auth({ user }), child.id)).rejects.toThrow('Not found or no tag.read access');
+    });
+
+    it('should require elevated permission to create a private tag', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      await expect(sut.create(auth, { name: 'private', isPrivate: true })).rejects.toThrow(
+        'Elevated permission is required',
+      );
+    });
+
+    it('should hide descendants of private tags unless the session is elevated', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const privateParent = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      const child = await ctx.get(TagRepository).create({
+        userId: user.id,
+        value: 'private/child',
+        parentId: privateParent.id,
+        isPrivate: false,
+      });
+      const auth = factory.auth({ user });
+      const elevatedAuth = factory.auth({ user, session: { hasElevatedPermission: true } });
+
+      await expect(sut.getAll(auth)).resolves.toEqual([]);
+      await expect(sut.get(auth, child.id)).rejects.toThrow('Not found or no tag.read access');
+      await expect(sut.getAll(elevatedAuth)).resolves.toEqual([
+        expect.objectContaining({ id: privateParent.id }),
+        expect.objectContaining({ id: child.id }),
+      ]);
+    });
+
+    it('should inherit privacy while preserving the descendant flag', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+      const [parent, child] = await upsertTags(ctx.get(TagRepository), {
+        userId: user.id,
+        tags: ['family', 'family/taxes'],
+      });
+
+      await expect(sut.update(auth, parent.id, { isPrivate: true })).resolves.toEqual(
+        expect.objectContaining({ id: parent.id, isPrivate: true }),
+      );
+
+      await expect(ctx.get(TagRepository).get(child.id)).resolves.toMatchObject({ isPrivate: false });
+      await expect(sut.get(factory.auth({ user }), child.id)).rejects.toThrow('Not found or no tag.read access');
+      await sut.update(auth, parent.id, { isPrivate: false });
+      await expect(sut.get(factory.auth({ user }), child.id)).resolves.toMatchObject({ isPrivate: false });
+    });
+
+    it('should preserve a private child when the public parent receives an unchanged privacy flag', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const locked = factory.auth({ user });
+      const elevated = factory.auth({ user, session: { hasElevatedPermission: true } });
+      const parent = await sut.create(locked, { name: 'family' });
+      const child = await sut.create(elevated, { name: 'taxes', parentId: parent.id, isPrivate: true });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newTagAsset({ tagIds: [child.id], assetIds: [asset.id] });
+
+      await sut.update(locked, parent.id, { isPrivate: false });
+
+      await expect(sut.get(elevated, child.id)).resolves.toMatchObject({ isPrivate: true });
+      await expect(
+        ctx.get(AccessRepository).asset.checkOwnerAccess(user.id, new Set([asset.id]), false),
+      ).resolves.toEqual(new Set());
+    });
+
+    it('should mark sync for reset even if writing sidecar metadata fails', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { session } = await ctx.newSession({ userId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+      const tag = await sut.create(auth, { name: 'family' });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+      ctx.getMock(JobRepository).queueAll.mockRejectedValue(new Error('Sidecar queue unavailable'));
+
+      await expect(sut.update(auth, tag.id, { isPrivate: true })).rejects.toThrow('Sidecar queue unavailable');
+
+      await expect(
+        ctx.database
+          .selectFrom('session')
+          .select('isPendingSyncReset')
+          .where('id', '=', session.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isPendingSyncReset: true });
+      await expect(sut.get(factory.auth({ user }), tag.id)).rejects.toThrow('Not found or no tag.read access');
+    });
+
+    it('should not make a private tag public while it has assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const privateTag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [privateTag.id], assetIds: [asset.id] });
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+
+      await expect(sut.update(auth, privateTag.id, { isPrivate: false })).rejects.toThrow(
+        'Cannot make a private tag public while it has assets',
+      );
+    });
+
+    it('should not delete a private tag while it has assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const privateTag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [privateTag.id], assetIds: [asset.id] });
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+
+      await expect(sut.remove(auth, privateTag.id)).rejects.toThrow('Cannot delete a private tag while it has assets');
+    });
+
+    it('should hide private-tagged assets and files from unelevated owner access checks', async () => {
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const fileId = newUuid();
+      await ctx.newAssetFile({
+        id: fileId,
+        assetId: asset.id,
+        type: AssetFileType.Preview,
+        path: 'preview.jpg',
+      });
+      const privateTag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [privateTag.id], assetIds: [asset.id] });
+
+      await expect(
+        ctx.get(AccessRepository).asset.checkOwnerAccess(user.id, new Set([asset.id]), false),
+      ).resolves.toEqual(new Set());
+      await expect(
+        ctx.get(AccessRepository).asset.checkOwnerAccess(user.id, new Set([asset.id]), true),
+      ).resolves.toEqual(new Set([asset.id]));
+      await expect(
+        ctx.get(AccessRepository).assetFile.checkOwnerAccess(user.id, new Set([fileId]), false),
+      ).resolves.toEqual(new Set());
+      await expect(
+        ctx.get(AccessRepository).assetFile.checkOwnerAccess(user.id, new Set([fileId]), true),
+      ).resolves.toEqual(new Set([fileId]));
     });
   });
 

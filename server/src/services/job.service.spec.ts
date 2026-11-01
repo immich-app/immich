@@ -1,7 +1,9 @@
 import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { JobService } from 'src/services/job.service.js';
 import type { JobItem } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
+import { getDehydrated } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
@@ -20,6 +22,26 @@ describe(JobService.name, () => {
   });
 
   describe('onJobRun', () => {
+    it('should refresh the library without broadcasting private upload data', async () => {
+      const asset = AssetFactory.from().exif().build();
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([
+        { ...asset, exifInfo: getDehydrated(asset.exifInfo), faces: [] },
+      ]);
+      mocks.asset.isPrivate.mockResolvedValue(true);
+      mocks.job.run.mockResolvedValue(JobStatus.Success);
+
+      await sut.onJobRun(QueueName.ThumbnailGeneration, {
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: asset.id, source: 'upload' },
+      });
+
+      expect(mocks.websocket.clientSend).not.toHaveBeenCalled();
+      expect(mocks.resource.send).toHaveBeenCalledWith({
+        userIds: [asset.ownerId],
+        changed: [Resource.tags(), Resource.timeline()],
+      });
+    });
+
     it('should queue metadata extraction when sidecar discovery is skipped', async () => {
       const job: JobItem = { name: JobName.SidecarCheck, data: { id: 'asset-1', source: 'upload' } };
       mocks.job.run.mockResolvedValue(JobStatus.Skipped);

@@ -333,6 +333,9 @@ describe(SearchService.name, () => {
         {
           query: 'test',
           size: 100,
+          includePrivate: false,
+          albumUserId: authStub.user1.user.id,
+          privateOwnerId: authStub.user1.user.id,
           embedding: '[1, 2, 3]',
           userIds: [authStub.user1.user.id],
           viewingUserId: authStub.user1.user.id,

@@ -119,6 +119,35 @@ describe(UserService.name, () => {
   });
 
   describe('updateMyPreferences', () => {
+    it('keeps the legacy Locked Folder visible until the user hides it', async () => {
+      mocks.user.getMetadata.mockResolvedValue([]);
+      await expect(sut.getMyPreferences(authStub.user1)).resolves.toMatchObject({ lockedFolder: { sidebarWeb: true } });
+
+      mocks.user.upsertMetadata.mockResolvedValue();
+      await expect(
+        sut.updateMyPreferences(authStub.user1, { lockedFolder: { sidebarWeb: false } }),
+      ).resolves.toMatchObject({ lockedFolder: { sidebarWeb: false } });
+      expect(mocks.user.upsertMetadata).toHaveBeenCalledWith(authStub.user1.user.id, {
+        key: UserMetadataKey.Preferences,
+        value: { lockedFolder: { sidebarWeb: false } },
+      });
+    });
+
+    it('preserves a hidden Locked Folder when updating other preferences', async () => {
+      mocks.user.getMetadata.mockResolvedValue([
+        { key: UserMetadataKey.Preferences, value: { lockedFolder: { sidebarWeb: false } } },
+      ]);
+      mocks.user.upsertMetadata.mockResolvedValue();
+
+      await expect(sut.updateMyPreferences(authStub.user1, { memories: { enabled: false } })).resolves.toMatchObject({
+        lockedFolder: { sidebarWeb: false },
+      });
+      expect(mocks.user.upsertMetadata).toHaveBeenCalledWith(authStub.user1.user.id, {
+        key: UserMetadataKey.Preferences,
+        value: { lockedFolder: { sidebarWeb: false }, memories: { enabled: false } },
+      });
+    });
+
     it('should tell the user about the changed preferences', async () => {
       const user = UserFactory.create();
       mocks.user.getMetadata.mockResolvedValue([]);

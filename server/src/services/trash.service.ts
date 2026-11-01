@@ -34,7 +34,7 @@ export class TrashService extends BaseService {
   }
 
   async restore(auth: AuthDto): Promise<TrashResponseDto> {
-    const count = await this.trashRepository.restore(auth.user.id);
+    const count = await this.trashRepository.restore(auth.user.id, auth.session?.hasElevatedPermission === true);
     if (count > 0) {
       this.resourceRepository.send({
         userIds: [auth.user.id],
@@ -46,7 +46,7 @@ export class TrashService extends BaseService {
   }
 
   async empty(auth: AuthDto): Promise<TrashResponseDto> {
-    const count = await this.trashRepository.empty(auth.user.id);
+    const count = await this.trashRepository.empty(auth.user.id, auth.session?.hasElevatedPermission === true);
     if (count > 0) {
       this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.assets()] });
       await this.jobRepository.queue({ name: JobName.AssetEmptyTrash, data: {} });

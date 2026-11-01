@@ -6,6 +6,7 @@ import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
+import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
 import { TimelineService } from 'src/services/timeline.service.js';
 import { newMediumService } from 'test/medium.factory.js';
@@ -29,6 +30,43 @@ beforeAll(async () => {
 
 describe(TimelineService.name, () => {
   describe('getTimeBuckets', () => {
+    it('should omit another owner’s system locked assets from album buckets', async () => {
+      const { sut, ctx } = setup();
+      const { album, owner, sharedWith, asset } = await ctx.newSharedAlbum();
+      const tag = await ctx.get(TagRepository).getOrCreateSystemTag({
+        userId: owner.id,
+        value: 'locked',
+        systemKey: 'locked',
+        isPrivate: true,
+      });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+      const viewer = factory.auth({ user: sharedWith, session: { hasElevatedPermission: true } });
+
+      await expect(
+        sut.getTimeBuckets(viewer, { albumId: album.id, visibility: AssetVisibility.Locked }),
+      ).resolves.toEqual([]);
+    });
+
+    it('should show public siblings independently if the stack primary is private', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const localDateTime = new Date('1970-02-10');
+      const { asset: primary } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+      const { asset: secondary } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+      await ctx.newExif({ assetId: secondary.id, make: 'Canon' });
+      await ctx.newStack({ ownerId: user.id }, [primary.id, secondary.id]);
+      const tag = await ctx.get(TagRepository).create({ userId: user.id, value: 'private', isPrivate: true });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [primary.id] });
+
+      await expect(sut.getTimeBuckets(auth, { withStacked: true })).resolves.toEqual([
+        { count: 1, timeBucket: '1970-02-01' },
+      ]);
+      const data = JSON.parse(await sut.getTimeBucket(auth, { timeBucket: '1970-02-01', withStacked: true }));
+      expect(data.id).toEqual([secondary.id]);
+      expect(data.stack).toEqual([null]);
+    });
+
     it('should get time buckets by month', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();

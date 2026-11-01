@@ -20,6 +20,7 @@ class HashService {
   final TrashedLocalAssetRepository _trashedLocalAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final Completer<void>? _cancellation;
+  final Future<void> Function(Map<String, String>)? _rememberBackedUpHashes;
   final _log = Logger('HashService');
 
   HashService({
@@ -28,6 +29,7 @@ class HashService {
     required this._trashedLocalAssetRepository,
     required this._nativeSyncApi,
     this._cancellation,
+    this._rememberBackedUpHashes,
     int? batchSize,
   }) : _batchSize = batchSize ?? kBatchHashFileLimit {
     // Stop the in-flight native hash call promptly on cancellation; the loops
@@ -141,7 +143,12 @@ class HashService {
     if (isTrashed) {
       await _trashedLocalAssetRepository.updateHashes(hashed);
     } else {
-      await _localAssetRepository.updateHashes(hashed);
+      if (album.backupSelection == BackupSelection.selected) {
+        await _rememberBackedUpHashes?.call(hashed);
+      }
+      if (!isCancelled) {
+        await _localAssetRepository.updateHashes(hashed);
+      }
     }
   }
 }

@@ -18,6 +18,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../api.mocks.dart';
 import '../fixtures/asset.stub.dart';
+import '../fixtures/user.stub.dart';
 import '../infrastructure/repository.mock.dart';
 import '../mocks/asset_entity.mock.dart';
 import '../repository.mocks.dart';
@@ -45,6 +46,7 @@ void main() {
 
     await Store.put(StoreKey.serverEndpoint, 'http://demo.immich.app');
     await Store.put(StoreKey.deviceId, 'device-id');
+    await Store.put(StoreKey.currentUser, UserStub.admin);
 
     registerFallbackValue(File('file'));
     registerFallbackValue(<String, String>{});
@@ -59,6 +61,8 @@ void main() {
     mockAssetService = MockAssetService();
     when(() => mockAssetService.getLocalAsset(any())).thenAnswer((_) async => null);
     when(() => mockAssetService.stackEditedUpload(any(), any(), any())).thenAnswer((_) async {});
+    when(() => mockAssetService.rememberPrivateUpload(any(), any(), any(), any())).thenAnswer((_) async {});
+    when(() => mockStorageRepository.getFileChecksum(any())).thenAnswer((_) async => 'private-checksum');
     when(() => mockBackupRepository.markIfUnsupported(any(), any())).thenAnswer((_) async => false);
 
     sut = ForegroundUploadService(
@@ -109,6 +113,42 @@ void main() {
   }
 
   group('uploadSingleAsset', () {
+    test('adds the private tag to both parts of an uploaded live photo', () async {
+      final asset = LocalAssetStub.image1;
+      final entity = MockAssetEntity();
+      when(mockStorageRepository.clearCache).thenAnswer((_) async {});
+      when(() => entity.isLivePhoto).thenReturn(true);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => entity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => File('/photo.heic'));
+      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => File('/motion.mov'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.heic');
+      final uploads = captureFields();
+      final persisted = Completer<void>();
+      var succeeded = false;
+      when(
+        () => mockAssetService.rememberPrivateUpload(any(), any(), any(), any()),
+      ).thenAnswer((_) => persisted.future);
+
+      final upload = sut.uploadManual(
+        [asset],
+        privateTagId: 'private-tag',
+        callbacks: UploadCallbacks(onSuccess: (_, _) => succeeded = true),
+      );
+      await untilCalled(() => mockAssetService.rememberPrivateUpload(any(), any(), any(), any()));
+      expect(succeeded, isFalse);
+      persisted.complete();
+      await upload;
+      expect(succeeded, isTrue);
+
+      expect(uploads.map((upload) => upload['privateTagId']), ['private-tag', 'private-tag']);
+      expect(uploads.map((upload) => upload['privateLivePhotoMotion']), ['true', null]);
+      expect(uploads.last['livePhotoVideoId'], 'remote-1');
+      verify(
+        () => mockAssetService.rememberPrivateUpload(UserStub.admin.id, asset.id, 'remote-2', 'private-checksum'),
+      ).called(1);
+    });
+
     test('should upload the motion part hidden and keep the still image visible', () async {
       final asset = LocalAssetStub.image1;
       final mockEntity = MockAssetEntity();

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import sanitize from 'sanitize-filename';
-import { SALT_ROUNDS } from 'src/constants.js';
+import { ASSET_VISIBILITY_DEPENDENT_PATHS, SALT_ROUNDS } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { UserAdmin } from 'src/database.js';
 import { mapLoginResponse } from 'src/dtos/auth.dto.js';
@@ -66,6 +66,7 @@ import { ViewRepository } from 'src/repositories/view-repository.js';
 import { WebAuthnRepository } from 'src/repositories/webauthn.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
 import type { LoginDetails } from 'src/services/auth.service.js';
 import type { ClassConstructor } from 'src/types.js';
@@ -365,6 +366,26 @@ export class BaseService {
     await this.eventRepository.emit('UserCreate', user);
 
     return user;
+  }
+
+  protected notifyAssetPrivacy(userIds: string[]) {
+    if (userIds.length === 0) {
+      return false;
+    }
+
+    this.resourceRepository.send({
+      userIds,
+      changed: [
+        Resource.assets(),
+        Resource.activities(),
+        Resource.tags(),
+        Resource.timeline(),
+        Resource.sharedLinks(),
+        Resource.stacks(),
+        ...ASSET_VISIBILITY_DEPENDENT_PATHS,
+      ],
+    });
+    return true;
   }
 
   protected async createLoginResponse(

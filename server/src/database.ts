@@ -120,6 +120,8 @@ export type Tag = {
   createdAt: Date;
   updatedAt: Date;
   color: string | null;
+  isPrivate: boolean;
+  systemKey: string | null;
   parentId: string | null;
 };
 
@@ -197,6 +199,7 @@ export type Stack = {
 
 export type AuthSharedLink = {
   id: string;
+  includePrivateAssets?: boolean;
   expiresAt: Date | null;
   userId: string;
   albumId: string | null;
@@ -208,6 +211,7 @@ export type AuthSharedLink = {
 
 export type SharedLink = {
   id: string;
+  includePrivateAssets?: boolean;
   album?: ShallowDehydrateObject<Album> | null;
   albumId: string | null;
   allowDownload: boolean;
@@ -226,6 +230,7 @@ export type SharedLink = {
 
 export type Album = Selectable<AlbumTable> & {
   assets: ShallowDehydrateObject<Selectable<AssetTable>>[];
+  visibleThumbnailAssetId?: string | null;
 };
 
 export type AuthSession = {
@@ -391,7 +396,6 @@ export const columns = {
     'asset.localDateTime',
     'asset.type',
     'asset.status',
-    'asset.visibility',
     'asset.duration',
     'asset.checksum',
     'asset.originalPath',
@@ -439,7 +443,16 @@ export const columns = {
     'quotaSizeInBytes',
     'quotaUsageInBytes',
   ],
-  tag: ['tag.id', 'tag.value', 'tag.createdAt', 'tag.updatedAt', 'tag.color', 'tag.parentId'],
+  tag: [
+    'tag.id',
+    'tag.value',
+    'tag.createdAt',
+    'tag.updatedAt',
+    'tag.color',
+    'tag.isPrivate',
+    'tag.systemKey',
+    'tag.parentId',
+  ],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
   passkey: ['id', 'name', 'userId', 'credentialId', 'transports', 'createdAt', 'updatedAt', 'usedAt'],
   notification: ['id', 'createdAt', 'level', 'type', 'title', 'description', 'data', 'readAt'],
@@ -487,7 +500,6 @@ export const columns = {
     'asset.localDateTime',
     'asset.type',
     'asset.deletedAt',
-    'asset.visibility',
     'asset.duration',
     'asset.livePhotoVideoId',
     'asset.stackId',

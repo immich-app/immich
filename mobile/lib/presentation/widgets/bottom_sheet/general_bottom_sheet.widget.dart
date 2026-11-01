@@ -11,7 +11,6 @@ import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
-import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
@@ -86,7 +85,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
         .new(action: TagAction(source: .timeline)),
         .new(action: EditDateTimeAction(source: .timeline)),
         .new(action: EditLocationAction(source: .timeline)),
-        .new(action: LockAction(source: .timeline)),
+        .new(action: PrivateTagAction(source: .timeline)),
         .new(action: StackAction(source: .timeline)),
         .new(action: CleanupLocalAction(source: .timeline)),
         .new(action: UploadAction(source: .timeline)),

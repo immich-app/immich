@@ -4,6 +4,7 @@ import { mapAsset } from 'src/dtos/asset-response.dto.js';
 import { JobCreateDto } from 'src/dtos/job.dto.js';
 import { AssetType, AssetVisibility, IntegrityReport, JobName, JobStatus, ManualJobName } from 'src/enum.js';
 import { ArgsOf } from 'src/repositories/event.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { JobItem } from 'src/types.js';
 import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
@@ -185,6 +186,10 @@ export class JobService extends BaseService {
         }
 
         await this.jobRepository.queueAll(jobs);
+        if (await this.assetRepository.isPrivate(asset.id)) {
+          this.resourceRepository.send({ userIds: [asset.ownerId], changed: [Resource.tags(), Resource.timeline()] });
+          break;
+        }
         if (asset.visibility === AssetVisibility.Timeline || asset.visibility === AssetVisibility.Archive) {
           this.websocketRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
           if (asset.exifInfo) {

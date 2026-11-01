@@ -724,6 +724,10 @@ export type FoldersResponse = {
     /** Whether folders appear in web sidebar */
     sidebarWeb: boolean;
 };
+export type LockedFolderResponse = {
+    /** Whether the legacy Locked Folder appears in the web sidebar */
+    sidebarWeb: boolean;
+};
 export type MemoriesResponse = {
     /** Memory duration in seconds */
     duration: number;
@@ -773,6 +777,7 @@ export type UserPreferencesResponseDto = {
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     folders: FoldersResponse;
+    lockedFolder?: LockedFolderResponse;
     memories: MemoriesResponse;
     people: PeopleResponse;
     purchase: PurchaseResponse;
@@ -809,6 +814,10 @@ export type FoldersUpdate = {
     /** Whether folders are enabled */
     enabled?: boolean;
     /** Whether folders appear in web sidebar */
+    sidebarWeb?: boolean;
+};
+export type LockedFolderUpdate = {
+    /** Whether the legacy Locked Folder appears in the web sidebar */
     sidebarWeb?: boolean;
 };
 export type MemoriesUpdate = {
@@ -861,6 +870,7 @@ export type UserPreferencesUpdateDto = {
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     folders?: FoldersUpdate;
+    lockedFolder?: LockedFolderUpdate;
     memories?: MemoriesUpdate;
     people?: PeopleUpdate;
     purchase?: PurchaseUpdate;
@@ -923,10 +933,14 @@ export type AlbumResponseDto = {
     description: string | null;
     /** UTC representation of (local) end date (latest asset) */
     endDate?: string;
+    /** Whether the album contains private assets owned by the viewer */
+    hasPrivateAssets?: boolean;
     /** Has shared link */
     hasSharedLink: boolean;
     /** Album ID */
     id: string;
+    /** Share album-owner private assets with album members */
+    includePrivateAssets?: boolean;
     /** Activity feed enabled */
     isActivityEnabled: boolean;
     /** Last modified asset timestamp */
@@ -980,6 +994,8 @@ export type UpdateAlbumDto = {
     albumThumbnailAssetId?: string;
     /** Album description */
     description?: string | null;
+    /** Share album-owner private assets with album members */
+    includePrivateAssets?: boolean;
     /** Enable activity feed */
     isActivityEnabled?: boolean;
     order?: AssetOrder;
@@ -1110,6 +1126,10 @@ export type AssetMediaCreateDto = {
     livePhotoVideoId?: string;
     /** Asset metadata items */
     metadata?: AssetMetadataUpsertItemDto[];
+    /** Upload the motion component of a private Live Photo */
+    privateLivePhotoMotion?: boolean;
+    /** Private tag to apply when saving the asset */
+    privateTagId?: string;
     /** Sidecar file data */
     sidecarData?: Blob;
     visibility?: AssetVisibility;
@@ -1136,10 +1156,13 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     /** Longitude coordinate */
     longitude?: number;
+    preserveLockedTag?: boolean;
     /** Rating in range [1-5] (starred), -1 (rejected), or null (unrated) */
     rating?: number | null;
     /** Time zone (IANA timezone) */
     timeZone?: string;
+    /** Explicitly remove the system private tag when moving to the timeline */
+    unlockLockedFolder?: boolean;
     visibility?: AssetVisibility;
 };
 export type AssetBulkUploadCheckItem = {
@@ -1151,6 +1174,8 @@ export type AssetBulkUploadCheckItem = {
 export type AssetBulkUploadCheckDto = {
     /** Assets to check */
     assets: AssetBulkUploadCheckItem[];
+    /** Check for matching uploads without returning asset IDs or metadata */
+    presenceOnly?: boolean;
 };
 export type AssetBulkUploadCheckResult = {
     action: AssetUploadAction;
@@ -1328,6 +1353,8 @@ export type TagResponseDto = {
     createdAt: string;
     /** Tag ID */
     id: string;
+    /** Whether this tag hides its assets behind private mode */
+    isPrivate?: boolean;
     /** Tag name */
     name: string;
     /** Parent tag ID */
@@ -1407,8 +1434,11 @@ export type UpdateAssetDto = {
     livePhotoVideoId?: string | null;
     /** Longitude coordinate */
     longitude?: number;
+    preserveLockedTag?: boolean;
     /** Rating in range [1-5] (starred), -1 (rejected), or null (unrated) */
     rating?: number | null;
+    /** Explicitly remove the system private tag when moving to the timeline */
+    unlockLockedFolder?: boolean;
     visibility?: AssetVisibility;
 };
 export type CropParameters = {
@@ -2545,6 +2575,8 @@ export type MetadataSearchDto = {
     description?: string;
     /** Filter by encoded video file path */
     encodedVideoPath?: string;
+    /** Exclude private assets even in an elevated session */
+    excludePrivate?: boolean;
     filter?: SearchFilter;
     /** Filter by asset ID */
     id?: string;
@@ -2670,6 +2702,8 @@ export type RandomSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
+    /** Exclude private assets even in an elevated session */
+    excludePrivate?: boolean;
     filter?: SearchFilter;
     /** Filter by encoded status */
     isEncoded?: boolean;
@@ -2735,6 +2769,8 @@ export type SmartSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
+    /** Exclude private assets even in an elevated session */
+    excludePrivate?: boolean;
     filter?: SearchFilter;
     /** Filter by encoded status */
     isEncoded?: boolean;
@@ -2806,6 +2842,8 @@ export type StatisticsSearchDto = {
     createdBefore?: string;
     /** Filter by description text */
     description?: string;
+    /** Exclude private assets even in an elevated session */
+    excludePrivate?: boolean;
     filter?: SearchFilter;
     /** Filter by encoded status */
     isEncoded?: boolean;
@@ -3112,6 +3150,8 @@ export type SharedLinkResponseDto = {
     expiresAt: string | null;
     /** Shared link ID */
     id: string;
+    /** Include link-owner private assets */
+    includePrivateAssets?: boolean;
     /** Encryption key (base64url) */
     key: string;
     /** Has password */
@@ -3137,6 +3177,8 @@ export type SharedLinkCreateDto = {
     description?: string | null;
     /** Expiration date */
     expiresAt?: string | null;
+    /** Include link-owner private assets */
+    includePrivateAssets?: boolean;
     /** Link password */
     password?: string | null;
     /** Show metadata */
@@ -3158,6 +3200,8 @@ export type SharedLinkEditDto = {
     description?: string | null;
     /** Expiration date */
     expiresAt?: string | null;
+    /** Include link-owner private assets */
+    includePrivateAssets?: boolean;
     /** Link password */
     password?: string | null;
     /** Show metadata */
@@ -3241,6 +3285,8 @@ export type ReverseGeocodingStateResponseDto = {
 export type TagCreateDto = {
     /** Tag color (hex) */
     color?: string | null;
+    /** Whether this tag hides its assets behind private mode */
+    isPrivate?: boolean;
     /** Tag name */
     name: string;
     /** Parent tag ID */
@@ -3263,6 +3309,8 @@ export type TagBulkAssetsResponseDto = {
 export type TagUpdateDto = {
     /** Tag color (hex) */
     color?: string | null;
+    /** Whether this tag hides its assets behind private mode */
+    isPrivate?: boolean;
     /** Tag name */
     name?: string;
 };
@@ -6841,12 +6889,13 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * Search large assets
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, excludePrivate, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
+    excludePrivate?: boolean;
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
@@ -6883,6 +6932,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         country,
         createdAfter,
         createdBefore,
+        excludePrivate,
         isEncoded,
         isFavorite,
         isMotion,
