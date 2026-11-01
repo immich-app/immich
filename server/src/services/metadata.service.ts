@@ -32,8 +32,9 @@ import { BaseService } from 'src/services/base.service.js';
 import { getAssetFiles } from 'src/utils/asset.util.js';
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
 import { mergeTimeZone } from 'src/utils/date.js';
+import { toMwgExifToolArgs, toMwgRegionInfo } from 'src/utils/face-region.util.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { batched, isFaceImportEnabled } from 'src/utils/misc.js';
+import { batched, isFaceExportEnabled, isFaceImportEnabled } from 'src/utils/misc.js';
 import { upsertTags } from 'src/utils/tag.js';
 import { Tasks } from 'src/utils/tasks.js';
 
@@ -518,11 +519,42 @@ export class MetadataService extends BaseService {
       isUndefined,
     );
 
-    if (Object.keys(exif).length === 0) {
+    const { metadata } = await this.getConfig({ withCache: true });
+    let writeArgs: string[] | undefined;
+
+    if (isFaceExportEnabled(metadata)) {
+      const faces = await this.personRepository.getFacesForSidecar(id);
+      if (faces.length > 0) {
+        const orientation = asset.exifInfo.orientation ? Number(asset.exifInfo.orientation) : undefined;
+        const dimensions =
+          asset.exifInfo.exifImageWidth && asset.exifInfo.exifImageHeight
+            ? { width: asset.exifInfo.exifImageWidth, height: asset.exifInfo.exifImageHeight }
+            : undefined;
+
+        const regionInfo = toMwgRegionInfo(
+          faces.map((f) => ({
+            ...f,
+            name: f.name || '',
+          })),
+          orientation,
+          dimensions,
+        );
+
+        if (regionInfo) {
+          writeArgs = toMwgExifToolArgs(regionInfo);
+        }
+      }
+    }
+
+    if (Object.keys(exif).length === 0 && (!writeArgs || writeArgs.length === 0)) {
       return JobStatus.Skipped;
     }
 
-    await this.metadataRepository.writeTags(sidecarPath, exif);
+    if (writeArgs) {
+      await this.metadataRepository.writeTags(sidecarPath, exif, writeArgs);
+    } else {
+      await this.metadataRepository.writeTags(sidecarPath, exif);
+    }
 
     if (asset.files.length === 0) {
       await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: sidecarPath });

@@ -263,6 +263,8 @@ export type AdminConfigMapDto = {
     lightStyle: string;
 };
 export type AdminConfigFacesDto = {
+    /** Export */
+    "export"?: boolean;
     /** Import */
     "import": boolean;
 };

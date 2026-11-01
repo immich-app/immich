@@ -139,13 +139,13 @@ export class MetadataRepository {
     return this.exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
-  async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
+  async writeTags(path: string, tags: Partial<Tags>, writeArgs?: string[]): Promise<void> {
     // If exiftool assigns a field with ^= instead of =, empty values will be written too.
     // Since exiftool-vendored doesn't support an option for this, we append the ^ to the name of the tag instead.
     // https://exiftool.org/exiftool_pod.html#:~:text=is%20used%20to%20write%20an%20empty%20string
     const tagsToWrite = Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key}^`, value]));
     try {
-      await this.exiftool.write(path, tagsToWrite);
+      await this.exiftool.write(path, tagsToWrite, writeArgs ? { writeArgs } : undefined);
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }

@@ -105,6 +105,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   metadata: {
     faces: {
       import: false,
+      export: false,
     },
   },
   machineLearning: {
