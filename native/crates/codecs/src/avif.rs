@@ -773,14 +773,21 @@ impl Picture {
         } else {
             (0, (1 << depth) - 1)
         };
+        // Dividing once per value instead of per pixel, as rav1d keeps samples within their depth.
+        let mut table = [T::default(); 4096];
+        for (a, t) in (0..).zip(&mut table[..1 << depth]) {
+            let a = (u32::saturating_sub(a, low).min(span) * max + span / 2) / span;
+            *t = T::try_from(a).ok()?;
+        }
 
         let (plane, stride) = self.plane::<S>(0, rows)?;
         let w = self.width();
         for (row, px) in plane.chunks(stride as usize).zip(rgba.chunks_exact_mut(w)) {
             for (&a, px) in row.iter().zip(px) {
-                let a = (a.into().saturating_sub(low).min(span) * max + span / 2) / span;
-                px[3] = T::try_from(a).ok()?;
+                // Samples are already below 4096, but the remainder drops the bounds check.
+                px[3] = table[a.into() as usize % 4096];
                 if premultiplied {
+                    let a = px[3].into();
                     for c in &mut px[..3] {
                         let straight = ((*c).into() * max + a / 2).checked_div(a).unwrap_or(0);
                         *c = T::try_from(straight.min(max)).ok()?;
