@@ -49,86 +49,20 @@ pub(crate) fn is_avif(data: &[u8]) -> bool {
 /// Decodes the primary image unless cancelled. Grids, essential crops or layers, gray ICC profiles
 /// and HDR outside BT.709, P3 and BT.2020 return None.
 pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> Option<Image> {
-    let container = mp4parse::read_avif(&mut &*data, ParseStrictness::Normal).ok()?;
-
-    let color = Picture::decode(container.primary_item_coded_data()?)?;
-    let alpha = match container.alpha_item_coded_data() {
-        Some(data) => Some(Picture::decode(data)?),
-        None => None,
-    };
-
-    let (w, h, has_alpha) = (color.width(), color.height(), alpha.is_some());
-    if cancelled.load(Ordering::Relaxed)
-        || alpha
-            .as_ref()
-            .is_some_and(|alpha| (alpha.width(), alpha.height()) != (w, h))
-    {
-        return None;
-    }
-
-    // A colr box overrides the color description in the AV1 data (MIAF 7.3.6.4).
-    let (pri, trc, mtrx, full_range) = match container.nclx_colour_information_ptr() {
-        Some(nclx) => {
-            // mp4parse 0.17 keeps these fields private and only hands out this pointer.
-            const _: () = assert!(size_of::<mp4parse::NclxColourInformation>() == 4);
-            // SAFETY: the pointer points into `container`, which outlives this read, at mp4parse's
-            // repr(C) NclxColourInformation: primaries, transfer, matrix and the full range flag, a
-            // byte each.
-            let [pri, trc, mtrx, full_range] = unsafe { nclx.ok()?.cast::<[u8; 4]>().read() };
-            (pri, trc, mtrx, full_range != 0)
-        }
-        // rav1d's enums count by these codes, but fold SMPTE 170M primaries, xvYCC and BT.1361 into
-        // BT.470BG, sRGB and BT.709.
-        None => (
-            color.0.color_primaries() as u8,
-            color.0.transfer_characteristic() as u8,
-            color.0.matrix_coefficients() as u8,
-            color.0.color_range() == pixel::YUVRange::Full,
-        ),
-    };
-
-    let cicp = CicpProfile {
-        // Unspecified primaries and transfer are taken as sRGB.
-        color_primaries: match CicpColorPrimaries::try_from(pri).ok()? {
-            CicpColorPrimaries::Unspecified => CicpColorPrimaries::Bt709,
-            pri => pri,
-        },
-        transfer_characteristics: match TransferCharacteristics::try_from(trc).ok()? {
-            TransferCharacteristics::Unspecified => TransferCharacteristics::Srgb,
-            trc => trc,
-        },
-        matrix_coefficients: MatrixCoefficients::Identity,
-        full_range: true,
-    };
-
-    let icc = container.icc_colour_information().transpose().ok()?;
-    // An ICC profile describes the samples instead.
-    let hdr = icc.is_none() && color::is_hdr(cicp);
-    let keep_space = options.color_space == Target::Source && describable(cicp);
-
-    let range = if full_range {
-        YuvRange::Full
-    } else {
-        YuvRange::Limited
-    };
-    let matrix = matrix(mtrx)?;
-
-    let rotation = container.image_rotation().ok()?;
-    // SAFETY: the pointer is null or points into `container`, which outlives this borrow.
-    let mirror = unsafe { container.image_mirror_ptr().ok()?.as_ref() };
-    let orientation = exif_orientation(rotation, mirror);
+    let avif = Avif::decode(data, cancelled)?;
+    let (cicp, has_alpha, orientation) = (avif.cicp, avif.alpha.is_some(), avif.orientation);
     // The image turns after resizing, so a quarter turn swaps the target's sides first.
     let target_size = options
         .target_size
         .map(|(tw, th)| orientation.dimensions(tw, th));
-    let size = resize::cover((w, h), target_size, options.max_pixel_size);
-    let avif = Avif {
-        color,
-        alpha,
-        range,
-        matrix,
-        premultiplied: container.premultiplied_alpha,
-    };
+    let size = resize::cover(
+        (avif.color.width(), avif.color.height()),
+        target_size,
+        options.max_pixel_size,
+    );
+    // An ICC profile describes the samples instead.
+    let hdr = avif.icc.is_none() && color::is_hdr(cicp);
+    let keep_space = options.color_space == Target::Source && describable(cicp);
 
     // Converting consumes the pictures, which frees them before resizing and turning allocate more.
     if hdr && keep_space {
@@ -139,11 +73,8 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
         });
     }
 
-    let transform = match icc {
-        Some(icc) => match color::icc_to_srgb(icc)? {
-            (transform, Layout::Rgba) => Some(transform),
-            _ => return None,
-        },
+    let transform = match &avif.icc {
+        Some(icc) => Some(Arc::clone(icc)),
         None if color::is_srgb(cicp) || keep_space => None,
         None => Some(cicp_transform(cicp)?),
     };
@@ -162,12 +93,99 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
 struct Avif {
     color: Picture,
     alpha: Option<Picture>,
+    cicp: CicpProfile,
+    /// The transform to sRGB of the ICC profile, if any.
+    icc: Option<Arc<Transform16BitExecutor>>,
     range: YuvRange,
     matrix: Option<YuvStandardMatrix>,
     premultiplied: bool,
+    orientation: Orientation,
 }
 
 impl Avif {
+    /// Decodes the primary item's pictures unless cancelled. Returning frees the container, which
+    /// holds a copy of the file.
+    fn decode(data: &[u8], cancelled: &AtomicBool) -> Option<Self> {
+        let container = mp4parse::read_avif(&mut &*data, ParseStrictness::Normal).ok()?;
+
+        let color = Picture::decode(container.primary_item_coded_data()?)?;
+        let alpha = match container.alpha_item_coded_data() {
+            Some(data) => Some(Picture::decode(data)?),
+            None => None,
+        };
+
+        if cancelled.load(Ordering::Relaxed)
+            || alpha.as_ref().is_some_and(|alpha| {
+                (alpha.width(), alpha.height()) != (color.width(), color.height())
+            })
+        {
+            return None;
+        }
+
+        // A colr box overrides the color description in the AV1 data (MIAF 7.3.6.4).
+        let (pri, trc, mtrx, full_range) = match container.nclx_colour_information_ptr() {
+            Some(nclx) => {
+                // mp4parse 0.17 keeps these fields private and only hands out this pointer.
+                const _: () = assert!(size_of::<mp4parse::NclxColourInformation>() == 4);
+                // SAFETY: the pointer points into `container`, which outlives this read, at
+                // mp4parse's repr(C) NclxColourInformation: primaries, transfer, matrix and the
+                // full range flag, a byte each.
+                let [pri, trc, mtrx, full_range] = unsafe { nclx.ok()?.cast::<[u8; 4]>().read() };
+                (pri, trc, mtrx, full_range != 0)
+            }
+            // rav1d's enums count by these codes, but fold SMPTE 170M primaries, xvYCC and BT.1361
+            // into BT.470BG, sRGB and BT.709.
+            None => (
+                color.0.color_primaries() as u8,
+                color.0.transfer_characteristic() as u8,
+                color.0.matrix_coefficients() as u8,
+                color.0.color_range() == pixel::YUVRange::Full,
+            ),
+        };
+
+        let cicp = CicpProfile {
+            // Unspecified primaries and transfer are taken as sRGB.
+            color_primaries: match CicpColorPrimaries::try_from(pri).ok()? {
+                CicpColorPrimaries::Unspecified => CicpColorPrimaries::Bt709,
+                pri => pri,
+            },
+            transfer_characteristics: match TransferCharacteristics::try_from(trc).ok()? {
+                TransferCharacteristics::Unspecified => TransferCharacteristics::Srgb,
+                trc => trc,
+            },
+            matrix_coefficients: MatrixCoefficients::Identity,
+            full_range: true,
+        };
+
+        let range = if full_range {
+            YuvRange::Full
+        } else {
+            YuvRange::Limited
+        };
+        let matrix = matrix(mtrx)?;
+
+        let rotation = container.image_rotation().ok()?;
+        // SAFETY: the pointer is null or points into `container`, which outlives this borrow.
+        let mirror = unsafe { container.image_mirror_ptr().ok()?.as_ref() };
+        let icc = match container.icc_colour_information().transpose().ok()? {
+            Some(icc) => match color::icc_to_srgb(icc)? {
+                (transform, Layout::Rgba) => Some(transform),
+                _ => return None,
+            },
+            None => None,
+        };
+        Some(Self {
+            color,
+            alpha,
+            cicp,
+            icc,
+            range,
+            matrix,
+            premultiplied: container.premultiplied_alpha,
+            orientation: exif_orientation(rotation, mirror),
+        })
+    }
+
     /// Converts the pictures to premultiplied RGBA16 in their own space, unless cancelled.
     fn into_rgba16(self, cancelled: &AtomicBool) -> Option<Pixels<u16>> {
         let Self {
@@ -176,6 +194,7 @@ impl Avif {
             range,
             matrix,
             premultiplied,
+            ..
         } = self;
         let (w, h, has_alpha) = (color.width(), color.height(), alpha.is_some());
         let mut rgba = Pixels::<u16>::zeroed(w, h, 8)?;
@@ -217,6 +236,7 @@ impl Avif {
             range,
             matrix,
             premultiplied,
+            ..
         } = self;
         let (w, h, has_alpha) = (color.width(), color.height(), alpha.is_some());
         // yuv narrows deeper YUV samples to 8 bits itself, but not deeper gray or RGB ones.
