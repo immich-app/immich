@@ -22,10 +22,10 @@ use crate::color::{
     self, BAND, CicpColorPrimaries, CicpProfile, TRANSFORMS, Target, TransferCharacteristics,
     Transforms,
 };
-use crate::image::{Image, Pixels, Sample, Samples};
+use crate::image::{self, Image, Pixels, Sample, Samples};
 use crate::jxl::srgb_transform;
 use crate::resize;
-use crate::rotate::{Orientation, rotate};
+use crate::rotate::Orientation;
 
 /// Whether `data` starts with a file type box that lists an AVIF brand.
 pub(crate) fn is_avif(data: &[u8]) -> bool {
@@ -132,10 +132,10 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
 
     // Converting consumes the pictures, which frees them before resizing and turning allocate more.
     if hdr && keep_space {
-        let rgba = avif.into_rgba16()?;
+        let rgba = avif.into_rgba16(cancelled)?;
         return Some(Image {
             cicp,
-            samples: Samples::U16(finish(rgba, has_alpha, size, orientation, cancelled)?),
+            samples: Samples::U16(rgba.resize(has_alpha, size)?.rotate(orientation)?),
         });
     }
 
@@ -154,7 +154,7 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
         } else {
             cicp
         },
-        samples: Samples::U8(finish(rgba, has_alpha, size, orientation, cancelled)?),
+        samples: Samples::U8(rgba.resize(has_alpha, size)?.rotate(orientation)?),
     })
 }
 
@@ -168,8 +168,8 @@ struct Avif {
 }
 
 impl Avif {
-    /// Converts the pictures to RGBA16 in their own space.
-    fn into_rgba16(self) -> Option<Pixels<u16>> {
+    /// Converts the pictures to premultiplied RGBA16 in their own space, unless cancelled.
+    fn into_rgba16(self, cancelled: &AtomicBool) -> Option<Pixels<u16>> {
         let Self {
             color,
             alpha,
@@ -177,7 +177,7 @@ impl Avif {
             matrix,
             premultiplied,
         } = self;
-        let (w, h) = (color.width(), color.height());
+        let (w, h, has_alpha) = (color.width(), color.height(), alpha.is_some());
         let mut rgba = Pixels::<u16>::zeroed(w, h, 8)?;
         // Only 8-bit pictures go through RGBA8.
         let staged = if color.bpc() == 8 { BAND.min(h) } else { 0 };
@@ -186,18 +186,26 @@ impl Avif {
             let rows = i * BAND..i * BAND + band.len() / w;
             color.to_rgba12(&rows, &mut rgba8, band.as_flattened_mut(), range, matrix)?;
             if let Some(alpha) = &alpha {
-                alpha.put_alpha(band, premultiplied, &rows)?;
+                // With no transform between, dividing color out and multiplying it back in only
+                // clamps it to alpha.
+                alpha.put_alpha(band, false, &rows)?;
             }
             // 16 bits in the image's own transfer, like the jxl decoder's HDR output.
             for sample in band.as_flattened_mut() {
                 *sample = *sample << 4 | *sample >> 8;
             }
+            if has_alpha && premultiplied {
+                image::clamp(band);
+            } else if has_alpha {
+                image::premultiply(band);
+            }
         }
-        Some(rgba)
+        // Resizing costs ~10% of a thumbnail decode, wasted on tiles that scrolled away meanwhile.
+        (!cancelled.load(Ordering::Relaxed)).then_some(rgba)
     }
 
-    /// Converts the pictures to RGBA8 through `transform`, or else in their own space, unless
-    /// cancelled.
+    /// Converts the pictures to premultiplied RGBA8 through `transform`, or else in their own
+    /// space, unless cancelled.
     fn into_rgba8(
         self,
         transform: Option<&Transform16BitExecutor>,
@@ -210,21 +218,23 @@ impl Avif {
             matrix,
             premultiplied,
         } = self;
-        let (w, h) = (color.width(), color.height());
+        let (w, h, has_alpha) = (color.width(), color.height(), alpha.is_some());
         // yuv narrows deeper YUV samples to 8 bits itself, but not deeper gray or RGB ones.
         let direct = transform.is_none()
             && (color.bpc() == 8 || matrix.is_some() && color.layout() != PixelLayout::I400);
 
         let mut rgba = Pixels::<u8>::zeroed(w, h, 4)?;
         if direct {
-            color.to_rgba8(
-                alpha.as_ref(),
-                premultiplied,
-                &(0..h),
-                rgba.bytes_mut(),
-                range,
-                matrix,
-            )?;
+            color.to_rgba8(&(0..h), rgba.bytes_mut(), range, matrix)?;
+            if let Some(alpha) = &alpha {
+                // Dividing 8-bit color out and multiplying it back in only clamps it to alpha.
+                alpha.put_alpha(rgba.pixels_mut(), false, &(0..h))?;
+                if premultiplied {
+                    image::clamp(rgba.pixels_mut());
+                } else {
+                    image::premultiply(rgba.pixels_mut());
+                }
+            }
         } else {
             // The transform, and narrowing deeper gray or RGB samples, read 12-bit ones, which take
             // a band of rows at a time.
@@ -239,7 +249,8 @@ impl Avif {
                 let bytes = band.as_flattened_mut();
                 color.to_rgba12(&rows, bytes, wide.as_flattened_mut(), range, matrix)?;
                 if let Some(alpha) = &alpha {
-                    alpha.put_alpha(wide, premultiplied, &rows)?;
+                    // Only the transform needs color divided out of premultiplied alpha.
+                    alpha.put_alpha(wide, premultiplied && transform.is_some(), &rows)?;
                 }
                 match transform {
                     Some(transform) => {
@@ -250,9 +261,15 @@ impl Avif {
                     }
                     None => color::narrow(wide.as_flattened(), bytes),
                 }
+                if has_alpha && premultiplied && transform.is_none() {
+                    image::clamp(band);
+                } else if has_alpha {
+                    image::premultiply(band);
+                }
             }
         }
-        Some(rgba)
+        // Resizing costs ~10% of a thumbnail decode, wasted on tiles that scrolled away meanwhile.
+        (!cancelled.load(Ordering::Relaxed)).then_some(rgba)
     }
 }
 
@@ -331,30 +348,6 @@ fn exif_orientation(rotation: ImageRotation, mirror: Option<&ImageMirror>) -> Or
         (ImageRotation::D180, None) => Orientation::Rotate180,
         (ImageRotation::D270, None) => Orientation::Rotate90,
     }
-}
-
-/// Premultiplies `rgba`, downscales it to `size` and turns it to `orientation`, unless cancelled.
-fn finish<T: Sample>(
-    rgba: Pixels<T>,
-    alpha: bool,
-    size: Option<(usize, usize)>,
-    orientation: Orientation,
-    cancelled: &AtomicBool,
-) -> Option<Pixels<T>> {
-    if cancelled.load(Ordering::Relaxed) {
-        return None;
-    }
-
-    let rgba = rgba.premultiply_resize(alpha, size)?;
-    if matches!(orientation, Orientation::Normal) {
-        return Some(rgba);
-    }
-
-    let (w, h) = (rgba.width(), rgba.height());
-    let (ow, oh) = orientation.dimensions(w, h);
-    let mut out = Pixels::zeroed(ow, oh, size_of::<[T; 4]>())?;
-    rotate(rgba.pixels(), w, w, h, orientation, out.pixels_mut());
-    Some(out)
 }
 
 /// The number of tiles in the first frame of AV1 `data`, if it's a key or intra-only frame.
@@ -634,11 +627,9 @@ impl Picture {
         })
     }
 
-    /// Converts `rows` of a picture and its `alpha` to RGBA8 in `rgba`, a deeper one only from YUV.
+    /// Converts `rows` of a picture to RGBA8 in `rgba`, a deeper one only from YUV.
     fn to_rgba8(
         &self,
-        alpha: Option<&Self>,
-        premultiplied: bool,
         rows: &Range<usize>,
         rgba: &mut [u8],
         range: YuvRange,
@@ -677,11 +668,7 @@ impl Picture {
             }
             .ok()?;
         }
-
-        match alpha {
-            Some(alpha) => alpha.put_alpha(rgba.as_chunks_mut().0, premultiplied, rows),
-            None => Some(()),
-        }
+        Some(())
     }
 
     /// Converts `rows` of a picture to 12-bit RGBA in `wide`, an 8-bit one through RGBA8 in `rgba`.
@@ -694,7 +681,7 @@ impl Picture {
         matrix: Option<YuvStandardMatrix>,
     ) -> Option<()> {
         if self.bpc() == 8 {
-            self.to_rgba8(None, false, rows, rgba, range, matrix)?;
+            self.to_rgba8(rows, rgba, range, matrix)?;
             for (wide, &v) in wide.iter_mut().zip(&*rgba) {
                 let v = u16::from(v);
                 *wide = v << 4 | v >> 4;
@@ -831,7 +818,7 @@ mod tests {
             (D270, Some(TopBottom), [4, 2, 3, 1]),
         ] {
             let orientation = exif_orientation(rotation, mirror.as_ref());
-            let out = finish(square(), false, None, orientation, &AtomicBool::new(false)).unwrap();
+            let out = square().rotate(orientation).unwrap();
             let firsts: Vec<_> = out.pixels().iter().map(|px| px[0]).collect();
             assert_eq!(firsts, expected);
         }
