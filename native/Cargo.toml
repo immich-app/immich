@@ -30,6 +30,6 @@ lto = true
 codegen-units = 1
 strip = true
 
-# rav1d decodes on the caller's thread, whose stack it overflows on Android when unoptimized.
+# rav1d decodes untiled images on the caller's thread, whose stack it overflows on Android when unoptimized.
 [profile.dev.package.rav1d]
 opt-level = 3

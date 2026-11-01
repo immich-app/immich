@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+use std::ptr::NonNull;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
 
@@ -8,7 +10,10 @@ use jxl::api::{
 use moxcms::{ColorProfile, Layout, MatrixCoefficients, Transform16BitExecutor};
 use mp4parse::{ImageMirror, ImageRotation, ParseStrictness};
 use quick_cache::sync::Cache;
-use rav1d::{Decoder, PixelLayout, PlanarImageComponent, Settings, pixel};
+use rav1d::include::dav1d::headers::{DAV1D_ADAPTIVE, DAV1D_ON, Dav1dSequenceHeader};
+use rav1d::{
+    Decoder, PixelLayout, PlanarImageComponent, Settings, dav1d_parse_sequence_header, pixel,
+};
 use yuv::{YuvGrayImage, YuvPlanarImage, YuvRange, YuvStandardMatrix};
 
 use crate::Options;
@@ -280,6 +285,198 @@ fn finish<T: Sample>(
     Some(out)
 }
 
+/// The number of tiles in the first frame of AV1 `data`, if it's a key or intra-only frame.
+fn tiles(mut data: &[u8]) -> Option<u32> {
+    let mut sequence = None;
+    // An OBU leads with its type and flags, then the temporal and spatial layer of its frame, as
+    // the bits an operating_point_idc sets, and its size (AV1 5.3).
+    while let [header, rest @ ..] = data {
+        let (layer, rest) = match (header & 4, rest) {
+            (0, rest) => (0x101, rest),
+            (_, [ids, rest @ ..]) => (1 << (ids >> 5) | 1 << ((ids >> 3 & 3) + 8), rest),
+            _ => return None,
+        };
+        let (payload, next) = if header & 2 == 0 {
+            (rest, &[][..])
+        } else {
+            let (leb128, rest) = rest.split_at(rest.iter().take(8).position(|&b| b < 128)? + 1);
+            let size = leb128.iter().rfold(0, |n, b| n << 7 | usize::from(b & 127));
+            rest.split_at_checked(size)?
+        };
+        match header >> 3 & 15 {
+            1 => sequence = Some(&data[..data.len() - next.len()]),
+            3 | 6 => return frame_tiles(&sequence_header(sequence?)?, payload, layer),
+            _ => {}
+        }
+        data = next;
+    }
+    None
+}
+
+/// rav1d's reading of the sequence header OBU `obu`, or None where its decoder fails too.
+fn sequence_header(obu: &[u8]) -> Option<Dav1dSequenceHeader> {
+    let mut sequence = MaybeUninit::uninit();
+    // SAFETY: rav1d reads the `obu.len()` bytes of `obu`, and writes a whole header to `sequence`
+    // when it returns 0. A panic in it aborts, as it can't unwind out of extern "C". The one it's
+    // known for, in builds with overflow checks, is on an OBU cut off before its payload, which
+    // tiles() never passes.
+    unsafe {
+        let parsed = dav1d_parse_sequence_header(
+            NonNull::new(sequence.as_mut_ptr()),
+            Some(NonNull::from(obu).cast()),
+            obu.len(),
+        );
+        (parsed.0 == 0).then(|| sequence.assume_init())
+    }
+}
+
+/// The number of tiles in `frame`, the payload of a frame header OBU from `layer`, after
+/// `sequence`, read up to tile_info (AV1 5.9).
+fn frame_tiles(sequence: &Dav1dSequenceHeader, frame: &[u8], layer: u16) -> Option<u32> {
+    let reduced = sequence.reduced_still_picture_header != 0;
+    // Frames give a buffer_removal_time for each operating point with a decoder model that decodes
+    // their layer, and shown ones, under a decoder model, a presentation time unless pictures are
+    // evenly spaced. rav1d zeroes the lengths of fields the sequence header leaves out.
+    let removals = sequence.operating_points[..usize::from(sequence.num_operating_points)]
+        .iter()
+        .filter(|op| {
+            op.decoder_model_param_present != 0 && (op.idc == 0 || op.idc & layer == layer)
+        })
+        .count();
+    let presentation_bits = if sequence.equal_picture_interval != 0 {
+        0
+    } else {
+        usize::from(sequence.frame_presentation_delay_length)
+    };
+    let order_hint_bits = usize::from(sequence.order_hint_n_bits);
+    let sb = if sequence.sb128 != 0 { 128 } else { 64 };
+
+    let mut b = Bits(frame, 0);
+    let (key_shown, error_resilient) = if reduced {
+        (true, true)
+    } else {
+        // Stills are key or intra-only frames, not shown again.
+        let (false, frame_type @ (0 | 2)) = (b.bit()?, b.f(2)?) else {
+            return None;
+        };
+        let show = b.bit()?;
+        b.skip(if show { presentation_bits } else { 1 });
+        let key_shown = frame_type == 0 && show;
+        (key_shown, key_shown || b.bit()?)
+    };
+    let disable_cdf_update = b.bit()?;
+    // Adaptive leaves screen content tools to each frame.
+    let screen_content = match sequence.screen_content_tools {
+        DAV1D_ADAPTIVE => b.bit()?,
+        tools => tools == DAV1D_ON,
+    };
+    if screen_content && sequence.force_integer_mv == DAV1D_ADAPTIVE {
+        b.skip(1);
+    }
+    b.skip(sequence.frame_id_n_bits.into());
+    let size_override = !reduced && b.bit()?;
+    b.skip(order_hint_bits);
+    if sequence.decoder_model_info_present != 0 && b.bit()? {
+        b.skip(removals * usize::from(sequence.buffer_removal_delay_length));
+    }
+    if !key_shown && b.f(8)? != 0xff && error_resilient {
+        b.skip(8 * order_hint_bits);
+    }
+    let (width, height) = if size_override {
+        (
+            b.f(sequence.width_n_bits.into())? + 1,
+            b.f(sequence.height_n_bits.into())? + 1,
+        )
+    } else {
+        (sequence.max_width as u32, sequence.max_height as u32)
+    };
+    let denominator = if sequence.super_res != 0 && b.bit()? {
+        b.f(3)? + 9
+    } else {
+        8
+    };
+    if b.bit()? {
+        b.skip(32);
+    }
+    if screen_content && denominator == 8 {
+        b.skip(1);
+    }
+    if !reduced && !disable_cdf_update {
+        b.skip(1);
+    }
+
+    // Tiles split the superblocks of the width superres downscales to.
+    let cols = ((width * 8 + denominator / 2) / denominator).div_ceil(sb);
+    let rows = height.div_ceil(sb);
+    let tile_log2 =
+        |size: u32, target: u32| target.div_ceil(size).next_power_of_two().trailing_zeros();
+    let max_width = 4096 / sb;
+    let min_cols_log2 = tile_log2(max_width, cols);
+    let min_log2 = min_cols_log2.max(tile_log2(4096 * 2304 / (sb * sb), cols * rows));
+    let (tile_cols, tile_rows) = if b.bit()? {
+        let mut cols_log2 = min_cols_log2;
+        while cols_log2 < tile_log2(1, cols.min(64)) && b.bit()? {
+            cols_log2 += 1;
+        }
+        let mut rows_log2 = min_log2.saturating_sub(cols_log2);
+        while rows_log2 < tile_log2(1, rows.min(64)) && b.bit()? {
+            rows_log2 += 1;
+        }
+        let tiles = |sbs: u32, log2: u32| sbs.div_ceil(sbs.div_ceil(1 << log2));
+        (tiles(cols, cols_log2), tiles(rows, rows_log2))
+    } else {
+        let (tile_cols, widest) = b.tile_sizes(cols, max_width)?;
+        let area = if min_log2 > 0 {
+            (cols * rows) >> (min_log2 + 1)
+        } else {
+            cols * rows
+        };
+        (tile_cols, b.tile_sizes(rows, (area / widest).max(1))?.0)
+    };
+    Some(tile_cols * tile_rows)
+}
+
+/// The big-endian bit fields of AV1 headers, from a bit position.
+struct Bits<'a>(&'a [u8], usize);
+
+impl Bits<'_> {
+    /// The next `n` bits, or None past the end.
+    fn f(&mut self, n: u32) -> Option<u32> {
+        (0..n).try_fold(0, |value, _| {
+            let bit = self.0.get(self.1 / 8)? >> (7 - self.1 % 8) & 1;
+            self.1 += 1;
+            Some(value << 1 | u32::from(bit))
+        })
+    }
+
+    fn bit(&mut self) -> Option<bool> {
+        Some(self.f(1)? == 1)
+    }
+
+    /// Skips `n` bits, leaving reads past the end to fail.
+    fn skip(&mut self, n: usize) {
+        self.1 += n;
+    }
+
+    /// A value below `n` in the fewest bits that tell them apart.
+    fn ns(&mut self, n: u32) -> Option<u32> {
+        let w = n.ilog2() + 1;
+        let m = (1 << w) - n;
+        let v = self.f(w - 1)?;
+        Some(if v < m { v } else { (v << 1) - m + self.f(1)? })
+    }
+
+    /// The number and the largest of the tiles of up to `max` superblocks that split `sbs`.
+    fn tile_sizes(&mut self, sbs: u32, max: u32) -> Option<(u32, u32)> {
+        let (mut start, mut count, mut largest) = (0, 0, 0);
+        while start < sbs {
+            let size = self.ns(max.min(sbs - start))? + 1;
+            (start, count, largest) = (start + size, count + 1, largest.max(size));
+        }
+        Some((count, largest))
+    }
+}
+
 struct Picture(rav1d::Picture);
 
 impl Picture {
@@ -289,10 +486,13 @@ impl Picture {
             return None;
         }
         let mut settings = Settings::new();
-        // Images already decode side by side, and a panic on this thread unwinds to the caller where
-        // one on a rav1d worker would leave it waiting. One thread is also one frame context, which
-        // has the frame once its data is in.
-        settings.set_n_threads(1);
+        // rav1d's workers decode a frame's tiles side by side, but slow down images of one tile, so
+        // only tiled ones get them, four of them as that did best on phones decoding two images at
+        // once. They don't catch panics, so one on a worker leaves this thread waiting. A frame
+        // delay of 1 keeps one frame context, which has the frame once its data is in.
+        let tiled = tiles(item).is_some_and(|n| n > 1);
+        settings.set_n_threads(if tiled { 4 } else { 1 });
+        settings.set_max_frame_delay(1);
         // A scalable image comes back as its top layer alone, not one picture per layer.
         settings.set_all_layers(false);
         let mut decoder = Decoder::with_settings(&settings).ok()?;
