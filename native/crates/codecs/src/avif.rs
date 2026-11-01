@@ -1,4 +1,5 @@
 use std::mem::MaybeUninit;
+use std::ops::Range;
 use std::ptr::NonNull;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
@@ -18,7 +19,8 @@ use yuv::{YuvGrayImage, YuvPlanarImage, YuvRange, YuvStandardMatrix};
 
 use crate::Options;
 use crate::color::{
-    self, CicpColorPrimaries, CicpProfile, TRANSFORMS, Target, TransferCharacteristics, Transforms,
+    self, BAND, CicpColorPrimaries, CicpProfile, TRANSFORMS, Target, TransferCharacteristics,
+    Transforms,
 };
 use crate::image::{Image, Pixels, Sample, Samples};
 use crate::jxl::srgb_transform;
@@ -122,16 +124,19 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
 
     if hdr && keep_space {
         let mut rgba = Pixels::<u16>::zeroed(w, h, 8)?;
-        color.to_rgba12(
-            alpha.as_ref(),
-            avif.premultiplied_alpha,
-            rgba.bytes_mut(),
-            range,
-            matrix,
-        )?;
-        // 16 bits in the image's own transfer, like the jxl decoder's HDR output.
-        for sample in rgba.pixels_mut().as_flattened_mut() {
-            *sample = *sample << 4 | *sample >> 8;
+        // Only 8-bit pictures go through RGBA8.
+        let staged = if color.bpc() == 8 { BAND.min(h) } else { 0 };
+        let mut rgba8 = vec![0; w * 4 * staged];
+        for (i, band) in rgba.pixels_mut().chunks_mut(w * BAND).enumerate() {
+            let rows = i * BAND..i * BAND + band.len() / w;
+            color.to_rgba12(&rows, &mut rgba8, band.as_flattened_mut(), range, matrix)?;
+            if let Some(alpha) = &alpha {
+                alpha.put_alpha(band, avif.premultiplied_alpha, &rows)?;
+            }
+            // 16 bits in the image's own transfer, like the jxl decoder's HDR output.
+            for sample in band.as_flattened_mut() {
+                *sample = *sample << 4 | *sample >> 8;
+            }
         }
         return Some(Image {
             cicp,
@@ -144,34 +149,48 @@ pub(crate) fn decode(data: &[u8], options: &Options, cancelled: &AtomicBool) -> 
             (transform, Layout::Rgba) => Some(transform),
             _ => return None,
         },
-        // yuv narrows deeper YUV samples to 8 bits itself, but not deeper gray or RGB ones.
-        None if (color.bpc() == 8 || matrix.is_some() && color.layout() != PixelLayout::I400)
-            && (color::is_srgb(cicp) || keep_space) =>
-        {
-            None
-        }
+        None if color::is_srgb(cicp) || keep_space => None,
         None => Some(cicp_transform(cicp)?),
     };
+    // yuv narrows deeper YUV samples to 8 bits itself, but not deeper gray or RGB ones.
+    let direct = transform.is_none()
+        && (color.bpc() == 8 || matrix.is_some() && color.layout() != PixelLayout::I400);
 
-    // The 12-bit samples for the transform need twice the room.
-    let mut rgba = Pixels::<u8>::zeroed(w, h, if transform.is_some() { 8 } else { 4 })?;
-    match &transform {
-        None => color.to_rgba8(
+    let mut rgba = Pixels::<u8>::zeroed(w, h, 4)?;
+    if direct {
+        color.to_rgba8(
             alpha.as_ref(),
             avif.premultiplied_alpha,
+            &(0..h),
             rgba.bytes_mut(),
             range,
             matrix,
-        )?,
-        Some(transform) => {
-            color.to_rgba12(
-                alpha.as_ref(),
-                avif.premultiplied_alpha,
-                rgba.bytes_mut(),
-                range,
-                matrix,
-            )?;
-            color::convert_bands(transform.as_ref(), &mut rgba, w * 8, cancelled)?;
+        )?;
+    } else {
+        // The transform, and narrowing deeper gray or RGB samples, read 12-bit ones, which take a
+        // band of rows at a time.
+        let mut wide = vec![[0; 4]; w * BAND.min(h)];
+        let mut converted = vec![0; w * 4 * BAND.min(h)];
+        for (i, band) in rgba.pixels_mut().chunks_mut(w * BAND).enumerate() {
+            if cancelled.load(Ordering::Relaxed) {
+                return None;
+            }
+            let rows = i * BAND..i * BAND + band.len() / w;
+            let wide = &mut wide[..band.len()];
+            let bytes = band.as_flattened_mut();
+            color.to_rgba12(&rows, bytes, wide.as_flattened_mut(), range, matrix)?;
+            if let Some(alpha) = &alpha {
+                alpha.put_alpha(wide, avif.premultiplied_alpha, &rows)?;
+            }
+            match &transform {
+                Some(transform) => {
+                    transform
+                        .transform(wide.as_flattened(), &mut converted[..bytes.len()])
+                        .ok()?;
+                    color::narrow(&converted, bytes);
+                }
+                None => color::narrow(wide.as_flattened(), bytes),
+            }
         }
     }
     Some(Image {
@@ -517,12 +536,13 @@ impl Picture {
         self.0.pixel_layout()
     }
 
-    /// Plane `i` as samples of `T`, and its stride in samples.
-    fn plane<T: Sample>(&self, i: usize) -> Option<(&[T], u32)> {
-        let rows = if i > 0 && self.layout() == PixelLayout::I420 {
-            self.height().div_ceil(2)
+    /// `rows` of plane `i` as samples of `T`, and its stride in samples.
+    fn plane<T: Sample>(&self, i: usize, rows: &Range<usize>) -> Option<(&[T], u32)> {
+        // Bands start on even rows, so each has its subsampled chroma rows to itself.
+        let (start, end) = if i > 0 && self.layout() == PixelLayout::I420 {
+            (rows.start / 2, rows.end.div_ceil(2))
         } else {
-            self.height()
+            (rows.start, rows.end)
         };
         let component = PlanarImageComponent::try_from(i).ok()?;
         // rav1d documents the stride in pixels, but gives bytes.
@@ -532,13 +552,13 @@ impl Picture {
             return None;
         };
         // The plane runs on past the picture's rows.
-        Some((plane.get(..stride * rows)?, stride as u32))
+        Some((plane.get(stride * start..stride * end)?, stride as u32))
     }
 
-    fn planar<T: Sample>(&self) -> Option<YuvPlanarImage<'_, T>> {
-        let (y_plane, y_stride) = self.plane(0)?;
-        let (u_plane, u_stride) = self.plane(1)?;
-        let (v_plane, v_stride) = self.plane(2)?;
+    fn planar<T: Sample>(&self, rows: &Range<usize>) -> Option<YuvPlanarImage<'_, T>> {
+        let (y_plane, y_stride) = self.plane(0, rows)?;
+        let (u_plane, u_stride) = self.plane(1, rows)?;
+        let (v_plane, v_stride) = self.plane(2, rows)?;
         Some(YuvPlanarImage {
             y_plane,
             y_stride,
@@ -547,25 +567,26 @@ impl Picture {
             v_plane,
             v_stride,
             width: self.width() as u32,
-            height: self.height() as u32,
+            height: rows.len() as u32,
         })
     }
 
-    fn gray<T: Sample>(&self) -> Option<YuvGrayImage<'_, T>> {
-        let (y_plane, y_stride) = self.plane(0)?;
+    fn gray<T: Sample>(&self, rows: &Range<usize>) -> Option<YuvGrayImage<'_, T>> {
+        let (y_plane, y_stride) = self.plane(0, rows)?;
         Some(YuvGrayImage {
             y_plane,
             y_stride,
             width: self.width() as u32,
-            height: self.height() as u32,
+            height: rows.len() as u32,
         })
     }
 
-    /// Converts a picture and its `alpha` to RGBA8 at the front of `rgba`, a deeper one only from YUV.
+    /// Converts `rows` of a picture and its `alpha` to RGBA8 in `rgba`, a deeper one only from YUV.
     fn to_rgba8(
         &self,
         alpha: Option<&Self>,
         premultiplied: bool,
+        rows: &Range<usize>,
         rgba: &mut [u8],
         range: YuvRange,
         matrix: Option<YuvStandardMatrix>,
@@ -581,57 +602,51 @@ impl Picture {
                 (PixelLayout::I444, false) => yuv::i412_to_rgba,
                 _ => return None,
             };
-            convert(&self.planar()?, rgba, stride, range, matrix?).ok()?;
+            convert(&self.planar(rows)?, rgba, stride, range, matrix?).ok()?;
         } else {
             match (self.layout(), matrix) {
                 (PixelLayout::I400, Some(matrix)) => {
-                    yuv::yuv400_to_rgba(&self.gray()?, rgba, stride, range, matrix)
+                    yuv::yuv400_to_rgba(&self.gray(rows)?, rgba, stride, range, matrix)
                 }
                 (PixelLayout::I420, Some(matrix)) => {
-                    yuv::yuv420_to_rgba(&self.planar()?, rgba, stride, range, matrix)
+                    yuv::yuv420_to_rgba(&self.planar(rows)?, rgba, stride, range, matrix)
                 }
                 (PixelLayout::I422, Some(matrix)) => {
-                    yuv::yuv422_to_rgba(&self.planar()?, rgba, stride, range, matrix)
+                    yuv::yuv422_to_rgba(&self.planar(rows)?, rgba, stride, range, matrix)
                 }
                 (PixelLayout::I444, Some(matrix)) => {
-                    yuv::yuv444_to_rgba(&self.planar()?, rgba, stride, range, matrix)
+                    yuv::yuv444_to_rgba(&self.planar(rows)?, rgba, stride, range, matrix)
                 }
-                (PixelLayout::I444, None) => yuv::gbr_to_rgba(&self.planar()?, rgba, stride, range),
+                (PixelLayout::I444, None) => {
+                    yuv::gbr_to_rgba(&self.planar(rows)?, rgba, stride, range)
+                }
                 _ => return None,
             }
             .ok()?;
         }
 
         match alpha {
-            Some(alpha) => alpha.put_alpha(rgba.as_chunks_mut().0, premultiplied),
+            Some(alpha) => alpha.put_alpha(rgba.as_chunks_mut().0, premultiplied, rows),
             None => Some(()),
         }
     }
 
-    /// Converts a picture and its `alpha` to 12-bit RGBA, which takes all of `rgba`.
+    /// Converts `rows` of a picture to 12-bit RGBA in `wide`, an 8-bit one through RGBA8 in `rgba`.
     fn to_rgba12(
         &self,
-        alpha: Option<&Self>,
-        premultiplied: bool,
+        rows: &Range<usize>,
         rgba: &mut [u8],
+        wide: &mut [u16],
         range: YuvRange,
         matrix: Option<YuvStandardMatrix>,
     ) -> Option<()> {
         if self.bpc() == 8 {
-            self.to_rgba8(None, false, rgba, range, matrix)?;
-            // Widening from the back only overwrites bytes already read.
-            for i in (0..rgba.len() / 2).rev() {
-                let v = u16::from(rgba[i]);
-                [rgba[2 * i], rgba[2 * i + 1]] = (v << 4 | v >> 4).to_ne_bytes();
+            self.to_rgba8(None, false, rows, rgba, range, matrix)?;
+            for (wide, &v) in wide.iter_mut().zip(&*rgba) {
+                let v = u16::from(v);
+                *wide = v << 4 | v >> 4;
             }
-        }
-
-        // SAFETY: any two bytes are a valid u16.
-        let ([], rgba, []) = (unsafe { rgba.align_to_mut::<u16>() }) else {
-            return None;
-        };
-
-        if self.bpc() > 8 {
+        } else {
             let stride = self.width() as u32 * 4;
             let ten = self.bpc() == 10;
             match (self.layout(), matrix) {
@@ -641,7 +656,7 @@ impl Picture {
                     } else {
                         yuv::y012_to_rgba12
                     };
-                    convert(&self.gray()?, rgba, stride, range, matrix)
+                    convert(&self.gray(rows)?, wide, stride, range, matrix)
                 }
                 (layout, Some(matrix)) => {
                     let convert = match (layout, ten) {
@@ -652,7 +667,7 @@ impl Picture {
                         (_, true) => yuv::i410_to_rgba10,
                         (_, false) => yuv::i412_to_rgba12,
                     };
-                    convert(&self.planar()?, rgba, stride, range, matrix)
+                    convert(&self.planar(rows)?, wide, stride, range, matrix)
                 }
                 (PixelLayout::I444, None) => {
                     let convert = if ten {
@@ -660,36 +675,34 @@ impl Picture {
                     } else {
                         yuv::gb12_to_rgba12
                     };
-                    convert(&self.planar()?, rgba, stride, range)
+                    convert(&self.planar(rows)?, wide, stride, range)
                 }
                 _ => return None,
             }
             .ok()?;
 
             if ten {
-                for sample in &mut *rgba {
+                for sample in wide {
                     *sample = *sample << 2 | *sample >> 8;
                 }
             }
         }
-
-        match alpha {
-            Some(alpha) => alpha.put_alpha(rgba.as_chunks_mut().0, premultiplied),
-            None => Some(()),
-        }
+        Some(())
     }
 
-    /// Writes this monochrome picture into the alpha of `rgba`, at the depth of its samples, and
-    /// divides it out of color that was `premultiplied`, as the steps after expect straight color.
+    /// Writes `rows` of this monochrome picture into the alpha of `rgba`, at the depth of its
+    /// samples, and divides it out of color that was `premultiplied`, as the steps after expect
+    /// straight color.
     fn put_alpha<T: Sample + Into<u32> + TryFrom<u32>>(
         &self,
         rgba: &mut [[T; 4]],
         premultiplied: bool,
+        rows: &Range<usize>,
     ) -> Option<()> {
         if self.bpc() == 8 {
-            self.put_alpha_from::<u8, T>(rgba, premultiplied)
+            self.put_alpha_from::<u8, T>(rgba, premultiplied, rows)
         } else {
-            self.put_alpha_from::<u16, T>(rgba, premultiplied)
+            self.put_alpha_from::<u16, T>(rgba, premultiplied, rows)
         }
     }
 
@@ -697,6 +710,7 @@ impl Picture {
         &self,
         rgba: &mut [[T; 4]],
         premultiplied: bool,
+        rows: &Range<usize>,
     ) -> Option<()> {
         // 16-bit pixels here hold 12-bit samples.
         let max = if size_of::<T>() == 1 { 255 } else { 4095 };
@@ -707,7 +721,7 @@ impl Picture {
             (0, (1 << depth) - 1)
         };
 
-        let (plane, stride) = self.plane::<S>(0)?;
+        let (plane, stride) = self.plane::<S>(0, rows)?;
         let w = self.width();
         for (row, px) in plane.chunks(stride as usize).zip(rgba.chunks_exact_mut(w)) {
             for (&a, px) in row.iter().zip(px) {

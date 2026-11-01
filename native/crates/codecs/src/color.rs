@@ -48,6 +48,9 @@ pub(crate) type Transforms<K> = Cache<K, (Arc<Transform16BitExecutor>, Layout)>;
 
 pub(crate) const TRANSFORMS: usize = 8;
 
+/// Rows a transform converts at a time, which keeps a band's samples in cache.
+pub(crate) const BAND: usize = 64;
+
 /// [`to_srgb`], built once per distinct profile.
 pub(crate) fn icc_to_srgb(icc: &[u8]) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
     static ICCS: LazyLock<Transforms<Vec<u8>>> = LazyLock::new(|| Cache::new(TRANSFORMS));
@@ -86,13 +89,12 @@ pub(crate) fn convert_bands(
     let (w, h) = (rgba.width(), rgba.height());
     let buf = rgba.bytes_mut();
     // Narrowing in place keeps peak memory at the wide decode plus one band.
-    let rows = 64;
-    let mut converted = vec![0u16; w * 4 * rows.min(h)];
-    for y in (0..h).step_by(rows) {
+    let mut converted = vec![0u16; w * 4 * BAND.min(h)];
+    for y in (0..h).step_by(BAND) {
         if cancelled.load(Ordering::Relaxed) {
             return None;
         }
-        let n = rows.min(h - y);
+        let n = BAND.min(h - y);
         let band = &buf[y * stride..][..n * stride];
         // SAFETY: any two bytes are a valid u16.
         let ([], src, []) = (unsafe { band.align_to::<u16>() }) else {
@@ -100,11 +102,17 @@ pub(crate) fn convert_bands(
         };
         transform.transform(src, &mut converted[..n * w * 4]).ok()?;
         // Pixels decode at least as wide as RGBA8, so this only overwrites converted rows.
-        let narrowed = &mut buf[y * w * 4..][..n * w * 4];
-        for (dst, &src) in narrowed.iter_mut().zip(&converted) {
-            const NARROW: u32 = ((255 << 16) + 4095 / 2) / 4095;
-            *dst = ((u32::from(src) * NARROW + (1 << 15)) >> 16) as u8;
-        }
+        narrow(&converted, &mut buf[y * w * 4..][..n * w * 4]);
     }
     Some(())
+}
+
+/// Rounds 12-bit samples to 8 bits.
+pub(crate) fn narrow(wide: &[u16], narrowed: &mut [u8]) {
+    const NARROW: u32 = ((255 << 16) + 4095 / 2) / 4095;
+    for (dst, &src) in narrowed.iter_mut().zip(wide) {
+        // Adding 8 first rounds every 12-bit value like adding half after scaling would, and the
+        // min, which never applies, lets the result narrow with a saturating instruction.
+        *dst = (((u32::from(src + 8) * NARROW) >> 16) as u16).min(255) as u8;
+    }
 }
