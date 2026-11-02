@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/passkey.action.dart';
 
@@ -10,13 +8,9 @@ class PasskeySettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: [
+      children: const [
         Padding(
-          padding: const .fromLTRB(16, 16, 16, 0),
-          child: Text(context.t.passkeys_description, style: context.textTheme.bodyMedium),
-        ),
-        const Padding(
-          padding: .all(16),
+          padding: .symmetric(horizontal: 20, vertical: 16),
           child: ActionButton(action: PasskeyCreateAction(), variant: .filled),
         ),
       ],
