@@ -1,6 +1,7 @@
+import type sdk from '@immich/sdk';
 import type { Request } from '@playwright/test';
 
-type Sdk = typeof import('@immich/sdk');
+type Sdk = typeof sdk;
 type FunctionKeys<T> = { [K in keyof T]-?: T[K] extends (...args: never[]) => unknown ? K : never }[keyof T];
 
 export type OperationId = FunctionKeys<Sdk>;

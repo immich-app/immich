@@ -41,7 +41,7 @@ const fulfill = async (route: Route, options: Parameters<Route['fulfill']>[0]) =
 const parseBody = (request: Request) => {
   const data = request.postData();
   if (data === null) {
-    return undefined;
+    return;
   }
   try {
     return JSON.parse(data) as unknown;

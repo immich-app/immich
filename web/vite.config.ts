@@ -107,6 +107,10 @@ export default defineConfig({
 
         handler(warning);
       },
+      // TODO remove as this way of doing it is deprecated
+      alias: {
+        'chromecast-caf-sender': './node_modules/@types/chromecast-caf-sender/index.d.ts',
+      },
     }),
     cspManifest(),
 
