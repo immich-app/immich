@@ -15,7 +15,7 @@ import { stringToBool } from 'src/validation.js';
 const AlbumUserAddSchema = z
   .object({
     userId: z.uuidv4().describe('User ID'),
-    role: AlbumUserRoleSchema.default(AlbumUserRole.Editor).optional().describe('Album user role'),
+    role: AlbumUserRoleSchema.default(AlbumUserRole.Viewer).optional().describe('Album user role'),
   })
   .meta({ id: 'AlbumUserAddDto' });
 

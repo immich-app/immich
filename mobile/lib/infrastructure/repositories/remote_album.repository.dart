@@ -342,7 +342,7 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
       (assetId) => RemoteAlbumUserEntityCompanion(
         albumId: Value(albumId),
         userId: Value(assetId),
-        role: const Value(AlbumUserRole.editor),
+        role: const Value(AlbumUserRole.viewer),
       ),
     );
 

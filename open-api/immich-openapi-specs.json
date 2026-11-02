@@ -22978,7 +22978,7 @@
         "properties": {
           "role": {
             "$ref": "#/components/schemas/AlbumUserRole",
-            "default": "editor",
+            "default": "viewer",
             "description": "Album user role"
           },
           "userId": {
