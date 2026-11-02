@@ -76,9 +76,6 @@ class PasskeyDeleteAction extends ActionBuilder {
     try {
       await passkeys.delete(passkey.id);
       toastService.success(message);
-      if (context.mounted) {
-        ref.invalidate(Store.passkeys.all());
-      }
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to delete a passkey");
     }
