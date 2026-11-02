@@ -21,9 +21,6 @@ class PasskeyCreateAction extends ActionBuilder {
     try {
       if (await passkeys.create()) {
         toastService.success(message);
-        if (context.mounted) {
-          ref.invalidate(Store.passkeys.all());
-        }
       }
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to create a passkey");

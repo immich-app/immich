@@ -48,6 +48,7 @@ class _PasskeyTile extends StatelessWidget {
     final lastUsed = passkey.usedAt?.toLocal().formatDate() ?? context.t.never;
 
     return ListTile(
+      contentPadding: const .symmetric(horizontal: 20),
       title: Text(passkey.name ?? context.t.passkeys(count: 1)),
       subtitle: Text('${context.t.created} $created • ${context.t.last_used} $lastUsed'),
     );
