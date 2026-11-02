@@ -120,7 +120,7 @@ ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
 
 COPY --from=ghcr.io/futo-org/backups/restic-proxy:v1.11.2@sha256:a88252d884d22a55749f45dd39a2458c6391ca3e4d3b0d9e0c2246786cf923be /usr/local/bin/restic-proxy /usr/local/bin/restic-proxy
-COPY --from=ghcr.io/futo-org/restic:sha-a24cc22@sha256:7b5cdba9cc8690ecc528e239e6f8b2cfb9ef3644895cafd0e0fa9003bcded1f6 /usr/bin/restic /usr/local/bin/restic
+COPY --from=ghcr.io/futo-org/restic:sha-1e904f0@sha256:501bb3e696bd78db0d89ae4e5c51b6993b9cb3f88e657020777dba49226169bc /usr/bin/restic /usr/local/bin/restic
 
 VOLUME /data
 EXPOSE 2283

@@ -74,11 +74,12 @@ export class OcrRepository {
     return query.selectNoFrom(sql`1`.as('dummy')).execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [], []] })
+  @GenerateSql({ params: [DummyValue.UUID, [], [], DummyValue.STRING] })
   async updateOcrVisibilities(
     assetId: string,
     visible: AssetOcrResponseDto[],
     hidden: AssetOcrResponseDto[],
+    searchText: string,
   ): Promise<void> {
     await this.db.transaction().execute(async (trx) => {
       if (visible.length > 0) {
@@ -105,7 +106,6 @@ export class OcrRepository {
           .execute();
       }
 
-      const searchText = visible.map((item) => item.text.trim()).join(' ');
       await trx.updateTable('ocr_search').set({ text: searchText }).where('assetId', '=', assetId).execute();
     });
   }

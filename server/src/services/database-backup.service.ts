@@ -271,7 +271,7 @@ export class DatabaseBackupService {
 
   private async getCompressionCommand() {
     if (await this.processRepository.isCommandAvailable('pigz')) {
-      const processes = this.processRepository.availableParallelism();
+      const processes = Math.min(Math.max(Math.floor(this.processRepository.availableParallelism() * 0.75), 1), 32);
       return { command: 'pigz', args: ['--rsyncable', '--processes', processes.toString()] };
     }
 

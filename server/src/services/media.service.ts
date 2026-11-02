@@ -39,6 +39,7 @@ import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getAssetFile, getDimensions } from 'src/utils/asset.util.js';
+import { tokenizeForSearch } from 'src/utils/database.js';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor.js';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -855,7 +856,10 @@ export class MediaService extends BaseService {
     await this.personRepository.updateVisibility(faceStatuses.visible, faceStatuses.hidden);
 
     const ocrStatuses = checkOcrVisibility(ocrData, originalDimensions, cropBox);
-    await this.ocrRepository.updateOcrVisibilities(asset.id, ocrStatuses.visible, ocrStatuses.hidden);
+    const searchText = (cropBox ? ocrStatuses.visible : ocrData)
+      .flatMap(({ text }) => tokenizeForSearch(text))
+      .join(' ');
+    await this.ocrRepository.updateOcrVisibilities(asset.id, ocrStatuses.visible, ocrStatuses.hidden, searchText);
 
     return generated;
   }

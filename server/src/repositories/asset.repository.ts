@@ -7,13 +7,13 @@ import {
   type SelectQueryBuilder,
   type Selectable,
   type ShallowDehydrateObject,
-  UpdateResult,
   type Updateable,
   sql,
 } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { LockableProperty, Stack } from 'src/database.js';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
 import { type AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
@@ -54,7 +54,6 @@ import {
   withTagId,
   withTags,
 } from 'src/utils/database.js';
-import { globToPostgresRegex } from 'src/utils/misc.js';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -694,13 +693,14 @@ export class AssetRepository {
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions) {
-    const { ownerId, otherAssetId, livePhotoCID, type } = options;
+    const { ownerId, libraryId, otherAssetId, livePhotoCID, type } = options;
     return this.db
       .selectFrom('asset')
       .select(['asset.id', 'asset.ownerId'])
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .where('id', '!=', asUuid(otherAssetId))
       .where('ownerId', '=', asUuid(ownerId))
+      .$call((qb) => (libraryId ? qb.where('libraryId', '=', asUuid(libraryId)) : qb.where('libraryId', 'is', null)))
       .where('type', '=', type)
       .where('asset_exif.livePhotoCID', '=', livePhotoCID)
       .limit(1)
@@ -1087,31 +1087,45 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING], [DummyValue.STRING]] })
-  async detectOfflineExternalAssets(
-    libraryId: string,
-    importPaths: string[],
-    exclusionPatterns: string[],
-  ): Promise<UpdateResult> {
-    const paths = importPaths.map((importPath) => `${importPath}%`);
-    const exclusions = exclusionPatterns.map((pattern) => globToPostgresRegex(pattern));
+  @GenerateSql({ params: [DummyValue.UUID, () => true] })
+  detectOfflineExternalAssets(libraryId: string, isInLibrary: (originalPath: string) => boolean): Promise<number> {
+    // read and write on one connection, so concurrent library scans can't deadlock on the pool
+    return this.db.transaction().execute(async (trx) => {
+      const query = trx
+        .selectFrom('asset')
+        .select(['asset.id', 'asset.originalPath'])
+        .where('asset.libraryId', '=', asUuid(libraryId))
+        .where('asset.isOffline', '=', false)
+        .where('asset.isExternal', '=', true);
+      await sql`declare offline_check no scroll cursor for ${query}`.execute(trx);
 
-    return this.db
-      .updateTable('asset')
-      .set({
-        isOffline: true,
-        deletedAt: new Date(),
-      })
-      .where('isOffline', '=', false)
-      .where('isExternal', '=', true)
-      .where('libraryId', '=', asUuid(libraryId))
-      .where((eb) =>
-        eb.or([
-          eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
-          eb.or(exclusions.map((pattern) => eb('originalPath', '~*', pattern))),
-        ]),
-      )
-      .executeTakeFirstOrThrow();
+      const fetchBatch = async () => {
+        const { rows } = await sql<{ id: string; originalPath: string }>`
+          fetch ${sql.lit(JOBS_LIBRARY_PAGINATION_SIZE)} from offline_check
+        `.execute(trx);
+        return rows;
+      };
+
+      const deletedAt = new Date();
+      let count = 0;
+      for (let rows = await fetchBatch(); rows.length > 0; rows = await fetchBatch()) {
+        const ids = rows.filter(({ originalPath }) => !isInLibrary(originalPath)).map(({ id }) => id);
+        if (ids.length === 0) {
+          continue;
+        }
+
+        // a concurrent check of the same library may have offlined these rows after the cursor was declared
+        const { numUpdatedRows } = await trx
+          .updateTable('asset')
+          .set({ isOffline: true, deletedAt })
+          .where('id', '=', anyUuid(ids))
+          .where('isOffline', '=', false)
+          .executeTakeFirst();
+        count += Number(numUpdatedRows);
+      }
+
+      return count;
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
