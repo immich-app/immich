@@ -24,7 +24,6 @@ class PasskeyCreateAction extends ActionBuilder {
       if (await passkeys.create() case final passkey?) {
         toastService.success(message);
         if (context.mounted) {
-          ref.invalidate(Store.passkeys.all());
           await _rename(context, ref, passkey);
         }
       }

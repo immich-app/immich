@@ -63,7 +63,9 @@ class PasskeyMutations extends StoreMutations {
         return null;
       }
 
-      return await apiRepository.finishRegistration(jsonDecode(credential));
+      final passkey = await apiRepository.finishRegistration(jsonDecode(credential));
+      invalidate(_allProvider);
+      return passkey;
     } catch (error, stack) {
       _log.severe("Failed to create a passkey", error, stack);
       rethrow;
