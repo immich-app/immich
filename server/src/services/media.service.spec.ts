@@ -1556,6 +1556,50 @@ describe(MediaService.name, () => {
 
       expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ thumbhash: thumbhashBuffer }));
     });
+
+    it('should keep the ocr search text if the edits have no crop', async () => {
+      const asset = AssetFactory.from()
+        .exif()
+        .edit({ action: AssetEditAction.Rotate, parameters: { angle: 90 } })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.ocr.getByAssetId.mockResolvedValue([factory.assetOcr({ assetId: asset.id, text: 'Hello World' })]);
+
+      await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(mocks.ocr.updateOcrVisibilities).toHaveBeenCalledWith(asset.id, [], [], 'Hello World');
+    });
+
+    it('should tokenize the ocr search text inside the crop', async () => {
+      const asset = AssetFactory.from()
+        .exif({ exifImageWidth: 1000, exifImageHeight: 1000 })
+        .edit({ action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 500, height: 500 } })
+        .build();
+      const inside = factory.assetOcr({ assetId: asset.id, text: '東京タワー' });
+      const outside = factory.assetOcr({
+        assetId: asset.id,
+        text: 'World',
+        x1: 0.6,
+        y1: 0.6,
+        x2: 0.8,
+        y2: 0.6,
+        x3: 0.8,
+        y3: 0.8,
+        x4: 0.6,
+        y4: 0.8,
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.ocr.getByAssetId.mockResolvedValue([inside, outside]);
+
+      await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(mocks.ocr.updateOcrVisibilities).toHaveBeenCalledWith(
+        asset.id,
+        [inside],
+        [outside],
+        '東京 京タ タワ ワー',
+      );
+    });
   });
 
   describe('handleGeneratePersonThumbnail', () => {
@@ -3099,7 +3143,7 @@ describe(MediaService.name, () => {
             '-v',
             'verbose',
             '-vf',
-            'hwupload=extra_hw_frames=64,scale_qsv=-1:720:mode=hq:format=nv12',
+            'format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720:mode=hq:format=nv12',
             '-preset',
             '7',
             '-global_quality:v',
@@ -3112,6 +3156,24 @@ describe(MediaService.name, () => {
             '20000k',
           ]),
           twoPass: false,
+        }),
+      );
+    });
+
+    it('should tone-map to nv12 before upload for sw decode qsv', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStreamHDR });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Qsv, accelDecode: false },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([
+            '-vf',
+            'tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=nv12,hwupload=extra_hw_frames=64',
+          ]),
         }),
       );
     });
@@ -3347,13 +3409,46 @@ describe(MediaService.name, () => {
             '-v',
             'verbose',
             '-vf',
-            'hwupload=extra_hw_frames=64,scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12',
+            'format=nv12,hwupload=extra_hw_frames=64,scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12',
             '-compression_level',
             '7',
             '-rc_mode',
             '1',
           ]),
           twoPass: false,
+        }),
+      );
+    });
+
+    it('should convert to nv12 before upload for sw decode vaapi without scaling', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: false, targetResolution: 'original' },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining(['-vf', 'format=nv12,hwupload=extra_hw_frames=64']),
+        }),
+      );
+    });
+
+    it('should tone-map to nv12 before upload for sw decode vaapi', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStreamHDR });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: false },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([
+            '-vf',
+            'tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=nv12,hwupload=extra_hw_frames=64',
+          ]),
         }),
       );
     });

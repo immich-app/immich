@@ -5,13 +5,18 @@ import { DateTime } from 'luxon';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import MaintenanceBackupEntry from './MaintenanceBackupEntry.svelte';
 
-vi.mock('#lib/services/database-backups.service.js', () => ({
-  getDatabaseBackupActions: () => ({
-    Download: { type: 'command', title: 'Download', onAction: vi.fn() },
-    Delete: { type: 'command', title: 'Delete', onAction: vi.fn() },
-  }),
-  handleRestoreDatabaseBackup: vi.fn(),
-}));
+vi.mock('#lib/services/database-backups.service.js', async (importOriginal) => {
+  const original = await importOriginal<typeof import('#lib/services/database-backups.service.ts')>();
+
+  return {
+    ...original,
+    getDatabaseBackupActions: () => ({
+      Download: { type: 'command', title: 'Download', onAction: vi.fn() },
+      Delete: { type: 'command', title: 'Delete', onAction: vi.fn() },
+    }),
+    handleRestoreDatabaseBackup: vi.fn(),
+  };
+});
 
 describe('MaintenanceBackupEntry', () => {
   beforeEach(() => {

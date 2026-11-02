@@ -137,5 +137,10 @@ export default defineConfig({
     env: {
       TZ: 'UTC',
     },
+    server: {
+      deps: {
+        inline: ['@futo-org/backups-orchestrator-ui', '@material-symbols/svg-400'],
+      },
+    },
   },
 } as UserConfig);

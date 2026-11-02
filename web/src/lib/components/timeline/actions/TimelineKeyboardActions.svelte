@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '#lib/actions/shortcut.ts';
   import {
     setFocusToAsset as setFocusAssetInit,
@@ -14,6 +13,7 @@
   import NavigateToDateModal from '#lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '#lib/modals/ShortcutsModal.svelte';
   import { Route } from '#lib/route.ts';
+  import { toggleFavoriteAssets } from '#lib/services/asset.service.ts';
   import { handleStack } from '#lib/services/stack.service.ts';
   import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
   import { showDeleteModal } from '#lib/stores/preferences.store.ts';
@@ -21,6 +21,7 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { deleteAssets } from '#lib/utils/actions.ts';
   import { selectAllAssets } from '#lib/utils/asset-utils.ts';
+  import { goto } from '$app/navigation';
   import { isModalOpen, modalManager } from '@immich/ui';
 
   type Props = {
@@ -60,6 +61,14 @@
   const onStackAssets = async () => {
     await handleStack(assetInteraction.assets.map((asset) => asset.id));
     onEscape?.();
+  };
+
+  const toggleFavoriteSelected = async () => {
+    const allAssets = assetInteraction.ownedAssets;
+    const isFavorite = allAssets.some((a) => !a.isFavorite);
+    const assetsToUpdate = allAssets.filter((asset) => asset.isFavorite !== isFavorite);
+    await toggleFavoriteAssets(assetsToUpdate, isFavorite);
+    assetInteraction.clear();
   };
 
   const onSelectStart = (e: Event) => {
@@ -125,6 +134,7 @@
         { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => assetInteraction.clear() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
+        { shortcut: { key: 'f' }, onShortcut: () => toggleFavoriteSelected() },
       );
     } else {
       // conflicting shortcuts

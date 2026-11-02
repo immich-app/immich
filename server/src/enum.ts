@@ -1031,6 +1031,7 @@ export enum DatabaseLock {
   VersionCheck = 800,
   HlsSessionCleanup = 850,
   FacialRecognition = 900,
+  FutoBackupsModuleConfig = 926,
   DuplicateDetection = 1000,
 }
 
@@ -1039,6 +1040,7 @@ export enum MaintenanceAction {
   End = 'end',
   SelectDatabaseRestore = 'select_database_restore',
   RestoreDatabase = 'restore_database',
+  Rollback = 'rollback',
 }
 
 export const MaintenanceActionSchema = z
@@ -1263,6 +1265,7 @@ export enum ApiTag {
   AuthenticationAdmin = 'Authentication (admin)',
   Assets = 'Assets',
   AssetFiles = 'Asset files',
+  Backups = 'Backups',
   ConfigUser = 'Config (user)',
   ConfigAdmin = 'Config (admin)',
   ConfigPublic = 'Config (public)',

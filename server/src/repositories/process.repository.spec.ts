@@ -27,6 +27,16 @@ describe(ProcessRepository.name, () => {
     });
   });
 
+  describe('isCommandAvailable', () => {
+    it('should find an executable on the PATH', async () => {
+      await expect(sut.isCommandAvailable('bash')).resolves.toBe(true);
+    });
+
+    it('should not find a missing executable', async () => {
+      await expect(sut.isCommandAvailable('immich-missing-command')).resolves.toBe(false);
+    });
+  });
+
   describe('createSpawnDuplexStream', () => {
     it('should work (drain to stdout)', async () => {
       const process = sut.spawnDuplexStream('bash', ['-c', 'exit 0']);

@@ -1,6 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { SignJWT } from 'jose';
-import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { DatabaseLock, MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
@@ -10,12 +10,14 @@ import { AutoMocked, ServiceMocks, automock, getMocks } from 'test/utils.js';
 describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;
   let mocks: ServiceMocks;
+  let moduleRefMock: { get: ReturnType<typeof vitest.fn> };
   let maintenanceWebsocketRepositoryMock: AutoMocked<MaintenanceWebsocketRepository>;
   let maintenanceHealthRepositoryMock: AutoMocked<MaintenanceHealthRepository>;
   let databaseBackupServiceMock: AutoMocked<DatabaseBackupService>;
 
   beforeEach(() => {
     mocks = getMocks();
+    moduleRefMock = { get: vitest.fn() };
     maintenanceWebsocketRepositoryMock = automock(MaintenanceWebsocketRepository, {
       args: [mocks.logger],
       strict: false,
@@ -50,11 +52,39 @@ describe(MaintenanceWorkerService.name, () => {
       mocks.process,
       mocks.database as never,
       databaseBackupServiceMock,
+      moduleRefMock as never,
     );
 
     sut.mock({
       active: true,
       action: MaintenanceAction.Start,
+    });
+  });
+
+  describe('init', () => {
+    beforeEach(() => {
+      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+    });
+
+    it('takes the backups SDK lock so its jobs run during maintenance', async () => {
+      const futoBackups = { acquireLock: vitest.fn() };
+      moduleRefMock.get.mockReturnValue(futoBackups);
+      mocks.database.tryLock.mockResolvedValue(true);
+
+      await sut.init();
+
+      expect(mocks.database.tryLock).toHaveBeenCalledWith(DatabaseLock.FutoBackupsModuleConfig);
+      expect(futoBackups.acquireLock).toHaveBeenCalled();
+    });
+
+    it('leaves the backups SDK lock to whoever already holds it', async () => {
+      const futoBackups = { acquireLock: vitest.fn() };
+      moduleRefMock.get.mockReturnValue(futoBackups);
+      mocks.database.tryLock.mockResolvedValue(false);
+
+      await sut.init();
+
+      expect(futoBackups.acquireLock).not.toHaveBeenCalled();
     });
   });
 
