@@ -1,7 +1,7 @@
-import { renderWithTooltips } from '#tests/helpers';
+import { factory } from '#test/unit/factories.ts';
+import { renderWithTooltips } from '#test/unit/helpers.ts';
 import type { AssetResponseDto } from '@immich/sdk';
 import '@testing-library/jest-dom';
-import { assetFactory } from '#test-data/factories/asset-factory';
 import DeleteAction from './DeleteAction.svelte';
 
 vi.mock(import('#lib/managers/feature-flags-manager.svelte.js'), () => {
@@ -14,7 +14,7 @@ let asset: AssetResponseDto;
 describe('DeleteAction component', () => {
   describe('given an asset which is not trashed yet', () => {
     beforeEach(() => {
-      asset = assetFactory.build({ isTrashed: false });
+      asset = factory.asset({ isTrashed: false });
     });
 
     it('displays a button to move the asset to the trash bin', () => {
@@ -31,7 +31,7 @@ describe('DeleteAction component', () => {
 
   describe('but if the asset is already trashed', () => {
     beforeEach(() => {
-      asset = assetFactory.build({ isTrashed: true });
+      asset = factory.asset({ isTrashed: true });
     });
 
     it('displays a button to permanently delete the asset', () => {

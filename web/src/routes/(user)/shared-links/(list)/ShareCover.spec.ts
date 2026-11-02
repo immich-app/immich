@@ -1,8 +1,6 @@
 import { getAssetMediaUrl } from '#lib/utils.ts';
+import { factory } from '#test/unit/factories.ts';
 import { render, screen } from '@testing-library/svelte';
-import { albumFactory } from '#test-data/factories/album-factory';
-import { assetFactory } from '#test-data/factories/asset-factory';
-import { sharedLinkFactory } from '#test-data/factories/shared-link-factory';
 import ShareCover from './ShareCover.svelte';
 
 vi.mock('#lib/utils.js');
@@ -10,7 +8,7 @@ vi.mock('#lib/utils.js');
 describe('ShareCover component', () => {
   it('renders an image when the shared link is an album', () => {
     const component = render(ShareCover, {
-      sharedLink: sharedLinkFactory.build({ album: albumFactory.build({ albumName: '123' }) }),
+      sharedLink: factory.sharedLink({ album: factory.album({ albumName: '123' }) }),
       preload: false,
       class: 'text',
     });
@@ -23,7 +21,7 @@ describe('ShareCover component', () => {
   it('renders an image when the shared link is an individual share', () => {
     vi.mocked(getAssetMediaUrl).mockReturnValue('/asdf');
     const component = render(ShareCover, {
-      sharedLink: sharedLinkFactory.build({ assets: [assetFactory.build({ id: 'someId' })] }),
+      sharedLink: factory.sharedLink({ assets: [factory.asset({ id: 'someId' })] }),
       preload: false,
       class: 'text',
     });
@@ -37,7 +35,7 @@ describe('ShareCover component', () => {
 
   it('renders an image when the shared link has no album or assets', () => {
     const component = render(ShareCover, {
-      sharedLink: sharedLinkFactory.build(),
+      sharedLink: factory.sharedLink(),
       preload: false,
       class: 'text',
     });
@@ -48,7 +46,7 @@ describe('ShareCover component', () => {
   });
 
   it.skip('renders fallback image when asset is not resized', () => {
-    const sharedLink = sharedLinkFactory.build({ assets: [assetFactory.build()] });
+    const sharedLink = factory.sharedLink({ assets: [factory.asset()] });
     render(ShareCover, {
       sharedLink,
       preload: false,

@@ -1,0 +1,340 @@
+import type { ResponseOf } from '#test/medium/mock/types.ts';
+import {
+  AudioCodec,
+  CQMode,
+  Colorspace,
+  ImageFormat,
+  LogLevel,
+  OAuthTokenEndpointAuthMethod,
+  ReleaseChannel,
+  ToneMapping,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  VideoCodec,
+  VideoContainer,
+} from '@immich/sdk';
+
+const serverConfig = (overrides: Partial<ResponseOf<'getServerConfig'>> = {}): ResponseOf<'getServerConfig'> => ({
+  loginPageMessage: '',
+  trashDays: 30,
+  userDeleteDelay: 7,
+  oauthButtonText: 'Login with OAuth',
+  isInitialized: true,
+  isOnboarded: true,
+  externalDomain: '',
+  publicUsers: true,
+  mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
+  mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
+  maintenanceMode: false,
+  minFaces: 3,
+  ...overrides,
+});
+
+const publicConfig = (overrides: Partial<ResponseOf<'getPublicConfig'>> = {}): ResponseOf<'getPublicConfig'> => ({
+  ffmpeg: { realtime: { enabled: false } },
+  map: {
+    enabled: true,
+    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+  },
+  oauth: { autoLaunch: false, buttonText: 'Login with OAuth', enabled: false },
+  passkey: { enabled: true },
+  passwordLogin: { enabled: true },
+  server: { loginPageMessage: '' },
+  ...overrides,
+});
+
+const userConfig = (overrides: Partial<ResponseOf<'getUserConfig'>> = {}): ResponseOf<'getUserConfig'> => ({
+  ffmpeg: {
+    realtime: { enabled: false, videoCodecs: [VideoCodec.H264, VideoCodec.Hevc], resolutions: [480, 720, 1080] },
+  },
+  machineLearning: {
+    enabled: false,
+    clip: { enabled: true },
+    duplicateDetection: { enabled: true },
+    facialRecognition: { enabled: true, minFaces: 3 },
+    ocr: { enabled: true },
+  },
+  map: {
+    enabled: true,
+    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+  },
+  reverseGeocoding: { enabled: true },
+  oauth: { autoLaunch: false, buttonText: 'Login with OAuth', enabled: false, accountManagementUrl: '' },
+  passkey: { enabled: true },
+  passwordLogin: { enabled: true },
+  image: { thumbnail: { size: 250 }, preview: { size: 1440 }, fullsize: { enabled: false } },
+  trash: { enabled: true, days: 30 },
+  notifications: { smtp: { enabled: false } },
+  server: { externalDomain: '', loginPageMessage: '', publicUsers: true },
+  user: { deleteDelay: 7 },
+  ...overrides,
+});
+
+const serverFeatures = (overrides: Partial<ResponseOf<'getServerFeatures'>> = {}): ResponseOf<'getServerFeatures'> => ({
+  smartSearch: false,
+  facialRecognition: false,
+  duplicateDetection: false,
+  map: true,
+  reverseGeocoding: true,
+  importFaces: false,
+  sidecar: true,
+  search: true,
+  trash: true,
+  oauth: false,
+  oauthAutoLaunch: false,
+  ocr: false,
+  passwordLogin: true,
+  configFile: false,
+  email: false,
+  realtimeTranscoding: false,
+  backups: false,
+  ...overrides,
+});
+
+const aboutInfo = (overrides: Partial<ResponseOf<'getAboutInfo'>> = {}): ResponseOf<'getAboutInfo'> => ({
+  version: 'v2.2.3',
+  versionUrl: 'https://github.com/immich-app/immich/releases/tag/v2.2.3',
+  licensed: false,
+  build: '1234567890',
+  buildUrl: 'https://github.com/immich-app/immich/actions/runs/1234567890',
+  buildImage: 'test',
+  buildImageUrl: 'https://github.com/immich-app/immich/pkgs/container/immich-server',
+  repository: 'immich-app/immich',
+  repositoryUrl: 'https://github.com/immich-app/immich',
+  sourceRef: 'test',
+  sourceCommit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  sourceUrl: 'https://github.com/immich-app/immich/commit/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  nodejs: 'v22.18.0',
+  exiftool: '13.41',
+  ffmpeg: '7.1.1-6',
+  libvips: '8.17.2',
+  imagemagick: '7.1.2-2',
+  ...overrides,
+});
+
+const storage = (overrides: Partial<ResponseOf<'getStorage'>> = {}): ResponseOf<'getStorage'> => ({
+  diskSize: '100.0 GiB',
+  diskUse: '74.4 GiB',
+  diskAvailable: '25.6 GiB',
+  diskSizeRaw: 107_374_182_400,
+  diskUseRaw: 79_891_660_800,
+  diskAvailableRaw: 27_482_521_600,
+  diskUsagePercentage: 74.4,
+  ...overrides,
+});
+
+const versionHistory = (): ResponseOf<'getVersionHistory'> => [
+  {
+    id: 'd1fbeadc-cb4f-4db3-8d19-8c6a921d5d8e',
+    createdAt: '2025-11-15T20:14:01.935Z',
+    version: '2.2.3',
+  },
+];
+
+const mediaTypes = (
+  overrides: Partial<ResponseOf<'getSupportedMediaTypes'>> = {},
+): ResponseOf<'getSupportedMediaTypes'> => ({
+  video: ['.mov', '.mp4', '.webm', '.mkv'],
+  image: ['.jpeg', '.jpg', '.png', '.webp', '.heic', '.gif', '.svg'],
+  sidecar: ['.xmp'],
+  ...overrides,
+});
+
+const adminConfig = (overrides: Partial<ResponseOf<'getAdminConfig'>> = {}): ResponseOf<'getAdminConfig'> => ({
+  backup: { database: { enabled: true, cronExpression: '0 02 * * *', keepLastAmount: 14 } },
+  ffmpeg: {
+    crf: 23,
+    threads: 0,
+    preset: 'ultrafast',
+    targetVideoCodec: VideoCodec.H264,
+    acceptedVideoCodecs: [VideoCodec.H264],
+    targetAudioCodec: AudioCodec.Aac,
+    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.Opus],
+    acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
+    targetResolution: '720',
+    maxBitrate: '0',
+    bframes: -1,
+    refs: 0,
+    gopSize: 0,
+    temporalAQ: false,
+    cqMode: CQMode.Auto,
+    twoPass: false,
+    preferredHwDevice: 'auto',
+    transcode: TranscodePolicy.Required,
+    tonemap: ToneMapping.Hable,
+    accel: TranscodeHWAccel.Disabled,
+    accelDecode: true,
+    realtime: { enabled: false, videoCodecs: [VideoCodec.H264, VideoCodec.Hevc], resolutions: [480, 720, 1080] },
+  },
+  integrityChecks: {
+    missingFiles: { enabled: true, cronExpression: '0 03 * * *' },
+    untrackedFiles: { enabled: true, cronExpression: '0 03 * * *' },
+    checksumFiles: { enabled: true, cronExpression: '0 03 * * *', timeLimit: 3_600_000, percentageLimit: 1 },
+  },
+  job: {
+    thumbnailGeneration: { concurrency: 3 },
+    metadataExtraction: { concurrency: 5 },
+    videoConversion: { concurrency: 1 },
+    faceDetection: { concurrency: 2 },
+    smartSearch: { concurrency: 2 },
+    backgroundTask: { concurrency: 5 },
+    migration: { concurrency: 5 },
+    search: { concurrency: 5 },
+    sidecar: { concurrency: 5 },
+    library: { concurrency: 5 },
+    notifications: { concurrency: 5 },
+    ocr: { concurrency: 1 },
+    workflow: { concurrency: 5 },
+    editor: { concurrency: 2 },
+    integrityCheck: { concurrency: 1 },
+  },
+  logging: { enabled: true, level: LogLevel.Log },
+  machineLearning: {
+    enabled: false,
+    urls: ['http://immich-machine-learning:3003'],
+    availabilityChecks: { enabled: true, timeout: 2000, interval: 30_000 },
+    clip: { enabled: true, modelName: 'ViT-B-32__openai' },
+    duplicateDetection: { enabled: true, maxDistance: 0.01 },
+    facialRecognition: { enabled: true, modelName: 'buffalo_l', minScore: 0.7, maxDistance: 0.5, minFaces: 3 },
+    ocr: {
+      enabled: true,
+      modelName: 'PP-OCRv5_mobile',
+      minDetectionScore: 0.5,
+      minRecognitionScore: 0.8,
+      maxResolution: 736,
+    },
+  },
+  map: {
+    enabled: true,
+    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+  },
+  reverseGeocoding: { enabled: true },
+  metadata: { faces: { import: false } },
+  oauth: {
+    autoLaunch: false,
+    autoRegister: true,
+    buttonText: 'Login with OAuth',
+    clientId: '',
+    clientSecret: '',
+    defaultStorageQuota: null,
+    enabled: false,
+    issuerUrl: '',
+    accountManagementUrl: '',
+    endSessionEndpoint: '',
+    mobileOverrideEnabled: false,
+    mobileRedirectUri: '',
+    prompt: '',
+    scope: 'openid email profile',
+    signingAlgorithm: 'RS256',
+    profileSigningAlgorithm: 'none',
+    storageLabelClaim: 'preferred_username',
+    storageQuotaClaim: 'immich_quota',
+    roleClaim: 'immich_role',
+    tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
+    timeout: 30_000,
+    allowInsecureRequests: false,
+  },
+  passkey: { enabled: true, domain: null, additionalDomains: [] },
+  passwordLogin: { enabled: true },
+  storageTemplate: {
+    enabled: false,
+    hashVerificationEnabled: true,
+    template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  },
+  image: {
+    thumbnail: { format: ImageFormat.Webp, size: 250, quality: 80, progressive: false },
+    preview: { format: ImageFormat.Jpeg, size: 1440, quality: 80, progressive: false },
+    colorspace: Colorspace.P3,
+    extractEmbedded: false,
+    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80, progressive: false },
+  },
+  newVersionCheck: { enabled: true, channel: ReleaseChannel.Stable },
+  nightlyTasks: {
+    startTime: '00:00',
+    databaseCleanup: true,
+    generateMemories: true,
+    syncQuotaUsage: true,
+    missingThumbnails: true,
+    clusterNewFaces: true,
+  },
+  trash: { enabled: true, days: 30 },
+  theme: { customCss: '' },
+  library: { scan: { enabled: true, cronExpression: '0 0 * * *' }, watch: { enabled: false } },
+  server: { externalDomain: '', loginPageMessage: '', publicUsers: true },
+  notifications: {
+    smtp: {
+      enabled: false,
+      from: '',
+      replyTo: '',
+      transport: { ignoreCert: false, host: '', port: 587, secure: false, username: '', password: '' },
+    },
+  },
+  templates: { email: { welcomeTemplate: '', albumInviteTemplate: '', albumUpdateTemplate: '' } },
+  user: { deleteDelay: 7 },
+  ...overrides,
+});
+
+const serverVersion = (): ResponseOf<'getServerVersion'> => ({
+  major: 2,
+  minor: 2,
+  patch: 3,
+  prerelease: null,
+  featureLevel: 1,
+});
+
+const idleQueue = () => ({
+  jobCounts: { active: 0, completed: 0, delayed: 0, failed: 0, paused: 0, waiting: 0 },
+  queueStatus: { isActive: false, isPaused: false },
+});
+
+const queues = (): ResponseOf<'getQueuesLegacy'> => ({
+  backgroundTask: idleQueue(),
+  backupDatabase: idleQueue(),
+  duplicateDetection: idleQueue(),
+  editor: idleQueue(),
+  faceDetection: idleQueue(),
+  facialRecognition: idleQueue(),
+  integrityCheck: idleQueue(),
+  library: idleQueue(),
+  metadataExtraction: idleQueue(),
+  migration: idleQueue(),
+  notifications: idleQueue(),
+  ocr: idleQueue(),
+  search: idleQueue(),
+  sidecar: idleQueue(),
+  smartSearch: idleQueue(),
+  storageTemplateMigration: idleQueue(),
+  thumbnailGeneration: idleQueue(),
+  videoConversion: idleQueue(),
+  workflow: idleQueue(),
+});
+
+const notifications = (): ResponseOf<'getNotifications'> => [];
+
+const backups = (): ResponseOf<'listDatabaseBackups'> => ({ backups: [] });
+
+const integrityReport = (): ResponseOf<'getIntegrityReportSummary'> => ({
+  checksum_mismatch: 0,
+  missing_file: 0,
+  untracked_file: 0,
+});
+
+export const payload = {
+  serverConfig,
+  publicConfig,
+  userConfig,
+  serverFeatures,
+  aboutInfo,
+  storage,
+  versionHistory,
+  mediaTypes,
+  adminConfig,
+  serverVersion,
+  queues,
+  notifications,
+  backups,
+  integrityReport,
+};

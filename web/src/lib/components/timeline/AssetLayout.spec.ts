@@ -3,13 +3,13 @@ import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
 import AssetLayout from '#lib/components/timeline/AssetLayout.svelte';
 import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
 import { fromISODateTimeUTCToObject } from '#lib/utils/timeline-util.ts';
+import { factory } from '#test/unit/factories.ts';
 import { render } from '@testing-library/svelte';
 import { createRawSnippet, flushSync } from 'svelte';
-import { timelineAssetFactory } from '#test-data/factories/asset-factory';
 
 const newAsset = (takenAt: string) => {
   const dateTime = fromISODateTimeUTCToObject(takenAt);
-  return timelineAssetFactory.build({ ratio: 1, fileCreatedAt: dateTime, localDateTime: dateTime });
+  return factory.timelineAsset({ ratio: 1, fileCreatedAt: dateTime, localDateTime: dateTime });
 };
 
 describe('AssetLayout component', () => {
