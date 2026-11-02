@@ -94,6 +94,7 @@ class PasskeyMutations extends StoreMutations {
   Future<void> rename(String id, String? name) async {
     try {
       await read(passkeyApiRepositoryProvider).update(id, name);
+      invalidate(_allProvider);
     } catch (error, stack) {
       _log.severe("Failed to rename passkey $id", error, stack);
       rethrow;

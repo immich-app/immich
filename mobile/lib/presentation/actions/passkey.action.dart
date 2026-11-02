@@ -58,9 +58,6 @@ Future<void> _rename(BuildContext context, WidgetRef ref, Passkey passkey) async
 
   try {
     await passkeys.rename(passkey.id, name.isEmpty ? null : name);
-    if (context.mounted) {
-      ref.invalidate(Store.passkeys.all());
-    }
   } catch (error, stack) {
     handleError(error, stack: stack, description: "Failed to rename a passkey");
   }
