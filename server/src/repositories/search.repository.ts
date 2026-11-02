@@ -23,6 +23,8 @@ import {
 } from 'src/utils/database.js';
 import { type PaginationOptions, paginationHelper } from 'src/utils/pagination.js';
 
+const resultSizeSchema = z.int().min(1).max(1000);
+
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
   id?: string;
@@ -318,7 +320,7 @@ export class SearchRepository {
     ],
   })
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions) {
-    if (!z.int().min(1).max(1000).safeParse(pagination.size).success) {
+    if (!resultSizeSchema.validate(pagination.size)) {
       throw new Error(`Invalid value for 'size': ${pagination.size}`);
     }
 
@@ -354,7 +356,7 @@ export class SearchRepository {
     ],
   })
   searchFaces({ clusterGroupId, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
-    if (!z.int().min(1).max(1000).safeParse(numResults).success) {
+    if (!resultSizeSchema.validate(numResults)) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
 
