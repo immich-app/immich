@@ -36,7 +36,7 @@
 <div data-image-grid class="relative overflow-clip" style:height={height + 'px'} style:width={width + 'px'}>
   {#each viewerAssets as viewerAsset (viewerAsset.id)}
     {const position = $derived(viewerAsset.position!)}
-    {const asset = viewerAsset.asset!}
+    {const asset = $derived(viewerAsset.asset!)}
 
     <!-- note: don't remove data-asset-id - its used by web e2e tests -->
     <div
