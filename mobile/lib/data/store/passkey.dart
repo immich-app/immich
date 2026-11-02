@@ -63,7 +63,9 @@ class PasskeyMutations extends StoreMutations {
         return null;
       }
 
-      return await apiRepository.finishRegistration(jsonDecode(credential));
+      final passkey = await apiRepository.finishRegistration(jsonDecode(credential));
+      invalidate(_allProvider);
+      return passkey;
     } catch (error, stack) {
       _log.severe("Failed to create a passkey", error, stack);
       rethrow;
@@ -92,6 +94,7 @@ class PasskeyMutations extends StoreMutations {
   Future<void> rename(String id, String? name) async {
     try {
       await read(passkeyApiRepositoryProvider).update(id, name);
+      invalidate(_allProvider);
     } catch (error, stack) {
       _log.severe("Failed to rename passkey $id", error, stack);
       rethrow;

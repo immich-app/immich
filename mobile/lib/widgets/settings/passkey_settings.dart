@@ -18,12 +18,8 @@ class PasskeySettings extends ConsumerWidget {
 
     return ListView(
       children: [
-        Padding(
-          padding: const .fromLTRB(16, 16, 16, 0),
-          child: Text(context.t.passkeys_description, style: context.textTheme.bodyMedium),
-        ),
         const Padding(
-          padding: .all(16),
+          padding: .symmetric(horizontal: 20, vertical: 16),
           child: ActionButton(action: PasskeyCreateAction(), variant: .filled),
         ),
         if (passkeys == null)
@@ -52,6 +48,7 @@ class _PasskeyTile extends StatelessWidget {
     final lastUsed = passkey.usedAt?.toLocal().formatDate() ?? context.t.never;
 
     return ListTile(
+      contentPadding: const .symmetric(horizontal: 20),
       title: Text(passkey.name ?? context.t.passkeys(count: 1)),
       subtitle: Text('${context.t.created} $created • ${context.t.last_used} $lastUsed'),
       trailing: Row(

@@ -25,7 +25,6 @@ class PasskeyCreateAction extends ActionBuilder {
       if (await passkeys.create() case final passkey?) {
         toastService.success(message);
         if (context.mounted) {
-          ref.invalidate(Store.passkeys.all());
           await _rename(context, ref, passkey);
         }
       }
@@ -98,9 +97,6 @@ Future<void> _rename(BuildContext context, WidgetRef ref, Passkey passkey) async
 
   try {
     await passkeys.rename(passkey.id, name.isEmpty ? null : name);
-    if (context.mounted) {
-      ref.invalidate(Store.passkeys.all());
-    }
   } catch (error, stack) {
     handleError(error, stack: stack, description: "Failed to rename a passkey");
   }
