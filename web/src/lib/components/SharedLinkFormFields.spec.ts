@@ -1,4 +1,4 @@
-import { renderWithTooltips } from '#tests/helpers';
+import { renderWithTooltips } from '#test/unit/helpers.ts';
 import userEvent from '@testing-library/user-event';
 import SharedLinkFormFields from './SharedLinkFormFields.svelte';
 

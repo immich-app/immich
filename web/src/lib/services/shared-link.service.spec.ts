@@ -1,5 +1,5 @@
 import { asUrl } from '#lib/services/shared-link.service.ts';
-import { sharedLinkFactory } from '#test-data/factories/shared-link-factory';
+import { factory } from '#test/unit/factories.ts';
 
 vi.mock(import('#lib/queries/client.js'), async (importOriginal) => ({
   ...(await importOriginal()),
@@ -9,7 +9,7 @@ vi.mock(import('#lib/queries/client.js'), async (importOriginal) => ({
 describe('SharedLinkService', () => {
   describe('asUrl', () => {
     it('should properly encode characters in slug', () => {
-      expect(asUrl(sharedLinkFactory.build({ slug: 'foo/bar' }))).toBe('http://localhost:2283/s/foo%2Fbar');
+      expect(asUrl(factory.sharedLink({ slug: 'foo/bar' }))).toBe('http://localhost:2283/s/foo%2Fbar');
     });
   });
 });

@@ -4,10 +4,10 @@ import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
 import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.ts';
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { calcNewDate } from '#lib/modals/timezone-utils.ts';
+import { factory } from '#test/unit/factories.ts';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { DateTime } from 'luxon';
-import { userAdminFactory } from '#test-data/factories/user-factory';
 import AssetSelectionChangeDateModal from './AssetSelectionChangeDateModal.svelte';
 
 describe('DateSelectionModal component', () => {
@@ -28,7 +28,7 @@ describe('DateSelectionModal component', () => {
     vi.resetAllMocks();
     Element.prototype.animate = getAnimateMock();
 
-    authManager.setUser(userAdminFactory.build());
+    authManager.setUser(factory.user());
   });
 
   afterAll(async () => {

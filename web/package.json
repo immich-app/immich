@@ -6,10 +6,8 @@
   "imports": {
     "#lib": "./src/lib/index.js",
     "#lib/*": "./src/lib/*",
-    "#tests": "./src/../tests",
-    "#tests/*": "./src/../tests/*",
     "#i18n/*": "../i18n/*",
-    "#test-data/*": "./src/test-data/*"
+    "#test/*": "./test/*"
   },
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -22,13 +20,15 @@
     "check:watch": "pnpm run check:svelte --watch",
     "check:code": "pnpm run format && pnpm run lint && pnpm run check:svelte && pnpm run check:typescript",
     "check:all": "pnpm run check:code && pnpm run test:cov",
-    "lint": "eslint . --max-warnings 0 --concurrency 6",
+    "lint": "eslint . --max-warnings 0 --concurrency 4",
     "lint:fix": "pnpm run lint --fix",
     "format": "prettier --cache --check .",
     "format:fix": "prettier --cache --write --list-different .",
     "test": "vitest",
     "test:cov": "vitest --coverage",
     "test:watch": "vitest dev",
+    "test:medium": "playwright test",
+    "test:medium:ui": "playwright test --ui",
     "prepare": "svelte-kit sync"
   },
   "dependencies": {
@@ -84,8 +84,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
-    "@faker-js/faker": "^10.0.0",
     "@koddsson/eslint-plugin-tscompat": "^0.4.0",
+    "@playwright/test": "1.64.1",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^4.0.0",
     "@sveltejs/enhanced-img": "^1.0.0",
@@ -101,6 +101,7 @@
     "@types/justified-layout": "^4.1.4",
     "@types/lodash-es": "^4.17.12",
     "@types/luxon": "^3.4.2",
+    "@types/node": "^24.19.2",
     "@types/qrcode": "^1.5.5",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.0",
@@ -112,7 +113,6 @@
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-svelte": "^3.23.1",
     "eslint-plugin-unicorn": "^78.0.0",
-    "factory.ts": "^1.4.1",
     "globals": "^17.0.0",
     "happy-dom": "^21.0.0",
     "parse5": "^8.0.1",

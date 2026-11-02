@@ -1,9 +1,10 @@
 import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
+import { factory } from '#test/unit/factories.ts';
+import type { PersonResponseDto } from '@immich/sdk';
 import { render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'svelte';
 import { vi } from 'vitest';
-import { personFactory } from '#test-data/factories/person-factory';
 import ManagePeoplePage from './+page.svelte';
 import ManagePeoplePageTestWrapper from './ManagePeopleVisibility.test-wrapper.svelte';
 
@@ -14,11 +15,11 @@ vi.mock(import('#lib/managers/feature-flags-manager.svelte.js'), function () {
 });
 
 vi.mock('#lib/components/layouts/UserPageLayout.svelte', async () => {
-  return await import('#test-data/mocks/UserPageLayout.mock.svelte');
+  return await import('#test/unit/mocks/UserPageLayout.mock.svelte');
 });
 
 const getData = (
-  people: ReturnType<typeof personFactory.build>[],
+  people: PersonResponseDto[],
   hasNextPage = false,
 ): ComponentProps<typeof ManagePeoplePage>['data'] => ({
   error: undefined,
@@ -39,9 +40,9 @@ describe('People manage page', () => {
 
   it('keeps toggled hidden state when loading more people', async () => {
     const [personA, personB, personC] = [
-      personFactory.build({ id: 'a', isHidden: false }),
-      personFactory.build({ id: 'b', isHidden: false }),
-      personFactory.build({ id: 'c', isHidden: true }),
+      factory.person({ id: 'a', isHidden: false }),
+      factory.person({ id: 'b', isHidden: false }),
+      factory.person({ id: 'c', isHidden: true }),
     ];
 
     const { container, rerender } = render(ManagePeoplePageTestWrapper, { data: getData([personA, personB], true) });
@@ -63,9 +64,9 @@ describe('People manage page', () => {
 
   it('shows newly loaded hidden people as hidden', async () => {
     const [personA, personB, personC] = [
-      personFactory.build({ id: 'a', isHidden: false }),
-      personFactory.build({ id: 'b', isHidden: false }),
-      personFactory.build({ id: 'c', isHidden: true }),
+      factory.person({ id: 'a', isHidden: false }),
+      factory.person({ id: 'b', isHidden: false }),
+      factory.person({ id: 'c', isHidden: true }),
     ];
 
     const { container, rerender } = render(ManagePeoplePageTestWrapper, { data: getData([personA, personB], true) });
