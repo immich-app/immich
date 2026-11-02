@@ -291,6 +291,10 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
 }
 
+export interface INotifyIntegrityErrorsJob {
+  type: IntegrityReport;
+}
+
 export interface IIntegrityJob {
   refreshOnly?: boolean;
 }
@@ -431,6 +435,7 @@ export type JobItem =
   | { name: JobName.NotifyAlbumInvite; data: INotifyAlbumInviteJob }
   | { name: JobName.NotifyAlbumUpdate; data: INotifyAlbumUpdateJob }
   | { name: JobName.NotifyUserSignup; data: INotifySignupJob }
+  | { name: JobName.NotifyIntegrityErrors; data: INotifyIntegrityErrorsJob }
 
   // Version check
   | { name: JobName.VersionCheck; data: IBaseJob }
@@ -592,6 +597,7 @@ export type UserPreferences = {
     enabled: boolean;
     albumInvite: boolean;
     albumUpdate: boolean;
+    integrity: boolean;
   };
   download: {
     archiveSize: number;
