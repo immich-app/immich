@@ -102,7 +102,8 @@ class URLSessionManager: NSObject {
     }
 
     var sourceCookies: [String: HTTPCookie] = [:]
-    for cookie in serverAuthCookies {
+    // every login sets a new 400 day expiry, so the newest login sorts last and wins
+    for cookie in serverAuthCookies.sorted(by: { ($0.expiresDate ?? .distantFuture) < ($1.expiresDate ?? .distantFuture) }) {
       if cookie.expiresDate.map({ $0 > now }) ?? true {
         sourceCookies[cookie.name] = cookie
       }
