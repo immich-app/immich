@@ -7,7 +7,6 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
-import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { commandsAndQuestions } from 'src/commands/index.js';
@@ -23,6 +22,7 @@ import { AuthGuard, Authenticated } from 'src/middleware/auth.guard.js';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor.js';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor.js';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter.js';
+import { GlobalValidationPipe } from 'src/middleware/global-validation.pipe.js';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -44,13 +44,13 @@ import { QueueService } from 'src/services/queue.service.js';
 import { getKyselyConfig } from 'src/utils/database.js';
 import { configureUserAgent } from 'src/utils/fetch.js';
 import { detectMediaLocation, getBackupsStatePath } from 'src/utils/storage.js';
+import { registerSchemas } from 'src/zod.js';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
 const commonMiddleware = [
   { provide: APP_FILTER, useClass: GlobalExceptionFilter },
-  { provide: APP_PIPE, useClass: ZodValidationPipe },
-  { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
+  { provide: APP_PIPE, useClass: GlobalValidationPipe },
   { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
 ];
@@ -142,7 +142,11 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
   providers: [...common, ...apiMiddleware, { provide: IWorker, useValue: ImmichWorker.Api }],
   exports: [AuthService, WebsocketRepository],
 })
-export class ApiModule extends BaseModule {}
+export class ApiModule extends BaseModule {
+  static {
+    registerSchemas({ controllers });
+  }
+}
 
 @Module({
   imports: [
@@ -185,6 +189,10 @@ export class ApiModule extends BaseModule {}
   exports: [MaintenanceWorkerService, MaintenanceWebsocketRepository],
 })
 export class MaintenanceModule {
+  static {
+    registerSchemas({ controllers: [MaintenanceWorkerController] });
+  }
+
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,

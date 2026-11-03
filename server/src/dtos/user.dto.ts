@@ -1,4 +1,3 @@
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import type { MaybeDehydrated, UserMetadataItem } from 'src/types.js';
 import { User, UserAdmin } from 'src/database.js';
@@ -7,6 +6,7 @@ import { pinCodeRegex } from 'src/dtos/auth.dto.js';
 import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation.js';
+import { createZodDto } from 'src/zod.js';
 
 export const UserUpdateMeSchema = z
   .object({
