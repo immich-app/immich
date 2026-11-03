@@ -97,7 +97,6 @@
     "nestjs-cls": "^7.0.0",
     "nestjs-kysely": "3.1.5",
     "nestjs-otel": "^8.0.0",
-    "nestjs-zod": "^5.5.0",
     "nodemailer": "^10.0.0",
     "openid-client": "^6.3.3",
     "pg": "^8.11.3",
