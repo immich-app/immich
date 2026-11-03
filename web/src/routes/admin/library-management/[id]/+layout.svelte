@@ -1,58 +1,40 @@
 <script lang="ts">
-  import { goto, invalidate } from '$app/navigation';
-  import emptyFoldersUrl from '$lib/assets/empty-folders.svg';
-  import AdminCard from '$lib/components/AdminCard.svelte';
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import TableButton from '$lib/components/TableButton.svelte';
-  import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
-  import { Route } from '$lib/route';
+  import emptyFoldersUrl from '#lib/assets/empty-folders.svg';
+  import AdminCard from '#lib/components/AdminCard.svelte';
+  import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
+  import ServerStatisticsCard from '#lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import TableButton from '#lib/components/TableButton.svelte';
+  import LibraryFolderAddModal from '#lib/modals/LibraryFolderAddModal.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getLibraryQuery, getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
+  import { Route } from '#lib/route.ts';
   import {
     getLibraryActions,
     getLibraryExclusionPatternActions,
     getLibraryFolderActions,
-  } from '$lib/services/library.service';
-  import { getBytesWithUnit } from '$lib/utils/byte-units';
+  } from '#lib/services/library.service.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import { Code, CommandPaletteDefaultProvider, Container, Heading, modalManager } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
-  import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
-  import type { LayoutData } from './$types';
+  import type { LayoutProps } from './$types';
 
-  type Props = {
-    children?: Snippet;
-    data: LayoutData;
+  const { children, params }: LayoutProps = $props();
+
+  const queries = {
+    library: createPreloadedQuery(() => getLibraryQuery(params.id)),
+    statistics: createQuery(() => getLibraryStatisticsQuery(params.id)),
   };
 
-  const { children, data }: Props = $props();
+  const library = $derived(queries.library.data);
+  const stats = $derived(queries.statistics.data);
 
-  const photosPromise = $derived(data.statisticsPromise.then((stats) => ({ value: stats.photos })));
-
-  const videosPromise = $derived(data.statisticsPromise.then((stats) => ({ value: stats.videos })));
-
-  const usagePromise = $derived(
-    data.statisticsPromise.then((stats) => {
-      const [value, unit] = getBytesWithUnit(stats.usage);
-      return { value, unit };
-    }),
-  );
-
-  const library = $derived(data.library);
-
-  const onLibraryUpdate = () => invalidate('app:library');
-
-  const onLibraryDelete = async ({ id }: { id: string }) => {
-    if (id === library.id) {
-      await goto(Route.libraries());
-    }
-  };
+  const [usage, usageUnit] = $derived(stats ? getBytesWithUnit(stats.usage) : [undefined, undefined]);
 
   const { Edit, Delete, AddFolder, AddExclusionPattern, Scan } = $derived(getLibraryActions($t, library));
 </script>
-
-<OnEvents {onLibraryUpdate} {onLibraryDelete} />
 
 <CommandPaletteDefaultProvider name={$t('library')} actions={[Edit, Delete, AddFolder, AddExclusionPattern, Scan]} />
 
@@ -64,9 +46,9 @@
     <div class="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
       <Heading tag="h1" size="large" class="col-span-full my-4">{library.name}</Heading>
       <div class="col-span-full flex flex-col gap-4 lg:flex-row">
-        <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} valuePromise={photosPromise} />
-        <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} valuePromise={videosPromise} />
-        <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} valuePromise={usagePromise} />
+        <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={stats?.photos} />
+        <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={stats?.videos} />
+        <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} value={usage} unit={usageUnit} />
       </div>
 
       <AdminCard icon={mdiFolderOutline} title={$t('folders')} headerAction={AddFolder}>
@@ -81,7 +63,7 @@
           <table class="w-full">
             <tbody>
               {#each library.importPaths as folder (folder)}
-                {@const { Edit, Delete } = getLibraryFolderActions($t, library, folder)}
+                {const { Edit, Delete } = $derived(getLibraryFolderActions($t, library, folder))}
                 <tr class="h-12">
                   <td>
                     <Code>{folder}</Code>
@@ -101,7 +83,7 @@
         <table class="w-full">
           <tbody>
             {#each library.exclusionPatterns as exclusionPattern (exclusionPattern)}
-              {@const { Edit, Delete } = getLibraryExclusionPatternActions($t, library, exclusionPattern)}
+              {const { Edit, Delete } = $derived(getLibraryExclusionPatternActions($t, library, exclusionPattern))}
               <tr class="h-12">
                 <td>
                   <Code>{exclusionPattern}</Code>

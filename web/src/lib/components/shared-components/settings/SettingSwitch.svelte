@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { generateId } from '$lib/utils/generate-id';
   import { Switch } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
 
-  interface Props {
+  type Props = {
     title: string;
     subtitle?: string;
     checked?: boolean;
@@ -14,7 +13,7 @@
     isEdited?: boolean;
     onToggle?: (isChecked: boolean) => void;
     children?: Snippet;
-  }
+  };
 
   let {
     title,
@@ -26,10 +25,9 @@
     children,
   }: Props = $props();
 
-  let id: string = generateId();
-
-  let switchId = $derived(`input-${id}`);
-  let subtitleId = $derived(subtitle ? `${id}-subtitle` : undefined);
+  const id = $props.id();
+  const switchId = `input-${id}`;
+  const subtitleId = $derived(subtitle ? `${id}-subtitle` : undefined);
 </script>
 
 <div class="flex place-items-center justify-between">

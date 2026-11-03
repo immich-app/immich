@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
+  import { moonPath, moonViewBox, sunPath, sunViewBox } from '#lib/assets/svg-paths.ts';
   import { Icon, themeManager, ThemePreference } from '@immich/ui';
   import { t } from 'svelte-i18n';
 </script>

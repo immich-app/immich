@@ -19,6 +19,7 @@ import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(MemoryService, {
     database: db || defaultDatabase,
@@ -47,10 +48,14 @@ const create = async (ctx: ReturnType<typeof setup>['ctx']) => {
 
 const newPersonAsset = async (
   ctx: ReturnType<typeof setup>['ctx'],
-  { ownerId, personGroupId, localDateTime }: { ownerId: string; personGroupId: string; localDateTime?: string },
+  {
+    ownerId,
+    personGroupId,
+    localDateTime = '2024-06-13T12:00:00.000Z',
+  }: { ownerId: string; personGroupId: string; localDateTime?: string },
 ) => {
   const assetRepo = ctx.get(AssetRepository);
-  const { asset } = await ctx.newAsset({ ownerId, localDateTime: localDateTime ?? '2024-06-13T12:00:00.000Z' });
+  const { asset } = await ctx.newAsset({ ownerId, localDateTime });
   await Promise.all([
     ctx.newExif({ assetId: asset.id, make: 'Canon' }),
     ctx.newJobStatus({ assetId: asset.id }),

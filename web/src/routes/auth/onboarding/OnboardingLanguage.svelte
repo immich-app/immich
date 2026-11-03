@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SettingsLanguageSelector from '$lib/components/shared-components/settings/SettingsLanguageSelector.svelte';
+  import SettingsLanguageSelector from '#lib/components/shared-components/settings/SettingsLanguageSelector.svelte';
   import { t } from 'svelte-i18n';
 </script>
 

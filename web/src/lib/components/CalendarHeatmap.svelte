@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import type { CalendarHeatmapResponseDto } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { DateTime, Info } from 'luxon';
@@ -70,9 +70,11 @@
         </div>
 
         {#each data.series as day, idx (day.date)}
-          {@const date = DateTime.fromISO(day.date, { zone: 'utc' }).toLocaleString(
-            { month: 'short', day: 'numeric' },
-            { locale: $locale },
+          {const date = $derived(
+            DateTime.fromISO(day.date, { zone: 'utc' }).toLocaleString(
+              { month: 'short', day: 'numeric' },
+              { locale: $locale },
+            ),
           )}
           <div
             class="aspect-square size-full rounded-sm {itemColors(day.count)} row-start-(--heatmap-row-start)"

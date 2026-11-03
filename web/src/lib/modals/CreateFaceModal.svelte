@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { delay } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { createFace, createPerson } from '@immich/sdk';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { createFaceMutation } from '#lib/queries/face.query.ts';
+  import { delay } from '#lib/utils/asset-utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { createPerson } from '@immich/sdk';
   import { Field, FormModal, Input, LoadingSpinner, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -30,36 +32,30 @@
       return;
     }
 
+    isSubmitting = true;
+
+    let personId: string;
     try {
-      isSubmitting = true;
+      const person = await createPerson({ personCreateDto: { name } });
+      personId = person.id;
+    } catch (error) {
+      handleError(error, $t('errors.something_went_wrong'));
+      isSubmitting = false;
+      return;
+    }
 
-      const person = await createPerson({
-        personCreateDto: {
-          name,
-        },
-      });
-
-      await createFace({
-        assetFaceCreateDto: {
-          assetId,
-          imageHeight,
-          imageWidth,
-          personId: person.id,
-          x,
-          y,
-          width,
-          height,
-        },
-      });
-
+    const onSuccess = async () => {
       await delay(1500);
       await assetViewerManager.setAssetId(assetId);
       onClose(true);
-    } catch (error) {
-      handleError(error, 'Error creating and tagging face');
-    } finally {
       isSubmitting = false;
-    }
+    };
+
+    const assetFaceCreateDto = { assetId, imageHeight, imageWidth, personId, x, y, width, height };
+    await executeMutation(createFaceMutation, [{ assetFaceCreateDto }], {
+      onSuccess: () => void onSuccess(),
+      onError: () => (isSubmitting = false),
+    });
   };
 </script>
 

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
   import { type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,

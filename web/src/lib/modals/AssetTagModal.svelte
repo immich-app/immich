@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { handleTagUntagAssets } from '$lib/services/asset.service';
+  import { handleTagUntagAssets } from '#lib/services/asset.service';
   import {
     getAllTags,
     queryTagsForAssets,

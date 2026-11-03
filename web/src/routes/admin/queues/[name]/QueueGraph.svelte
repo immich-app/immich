@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { cleanClass } from '$lib';
-  import { queueManager } from '$lib/managers/queue-manager.svelte';
-  import type { QueueSnapshot } from '$lib/types';
+  import { cleanClass } from '#lib';
+  import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
+  import type { QueueSnapshot } from '#lib/types.ts';
   import type { QueueResponseDto } from '@immich/sdk';
   import { LoadingSpinner, Theme, themeManager } from '@immich/ui';
   import { DateTime } from 'luxon';
@@ -35,7 +35,7 @@
       if (statistics) {
         items[1].push(statistics.failed);
         items[2].push(statistics.active);
-        items[3].push(statistics.waiting + statistics.paused);
+        items[3].push(statistics.waiting);
       } else {
         items[0].push(timestamp);
         items[1].push(null);

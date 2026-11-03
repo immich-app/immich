@@ -1,11 +1,15 @@
 <script lang="ts">
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { handleDeleteUserAdmin } from '$lib/services/user-admin.service';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { deleteUserAdminMutation } from '#lib/queries/user-admin.query.ts';
   import { type UserAdminResponseDto } from '@immich/sdk';
   import { Alert, Checkbox, ConfirmModal, Field, Input, Label, Text } from '@immich/ui';
   import { mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   type Props = {
     user: UserAdminResponseDto;
@@ -24,10 +28,9 @@
       return;
     }
 
-    const success = await handleDeleteUserAdmin(user, { force });
-    if (success) {
-      onClose();
-    }
+    await executeMutation(deleteUserAdminMutation, [{ id: user.id, userAdminDeleteDto: { force } }], {
+      onSuccess: onClose,
+    });
   };
 </script>
 
@@ -48,10 +51,7 @@
             {/snippet}
           </FormatMessage>
         {:else}
-          <FormatMessage
-            key="admin.user_delete_delay"
-            values={{ user: user.name, delay: serverConfigManager.value.userDeleteDelay }}
-          >
+          <FormatMessage key="admin.user_delete_delay" values={{ user: user.name, delay: config.user.deleteDelay }}>
             {#snippet children({ message })}
               <b>{message}</b>
             {/snippet}

@@ -1,12 +1,16 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { OnboardingRole } from '$lib/types';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { OnboardingRole } from '#lib/types.ts';
   import { Logo } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+
+  const query = createPreloadedQuery(getServerConfigQuery);
+  const serverConfig = $derived(query.data);
 
   let userRole = $derived(
-    authManager.user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
+    authManager.user.isAdmin && !serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
   );
 </script>
 

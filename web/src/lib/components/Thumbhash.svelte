@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { decodeBase64 } from '$lib/utils';
-  import { TUNABLES } from '$lib/utils/tunables';
+  import { decodeBase64 } from '#lib/utils.ts';
+  import { TUNABLES } from '#lib/utils/tunables.ts';
   import type { HTMLCanvasAttributes } from 'svelte/elements';
   import { fade } from 'svelte/transition';
   import { thumbHashToRGBA } from 'thumbhash';

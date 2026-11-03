@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 function getBoolean(string: string | null, fallback: boolean) {
   if (string === null) {

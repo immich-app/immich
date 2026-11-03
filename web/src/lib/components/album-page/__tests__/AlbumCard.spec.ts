@@ -1,8 +1,8 @@
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
+import { factory } from '#test/unit/factories.ts';
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';
-import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { albumFactory } from '@test-data/factories/album-factory';
 import AlbumCard from '../AlbumCard.svelte';
 
 describe('AlbumCard component', () => {
@@ -10,28 +10,28 @@ describe('AlbumCard component', () => {
 
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });
-    register('en-US', () => import('$i18n/en.json'));
+    register('en-US', () => import('#i18n/en.json'));
     await waitLocale('en-US');
   });
 
   it.each([
     {
-      album: albumFactory.build({ albumThumbnailAssetId: null, shared: false, assetCount: 0 }),
+      album: factory.album({ albumThumbnailAssetId: null, shared: false, assetCount: 0 }),
       count: 0,
       shared: false,
     },
     {
-      album: albumFactory.build({ albumThumbnailAssetId: null, shared: true, assetCount: 0 }),
+      album: factory.album({ albumThumbnailAssetId: null, shared: true, assetCount: 0 }),
       count: 0,
       shared: true,
     },
     {
-      album: albumFactory.build({ albumThumbnailAssetId: null, shared: false, assetCount: 5 }),
+      album: factory.album({ albumThumbnailAssetId: null, shared: false, assetCount: 5 }),
       count: 5,
       shared: false,
     },
     {
-      album: albumFactory.build({ albumThumbnailAssetId: null, shared: true, assetCount: 2 }),
+      album: factory.album({ albumThumbnailAssetId: null, shared: true, assetCount: 2 }),
       count: 2,
       shared: true,
     },
@@ -43,20 +43,26 @@ describe('AlbumCard component', () => {
     const albumDetailsElement = sut.getByTestId('album-details');
     const detailsText = `${count} items` + (shared ? ' . Shared' : '');
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('src');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
     expect(sdkMock.viewAsset).not.toHaveBeenCalled();
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumNameElement).toHaveTextContent(album.albumName);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumDetailsElement).toHaveTextContent(new RegExp(detailsText));
   });
 
   it('shows album data', () => {
-    const album = albumFactory.build({
+    const album = factory.album({
       shared: false,
       albumName: 'some album name',
     });
@@ -66,18 +72,23 @@ describe('AlbumCard component', () => {
     const albumNameElement = sut.getByTestId('album-name');
     const albumDetailsElement = sut.getByTestId('album-details');
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('src');
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumNameElement).toHaveTextContent('some album name');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumDetailsElement).toHaveTextContent(`${album.assetCount} item`);
   });
 
   it('hides context menu when "contextMenuItems" is undefined', () => {
-    const album = Object.freeze(albumFactory.build({ albumThumbnailAssetId: null }));
+    const album = Object.freeze(factory.album({ albumThumbnailAssetId: null }));
     sut = render(AlbumCard, { album });
 
     const contextButtonParent = sut.queryByTestId('context-button-parent');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(contextButtonParent).not.toBeInTheDocument();
   });
 });

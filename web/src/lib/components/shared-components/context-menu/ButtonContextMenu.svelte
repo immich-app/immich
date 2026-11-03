@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import ContextMenu from '$lib/components/shared-components/context-menu/ContextMenu.svelte';
-  import { languageManager } from '$lib/managers/language-manager.svelte';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
+  import { contextMenuNavigation } from '#lib/actions/context-menu-navigation.ts';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import ContextMenu from '#lib/components/shared-components/context-menu/ContextMenu.svelte';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
+  import { optionClickCallbackStore, selectedIdStore } from '#lib/stores/context-menu.store.ts';
   import {
     getContextMenuPositionFromBoundingRect,
     getContextMenuPositionFromEvent,
     type Align,
-  } from '$lib/utils/context-menu';
-  import { generateId } from '$lib/utils/generate-id';
+  } from '#lib/utils/context-menu.ts';
   import { IconButton, type Color, type Size, type Variants } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
@@ -17,21 +16,15 @@
   type Props = {
     icon: string;
     title: string;
-    /**
-     * The alignment of the context menu relative to the button.
-     */
+    /** The alignment of the context menu relative to the button. */
     align?: Align;
-    /**
-     * The direction in which the context menu should open.
-     */
+    /** The direction in which the context menu should open. */
     // TODO change to start vs end
     direction?: 'left' | 'right';
     color?: Color;
     size?: Size | undefined;
     variant?: Variants | undefined;
-    /**
-     * Additional classes to apply to the button.
-     */
+    /** Additional classes to apply to the button. */
     buttonClass?: string | undefined;
     hideContent?: boolean;
     children?: Snippet;
@@ -61,7 +54,7 @@
   let menuContainer: HTMLUListElement | undefined = $state();
   let buttonContainer: HTMLDivElement | undefined = $state();
 
-  const id = generateId();
+  const id = $props.id();
   const buttonId = `context-menu-button-${id}`;
   const menuId = `context-menu-${id}`;
 

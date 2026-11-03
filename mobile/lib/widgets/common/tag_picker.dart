@@ -86,7 +86,7 @@ class TagPicker extends HookConsumerWidget {
     final searchQuery = useState('');
     final tags = ref.watch(Store.tags.all());
     final selectedTagIds = useState<Set<String>>(initialSelection);
-    const borderRadius = BorderRadius.all(Radius.circular(10));
+    const borderRadius = BorderRadius.all(Radius.circular(20));
     final selectedNewTagValues = useState<Set<String>>({});
 
     return Column(
@@ -102,8 +102,8 @@ class TagPicker extends HookConsumerWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 0),
-          child: Divider(color: context.colorScheme.surfaceContainerHighest, thickness: 1),
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
+          child: Divider(height: 1, color: context.colorScheme.surfaceContainerHighest, thickness: 1),
         ),
         Expanded(
           child: tags.widgetWhen(
@@ -117,20 +117,23 @@ class TagPicker extends HookConsumerWidget {
                   trimmedQuery.isNotEmpty &&
                   !tags.any((t) => t.value.toLowerCase() == trimmedQuery.toLowerCase());
               final isCreateSelected = selectedNewTagValues.value.contains(trimmedQuery);
-              return ListView.builder(
-                itemCount: queryResult.length + (showCreateTile ? 1 : 0),
-                padding: const EdgeInsets.all(8),
-                itemBuilder: (context, index) {
-                  if (showCreateTile && index == queryResult.length) {
-                    // Create new tag tile
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 2.0),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: isCreateSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        ),
+              // ListTile paints its tile color on the nearest Material, clip it to the list
+              return Material(
+                type: MaterialType.transparency,
+                clipBehavior: Clip.hardEdge,
+                child: ListView.builder(
+                  itemCount: queryResult.length + (showCreateTile ? 1 : 0),
+                  padding: const EdgeInsets.all(8),
+                  itemBuilder: (context, index) {
+                    if (showCreateTile && index == queryResult.length) {
+                      // Create new tag tile
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 2.0),
                         child: ListTile(
+                          shape: const RoundedRectangleBorder(borderRadius: borderRadius),
+                          selected: isCreateSelected,
+                          selectedTileColor: context.primaryColor,
+                          tileColor: context.primaryColor.withAlpha(25),
                           title: Text(
                             trimmedQuery,
                             style: context.textTheme.bodyLarge?.copyWith(
@@ -152,20 +155,18 @@ class TagPicker extends HookConsumerWidget {
                             onSelectNewTag!.call(newSelectedNewTagValues);
                           },
                         ),
-                      ),
-                    );
-                  }
-                  final tag = queryResult[index];
-                  final isSelected = selectedTagIds.value.any((id) => id == tag.id);
+                      );
+                    }
+                    final tag = queryResult[index];
+                    final isSelected = selectedTagIds.value.any((id) => id == tag.id);
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 2.0),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: isSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
-                        borderRadius: borderRadius,
-                      ),
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 7.0, right: 2.0, left: 2.0),
                       child: ListTile(
+                        shape: const RoundedRectangleBorder(borderRadius: borderRadius),
+                        selected: isSelected,
+                        selectedTileColor: context.primaryColor,
+                        tileColor: context.primaryColor.withAlpha(25),
                         title: Text(
                           tag.value,
                           style: context.textTheme.bodyLarge?.copyWith(
@@ -183,9 +184,9 @@ class TagPicker extends HookConsumerWidget {
                           onSelectExistingTag(tags.where((t) => newSelected.contains(t.id)));
                         },
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               );
             },
           ),

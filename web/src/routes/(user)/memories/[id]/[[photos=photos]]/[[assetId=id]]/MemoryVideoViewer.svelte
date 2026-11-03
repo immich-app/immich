@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { assetViewerFadeDuration } from '$lib/constants';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { autoPlayVideo } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import { assetViewerFadeDuration } from '#lib/constants.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { autoPlayVideo } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, getAssetPlaybackUrl } from '#lib/utils.ts';
   import { AssetMediaSize } from '@immich/sdk';
   import 'media-chrome/media-controller';
   import { onMount } from 'svelte';

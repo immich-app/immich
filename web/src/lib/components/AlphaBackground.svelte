@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cleanClass } from '$lib';
+  import { cleanClass } from '#lib';
   import type { ClassValue } from 'svelte/elements';
 
   interface Props {

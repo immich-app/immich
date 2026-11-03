@@ -1,6 +1,6 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { getAssetInfo, getAssetOcr, getFaces } from '@immich/sdk';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
 
 const defaultSerializer = <K>(params: K) => JSON.stringify(params);
 

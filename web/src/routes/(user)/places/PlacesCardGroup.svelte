@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Route } from '$lib/route';
-  import { placesViewSettings } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '$lib/utils/places-utils';
+  import { Route } from '#lib/route.ts';
+  import { placesViewSettings } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
+  import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '#lib/utils/places-utils.ts';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiChevronRight } from '@mdi/js';
@@ -39,7 +39,7 @@
   {#if !isCollapsed}
     <div class="flex flex-row flex-wrap gap-4">
       {#each places as item (item.id)}
-        {@const city = item.exifInfo?.city}
+        {const city = item.exifInfo?.city}
         <a class="relative" href={Route.search({ city })} draggable="false">
           <div
             class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-39 justify-center overflow-hidden rounded-xl brightness-75 filter"

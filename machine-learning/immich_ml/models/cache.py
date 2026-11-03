@@ -3,6 +3,7 @@ from collections.abc import Hashable
 from typing import Any
 
 from immich_ml import allocator
+from immich_ml.config import clean_name
 from immich_ml.models.base import InferenceEntry, InferenceModel
 from immich_ml.schemas import Options
 
@@ -15,7 +16,8 @@ class ModelCache:
         self._expiries: dict[Key, asyncio.TimerHandle] = {}
 
     def get[O: Options](self, entry: InferenceEntry[O], ttl: int | None = None) -> InferenceModel[O]:
-        key = (entry.model, entry.name, entry.model.graph(entry.options))
+        # names that differ only in what cleaning drops, like an `immich-app/` prefix, are the same model
+        key = (entry.model, clean_name(entry.name), entry.model.graph(entry.options))
         if key not in self._models:
             self._models[key] = entry.model.create(entry.name, entry.options)
         elif key not in self._expiries:

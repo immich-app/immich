@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { languageManager } from '$lib/managers/language-manager.svelte';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import { Button, Icon } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiCheck } from '@mdi/js';
   import type { Snippet } from 'svelte';

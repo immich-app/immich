@@ -1,5 +1,5 @@
 import { isHttpError, type ApiHttpError } from '@immich/sdk';
-import type { HandleClientError } from '@sveltejs/kit';
+import type { HandleClientError } from '@sveltejs/kit/hooks';
 
 const DEFAULT_MESSAGE = 'Hmm, not sure about that. Check the logs or open a ticket?';
 
@@ -19,19 +19,23 @@ const parseHTTPError = (httpError: ApiHttpError) => {
   };
 };
 
-const parseError = (error: unknown, status: number, message: string) => {
+const parseError = (error: App.Error | { status: number; message: string }) => {
   if (isHttpError(error)) {
     return parseHTTPError(error);
   }
 
   return {
-    message: (error as Error)?.message || message || DEFAULT_MESSAGE,
-    code: status,
+    message: error.message || DEFAULT_MESSAGE,
+    code: error.status,
   };
 };
 
-export const handleError: HandleClientError = ({ error, status, message }) => {
-  const result = parseError(error, status, message);
+export const handleError: HandleClientError = ({ kind, error }) => {
+  if (kind === 'unknown') {
+    console.error(error);
+    return;
+  }
+  const result = parseError(error);
   console.error(`[hooks.client.ts]:handleError ${result.message}`, error);
   return result;
 };

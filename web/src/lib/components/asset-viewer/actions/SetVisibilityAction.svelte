@@ -1,8 +1,8 @@
 <script lang="ts">
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import { AssetAction } from '$lib/constants';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { handleError } from '$lib/utils/handle-error';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import { AssetAction } from '#lib/constants.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { AssetVisibility, updateAssets } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline } from '@mdi/js';

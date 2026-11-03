@@ -308,6 +308,35 @@ export const asset_face_audit = registerFunction({
     END`,
 });
 
+export const asset_face_set_asset_state = registerFunction({
+  name: 'asset_face_set_asset_state',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      -- FOR SHARE so a concurrent update of the asset cannot leave this face with stale state
+      SELECT "ownerId", "visibility", "deletedAt"
+      INTO NEW."ownerId", NEW."assetVisibility", NEW."assetDeletedAt"
+      FROM asset
+      WHERE "id" = NEW."assetId"
+      FOR SHARE;
+      RETURN NEW;
+    END`,
+});
+
+export const asset_face_update_asset_state = registerFunction({
+  name: 'asset_face_update_asset_state',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      UPDATE asset_face
+      SET "ownerId" = NEW."ownerId", "assetVisibility" = NEW."visibility", "assetDeletedAt" = NEW."deletedAt"
+      WHERE "assetId" = NEW."id";
+      RETURN NULL;
+    END`,
+});
+
 export const asset_edit_insert = registerFunction({
   name: 'asset_edit_insert',
   returnType: 'TRIGGER',

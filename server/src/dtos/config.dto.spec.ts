@@ -10,12 +10,16 @@ import {
 import { getKeysDeep } from 'src/utils/misc.js';
 
 const PUBLIC_PROPERTIES = [
+  'ffmpeg.realtime.enabled',
+  'map.darkStyle',
+  'map.enabled',
+  'map.lightStyle',
   'oauth.autoLaunch',
   'oauth.buttonText',
   'oauth.enabled',
+  'passkey.enabled',
   'passwordLogin.enabled',
   'server.loginPageMessage',
-  'theme.customCss',
 ];
 
 describe('config visibility', () => {
@@ -59,10 +63,58 @@ describe('config visibility', () => {
     expect(config.notifications).toBeUndefined();
   });
 
+  it('should expose only whether smtp is enabled to users', () => {
+    const config = mapUserConfig(defaults) as Record<string, any>;
+
+    expect(config.notifications).toEqual({ smtp: { enabled: defaults.notifications.smtp.enabled } });
+  });
+
   it('should keep the visibility metadata out of the schemas', () => {
     for (const schema of [AdminConfigDto.schema, UserConfigDto.schema, PublicConfigDto.schema]) {
       const json = JSON.stringify(z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' }));
       expect(json).not.toContain('visibility');
     }
+  });
+});
+
+const parsePasskey = (passkey: Record<string, unknown>) => AdminConfigDto.schema.safeParse({ ...defaults, passkey });
+const passkeyMessages = (passkey: Record<string, unknown>) =>
+  parsePasskey(passkey).error?.issues.map((issue) => issue.message);
+
+describe('passkey config', () => {
+  it('should allow enabling without a domain', () => {
+    expect(parsePasskey({ enabled: true, domain: null, additionalDomains: [] }).success).toBe(true);
+  });
+
+  it('should reject domains that are not https', () => {
+    expect(passkeyMessages({ enabled: true, domain: 'ftp://immich.example', additionalDomains: [] })).toEqual([
+      'Invalid URL',
+    ]);
+  });
+
+  it('should reject domains with a path', () => {
+    expect(
+      passkeyMessages({ enabled: true, domain: null, additionalDomains: ['https://immich.tailnet.example/photos'] }),
+    ).toEqual(['Additional domain must not include a path, query, or fragment']);
+  });
+
+  it('should reject duplicate additional domains', () => {
+    expect(
+      passkeyMessages({
+        enabled: true,
+        domain: null,
+        additionalDomains: ['https://immich.tailnet.example', 'https://immich.tailnet.example/'],
+      }),
+    ).toEqual(['Duplicate domain']);
+  });
+
+  it('should reject the passkey domain as an additional domain', () => {
+    expect(
+      passkeyMessages({
+        enabled: true,
+        domain: 'https://immich.example',
+        additionalDomains: ['https://immich.example/'],
+      }),
+    ).toEqual(['The passkey domain is always allowed and must not be listed as an additional domain']);
   });
 });

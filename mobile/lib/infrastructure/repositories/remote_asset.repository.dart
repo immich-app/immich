@@ -41,6 +41,23 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
     return _assetSelectable(id).watchSingleOrNull();
   }
 
+  Stream<Set<String>> watchDeletedAssetIds(Iterable<String> ids, AssetVisibility visibility) {
+    final idList = ids.toList(growable: false);
+    if (idList.isEmpty) {
+      return Stream.value(const <String>{});
+    }
+
+    final query = _db.remoteAssetEntity.selectOnly()
+      ..addColumns([_db.remoteAssetEntity.id])
+      ..where(
+        _db.remoteAssetEntity.id.isIn(idList) &
+            (_db.remoteAssetEntity.deletedAt.isNotNull() |
+                _db.remoteAssetEntity.visibility.equalsValue(visibility).not()),
+      );
+
+    return query.map((row) => row.read(_db.remoteAssetEntity.id)!).watch().map((rows) => rows.toSet());
+  }
+
   Future<RemoteAsset?> get(String id) {
     return _assetSelectable(id).getSingleOrNull();
   }
@@ -59,7 +76,7 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
 
     final query = _db.remoteAssetEntity.select()
       ..where((row) => row.stackId.equals(stackId) & row.id.equals(asset.id).not())
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
+      ..orderBy([(row) => OrderingTerm.asc(row.createdAt)]);
 
     return query.map((row) => row.toDto()).get();
   }

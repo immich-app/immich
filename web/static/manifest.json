@@ -5,19 +5,13 @@
   "display": "standalone",
   "icons": [
     {
-      "purpose": "any",
+      "purpose": "any maskable",
       "sizes": "192x192",
       "src": "manifest-icon-192.maskable.png",
       "type": "image/png"
     },
     {
-      "purpose": "any",
-      "sizes": "512x512",
-      "src": "manifest-icon-512.maskable.png",
-      "type": "image/png"
-    },
-    {
-      "purpose": "maskable",
+      "purpose": "any maskable",
       "sizes": "512x512",
       "src": "manifest-icon-512.maskable.png",
       "type": "image/png"

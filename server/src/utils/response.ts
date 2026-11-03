@@ -60,6 +60,9 @@ export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values 
   };
 
   for (const { key, value } of values) {
+    if (value === null) {
+      continue;
+    }
     const options = cookieOptions[key];
     res.cookie(key, value, options);
   }

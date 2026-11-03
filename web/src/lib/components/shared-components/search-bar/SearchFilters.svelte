@@ -24,7 +24,7 @@
   import SearchTextSection from './SearchTextSection.svelte';
   import SearchDisplaySection from './SearchDisplaySection.svelte';
   import SearchRatingsSection from './SearchRatingsSection.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import {
     getPeople,
     getSearchDatePreset,
@@ -36,7 +36,7 @@
     getSearchTypeTitle,
   } from './search-bar-utils';
   import { onMount } from 'svelte';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import SearchButton from './SearchButton.svelte';
 
   interface Props {

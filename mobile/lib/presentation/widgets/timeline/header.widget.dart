@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -27,15 +28,15 @@ class TimelineHeader extends HookWidget {
     required this.assetOffset,
   });
 
-  String _formatMonth(BuildContext context, DateTime date) {
+  String _formatMonth(DateTime date) {
     final formatter = date.year == DateTime.now().year
-        ? DateFormat.MMMM(context.locale.toLanguageTag())
-        : DateFormat.yMMMM(context.locale.toLanguageTag());
+        ? DateFormat.MMMM(resolvedDateTimeLocale())
+        : DateFormat.yMMMM(resolvedDateTimeLocale());
     return formatter.format(date);
   }
 
-  String _formatDay(BuildContext context, DateTime date) {
-    final formatter = DateFormat.yMMMEd(context.locale.toLanguageTag());
+  String _formatDay(DateTime date) {
+    final formatter = DateFormat.yMMMEd(resolvedDateTimeLocale());
     return formatter.format(date);
   }
 
@@ -61,7 +62,7 @@ class TimelineHeader extends HookWidget {
               Row(
                 children: [
                   Text(
-                    toBeginningOfSentenceCase(_formatMonth(context, date)),
+                    toBeginningOfSentenceCase(_formatMonth(date)),
                     style: context.textTheme.labelLarge?.copyWith(fontSize: 24),
                   ),
                   const Spacer(),
@@ -72,7 +73,7 @@ class TimelineHeader extends HookWidget {
               Row(
                 children: [
                   Text(
-                    toBeginningOfSentenceCase(_formatDay(context, date)),
+                    toBeginningOfSentenceCase(_formatDay(date)),
                     style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
                   ),
                   const Spacer(),

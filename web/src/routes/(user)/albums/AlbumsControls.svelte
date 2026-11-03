@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Dropdown from '$lib/elements/Dropdown.svelte';
-  import GroupTab from '$lib/elements/GroupTab.svelte';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
+  import Dropdown from '#lib/elements/Dropdown.svelte';
+  import GroupTab from '#lib/elements/GroupTab.svelte';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -9,7 +9,7 @@
     AlbumViewMode,
     albumViewSettings,
     SortOrder,
-  } from '$lib/stores/preferences.store';
+  } from '#lib/stores/preferences.store.ts';
   import {
     type AlbumGroupOptionMetadata,
     type AlbumSortOptionMetadata,
@@ -22,7 +22,7 @@
     getSelectedAlbumGroupOption,
     groupOptionsMetadata,
     sortOptionsMetadata,
-  } from '$lib/utils/album-utils';
+  } from '#lib/utils/album-utils.ts';
   import { Button, IconButton, Text } from '@immich/ui';
   import {
     mdiArrowDownThin,

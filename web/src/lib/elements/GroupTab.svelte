@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { generateId } from '$lib/utils/generate-id';
-
   interface Props {
     filters: string[];
     labels?: string[];
@@ -9,9 +7,9 @@
     onSelect: (selected: string) => void;
   }
 
-  let { filters, selected, label, labels, onSelect }: Props = $props();
+  const { filters, selected, label, labels, onSelect }: Props = $props();
 
-  const id = `group-tab-${generateId()}`;
+  const id = $props.id();
 </script>
 
 <fieldset

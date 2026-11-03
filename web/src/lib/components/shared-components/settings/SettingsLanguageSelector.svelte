@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation';
-  import Combobox from '$lib/components/shared-components/Combobox.svelte';
-  import { defaultLang } from '$lib/constants';
-  import { lang } from '$lib/stores/preferences.store';
-  import { convertBCP47, getClosestAvailableLocale, langCodes, langs } from '$lib/utils/i18n';
+  import Combobox from '#lib/components/shared-components/Combobox.svelte';
+  import { defaultLang } from '#lib/constants.ts';
+  import { lang } from '#lib/stores/preferences.store.ts';
+  import { convertBCP47, getClosestAvailableLocale, langCodes, langs } from '#lib/utils/i18n.ts';
+  import { refreshAll } from '$app/navigation';
   import { Label, Text } from '@immich/ui';
   import { locale as i18nLocale, t } from 'svelte-i18n';
 
@@ -24,7 +24,7 @@
 
     $lang = newLang;
     await i18nLocale.set(convertBCP47(newLang));
-    await invalidateAll();
+    await refreshAll();
   };
 
   let closestLanguage = $derived(getClosestAvailableLocale([$lang], langCodes));

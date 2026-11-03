@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cleanClass } from '$lib';
+  import { cleanClass } from '#lib';
   import { Icon, LoadingSpinner } from '@immich/ui';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import { Duration } from 'luxon';

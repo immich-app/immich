@@ -1,31 +1,28 @@
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
+import RecentAlbums from '#lib/components/shared-components/side-bar/RecentAlbums.svelte';
+import { factory } from '#test/unit/factories.ts';
 import { render, screen } from '@testing-library/svelte';
-import { tick } from 'svelte';
-import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import RecentAlbums from '$lib/components/shared-components/side-bar/RecentAlbums.svelte';
-import { albumFactory } from '@test-data/factories/album-factory';
 
 describe('RecentAlbums component', () => {
   it('sorts albums by most recently updated', async () => {
     const albums = [
-      albumFactory.build({ updatedAt: '2024-01-01T00:00:00Z' }),
-      albumFactory.build({ updatedAt: '2024-01-09T00:00:01Z' }),
-      albumFactory.build({ updatedAt: '2024-01-10T00:00:00Z' }),
-      albumFactory.build({ updatedAt: '2024-01-09T00:00:00Z' }),
+      factory.album({ updatedAt: '2024-01-01T00:00:00Z' }),
+      factory.album({ updatedAt: '2024-01-09T00:00:01Z' }),
+      factory.album({ updatedAt: '2024-01-10T00:00:00Z' }),
+      factory.album({ updatedAt: '2024-01-09T00:00:00Z' }),
     ];
 
     sdkMock.getAllAlbums.mockResolvedValueOnce([...albums]);
     render(RecentAlbums);
 
+    const links = await screen.findAllByRole('link');
     expect(sdkMock.getAllAlbums).toHaveBeenCalledOnce();
-
-    // wtf
-    await tick();
-    await tick();
-
-    const links = screen.getAllByRole('link');
     expect(links).toHaveLength(3);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(links[0]).toHaveAttribute('href', `/albums/${albums[2].id}`);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(links[1]).toHaveAttribute('href', `/albums/${albums[1].id}`);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(links[2]).toHaveAttribute('href', `/albums/${albums[3].id}`);
   });
 });

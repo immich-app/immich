@@ -1,16 +1,14 @@
+import { getAnimateMock } from '#lib/__mocks__/animate.mock.ts';
+import { getResizeObserverMock } from '#lib/__mocks__/resize-observer.mock.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
+import { factory } from '#test/unit/factories.ts';
+import { renderWithTooltips } from '#test/unit/helpers.ts';
 import { updateAsset } from '@immich/sdk';
 import { fireEvent, waitFor } from '@testing-library/svelte';
-import { getAnimateMock } from '$lib/__mocks__/animate.mock';
-import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-import { renderWithTooltips } from '$tests/helpers';
-import { assetFactory } from '@test-data/factories/asset-factory';
-import { preferencesFactory } from '@test-data/factories/preferences-factory';
-import { userAdminFactory } from '@test-data/factories/user-factory';
 import AssetViewer from './AssetViewer.svelte';
 
-vi.mock('$lib/managers/feature-flags-manager.svelte', () => ({
+vi.mock('#lib/managers/feature-flags-manager.svelte.js', () => ({
   featureFlagsManager: {
     init: vi.fn(),
     loadFeatureFlags: vi.fn(),
@@ -18,7 +16,7 @@ vi.mock('$lib/managers/feature-flags-manager.svelte', () => ({
   } as never,
 }));
 
-vi.mock('$lib/stores/ocr.svelte', () => ({
+vi.mock('#lib/stores/ocr.svelte.js', () => ({
   ocrManager: {
     clear: vi.fn(),
     getAssetOcr: vi.fn(),
@@ -53,11 +51,11 @@ describe('AssetViewer', () => {
 
   it.skip('updates the top bar favorite action after pressing favorite', async () => {
     const ownerId = 'owner-id';
-    const user = userAdminFactory.build({ id: ownerId });
-    const asset = assetFactory.build({ ownerId, isFavorite: false, isTrashed: false });
+    const user = factory.user({ id: ownerId });
+    const asset = factory.asset({ ownerId, isFavorite: false, isTrashed: false });
 
     authManager.setUser(user);
-    authManager.setPreferences(preferencesFactory.build({ cast: { gCastEnabled: false } }));
+    authManager.setPreferences(factory.preferences({ cast: { gCastEnabled: false } }));
 
     vi.mocked(updateAsset).mockResolvedValue({ ...asset, isFavorite: true });
 
@@ -66,6 +64,7 @@ describe('AssetViewer', () => {
       showNavigation: false,
     });
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(getByLabelText('to_favorite')).toBeInTheDocument();
     expect(queryByLabelText('unfavorite')).toBeNull();
 
@@ -74,6 +73,7 @@ describe('AssetViewer', () => {
     await waitFor(() =>
       expect(updateAsset).toHaveBeenCalledWith({ id: asset.id, updateAssetDto: { isFavorite: true } }),
     );
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     await waitFor(() => expect(getByLabelText('unfavorite')).toBeInTheDocument());
   });
 });

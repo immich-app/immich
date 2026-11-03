@@ -5,7 +5,7 @@ import {
   mapNormalizedToContent,
   scaleToCover,
   scaleToFit,
-} from '$lib/utils/container-utils';
+} from '#lib/utils/container-utils.ts';
 
 const mockImage = (props: {
   naturalWidth: number;

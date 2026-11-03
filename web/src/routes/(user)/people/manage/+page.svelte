@@ -1,12 +1,12 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import PeopleInfiniteScroll from '../PeopleInfiniteScroll.svelte';
   import { goto } from '$app/navigation';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import { ToggleVisibility } from '$lib/constants';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import { ToggleVisibility } from '#lib/constants.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { getAllPeople, updatePeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, IconButton, toastManager } from '@immich/ui';
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
@@ -148,7 +148,7 @@
   <div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8">
     <PeopleInfiniteScroll {people} hasNextPage={nextPage !== null} {loadNextPage}>
       {#snippet children({ person })}
-        {@const hidden = overrides.get(person.id) ?? person.isHidden}
+        {const hidden = $derived(overrides.get(person.id) ?? person.isHidden)}
         <button
           type="button"
           class="group relative size-full"

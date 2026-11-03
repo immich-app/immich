@@ -1,8 +1,8 @@
+import { getSharedLink as getCachedSharedLink, setSharedLink } from '#lib/utils.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import { getAssetInfoFromParam } from '#lib/utils/navigation.ts';
 import { getMySharedLink, isHttpError } from '@immich/sdk';
-import { getAssetMediaUrl, getSharedLink as getCachedSharedLink, setSharedLink } from '$lib/utils';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
-import { getAssetInfoFromParam } from '$lib/utils/navigation';
 
 export const asQueryString = ({ slug, key }: { slug?: string; key?: string }) => {
   const params = new URLSearchParams();
@@ -39,9 +39,6 @@ export const loadSharedLink = async ({
   try {
     const [sharedLink, asset] = await Promise.all([sharedLinkPromise, getAssetInfoFromParam(params)]);
     setSharedLink(sharedLink);
-    const assetCount = sharedLink.assets.length;
-    const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetPath = assetId ? getAssetMediaUrl({ id: assetId }) : '/feature-panel.png';
 
     return {
       ...common,
@@ -49,8 +46,6 @@ export const loadSharedLink = async ({
       asset,
       meta: {
         title: sharedLink.album ? sharedLink.album.albumName : $t('public_share'),
-        description: sharedLink.description || $t('shared_photos_and_videos_count', { values: { assetCount } }),
-        imageUrl: assetPath,
       },
     };
   } catch (error) {

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import SchemaConfiguration from '$lib/components/SchemaConfiguration.svelte';
-  import PluginMethodPicker from '$lib/modals/PluginMethodPicker.svelte';
-  import { type JSONSchemaProperty, type SchemaConfig } from '$lib/types';
-  import { getWorkflowDefaultConfig } from '$lib/utils/workflow';
+  import SchemaConfiguration from '#lib/components/SchemaConfiguration.svelte';
+  import PluginMethodPicker from '#lib/modals/PluginMethodPicker.svelte';
+  import { type JSONSchemaProperty, type SchemaConfig } from '#lib/types.ts';
+  import { getWorkflowDefaultConfig } from '#lib/utils/workflow.ts';
   import { WorkflowTrigger, type PluginMethodResponseDto, type WorkflowStepDto } from '@immich/sdk';
   import { FormModal, IconButton, modalManager, Stack, Text, Textarea } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';

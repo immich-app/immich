@@ -1,31 +1,26 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { handleCreateLibrary } from '$lib/services/library.service';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { createLibraryMutation } from '#lib/queries/library.query.ts';
+  import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
+  import { Route } from '#lib/route.ts';
   import { Field, FormModal, HelperText, Select } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { type PageData } from './$types';
-
-  type Props = {
-    data: PageData;
-  };
-
-  const { data }: Props = $props();
 
   let ownerId: string = $state(authManager.user.id);
-  const users = $state(data.allUsers);
+  const query = createPreloadedQuery(searchUsersAdminQuery);
+  const users = $derived(query.data);
 
   const onClose = async () => {
     await goto(Route.libraries());
   };
 
   const onSubmit = async () => {
-    const library = await handleCreateLibrary({ ownerId });
-    if (library) {
-      await goto(Route.viewLibrary(library), { replaceState: true });
-    }
+    await executeMutation(createLibraryMutation, [{ createLibraryDto: { ownerId } }], {
+      onSuccess: (library) => void goto(Route.viewLibrary(library), { replaceState: true }),
+    });
   };
 </script>
 

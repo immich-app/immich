@@ -1,11 +1,11 @@
 <script lang="ts">
-  import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { zoomImageToBase64 } from '$lib/utils/people-utils';
-  import { getPersonNameWithHiddenValue } from '$lib/utils/person';
+  import SearchPeople from '#lib/components/faces-page/PeopleSearch.svelte';
+  import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { getPeopleThumbnailUrl, handlePromiseError } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { zoomImageToBase64 } from '#lib/utils/people-utils.ts';
+  import { getPersonNameWithHiddenValue } from '#lib/utils/person.ts';
   import { AssetTypeEnum, getAllPeople, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';

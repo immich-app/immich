@@ -1,7 +1,7 @@
+import { Route } from '#lib/route.ts';
+import { maintenanceStore } from '#lib/stores/maintenance.store.ts';
+import { websocketStore } from '#lib/stores/websocket.ts';
 import { getMaintenanceStatus, MaintenanceAction, maintenanceLogin } from '@immich/sdk';
-import { Route } from '$lib/route';
-import { maintenanceStore } from '$lib/stores/maintenance.store';
-import { websocketStore } from '$lib/stores/websocket';
 
 export function maintenanceCreateUrl(url: URL) {
   return new URL(Route.maintenanceMode({ continue: url.pathname + url.search }), url.origin).href;

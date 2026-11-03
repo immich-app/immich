@@ -1,26 +1,20 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { languageManager } from '$lib/managers/language-manager.svelte';
-  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { zoomImageToBase64 } from '$lib/utils/people-utils';
-  import { getPersonNameWithHiddenValue } from '$lib/utils/person';
-  import {
-    AssetTypeEnum,
-    createPerson,
-    deleteFace,
-    getFaces,
-    reassignFacesById,
-    type AssetFaceResponseDto,
-    type PersonResponseDto,
-  } from '@immich/sdk';
+  import { shortcut } from '#lib/actions/shortcut.ts';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { deleteFaceMutation, getFacesQuery, reassignFacesByIdMutation } from '#lib/queries/face.query.ts';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { zoomImageToBase64 } from '#lib/utils/people-utils.ts';
+  import { getPersonNameWithHiddenValue } from '#lib/utils/person.ts';
+  import { AssetTypeEnum, createPerson, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager, toastManager } from '@immich/ui';
   import { mdiAccountOff, mdiArrowLeftThin, mdiArrowRightThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -40,15 +34,14 @@
   let peopleToCreate: string[] = [];
   let assetFaceGenerated: string[] = [];
 
-  // faces
-  let peopleWithFaces: AssetFaceResponseDto[] = $state([]);
+  const query = createQuery(() => getFacesQuery(assetId));
+  const peopleWithFaces = $derived(query.data ?? []);
   let selectedPersonToReassign: Record<string, PersonResponseDto> = $state({});
   let selectedPersonToCreate: Record<string, string> = $state({});
   let editedFace: AssetFaceResponseDto | undefined = $state();
 
   // loading spinners
   let isShowLoadingDone = $state(false);
-  let isShowLoadingPeople = $state(false);
 
   // search people
   let showSelectedFaces = $state(false);
@@ -58,18 +51,6 @@
   let automaticRefreshTimeout: ReturnType<typeof setTimeout>;
 
   const thumbnailWidth = '90px';
-
-  async function loadPeople() {
-    const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
-    try {
-      peopleWithFaces = await getFaces({ id: assetId });
-    } catch (error) {
-      handleError(error, $t('errors.cant_get_faces'));
-    } finally {
-      clearTimeout(timeout);
-    }
-    isShowLoadingPeople = false;
-  }
 
   const onPersonThumbnailReady = ({ id }: { id: string }) => {
     assetFaceGenerated.push(id);
@@ -84,10 +65,6 @@
       onRefresh();
     }
   };
-
-  onMount(() => {
-    handlePromiseError(loadPeople());
-  });
 
   const isEqual = (a: string[], b: string[]): boolean => {
     return b.every((valueB) => a.includes(valueB));
@@ -107,28 +84,36 @@
     const numberOfChanges = Object.keys(selectedPersonToCreate).length + Object.keys(selectedPersonToReassign).length;
 
     if (numberOfChanges > 0) {
+      let failed = false;
       try {
         for (const personWithFace of peopleWithFaces) {
-          const personId = selectedPersonToReassign[personWithFace.id]?.id;
+          let personId = selectedPersonToReassign[personWithFace.id]?.id;
 
-          if (personId) {
-            await reassignFacesById({
-              id: personId,
-              faceDto: { id: personWithFace.id },
-            });
-          } else if (Object.hasOwn(selectedPersonToCreate, personWithFace.id)) {
+          if (!personId && Object.hasOwn(selectedPersonToCreate, personWithFace.id)) {
             const data = await createPerson({ personCreateDto: {} });
             peopleToCreate.push(data.id);
-            await reassignFacesById({
-              id: data.id,
-              faceDto: { id: personWithFace.id },
-            });
+            personId = data.id;
+          }
+
+          if (!personId) {
+            continue;
+          }
+
+          await executeMutation(reassignFacesByIdMutation, [{ id: personId, faceDto: { id: personWithFace.id } }], {
+            onError: () => (failed = true),
+          });
+
+          if (failed) {
+            break;
           }
         }
-
-        toastManager.primary($t('people_edits_count', { values: { count: numberOfChanges } }));
       } catch (error) {
         handleError(error, $t('errors.cant_apply_changes'));
+        failed = true;
+      }
+
+      if (!failed) {
+        toastManager.primary($t('people_edits_count', { values: { count: numberOfChanges } }));
       }
     }
 
@@ -161,28 +146,24 @@
   };
 
   const deleteAssetFace = async (face: AssetFaceResponseDto) => {
-    try {
-      if (!face.person) {
-        return;
-      }
-
-      const isConfirmed = await modalManager.showDialog({
-        prompt: $t('confirm_delete_face', { values: { name: face.person.name } }),
-      });
-      if (!isConfirmed) {
-        return;
-      }
-
-      await deleteFace({ id: face.id, assetFaceDeleteDto: { force: false } });
-
-      eventManager.emit('PersonAssetDelete', { id: face.person.id, assetId });
-
-      peopleWithFaces = peopleWithFaces.filter((f) => f.id !== face.id);
-
-      await assetViewerManager.setAssetId(assetId);
-    } catch (error) {
-      handleError(error, $t('error_delete_face'));
+    const person = face.person;
+    if (!person) {
+      return;
     }
+
+    const isConfirmed = await modalManager.showDialog({
+      prompt: $t('confirm_delete_face', { values: { name: person.name } }),
+    });
+    if (!isConfirmed) {
+      return;
+    }
+
+    await executeMutation(deleteFaceMutation, [{ id: face.id, assetFaceDeleteDto: { force: false } }], {
+      onSuccess: () => {
+        eventManager.emit('PersonAssetDelete', { id: person.id, assetId });
+        void assetViewerManager.setAssetId(assetId);
+      },
+    });
   };
 </script>
 
@@ -232,14 +213,14 @@
 
   <div class="p-4 text-sm">
     <div class="mt-4 flex flex-wrap gap-2">
-      {#if isShowLoadingPeople}
+      {#if query.isPending}
         <div class="flex w-full justify-center">
           <LoadingSpinner />
         </div>
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
-          {@const personName = face.person ? face.person.name : $t('face_unassigned')}
-          {@const isHighlighted = assetViewerManager.highlightedFaces.some((b) => b.id === face.id)}
+          {const personName = face.person ? face.person.name : $t('face_unassigned')}
+          {const isHighlighted = $derived(assetViewerManager.highlightedFaces.some((b) => b.id === face.id))}
           <div class="relative h-29 w-24">
             <div
               role="button"

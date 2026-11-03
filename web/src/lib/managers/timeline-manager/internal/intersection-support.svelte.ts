@@ -1,4 +1,4 @@
-import { TUNABLES } from '$lib/utils/tunables';
+import { TUNABLES } from '#lib/utils/tunables.ts';
 import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineMonth } from '../timeline-month.svelte';
 

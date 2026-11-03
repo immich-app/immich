@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { assetViewerFadeDuration } from '$lib/constants';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
+  import { assetViewerFadeDuration } from '#lib/constants.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
   import { AssetMediaSize } from '@immich/sdk';
-  import DelayedLoadingSpinner from '$lib/components/DelayedLoadingSpinner.svelte';
+  import DelayedLoadingSpinner from '#lib/components/DelayedLoadingSpinner.svelte';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
 

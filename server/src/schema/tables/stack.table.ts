@@ -31,7 +31,7 @@ export class StackTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @UpdateIdColumn()
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 
   //TODO: Add constraint to ensure primary asset exists in the assets array
