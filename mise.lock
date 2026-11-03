@@ -67,10 +67,13 @@ version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
 specifiers = ["7.1.3-6"]
 
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.windows-x64"]
-checksum = "sha256:7b7168149689610296f3a187c717056ce0786cc125a31caf28056737e9ba1cc1"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_win64-clang-gpl.zip"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409036094"
+[tools."github:jellyfin/jellyfin-ffmpeg".options]
+asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz"
+
+[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-arm64"]
+checksum = "sha256:bea03c670e8cc5bfe9edc0c5d624d4735421610cef5e808db93e7d8596952886"
+url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linuxarm64-gpl.tar.xz"
+url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048876"
 
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
@@ -88,18 +91,20 @@ url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
+specifiers = ["7.1.3-6"]
 
 [tools."github:jellyfin/jellyfin-ffmpeg".options]
-asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz"
+asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
 
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-arm64"]
-checksum = "sha256:bea03c670e8cc5bfe9edc0c5d624d4735421610cef5e808db93e7d8596952886"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linuxarm64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048876"
+[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.macos-arm64"]
+checksum = "sha256:e024d5e78d5414e75f0181036cd21373fafb9270c72894dfd7dbda2572439820"
+url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_macarm64-gpl.tar.xz"
+url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/408995838"
 
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
+specifiers = ["7.1.3-6"]
 
 [tools."github:jellyfin/jellyfin-ffmpeg".options]
 asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz"
@@ -112,14 +117,12 @@ url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets
 [[tools."github:jellyfin/jellyfin-ffmpeg"]]
 version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
+specifiers = ["7.1.3-6"]
 
-[tools."github:jellyfin/jellyfin-ffmpeg".options]
-asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.macos-arm64"]
-checksum = "sha256:e024d5e78d5414e75f0181036cd21373fafb9270c72894dfd7dbda2572439820"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_macarm64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/408995838"
+[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.windows-x64"]
+checksum = "sha256:7b7168149689610296f3a187c717056ce0786cc125a31caf28056737e9ba1cc1"
+url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_win64-clang-gpl.zip"
+url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409036094"
 
 [[tools."github:webassembly/binaryen"]]
 version = "version_124"
@@ -247,38 +250,38 @@ url = "https://github.com/opentofu/opentofu/releases/download/v1.13.2/tofu_1.13.
 url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/662742635"
 
 [[tools.pnpm]]
-version = "12.15.0"
+version = "12.16.1"
 backend = "aqua:pnpm/pnpm"
-specifiers = ["12.15.0"]
+specifiers = ["12.16.1"]
 
 [tools.pnpm."platforms.linux-arm64"]
-checksum = "sha256:d7ce93a2c7d847d3a34bd3f559b60c14f578b1320c17cc352a2c5c5fdf956117"
-url = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/662173352"
+checksum = "sha256:f5847699e5d528f8f8e9bcfb385e58cb9fba7482af1b1aa7b70737be42277f81"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.16.1/pnpm-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/681916052"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64"]
-checksum = "sha256:55b5ed0092bd11176c1669598e231ae52e7cedac59de6efd0d415730f37d0598"
-url = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/662173360"
+checksum = "sha256:565ff81174a14f6f7bd5d84c1b17e51031a80230d370a1fe24be5d16bd02a825"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.16.1/pnpm-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/681916059"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.macos-arm64"]
-checksum = "sha256:6a41a2877773e97f19832067187cc6fc82e186d8a2cf91fec4b4c1a5fbd6ef27"
-url = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/662173343"
+checksum = "sha256:6661212a6ec725634b0d3268e5bc9408e3152506dab5997891e38fa1ef22bf9c"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.16.1/pnpm-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/681916062"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.macos-x64"]
-checksum = "sha256:2d7b336884574aee8a765bee48591212e9caf4fcf985fb3279588c1fb73fb47f"
-url = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/662173347"
+checksum = "sha256:f2c52f20f631a31011a6e33e3812d136db89c4a5c1d23123b92cbe62ecec82a6"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.16.1/pnpm-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/681916060"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64"]
-checksum = "sha256:84cf69db1be19e95bb4e5bef329291a046f2821b390d87e00f5690809d8a2ed7"
-url = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-win32-x64.zip"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/662173351"
+checksum = "sha256:253cd5caa8cdf3859a92995bdf1819d3b433690157616cc372af00d22eb0c6a4"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.16.1/pnpm-win32-x64.zip"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/681916063"
 provenance = "github-attestations"
 
 [[tools.restic]]
@@ -291,17 +294,7 @@ checksum = "sha256:e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351
 url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
 url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897888"
 
-[tools.restic."platforms.linux-arm64-musl"]
-checksum = "sha256:e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351d91"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
-url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897888"
-
 [tools.restic."platforms.linux-x64"]
-checksum = "sha256:13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
-url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897993"
-
-[tools.restic."platforms.linux-x64-musl"]
 checksum = "sha256:13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
 url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
 url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897993"
