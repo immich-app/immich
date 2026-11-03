@@ -160,18 +160,41 @@ export function getCLIPModelInfo(modelName: string) {
   return modelInfo;
 }
 
+const canonicalize = (document: OpenAPIObject): OpenAPIObject => {
+  for (const path of Object.values(document.paths)) {
+    for (const operation of Object.values(path)) {
+      if (hasParameters(operation)) {
+        operation.parameters = orderBy(operation.parameters, 'name');
+      }
+    }
+  }
+
+  return Object.fromEntries(Object.entries(document).map(([key, value]) => [key, sortKeys(value)])) as OpenAPIObject;
+};
+
+const hasParameters = (value: unknown): value is { parameters: Array<{ name?: string }> } =>
+  typeof value === 'object' && value !== null && 'parameters' in value && Array.isArray(value.parameters);
+
 function sortKeys<T>(target: T): T {
-  if (!target || typeof target !== 'object' || Array.isArray(target)) {
+  if (!target || typeof target !== 'object') {
     return target;
+  }
+
+  if (Array.isArray(target)) {
+    return target.map((item) => sortKeys(item)) as T;
   }
 
   const result: Partial<T> = {};
   const keys = Object.keys(target).toSorted() as Array<keyof T>;
   for (const key of keys) {
-    result[key] = sortKeys(target[key]);
+    const value = target[key];
+    result[key] = key === 'required' && isStringArray(value) ? (value.toSorted() as T[keyof T]) : sortKeys(value);
   }
   return result as T;
 }
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
 
 export const routeToErrorMessage = (methodName: string) =>
   'Failed to ' + methodName.replaceAll(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
@@ -202,7 +225,6 @@ const patchOpenAPI = (document: OpenAPIObject) => {
     }
   };
 
-  document.paths = sortKeys(document.paths);
   // Allowed in OpenAPI v3.1 (JSON Schema 2020-12), but not in OpenAPI v3.0 (current spec).
   removeOpenApi30IncompatibleKeys(document);
 
@@ -222,8 +244,6 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         (schema.required ??= []).push(key);
       }
     }
-
-    document.components.schemas = sortKeys(schemas);
 
     const errors: string[] = [];
 
@@ -260,8 +280,6 @@ const patchOpenAPI = (document: OpenAPIObject) => {
           );
         }
       }
-      schema.required?.sort();
-
       if (errors.length > 0) {
         throw new Error(`Schema validation failed:\n  ${errors.join('\n  ')}`);
       }
@@ -306,10 +324,6 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
       if (operation.operationId) {
         // console.log(`${routeToErrorMessage(operation.operationId).padEnd(40)} (${operation.operationId})`);
-      }
-
-      if (operation.parameters) {
-        operation.parameters = orderBy(operation.parameters, 'name');
       }
     }
   }
@@ -369,7 +383,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   }
 
   const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
-  writeFileSync(outputPath, JSON.stringify(patchOpenAPI(openApiDoc), null, 2), { encoding: 'utf8' });
+  writeFileSync(outputPath, JSON.stringify(canonicalize(patchOpenAPI(openApiDoc)), null, 2), { encoding: 'utf8' });
 };
 
 // Offline detection and the re-online check must share one matcher, or an asset flips state on every scan
