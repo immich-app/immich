@@ -998,6 +998,23 @@ describe(MetadataService.name, () => {
       },
     );
 
+    it('should not extract a motion photo video that lies outside the file', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({
+        Directory: 'foo/bar/',
+        MotionPhoto: 1,
+        MicroVideo: 1,
+        MicroVideoOffset: 2_147_483_647,
+        ContainerDirectory: [{ Item: { Semantic: 'MotionPhoto', Length: 1, Padding: -2_147_360_191 } }],
+      });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.storage.readFile).not.toHaveBeenCalled();
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+    });
+
     it('should not create a new motion photo video asset if the hash of the extracted video matches an existing asset', async () => {
       const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
       const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
