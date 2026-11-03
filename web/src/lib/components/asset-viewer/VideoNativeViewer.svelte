@@ -458,7 +458,9 @@
         {/if}
 
         <div class="relative isolate flex h-32 w-full flex-col justify-end px-4">
-          <div class="bottom-gradient pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-48 bg-black/80"></div>
+          <div
+            class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-48 bg-black/80 mask-smoothstep-to-top"
+          ></div>
           <media-control-bar part="bottom" class="flex h-10 w-full gap-2">
             <media-play-button class="shrink-0 rounded-full p-2 outline-none">
               <Icon slot="play" icon={mdiPlay} />
@@ -589,9 +591,5 @@
     padding: 0 calc(var(--spacing) * 2);
     margin-left: calc(var(--spacing) * 2);
     width: 70px;
-  }
-
-  .bottom-gradient {
-    mask-image: linear-gradient(to top, var(--mask-smoothstep));
   }
 </style>

@@ -86,7 +86,7 @@
 <div
   class="relative isolate flex h-16 place-items-center justify-between px-3 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)] transition-transform duration-200"
 >
-  <div class="top-gradient pointer-events-none absolute inset-x-0 top-0 -z-10 h-24 bg-black/40"></div>
+  <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-24 bg-black/40 mask-smoothstep-to-bottom"></div>
   <div class="dark">
     <ActionButton action={Close} />
   </div>
@@ -176,9 +176,3 @@
     {/if}
   </div>
 </div>
-
-<style>
-  .top-gradient {
-    mask-image: linear-gradient(to bottom, var(--mask-smoothstep));
-  }
-</style>
