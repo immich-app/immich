@@ -120,12 +120,12 @@
     "prettier-plugin-sort-json": "^4.1.1",
     "prettier-plugin-svelte": "^4.0.0",
     "rollup-plugin-visualizer": "^7.0.0",
-    "svelte": "5.57.2",
+    "svelte": "5.57.3",
     "svelte-check": "^4.7.5",
     "svelte-eslint-parser": "^1.8.1",
     "tailwindcss": "^4.2.4",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "8.72.0",
+    "typescript-eslint": "8.72.1",
     "vite": "^8.0.12",
     "vitest": "^5.0.0"
   }
