@@ -28,12 +28,12 @@ dependencies:
     sdk: flutter
   flutter_displaymode: ^0.7.0
   flutter_hooks: ^0.21.3+1
-  flutter_local_notifications: ^17.2.4
-  flutter_secure_storage: ^9.2.4
+  flutter_local_notifications: ^22.0.0
+  flutter_secure_storage: ^11.0.0
   flutter_svg: ^2.2.4
   flutter_udid: ^4.1.6
   flutter_web_auth_2: ^5.0.2
-  fluttertoast: ^8.2.14
+  fluttertoast: ^10.0.0
   geolocator: ^14.0.2
   home_widget: ^0.9.3
   hooks_riverpod: ^2.6.1
