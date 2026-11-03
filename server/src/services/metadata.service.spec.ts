@@ -332,16 +332,42 @@ describe(MetadataService.name, () => {
       });
     });
 
-    it('should prefer the 32-bit sensitivity tags over a saturated ISO', async () => {
-      const asset = AssetFactory.create();
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
-      mockReadTags({ ISO: 65_535, RecommendedExposureIndex: 128_000 });
+    it.each([
+      {
+        iso: 65_535,
+        recommendedExposureIndex: 128_000,
+        standardOutputSensitivity: 0,
+        expected: 128_000,
+      },
+      {
+        iso: 65_535,
+        recommendedExposureIndex: 0,
+        standardOutputSensitivity: 128_000,
+        expected: 128_000,
+      },
+      {
+        iso: 100,
+        recommendedExposureIndex: 0,
+        standardOutputSensitivity: 0,
+        expected: 100,
+      },
+    ])(
+      'should read ISO values from tags with the most accurate data',
+      async ({ iso, recommendedExposureIndex, standardOutputSensitivity, expected }) => {
+        const asset = AssetFactory.create();
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+        mockReadTags({
+          ISO: iso,
+          RecommendedExposureIndex: recommendedExposureIndex,
+          StandardOutputSensitivity: standardOutputSensitivity,
+        });
 
-      await sut.handleMetadataExtraction({ id: asset.id });
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({ exif: expect.objectContaining({ iso: 128_000 }) }),
-      );
-    });
+        await sut.handleMetadataExtraction({ id: asset.id });
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({ exif: expect.objectContaining({ iso: expected }) }),
+        );
+      },
+    );
 
     it('should not delete latituide and longitude without reverse geocode', async () => {
       // regression test for issue 17511
