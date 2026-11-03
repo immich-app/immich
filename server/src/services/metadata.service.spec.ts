@@ -334,32 +334,37 @@ describe(MetadataService.name, () => {
 
     it.each([
       {
-        iso: 65_535,
-        recommendedExposureIndex: 128_000,
-        standardOutputSensitivity: 0,
+        exif: { iso: 65_535, recommendedExposureIndex: 128_000, standardOutputSensitivity: 0 },
         expected: 128_000,
       },
       {
-        iso: 65_535,
-        recommendedExposureIndex: 128_000,
-        standardOutputSensitivity: 500,
+        exif: { iso: 65_535, recommendedExposureIndex: 128_000, standardOutputSensitivity: undefined },
         expected: 128_000,
       },
       {
-        iso: 65_535,
-        recommendedExposureIndex: 0,
-        standardOutputSensitivity: 128_000,
+        exif: { iso: 65_535, recommendedExposureIndex: 256_000, standardOutputSensitivity: 500 },
+        expected: 256_000,
+      },
+      {
+        exif: { iso: 65_535, recommendedExposureIndex: 0, standardOutputSensitivity: 128_000 },
         expected: 128_000,
       },
       {
-        iso: 100,
-        recommendedExposureIndex: 0,
-        standardOutputSensitivity: 0,
+        exif: { iso: 65_535, recommendedExposureIndex: undefined, standardOutputSensitivity: 512_000 },
+        expected: 512_000,
+      },
+      {
+        exif: { iso: 100, recommendedExposureIndex: 0, standardOutputSensitivity: 0 },
         expected: 100,
       },
+      {
+        exif: { iso: 200, recommendedExposureIndex: undefined, standardOutputSensitivity: undefined },
+        expected: 200,
+      },
     ])(
-      'should read ISO values from tags with the most accurate data',
-      async ({ iso, recommendedExposureIndex, standardOutputSensitivity, expected }) => {
+      'should read ISO values from tags with the most accurate data: $exif -> $expected',
+      async ({ exif, expected }) => {
+        const { iso, recommendedExposureIndex, standardOutputSensitivity } = exif;
         const asset = AssetFactory.create();
         mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
         mockReadTags({
