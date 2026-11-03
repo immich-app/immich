@@ -17,6 +17,7 @@ export const createZodDto = <S extends z.ZodType>(schema: S): DtoClass<S> =>
   } as unknown as DtoClass<S>;
 
 type JsonSchema = Record<string, unknown>;
+type GeneratedSchema = { $ref?: string; definitions?: Record<string, JsonSchema> } & JsonSchema;
 type SchemaObject = Extract<ApiBodyOptions, { schema: unknown }>['schema'];
 type SchemaReference = { '~standard': z.ZodType['~standard']; schema: z.ZodType; name?: string };
 type RouteArgument = { index: number; data?: unknown; factory?: unknown; schema?: unknown };
@@ -150,14 +151,19 @@ const patchOpenApiParameter = <T extends Parameter>(parameter: T): T => {
 };
 
 const convert = ({ schema, name }: SchemaReference) => {
-  const { definitions = {}, ...jsonSchema } = z.toJSONSchema(schema, { target: 'openapi-3.0', io: 'input' }) as {
-    definitions?: Record<string, JsonSchema>;
-  } & JsonSchema;
-  const components = normalize(name ? { ...definitions, [name]: jsonSchema } : definitions) as Record<
-    string,
-    SchemaObject
-  >;
-  return { schema: name ? { $ref: `#/components/schemas/${name}` } : normalize(jsonSchema), components };
+  const { root, definitions } = inlineRoot(z.toJSONSchema(schema, { target: 'openapi-3.0', io: 'input' }));
+  const components = normalize(name ? { ...definitions, [name]: root } : definitions) as Record<string, SchemaObject>;
+  return { schema: name ? { $ref: `#/components/schemas/${name}` } : normalize(root), components };
+};
+
+const inlineRoot = ({ definitions = {}, ...root }: GeneratedSchema) => {
+  if (typeof root.$ref !== 'string') {
+    return { root, definitions };
+  }
+
+  const id = root.$ref.replace('#/definitions/', '');
+  const { [id]: rootDefinition, ...rest } = definitions;
+  return { root: rootDefinition, definitions: rest };
 };
 
 const normalize = (value: unknown): unknown => {
