@@ -3,14 +3,17 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
 import 'package:immich_mobile/domain/services/memory.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -19,9 +22,12 @@ import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
 import 'package:immich_ui/immich_ui.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -32,6 +38,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final serverVersion = ref.watch(serverInfoProvider.select((value) => value.serverVersion));
+    final isResetting = useState(false);
 
     Future<void> exportDatabase() async {
       try {
@@ -131,23 +138,24 @@ class SyncStatusAndActions extends HookConsumerWidget {
               TextButton(onPressed: () => context.pop(), child: Text(context.t.cancel)),
               TextButton(
                 onPressed: () async {
-                  await ref.read(driftProvider).reset();
-                  if (!context.mounted) {
-                    return;
-                  }
-
                   context.pop();
-                  unawaited(
-                    showDialog<void>(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (ctx) => AlertDialog(
-                        title: Text(context.t.reset_sqlite_success),
-                        content: Text(context.t.reset_sqlite_done),
-                        actions: [TextButton(onPressed: () => ctx.pop(), child: Text(context.t.ok))],
-                      ),
-                    ),
-                  );
+                  isResetting.value = true;
+                  final db = ref.read(driftProvider);
+                  final router = ref.read(appRouterProvider);
+                  ref.read(websocketProvider.notifier).disconnect();
+                  try {
+                    await ref.read(authProvider.notifier).logout();
+                  } catch (error, stackTrace) {
+                    Logger('SyncStatusAndActions').warning('Logout failed, resetting anyway', error, stackTrace);
+                  }
+                  try {
+                    await db.reset();
+                    await Store.clear();
+                  } catch (_) {
+                    isResetting.value = false;
+                    rethrow;
+                  }
+                  unawaited(router.replaceAll([const LoginRoute()]));
                 },
                 child: Text(context.t.confirm, style: TextStyle(color: context.colorScheme.error)),
               ),
@@ -220,7 +228,14 @@ class SyncStatusAndActions extends HookConsumerWidget {
             style: TextStyle(color: context.colorScheme.error, fontWeight: FontWeight.w500),
           ),
           leading: Icon(Icons.settings_backup_restore_rounded, color: context.colorScheme.error),
+          trailing: isResetting.value
+              ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              : null,
           onTap: () async {
+            if (isResetting.value) {
+              return;
+            }
+
             await resetSqliteDb(context);
           },
         ),
