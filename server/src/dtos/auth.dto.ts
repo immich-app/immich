@@ -25,13 +25,31 @@ export const isMetadataHidden = (auth?: AuthDto) => !!auth?.sharedLink && !auth.
 
 export const isEditedOnly = (auth: AuthDto, edited = false) => !!auth.sharedLink || edited;
 
-const storageLabelClaimSchema = z.string().transform((label) => sanitize(label));
-const quotaSizeInBytesSchema = z
+const storageLabelClaimSchema = z
+  .string()
+  .optional()
+  .transform((label) => {
+    if (label === undefined) {
+      return;
+    }
+
+    return label ? sanitize(label) : null;
+  })
+  .catch(undefined);
+const quotaSizeInBytesSchema = z.coerce
+  .number()
   .int()
   .min(-1)
   .nullable()
-  .transform((quota) => (quota === null || quota === -1 ? null : quota * HumanReadableSize.GiB));
-const userRoleSchema = z.union([z.literal('user'), z.literal('admin')]);
+  .optional()
+  .transform((quota) => {
+    if (quota === undefined) {
+      return;
+    }
+
+    return quota === null || quota === -1 ? null : quota * HumanReadableSize.GiB;
+  })
+  .catch(undefined);
 
 export const OAuthProfileSchema = z.object({
   defaults: z.object({
@@ -45,10 +63,11 @@ export const OAuthProfileSchema = z.object({
   family_name: z.string().trim().optional().catch(undefined),
   preferred_username: z.string().trim().optional().catch(undefined),
   picture: z.string().optional().catch(undefined),
-  immich_storage_label: storageLabelClaimSchema.optional().catch(undefined),
-  immich_quota_bytes: quotaSizeInBytesSchema.optional().catch(undefined),
+  immich_storage_label: storageLabelClaimSchema,
+  immich_quota_bytes: quotaSizeInBytesSchema,
   immich_role: z
-    .union([userRoleSchema, z.array(userRoleSchema)])
+    .union([z.string(), z.array(z.string())])
+    .optional()
     .transform((value) => {
       if (!value) {
         return;
@@ -61,7 +80,6 @@ export const OAuthProfileSchema = z.object({
 
       return 'user';
     })
-    .optional()
     .catch(undefined),
 });
 export type OAuthProfile = z.infer<typeof OAuthProfileSchema>;
