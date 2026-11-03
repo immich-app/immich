@@ -4,6 +4,7 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
+import 'package:immich_mobile/data/db/main/table/remote/exif.drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -171,6 +172,37 @@ void main() {
         test('when only the created time changed', () async {
           await sut.upsert(album, toUpsert: [asset.copyWith(createdAt: asset.createdAt.add(const .new(days: 1)))]);
           expect((await assetInDb(asset.id)).checksum, checksum);
+        });
+      });
+
+      group('synced before the size was stored', () {
+        setUp(() async {
+          await ctx.db.update(ctx.db.localAssetEntity).write(const LocalAssetEntityCompanion(size: .new(null)));
+        });
+
+        Future<void> newRemoteWithExif({required String checksum, required int fileSize}) async {
+          final user = await ctx.newUser();
+          final remote = await ctx.newRemoteAsset(checksum: checksum, ownerId: user.id);
+          await ctx.db
+              .into(ctx.db.remoteExifEntity)
+              .insert(RemoteExifEntityCompanion.insert(assetId: remote.id, fileSize: .new(fileSize)));
+        }
+
+        test('keeps the checksum when the server has it with the same size', () async {
+          await newRemoteWithExif(checksum: checksum, fileSize: 1234);
+          await sut.upsert(album, toUpsert: [asset]);
+          expect((await assetInDb(asset.id)).checksum, checksum);
+        });
+
+        test('resets the checksum when the server has it with another size', () async {
+          await newRemoteWithExif(checksum: checksum, fileSize: 999);
+          await sut.upsert(album, toUpsert: [asset]);
+          expect((await assetInDb(asset.id)).checksum, isNull);
+        });
+
+        test('resets the checksum when the server does not have it', () async {
+          await sut.upsert(album, toUpsert: [asset]);
+          expect((await assetInDb(asset.id)).checksum, isNull);
         });
       });
 

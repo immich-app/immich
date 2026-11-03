@@ -147,6 +147,21 @@ class LocalSyncService {
         onlySecond: addAlbum,
       );
 
+      // updateAlbum skips albums whose asset count and newest DATE_MODIFIED are unchanged, which is
+      // the case for a file rewritten in place. MediaStore's generation still records the rewrite,
+      // so apply the delta before the checkpoint below discards it. Without a valid checkpoint
+      // (Android 10 and below, or the first sync) there is no delta to apply
+      if (CurrentPlatform.isAndroid && !await _nativeSyncApi.shouldFullSync()) {
+        final delta = await _nativeSyncApi.getMediaChanges();
+        if (delta.hasChanges) {
+          await _localAlbumRepository.processDelta(
+            updates: delta.updates.toLocalAssets(),
+            deletes: delta.deletes,
+            assetAlbums: delta.assetAlbums,
+          );
+        }
+      }
+
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");

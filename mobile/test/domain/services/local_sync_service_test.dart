@@ -120,6 +120,47 @@ void main() {
     });
   });
 
+  group('LocalSyncService - fullSync media changes', () {
+    setUp(() {
+      when(() => mockNativeSyncApi.getAlbums()).thenAnswer((_) async => []);
+      when(() => mockLocalAlbumRepository.getAll(sortBy: any(named: 'sortBy'))).thenAnswer((_) async => []);
+      when(() => mockNativeSyncApi.checkpointSync()).thenAnswer((_) async {});
+      when(
+        () => mockLocalAlbumRepository.processDelta(
+          updates: any(named: 'updates'),
+          deletes: any(named: 'deletes'),
+          assetAlbums: any(named: 'assetAlbums'),
+        ),
+      ).thenAnswer((_) async {});
+    });
+
+    test('applies media changes before the checkpoint when one is valid', () async {
+      when(() => mockNativeSyncApi.getMediaChanges()).thenAnswer(
+        (_) async => SyncDelta(hasChanges: true, updates: const [], deletes: const ['asset-1'], assetAlbums: const {}),
+      );
+
+      await sut.fullSync();
+
+      verifyInOrder([
+        () => mockLocalAlbumRepository.processDelta(
+          updates: any(named: 'updates'),
+          deletes: ['asset-1'],
+          assetAlbums: any(named: 'assetAlbums'),
+        ),
+        () => mockNativeSyncApi.checkpointSync(),
+      ]);
+    });
+
+    test('skips media changes without a valid checkpoint', () async {
+      when(() => mockNativeSyncApi.shouldFullSync()).thenAnswer((_) async => true);
+
+      await sut.fullSync();
+
+      verifyNever(() => mockNativeSyncApi.getMediaChanges());
+      verify(() => mockNativeSyncApi.checkpointSync()).called(1);
+    });
+  });
+
   group('LocalSyncService - syncTrashedAssets behavior', () {
     test('processes trashed snapshot, restores assets, and trashes local files', () async {
       final platformAsset = PlatformAsset(
