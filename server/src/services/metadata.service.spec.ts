@@ -341,6 +341,12 @@ describe(MetadataService.name, () => {
       },
       {
         iso: 65_535,
+        recommendedExposureIndex: 128_000,
+        standardOutputSensitivity: 500,
+        expected: 128_000,
+      },
+      {
+        iso: 65_535,
         recommendedExposureIndex: 0,
         standardOutputSensitivity: 128_000,
         expected: 128_000,
