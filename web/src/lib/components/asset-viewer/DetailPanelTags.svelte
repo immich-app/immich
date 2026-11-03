@@ -4,7 +4,7 @@
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetActions } from '#lib/services/asset.service.ts';
-  import { untagAssets } from '#lib/utils/asset-utils';
+  import { untagAssets } from '#lib/utils/asset-utils.ts';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Badge, Link, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';

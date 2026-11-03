@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { handleTagUntagAssets } from '#lib/services/asset.service';
+  import { handleTagUntagAssets } from '#lib/services/asset.service.ts';
   import {
     getAllTags,
     queryTagsForAssets,
@@ -132,7 +132,7 @@
   </div>
   <section class="flex flex-wrap gap-1 pt-2">
     {#each selectedTags as { id, count, partial } (id)}
-      {@const tag = tagMap[id]}
+      {const tag = $derived(tagMap[id])}
       {#if tag}
         <TagPill
           label={tag.value}

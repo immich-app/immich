@@ -583,7 +583,7 @@ export const handleTagUntagAssets = async (assetIds: string[], tagIdsToAdd: stri
     handleError(error, $t('errors.failed_to_tag_assets'));
     return false;
   }
-}
+};
 
 const handleSetVisibility = async (assets: TimelineAsset[], visibility: AssetVisibility) => {
   const $t = await getFormatter();
