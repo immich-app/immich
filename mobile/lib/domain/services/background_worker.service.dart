@@ -23,6 +23,7 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -297,17 +298,23 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         return false;
       }
 
-      final uploadService = _ref?.read(foregroundUploadServiceProvider);
-      var failed = 0;
-      await uploadService?.uploadCandidates(
+      // On Android the background_downloader-backed service is already a
+      // WorkManager job wrapped in a foreground service (dataSync), so handing
+      // the candidate queue over to it keeps the upload alive after the app is
+      // backgrounded. Driving `foregroundUploadService` here instead would rely
+      // on a plain Dart loop that is cancelled when the app pauses.
+      final backgroundUpload = _ref?.read(backgroundUploadServiceProvider);
+      if (backgroundUpload == null) {
+        _logger.warning("backgroundUploadService unavailable, skipping backup");
+        return false;
+      }
+      final allSucceeded = await backgroundUpload.uploadBackupCandidatesAndWait(
         currentUser.id,
-        _cancellationToken,
-        callbacks: UploadCallbacks(onError: (_, _) => failed++),
-        useSequentialUpload: true,
+        cancellationToken: _cancellationToken,
       );
-      _logger.info("Background backup finished, $failed uploads failed");
+      _logger.info("Background backup finished, all uploads succeeded: $allSucceeded");
       // Retry when at least one upload failed
-      return failed > 0;
+      return !allSucceeded;
     }, (error, stack) => dPrint(() => "Error in backup zone $error, $stack"));
     return needsRetry ?? true;
   }

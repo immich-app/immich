@@ -14,6 +14,8 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:logging/logging.dart';
 
@@ -220,7 +222,29 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
-      _ref.read(backupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
+      final backupNotifier = _ref.read(backupProvider.notifier);
+
+      // Hand the pending queue over to the background upload service before
+      // cancelling the foreground run. Without this the upload simply stops
+      // when the app is backgrounded and only resumes on the next WorkManager
+      // tick. `uploadBackupCandidates` de-duplicates against the server asset
+      // list, so already-uploaded files are not queued again.
+      if (backupNotifier.isForegroundBackupRunning) {
+        final currentUser = _ref.read(currentUserProvider);
+        if (currentUser != null) {
+          _log.info("Handing the foreground backup over to the background service");
+          unawaited(
+            _ref
+                .read(backgroundUploadServiceProvider)
+                .uploadBackupCandidates(currentUser.id)
+                .onError((Object error, StackTrace stack) {
+                  _log.warning("Failed to hand over the foreground backup: $error");
+                }),
+          );
+        }
+      }
+
+      backupNotifier.stopForegroundBackup(reason: "the app being sent to the background");
 
       _ref.read(websocketProvider.notifier).disconnect();
     }

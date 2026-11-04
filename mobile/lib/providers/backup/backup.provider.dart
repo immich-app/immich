@@ -156,6 +156,12 @@ class BackupNotifier extends StateNotifier<BackupState> {
     );
   }
 
+  /// Whether a foreground backup is currently running.
+  ///
+  /// Used by the lifecycle handler to decide if the pending work should be
+  /// handed over to the background upload service before the app pauses.
+  bool get isForegroundBackupRunning => _cancelToken != null;
+
   void stopForegroundBackup({required String reason}) {
     if (_cancelToken != null) {
       _logger.info("Foreground backup cancelled: $reason");
