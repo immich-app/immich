@@ -146,6 +146,12 @@ export const Route = {
   workflows: () => '/workflows',
   viewWorkflow: ({ id }: { id: string }) => `/workflows/${id}`,
 
+  // backups
+  backups: () => '/admin/backups',
+  backupSettings: () => '/admin/backups/settings',
+  backupAttempts: () => '/admin/backups/attempts',
+  backupSnapshots: () => '/admin/backups/snapshots',
+
   // queues
   queues: () => '/admin/queues',
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,

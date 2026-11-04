@@ -1,18 +1,41 @@
 import {
   deleteDatabaseBackup,
   getBaseUrl,
+  listDatabaseBackups,
   MaintenanceAction,
   setMaintenanceMode,
+  type DatabaseBackupDto,
   type DatabaseBackupUploadDto,
 } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
+import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { uploadRequest } from '$lib/utils';
 import { openFilePicker } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
+
+export const loadDatabaseBackups = async (): Promise<DatabaseBackupDto[]> => {
+  const { backups } = await listDatabaseBackups();
+  return backups;
+};
+
+const getBackupTimestamp = (backup: DatabaseBackupDto): number => {
+  const dateMatch = backup.filename.match(/\d+T\d+/);
+  if (!dateMatch) {
+    return 0;
+  }
+  return DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: backup.timezone }).toMillis();
+};
+
+export const getLatestBackup = (backups: DatabaseBackupDto[]): DatabaseBackupDto | undefined => {
+  if (backups.length === 0) {
+    return undefined;
+  }
+  return [...backups].sort((a, b) => getBackupTimestamp(b) - getBackupTimestamp(a))[0];
+};
 
 export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string) => {
   const Download: ActionItem = {
