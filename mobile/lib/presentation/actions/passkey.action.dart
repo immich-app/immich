@@ -22,11 +22,8 @@ class PasskeyCreateAction extends ActionBuilder {
     final toastService = ref.read(toastServiceProvider);
 
     try {
-      if (await passkeys.create() case final passkey?) {
+      if (await passkeys.create()) {
         toastService.success(message);
-        if (context.mounted) {
-          await _rename(context, ref, passkey);
-        }
       }
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to create a passkey");
@@ -40,11 +37,25 @@ class PasskeyRenameAction extends ActionBuilder {
   final Passkey passkey;
 
   @override
-  ActionItem create(BuildContext context, WidgetRef ref) => ActionItem(
-    icon: Icons.edit_outlined,
-    label: context.t.edit_passkey,
-    onAction: () => _rename(context, ref, passkey),
-  );
+  ActionItem create(BuildContext context, WidgetRef ref) =>
+      ActionItem(icon: Icons.edit_outlined, label: context.t.edit_passkey, onAction: () => _rename(context, ref));
+
+  Future<void> _rename(BuildContext context, WidgetRef ref) async {
+    final passkeys = ref.read(Store.passkeys);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (_) => _PasskeyNameDialog(name: passkey.name),
+    );
+    if (name == null) {
+      return;
+    }
+
+    try {
+      await passkeys.rename(passkey.id, name.isEmpty ? null : name);
+    } catch (error, stack) {
+      handleError(error, stack: stack, description: "Failed to rename a passkey");
+    }
+  }
 }
 
 class PasskeyDeleteAction extends ActionBuilder {
@@ -79,23 +90,6 @@ class PasskeyDeleteAction extends ActionBuilder {
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to delete a passkey");
     }
-  }
-}
-
-Future<void> _rename(BuildContext context, WidgetRef ref, Passkey passkey) async {
-  final passkeys = ref.read(Store.passkeys);
-  final name = await showDialog<String>(
-    context: context,
-    builder: (_) => _PasskeyNameDialog(name: passkey.name),
-  );
-  if (name == null) {
-    return;
-  }
-
-  try {
-    await passkeys.rename(passkey.id, name.isEmpty ? null : name);
-  } catch (error, stack) {
-    handleError(error, stack: stack, description: "Failed to rename a passkey");
   }
 }
 

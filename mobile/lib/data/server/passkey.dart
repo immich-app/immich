@@ -26,9 +26,8 @@ class PasskeyApiRepository extends ApiRepository {
   Future<Map<String, Object>> startRegistration() => checkNull(_api.startRegistration());
 
   /// Save the WebAuthn [credential] created from the [startRegistration] options as a passkey of the current user
-  Future<Passkey> finishRegistration(Map<String, dynamic> credential) async {
-    final dto = PasskeyRegistrationFinishDto(response: credential);
-    return _toPasskey(await checkNull(_api.finishRegistration(dto)));
+  Future<void> finishRegistration(Map<String, dynamic> credential) async {
+    await _api.finishRegistration(PasskeyRegistrationFinishDto(response: credential));
   }
 
   /// The WebAuthn options for logging in with a passkey
