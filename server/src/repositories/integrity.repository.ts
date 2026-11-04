@@ -16,6 +16,14 @@ export class IntegrityRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   create(dto: Insertable<IntegrityReportTable> | Insertable<IntegrityReportTable>[]) {
+    if (Array.isArray(dto)) {
+      const reports = new Map<string, Insertable<IntegrityReportTable>>();
+      for (const report of dto) {
+        reports.set(JSON.stringify([report.path, report.type]), report);
+      }
+      dto = reports.values().toArray();
+    }
+
     return this.db
       .insertInto('integrity_report')
       .values(dto)
