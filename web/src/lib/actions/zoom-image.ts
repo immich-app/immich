@@ -1,5 +1,6 @@
 import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
 import { createZoomImageWheel } from '@zoom-image/core';
+import { untrack } from 'svelte';
 
 // Minimal touch shape — avoids importing DOM TouchEvent which isn't available in all TS targets.
 type TouchEventLike = {
@@ -8,17 +9,12 @@ type TouchEventLike = {
 };
 const asTouchEvent = (event: Event) => event as unknown as TouchEventLike;
 
-export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTMLElement }) => {
+export const zoomImageAction = (options?: { zoomTarget?: HTMLElement }) => (node: HTMLElement) => {
   const zoomInstance = createZoomImageWheel(node, {
     maxZoom: 10,
-    initialState: assetViewerManager.zoomState,
+    initialState: untrack(() => assetViewerManager.zoomState),
     zoomTarget: options?.zoomTarget,
   });
-
-  const unsubscribes = [
-    assetViewerManager.on({ ZoomChange: (state) => zoomInstance.setState(state) }),
-    zoomInstance.subscribe(({ state }) => assetViewerManager.onZoomChange(state)),
-  ];
 
   const controller = new AbortController();
   const { signal } = controller;
@@ -126,19 +122,17 @@ export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTML
 
   node.style.overflow = 'visible';
   node.style.touchAction = 'none';
-  return {
-    update(newOptions?: { zoomTarget?: HTMLElement }) {
-      options = newOptions;
-      if (newOptions?.zoomTarget !== undefined) {
-        zoomInstance.setState({ zoomTarget: newOptions.zoomTarget });
-      }
-    },
-    destroy() {
-      controller.abort();
-      for (const unsubscribe of unsubscribes) {
-        unsubscribe();
-      }
-      zoomInstance.cleanup();
-    },
+
+  const unsubscribes = untrack(() => [
+    assetViewerManager.on({ ZoomChange: (state) => zoomInstance.setState(state) }),
+    zoomInstance.subscribe(({ state }) => assetViewerManager.onZoomChange(state)),
+  ]);
+
+  return () => {
+    controller.abort();
+    for (const unsubscribe of unsubscribes) {
+      unsubscribe();
+    }
+    zoomInstance.cleanup();
   };
 };

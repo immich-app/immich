@@ -362,11 +362,11 @@
         <!-- Person information block -->
         <div
           class="relative w-fit p-4 pt-12 sm:px-6"
-          use:clickOutside={{
+          {@attach clickOutside({
             onOutclick: handleCancelEditName,
             onEscape: isEditingName ? handleCancelEditName : undefined,
-          }}
-          use:listNavigation={suggestionContainer}
+          })}
+          {@attach listNavigation(suggestionContainer)}
         >
           <section class="flex w-64 place-items-center border-black sm:w-96">
             {#if isEditingName}

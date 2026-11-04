@@ -178,7 +178,7 @@
           placeholder={$t('search')}
           {onkeydown}
           bind:value={search}
-          use:initInput
+          {@attach initInput}
         />
         <div class="immich-scrollbar overflow-y-auto">
           <!-- eslint-disable-next-line svelte/require-each-key -->
