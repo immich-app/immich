@@ -169,5 +169,5 @@ export const Route = {
 };
 
 export const ExternalRoute = {
-  archivedDocs: (version: string) => `https://docs.${version}.archive.immich.app/overview/introduction`,
+  docs: () => 'https://docs.immich.app/overview/quick-start',
 };

@@ -44,18 +44,16 @@
     {/if}
 
     <Heading size="tiny">{$t('official_immich_resources')}</Heading>
-    {#if isThirdParty}
-      <Text>
-        <FormatMessage key="support_ensure_latest">
-          {#snippet children({ message })}
-            <Link href="https://github.com/immich-app/immich/releases">{message}</Link>
-          {/snippet}
-        </FormatMessage>
-      </Text>
-    {/if}
+    <Text>
+      <FormatMessage key="support_ensure_latest">
+        {#snippet children({ message })}
+          <Link href="https://github.com/immich-app/immich/releases">{message}</Link>
+        {/snippet}
+      </FormatMessage>
+    </Text>
 
     <Stack class="mt-5">
-      {@render link(ExternalRoute.archivedDocs(info.version), mdiInformationOutline, $t('documentation'))}
+      {@render link(ExternalRoute.docs(), mdiInformationOutline, $t('documentation'))}
       {@render link('https://github.com/immich-app/immich/', mdiGithub, $t('source'))}
       {@render link('https://discord.immich.app', siDiscord, $t('discord'))}
       {@render link(
