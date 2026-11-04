@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -9,6 +12,7 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
 import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
@@ -214,11 +218,31 @@ class _PeopleCollectionCard extends ConsumerWidget {
   }
 }
 
-class _PlacesCollectionCard extends StatelessWidget {
+class _PlacesCollectionCard extends HookWidget {
   const _PlacesCollectionCard();
 
   @override
   Widget build(BuildContext context) {
+    // The card preview must not pretend the user is in Honolulu: use the last
+    // known device location when the permission was already granted, otherwise
+    // fall back to a neutral world view. Never prompts.
+    final centre = useState<LatLng?>(null);
+    final resolved = useState(false);
+
+    useEffect(() {
+      var cancelled = false;
+      unawaited(
+        MapUtils.getLastKnownPosition().then((position) {
+          if (cancelled) {
+            return;
+          }
+          centre.value = position;
+          resolved.value = true;
+        }),
+      );
+      return () => cancelled = true;
+    }, const []);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isTablet = constraints.maxWidth > 600;
@@ -226,7 +250,7 @@ class _PlacesCollectionCard extends StatelessWidget {
         final size = context.width * widthFactor - 20.0;
 
         return GestureDetector(
-          onTap: () => context.pushRoute(PlaceRoute(currentLocation: null)),
+          onTap: () => context.pushRoute(PlaceRoute(currentLocation: centre.value)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -239,12 +263,14 @@ class _PlacesCollectionCard extends StatelessWidget {
                     color: context.colorScheme.secondaryContainer.withAlpha(100),
                   ),
                   child: IgnorePointer(
-                    child: MapThumbnail(
-                      zoom: 8,
-                      centre: const LatLng(21.44950, -157.91959),
-                      showAttribution: false,
-                      themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
-                    ),
+                    child: resolved.value
+                        ? MapThumbnail(
+                            zoom: centre.value == null ? 1 : 8,
+                            centre: centre.value ?? const LatLng(0, 0),
+                            showAttribution: false,
+                            themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 ),
               ),

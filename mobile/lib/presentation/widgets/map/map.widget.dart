@@ -111,6 +111,18 @@ class _MapViewState extends ConsumerState<MapView> {
       );
     }
 
+    // Opened without an explicit target (e.g. from the Places collection card):
+    // fall back to the device location when the permission was already granted,
+    // otherwise keep the neutral world view.
+    if (widget.initialLocation == null) {
+      final (position, _) = await MapUtils.checkPermAndGetLocation(context: context, silent: true);
+      if (position != null && mounted) {
+        await controller.animateCamera(
+          CameraUpdate.newLatLngZoom(LatLng(position.latitude, position.longitude), MapUtils.mapZoomToAssetLevel),
+        );
+      }
+    }
+
     _debouncer.run(() => setBounds(forceReload: true));
     controller.addListener(onMapMoved);
   }
