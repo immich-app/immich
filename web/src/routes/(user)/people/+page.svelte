@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { scrollMemory } from '#lib/actions/scroll-memory.ts';
+  import { scrollMemory } from '#lib/actions/scroll-memory.svelte.ts';
   import { shortcut } from '#lib/actions/shortcut.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
@@ -98,6 +98,8 @@
           resolve();
         }
         sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+      } else {
+        resolve();
       }
     });
 
@@ -281,23 +283,18 @@
 <UserPageLayout
   title={$t('people')}
   description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
-  use={[
-    [
-      scrollMemory,
-      {
-        routeStartsWith: Route.people(),
-        beforeSave: () => {
-          if (currentPage) {
-            sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());
-          }
-        },
-        beforeClear: () => {
-          sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
-        },
-        beforeLoad: loadInitialScroll,
-      },
-    ],
-  ]}
+  {@attach scrollMemory({
+    routeStartsWith: Route.people(),
+    beforeSave: () => {
+      if (currentPage) {
+        sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());
+      }
+    },
+    beforeClear: () => {
+      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+    },
+    beforeScroll: loadInitialScroll,
+  })}
 >
   {#snippet buttons()}
     <div class="flex items-center justify-center gap-2">

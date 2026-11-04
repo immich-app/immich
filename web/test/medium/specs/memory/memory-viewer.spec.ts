@@ -1,6 +1,7 @@
 import { Route } from '#lib/route.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
 import { factory } from '#test/medium/mock/factories.ts';
+import { DateTime } from 'luxon';
 
 test.describe('memory viewer', () => {
   test('walks through every asset across memories with buttons and arrow keys', async ({ page, data, app }) => {
@@ -55,5 +56,26 @@ test.describe('memory viewer', () => {
 
     await expect(app.viewer.previousButton).toBeVisible();
     await expect(app.viewer.nextButton).toBeVisible();
+  });
+
+  test('should restore scroll position when navigating from a memory back to the list', async ({ page, data, app }) => {
+    const assets = Array.from({ length: 20 }, (_, i) =>
+      factory.asset({ fileCreatedAt: DateTime.now().minus({ years: i }).toISO() }),
+    );
+
+    data.addAssets(...assets);
+    data.addMemories(
+      ...factory.memories(
+        assets,
+        assets.map(({ fileCreatedAt }) => ({ year: DateTime.fromISO(fileCreatedAt).year, assetCount: 1 })),
+      ),
+    );
+
+    await page.goto(Route.memories());
+    await app.memories.card().last().click();
+    await app.memory.root.waitFor();
+    await page.goBack();
+
+    await expect(app.memories.card().last()).toBeInViewport();
   });
 });

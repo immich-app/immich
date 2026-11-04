@@ -24,6 +24,7 @@
   class="group relative me-2 inline-block aspect-3/4 h-54 rounded-xl shadow-sm last:me-0 max-md:h-37.5 md:me-4 md:aspect-4/3 xl:aspect-video {className}"
   href={item.href}
   onmouseenter={() => isBirthday && confettiCount++}
+  data-testid="memory-card"
 >
   <img class="size-full rounded-xl object-cover" src={item.src} alt={item.alt ?? item.title} draggable="false" />
   {#if item.isSaved}
