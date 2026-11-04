@@ -34,7 +34,8 @@ RUN --mount=type=cache,target=/ccache \
     --skip_tests \
     --use_openvino CPU \
     --use_cache \
-    --compile_no_warning_as_error
+    --compile_no_warning_as_error \
+    --no_telemetry
 
 # bundle openvino into the wheel as the published one does, so it is what the EP loads beside it
 WORKDIR /code/onnxruntime/build/Release/dist
@@ -168,7 +169,8 @@ ENV TRANSFORMERS_CACHE=/cache \
     PYTHONPATH=/usr/src \
     DEVICE=${DEVICE} \
     VIRTUAL_ENV=/opt/venv \
-    MACHINE_LEARNING_CACHE_FOLDER=/cache
+    MACHINE_LEARNING_CACHE_FOLDER=/cache \
+    ORT_DISABLE_TELEMETRY=1
 
 # prevent core dumps
 RUN echo "hard core 0" >> /etc/security/limits.conf && \

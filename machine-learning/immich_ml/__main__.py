@@ -13,6 +13,9 @@ else:
 
 module_dir = Path(__file__).parent
 
+# onnxruntime sends telemetry by default since 1.29 and reads this once on load, so it must be set before workers start
+os.environ.setdefault("ORT_DISABLE_TELEMETRY", "1")
+
 # on i915, Intel's runtime submits every allocation in the process with each run it gives OpenVINO's GPU plugin
 if any(driver.resolve().name == "i915" for driver in Path("/sys/class/drm").glob("renderD*/device/driver")):
     os.environ.setdefault("NEOReadDebugKeys", "1")
