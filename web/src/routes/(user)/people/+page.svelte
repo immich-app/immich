@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { page } from '$app/state';
   import { scrollMemory } from '#lib/actions/scroll-memory.ts';
   import { shortcut } from '#lib/actions/shortcut.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
@@ -18,6 +16,8 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import {
     getAllPeople,
     getClusterGroupUsers,
@@ -28,7 +28,7 @@
   } from '@immich/sdk';
   import { ActionButton, Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import PeopleCard from './PeopleCard.svelte';
@@ -61,15 +61,15 @@
     }
   });
 
-  onDestroy(() => {
+  onMount(() =>
     websocketEvents.on('on_person_thumbnail', (personId: string) => {
       for (const person of people) {
         if (person.id === personId) {
           person.updatedAt = new Date().toISOString();
         }
       }
-    });
-  });
+    }),
+  );
 
   const loadInitialScroll = () =>
     new Promise<void>((resolve) => {
