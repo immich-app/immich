@@ -335,7 +335,7 @@
     {#each assets as asset, index (asset.id + '-' + index)}
       {#if isInOrNearViewport(index)}
         <div class="absolute" style:overflow="clip" style={getStyle(index)}>
-          {const currentAsset = toTimelineAsset(asset)}
+          {const currentAsset = $derived(toTimelineAsset(asset))}
           <Thumbnail
             onClick={() => {
               if (assetInteraction.selectionActive) {
