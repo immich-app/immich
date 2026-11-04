@@ -52,20 +52,20 @@ final _allProvider = FutureProvider.autoDispose<List<Passkey>>((ref) async {
 class PasskeyMutations extends StoreMutations {
   const PasskeyMutations._(super.ref);
 
-  /// Create a passkey for the current user through the system's passkey prompt, returning null if the user cancels
-  Future<Passkey?> create() async {
+  /// Create a passkey for the current user through the system's passkey prompt, returning false if the user cancels
+  Future<bool> create() async {
     final apiRepository = read(passkeyApiRepositoryProvider);
 
     try {
       final options = await apiRepository.startRegistration();
       final credential = await read(passkeyHostApiProvider).register(jsonEncode(options));
       if (credential == null) {
-        return null;
+        return false;
       }
 
-      final passkey = await apiRepository.finishRegistration(jsonDecode(credential));
+      await apiRepository.finishRegistration(jsonDecode(credential));
       invalidate(_allProvider);
-      return passkey;
+      return true;
     } catch (error, stack) {
       _log.severe("Failed to create a passkey", error, stack);
       rethrow;
