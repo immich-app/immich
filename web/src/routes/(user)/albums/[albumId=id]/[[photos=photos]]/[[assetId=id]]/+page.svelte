@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto, onNavigate } from '$app/navigation';
-  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.svelte.ts';
   import AlbumMap from '#lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '#lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '#lib/components/asset-viewer/ActivityStatus.svelte';
@@ -289,7 +289,7 @@
 
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close, ...Object.values(Actions)]} />
 
-<div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
+<div class="flex overflow-hidden" {@attach scrollMemoryClearer({ routeStartsWith: Route.albums() })}>
   <div class="relative w-full shrink">
     <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
       <Timeline
