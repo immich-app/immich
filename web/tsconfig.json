@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "es2022",
+    "module": "esnext",
     "noImplicitOverride": true,
     "paths": {
       "#i18n/*": ["../i18n/*"],

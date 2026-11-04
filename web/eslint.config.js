@@ -204,6 +204,7 @@ export default defineConfig(
     files: ['test/**/*.ts'],
     rules: {
       'no-empty-pattern': 'off',
+      'unicorn/no-document-cookie': 'off',
       'compat/compat': 'off',
       'tscompat/tscompat': 'off',
     },

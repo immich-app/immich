@@ -1,4 +1,5 @@
-import type { MockData } from '#test/medium/mock/data.ts';
+import { Route } from '#lib/route.ts';
+import type { MockData } from '#test/common/data.ts';
 import type { AssetResponseDto, IntegrityReport } from '@immich/sdk';
 import { expect, type Page } from '@playwright/test';
 import { DateTime } from 'luxon';
@@ -13,10 +14,14 @@ export const createApp = (page: Page, data: MockData) => {
   const labelled = (name: string) => page.getByLabel(name, { exact: true });
 
   const viewer = createViewer(page);
+  const card = (link: { key: string }) => page.locator(`a[href="${Route.viewSharedLink(link)}"]`);
   const memoryRoot = page.locator('#memory-viewer');
   const memoryGallery = page.locator('#gallery-memory');
 
   return {
+    dialog: page.getByRole('dialog'),
+    toast: (key: string) => page.getByText(key),
+
     admin: {
       maintenance: {
         checkAllButton: button('admin.maintenance_integrity_check_all'),
@@ -29,6 +34,10 @@ export const createApp = (page: Page, data: MockData) => {
       },
       users: {
         createUserButton: button('create_user'),
+        restoreButton: button('restore'),
+        editButton: button('edit'),
+        deleteButton: button('delete'),
+        resetPasswordButton: button('reset_password'),
         form: {
           emailInput: labelled('email'),
           passwordInput: labelled('password'),
@@ -41,7 +50,13 @@ export const createApp = (page: Page, data: MockData) => {
       },
     },
 
+    albums: {
+      createAlbumButton: button('create_album'),
+    },
+
     album: {
+      summary: page.getByTestId('album-details'),
+      selectPhotosButton: button('select_photos'),
       mapButton: labelled('map'),
       mapDialog: page.getByRole('dialog'),
       mapMarkers: page.getByRole('dialog').locator('.maplibregl-marker'),
@@ -85,6 +100,13 @@ export const createApp = (page: Page, data: MockData) => {
       homeLink: page.locator('a[href="/"]'),
       heading: (name: string) => page.getByRole('heading', { name }),
       confirmRemove: () => button('remove').click(),
+      card,
+      cover: (link: { key: string }) => card(link).getByTestId('album-image'),
+      brokenCover: (link: { key: string }) => card(link).locator('[data-broken-asset]'),
+      form: {
+        showMetadataSwitch: page.getByRole('dialog').getByLabel('show_metadata', { exact: true }),
+        allowDownloadSwitch: page.getByRole('dialog').getByLabel('allow_public_user_to_download', { exact: true }),
+      },
     },
 
     sidebar: {
@@ -95,6 +117,10 @@ export const createApp = (page: Page, data: MockData) => {
     },
 
     timeline: createTimeline(page, data),
+
+    duplicates: {
+      viewButton: button('view'),
+    },
 
     viewer,
   };
@@ -124,7 +150,13 @@ const createTimeline = (page: Page, data: MockData) => {
     thumbnail,
     selected: page.locator('[data-thumbnail-focus-container][data-selected]'),
     addPhotosButton: page.getByLabel('add_photos', { exact: true }),
+    albumPicker: {
+      title: page.getByRole('dialog').getByText('add_to_album_item_count', { exact: true }),
+      selectAlbumsTitle: page.getByRole('dialog').getByText('select_albums', { exact: true }),
+    },
+    selectionCandidates: thumbnails.locator('[data-selection-candidate]'),
     selectionBar: {
+      addToAlbumButton: page.getByLabel('add_to_album', { exact: true }),
       favoriteButton: page.getByLabel('to_favorite', { exact: true }),
       unfavoriteButton: page.getByLabel('remove_from_favorites', { exact: true }),
       unarchiveButton: page.getByLabel('unarchive', { exact: true }),
@@ -141,9 +173,31 @@ const createTimeline = (page: Page, data: MockData) => {
         await page.getByLabel('menu', { exact: true }).click();
         await page.getByRole('menuitem', { name: 'delete', exact: true }).click();
       },
+
+      changeDate: async () => {
+        await page.getByLabel('menu', { exact: true }).click();
+        await page.getByRole('menuitem', { name: 'change_date', exact: true }).click();
+      },
+
+      removeFromAlbum: async () => {
+        await page.getByLabel('menu', { exact: true }).click();
+        await page.getByRole('menuitem', { name: 'remove_from_album', exact: true }).click();
+        await page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }).click();
+      },
+    },
+    changeDate: {
+      dateInput: page.getByLabel('date_and_time', { exact: true }),
+      timezoneInput: page.getByLabel('timezone', { exact: true }),
+      offsetSwitch: page.getByTestId('edit-by-offset-switch'),
+      daysInput: page.getByPlaceholder('days', { exact: true }),
+      hoursInput: page.getByPlaceholder('hours', { exact: true }),
+      minutesInput: page.getByPlaceholder('minutes', { exact: true }),
+      confirmButton: page.getByRole('button', { name: 'confirm', exact: true }),
     },
     disabledSelection: (asset: Asset) => thumbnail(asset).and(page.locator('[data-selected][data-disabled]')),
     favoriteIcon: (asset: Asset) => thumbnail(asset).locator('[data-icon-favorite]'),
+    thumbhash: (asset: Asset) => thumbnail(asset).getByTestId('thumbhash'),
+    brokenImage: (asset: Asset) => thumbnail(asset).getByText('error_loading_image', { exact: true }),
     archiveIcon: (asset: Asset) => thumbnail(asset).locator('[data-icon-archive]'),
     scrubber: (yearMonth: string) => page.locator(`[data-segment-year-month="${yearMonth}"]`),
 
@@ -191,8 +245,100 @@ const createTimeline = (page: Page, data: MockData) => {
       });
     },
 
+    position: async (asset: Asset) => {
+      const box = (await thumbnail(asset).boundingBox())!;
+      return { x: Math.round(box.x), y: Math.round(box.y) };
+    },
+
     expectAtTop: (asset: Asset) => alignedWith(asset, 'top'),
     expectAtBottom: (asset: Asset) => alignedWith(asset, 'bottom'),
+  };
+};
+
+const createViewer = (page: Page) => {
+  const root = page.locator('#immich-asset-viewer');
+  const content = page.locator('[data-viewer-content]');
+  const detailPanel = page.locator('#detail-panel');
+  const stack = page.locator('#stack-slideshow');
+  const ocrImage = content.locator('img[draggable="false"]');
+
+  const moreMenuItem = async (name: string) => {
+    await page.getByLabel('more', { exact: true }).click();
+    await page.getByRole('menuitem', { name, exact: true }).click();
+  };
+
+  const media = (asset: Asset) =>
+    content
+      .locator(`img[src*="/assets/${asset.id}/thumbnail"], video[poster*="/assets/${asset.id}/thumbnail"]`)
+      .first();
+
+  return {
+    root,
+    content,
+    detailPanel,
+    stack,
+    nextButton: page.getByLabel('view_next_asset', { exact: true }),
+    previousButton: page.getByLabel('view_previous_asset', { exact: true }),
+    shareButton: page.getByLabel('share', { exact: true }),
+    deleteButton: page.getByLabel('delete', { exact: true }),
+    permanentlyDeleteButton: page.getByLabel('permanently_delete', { exact: true }),
+    backButton: page.getByLabel('go_back', { exact: true }),
+    favoriteButton: page.getByRole('button', { name: 'to_favorite', exact: true }),
+    unfavoriteButton: page.getByRole('button', { name: 'unfavorite', exact: true }),
+    infoButton: page.getByLabel('info', { exact: true }),
+    moreButton: page.getByLabel('more', { exact: true }),
+    exitSlideshowButton: page.getByLabel('exit_slideshow', { exact: true }),
+    description: page.getByPlaceholder('add_a_description'),
+    rating: page.getByTestId('star-container'),
+    editDateButton: page.getByTestId('detail-panel-edit-date-button'),
+    editLocationButton: page.getByTitle('edit_location'),
+    changeDate: {
+      dateInput: page.locator('#datetime'),
+      timezoneInput: page.getByRole('combobox', { name: 'timezone' }),
+    },
+    changeLocation: {
+      latitudeInput: page.getByRole('dialog').getByLabel('latitude', { exact: true }),
+      longitudeInput: page.getByRole('dialog').getByLabel('longitude', { exact: true }),
+      confirmButton: page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }),
+    },
+    navbarActions: page.getByTestId('asset-viewer-navbar-actions'),
+    tags: page.getByTestId('detail-panel-tags').getByRole('link'),
+    media,
+    image: (quality: 'thumbnail' | 'preview' | 'original') => content.getByTestId(quality).filter({ visible: true }),
+    stackThumbnail: (asset: Asset) => stack.locator(`[data-asset="${asset.id}"]`),
+    stackAssets: stack.locator('[data-asset]'),
+    stackBrokenAssets: stack.locator('[data-broken-asset]'),
+    brokenAsset: content.locator('[data-broken-asset]').first(),
+
+    ocr: {
+      button: page.getByLabel('text_recognition', { exact: true }),
+      boxes: content.locator('[data-testid="ocr-box"]'),
+      image: ocrImage,
+      imageTransform: () =>
+        ocrImage.evaluate((element) => getComputedStyle(element.closest('[style*="transform"]') ?? element).transform),
+    },
+
+    faceEditor: createFaceEditor(page),
+
+    waitForAsset: (asset: Asset) => expect(media(asset)).toBeVisible(),
+
+    openSlideshow: () => moreMenuItem('slideshow'),
+    download: () => moreMenuItem('download'),
+    archive: () => moreMenuItem('to_archive'),
+    unarchive: () => moreMenuItem('unarchive'),
+
+    permanentlyDelete: async () => {
+      await page.getByLabel('permanently_delete', { exact: true }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'delete', exact: true }).click();
+    },
+
+    openDetailPanel: async () => {
+      await expect(root).toBeVisible();
+      if (!(await detailPanel.isVisible())) {
+        await page.keyboard.press('i');
+      }
+      await expect(detailPanel).toBeVisible();
+    },
   };
 };
 
@@ -263,72 +409,6 @@ const createFaceEditor = (page: Page) => {
       await page.mouse.move(centerX + deltaX, centerY + deltaY, { steps: 5 });
       await page.mouse.up();
       await page.waitForTimeout(300);
-    },
-  };
-};
-
-const createViewer = (page: Page) => {
-  const root = page.locator('#immich-asset-viewer');
-  const content = page.locator('[data-viewer-content]');
-  const detailPanel = page.locator('#detail-panel');
-  const stack = page.locator('#stack-slideshow');
-  const ocrImage = content.locator('img[draggable="false"]');
-
-  const media = (asset: Asset) =>
-    content
-      .locator(`img[src*="/assets/${asset.id}/thumbnail"], video[poster*="/assets/${asset.id}/thumbnail"]`)
-      .first();
-
-  return {
-    root,
-    content,
-    detailPanel,
-    stack,
-    nextButton: page.getByLabel('view_next_asset', { exact: true }),
-    previousButton: page.getByLabel('view_previous_asset', { exact: true }),
-    deleteButton: page.getByLabel('delete', { exact: true }),
-    permanentlyDeleteButton: page.getByLabel('permanently_delete', { exact: true }),
-    backButton: page.getByLabel('go_back', { exact: true }),
-    favoriteButton: page.getByRole('button', { name: 'to_favorite', exact: true }),
-    unfavoriteButton: page.getByRole('button', { name: 'unfavorite', exact: true }),
-    infoButton: page.getByLabel('info', { exact: true }),
-    moreButton: page.getByLabel('more', { exact: true }),
-    exitSlideshowButton: page.getByLabel('exit_slideshow', { exact: true }),
-    description: page.getByPlaceholder('add_a_description'),
-    editDateButton: page.getByTestId('detail-panel-edit-date-button'),
-    tags: page.getByTestId('detail-panel-tags').getByRole('link'),
-    media,
-    image: (quality: 'thumbnail' | 'preview' | 'original') => content.getByTestId(quality).filter({ visible: true }),
-    stackThumbnail: (asset: Asset) => stack.locator(`[data-asset="${asset.id}"]`),
-
-    ocr: {
-      button: page.getByLabel('text_recognition', { exact: true }),
-      boxes: content.locator('[data-testid="ocr-box"]'),
-      image: ocrImage,
-      imageTransform: () =>
-        ocrImage.evaluate((element) => getComputedStyle(element.closest('[style*="transform"]') ?? element).transform),
-    },
-
-    faceEditor: createFaceEditor(page),
-
-    waitForAsset: (asset: Asset) => expect(media(asset)).toBeVisible(),
-
-    openSlideshow: async () => {
-      await page.getByLabel('more', { exact: true }).click();
-      await page.getByRole('menuitem', { name: 'slideshow', exact: true }).click();
-    },
-
-    permanentlyDelete: async () => {
-      await page.getByLabel('permanently_delete', { exact: true }).click();
-      await page.getByRole('dialog').getByRole('button', { name: 'delete', exact: true }).click();
-    },
-
-    openDetailPanel: async () => {
-      await expect(root).toBeVisible();
-      if (!(await detailPanel.isVisible())) {
-        await page.keyboard.press('i');
-      }
-      await expect(detailPanel).toBeVisible();
     },
   };
 };

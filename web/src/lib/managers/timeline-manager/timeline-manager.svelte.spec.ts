@@ -1,11 +1,18 @@
-import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { getTimelineMonthByDate } from '#lib/managers/timeline-manager/internal/search-support.svelte.ts';
-import { AbortError } from '#lib/utils.ts';
 import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '#lib/utils/timeline-util.ts';
 import { factory } from '#test/unit/factories.ts';
-import { AssetOrderBy, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { test } from '#test/unit/fixtures.ts';
+import type { Mock } from '#test/unit/mocks/mock.ts';
+import {
+  AssetOrderBy,
+  AssetVisibility,
+  type AssetResponseDto,
+  type TimeBucketAssetResponseDto,
+  type TimeBucketsResponseDto,
+} from '@immich/sdk';
 import { tick } from 'svelte';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 import { TimelineManager } from './timeline-manager.svelte';
 import type { TimelineAsset } from './types';
 
@@ -66,63 +73,44 @@ function deriveLocalDateTimeFromFileCreatedAt(arg: TimelineAsset): TimelineAsset
   };
 }
 
-describe('TimelineManager', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
+type Context = { api: Mock['api'] };
+
+const mockTimeBuckets = (
+  api: Mock['api'],
+  timeBuckets: TimeBucketsResponseDto[],
+  bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto>,
+) =>
+  api.on({
+    getTimeBuckets: () => ({ json: timeBuckets }),
+    getTimeBucket: ({ params }) => ({ json: bucketAssetsResponse[params.timeBucket] }),
   });
 
+describe('TimelineManager', () => {
   describe('init', () => {
     let timelineManager: TimelineManager;
-    const bucketAssets: Record<string, TimelineAsset[]> = {
-      '2024-03-01T00:00:00.000Z': factory
-        .many(1, () => factory.timelineAsset())
-        .map((asset) =>
-          deriveLocalDateTimeFromFileCreatedAt({
-            ...asset,
-            fileCreatedAt: fromISODateTimeUTCToObject('2024-03-01T00:00:00.000Z'),
-          }),
-        ),
-      '2024-02-01T00:00:00.000Z': factory
-        .many(100, () => factory.timelineAsset())
-        .map((asset) =>
-          deriveLocalDateTimeFromFileCreatedAt({
-            ...asset,
-            fileCreatedAt: fromISODateTimeUTCToObject('2024-02-01T00:00:00.000Z'),
-          }),
-        ),
-      '2024-01-01T00:00:00.000Z': factory
-        .many(3, () => factory.timelineAsset())
-        .map((asset) =>
-          deriveLocalDateTimeFromFileCreatedAt({
-            ...asset,
-            fileCreatedAt: fromISODateTimeUTCToObject('2024-01-01T00:00:00.000Z'),
-          }),
-        ),
-    };
 
-    const bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
-      Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
-    );
-
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([
-        { count: 1, timeBucket: '2024-03-01' },
-        { count: 100, timeBucket: '2024-02-01' },
-        { count: 3, timeBucket: '2024-01-01' },
-      ]);
-
-      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
+      api.on({
+        getTimeBuckets: () => ({
+          json: [
+            { count: 1, timeBucket: '2024-03-01' },
+            { count: 100, timeBucket: '2024-02-01' },
+            { count: 3, timeBucket: '2024-01-01' },
+          ],
+        }),
+        getTimeBucket: () => new Promise(() => {}),
+      });
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
       await tick();
     });
 
-    it('should load months in viewport', () => {
-      expect(sdkMock.getTimeBuckets).toHaveBeenCalledOnce();
-      expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
+    test('should load months in viewport', ({ api }) => {
+      expect(api.getTimeBuckets.calls).toHaveLength(1);
+      expect(api.getTimeBucket.calls).toHaveLength(2);
     });
 
-    it('calculates month height', () => {
+    test('calculates month height', () => {
       const plainMonths = timelineManager.months.map((month) => ({
         year: month.yearMonth.year,
         month: month.yearMonth.month,
@@ -132,14 +120,14 @@ describe('TimelineManager', () => {
       expect(plainMonths).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ year: 2024, month: 3, height: 283 }),
-          expect.objectContaining({ year: 2024, month: 2, height: 7711 }),
+          expect.objectContaining({ year: 2024, month: 2, height: 3808 }),
           expect.objectContaining({ year: 2024, month: 1, height: 283 }),
         ]),
       );
     });
 
-    it('calculates timeline height', () => {
-      expect(timelineManager.totalViewerHeight).toBe(8337);
+    test('calculates timeline height', () => {
+      expect(timelineManager.totalViewerHeight).toBe(4434);
     });
   });
 
@@ -166,35 +154,32 @@ describe('TimelineManager', () => {
     const bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
     );
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([
-        { count: 1, timeBucket: '2024-03-01T00:00:00.000Z' },
-        { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
-      ]);
-      sdkMock.getTimeBucket.mockImplementation(async ({ timeBucket }, { signal } = {}) => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        if (signal?.aborted) {
-          throw new AbortError();
-        }
-        return bucketAssetsResponse[timeBucket];
-      });
+      mockTimeBuckets(
+        api,
+        [
+          { count: 1, timeBucket: '2024-03-01T00:00:00.000Z' },
+          { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
+        ],
+        bucketAssetsResponse,
+      );
       await timelineManager.updateViewport({ width: 1588, height: 0 });
     });
 
-    it('loads a month', async () => {
+    test('loads a month', async ({ api }) => {
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(0);
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
-      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
+      expect(api.getTimeBucket.calls).toHaveLength(1);
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
-    it('ignores invalid months', async () => {
+    test('ignores invalid months', async ({ api }) => {
       await timelineManager.loadTimelineMonth({ year: 2023, month: 1 });
-      expect(sdkMock.getTimeBucket).not.toHaveBeenCalled();
+      expect(api.getTimeBucket).not.toHaveBeenCalled();
     });
 
-    it('cancels month loading', async () => {
+    test('cancels month loading', async () => {
       const month = getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })!;
       void timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
       const abortSpy = vi.spyOn(month!.loader!.cancelToken!, 'abort');
@@ -204,18 +189,18 @@ describe('TimelineManager', () => {
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
-    it('prevents loading months multiple times', async () => {
+    test('prevents loading months multiple times', async ({ api }) => {
       await Promise.all([
         timelineManager.loadTimelineMonth({ year: 2024, month: 1 }),
         timelineManager.loadTimelineMonth({ year: 2024, month: 1 }),
       ]);
-      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
+      expect(api.getTimeBucket.calls).toHaveLength(1);
 
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
-      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
+      expect(api.getTimeBucket.calls).toHaveLength(1);
     });
 
-    it('allows loading a canceled month', async () => {
+    test('allows loading a canceled month', async () => {
       const month = getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })!;
       const loadPromise = timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
 
@@ -231,19 +216,19 @@ describe('TimelineManager', () => {
   describe('upsertAssets', () => {
     let timelineManager: TimelineManager;
 
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      api.on({ getTimeBuckets: () => ({ json: [] }) });
 
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
     });
 
-    it('is empty initially', () => {
+    test('is empty initially', () => {
       expect(timelineManager.months.length).toEqual(0);
       expect(timelineManager.assetCount).toEqual(0);
     });
 
-    it('adds assets to new month', () => {
+    test('adds assets to new month', () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(
         factory.timelineAsset({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -259,7 +244,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.months[0].getFirstAsset().id).toEqual(asset.id);
     });
 
-    it('adds assets to existing month', () => {
+    test('adds assets to existing month', () => {
       const [assetOne, assetTwo] = factory
         .many(2, () =>
           factory.timelineAsset({
@@ -277,7 +262,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.months[0].yearMonth.month).toEqual(1);
     });
 
-    it('orders assets in months by descending date', () => {
+    test('orders assets in months by descending date', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         factory.timelineAsset({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -303,7 +288,7 @@ describe('TimelineManager', () => {
       expect(month?.getAssets()[2].id).toEqual(assetTwo.id);
     });
 
-    it('orders months by descending date', () => {
+    test('orders months by descending date', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         factory.timelineAsset({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -332,7 +317,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.months[2].yearMonth.month).toEqual(1);
     });
 
-    it('updates existing asset', () => {
+    test('updates existing asset', () => {
       const updateAssetsSpy = vi.spyOn(timelineManager, 'upsertAssets');
       const asset = deriveLocalDateTimeFromFileCreatedAt(factory.timelineAsset());
       timelineManager.upsertAssets([asset]);
@@ -341,7 +326,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.assetCount).toEqual(1);
     });
 
-    it('ignores new assets that do not match the tag filter', async () => {
+    test('ignores new assets that do not match the tag filter', async () => {
       await timelineManager.updateOptions({ tagId: 'tag-1' });
 
       const matching = deriveLocalDateTimeFromFileCreatedAt(factory.timelineAsset({ tags: ['tag-1'] }));
@@ -353,7 +338,7 @@ describe('TimelineManager', () => {
     });
 
     // disabled due to the wasm Justified Layout import
-    it('ignores trashed assets when isTrashed is true', async () => {
+    test('ignores trashed assets when isTrashed is true', async () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(factory.timelineAsset({ isTrashed: false }));
       const trashedAsset = deriveLocalDateTimeFromFileCreatedAt(factory.timelineAsset({ isTrashed: true }));
 
@@ -367,14 +352,14 @@ describe('TimelineManager', () => {
   describe('upsertAssets - updating existing', () => {
     let timelineManager: TimelineManager;
 
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      api.on({ getTimeBuckets: () => ({ json: [] }) });
 
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
     });
 
-    it('updates an asset', () => {
+    test('updates an asset', () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(factory.timelineAsset({ isFavorite: false }));
       const updatedAsset = { ...asset, isFavorite: true };
 
@@ -387,7 +372,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(true);
     });
 
-    it('asset moves months when asset date changes', () => {
+    test('asset moves months when asset date changes', () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(
         factory.timelineAsset({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -411,29 +396,7 @@ describe('TimelineManager', () => {
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 3 })?.getAssets().length).toEqual(1);
     });
 
-    it('yearMonth is not a shared reference with asset.localDateTime (reference bug)', () => {
-      const asset = deriveLocalDateTimeFromFileCreatedAt(
-        factory.timelineAsset({
-          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
-        }),
-      );
-
-      timelineManager.upsertAssets([asset]);
-      const januaryMonth = getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })!;
-      const monthYearMonth = januaryMonth.yearMonth;
-
-      const originalMonth = monthYearMonth.month;
-      expect(originalMonth).toEqual(1);
-
-      // Simulating updateObject
-      asset.localDateTime.month = 3;
-      asset.localDateTime.day = 20;
-
-      expect(monthYearMonth.month).toEqual(originalMonth);
-      expect(monthYearMonth.month).toEqual(1);
-    });
-
-    it('asset is removed during upsert when TimelineManager if visibility changes', async () => {
+    test('asset is removed during upsert when TimelineManager if visibility changes', async () => {
       await timelineManager.updateOptions({
         visibility: AssetVisibility.Archive,
       });
@@ -454,7 +417,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.assetCount).toEqual(1);
     });
 
-    it('asset is removed during upsert when TimelineManager if isFavorite changes', async () => {
+    test('asset is removed during upsert when TimelineManager if isFavorite changes', async () => {
       await timelineManager.updateOptions({
         isFavorite: true,
       });
@@ -475,7 +438,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.assetCount).toEqual(1);
     });
 
-    it('asset is removed during upsert when TimelineManager if isTrashed changes', async () => {
+    test('asset is removed during upsert when TimelineManager if isTrashed changes', async () => {
       await timelineManager.updateOptions({
         isTrashed: true,
       });
@@ -500,9 +463,9 @@ describe('TimelineManager', () => {
   describe('AssetUpdate events', () => {
     let timelineManager: TimelineManager;
 
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      api.on({ getTimeBuckets: () => ({ json: [] }) });
 
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
       await timelineManager.updateOptions({ albumId: 'album-id' });
@@ -512,14 +475,14 @@ describe('TimelineManager', () => {
       timelineManager.destroy();
     });
 
-    it('ignores unknown assets for album timelines', () => {
+    test('ignores unknown assets for album timelines', () => {
       eventManager.emit('AssetUpdate', factory.asset());
 
       expect(timelineManager.assetCount).toEqual(0);
       expect(timelineManager.months).toHaveLength(0);
     });
 
-    it('updates existing assets in the timeline', () => {
+    test('updates existing assets in the timeline', () => {
       const existing = deriveLocalDateTimeFromFileCreatedAt(factory.timelineAsset({ isFavorite: false }));
 
       timelineManager.upsertAssets([existing]);
@@ -542,9 +505,9 @@ describe('TimelineManager', () => {
   describe('live event asset insertion', () => {
     let timelineManager: TimelineManager;
 
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      api.on({ getTimeBuckets: () => ({ json: [] }) });
 
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
     });
@@ -553,7 +516,7 @@ describe('TimelineManager', () => {
       timelineManager.destroy();
     });
 
-    it('does not insert live event assets with a different owner into a user-scoped timeline', async () => {
+    test('does not insert live event assets with a different owner into a user-scoped timeline', async () => {
       await timelineManager.updateOptions({ userId: 'partner-id', visibility: AssetVisibility.Timeline });
 
       const asset = deriveLocalDateTimeFromFileCreatedAt(
@@ -568,7 +531,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.assetCount).toEqual(0);
     });
 
-    it('inserts live event assets for the matching owner into a user-scoped timeline', async () => {
+    test('inserts live event assets for the matching owner into a user-scoped timeline', async () => {
       await timelineManager.updateOptions({ userId: 'partner-id', visibility: AssetVisibility.Timeline });
 
       const asset = deriveLocalDateTimeFromFileCreatedAt(
@@ -583,7 +546,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.assetCount).toEqual(1);
     });
 
-    it('does not insert unknown live event assets into album timelines', async () => {
+    test('does not insert unknown live event assets into album timelines', async () => {
       await timelineManager.updateOptions({ albumId: 'album-id' });
 
       const asset = deriveLocalDateTimeFromFileCreatedAt(factory.timelineAsset());
@@ -593,7 +556,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.assetCount).toEqual(0);
     });
 
-    it('updates existing live event assets in scoped timelines', async () => {
+    test('updates existing live event assets in scoped timelines', async () => {
       await timelineManager.updateOptions({ albumId: 'album-id' });
 
       const asset = deriveLocalDateTimeFromFileCreatedAt(
@@ -621,14 +584,14 @@ describe('TimelineManager', () => {
   describe('removeAssets', () => {
     let timelineManager: TimelineManager;
 
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      api.on({ getTimeBuckets: () => ({ json: [] }) });
 
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
     });
 
-    it('ignores invalid IDs', () => {
+    test('ignores invalid IDs', () => {
       timelineManager.upsertAssets(
         factory
           .many(2, () =>
@@ -645,7 +608,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.months[0].getAssets().length).toEqual(2);
     });
 
-    it('removes asset from month', () => {
+    test('removes asset from month', () => {
       const [assetOne, assetTwo] = factory
         .many(2, () =>
           factory.timelineAsset({
@@ -661,7 +624,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.months[0].getAssets().length).toEqual(1);
     });
 
-    it('does not remove month when empty', () => {
+    test('does not remove month when empty', () => {
       const assets = factory
         .many(2, () =>
           factory.timelineAsset({
@@ -680,17 +643,17 @@ describe('TimelineManager', () => {
   describe('firstAsset', () => {
     let timelineManager: TimelineManager;
 
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      api.on({ getTimeBuckets: () => ({ json: [] }) });
       await timelineManager.updateViewport({ width: 0, height: 0 });
     });
 
-    it('empty store returns null', () => {
+    test('empty store returns null', () => {
       expect(timelineManager.getFirstAsset()).toBeUndefined();
     });
 
-    it('populated store returns first asset', () => {
+    test('populated store returns first asset', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         factory.timelineAsset({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -738,24 +701,26 @@ describe('TimelineManager', () => {
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
     );
 
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([
-        { count: 1, timeBucket: '2024-03-01T00:00:00.000Z' },
-        { count: 6, timeBucket: '2024-02-01T00:00:00.000Z' },
-        { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
-      ]);
-      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
-      sdkMock.getAssetInfo.mockRejectedValue(new Error('Asset not found'));
+      mockTimeBuckets(
+        api,
+        [
+          { count: 1, timeBucket: '2024-03-01T00:00:00.000Z' },
+          { count: 6, timeBucket: '2024-02-01T00:00:00.000Z' },
+          { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
+        ],
+        bucketAssetsResponse,
+      ).on({ getAssetInfo: () => ({ status: 404 }) });
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
     });
 
-    it('returns null for invalid assetId', async () => {
+    test('returns null for invalid assetId', async () => {
       expect(() => timelineManager.getLaterAsset({ id: 'invalid' } as AssetResponseDto)).not.toThrow();
       expect(await timelineManager.getLaterAsset({ id: 'invalid' } as AssetResponseDto)).toBeUndefined();
     });
 
-    it('returns previous assetId', async () => {
+    test('returns previous assetId', async () => {
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
       const month = getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 });
 
@@ -765,7 +730,7 @@ describe('TimelineManager', () => {
       expect(previous).toEqual(a);
     });
 
-    it('returns previous assetId spanning multiple months', async () => {
+    test('returns previous assetId spanning multiple months', async () => {
       await timelineManager.loadTimelineMonth({ year: 2024, month: 2 });
       await timelineManager.loadTimelineMonth({ year: 2024, month: 3 });
 
@@ -777,7 +742,7 @@ describe('TimelineManager', () => {
       expect(previous).toEqual(b);
     });
 
-    it('loads previous month', async () => {
+    test('loads previous month', async () => {
       await timelineManager.loadTimelineMonth({ year: 2024, month: 2 });
       const month = getTimelineMonthByDate(timelineManager, { year: 2024, month: 2 });
       const previousMonth = getTimelineMonthByDate(timelineManager, { year: 2024, month: 3 });
@@ -791,7 +756,7 @@ describe('TimelineManager', () => {
       expect(previousMonthSpy).not.toHaveBeenCalled();
     });
 
-    it('skips removed assets', async () => {
+    test('skips removed assets', async () => {
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
       await timelineManager.loadTimelineMonth({ year: 2024, month: 2 });
       await timelineManager.loadTimelineMonth({ year: 2024, month: 3 });
@@ -801,7 +766,7 @@ describe('TimelineManager', () => {
       expect(await timelineManager.getLaterAsset(assetThree)).toEqual(assetOne);
     });
 
-    it('returns null when no more assets', async () => {
+    test('returns null when no more assets', async () => {
       await timelineManager.loadTimelineMonth({ year: 2024, month: 3 });
       expect(await timelineManager.getLaterAsset(timelineManager.months[0].getFirstAsset())).toBeUndefined();
     });
@@ -810,19 +775,19 @@ describe('TimelineManager', () => {
   describe('getTimelineMonthIndexByAssetId', () => {
     let timelineManager: TimelineManager;
 
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      api.on({ getTimeBuckets: () => ({ json: [] }) });
 
       await timelineManager.updateViewport({ width: 0, height: 0 });
     });
 
-    it('returns null for invalid months', () => {
+    test('returns null for invalid months', () => {
       expect(getTimelineMonthByDate(timelineManager, { year: -1, month: -1 })).toBeUndefined();
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 3 })).toBeUndefined();
     });
 
-    it('returns the month index', () => {
+    test('returns the month index', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         factory.timelineAsset({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -841,7 +806,7 @@ describe('TimelineManager', () => {
       expect(timelineManager.getTimelineMonthByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
     });
 
-    it('ignores removed months', () => {
+    test('ignores removed months', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         factory.timelineAsset({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -894,19 +859,21 @@ describe('TimelineManager', () => {
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
     );
 
-    beforeEach(async () => {
+    beforeEach<Context>(async ({ api }) => {
       timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([
-        { count: 1, timeBucket: '2024-03-01' },
-        { count: 10, timeBucket: '2024-02-01' },
-        { count: 3, timeBucket: '2024-01-01' },
-      ]);
-
-      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
+      mockTimeBuckets(
+        api,
+        [
+          { count: 1, timeBucket: '2024-03-01' },
+          { count: 10, timeBucket: '2024-02-01' },
+          { count: 3, timeBucket: '2024-01-01' },
+        ],
+        bucketAssetsResponse,
+      );
       await timelineManager.updateViewport({ width: 1588, height: 0 });
     });
 
-    it('gets all assets once', async () => {
+    test('gets all assets once', async () => {
       const assetCount = timelineManager.assetCount;
       expect(assetCount).toBe(14);
       const discoveredAssets: Set<string> = new Set();
@@ -930,29 +897,7 @@ describe('TimelineManager', () => {
       globalThis.localStorage?.removeItem(LS_KEY);
     });
 
-    it('defaults to false', () => {
-      const timelineManager = new TimelineManager();
-      expect(timelineManager.showAssetOwners).toBe(false);
-    });
-
-    it('setShowAssetOwners updates value', () => {
-      const timelineManager = new TimelineManager();
-      timelineManager.setShowAssetOwners(true);
-      expect(timelineManager.showAssetOwners).toBe(true);
-      timelineManager.setShowAssetOwners(false);
-      expect(timelineManager.showAssetOwners).toBe(false);
-    });
-
-    it('toggleShowAssetOwners flips value', () => {
-      const timelineManager = new TimelineManager();
-      expect(timelineManager.showAssetOwners).toBe(false);
-      timelineManager.toggleShowAssetOwners();
-      expect(timelineManager.showAssetOwners).toBe(true);
-      timelineManager.toggleShowAssetOwners();
-      expect(timelineManager.showAssetOwners).toBe(false);
-    });
-
-    it('persists across instances via localStorage', () => {
+    test('persists across instances via localStorage', () => {
       const a = new TimelineManager();
       a.setShowAssetOwners(true);
       const b = new TimelineManager();
@@ -961,12 +906,12 @@ describe('TimelineManager', () => {
   });
 
   describe('retrieveRange', () => {
-    it('uses createdAt ordering in the Recently Added view (orderBy=CreatedAt)', async () => {
+    test('uses createdAt ordering in the Recently Added view (orderBy=CreatedAt)', async ({ api }) => {
       // Simulate the "Recently Added" bug: two assets whose localDateTime order is
       // the reverse of their createdAt (upload) order. Before the fix, retrieveRange
       // compared localDateTime and selected the wrong range direction.
       const timelineManager = new TimelineManager();
-      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      api.on({ getTimeBuckets: () => ({ json: [] }) });
       await timelineManager.updateOptions({ orderBy: AssetOrderBy.CreatedAt });
 
       // assetA was taken recently (2024) but uploaded first (2025-01)

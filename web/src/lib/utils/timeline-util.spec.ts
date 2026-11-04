@@ -6,7 +6,6 @@ import { DateTime } from 'luxon';
 describe('formatGroupTitle', () => {
   beforeAll(() => {
     vi.useFakeTimers();
-    process.env.TZ = 'UTC';
   });
 
   beforeEach(() => {
@@ -15,7 +14,6 @@ describe('formatGroupTitle', () => {
 
   afterAll(() => {
     vi.useRealTimers();
-    delete process.env.TZ;
   });
 
   it('formats today', () => {

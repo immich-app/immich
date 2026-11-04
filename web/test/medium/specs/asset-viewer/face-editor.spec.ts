@@ -1,7 +1,7 @@
 import { Route } from '#lib/route.ts';
+import { factory } from '#test/common/factories.ts';
 import type { Rect } from '#test/medium/app.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
-import { factory } from '#test/medium/mock/factories.ts';
 import type { AssetResponseDto, PersonResponseDto } from '@immich/sdk';
 
 const names = [
@@ -29,7 +29,7 @@ test.describe('face editor', () => {
   test.beforeEach(async ({ page, data, app }) => {
     asset = factory.asset({ width: 4000, height: 3000 });
     people = names.map((name) => factory.person({ name }));
-    data.addAsset(asset).addPeople(...people);
+    data.addAssets(asset).addPeople(people);
     await page.goto(Route.viewAsset({ id: asset.id }));
     await app.viewer.waitForAsset(asset);
     await app.viewer.openDetailPanel();
@@ -57,10 +57,10 @@ test.describe('face editor', () => {
     }
   });
 
-  test('tags the selected person after confirming', async ({ page, api, app }) => {
+  test('tags the selected person after confirming', async ({ api, app }) => {
     const [alice] = people;
     await app.viewer.faceEditor.person(alice.name).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(app.dialog).toBeVisible();
     await app.viewer.faceEditor.confirmButton.click();
 
     await expect(app.viewer.faceEditor.selector).toBeHidden();

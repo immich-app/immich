@@ -1,6 +1,7 @@
 import { Route } from '#lib/route.ts';
-import { expect, test, type MockData } from '#test/medium/fixtures.ts';
-import { factory } from '#test/medium/mock/factories.ts';
+import type { MockData } from '#test/common/data.ts';
+import { factory } from '#test/common/factories.ts';
+import { expect, test } from '#test/medium/fixtures.ts';
 import type { Page } from '@playwright/test';
 
 const helloWorld = { text: 'Hello World', x1: 0.1, y1: 0.1, x2: 0.4, y2: 0.1, x3: 0.4, y3: 0.15, x4: 0.1, y4: 0.15 };
@@ -18,10 +19,10 @@ const secondText = {
 };
 
 const setup = (data: MockData) => {
-  const asset = factory.asset({ width: 4000, height: 3000 });
+  const asset = factory.asset({ width: 4000, height: 3000, fileCreatedAt: '2024-06-01T12:00:00.000Z' });
   data
-    .addAsset(asset)
-    .addOcr(factory.ocr({ assetId: asset.id, ...helloWorld }), factory.ocr({ assetId: asset.id, ...immichPhoto }));
+    .addAssets(asset)
+    .addOcr([factory.ocr({ assetId: asset.id, ...helloWorld }), factory.ocr({ assetId: asset.id, ...immichPhoto })]);
   return asset;
 };
 
@@ -80,7 +81,7 @@ test.describe('OCR bounding boxes', () => {
     const primary = setup(data);
     const second = factory.asset({ originalFileName: 'second-ocr-asset.jpg' });
     data
-      .addStack(factory.stack({ assets: [primary, second] }))
+      .addStacks(factory.stack({ assets: [primary, second] }))
       .addOcr(factory.ocr({ assetId: second.id, ...secondText }));
     await page.goto(Route.viewAsset({ id: primary.id }));
     await app.viewer.waitForAsset(primary);
@@ -115,6 +116,53 @@ test.describe('OCR bounding boxes', () => {
       expect(zoomed.width).toBeGreaterThan(initial.width);
       expect(zoomed.height).toBeGreaterThan(initial.height);
     }).toPass({ timeout: 2000 });
+  });
+
+  test('button is hidden for an asset without recognized text', async ({ page, data, app }) => {
+    const asset = factory.asset();
+    data.addAssets(asset);
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+
+    await expect(app.viewer.ocr.button).toHaveCount(0);
+  });
+
+  test('viewer still opens when the text lookup fails', async ({ page, data, api, logger, app }) => {
+    const asset = setup(data);
+    api.on({ getAssetOcr: () => ({ status: 500, json: { message: 'OCR unavailable', statusCode: 500 } }) });
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+
+    await expect(app.viewer.ocr.button).toHaveCount(0);
+    expect(logger.error).toHaveBeenCalledWith(/500/);
+  });
+
+  test('a slow lookup never shows the previous asset text', async ({ page, data, api, app }) => {
+    const first = setup(data);
+    const second = factory.asset({ fileCreatedAt: '2024-01-01T12:00:00.000Z', originalFileName: 'second.jpg' });
+    data.addAssets(second).addOcr(factory.ocr({ assetId: second.id, ...secondText }));
+    let answerFirst = () => {};
+    const firstAnswered = new Promise<void>((resolve) => (answerFirst = resolve));
+    api.on({
+      getAssetOcr: async ({ params }) => {
+        if (params.id === first.id) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          answerFirst();
+        }
+        return { json: data.getOcr(params.id) };
+      },
+    });
+    await page.goto(Route.viewAsset({ id: first.id }));
+    await app.viewer.waitForAsset(first);
+    await expect.poll(() => api.getAssetOcr.calls.length).toBe(1);
+
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(second);
+    await firstAnswered;
+    await app.viewer.ocr.button.click();
+
+    await expect(app.viewer.ocr.boxes).toHaveCount(1);
+    await expect(app.viewer.ocr.boxes.first()).toContainText('Second Asset Text');
   });
 
   test('are interactive overlays that take focus and swallow pointer gestures', async ({ page, data, app }) => {

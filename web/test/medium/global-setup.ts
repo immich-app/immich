@@ -1,6 +1,6 @@
 import { Route } from '#lib/route.ts';
-import { factory } from '#test/medium/mock/factories.ts';
-import { Mock } from '#test/medium/mock/mock.ts';
+import { factory } from '#test/common/factories.ts';
+import { Mock } from '#test/medium/mocks/mock.ts';
 import { chromium, type FullConfig } from '@playwright/test';
 
 const warmUp = async (config: FullConfig) => {
@@ -13,12 +13,10 @@ const warmUp = async (config: FullConfig) => {
   await context.addInitScript(() => {
     localStorage.setItem('lang', 'dev');
   });
-  await context.addCookies([{ name: 'immich_is_authenticated', value: 'true', url: baseURL }]);
-
   const mock = new Mock(context);
-  await mock.install();
+  await mock.setup({ baseURL });
   const asset = factory.asset();
-  mock.data.addAsset(asset);
+  mock.data.addAssets(asset);
 
   const page = await context.newPage();
   const routes = [

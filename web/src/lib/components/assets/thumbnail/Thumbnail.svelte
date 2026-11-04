@@ -384,6 +384,7 @@
 
     {#if selectionCandidate}
       <div
+        data-selection-candidate
         class={['absolute top-0 z-2 size-full bg-immich-primary opacity-40', { 'rounded-xl': selected }]}
         in:fade={{ duration: 100 }}
         out:fade={{ duration: 100 }}

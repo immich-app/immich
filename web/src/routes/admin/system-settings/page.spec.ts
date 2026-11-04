@@ -1,0 +1,28 @@
+import { Route } from '#lib/route.ts';
+import { test } from '#test/unit/fixtures.ts';
+import { expect } from 'vitest';
+import { userEvent } from 'vitest/browser';
+import Page from './+page.svelte';
+import { load } from './+page.ts';
+
+test.beforeEach(async ({ router, render, app }) => {
+  await router.goto(Route.systemSettings());
+  await render(Page, load);
+  await app.admin.settings.open('admin.user_settings');
+  await expect.element(app.admin.settings.numberInput).toHaveValue(7);
+});
+
+test('a number setting below its minimum snaps to the minimum on blur', async ({ app }) => {
+  await app.admin.settings.numberInput.fill('0');
+  await userEvent.tab();
+
+  await expect.element(app.admin.settings.numberInput).toHaveValue(1);
+});
+
+test('a number setting can be emptied while editing', async ({ app }) => {
+  await app.admin.settings.numberInput.clear();
+  await expect.element(app.admin.settings.numberInput).toHaveValue(null);
+
+  await userEvent.tab();
+  await expect.element(app.admin.settings.numberInput).toHaveValue(null);
+});
