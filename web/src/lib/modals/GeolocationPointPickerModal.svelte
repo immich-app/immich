@@ -148,9 +148,9 @@
 >
   {#snippet prompt()}
     <div class="flex size-full flex-col gap-2">
-      <div class="relative z-1 w-64 sm:w-96" use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}>
+      <div class="relative z-1 w-64 sm:w-96" {@attach clickOutside({ onOutclick: () => (hideSuggestion = true) })}>
         {#if suggestionContainer}
-          <div use:listNavigation={suggestionContainer}>
+          <div {@attach listNavigation(suggestionContainer)}>
             <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
               <SearchBar
                 placeholder={$t('search_places')}

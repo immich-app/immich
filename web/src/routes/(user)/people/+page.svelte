@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { page } from '$app/state';
-  import { scrollMemory } from '#lib/actions/scroll-memory.ts';
+  import { scrollMemory } from '#lib/actions/scroll-memory.svelte.ts';
   import { shortcut } from '#lib/actions/shortcut.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
@@ -18,6 +16,8 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import {
     getAllPeople,
     getClusterGroupUsers,
@@ -28,7 +28,7 @@
   } from '@immich/sdk';
   import { ActionButton, Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import PeopleCard from './PeopleCard.svelte';
@@ -61,15 +61,15 @@
     }
   });
 
-  onDestroy(() => {
+  onMount(() =>
     websocketEvents.on('on_person_thumbnail', (personId: string) => {
       for (const person of people) {
         if (person.id === personId) {
           person.updatedAt = new Date().toISOString();
         }
       }
-    });
-  });
+    }),
+  );
 
   const loadInitialScroll = () =>
     new Promise<void>((resolve) => {
@@ -98,6 +98,8 @@
           resolve();
         }
         sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+      } else {
+        resolve();
       }
     });
 
@@ -281,23 +283,18 @@
 <UserPageLayout
   title={$t('people')}
   description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
-  use={[
-    [
-      scrollMemory,
-      {
-        routeStartsWith: Route.people(),
-        beforeSave: () => {
-          if (currentPage) {
-            sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());
-          }
-        },
-        beforeClear: () => {
-          sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
-        },
-        beforeLoad: loadInitialScroll,
-      },
-    ],
-  ]}
+  {@attach scrollMemory({
+    routeStartsWith: Route.people(),
+    beforeSave: () => {
+      if (currentPage) {
+        sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());
+      }
+    },
+    beforeClear: () => {
+      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+    },
+    beforeScroll: loadInitialScroll,
+  })}
 >
   {#snippet buttons()}
     <div class="flex items-center justify-center gap-2">

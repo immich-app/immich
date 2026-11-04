@@ -1,7 +1,7 @@
 <script lang="ts">
   import { clickOutside } from '#lib/actions/click-outside.ts';
   import { listNavigation } from '#lib/actions/list-navigation.ts';
-  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.svelte.ts';
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
@@ -339,12 +339,12 @@
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 pt-(--navbar-height) md:px-6 md:pt-(--navbar-height-md)"
-  use:scrollMemoryClearer={{
+  {@attach scrollMemoryClearer({
     routeStartsWith: Route.people(),
     beforeClear: () => {
       sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
     },
-  }}
+  })}
 >
   {#key person.id}
     <Timeline
@@ -362,11 +362,11 @@
         <!-- Person information block -->
         <div
           class="relative w-fit p-4 pt-12 sm:px-6"
-          use:clickOutside={{
+          {@attach clickOutside({
             onOutclick: handleCancelEditName,
             onEscape: isEditingName ? handleCancelEditName : undefined,
-          }}
-          use:listNavigation={suggestionContainer}
+          })}
+          {@attach listNavigation(suggestionContainer)}
         >
           <section class="flex w-64 place-items-center border-black sm:w-96">
             {#if isEditingName}

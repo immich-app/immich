@@ -61,3 +61,25 @@ run = [
   { task = ":ci-unit" },
   { task = ":lint" },
 ]
+
+[tasks."playwright-install"]
+run = "pnpm exec playwright install chromium"
+
+[tasks."test-medium"]
+depends = [":playwright-install", ":build"]
+run = "pnpm run test:medium"
+
+[tasks."test-medium-ui"]
+depends = [":playwright-install"]
+env = { PLAYWRIGHT_DEV_SERVER = "1" }
+run = "pnpm run test:medium:ui"
+
+[tasks."ci-medium"]
+run = [
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
+  { task = ":install" },
+  { task = ":playwright-install" },
+  { task = ":build" },
+  "pnpm run test:medium",
+]

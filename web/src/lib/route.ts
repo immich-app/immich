@@ -167,3 +167,7 @@ export const Route = {
     return resolved;
   },
 };
+
+export const ExternalRoute = {
+  docs: () => 'https://docs.immich.app/overview/quick-start',
+};

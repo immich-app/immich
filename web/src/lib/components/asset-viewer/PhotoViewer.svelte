@@ -222,7 +222,7 @@
   bind:clientHeight={containerHeight}
   role="presentation"
   ondblclick={onZoom}
-  use:zoomImageAction={{ zoomTarget: adaptiveImage }}
+  {@attach zoomImageAction({ zoomTarget: adaptiveImage })}
   {...useSwipe((event) => onSwipe?.(event))}
 >
   <AdaptiveImage

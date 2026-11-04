@@ -1,13 +1,13 @@
+import { factory } from '#test/unit/factories.ts';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';
-import { writable } from 'svelte/store';
-import { albumFactory } from '#test-data/factories/album-factory';
 import AlbumSummary from '../AlbumSummary.svelte';
 
-vitest.mock('#lib/stores/preferences.store.js', () => ({
-  locale: writable('en'),
-}));
+vitest.mock('#lib/stores/preferences.store.js', async () => {
+  const { writable } = await import('svelte/store');
+  return { locale: writable('en') };
+});
 
 describe('AlbumSummary component', () => {
   beforeAll(async () => {
@@ -17,7 +17,7 @@ describe('AlbumSummary component', () => {
   });
 
   it('updates the date range when the start date of the album changes', async () => {
-    const album = albumFactory.build({
+    const album = factory.album({
       startDate: '2026-06-10T12:00:00.000Z',
       endDate: '2026-06-20T12:00:00.000Z',
       assetCount: 3,

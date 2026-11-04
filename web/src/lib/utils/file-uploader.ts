@@ -116,7 +116,7 @@ function getDeviceAssetId(asset: File) {
 
 function hashFile(file: File): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const worker = new Worker('#lib/workers/hash-file.ts', { type: 'module' });
+    const worker = new Worker(new URL('../workers/hash-file.ts', import.meta.url), { type: 'module' });
 
     worker.addEventListener('message', ({ data }: MessageEvent<{ result?: string; error?: string }>) => {
       worker.terminate();

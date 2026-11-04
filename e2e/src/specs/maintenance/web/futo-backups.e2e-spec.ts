@@ -1,4 +1,4 @@
-import * as sdk from '@immich/sdk';
+import * as sdk from '@futo-org/backups-orchestrator-ui/sdk';
 import { LoginResponseDto, StorageFolder, getServerFeatures } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import { io, type Socket } from 'socket.io-client';
@@ -30,12 +30,13 @@ test.describe('FUTO Backups', () => {
 
   test.beforeAll(async () => {
     utils.initSdk();
+    sdk.defaults.baseUrl = baseUrl;
     await utils.resetDatabase();
     admin = await utils.adminSetup();
 
     const headers = asBearerAuth(admin.accessToken);
     await sdk.futoBackupsResetOrchestrator({ headers });
-    await sdk.futoBackupsImportRecoveryKey({ importRecoveryKeyRequest: { recoveryKey: '0'.repeat(64) } }, { headers });
+    await sdk.futoBackupsImportRecoveryKey({ recoveryKey: '0'.repeat(64) }, { headers });
     await sdk.futoBackupsConfirmRecoveryKey({ headers });
     await sdk.futoBackupsEnableTelemetry({ headers });
     await utils.mkFolder('/local-backend');
@@ -73,24 +74,22 @@ test.describe('FUTO Backups', () => {
     const headers = asBearerAuth(admin.accessToken);
     await utils.setAuthCookies(context, admin.accessToken);
 
-    await sdk.futoBackupsCreateLocalBackend({ createLocalBackendRequestDto: { path: '/local-backend' } }, { headers });
+    await sdk.futoBackupsCreateLocalBackend({ path: '/local-backend' }, { headers });
     await sdk.futoBackupsConfigureImmichIntegration(
       {
-        configureImmichIntegrationRequestDto: {
-          name: 'Immich',
-          worm: false,
-          cron: '0 3 * * *',
-          backupConfiguration: true,
-          dataFolders: [StorageFolder.Backups, StorageFolder.Upload],
-          libraries: ['all'],
-        },
+        name: 'Immich',
+        worm: false,
+        cron: '0 3 * * *',
+        backupConfiguration: true,
+        dataFolders: [StorageFolder.Backups, StorageFolder.Upload],
+        libraries: ['all'],
       },
       { headers },
     );
 
     const { repositories } = await sdk.futoBackupsGetRepositories({ headers });
     const backupEnd = waitForJobEnd();
-    await sdk.futoBackupsCreateBackup({ id: repositories[0].id }, { headers });
+    await sdk.futoBackupsCreateBackup(repositories[0].id, { headers });
     await backupEnd;
 
     await page.goto('/link?target=backups');
