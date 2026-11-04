@@ -111,7 +111,7 @@ void main() {
 
       testWidgets('does not trash a merged asset when the MANAGE_MEDIA prompt is cancelled', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        await StoreService.I.put(StoreKey.manageLocalMediaAndroid, true);
+        await tester.runAsync(() => StoreService.I.put(StoreKey.manageLocalMediaAndroid, true));
         final asset = owned(localId: 'local');
 
         await pumpDelete(tester, {asset});
@@ -286,7 +286,7 @@ void main() {
 
       testWidgets('local only delete on Android with MANAGE_MEDIA shows the prompt', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        await StoreService.I.put(StoreKey.manageLocalMediaAndroid, true);
+        await tester.runAsync(() => StoreService.I.put(StoreKey.manageLocalMediaAndroid, true));
         final asset = LocalAssetFactory.create();
 
         await pumpDelete(tester, {asset});
@@ -303,7 +303,7 @@ void main() {
 
       testWidgets('local only delete on Android with MANAGE_MEDIA deletes nothing when cancelled', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        await StoreService.I.put(StoreKey.manageLocalMediaAndroid, true);
+        await tester.runAsync(() => StoreService.I.put(StoreKey.manageLocalMediaAndroid, true));
         final asset = LocalAssetFactory.create();
 
         await pumpDelete(tester, {asset});
