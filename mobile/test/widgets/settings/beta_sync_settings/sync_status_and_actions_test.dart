@@ -75,7 +75,7 @@ void main() {
       when(drift.reset).thenAnswer((_) async {});
       when(() => router.replaceAll(any())).thenAnswer((_) async {});
       when(() => context.service.asset.service.getAssetCounts()).thenThrow(Exception('corrupt db'));
-      await StoreService.I.put(StoreKey.serverEndpoint, PresentationContext.serverEndpoint);
+      await tester.runAsync(() => StoreService.I.put(StoreKey.serverEndpoint, PresentationContext.serverEndpoint));
 
       await tester.pumpTestWidget(
         context,
@@ -88,7 +88,10 @@ void main() {
       );
       await tester.tap(find.text('Reset SQLite Database'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Confirm'));
+      await tester.runAsync(() async {
+        await tester.tap(find.text('Confirm'));
+        await untilCalled(() => router.replaceAll(any()));
+      });
       await tester.pump();
     }
 
