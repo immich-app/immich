@@ -1164,7 +1164,6 @@ export class AssetRepository {
     return this.db
       .selectFrom('asset')
       .select('asset.id')
-      .select('originalFileName')
       .where('asset.id', 'in', ids)
       .$if(isEdited, (qb) =>
         qb
