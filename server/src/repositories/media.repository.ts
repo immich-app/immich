@@ -5,6 +5,7 @@ import { camelCase, upperFirst } from 'lodash-es';
 import { Duration } from 'luxon';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 import { Writable } from 'node:stream';
 import sharp, { Sharp } from 'sharp';
 import type {
@@ -395,6 +396,58 @@ export class MediaRepository {
     });
   }
 
+  async transcodeThumbnail(input: string, output: string, options: TranscodeCommand): Promise<void> {
+    if (options.twoPass) {
+      throw new TypeError('Video thumbnail extraction requires one-pass transcoding');
+    }
+    await using directory = await fs.mkdtempDisposable(join(dirname(output), '.immich-thumbnail-'));
+    const temporaryPath = join(directory.path, basename(output));
+    const hasOutput = async () => {
+      try {
+        const { size } = await fs.stat(temporaryPath);
+        return size > 0;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          return false;
+        }
+        throw error;
+      }
+    };
+
+    let completed = await this.transcodeThumbnailOnce(input, temporaryPath, options);
+    if (!completed || !(await hasOutput())) {
+      const skipFrameIndex = options.inputOptions.indexOf('-skip_frame');
+      if (skipFrameIndex !== -1 && options.inputOptions[skipFrameIndex + 1] === 'nointra') {
+        await fs.rm(temporaryPath, { force: true });
+        completed = await this.transcodeThumbnailOnce(input, temporaryPath, {
+          ...options,
+          inputOptions: options.inputOptions.toSpliced(skipFrameIndex, 2),
+        });
+      }
+      if (!completed || !(await hasOutput())) {
+        throw new Error('Video thumbnail extraction produced no frames');
+      }
+    }
+
+    await fs.rename(temporaryPath, output);
+  }
+
+  private transcodeThumbnailOnce(input: string, output: string, options: TranscodeCommand): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.configureFfmpegCall(input, output, options, false)
+        .on('error', (error, _, stderr) => {
+          if (stderr?.includes('No filtered frames for output stream')) {
+            resolve(false);
+          } else {
+            this.logger.error(stderr || error);
+            reject(error);
+          }
+        })
+        .on('end', () => resolve(true))
+        .run();
+    });
+  }
+
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
@@ -438,13 +491,17 @@ export class MediaRepository {
     return { width, height, isTransparent: hasAlpha };
   }
 
-  private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
+  private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand, logErrors = true) {
     const ffmpegCall = ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
       .on('start', (command: string) => this.logger.debug(command))
-      .on('error', (error, _, stderr) => this.logger.error(stderr || error));
+      .on('error', (error, _, stderr) => {
+        if (logErrors) {
+          this.logger.error(stderr || error);
+        }
+      });
 
     const { frameCount, percentInterval } = options.progress;
     const frameInterval = Math.ceil(frameCount / (100 / percentInterval));

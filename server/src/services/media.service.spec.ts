@@ -513,7 +513,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
@@ -565,12 +565,12 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.stringMatching(/_preview\.webp$/),
         expect.any(Object),
       );
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.stringMatching(/_thumbnail\.webp$/),
         expect.any(Object),
@@ -586,7 +586,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
@@ -637,7 +637,7 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
@@ -667,7 +667,7 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
@@ -687,7 +687,7 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
@@ -711,7 +711,7 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({

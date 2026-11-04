@@ -1,12 +1,31 @@
+import { execFile } from 'node:child_process';
 import { mkdtempDisposableSync, statSync } from 'node:fs';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import sharp from 'sharp';
+import type { TranscodeCommand } from 'src/types.js';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
 import { Colorspace, ImageFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { automock } from 'test/utils.js';
+
+const spyOnThumbnailTranscode = (repository: MediaRepository) =>
+  vi.spyOn(
+    repository as unknown as {
+      transcodeThumbnailOnce(input: string, output: string, options: TranscodeCommand): Promise<boolean>;
+    },
+    'transcodeThumbnailOnce',
+  );
+
+const thumbnailCommand = (): TranscodeCommand => ({
+  inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
+  outputOptions: ['-frames:v', '1'],
+  twoPass: false,
+  progress: { frameCount: 6, percentInterval: 5 },
+});
 
 const getPixelColor = async (buffer: Buffer, x: number, y: number) => {
   const metadata = await sharp(buffer).metadata();
@@ -317,6 +336,168 @@ describe(MediaRepository.name, () => {
 
       expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
       expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
+    });
+  });
+
+  describe('transcodeThumbnail', () => {
+    it.each(['jpeg', 'webp'])(
+      'should extract a %s thumbnail when the visible frames are not intra frames',
+      async (format) => {
+        using directory = mkdtempDisposableSync(join(tmpdir(), 'media-thumbnail-'));
+        const source = join(directory.path, 'synthetic.mp4');
+        const trimmed = join(directory.path, 'trimmed.mp4');
+        const output = join(directory.path, `thumbnail.${format}`);
+        const run = promisify(execFile);
+        await run('ffmpeg', [
+          '-v',
+          'error',
+          '-f',
+          'lavfi',
+          '-i',
+          'color=c=red:s=64x64:r=30:d=2',
+          '-c:v',
+          'libx264',
+          '-g',
+          '60',
+          '-keyint_min',
+          '60',
+          '-sc_threshold',
+          '0',
+          '-bf',
+          '0',
+          '-pix_fmt',
+          'yuv420p',
+          source,
+        ]);
+        await run('ffmpeg', ['-v', 'error', '-ss', '0.2', '-i', source, '-t', '0.2', '-c', 'copy', trimmed]);
+        const transcode = spyOnThumbnailTranscode(sut);
+
+        await sut.transcodeThumbnail(trimmed, output, {
+          ...thumbnailCommand(),
+          outputOptions: [
+            '-vf',
+            'fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,trim=end_frame=1',
+            '-frames:v',
+            '1',
+            '-update',
+            '1',
+            '-pix_fmt',
+            'yuvj420p',
+          ],
+        });
+
+        expect(transcode).toHaveBeenCalledTimes(2);
+        expect(await sharp(output).metadata()).toEqual(expect.objectContaining({ format, width: 64, height: 64 }));
+        expect(await sharp(output).resize(1, 1).raw().toBuffer()).toHaveLength(3);
+      },
+    );
+
+    it('should publish a nonempty thumbnail without retrying', async () => {
+      using directory = mkdtempDisposableSync(join(tmpdir(), 'media-thumbnail-'));
+      const output = join(directory.path, 'preview.jpeg');
+      const transcode = spyOnThumbnailTranscode(sut).mockImplementation(async (_, temporary) => {
+        await writeFile(temporary, 'thumbnail');
+        return true;
+      });
+
+      await sut.transcodeThumbnail('video.mp4', output, thumbnailCommand());
+
+      expect(await readFile(output, 'utf8')).toBe('thumbnail');
+      expect(transcode).toHaveBeenCalledOnce();
+      expect(await readdir(directory.path)).toEqual(['preview.jpeg']);
+    });
+
+    it.each([false, true])('should retry a missing or empty output (empty file: %s)', async (emptyFile) => {
+      using directory = mkdtempDisposableSync(join(tmpdir(), 'media-thumbnail-'));
+      const output = join(directory.path, 'thumbnail.webp');
+      await writeFile(output, 'old thumbnail');
+      const options = thumbnailCommand();
+      const originalOptions = structuredClone(options);
+      const transcode = spyOnThumbnailTranscode(sut)
+        .mockImplementationOnce(async (_, temporary) => {
+          if (emptyFile) {
+            await writeFile(temporary, '');
+          }
+          return true;
+        })
+        .mockImplementationOnce(async (_, temporary) => {
+          expect(await readFile(output, 'utf8')).toBe('old thumbnail');
+          await writeFile(temporary, 'new thumbnail');
+          return true;
+        });
+
+      await sut.transcodeThumbnail('video.mp4', output, options);
+
+      expect(transcode).toHaveBeenCalledTimes(2);
+      expect(transcode).toHaveBeenLastCalledWith('video.mp4', expect.any(String), {
+        ...options,
+        inputOptions: ['-sws_flags', 'accurate_rnd+full_chroma_int'],
+      });
+      expect(options).toEqual(originalOptions);
+      expect(await readFile(output, 'utf8')).toBe('new thumbnail');
+      expect(await readdir(directory.path)).toEqual(['thumbnail.webp']);
+    });
+
+    it('should preserve the old thumbnail if both attempts produce no frames', async () => {
+      using directory = mkdtempDisposableSync(join(tmpdir(), 'media-thumbnail-'));
+      const output = join(directory.path, 'preview.jpeg');
+      await writeFile(output, 'old thumbnail');
+      const transcode = spyOnThumbnailTranscode(sut).mockResolvedValue(true);
+
+      await expect(sut.transcodeThumbnail('video.mp4', output, thumbnailCommand())).rejects.toThrow(
+        'Video thumbnail extraction produced no frames',
+      );
+
+      expect(transcode).toHaveBeenCalledTimes(2);
+      expect(await readFile(output, 'utf8')).toBe('old thumbnail');
+      expect(await readdir(directory.path)).toEqual(['preview.jpeg']);
+    });
+
+    it('should not retry empty output when frame skipping is already disabled', async () => {
+      using directory = mkdtempDisposableSync(join(tmpdir(), 'media-thumbnail-'));
+      const output = join(directory.path, 'preview.jpeg');
+      const transcode = spyOnThumbnailTranscode(sut).mockResolvedValue(true);
+
+      await expect(
+        sut.transcodeThumbnail('video.mts', output, { ...thumbnailCommand(), inputOptions: [] }),
+      ).rejects.toThrow('Video thumbnail extraction produced no frames');
+
+      expect(transcode).toHaveBeenCalledOnce();
+      expect(await readdir(directory.path)).toEqual([]);
+    });
+
+    it('should not publish partial output from a failed attempt when the retry produces no frames', async () => {
+      using directory = mkdtempDisposableSync(join(tmpdir(), 'media-thumbnail-'));
+      const output = join(directory.path, 'thumbnail.webp');
+      await writeFile(output, 'old thumbnail');
+      const transcode = spyOnThumbnailTranscode(sut)
+        .mockImplementationOnce(async (_, temporary) => {
+          await writeFile(temporary, 'partial thumbnail');
+          return false;
+        })
+        .mockResolvedValueOnce(true);
+
+      await expect(sut.transcodeThumbnail('video.mp4', output, thumbnailCommand())).rejects.toThrow(
+        'Video thumbnail extraction produced no frames',
+      );
+
+      expect(transcode).toHaveBeenCalledTimes(2);
+      expect(await readFile(output, 'utf8')).toBe('old thumbnail');
+      expect(await readdir(directory.path)).toEqual(['thumbnail.webp']);
+    });
+
+    it('should propagate transcoding errors without replacing an existing thumbnail', async () => {
+      using directory = mkdtempDisposableSync(join(tmpdir(), 'media-thumbnail-'));
+      const output = join(directory.path, 'preview.jpeg');
+      await writeFile(output, 'old thumbnail');
+      const error = new Error('FFmpeg failed');
+      const transcode = spyOnThumbnailTranscode(sut).mockRejectedValue(error);
+
+      await expect(sut.transcodeThumbnail('video.mp4', output, thumbnailCommand())).rejects.toBe(error);
+
+      expect(transcode).toHaveBeenCalledOnce();
+      expect(await readFile(output, 'utf8')).toBe('old thumbnail');
+      expect(await readdir(directory.path)).toEqual(['preview.jpeg']);
     });
   });
 
