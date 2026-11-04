@@ -204,7 +204,7 @@
 
           <div>
             {#if asset.exifInfo?.make || asset.exifInfo?.model}
-              {const cameraName = getCameraName(asset.exifInfo.make, asset.exifInfo.model)}
+              {const cameraName = $derived(getCameraName(asset.exifInfo.make, asset.exifInfo.model))}
               <p>
                 <a
                   href={Route.search({
