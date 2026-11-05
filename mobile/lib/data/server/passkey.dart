@@ -45,6 +45,10 @@ class PasskeyApiRepository extends ApiRepository {
     return response.map(_toPasskey).toList();
   }
 
+  Future<void> update(String id, String? name) async {
+    await _api.updatePasskey(id, PasskeyUpdateDto(name: name));
+  }
+
   static Passkey _toPasskey(PasskeyResponseDto dto) =>
       .new(id: dto.id, createdAt: dto.createdAt, name: dto.name, usedAt: dto.usedAt);
 }
