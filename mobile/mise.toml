@@ -1,5 +1,5 @@
 [tools]
-java = "21.0.2"
+java = "25.0.5+8.0.LTS"
 # RUSTUP_TOOLCHAIN makes rustup ignore the targets in rust-toolchain.toml, so the cross targets are listed here too.
 rust = { version = "1.98.0", targets = "aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios" }
 
