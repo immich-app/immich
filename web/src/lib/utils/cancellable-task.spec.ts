@@ -1,11 +1,5 @@
 import { CancellableTask } from '#lib/utils/cancellable-task.ts';
 
-const deferred = () => {
-  let resolve = () => {};
-  const promise = new Promise<void>((done) => (resolve = done));
-  return { promise, resolve };
-};
-
 const abortable = (started: () => void) => async (signal: AbortSignal) => {
   started();
   await new Promise<void>((resolve, reject) => {
@@ -16,7 +10,7 @@ const abortable = (started: () => void) => async (signal: AbortSignal) => {
 describe('CancellableTask', () => {
   it('cancel aborts the running task and rejects complete', async () => {
     const task = new CancellableTask();
-    const started = deferred();
+    const started = Promise.withResolvers<void>();
     const complete = task.complete;
 
     const result = task.execute(abortable(started.resolve), true);

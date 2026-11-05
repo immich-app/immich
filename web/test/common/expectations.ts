@@ -52,16 +52,13 @@ export class Spy<TCall> {
   }
 }
 
-type ProblemKind = 'Handler errors' | 'Unhandled requests' | 'Network requests' | 'Browser errors' | 'Missing events';
-type Problem = { kind: ProblemKind; line: string };
-
 const maxLines = 3;
 const settleTimeout = 2000;
 const settleInterval = 50;
 
 type Logger = { error: Spy<string> };
 
-const fixes: Record<ProblemKind, string[]> = {
+const fixes = {
   'Handler errors': ['the shared handler in test/common/handlers.ts threw; fix it there'],
   'Unhandled requests': [
     'add a handler in test/common/handlers.ts, or one for this test only',
@@ -77,7 +74,10 @@ const fixes: Record<ProblemKind, string[]> = {
     '  expect(logger.error).toHaveBeenCalledWith(/Server error/);',
   ],
   'Missing events': ['the test expected an event that never happened; check the action that should trigger it'],
-};
+} as const;
+
+type ProblemKind = keyof typeof fixes;
+type Problem = { kind: ProblemKind; line: string };
 
 const missingEvents = (api: Dispatcher, logger: Logger) => [...api.missingExpectations(), ...logger.error.missing()];
 
@@ -135,4 +135,4 @@ const formatOffender = (line: string, index: number) => {
   ];
 };
 
-const indent = (lines: string[], width: number) => lines.map((line) => `${' '.repeat(width)}${line}`);
+const indent = (lines: readonly string[], width: number) => lines.map((line) => `${' '.repeat(width)}${line}`);

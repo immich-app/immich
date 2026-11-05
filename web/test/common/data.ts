@@ -54,8 +54,8 @@ const monthKey = (iso: string) => {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
 };
 
-type OneOrMany<T> = T | T[];
-const toList = <T>(items: OneOrMany<T>) => (Array.isArray(items) ? items : [items]);
+type MaybeArray<T> = T | T[];
+const toList = <T>(items: MaybeArray<T>) => (Array.isArray(items) ? items : [items]);
 
 const hiddenVisibilities = new Set<AssetVisibility>([AssetVisibility.Hidden, AssetVisibility.Locked]);
 
@@ -185,14 +185,14 @@ export class MockData {
     return this.brokenAssetIds.has(assetId);
   }
 
-  markBroken(assets: OneOrMany<Pick<AssetResponseDto, 'id'>>) {
+  markBroken(assets: MaybeArray<Pick<AssetResponseDto, 'id'>>) {
     for (const { id } of toList(assets)) {
       this.brokenAssetIds.add(id);
     }
     return this;
   }
 
-  addSharedLinks(links: OneOrMany<SharedLinkResponseDto>) {
+  addSharedLinks(links: MaybeArray<SharedLinkResponseDto>) {
     for (const link of toList(links)) {
       this.sharedLinks.set(link.id, link);
       this.addAssets(link.assets);
@@ -200,7 +200,7 @@ export class MockData {
     return this;
   }
 
-  addAssets(assets: OneOrMany<AssetResponseDto>) {
+  addAssets(assets: MaybeArray<AssetResponseDto>) {
     for (const asset of toList(assets)) {
       this.assets.set(asset.id, asset);
     }
@@ -268,7 +268,7 @@ export class MockData {
     return user;
   }
 
-  addUsers(users: OneOrMany<UserAdminResponseDto>) {
+  addUsers(users: MaybeArray<UserAdminResponseDto>) {
     for (const user of toList(users)) {
       this.users.set(user.id, user);
     }
@@ -310,7 +310,7 @@ export class MockData {
     return this.getAlbum(album.id)!;
   }
 
-  addAlbums(albums: OneOrMany<AlbumResponseDto>) {
+  addAlbums(albums: MaybeArray<AlbumResponseDto>) {
     for (const album of toList(albums)) {
       this.albums.set(album.id, album);
       this.albumAssets.set(album.id, new Set());
@@ -347,7 +347,7 @@ export class MockData {
     return assetIds.map((id) => ({ id, success: members?.delete(id) ?? false }));
   }
 
-  addToAlbum(albumId: string, assets: OneOrMany<Pick<AssetResponseDto, 'id'>>) {
+  addToAlbum(albumId: string, assets: MaybeArray<Pick<AssetResponseDto, 'id'>>) {
     const members = this.albumAssets.get(albumId);
     if (!members) {
       throw new Error(`Unknown album: ${albumId}`);
@@ -358,14 +358,14 @@ export class MockData {
     return this;
   }
 
-  addMemories(memories: OneOrMany<MemoryResponseDto>) {
+  addMemories(memories: MaybeArray<MemoryResponseDto>) {
     for (const memory of toList(memories)) {
       this.memories.set(memory.id, memory);
     }
     return this;
   }
 
-  addTags(tags: OneOrMany<TagResponseDto>) {
+  addTags(tags: MaybeArray<TagResponseDto>) {
     for (const tag of toList(tags)) {
       this.tags.set(tag.id, tag);
     }
@@ -380,7 +380,7 @@ export class MockData {
     return [...this.tags.values()];
   }
 
-  addActivities(activities: OneOrMany<ActivityResponseDto>) {
+  addActivities(activities: MaybeArray<ActivityResponseDto>) {
     for (const activity of toList(activities)) {
       this.activities.set(activity.id, activity);
     }
@@ -408,14 +408,14 @@ export class MockData {
     return config;
   }
 
-  addPeople(people: OneOrMany<PersonResponseDto>) {
+  addPeople(people: MaybeArray<PersonResponseDto>) {
     for (const person of toList(people)) {
       this.people.set(person.id, person);
     }
     return this;
   }
 
-  addStacks(stacks: OneOrMany<StackResponseDto>) {
+  addStacks(stacks: MaybeArray<StackResponseDto>) {
     for (const stack of toList(stacks)) {
       this.stacks.set(stack.id, stack);
       for (const asset of stack.assets) {
@@ -426,7 +426,7 @@ export class MockData {
     return this;
   }
 
-  addOcr(results: OneOrMany<AssetOcrResponseDto>) {
+  addOcr(results: MaybeArray<AssetOcrResponseDto>) {
     for (const result of toList(results)) {
       const existing = this.ocr.get(result.assetId) ?? [];
       this.ocr.set(result.assetId, [...existing, result]);
