@@ -592,7 +592,7 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
     },
   });
 
-  return [source, sink];
+  return [source, sink] as const;
 }
 
 function createSqlOwnerTransformStream(databaseUsername: string) {
