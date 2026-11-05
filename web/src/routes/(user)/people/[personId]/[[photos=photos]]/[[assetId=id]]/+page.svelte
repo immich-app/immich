@@ -389,7 +389,7 @@
               />
             {:else}
               <div class="relative flex gap-4">
-                <div class="@container relative size-[3.375rem]">
+                <div class="@container relative size-13.5">
                   <ImageThumbnail
                     circle
                     shadow
