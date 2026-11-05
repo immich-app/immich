@@ -118,7 +118,8 @@ class AssetMediaRepository {
   Future<void> cleanupStaleShareFiles() async {
     final records = await FileDownloader().database.allRecords(group: kShareDownloadGroup);
     await FileDownloader().cancelTasksWithIds(records.map((record) => record.taskId));
-    await cleanupTempFiles([for (final record in records) File(await record.task.filePath()).parent]);
+    final directories = await Future.wait(records.map((record) async => File(await record.task.filePath()).parent));
+    await cleanupTempFiles(directories);
   }
 
   static final RegExp _pathSeparators = RegExp(r'[\\/]');
