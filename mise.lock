@@ -285,34 +285,39 @@ url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/681916063"
 provenance = "github-attestations"
 
 [[tools.restic]]
-version = "0.19.0"
+version = "0.19.1"
 backend = "aqua:restic/restic"
-specifiers = ["0.19.0"]
+specifiers = ["0.19.1"]
 
 [tools.restic."platforms.linux-arm64"]
-checksum = "sha256:e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351d91"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
-url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897888"
+checksum = "sha256:a5f64aaab53d51e311fa3829124c5b703f2d14cf187d8640b6be3b2b49376465"
+checksum_source = "mise-versions"
+url = "https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_linux_arm64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/466999588"
 
 [tools.restic."platforms.linux-x64"]
-checksum = "sha256:13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
-url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897993"
+checksum = "sha256:f415415624dcc452f2a02b8c33641791a8c6d6d3b65bbb3543fcf9a25151585c"
+checksum_source = "mise-versions"
+url = "https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_linux_amd64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/466999719"
 
 [tools.restic."platforms.macos-arm64"]
-checksum = "sha256:1475397bf759ef4be16a77b19dec650bdbfec00d2cacd82005553411cdd37997"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_darwin_arm64.bz2"
-url_api = "https://api.github.com/repos/restic/restic/releases/assets/442898395"
+checksum = "sha256:7be0a144ccc377880f294204aa271d76e4b79554b42a751151d425ce6ebac143"
+checksum_source = "mise-versions"
+url = "https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_darwin_arm64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/467000314"
 
 [tools.restic."platforms.macos-x64"]
-checksum = "sha256:c9d9a71234bc0955fdba6da93cc9375f8793ec1e1cbce77a91014d536a969148"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_darwin_amd64.bz2"
-url_api = "https://api.github.com/repos/restic/restic/releases/assets/442898462"
+checksum = "sha256:c38d579622cf602f665234c5a8c315030b6cf70656028fe6dc29a786b60e5f35"
+checksum_source = "mise-versions"
+url = "https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_darwin_amd64.bz2"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/467000400"
 
 [tools.restic."platforms.windows-x64"]
-checksum = "sha256:6fa4219a70b1b5d1c429bb106a7f97f3d2a5aab74494db2e490b625edc486d8f"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_windows_amd64.zip"
-url_api = "https://api.github.com/repos/restic/restic/releases/assets/442897166"
+checksum = "sha256:da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d"
+checksum_source = "mise-versions"
+url = "https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_windows_amd64.zip"
+url_api = "https://api.github.com/repos/restic/restic/releases/assets/466998668"
 
 [[tools.terragrunt]]
 version = "1.2.1"
