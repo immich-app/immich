@@ -42,7 +42,6 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     kCGImageSourceCreateThumbnailWithTransform: true,
     kCGImageSourceCreateThumbnailFromImageAlways: true
   ]
-  private static let imageIOReadsAvif = (CGImageSourceCopyTypeIdentifiers() as? [String])?.contains("public.avif") == true
 
   func requestImage(url: String, requestId: Int64, preferEncoded: Bool, width: Int64?, height: Int64?, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
     var urlRequest = URLRequest(url: URL(string: url)!)
@@ -76,7 +75,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
 
     // Flutter can't decode JPEG XL and older iOS versions can't either, so this applies to encoded requests too.
     // ImageIO can't read AVIF before iOS 16, so it goes to the core there too.
-    if let mime = response?.mimeType, mime == "image/jxl" || (mime == "image/avif" && !imageIOReadsAvif) {
+    if let mime = response?.mimeType, mime == "image/jxl" || mime == "image/avif" {
       ImageProcessing.queue.addOperation {
         if request.isCancelled {
           return request.completion(ImageProcessing.cancelledResult)
