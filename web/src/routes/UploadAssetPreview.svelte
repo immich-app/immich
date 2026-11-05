@@ -2,8 +2,7 @@
   import { Route } from '#lib/route.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { uploadAssetsStore } from '#lib/stores/upload.ts';
-  import type { UploadAsset } from '#lib/types.ts';
-  import { UploadState } from '#lib/types.ts';
+  import { UploadState, type UploadAsset } from '#lib/types.ts';
   import { getByteUnitString } from '#lib/utils/byte-units.ts';
   import { fileUploadHandler } from '#lib/utils/file-uploader.ts';
   import { Icon } from '@immich/ui';

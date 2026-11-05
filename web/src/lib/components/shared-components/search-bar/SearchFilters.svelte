@@ -1,7 +1,7 @@
 <script lang="ts">
-  import SearchHistorySection from './SearchHistorySection.svelte';
-  import { t } from 'svelte-i18n';
-  import { fly } from 'svelte/transition';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
+  import { getAllTags, type PersonResponseDto, type TagResponseDto } from '@immich/sdk';
   import { Button, Text } from '@immich/ui';
   import {
     mdiAccount,
@@ -14,17 +14,20 @@
     mdiTagMultiple,
     mdiTune,
   } from '@mdi/js';
-  import SearchLocationSection from './SearchLocationSection.svelte';
-  import { getAllTags, type PersonResponseDto, type TagResponseDto } from '@immich/sdk';
-  import SearchMediaSection from './SearchMediaSection.svelte';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import { fly } from 'svelte/transition';
+  import SearchButton from './SearchButton.svelte';
   import SearchCameraSection from './SearchCameraSection.svelte';
   import SearchDateSection from './SearchDateSection.svelte';
+  import SearchDisplaySection from './SearchDisplaySection.svelte';
+  import SearchHistorySection from './SearchHistorySection.svelte';
+  import SearchLocationSection from './SearchLocationSection.svelte';
+  import SearchMediaSection from './SearchMediaSection.svelte';
   import SearchPeopleSection from './SearchPeopleSection.svelte';
+  import SearchRatingsSection from './SearchRatingsSection.svelte';
   import SearchTagsSection from './SearchTagsSection.svelte';
   import SearchTextSection from './SearchTextSection.svelte';
-  import SearchDisplaySection from './SearchDisplaySection.svelte';
-  import SearchRatingsSection from './SearchRatingsSection.svelte';
-  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import {
     getPeople,
     getSearchDatePreset,
@@ -35,9 +38,6 @@
     getSearchTagsTitle,
     getSearchTypeTitle,
   } from './search-bar-utils';
-  import { onMount } from 'svelte';
-  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
-  import SearchButton from './SearchButton.svelte';
 
   interface Props {
     id: string;

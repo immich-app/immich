@@ -4,7 +4,6 @@ import {
   ClientSecretBasic,
   ClientSecretPost,
   None,
-  type UserInfoResponse,
   allowInsecureRequests as allowInsecureRequestsExecute,
   authorizationCodeGrant,
   buildAuthorizationUrl,
@@ -14,6 +13,7 @@ import {
   randomPKCECodeVerifier,
   randomState,
   skipSubjectCheck,
+  type UserInfoResponse,
 } from 'openid-client';
 import { SystemConfig } from 'src/dtos/config.dto.js';
 import { OAuthTokenEndpointAuthMethod } from 'src/enum.js';

@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { type Kysely, sql } from 'kysely';
+import { sql, type Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import type { SyncAck } from 'src/types.js';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { MemoryType } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
+import type { SyncAck } from 'src/types.js';
 
 export type SyncBackfillOptions = {
   nowId: string;

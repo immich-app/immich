@@ -1,10 +1,9 @@
 <script lang="ts">
   import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
-  import MaintenanceBackupEntry from '#lib/components/maintenance/MaintenanceBackupEntry.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
+  import MaintenanceBackupEntry from '#lib/components/maintenance/MaintenanceBackupEntry.svelte';
   import { getDatabaseBackupDateTime, handleUploadDatabaseBackup } from '#lib/services/database-backups.service.ts';
-  import type { DatabaseBackupDto } from '@immich/sdk';
-  import { listDatabaseBackups } from '@immich/sdk';
+  import { listDatabaseBackups, type DatabaseBackupDto } from '@immich/sdk';
   import { Card, CardBody, HStack, Icon, ProgressBar, Stack, Text } from '@immich/ui';
   import { mdiCalendar, mdiTrayArrowUp } from '@mdi/js';
   import { DateTime } from 'luxon';

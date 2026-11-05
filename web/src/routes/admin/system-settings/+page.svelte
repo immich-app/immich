@@ -1,22 +1,5 @@
 <script lang="ts">
-  import AuthSettings from './AuthSettings.svelte';
-  import BackupSettings from './BackupSettings.svelte';
-  import FFmpegSettings from './FFmpegSettings.svelte';
-  import ImageSettings from './ImageSettings.svelte';
-  import JobSettings from './JobSettings.svelte';
-  import LibrarySettings from './LibrarySettings.svelte';
-  import LoggingSettings from './LoggingSettings.svelte';
-  import MachineLearningSettings from './MachineLearningSettings.svelte';
-  import MapSettings from './MapSettings.svelte';
-  import MetadataSettings from './MetadataSettings.svelte';
-  import NewVersionCheckSettings from './NewVersionCheckSettings.svelte';
-  import NightlyTasksSettings from './NightlyTasksSettings.svelte';
-  import NotificationSettings from './NotificationSettings.svelte';
-  import ServerSettings from './ServerSettings.svelte';
   import StorageTemplateSettings from '#lib/components/admin-settings/StorageTemplateSettings.svelte';
-  import ThemeSettings from './ThemeSettings.svelte';
-  import TrashSettings from './TrashSettings.svelte';
-  import UserSettings from './UserSettings.svelte';
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SearchBar from '#lib/elements/SearchBar.svelte';
@@ -49,7 +32,24 @@
   import type { Component } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import AuthSettings from './AuthSettings.svelte';
+  import BackupSettings from './BackupSettings.svelte';
+  import FFmpegSettings from './FFmpegSettings.svelte';
+  import ImageSettings from './ImageSettings.svelte';
   import IntegrityChecksSettings from './IntegrityChecksSettings.svelte';
+  import JobSettings from './JobSettings.svelte';
+  import LibrarySettings from './LibrarySettings.svelte';
+  import LoggingSettings from './LoggingSettings.svelte';
+  import MachineLearningSettings from './MachineLearningSettings.svelte';
+  import MapSettings from './MapSettings.svelte';
+  import MetadataSettings from './MetadataSettings.svelte';
+  import NewVersionCheckSettings from './NewVersionCheckSettings.svelte';
+  import NightlyTasksSettings from './NightlyTasksSettings.svelte';
+  import NotificationSettings from './NotificationSettings.svelte';
+  import ServerSettings from './ServerSettings.svelte';
+  import ThemeSettings from './ThemeSettings.svelte';
+  import TrashSettings from './TrashSettings.svelte';
+  import UserSettings from './UserSettings.svelte';
 
   type Props = {
     data: PageData;

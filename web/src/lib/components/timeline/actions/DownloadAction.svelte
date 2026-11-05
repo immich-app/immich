@@ -1,6 +1,5 @@
 <script lang="ts">
   import { shortcut } from '#lib/actions/shortcut.ts';
-
   import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';

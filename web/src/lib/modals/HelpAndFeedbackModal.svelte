@@ -4,7 +4,7 @@
   import { type ServerAboutResponseDto } from '@immich/sdk';
   import { Heading, Icon, Link, Modal, ModalBody, Stack, Text } from '@immich/ui';
   import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';
-  import { type SimpleIcon, siDiscord } from 'simple-icons';
+  import { siDiscord, type SimpleIcon } from 'simple-icons';
   import { t } from 'svelte-i18n';
 
   type Props = {

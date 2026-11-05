@@ -1,13 +1,13 @@
 import { Route } from '#lib/route.ts';
+import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
-import { factory } from '#test/medium/mock/factories.ts';
 import { DateTime } from 'luxon';
 
 test.describe('memory viewer', () => {
   test('walks through every asset across memories with buttons and arrow keys', async ({ page, data, app }) => {
     const assets = data.addTimeline({ years: 3 });
     data.addMemories(
-      ...factory.memories(assets, [
+      factory.memories(assets, [
         { year: 2024, assetCount: 3 },
         { year: 2023, assetCount: 2 },
         { year: 2022, assetCount: 4 },
@@ -48,7 +48,7 @@ test.describe('memory viewer', () => {
       ],
       123,
     );
-    data.addMemories(...memories);
+    data.addMemories(memories);
     const single = memories[1];
     await page.goto(Route.viewMemory({ id: single.id, assetId: single.assets[0].id }));
     await app.memory.gallery.open(single.assets[0]);
@@ -60,12 +60,12 @@ test.describe('memory viewer', () => {
 
   test('should restore scroll position when navigating from a memory back to the list', async ({ page, data, app }) => {
     const assets = Array.from({ length: 20 }, (_, i) =>
-      factory.asset({ fileCreatedAt: DateTime.now().minus({ years: i }).toISO() }),
+      factory.asset({ fileCreatedAt: `${2026 - i}-01-01T12:00:00.000Z` }),
     );
 
-    data.addAssets(...assets);
+    data.addAssets(assets);
     data.addMemories(
-      ...factory.memories(
+      factory.memories(
         assets,
         assets.map(({ fileCreatedAt }) => ({ year: DateTime.fromISO(fileCreatedAt).year, assetCount: 1 })),
       ),

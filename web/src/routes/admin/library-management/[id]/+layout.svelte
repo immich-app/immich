@@ -1,10 +1,10 @@
 <script lang="ts">
   import emptyFoldersUrl from '#lib/assets/empty-folders.svg';
   import AdminCard from '#lib/components/AdminCard.svelte';
+  import TableButton from '#lib/components/TableButton.svelte';
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
   import ServerStatisticsCard from '#lib/components/server-statistics/ServerStatisticsCard.svelte';
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
-  import TableButton from '#lib/components/TableButton.svelte';
   import LibraryFolderAddModal from '#lib/modals/LibraryFolderAddModal.svelte';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getLibraryQuery, getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
@@ -16,8 +16,8 @@
   } from '#lib/services/library.service.ts';
   import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import { Code, CommandPaletteDefaultProvider, Container, Heading, modalManager } from '@immich/ui';
-  import { createQuery } from '@tanstack/svelte-query';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import type { LayoutProps } from './$types';
 

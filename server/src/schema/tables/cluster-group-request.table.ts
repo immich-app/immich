@@ -1,11 +1,11 @@
 import {
   CreateDateColumn,
   ForeignKeyColumn,
-  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   Unique,
+  type Generated,
 } from '@immich/sql-tools';
 import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
