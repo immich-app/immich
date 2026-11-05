@@ -100,4 +100,15 @@ class PasskeyMutations extends StoreMutations {
       rethrow;
     }
   }
+
+  /// Delete the passkey [id]
+  Future<void> delete(String id) async {
+    try {
+      await read(passkeyApiRepositoryProvider).delete(id);
+      invalidate(_allProvider);
+    } catch (error, stack) {
+      _log.severe("Failed to delete passkey $id", error, stack);
+      rethrow;
+    }
+  }
 }
