@@ -112,5 +112,17 @@ export default defineConfig([
       ],
     },
   },
+  {
+    files: ['src/services/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.property.name='unwrap']",
+          message: 'Pass the transaction handle to a repository instead of querying through it.',
+        },
+      ],
+    },
+  },
   eslintPluginPrettierRecommended,
 ]);
