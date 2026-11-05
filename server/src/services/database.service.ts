@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { coerce, eq, gt, lt, satisfies } from 'semver';
-import type { VectorExtension } from 'src/types.js';
 import { EXTENSION_NAMES, ErrorMessages, VECTOR_EXTENSIONS } from 'src/constants.js';
 import { OnEvent } from 'src/decorators.js';
 import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
+import type { VectorExtension } from 'src/types.js';
 
 type CreateFailedArgs = { name: string; extension: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };

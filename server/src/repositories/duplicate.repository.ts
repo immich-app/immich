@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { type Kysely, type NotNull, type Selectable, type ShallowDehydrateObject, sql } from 'kysely';
+import { sql, type Kysely, type NotNull, type Selectable, type ShallowDehydrateObject } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database.js';
