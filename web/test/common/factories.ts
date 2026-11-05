@@ -10,17 +10,21 @@ import {
   SharedLinkType,
   UserAvatarColor,
   UserStatus,
+  WorkflowTrigger,
+  WorkflowType,
   type ActivityResponseDto,
   type AlbumResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
   type MemoryResponseDto,
   type PersonResponseDto,
+  type PluginMethodResponseDto,
   type SharedLinkResponseDto,
   type StackResponseDto,
   type TagResponseDto,
   type UserAdminResponseDto,
   type UserPreferencesResponseDto,
+  type WorkflowResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
 
@@ -29,6 +33,7 @@ export const adminUserId = '0d9a7a2e-0000-4000-8000-00000000ad01';
 let assetIndex = 0;
 let personIndex = 0;
 let tagIndex = 0;
+let pluginMethodIndex = 0;
 const random = new SeededRandom(7);
 
 const names = ['Alice Johnson', 'Bob Smith', 'Charlie Brown', 'Diana Prince', 'Eve Adams', 'Frank Castle'];
@@ -266,6 +271,36 @@ const tag = (overrides: Partial<TagResponseDto> = {}): TagResponseDto => {
     value: name,
     createdAt: now,
     updatedAt: now,
+    ...overrides,
+  };
+};
+
+const workflow = (overrides: Partial<WorkflowResponseDto> = {}): WorkflowResponseDto => {
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    name: 'Workflow',
+    description: null,
+    enabled: true,
+    logging: false,
+    trigger: WorkflowTrigger.AssetCreate,
+    steps: [],
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  };
+};
+
+const pluginMethod = (overrides: Partial<PluginMethodResponseDto> = {}): PluginMethodResponseDto => {
+  const key = overrides.key ?? `plugin#method-${pluginMethodIndex++}`;
+  return {
+    key,
+    name: key,
+    title: key,
+    description: '',
+    hostFunctions: false,
+    types: [WorkflowType.AssetV1],
+    uiHints: [],
     ...overrides,
   };
 };
@@ -518,6 +553,8 @@ export const factory = {
   ocr,
   tag,
   sharedLink,
+  workflow,
+  pluginMethod,
   memories,
   timeline,
   many,

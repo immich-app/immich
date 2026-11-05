@@ -21,6 +21,7 @@ import {
   type MemoryUpdateDto,
   type MetadataSearchDto,
   type PersonResponseDto,
+  type PluginMethodResponseDto,
   type SearchResponseDto,
   type SharedLinkResponseDto,
   type StackResponseDto,
@@ -33,6 +34,10 @@ import {
   type UserAdminResponseDto,
   type UserAdminUpdateDto,
   type UserPreferencesResponseDto,
+  type WorkflowCreateDto,
+  type WorkflowResponseDto,
+  type WorkflowStepDto,
+  type WorkflowUpdateDto,
 } from '@immich/sdk';
 
 export type TimelineFilter = {
@@ -56,6 +61,9 @@ const monthKey = (iso: string) => {
 
 type MaybeArray<T> = T | T[];
 const toList = <T>(items: MaybeArray<T>) => (Array.isArray(items) ? items : [items]);
+
+const toWorkflowSteps = (steps: WorkflowStepDto[]) =>
+  steps.map(({ method, config, enabled }) => ({ method, config, enabled }));
 
 const hiddenVisibilities = new Set<AssetVisibility>([AssetVisibility.Hidden, AssetVisibility.Locked]);
 
@@ -89,6 +97,8 @@ export class MockData {
   private readonly sharedLinks = new Map<string, SharedLinkResponseDto>();
   private readonly tags = new Map<string, TagResponseDto>();
   private readonly activities = new Map<string, ActivityResponseDto>();
+  private readonly workflows = new Map<string, WorkflowResponseDto>();
+  private readonly pluginMethods = new Map<string, PluginMethodResponseDto>();
 
   getPreferences() {
     return this.preferences;
@@ -401,6 +411,45 @@ export class MockData {
 
   deleteActivity(id: string) {
     return this.activities.delete(id);
+  }
+
+  addWorkflows(workflows: MaybeArray<WorkflowResponseDto>) {
+    for (const workflow of toList(workflows)) {
+      this.workflows.set(workflow.id, workflow);
+    }
+    return this;
+  }
+
+  workflowList() {
+    return [...this.workflows.values()];
+  }
+
+  createWorkflow(dto: WorkflowCreateDto) {
+    const workflow = factory.workflow({ ...dto, steps: toWorkflowSteps(dto.steps ?? []) });
+    this.workflows.set(workflow.id, workflow);
+    return workflow;
+  }
+
+  updateWorkflow(id: string, dto: WorkflowUpdateDto) {
+    const workflow = this.workflows.get(id);
+    if (!workflow) {
+      return;
+    }
+    const steps = dto.steps ? toWorkflowSteps(dto.steps) : workflow.steps;
+    const updated = { ...workflow, ...dto, steps, updatedAt: new Date().toISOString() };
+    this.workflows.set(id, updated);
+    return updated;
+  }
+
+  addPluginMethods(methods: MaybeArray<PluginMethodResponseDto>) {
+    for (const method of toList(methods)) {
+      this.pluginMethods.set(method.key, method);
+    }
+    return this;
+  }
+
+  pluginMethodList() {
+    return [...this.pluginMethods.values()];
   }
 
   updateAdminConfig(config: AdminConfigDto) {
