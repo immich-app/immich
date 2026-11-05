@@ -857,9 +857,6 @@ importers:
       '@types/luxon':
         specifier: ^3.6.2
         version: 3.7.6
-      '@types/mock-fs':
-        specifier: ^4.13.1
-        version: 4.13.4
       '@types/multer':
         specifier: ^2.0.0
         version: 2.3.0
@@ -914,9 +911,6 @@ importers:
       globals:
         specifier: ^17.0.0
         version: 17.13.0
-      mock-fs:
-        specifier: ^5.2.0
-        version: 5.5.0
       pngjs:
         specifier: ^7.0.0
         version: 7.0.0
