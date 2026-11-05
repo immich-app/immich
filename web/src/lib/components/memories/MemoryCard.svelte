@@ -29,7 +29,7 @@
   <img class="size-full rounded-xl object-cover" src={item.src} alt={item.alt ?? item.title} draggable="false" />
   {#if item.isSaved}
     <div class="absolute inset-s-2 top-2 p-1">
-      <Icon data-icon-favorite icon={mdiHeart} size="32" class="text-white" />
+      <Icon data-testid="favorite-icon" icon={mdiHeart} size="32" class="text-white" />
     </div>
   {/if}
   <div
@@ -40,12 +40,7 @@
   >
     {#if isBirthday}
       <span class="relative">
-        <Icon
-          data-icon-birthday
-          icon={bottomLayerPath}
-          size="1.25em"
-          class="block transition-colors group-hover:text-logo-blue"
-        />
+        <Icon icon={bottomLayerPath} size="1.25em" class="block transition-colors group-hover:text-logo-blue" />
         <Icon icon={topLayerPath} size="1.25em" class="absolute inset-0 transition-colors group-hover:text-logo-pink" />
         <span class="flame absolute inset-0">
           <Icon

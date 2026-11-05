@@ -62,7 +62,7 @@
   onMount(() => updateCountries());
 </script>
 
-<div id="location-selection">
+<div data-testid="search-location-section">
   <Text>{$t('search_filter_location_description')}</Text>
 
   <div class="mt-5 grid grid-auto-fit-40 gap-5">

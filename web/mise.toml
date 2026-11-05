@@ -23,6 +23,7 @@ env.IMMICH_SERVER_URL = "https://demo.immich.app"
 run = { task = ":start" }
 
 [tasks.test]
+depends = [":playwright-install"]
 run = "pnpm run test"
 
 [tasks.format]
@@ -51,6 +52,7 @@ run = [
   { task = "//:sdk:install" },
   { task = "//:sdk:build" },
   { task = ":install" },
+  { task = ":playwright-install" },
   { task = ":format" },
   { task = ":check" },
   { task = ":test --run" },
