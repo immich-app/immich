@@ -51,6 +51,7 @@ class _PasskeyTile extends StatelessWidget {
       contentPadding: const .symmetric(horizontal: 20),
       title: Text(passkey.name ?? context.t.passkeys(count: 1)),
       subtitle: Text('${context.t.created} $created • ${context.t.last_used} $lastUsed'),
+      trailing: ActionIconButton(action: PasskeyRenameAction(passkey: passkey)),
     );
   }
 }

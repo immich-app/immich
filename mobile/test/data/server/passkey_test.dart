@@ -82,4 +82,31 @@ void main() {
       Passkey(id: 'new', createdAt: DateTime.utc(2026, 10, 27, 6, 40)),
     ]);
   });
+
+  test('update sends the new name, and null to clear it', () async {
+    final bodies = <Object?>[];
+    final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
+      ..client = MockClient((request) async {
+        bodies.add(jsonDecode(request.body));
+        return http.Response(
+          jsonEncode({
+            'id': 'passkey-id',
+            'name': null,
+            'createdAt': '2026-10-27T06:34:31.000Z',
+            'updatedAt': '2026-10-27T06:34:31.000Z',
+            'usedAt': null,
+          }),
+          200,
+        );
+      });
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+
+    await sut.update('passkey-id', 'Laptop');
+    await sut.update('passkey-id', null);
+
+    expect(bodies, [
+      {'name': 'Laptop'},
+      {'name': null},
+    ]);
+  });
 }
