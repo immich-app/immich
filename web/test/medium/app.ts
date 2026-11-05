@@ -15,8 +15,8 @@ export const createApp = (page: Page, data: MockData) => {
 
   const viewer = createViewer(page);
   const card = (link: { key: string }) => page.locator(`a[href="${Route.viewSharedLink(link)}"]`);
-  const memoryRoot = page.locator('#memory-viewer');
-  const memoryGallery = page.locator('#gallery-memory');
+  const memoryRoot = page.getByTestId('memory-viewer');
+  const memoryGallery = page.getByTestId('memory-gallery');
 
   return {
     dialog: page.getByRole('dialog'),
@@ -27,10 +27,9 @@ export const createApp = (page: Page, data: MockData) => {
         checkAllButton: button('admin.maintenance_integrity_check_all'),
         reportCount: (report: IntegrityReport) =>
           page
-            .getByText(`admin.maintenance_integrity_${report}`, { exact: true })
-            .locator('xpath=ancestor::div[2]')
-            .locator('.font-mono')
-            .first(),
+            .getByTestId('statistic-card')
+            .filter({ hasText: `admin.maintenance_integrity_${report}` })
+            .getByTestId('statistic-value'),
       },
       users: {
         createUserButton: button('create_user'),
@@ -102,7 +101,7 @@ export const createApp = (page: Page, data: MockData) => {
       confirmRemove: () => button('remove').click(),
       card,
       cover: (link: { key: string }) => card(link).getByTestId('album-image'),
-      brokenCover: (link: { key: string }) => card(link).locator('[data-broken-asset]'),
+      brokenCover: (link: { key: string }) => card(link).getByTestId('broken-asset'),
       form: {
         showMetadataSwitch: page.getByRole('dialog').getByLabel('show_metadata', { exact: true }),
         allowDownloadSwitch: page.getByRole('dialog').getByLabel('allow_public_user_to_download', { exact: true }),
@@ -154,7 +153,7 @@ const createTimeline = (page: Page, data: MockData) => {
       title: page.getByRole('dialog').getByText('add_to_album_item_count', { exact: true }),
       selectAlbumsTitle: page.getByRole('dialog').getByText('select_albums', { exact: true }),
     },
-    selectionCandidates: thumbnails.locator('[data-selection-candidate]'),
+    selectionCandidates: thumbnails.getByTestId('selection-candidate'),
     selectionBar: {
       addToAlbumButton: page.getByLabel('add_to_album', { exact: true }),
       favoriteButton: page.getByLabel('to_favorite', { exact: true }),
@@ -162,7 +161,7 @@ const createTimeline = (page: Page, data: MockData) => {
       unarchiveButton: page.getByLabel('unarchive', { exact: true }),
       restoreButton: page.getByRole('button', { name: 'restore', exact: true }),
       // TODO: wire the app translations into the @immich/ui ControlBar so this can target the `close` key
-      closeButton: page.locator('#control-bar').getByLabel('Close'),
+      closeButton: page.getByTestId('control-bar').getByLabel('Close'),
 
       archive: async () => {
         await page.getByLabel('menu', { exact: true }).click();
@@ -195,15 +194,15 @@ const createTimeline = (page: Page, data: MockData) => {
       confirmButton: page.getByRole('button', { name: 'confirm', exact: true }),
     },
     disabledSelection: (asset: Asset) => thumbnail(asset).and(page.locator('[data-selected][data-disabled]')),
-    favoriteIcon: (asset: Asset) => thumbnail(asset).locator('[data-icon-favorite]'),
+    favoriteIcon: (asset: Asset) => thumbnail(asset).getByTestId('favorite-icon'),
     thumbhash: (asset: Asset) => thumbnail(asset).getByTestId('thumbhash'),
     brokenImage: (asset: Asset) => thumbnail(asset).getByText('error_loading_image', { exact: true }),
-    archiveIcon: (asset: Asset) => thumbnail(asset).locator('[data-icon-archive]'),
+    archiveIcon: (asset: Asset) => thumbnail(asset).getByTestId('archive-icon'),
     scrubber: (yearMonth: string) => page.locator(`[data-segment-year-month="${yearMonth}"]`),
 
     select: async (asset: Asset) => {
       await thumbnail(asset).hover();
-      await thumbnail(asset).locator('button[role="checkbox"]').click();
+      await thumbnail(asset).getByRole('checkbox').click();
     },
 
     selectDay: async (asset: AssetResponseDto) => {
@@ -211,16 +210,16 @@ const createTimeline = (page: Page, data: MockData) => {
         DateTime.DATE_MED_WITH_WEEKDAY,
         { locale: 'en-US' },
       );
-      const section = page.getByTitle(title).locator('xpath=ancestor::section[@data-group]');
-      await section.hover();
-      await section.locator('.w-8').click();
+      const day = page.getByTestId('timeline-day').filter({ has: page.getByTitle(title) });
+      await day.hover();
+      await day.getByTestId('select-day').click();
     },
 
     goToDate: async (asset: AssetResponseDto) => {
       await grid.hover();
       await page.keyboard.press('g');
       const value = DateTime.fromISO(asset.fileCreatedAt, { zone: 'utc' }).toFormat('MMddyyyy,hh:mm:ss.SSSa');
-      await page.locator('#datetime').pressSequentially(value);
+      await page.getByLabel('date_and_time', { exact: true }).pressSequentially(value);
       await page.getByRole('button', { name: 'confirm', exact: true }).click();
     },
 
@@ -257,10 +256,13 @@ const createTimeline = (page: Page, data: MockData) => {
 
 const createViewer = (page: Page) => {
   const root = page.locator('#immich-asset-viewer');
-  const content = page.locator('[data-viewer-content]');
-  const detailPanel = page.locator('#detail-panel');
-  const stack = page.locator('#stack-slideshow');
-  const ocrImage = content.locator('img[draggable="false"]');
+  const content = page.getByTestId('viewer-content');
+  const detailPanel = page.getByTestId('detail-panel');
+  const stack = page.getByTestId('stack-slideshow');
+  const ocrImage = content
+    .getByTestId(/^(thumbnail|preview|original)$/)
+    .filter({ visible: true })
+    .first();
 
   const moreMenuItem = async (name: string) => {
     await page.getByLabel('more', { exact: true }).click();
@@ -293,7 +295,7 @@ const createViewer = (page: Page) => {
     editDateButton: page.getByTestId('detail-panel-edit-date-button'),
     editLocationButton: page.getByTitle('edit_location'),
     changeDate: {
-      dateInput: page.locator('#datetime'),
+      dateInput: page.getByLabel('date_and_time', { exact: true }),
       timezoneInput: page.getByRole('combobox', { name: 'timezone' }),
     },
     changeLocation: {
@@ -307,12 +309,12 @@ const createViewer = (page: Page) => {
     image: (quality: 'thumbnail' | 'preview' | 'original') => content.getByTestId(quality).filter({ visible: true }),
     stackThumbnail: (asset: Asset) => stack.locator(`[data-asset="${asset.id}"]`),
     stackAssets: stack.locator('[data-asset]'),
-    stackBrokenAssets: stack.locator('[data-broken-asset]'),
-    brokenAsset: content.locator('[data-broken-asset]').first(),
+    stackBrokenAssets: stack.getByTestId('broken-asset'),
+    brokenAsset: content.getByTestId('broken-asset').first(),
 
     ocr: {
       button: page.getByLabel('text_recognition', { exact: true }),
-      boxes: content.locator('[data-testid="ocr-box"]'),
+      boxes: content.getByTestId('ocr-box'),
       image: ocrImage,
       imageTransform: () =>
         ocrImage.evaluate((element) => getComputedStyle(element.closest('[style*="transform"]') ?? element).transform),
@@ -343,9 +345,9 @@ const createViewer = (page: Page) => {
 };
 
 const createFaceEditor = (page: Page) => {
-  const selector = page.locator('#face-selector');
-  const canvas = page.locator('#face-editor');
-  const data = page.locator('#face-editor-data');
+  const selector = page.getByTestId('face-selector');
+  const canvas = page.getByTestId('face-editor');
+  const data = page.getByTestId('face-editor-data');
 
   const boxRect = async (): Promise<Rect> => {
     await expect(data).toHaveAttribute('data-face-left', /^-?\d+/);
@@ -369,7 +371,7 @@ const createFaceEditor = (page: Page) => {
   return {
     selector,
     canvas,
-    search: selector.locator('input'),
+    search: selector.getByPlaceholder('search_people'),
     confirmButton: page.getByRole('button', { name: 'confirm', exact: true }),
     cancelButton: page.getByRole('button', { name: 'cancel', exact: true }),
     person: (name: string) => selector.getByText(name),
@@ -381,7 +383,7 @@ const createFaceEditor = (page: Page) => {
       await expect(selector).toBeVisible();
       await page.waitForFunction(
         () => {
-          const element = document.querySelector('#face-selector');
+          const element = document.querySelector('[data-testid="face-selector"]');
           return (
             element !== null &&
             element.getAnimations({ subtree: false }).every((animation) => animation.playState === 'finished')

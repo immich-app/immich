@@ -29,7 +29,7 @@ const setup = (data: MockData) => {
 const dispatchSplitTouch = (page: Page, box: { x: number; y: number; width: number; height: number }) =>
   page.evaluate(
     ({ centerX, centerY, outsideY }) => {
-      const target = document.querySelector('[data-viewer-content]');
+      const target = document.querySelector('[data-testid="viewer-content"]');
       if (!target) {
         return;
       }

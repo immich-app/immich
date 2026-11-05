@@ -6,7 +6,7 @@ export const createApp = () => {
 
   const sidebar = page.getByTestId('sidebar-parent');
   const searchFilters = page.getByRole('listbox').first();
-  const tagsSection = () => page.elementLocator(document.querySelector('#location-selection')!);
+  const tagsSection = () => page.getByTestId('search-tags-section');
 
   return {
     sidebar: {

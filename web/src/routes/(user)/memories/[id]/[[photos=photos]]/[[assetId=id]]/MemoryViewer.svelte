@@ -310,7 +310,7 @@
 {/if}
 
 <section
-  id="memory-viewer"
+  data-testid="memory-viewer"
   data-sveltekit-reset={false}
   class="dark w-full bg-immich-dark-gray text-white"
   {@attach scrollMemoryClearer({ routeStartsWith: Route.memories() })}
@@ -626,7 +626,7 @@
       />
     </div>
 
-    <div id="gallery-memory" {@attach galleryObserver} bind:this={memoryGallery}>
+    <div data-testid="memory-gallery" {@attach galleryObserver} bind:this={memoryGallery}>
       <GalleryViewer
         assets={currentTimelineAssets}
         viewerAssets={current.viewerAssets}
