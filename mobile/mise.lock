@@ -3,31 +3,31 @@
 lockfile_version = 3
 
 [[tools."aqua:flutter/flutter"]]
-version = "3.47.2"
+version = "3.47.9"
 backend = "aqua:flutter/flutter"
-specifiers = ["3.47.2"]
+specifiers = ["3.47.9"]
 
 [tools."aqua:flutter/flutter"."platforms.linux-arm64"]
-url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.2-stable.tar.xz"
+url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.9-stable.tar.xz"
 
 [tools."aqua:flutter/flutter"."platforms.linux-arm64-musl"]
-url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.2-stable.tar.xz"
+url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.9-stable.tar.xz"
 
 [tools."aqua:flutter/flutter"."platforms.linux-x64"]
-url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.2-stable.tar.xz"
+url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.9-stable.tar.xz"
 
 [tools."aqua:flutter/flutter"."platforms.linux-x64-musl"]
-url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.2-stable.tar.xz"
+url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.9-stable.tar.xz"
 
 [tools."aqua:flutter/flutter"."platforms.macos-arm64"]
-checksum = "blake3:4efde121dcdba08ae87db8a4d60e58ec34c5442b248a0dae17b4d9b81ea707ef"
-url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.47.2-stable.zip"
+checksum = "blake3:b06d3a2c1fcce011d99a13b4cbee7562eee90cd1d069148e5263bc6f49b570db"
+url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.47.9-stable.zip"
 
 [tools."aqua:flutter/flutter"."platforms.macos-x64"]
-url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_3.47.2-stable.zip"
+url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_3.47.9-stable.zip"
 
 [tools."aqua:flutter/flutter"."platforms.windows-x64"]
-url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.47.2-stable.zip"
+url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.47.9-stable.zip"
 
 [[tools."github:CQLabs/homebrew-dcm"]]
 version = "1.39.1"
