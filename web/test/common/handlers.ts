@@ -78,6 +78,11 @@ export const createHandlers = (data: MockData): Handlers => {
       json: { results: body.assets.map(({ id }) => ({ id, action: AssetUploadAction.Accept })) },
     }),
     getAssetDuplicates: () => ({ json: data.duplicateList() }),
+    resolveDuplicates: ({ body }) => ({ json: data.resolveDuplicates(body) }),
+    deleteDuplicates: ({ body }) => {
+      data.deleteDuplicates(body.ids);
+      return { status: 204 };
+    },
 
     getActivities: ({ params }) => ({ json: data.activityList(params) }),
     getActivityStatistics: ({ params }) => ({ json: data.activityStatistics(params) }),
@@ -105,6 +110,17 @@ export const createHandlers = (data: MockData): Handlers => {
     getStack: ({ params }) => {
       const stack = data.getStack(params.id);
       return stack ? { json: stack } : notFound;
+    },
+    createStack: ({ body }) => ({ status: 201, json: data.createStack(body) }),
+    updateStack: ({ params, body }) => {
+      const stack = data.updateStack(params.id, body);
+      return stack ? { json: stack } : notFound;
+    },
+    removeAssetFromStack: ({ params }) =>
+      data.removeFromStack(params.id, params.assetId) ? { status: 204 } : notFound,
+    deleteStacks: ({ body }) => {
+      data.deleteStacks(body.ids);
+      return { status: 204 };
     },
 
     getAllAlbums: ({ params = {} }) => ({ json: data.albumList(params.assetId) }),
