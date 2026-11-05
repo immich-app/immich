@@ -11,6 +11,7 @@ import {
   type TimeBucketAssetResponseDto,
   type TimeBucketsResponseDto,
 } from '@immich/sdk';
+import { Settings } from 'luxon';
 import { tick } from 'svelte';
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 import { TimelineManager } from './timeline-manager.svelte';
@@ -210,6 +211,27 @@ describe('TimelineManager', () => {
 
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
       expect(month!.getAssets().length).toEqual(3);
+    });
+  });
+
+  describe('loadTimelineMonth ordered by upload date', () => {
+    afterEach(() => {
+      Settings.defaultZone = 'system';
+    });
+
+    test('groups recently added assets by the local upload day', async ({ api }) => {
+      Settings.defaultZone = 'Pacific/Auckland';
+      const asset = factory.timelineAsset({ fileCreatedAt: fromISODateTimeUTCToObject('2024-01-05T12:00:00.000Z') });
+      mockTimeBuckets(api, [{ count: 1, timeBucket: '2024-01-01T00:00:00.000Z' }], {
+        '2024-01-01T00:00:00.000Z': { ...toResponseDto(asset), createdAt: ['2024-01-10T23:30:00.000Z'] },
+      });
+      const timelineManager = new TimelineManager();
+      await timelineManager.updateOptions({ orderBy: AssetOrderBy.CreatedAt });
+
+      await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
+
+      const month = getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 });
+      expect(month?.timelineDays.map(({ day }) => day)).toEqual([11]);
     });
   });
 
