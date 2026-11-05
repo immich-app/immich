@@ -58,6 +58,7 @@ class URLSessionManager: NSObject {
   static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
   private static var serverUrls: [String] = []
   private static var isSyncing = false
+  private static let cookieQueue = DispatchQueue(label: "CookieSync")
 
   var sessionPointer: UnsafeMutableRawPointer {
     Unmanaged.passUnretained(session).toOpaque()
@@ -84,12 +85,20 @@ class URLSessionManager: NSObject {
     guard urls != serverUrls else { return }
     serverUrls = urls
     UserDefaults.group.set(urls, forKey: SERVER_URLS_KEY)
-    syncAuthCookies()
+    cookieQueue.sync { syncAuthCookies() }
+  }
+
+  static func clearCookies() {
+    cookieQueue.sync {
+      for cookie in cookieStorage.cookies ?? [] {
+        cookieStorage.deleteCookie(cookie)
+      }
+    }
   }
 
   @objc private static func cookiesDidChange(_ notification: Notification) {
     guard !isSyncing, !serverUrls.isEmpty else { return }
-    syncAuthCookies()
+    cookieQueue.async { syncAuthCookies() }
   }
 
   private static func syncAuthCookies() {
