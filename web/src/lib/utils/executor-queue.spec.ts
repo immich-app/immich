@@ -1,7 +1,7 @@
 import { ExecutorQueue } from '#lib/utils/executor-queue.ts';
 
-describe('Executor Queue test', function () {
-  it('should run all promises', async function () {
+describe('ExecutorQueue', () => {
+  it('runs every task and returns its result', async () => {
     const eq = new ExecutorQueue({ concurrency: 1 });
     const n1 = await eq.addTask(() => Promise.resolve(10));
     expect(n1).toBe(10);
@@ -11,42 +11,34 @@ describe('Executor Queue test', function () {
     expect(n3).toBe(12);
   });
 
-  it('should respect concurrency parameter', function () {
+  it('starts the next task only when a running one finishes', async () => {
     vi.useFakeTimers();
     const eq = new ExecutorQueue({ concurrency: 3 });
-
-    const finished = vi.fn();
     const started = vi.fn();
-
-    const timeoutPromiseBuilder = (delay: number, id: string) =>
-      new Promise((resolve) => {
+    const finished = vi.fn();
+    const timed = (delay: number) =>
+      new Promise<void>((resolve) => {
         started();
         setTimeout(() => {
           finished();
-          resolve(id);
+          resolve();
         }, delay);
       });
 
-    // The first 3 should be finished within 200ms (concurrency 3)
-    void eq.addTask(() => timeoutPromiseBuilder(100, 'T1'));
-    void eq.addTask(() => timeoutPromiseBuilder(200, 'T2'));
-    void eq.addTask(() => timeoutPromiseBuilder(150, 'T3'));
-    // The last task will be executed after 200ms and will finish at 400ms
-    void eq.addTask(() => timeoutPromiseBuilder(200, 'T4'));
+    void eq.addTask(() => timed(100));
+    void eq.addTask(() => timed(200));
+    void eq.addTask(() => timed(150));
+    void eq.addTask(() => timed(200));
 
-    expect(finished).not.toHaveBeenCalled();
     expect(started).toHaveBeenCalledTimes(3);
+    expect(finished).not.toHaveBeenCalled();
 
-    vi.advanceTimersByTime(100);
+    await vi.advanceTimersByTimeAsync(100);
     expect(finished).toHaveBeenCalledTimes(1);
+    expect(started).toHaveBeenCalledTimes(4);
 
-    vi.advanceTimersByTime(250);
-    expect(finished).toHaveBeenCalledTimes(3);
-    // expect(started).toHaveBeenCalledTimes(4)
-
-    //TODO : fix The test ...
-
-    vi.runAllTimers();
+    await vi.advanceTimersByTimeAsync(250);
+    expect(finished).toHaveBeenCalledTimes(4);
     vi.useRealTimers();
   });
 });

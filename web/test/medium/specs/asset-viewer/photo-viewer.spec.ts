@@ -1,6 +1,6 @@
 import { Route } from '#lib/route.ts';
+import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
-import { factory } from '#test/medium/mock/factories.ts';
 import type { Page } from '@playwright/test';
 
 const zoomIn = async (page: Page) => {
@@ -12,7 +12,7 @@ const zoomIn = async (page: Page) => {
 test.describe('photo viewer', () => {
   test('loads the original when zoomed and right-click targets the image', async ({ page, data, api, app }) => {
     const asset = factory.asset();
-    data.addAsset(asset);
+    data.addAssets(asset);
     await page.goto(Route.viewAsset({ id: asset.id }));
     await expect(app.viewer.image('preview')).toHaveAttribute('src', /.+/);
 
@@ -28,14 +28,9 @@ test.describe('photo viewer', () => {
     expect(api.downloadAsset).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id }) });
   });
 
-  test('loads the fullsize rendition when zoomed and the original is not web-compatible', async ({
-    page,
-    data,
-    api,
-    app,
-  }) => {
+  test('zoom loads the fullsize rendition for a non-web original', async ({ page, data, api, app }) => {
     const asset = factory.asset({ originalFileName: 'test.arw', originalMimeType: 'image/x-sony-arw' });
-    data.addAsset(asset);
+    data.addAssets(asset);
     await page.goto(Route.viewAsset({ id: asset.id }));
     await expect(app.viewer.image('preview')).toHaveAttribute('src', /.+/);
 
