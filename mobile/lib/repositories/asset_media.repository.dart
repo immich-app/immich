@@ -19,6 +19,7 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -109,6 +110,12 @@ class AssetMediaRepository {
         }
       }),
     );
+  }
+
+  Future<void> cleanupStaleShareFiles() async {
+    final tempDir = await getTemporaryDirectory();
+    final shareDirs = await tempDir.list().where((entity) => p.basename(entity.path).startsWith('share-')).toList();
+    await cleanupTempFiles(shareDirs);
   }
 
   static final RegExp _pathSeparators = RegExp(r'[\\/]');

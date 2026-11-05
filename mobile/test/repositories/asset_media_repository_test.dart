@@ -259,4 +259,14 @@ void main() {
     expect(result.count, 2);
     expect(result.names, ['IMG-preview.jpg', 'IMG-preview (1).jpg']);
   });
+
+  test('cleans up share downloads left by a killed app', () async {
+    final leftover = Directory(p.join(tempRoot.path, 'share-original-remote-1-1'))..createSync();
+    // share_plus keeps its own copies next to ours on Android and clears them itself
+    Directory(p.join(tempRoot.path, 'share_plus')).createSync();
+
+    await repository.cleanupStaleShareFiles();
+
+    expect(repository.cleanups.single.map((entity) => entity.path), [leftover.path]);
+  });
 }
