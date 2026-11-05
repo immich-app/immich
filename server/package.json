@@ -141,7 +141,7 @@
     "@types/lodash-es": "^4.14.197",
     "@types/luxon": "^3.6.2",
     "@types/multer": "^2.0.0",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.6.6",
     "@types/nodemailer": "^8.0.0",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",

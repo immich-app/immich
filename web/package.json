@@ -97,7 +97,7 @@
     "@types/justified-layout": "^4.1.4",
     "@types/lodash-es": "^4.17.12",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.6.6",
     "@types/qrcode": "^1.5.5",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/browser-playwright": "5.0.5",
