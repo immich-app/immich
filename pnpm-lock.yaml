@@ -397,9 +397,6 @@ importers:
       '@types/micromatch':
         specifier: ^4.0.9
         version: 4.0.10
-      '@types/mock-fs':
-        specifier: ^4.13.1
-        version: 4.13.4
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -433,9 +430,6 @@ importers:
       globals:
         specifier: ^17.0.0
         version: 17.13.0
-      mock-fs:
-        specifier: ^5.2.0
-        version: 5.5.0
       prettier:
         specifier: ^3.7.4
         version: 3.9.10
@@ -5460,9 +5454,6 @@ packages:
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
 
-  '@types/mock-fs@4.13.4':
-    resolution: {integrity: sha512-mXmM0o6lULPI8z3XNnQCpL0BGxPwx1Ul1wXYEPBGl4efShyxW2Rln0JOPEWGyZaYZMM6OVXM/15zUuFMY52ljg==}
-
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
@@ -10177,10 +10168,6 @@ packages:
 
   mnemonist@0.40.6:
     resolution: {integrity: sha512-c4mbin5HCz77Srw1L3nwThCH/0hLVYuY3oMF2plP2tKfp/gqzSgHP63qRUOpL8jutYWNNCr49LUlKSt7exkaww==}
-
-  mock-fs@5.5.0:
-    resolution: {integrity: sha512-d/P1M/RacgM3dB0sJ8rjeRNXxtapkPCUnMGmIN0ixJ16F/E4GUZCvWcSGfWGz8eaXYvn1s9baUwNjI4LOPEjiA==}
-    engines: {node: '>=12.0.0'}
 
   module-details-from-path@1.0.4:
     resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
@@ -18848,10 +18835,6 @@ snapshots:
 
   '@types/mime@1.3.5': {}
 
-  '@types/mock-fs@4.13.4':
-    dependencies:
-      '@types/node': 26.6.6
-
   '@types/ms@2.1.0': {}
 
   '@types/multer@2.3.0':
@@ -24372,8 +24355,6 @@ snapshots:
   mnemonist@0.40.6:
     dependencies:
       obliterator: 2.0.5
-
-  mock-fs@5.5.0: {}
 
   module-details-from-path@1.0.4: {}
 
