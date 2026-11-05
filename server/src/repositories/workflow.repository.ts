@@ -1,8 +1,8 @@
 import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { Injectable } from '@nestjs/common';
+import type { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import type { Insertable, Kysely, Updateable } from 'kysely';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { WorkflowGetLogsDto, WorkflowSearchDto } from 'src/dtos/workflow.dto.js';

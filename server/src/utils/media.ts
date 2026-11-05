@@ -1,14 +1,3 @@
-import type {
-  AudioStreamInfo,
-  BitrateDistribution,
-  HlsCommandOptions,
-  TranscodeCommand,
-  VideoCodecSWConfig,
-  VideoFormat,
-  VideoInterfaces,
-  VideoStreamInfo,
-  VideoTuning,
-} from 'src/types.js';
 import {
   AUDIO_ENCODER,
   AV1_LEVELS,
@@ -28,6 +17,17 @@ import {
   TranscodeTarget,
   VideoCodec,
 } from 'src/enum.js';
+import type {
+  AudioStreamInfo,
+  BitrateDistribution,
+  HlsCommandOptions,
+  TranscodeCommand,
+  VideoCodecSWConfig,
+  VideoFormat,
+  VideoInterfaces,
+  VideoStreamInfo,
+  VideoTuning,
+} from 'src/types.js';
 
 export const isVideoRotated = (videoStream: VideoStreamInfo): boolean => Math.abs(videoStream.rotation) === 90;
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectKysely } from 'nestjs-kysely';
 import type { Insertable, Kysely } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AuthChallengeType } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';

@@ -5,7 +5,6 @@ import path, { basename } from 'node:path';
 import { Duplex, PassThrough, Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { coerce, satisfies } from 'semver';
-import type { ArgOf } from 'src/repositories/event.repository.js';
 import { serverVersion } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
@@ -15,6 +14,7 @@ import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
