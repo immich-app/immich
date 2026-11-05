@@ -257,7 +257,7 @@
 {/if}
 <div
   class="relative w-full text-base text-gray-700 dark:text-gray-300"
-  use:focusOutside={{ onFocusOut: deactivate }}
+  {@attach focusOutside({ onFocusOut: deactivate })}
   use:shortcuts={[
     {
       shortcut: { key: 'Escape' },
@@ -297,7 +297,7 @@
       role="combobox"
       type="text"
       value={searchQuery}
-      use:forceFocusInput
+      {@attach forceFocusInput}
       use:shortcuts={[
         {
           shortcut: { key: 'ArrowUp' },

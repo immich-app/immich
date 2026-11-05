@@ -12,7 +12,7 @@
 <button type="button" onclick={() => (show = true)}>Open</button>
 
 {#if show}
-  <div use:focusTrap={{ active }}>
+  <div {@attach focusTrap({ active })}>
     <div>
       <span>text</span>
       <button data-testid="one" type="button" onclick={() => (show = false)}>Close</button>

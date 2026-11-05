@@ -47,6 +47,10 @@ export const createApp = (page: Page, data: MockData) => {
       mapMarkers: page.getByRole('dialog').locator('.maplibregl-marker'),
     },
 
+    memories: {
+      card: () => page.getByTestId('memory-card'),
+    },
+
     memory: {
       root: memoryRoot,
       gallery: {

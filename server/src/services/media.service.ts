@@ -1,15 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import type {
-  AudioStreamInfo,
-  DecodeToBufferOptions,
-  GenerateThumbnailOptions,
-  ImageDimensions,
-  JobItem,
-  JobOf,
-  VideoFormat,
-  VideoInterfaces,
-  VideoStreamInfo,
-} from 'src/types.js';
 import { FACE_THUMBNAIL_SIZE, THUMBNAIL_DECODING_TIER } from 'src/constants.js';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core.js';
 import { AssetFile } from 'src/database.js';
@@ -38,6 +27,17 @@ import {
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
 import { BaseService } from 'src/services/base.service.js';
+import type {
+  AudioStreamInfo,
+  DecodeToBufferOptions,
+  GenerateThumbnailOptions,
+  ImageDimensions,
+  JobItem,
+  JobOf,
+  VideoFormat,
+  VideoInterfaces,
+  VideoStreamInfo,
+} from 'src/types.js';
 import { getAssetFile, getDimensions } from 'src/utils/asset.util.js';
 import { tokenizeForSearch } from 'src/utils/database.js';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor.js';

@@ -219,7 +219,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
-          {const personName = face.person ? face.person.name : $t('face_unassigned')}
+          {const personName = $derived(face.person ? face.person.name : $t('face_unassigned'))}
           {const isHighlighted = $derived(assetViewerManager.highlightedFaces.some((b) => b.id === face.id))}
           <div class="relative h-29 w-24">
             <div

@@ -94,7 +94,7 @@
   };
 </script>
 
-<div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }} class="relative">
+<div {@attach clickOutside({ onOutclick: handleClickOutside, onEscape: handleClickOutside })} class="relative">
   <!-- BUTTON TITLE -->
   <Button onclick={() => (showMenu = true)} fullWidth {title} variant="ghost" color="secondary" size="small">
     {#if renderedSelectedOption?.icon}
