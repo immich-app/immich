@@ -6,6 +6,7 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 class PasskeyCreateAction extends ActionBuilder {
@@ -53,6 +54,41 @@ class PasskeyRenameAction extends ActionBuilder {
       await passkeys.rename(passkey.id, name.isEmpty ? null : name);
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to rename a passkey");
+    }
+  }
+}
+
+class PasskeyDeleteAction extends ActionBuilder {
+  const PasskeyDeleteAction({required this.passkey});
+
+  final Passkey passkey;
+
+  @override
+  ActionItem create(BuildContext context, WidgetRef ref) =>
+      ActionItem(icon: Icons.delete_outline, label: context.t.delete_passkey, onAction: () => _delete(context, ref));
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final message = context.t.removed_passkey(name: passkey.name ?? context.t.passkeys(count: 1));
+    final passkeys = ref.read(Store.passkeys);
+    final toastService = ref.read(toastServiceProvider);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => ConfirmDialog(
+        title: context.t.delete_passkey,
+        content: context.t.delete_passkey_prompt,
+        ok: context.t.delete,
+      ),
+    );
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      await passkeys.delete(passkey.id);
+      toastService.success(message);
+    } catch (error, stack) {
+      handleError(error, stack: stack, description: "Failed to delete a passkey");
     }
   }
 }
