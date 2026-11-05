@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { page, type ReadonlyURLSearchParams } from '$app/state';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
-  import SharedLinkCard from './SharedLinkCard.svelte';
   import { type SharedLinkTab } from '#lib/constants.ts';
   import GroupTab from '#lib/elements/GroupTab.svelte';
-  import { Route } from '#lib/route.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAllSharedLinksQuery } from '#lib/queries/shared-link.query.ts';
+  import { Route } from '#lib/route.ts';
   import { SharedLinkType } from '@immich/sdk';
   import { Container } from '@immich/ui';
   import { type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
+  import { page, type ReadonlyURLSearchParams } from '$app/state';
   import type { LayoutData } from './$types';
+  import SharedLinkCard from './SharedLinkCard.svelte';
 
   type Props = {
     children?: Snippet;

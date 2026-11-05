@@ -1,4 +1,4 @@
-import { matchesCall, Spy } from '#test/common/expectations.ts';
+import { Spy, matchesCall } from '#test/common/expectations.ts';
 import { chai, expect } from 'vitest';
 
 type AnySpy = Spy<unknown>;

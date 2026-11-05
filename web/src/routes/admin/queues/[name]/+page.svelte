@@ -1,6 +1,5 @@
 <script lang="ts">
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
-  import QueueGraph from './QueueGraph.svelte';
   import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
   import { Route } from '#lib/route.ts';
   import { asQueueItem, getQueueActions } from '#lib/services/queue.service.ts';
@@ -20,6 +19,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import QueueGraph from './QueueGraph.svelte';
 
   type Props = {
     data: PageData;

@@ -5,10 +5,10 @@
     handleRestoreDatabaseBackup,
     loadDatabaseBackups,
   } from '#lib/services/database-backups.service.ts';
-  import type { DatabaseBackupDto } from '@immich/sdk';
-  import { Alert, Button, Heading, HStack, Icon, Text } from '@immich/ui';
-  import { mdiArrowRight, mdiRefresh } from '@mdi/js';
   import { handleError } from '#lib/utils/handle-error.ts';
+  import type { DatabaseBackupDto } from '@immich/sdk';
+  import { Alert, Button, HStack, Heading, Icon, Text } from '@immich/ui';
+  import { mdiArrowRight, mdiRefresh } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 

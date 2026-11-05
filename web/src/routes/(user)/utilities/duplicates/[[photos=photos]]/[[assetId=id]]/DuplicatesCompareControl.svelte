@@ -1,6 +1,5 @@
 <script lang="ts">
   import { shortcuts } from '#lib/actions/shortcut.ts';
-  import DuplicateAsset from './DuplicateAsset.svelte';
   import Portal from '#lib/elements/Portal.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -18,6 +17,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
+  import DuplicateAsset from './DuplicateAsset.svelte';
 
   interface Props {
     assets: AssetResponseDto[];

@@ -1,28 +1,28 @@
 <script lang="ts">
-  import { type WorkflowLogEntryDto, type WorkflowResponseDto, WorkflowResult, getWorkflowLogs } from '@immich/sdk';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { WorkflowResult, getWorkflowLogs, type WorkflowLogEntryDto, type WorkflowResponseDto } from '@immich/sdk';
   import {
-    Modal,
-    ModalBody,
-    Table,
-    TableHeader,
-    TableHeading,
-    TableBody,
-    TableRow,
-    TableCell,
+    Button,
     HStack,
     Icon,
-    VStack,
-    Button,
+    Modal,
+    ModalBody,
     Select,
+    Table,
+    TableBody,
+    TableCell,
+    TableHeader,
+    TableHeading,
+    TableRow,
+    VStack,
     type SelectOption,
   } from '@immich/ui';
   import { mdiHistory, mdiOpenInNew } from '@mdi/js';
-  import { t } from 'svelte-i18n';
-  import { locale } from '#lib/stores/preferences.store.ts';
   import { DateTime } from 'luxon';
-  import { Route } from '#lib/route.ts';
-  import { executeMutation } from '#lib/queries/client.ts';
-  import { updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
+  import { t } from 'svelte-i18n';
 
   type Props = {
     workflow: WorkflowResponseDto;

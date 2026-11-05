@@ -2,7 +2,7 @@
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { handleUpdatePerson } from '#lib/services/person.service.ts';
   import { PersonUpdateStrategy, type PersonResponseDto } from '@immich/sdk';
-  import { Checkbox, DatePicker, Field, FormModal, HelperText, HStack, Input, Label, Stack } from '@immich/ui';
+  import { Checkbox, DatePicker, Field, FormModal, HStack, HelperText, Input, Label, Stack } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';

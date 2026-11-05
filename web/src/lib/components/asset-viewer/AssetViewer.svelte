@@ -1,18 +1,17 @@
 <script lang="ts">
-  import { browser } from '$app/env';
   import { focusTrap } from '#lib/actions/focus-trap.ts';
   import { shortcuts } from '#lib/actions/shortcut.ts';
-  import type { Action, OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
-  import NextAssetAction from '#lib/components/asset-viewer/actions/NextAssetAction.svelte';
-  import PreviousAssetAction from '#lib/components/asset-viewer/actions/PreviousAssetAction.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
   import AssetViewerNavBar from '#lib/components/asset-viewer/AssetViewerNavBar.svelte';
   import { preloadManager } from '#lib/components/asset-viewer/PreloadManager.svelte.ts';
-  import OnEvents from '#lib/components/OnEvents.svelte';
+  import NextAssetAction from '#lib/components/asset-viewer/actions/NextAssetAction.svelte';
+  import PreviousAssetAction from '#lib/components/asset-viewer/actions/PreviousAssetAction.svelte';
+  import type { Action, OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
   import { AssetAction, ProjectionType } from '#lib/constants.ts';
   import { activityManager } from '#lib/managers/activity-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { editManager, EditToolType } from '#lib/managers/edit/edit-manager.svelte.ts';
+  import { EditToolType, editManager } from '#lib/managers/edit/edit-manager.svelte.ts';
   import { eventManager } from '#lib/managers/event-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import { getAssetActions } from '#lib/services/asset.service.ts';
@@ -24,8 +23,8 @@
   import type { OnUndoDelete } from '#lib/utils/actions.ts';
   import { navigateToAsset } from '#lib/utils/asset-utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import { navigate } from '#lib/utils/navigation.ts';
   import { InvocationTracker } from '#lib/utils/invocationTracker.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
   import { SlideshowHistory } from '#lib/utils/slideshow-history.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import {
@@ -42,18 +41,19 @@
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
+  import { browser } from '$app/env';
   import Thumbnail from '../assets/thumbnail/Thumbnail.svelte';
   import ActivityStatus from './ActivityStatus.svelte';
   import ActivityViewer from './ActivityViewer.svelte';
   import DetailPanel from './DetailPanel.svelte';
-  import EditorPanel from './editor/EditorPanel.svelte';
-  import CropArea from './editor/transform-tool/CropArea.svelte';
   import ImagePanoramaViewer from './ImagePanoramaViewer.svelte';
   import OcrButton from './OcrButton.svelte';
   import PhotoViewer from './PhotoViewer.svelte';
   import SlideshowBar from './SlideshowBar.svelte';
   import SlideshowMetadataOverlay from './SlideshowMetadataOverlay.svelte';
   import VideoViewer from './VideoWrapperViewer.svelte';
+  import EditorPanel from './editor/EditorPanel.svelte';
+  import CropArea from './editor/transform-tool/CropArea.svelte';
 
   export type AssetCursor = {
     current: AssetResponseDto;

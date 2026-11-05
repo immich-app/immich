@@ -1,6 +1,5 @@
 <script lang="ts">
   import { scrollMemory } from '#lib/actions/scroll-memory.svelte.ts';
-  import AlbumsControls from './AlbumsControls.svelte';
   import Albums from '#lib/components/album-page/AlbumsList.svelte';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
@@ -13,6 +12,7 @@
   import { createAlbumAndRedirect } from '#lib/utils/album-utils.ts';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import AlbumsControls from './AlbumsControls.svelte';
 
   interface Props {
     data: PageData;

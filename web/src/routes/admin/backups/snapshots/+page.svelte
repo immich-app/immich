@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { ImmichSnapshotsPage, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
   import { Route } from '#lib/route.ts';
+  import { ImmichSnapshotsPage, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
   import type { PageData } from './$types';
 
   type Props = {

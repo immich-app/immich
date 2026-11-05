@@ -1,6 +1,7 @@
 <script lang="ts">
   import { focusOutside } from '#lib/actions/focus-outside.ts';
   import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import { Route } from '#lib/route.ts';
   import { searchStore } from '#lib/stores/search.svelte.ts';
   import { handlePromiseError } from '#lib/utils.ts';
@@ -9,7 +10,6 @@
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import SearchFilters from './SearchFilters.svelte';
-  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import { getSearchTypePlaceholder, isPopoverContent } from './search-bar-utils';
 
   type Props = {

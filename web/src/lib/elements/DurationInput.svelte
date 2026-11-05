@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { t } from 'svelte-i18n';
   import { Duration } from 'luxon';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     value: number;

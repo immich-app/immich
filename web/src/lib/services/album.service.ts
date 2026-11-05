@@ -21,7 +21,9 @@ import { getFormatter } from '#lib/utils/i18n.ts';
 import { AlbumUserRole, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import {
+  mdiCogOutline,
   mdiDownload,
+  mdiExitToApp,
   mdiImageOutline,
   mdiLink,
   mdiPlus,
@@ -29,9 +31,7 @@ import {
   mdiRenameOutline,
   mdiShareVariantOutline,
   mdiTrashCanOutline,
-  mdiExitToApp,
   mdiUpload,
-  mdiCogOutline,
 } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';

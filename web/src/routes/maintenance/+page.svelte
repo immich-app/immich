@@ -1,15 +1,15 @@
 <script lang="ts">
   /* eslint-disable unicorn/no-optional-chaining-on-undeclared-variable */
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
-  import MaintenanceRestoreFlow from './MaintenanceRestoreFlow.svelte';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import { handleSetMaintenanceMode } from '#lib/services/maintenance.service.ts';
   import { maintenanceStore } from '#lib/stores/maintenance.store.ts';
+  import { ViewStatusModal, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import { MaintenanceAction } from '@immich/sdk';
   import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
-  import { YuccaContext, ViewStatusModal } from '@futo-org/backups-orchestrator-ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import MaintenanceRestoreFlow from './MaintenanceRestoreFlow.svelte';
 
   type Props = {
     data: PageData;

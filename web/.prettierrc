@@ -1,9 +1,11 @@
 {
   "importOrder": ["<THIRD_PARTY_MODULES>", "<BUILTIN_MODULES>", "^\\$(.*)$", "^#test-data(.*)$", "^[./]"],
-  "importOrderSeparation": false,
+  "importOrderCaseSensitive": true,
+  "importOrderSafeSideEffects": [".*"],
+  "importOrderTypeScriptVersion": "6.0.0",
   "jsonRecursiveSort": true,
   "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }],
-  "plugins": ["@trivago/prettier-plugin-sort-imports", "prettier-plugin-svelte", "prettier-plugin-sort-json"],
+  "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-svelte", "prettier-plugin-sort-json"],
   "printWidth": 120,
   "semi": true,
   "singleQuote": true,
