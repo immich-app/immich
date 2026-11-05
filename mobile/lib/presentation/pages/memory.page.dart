@@ -41,8 +41,8 @@ class MemoryPage extends HookConsumerWidget {
     final currentAsset = useState<RemoteAsset?>(null);
     final isTapScrolling = useState(false);
 
-    // Shared timing for the page transition and the delay before preloading.
-    const tapScrollDuration = 120;
+    const nextPageDelta = 1;
+    const previousPageDelta = -1;
 
     /// The list of all of the asset page controllers
     final memoryAssetPageControllers = List.generate(memories.length, (i) => usePageController());
@@ -65,7 +65,7 @@ class MemoryPage extends HookConsumerWidget {
       }
     }
 
-    bool toPreviousPage(PageController controller) {
+    bool animateToPage(PageController controller, int pageDelta, Curve curve) {
       if (isTapScrolling.value) {
         return false;
       }
@@ -73,40 +73,24 @@ class MemoryPage extends HookConsumerWidget {
       isTapScrolling.value = true;
       unawaited(
         controller
-            .previousPage(
-              curve: Curves.easeInOut,
-              duration: const Duration(milliseconds: tapScrollDuration),
+            .animateToPage(
+              controller.page!.round() + pageDelta,
+              duration: const Duration(milliseconds: 500),
+              curve: curve,
             )
-            .then((value) => unlockTapScrollingFlag(), onError: (error) => unlockTapScrollingFlag()),
-      );
-      return true;
-    }
-
-    bool toNextPage(PageController controller) {
-      if (isTapScrolling.value) {
-        return false;
-      }
-      // Lock only when clicking to trigger page flipping, gesture sliding does not lock
-      isTapScrolling.value = true;
-      unawaited(
-        controller
-            .nextPage(
-              curve: Curves.easeInOut,
-              duration: const Duration(milliseconds: tapScrollDuration),
-            )
-            .then((value) => unlockTapScrollingFlag(), onError: (error) => unlockTapScrollingFlag()),
+            .whenComplete(unlockTapScrollingFlag),
       );
       return true;
     }
 
     void toNextMemory() {
-      toNextPage(memoryPageController);
+      animateToPage(memoryPageController, nextPageDelta, Curves.easeIn);
     }
 
     void toPreviousMemory() {
       if (currentMemoryIndex.value > 0) {
         // Move to the previous memory page
-        if (!toPreviousPage(memoryPageController)) {
+        if (!animateToPage(memoryPageController, previousPageDelta, Curves.easeIn)) {
           return;
         }
 
@@ -135,7 +119,7 @@ class MemoryPage extends HookConsumerWidget {
         // Go to the next asset
         final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        toNextPage(controller);
+        animateToPage(controller, nextPageDelta, Curves.easeInOut);
       } else {
         // Go to the next memory since we are at the end of our assets
         toNextMemory();
@@ -147,7 +131,7 @@ class MemoryPage extends HookConsumerWidget {
         // Go to the previous asset
         final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        toPreviousPage(controller);
+        animateToPage(controller, previousPageDelta, Curves.easeInOut);
       } else {
         // Go to the previous memory since we are at the end of our assets
         toPreviousMemory();
@@ -211,7 +195,7 @@ class MemoryPage extends HookConsumerWidget {
       final activeMemory = currentMemory.value;
 
       // Wait for page change animation to finish
-      await Future.delayed(Duration(milliseconds: (tapScrollDuration * 0.8).toInt()));
+      await Future.delayed(const Duration(milliseconds: 400));
 
       // check if memory is still the same and if context is still mounted
       if (currentMemory.value != activeMemory || !context.mounted) {
@@ -245,14 +229,6 @@ class MemoryPage extends HookConsumerWidget {
 
           final offset = notification.metrics.pixels;
           if (isEpiloguePage && (offset > notification.metrics.maxScrollExtent + 150)) {
-            unawaited(context.maybePop());
-            return true;
-          }
-
-          // Go back to the gallery view when swiping down on the first memory
-          final isFirstPage = (memoryPageController.page?.ceil() ?? 0) <= 0;
-          final axis = notification.metrics.axis;
-          if (isFirstPage && axis == Axis.vertical && (offset <= -150)) {
             unawaited(context.maybePop());
             return true;
           }

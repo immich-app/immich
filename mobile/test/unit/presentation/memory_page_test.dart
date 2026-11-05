@@ -46,7 +46,7 @@ void main() {
       await tester.tapAt(const Offset(760.0, 500.0));
       await tester.pump();
 
-      await tester.pump(const Duration(milliseconds: 30));
+      await tester.pump(const Duration(milliseconds: 200));
       await tester.tapAt(const Offset(760.0, 500.0));
       await tester.pumpAndSettle();
 
