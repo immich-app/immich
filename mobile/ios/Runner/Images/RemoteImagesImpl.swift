@@ -42,6 +42,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     kCGImageSourceCreateThumbnailWithTransform: true,
     kCGImageSourceCreateThumbnailFromImageAlways: true
   ]
+  private static let imageIOReadsAvif = (CGImageSourceCopyTypeIdentifiers() as? [String])?.contains("public.avif") == true
 
   func requestImage(url: String, requestId: Int64, preferEncoded: Bool, width: Int64?, height: Int64?, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
     var urlRequest = URLRequest(url: URL(string: url)!)
@@ -82,6 +83,9 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
         }
 
         guard let (width, height, pointer) = NativeCore.decodeImage(data, targetWidth: width, targetHeight: height, maxPixelSize: ImageProcessing.maxPixelSize, cancelled: request.decodeCancelled) else {
+          if mime == "image/avif" && imageIOReadsAvif {
+            return handleWithoutCore(request: request, encoded: encoded, width: width, height: height, data: data)
+          }
           registry.remove(requestId: request.id)
           if request.isCancelled {
             return request.completion(ImageProcessing.cancelledResult)
@@ -106,6 +110,10 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       return
     }
 
+    handleWithoutCore(request: request, encoded: encoded, width: width, height: height, data: data)
+  }
+
+  private static func handleWithoutCore(request: RemoteImageRequest, encoded: Bool, width: Int64?, height: Int64?, data: Data) {
     if encoded {
       let length = data.count
       let pointer = malloc(length)!
