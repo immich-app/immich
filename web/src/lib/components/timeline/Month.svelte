@@ -62,7 +62,7 @@
   <section
     class={[{ 'transition-all': !timelineMonth.timelineManager.suspendTransitions }]}
     style:transition-delay={timelineMonth.timelineManager.suspendTransitions ? undefined : `${transitionDuration}ms`}
-    data-group
+    data-testid="timeline-day"
     style:position="absolute"
     style:inset-inline-start={timelineDay.start + 'px'}
     style:top={timelineDay.top + 'px'}
@@ -79,6 +79,7 @@
         <div
           class="w-0 overflow-hidden transition-all duration-200 ease-out hover:cursor-pointer"
           class:w-8={hoveredTimelineDay === timelineDay.groupTitle || isTimelineDaySelected}
+          data-testid="select-day"
           onclick={() => onTimelineDaySelect(timelineDay, assetsSnapshot(timelineDay.getAssets()))}
           onkeydown={() => onTimelineDaySelect(timelineDay, assetsSnapshot(timelineDay.getAssets()))}
         >

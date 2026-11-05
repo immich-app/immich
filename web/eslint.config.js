@@ -201,9 +201,10 @@ export default defineConfig(
     },
   },
   {
-    files: ['test/**/*.ts'],
+    files: ['test/**/*.ts', 'src/**/*.spec.ts'],
     rules: {
       'no-empty-pattern': 'off',
+      'unicorn/no-document-cookie': 'off',
       'compat/compat': 'off',
       'tscompat/tscompat': 'off',
     },

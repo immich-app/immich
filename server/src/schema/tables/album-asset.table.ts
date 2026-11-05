@@ -2,10 +2,10 @@ import {
   AfterDeleteTrigger,
   CreateDateColumn,
   ForeignKeyColumn,
-  type Generated,
   Table,
   Timestamp,
   UpdateDateColumn,
+  type Generated,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { album_asset_delete_audit } from 'src/schema/functions.js';

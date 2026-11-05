@@ -1,6 +1,7 @@
 import { Route } from '#lib/route.ts';
+import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
-import { factory } from '#test/medium/mock/factories.ts';
+import { UserStatus } from '@immich/sdk';
 
 test.describe('user administration', () => {
   test('lists users and creates a new one', async ({ page, data, api, app }) => {
@@ -27,7 +28,7 @@ test.describe('user administration', () => {
   test('promotes a user to admin and revokes it again', async ({ page, data, api, app }) => {
     const { form } = app.admin.users;
     const user = factory.user({ name: 'Admin 2', email: 'admin2@immich.cloud', isAdmin: false });
-    data.addUser(user);
+    data.addUsers(user);
 
     await page.goto(Route.editUser(user));
     await expect(form.adminSwitch).not.toBeChecked();
@@ -50,5 +51,24 @@ test.describe('user administration', () => {
       params: { id: user.id },
       body: expect.objectContaining({ isAdmin: false }),
     });
+  });
+
+  test('a deleted user only offers restore', async ({ page, data, app }) => {
+    const user = factory.user({
+      name: 'Gone User',
+      email: 'gone@immich.cloud',
+      isAdmin: false,
+      deletedAt: '2026-10-01T00:00:00.000Z',
+      status: UserStatus.Deleted,
+    });
+    data.addUsers(user);
+
+    await page.goto(Route.viewUser(user));
+    await expect(page.getByText('user_has_been_deleted')).toBeVisible();
+
+    await expect(app.admin.users.restoreButton).toBeVisible();
+    await expect(app.admin.users.editButton).toHaveCount(0);
+    await expect(app.admin.users.deleteButton).toHaveCount(0);
+    await expect(app.admin.users.resetPasswordButton).toHaveCount(0);
   });
 });

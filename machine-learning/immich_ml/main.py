@@ -242,8 +242,10 @@ async def attempt[O: Options, R](
 
     try:
         return await run(_attempt)
-    except corrupt:
-        log.warning(f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'. Clearing cache.")
+    except corrupt as e:
+        log.warning(
+            f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}', clearing cache: {e}"
+        )
         model.unload()
         model.clear_cache()
         return await run(_attempt)

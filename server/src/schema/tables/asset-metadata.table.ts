@@ -2,11 +2,11 @@ import {
   AfterDeleteTrigger,
   Column,
   ForeignKeyColumn,
-  type Generated,
   PrimaryColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
+  type Generated,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { AssetMetadataKey } from 'src/enum.js';

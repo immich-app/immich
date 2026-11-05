@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import {
-  type GenerateAuthenticationOptionsOpts,
-  type GenerateRegistrationOptionsOpts,
-  type VerifyAuthenticationResponseOpts,
-  type VerifyRegistrationResponseOpts,
   generateAuthenticationOptions,
   generateRegistrationOptions,
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
+  type GenerateAuthenticationOptionsOpts,
+  type GenerateRegistrationOptionsOpts,
+  type VerifyAuthenticationResponseOpts,
+  type VerifyRegistrationResponseOpts,
 } from '@simplewebauthn/server';
 
 @Injectable()
