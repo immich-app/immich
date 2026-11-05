@@ -715,7 +715,6 @@ export const utils = {
   },
 };
 
-// eslint-disable-next-line unicorn/no-top-level-side-effects
 utils.initSdk();
 
 if (!existsSync(`${testAssetDir}/albums`)) {
