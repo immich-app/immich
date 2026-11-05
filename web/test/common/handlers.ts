@@ -114,6 +114,7 @@ export const createHandlers = (data: MockData): Handlers => {
       return { status: 204 };
     },
     getAlbumMapMarkers: ({ params }) => ({ json: data.mapMarkers(params.id) }),
+    getMapMarkers: () => ({ json: data.mapMarkers() }),
     getAlbumInfo: ({ params }) => {
       const album = data.getAlbum(params.id);
       return album ? { json: album } : notFound;
