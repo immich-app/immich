@@ -19,7 +19,6 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -110,12 +109,16 @@ class AssetMediaRepository {
         }
       }),
     );
+    // a share download lives in a directory named after its task
+    await FileDownloader().database.deleteRecordsWithIds(
+      tempFiles.whereType<Directory>().map((directory) => p.basename(directory.path)),
+    );
   }
 
   Future<void> cleanupStaleShareFiles() async {
-    final tempDir = await getTemporaryDirectory();
-    final shareDirs = await tempDir.list().where((entity) => p.basename(entity.path).startsWith('share-')).toList();
-    await cleanupTempFiles(shareDirs);
+    final records = await FileDownloader().database.allRecords(group: kShareDownloadGroup);
+    await FileDownloader().cancelTasksWithIds(records.map((record) => record.taskId));
+    await cleanupTempFiles([for (final record in records) File(await record.task.filePath()).parent]);
   }
 
   static final RegExp _pathSeparators = RegExp(r'[\\/]');
