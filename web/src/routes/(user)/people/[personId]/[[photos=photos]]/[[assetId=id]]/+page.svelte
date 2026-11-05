@@ -4,6 +4,7 @@
   import { scrollMemoryClearer } from '#lib/actions/scroll-memory.svelte.ts';
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import PersonIndicator from '#lib/components/faces-page/PersonIndicator.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
@@ -20,6 +21,7 @@
   import Timeline from '#lib/components/timeline/Timeline.svelte';
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '#lib/constants.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
@@ -326,7 +328,10 @@
     onAction: () => {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
     },
+    shortcuts: { key: 'm' },
   };
+
+  const personActionsEnabled = $derived(!assetViewerManager.isViewing && !assetMultiSelectManager.selectionActive);
 </script>
 
 <OnEvents
@@ -335,6 +340,10 @@
   onAssetsDelete={updateAssetCount}
   onAssetsArchive={updateAssetCount}
   onAssetsUnarchive={updateAssetCount}
+/>
+<CommandPaletteDefaultProvider
+  name={$t('person')}
+  actions={personActionsEnabled ? [SelectFeaturePhoto, Edit, HidePerson, ShowPerson, Merge, Favorite, Unfavorite] : []}
 />
 
 <main
@@ -380,14 +389,17 @@
               />
             {:else}
               <div class="relative flex gap-4">
-                <ImageThumbnail
-                  circle
-                  shadow
-                  url={thumbnailData}
-                  altText={person.name}
-                  widthStyle="3.375rem"
-                  heightStyle="3.375rem"
-                />
+                <div class="@container relative size-13.5">
+                  <ImageThumbnail
+                    circle
+                    shadow
+                    url={thumbnailData}
+                    altText={person.name}
+                    widthStyle="100%"
+                    hidden={person.isHidden}
+                  />
+                  <PersonIndicator {person} />
+                </div>
                 <div class="flex flex-col text-start text-primary">
                   <div class="flex gap-2">
                     <button type="button" title={$t('edit_name')} onclick={() => (isEditingName = true)}>
