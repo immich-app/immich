@@ -123,6 +123,21 @@ export class NotificationService extends BaseService {
     this.websocketRepository.serverSend('AppRestart', state);
   }
 
+  @OnEvent({ name: 'LibraryCreate' })
+  onLibraryCreate() {
+    this.websocketRepository.serverSend('LibraryCreate');
+  }
+
+  @OnEvent({ name: 'LibraryUpdate' })
+  onLibraryUpdate() {
+    this.websocketRepository.serverSend('LibraryUpdate');
+  }
+
+  @OnEvent({ name: 'LibraryDelete' })
+  onLibraryDelete() {
+    this.websocketRepository.serverSend('LibraryDelete');
+  }
+
   @OnEvent({ name: 'ConfigValidate', priority: -100 })
   async onConfigValidate({ oldConfig, newConfig }: ArgOf<'ConfigValidate'>) {
     try {

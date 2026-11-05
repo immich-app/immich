@@ -1,0 +1,20 @@
+[package]
+name = "codecs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = ["jxl"]
+jxl = ["dep:jxl", "dep:rayon"]
+
+[dependencies]
+jxl = { workspace = true, optional = true }
+libc = { workspace = true }
+moxcms = { workspace = true }
+pic-scale = { workspace = true }
+quick_cache = { workspace = true }
+rayon = { workspace = true, optional = true }
+
+[lints]
+workspace = true

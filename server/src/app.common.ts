@@ -28,14 +28,12 @@ export async function configureExpress(
     ssr,
   }: {
     /**
-     * Whether to allow swagger module to write to the specs.json
-     * This is not desirable when the API is not available
-     * @default true
-     */
+    Whether to allow swagger module to write to the specs.json
+    This is not desirable when the API is not available
+    @default true
+    */
     permitSwaggerWrite?: boolean;
-    /**
-     * Service to use for server-side rendering
-     */
+    /** Service to use for server-side rendering */
     ssr: typeof ApiService | typeof MaintenanceWorkerService;
   },
 ) {

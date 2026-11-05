@@ -366,10 +366,10 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     origin: TimelineOrigin.place,
   );
 
-  TimelineQuery person(List<String> userIds, String personId, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchPersonBucket(userIds, personId, groupBy: groupBy),
+  TimelineQuery person(String userId, String personId, GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchPersonBucket(userId, personId, groupBy: groupBy),
     assetSource: (offset, count) =>
-        _getPersonBucketAssets(userIds, personId, groupBy: groupBy, offset: offset, count: count),
+        _getPersonBucketAssets(userId, personId, groupBy: groupBy, offset: offset, count: count),
     origin: TimelineOrigin.person,
   );
 
@@ -430,7 +430,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
 
-  Expression<bool> _personAssetFilter(List<String> userIds, String personId) {
+  Expression<bool> _personAssetFilter(String userId, String personId) {
     final faceAssetIds = _db.assetFaceEntity.selectOnly()
       ..addColumns([_db.assetFaceEntity.assetId])
       ..where(
@@ -438,22 +438,23 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
             _db.assetFaceEntity.isVisible.equals(true) &
             _db.assetFaceEntity.deletedAt.isNull(),
       );
+    final partnerIds = _db.partnerEntity.selectOnly()
+      ..addColumns([_db.partnerEntity.sharedById])
+      ..where(_db.partnerEntity.sharedWithId.equals(userId));
     final albumAssetIds = _db.remoteAlbumAssetEntity.selectOnly()..addColumns([_db.remoteAlbumAssetEntity.assetId]);
     return _db.remoteAssetEntity.id.isInQuery(faceAssetIds) &
-        (_db.remoteAssetEntity.ownerId.isIn(userIds) | _db.remoteAssetEntity.id.isInQuery(albumAssetIds)) &
+        (_db.remoteAssetEntity.ownerId.equals(userId) |
+            _db.remoteAssetEntity.ownerId.isInQuery(partnerIds) |
+            _db.remoteAssetEntity.id.isInQuery(albumAssetIds)) &
         _db.remoteAssetEntity.deletedAt.isNull() &
         _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline);
   }
 
-  Stream<List<Bucket>> _watchPersonBucket(
-    List<String> userIds,
-    String personId, {
-    GroupAssetsBy groupBy = GroupAssetsBy.day,
-  }) {
+  Stream<List<Bucket>> _watchPersonBucket(String userId, String personId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       final query = _db.remoteAssetEntity.selectOnly()
         ..addColumns([_db.remoteAssetEntity.id.count()])
-        ..where(_personAssetFilter(userIds, personId));
+        ..where(_personAssetFilter(userId, personId));
 
       return query.map((row) {
         final count = row.read(_db.remoteAssetEntity.id.count())!;
@@ -466,7 +467,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
-      ..where(_personAssetFilter(userIds, personId))
+      ..where(_personAssetFilter(userId, personId))
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
@@ -478,14 +479,14 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
   }
 
   Future<List<BaseAsset>> _getPersonBucketAssets(
-    List<String> userIds,
+    String userId,
     String personId, {
     required int offset,
     required int count,
     GroupAssetsBy groupBy = GroupAssetsBy.day,
   }) {
     final query = _db.remoteAssetEntity.select()
-      ..where((_) => _personAssetFilter(userIds, personId))
+      ..where((_) => _personAssetFilter(userId, personId))
       ..orderBy(_assetDateOrder(groupBy))
       ..limit(count, offset: offset);
 

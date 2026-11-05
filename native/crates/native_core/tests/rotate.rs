@@ -1,3 +1,5 @@
+#![cfg(feature = "rotate")]
+
 use native_core::rotate::{Orientation, rotate};
 
 #[test]

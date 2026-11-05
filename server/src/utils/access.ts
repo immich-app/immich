@@ -179,8 +179,12 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     case Permission.AssetShare: {
       const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, false);
-      const isPartner = await access.asset.checkPartnerAccess(auth.user.id, ids.difference(isOwner));
-      return isOwner.union(isPartner);
+      const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, ids.difference(isOwner));
+      const isPartner = await access.asset.checkPartnerAccess(
+        auth.user.id,
+        ids.difference(isOwner).difference(isAlbum),
+      );
+      return isOwner.union(isAlbum).union(isPartner);
     }
 
     case Permission.AssetFileDownload: {
@@ -362,6 +366,10 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     case Permission.PersonReassign: {
       return access.person.checkFaceOwnerAccess(auth.user.id, ids);
+    }
+
+    case Permission.ClusterGroupAdmin: {
+      return access.clusterGroup.checkOwnerAccess(auth.user.id, ids);
     }
 
     case Permission.ClusterGroupRead: {

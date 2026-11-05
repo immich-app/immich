@@ -1,7 +1,7 @@
 <script lang="ts">
   import { clickOutside } from '#lib/actions/click-outside.ts';
   import { listNavigation } from '#lib/actions/list-navigation.ts';
-  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.svelte.ts';
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import PersonIndicator from '#lib/components/faces-page/PersonIndicator.svelte';
@@ -90,12 +90,12 @@
   let suggestedPeople: PersonResponseDto[] = $state([]);
 
   /**
-   * Save the word used to search people name: for example,
-   * if searching 'r' and the server returns 15 people with names starting with 'r',
-   * there's no need to search again people with name starting with 'ri'.
-   * However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
-   * or if the new search word starts with another word / letter
-   **/
+  Save the word used to search people name: for example,
+  if searching 'r' and the server returns 15 people with names starting with 'r',
+  there's no need to search again people with name starting with 'ri'.
+  However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
+  or if the new search word starts with another word / letter
+  */
   let isSearchingPeople = $state(false);
   let suggestionContainer: HTMLElement | undefined = $state();
 
@@ -348,12 +348,12 @@
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 pt-(--navbar-height) md:px-6 md:pt-(--navbar-height-md)"
-  use:scrollMemoryClearer={{
+  {@attach scrollMemoryClearer({
     routeStartsWith: Route.people(),
     beforeClear: () => {
       sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
     },
-  }}
+  })}
 >
   {#key person.id}
     <Timeline
@@ -371,11 +371,11 @@
         <!-- Person information block -->
         <div
           class="relative w-fit p-4 pt-12 sm:px-6"
-          use:clickOutside={{
+          {@attach clickOutside({
             onOutclick: handleCancelEditName,
             onEscape: isEditingName ? handleCancelEditName : undefined,
-          }}
-          use:listNavigation={suggestionContainer}
+          })}
+          {@attach listNavigation(suggestionContainer)}
         >
           <section class="flex w-64 place-items-center border-black sm:w-96">
             {#if isEditingName}

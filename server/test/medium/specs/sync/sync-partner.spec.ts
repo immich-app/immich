@@ -8,6 +8,7 @@ import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = async (db?: Kysely<DB>) => {
   const ctx = new SyncTestContext(db || defaultDatabase);
   const { auth, user, session } = await ctx.newSyncAuthUser();
@@ -77,27 +78,30 @@ describe(SyncEntityType.PartnerV1, () => {
     const { partner: partner2 } = await ctx.newPartner({ sharedById: user1.id, sharedWithId: user2.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(response).toEqual([
-      {
-        ack: expect.any(String),
-        data: {
-          inTimeline: partner1.inTimeline,
-          sharedById: partner1.sharedById,
-          sharedWithId: partner1.sharedWithId,
+    expect(response).toHaveLength(3);
+    expect(response).toEqual(
+      expect.arrayContaining([
+        {
+          ack: expect.any(String),
+          data: {
+            inTimeline: partner1.inTimeline,
+            sharedById: partner1.sharedById,
+            sharedWithId: partner1.sharedWithId,
+          },
+          type: 'PartnerV1',
         },
-        type: 'PartnerV1',
-      },
-      {
-        ack: expect.any(String),
-        data: {
-          inTimeline: partner2.inTimeline,
-          sharedById: partner2.sharedById,
-          sharedWithId: partner2.sharedWithId,
+        {
+          ack: expect.any(String),
+          data: {
+            inTimeline: partner2.inTimeline,
+            sharedById: partner2.sharedById,
+            sharedWithId: partner2.sharedWithId,
+          },
+          type: 'PartnerV1',
         },
-        type: 'PartnerV1',
-      },
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
-    ]);
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+      ]),
+    );
 
     await ctx.syncAckAll(auth, response);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnersV1]);

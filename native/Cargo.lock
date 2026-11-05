@@ -57,6 +57,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
+name = "codecs"
+version = "0.1.0"
+dependencies = [
+ "jxl",
+ "libc",
+ "moxcms",
+ "pic-scale",
+ "quick_cache",
+ "rayon",
+]
+
+[[package]]
 name = "combine"
 version = "4.6.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -251,9 +263,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.190"
+version = "0.2.191"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce5d3ddc6d3fa000eb1536d85e147bfe31aacaba692ed6a876f95cb7c855be78"
+checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 
 [[package]]
 name = "linux-raw-sys"
@@ -287,12 +299,7 @@ dependencies = [
 name = "native_core"
 version = "0.1.0"
 dependencies = [
- "jxl",
- "libc",
- "moxcms",
- "pic-scale",
- "quick_cache",
- "rayon",
+ "codecs",
 ]
 
 [[package]]

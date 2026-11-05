@@ -143,36 +143,36 @@
   let startX: number = 0;
   let startY: number = 0;
 
-  function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
-    let didPress = false;
-    const start = (evt: PointerEvent) => {
-      startX = evt.clientX;
-      startY = evt.clientY;
-      didPress = false;
-      // 350ms for longpress. For reference: iOS uses 500ms for default long press, or 200ms for fast long press.
-      timer = setTimeout(() => {
-        onLongPress();
-        element.addEventListener('contextmenu', preventContextMenu, { once: true });
-        disposeables.push(() => element.removeEventListener('contextmenu', preventContextMenu));
-        didPress = true;
-      }, 350);
-    };
-    const click = (e: MouseEvent) => {
-      if (!didPress) {
-        return;
-      }
-      e.stopPropagation();
-      e.preventDefault();
-    };
-    element.addEventListener('click', click);
-    element.addEventListener('pointerdown', start, { capture: true });
-    element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
-    return {
-      destroy: () => {
+  function longPress({ onLongPress }: { onLongPress: () => void }) {
+    return (element: HTMLElement) => {
+      let didPress = false;
+      const start = (evt: PointerEvent) => {
+        startX = evt.clientX;
+        startY = evt.clientY;
+        didPress = false;
+        // 350ms for longpress. For reference: iOS uses 500ms for default long press, or 200ms for fast long press.
+        timer = setTimeout(() => {
+          onLongPress();
+          element.addEventListener('contextmenu', preventContextMenu, { once: true });
+          disposeables.push(() => element.removeEventListener('contextmenu', preventContextMenu));
+          didPress = true;
+        }, 350);
+      };
+      const click = (e: MouseEvent) => {
+        if (!didPress) {
+          return;
+        }
+        e.stopPropagation();
+        e.preventDefault();
+      };
+      element.addEventListener('click', click);
+      element.addEventListener('pointerdown', start, { capture: true });
+      element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
+      return () => {
         element.removeEventListener('click', click);
         element.removeEventListener('pointerdown', start, true);
         element.removeEventListener('pointerup', clearLongPressTimer, true);
-      },
+      };
     };
   }
   function moveHandler(e: PointerEvent) {
@@ -214,7 +214,7 @@
   style:height="{height}px"
   onmouseenter={onMouseEnter}
   onmouseleave={onMouseLeave}
-  use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
+  {@attach longPress({ onLongPress: () => onSelect?.($state.snapshot(asset)) })}
   onkeydown={(evt) => {
     if (evt.key === 'Enter') {
       callClickHandlers();

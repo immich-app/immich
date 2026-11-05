@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { scrollMemory } from '#lib/actions/scroll-memory.ts';
+  import { scrollMemory } from '#lib/actions/scroll-memory.svelte.ts';
   import AlbumsControls from './AlbumsControls.svelte';
   import Albums from '#lib/components/album-page/AlbumsList.svelte';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
@@ -29,7 +29,7 @@
   let albumGroups: string[] = $state([]);
 </script>
 
-<UserPageLayout title={data.meta.title} use={[[scrollMemory, { routeStartsWith: Route.albums() }]]}>
+<UserPageLayout title={data.meta.title} {@attach scrollMemory({ routeStartsWith: Route.albums() })}>
   {#snippet buttons()}
     <div class="flex place-items-center gap-2">
       <AlbumsControls {albumGroups} bind:searchQuery />

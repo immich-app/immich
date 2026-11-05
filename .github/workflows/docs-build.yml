@@ -35,6 +35,7 @@ jobs:
           filters: |
             docs:
               - 'docs/**'
+              - 'deployment/**'
             open-api:
               - 'open-api/immich-openapi-specs.json'
           force-filters: |

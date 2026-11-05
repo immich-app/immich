@@ -36,6 +36,7 @@
 
   const [storage, storageUnit] = $derived(stats ? getStorageUsageWithUnit(stats.usage) : [undefined, undefined]);
 
+  // eslint-disable-next-line unicorn/no-unnecessary-parameters
   const zeros = (value: number, maxLength = 13) => {
     const valueLength = value.toString().length;
     const zeroLength = maxLength - valueLength;

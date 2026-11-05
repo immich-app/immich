@@ -114,9 +114,9 @@
           },
         });
 
-        const { success, error, errorMessage } = response[0];
+        const { success, error, errorMessage = error } = response[0];
         if (!success) {
-          throw new Error(errorMessage || error);
+          throw new Error(errorMessage);
         }
 
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);

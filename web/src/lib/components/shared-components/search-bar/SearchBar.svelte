@@ -137,7 +137,7 @@
 
 <svelte:document use:shortcuts={[{ shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input?.select() }]} />
 
-<div class="relative z-auto w-full" use:focusOutside={{ onFocusOut }} tabindex="-1">
+<div class="relative z-auto w-full" {@attach focusOutside({ onFocusOut })} tabindex="-1">
   <form
     draggable="false"
     autocomplete="off"
@@ -148,7 +148,7 @@
     onfocusin={onFocusIn}
     role="search"
   >
-    <div use:focusOutside={{ onFocusOut: onDropdownFocusOut }} tabindex="-1">
+    <div {@attach focusOutside({ onFocusOut: onDropdownFocusOut })} tabindex="-1">
       <label for="main-search-bar" class="sr-only">{$t('search_your_photos')}</label>
       <input
         type="text"

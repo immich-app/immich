@@ -331,7 +331,13 @@ describe(MediaRepository.name, () => {
       const decoded = await sut.decodeImage(buffer, { colorspace: Colorspace.P3, processInvalidImages: false });
       await sut.generateThumbnail(
         decoded,
-        { colorspace: Colorspace.P3, quality: 80, format: ImageFormat.Webp, processInvalidImages: false },
+        {
+          colorspace: Colorspace.P3,
+          quality: 80,
+          format: ImageFormat.Webp,
+          processInvalidImages: false,
+          decodingTier: 0,
+        },
         file,
       );
 

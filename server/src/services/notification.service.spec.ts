@@ -70,6 +70,27 @@ describe(NotificationService.name, () => {
     });
   });
 
+  describe('onLibraryCreate', () => {
+    it('should relay the event to other servers', () => {
+      sut.onLibraryCreate();
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('LibraryCreate');
+    });
+  });
+
+  describe('onLibraryUpdate', () => {
+    it('should relay the event to other servers', () => {
+      sut.onLibraryUpdate();
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('LibraryUpdate');
+    });
+  });
+
+  describe('onLibraryDelete', () => {
+    it('should relay the event to other servers', () => {
+      sut.onLibraryDelete();
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('LibraryDelete');
+    });
+  });
+
   describe('onConfigValidateEvent', () => {
     it('validates smtp config when enabling smtp', async () => {
       const oldConfig = configs.smtpDisabled;

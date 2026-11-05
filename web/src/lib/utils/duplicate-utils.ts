@@ -150,9 +150,9 @@ const metadataFields = [
     keys: ['latitude', 'longitude'],
     render: (asset, $t) =>
       // eslint-disable-next-line eqeqeq
-      asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null
-        ? `${asset.exifInfo.latitude.toFixed(4)}, ${asset.exifInfo.longitude.toFixed(4)}`
-        : $t('unknown'),
+      asset.exifInfo?.latitude == null || asset.exifInfo?.longitude == null
+        ? $t('unknown')
+        : `${asset.exifInfo.latitude.toFixed(4)}, ${asset.exifInfo.longitude.toFixed(4)}`,
   },
   {
     icon: mdiCameraOutline,

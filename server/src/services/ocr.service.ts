@@ -50,6 +50,11 @@ export class OcrService extends BaseService {
 
     await this.assetRepository.upsertJobStatus({ assetId: id, ocrAt: new Date() });
 
+    await this.eventRepository.emit('AssetOcrExtracted', {
+      userId: asset.ownerId,
+      assetId: id,
+    });
+
     this.logger.debug(`Processed ${ocrResults.text.length} OCR result(s) for ${id}`);
     return JobStatus.Success;
   }

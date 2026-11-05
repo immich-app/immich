@@ -1077,7 +1077,6 @@
   "image_alt_text_date_place_3_people": "{isVideo, select, true {Video} other {Bild}} ufgnoo in {city}, {country} mit {person1}, {person2} und {person3} am {date}",
   "image_alt_text_date_place_4_or_more_people": "{isVideo, select, true {Video} other {Bild}} ufgnoo in {city}, {country} mit {person1}, {person2} und {additionalCount, number} andere am {date}",
   "immich_logo": "Immich-Logo",
-  "immich_web_interface": "Immich-Web-Oberflächi",
   "import_from_json": "Us JSON importierä",
   "import_path": "Importpfad",
   "in_albums": "In {count, plural, one {# Album} other {# Albe}}",

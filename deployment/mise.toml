@@ -1,5 +1,5 @@
 [tools]
-terragrunt = "1.1.6"
+terragrunt = "1.2.0"
 opentofu = "1.13.2"
 
 [tasks."tg:fmt"]

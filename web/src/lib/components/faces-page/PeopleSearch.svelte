@@ -113,6 +113,6 @@
     {placeholder}
     bind:value={searchName}
     oninput={() => searchPeople(false)}
-    use:initInput
+    {@attach initInput}
   />
 {/if}

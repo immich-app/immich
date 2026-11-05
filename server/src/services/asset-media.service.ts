@@ -142,6 +142,19 @@ export class AssetMediaService extends BaseService {
       this.requireQuota(auth, file.size);
 
       if (dto.livePhotoVideoId) {
+        if (auth.sharedLink) {
+          const ids = new Set([dto.livePhotoVideoId]);
+          const [assetIds1, assetIds2] = await Promise.all([
+            this.accessRepository.asset.checkSharedLinkAccess(auth.sharedLink.id, ids),
+            this.accessRepository.asset.checkOwnerAccess(auth.user.id, ids, false),
+          ]);
+
+          if (!assetIds1.intersection(assetIds2).has(dto.livePhotoVideoId)) {
+            throw new BadRequestException(`Not found or no ${Permission.AssetUpdate} permission`);
+          }
+        } else {
+          await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [dto.livePhotoVideoId] });
+        }
         await onBeforeLink(
           { asset: this.assetRepository, event: this.eventRepository },
           { userId: auth.user.id, livePhotoVideoId: dto.livePhotoVideoId },

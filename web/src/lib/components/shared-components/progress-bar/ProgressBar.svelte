@@ -7,13 +7,11 @@
 
   interface Props {
     /**
-     * Autoplay on mount
-     * @default false
-     */
+    Autoplay on mount
+    @default false
+    */
     autoplay?: boolean;
-    /**
-     * Progress bar status
-     */
+    /** Progress bar status */
     status?: ProgressBarStatus;
     hidden?: boolean;
     duration?: number;

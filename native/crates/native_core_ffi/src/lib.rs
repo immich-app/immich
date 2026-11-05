@@ -9,7 +9,7 @@ mod android;
 mod bitmap;
 #[cfg(target_os = "android")]
 mod convert;
-mod jxl;
+mod decode;
 #[cfg(target_os = "android")]
 mod rotate;
 mod thumbhash;

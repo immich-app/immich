@@ -51,6 +51,7 @@
   let dragImage = $state<Element>();
   let isDropTarget = $state(false);
 
+  // eslint-disable-next-line unicorn/no-unnecessary-parameters
   const truncate = (input: string, max = 24) => (input.length > max ? input.slice(0, max - 1) + '…' : input);
 
   const formatConfigValue = (value: unknown): string => {
