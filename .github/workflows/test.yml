@@ -576,7 +576,7 @@ jobs:
         run: |
           for attempt in 1 2 3 4 5; do
             docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300 2>&1 | tee "${RUNNER_TEMP}/docker-compose-up.log" && exit 0
-            grep -q toomanyrequests "${RUNNER_TEMP}/docker-compose-up.log" || exit 1
+            grep -qiE 'toomanyrequests|retry-after' "${RUNNER_TEMP}/docker-compose-up.log" || exit 1
             sleep $((attempt * 15))
           done
           exit 1
@@ -671,7 +671,7 @@ jobs:
         run: |
           for attempt in 1 2 3 4 5; do
             docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300 2>&1 | tee "${RUNNER_TEMP}/docker-compose-up.log" && exit 0
-            grep -q toomanyrequests "${RUNNER_TEMP}/docker-compose-up.log" || exit 1
+            grep -qiE 'toomanyrequests|retry-after' "${RUNNER_TEMP}/docker-compose-up.log" || exit 1
             sleep $((attempt * 15))
           done
           exit 1
