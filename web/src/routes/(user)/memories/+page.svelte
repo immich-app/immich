@@ -1,9 +1,9 @@
 <script lang="ts">
   import { scrollMemory } from '#lib/actions/scroll-memory.svelte.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import MemoryCard from '#lib/components/memories/MemoryCard.svelte';
   import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
   import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
-  import MemoryCard from '#lib/components/memories/MemoryCard.svelte';
   import MemoriesSettingsModal from '#lib/modals/MemoriesSettingsModal.svelte';
   import { Route } from '#lib/route.ts';
   import { locale } from '#lib/stores/preferences.store.ts';

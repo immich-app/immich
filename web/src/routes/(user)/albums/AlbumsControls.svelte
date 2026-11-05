@@ -7,12 +7,10 @@
     AlbumGroupBy,
     AlbumSortBy,
     AlbumViewMode,
-    albumViewSettings,
     SortOrder,
+    albumViewSettings,
   } from '#lib/stores/preferences.store.ts';
   import {
-    type AlbumGroupOptionMetadata,
-    type AlbumSortOptionMetadata,
     collapseAllAlbumGroups,
     createAlbumAndRedirect,
     expandAllAlbumGroups,
@@ -22,6 +20,8 @@
     getSelectedAlbumGroupOption,
     groupOptionsMetadata,
     sortOptionsMetadata,
+    type AlbumGroupOptionMetadata,
+    type AlbumSortOptionMetadata,
   } from '#lib/utils/album-utils.ts';
   import { Button, IconButton, Text } from '@immich/ui';
   import {

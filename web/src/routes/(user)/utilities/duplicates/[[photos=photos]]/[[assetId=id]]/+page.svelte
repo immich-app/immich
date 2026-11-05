@@ -1,19 +1,16 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { page } from '$app/state';
   import { shortcuts } from '#lib/actions/shortcut.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
-  import LinkToDocs from './LinkToDocs.svelte';
-  import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import ShortcutsModal from '#lib/modals/ShortcutsModal.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
   import { Route } from '#lib/route.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import type { AssetResponseDto } from '@immich/sdk';
-  import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
-  import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
+  import { createStack, deleteDuplicates, resolveDuplicates, updateAssets, type AssetResponseDto } from '@immich/sdk';
+  import { Button, HStack, IconButton, Text, modalManager, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
     mdiChevronLeft,
@@ -24,9 +21,11 @@
     mdiTrashCanOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import type { PageData } from './$types';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
-  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
+  import LinkToDocs from './LinkToDocs.svelte';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);

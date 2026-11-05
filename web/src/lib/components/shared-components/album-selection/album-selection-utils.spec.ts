@@ -1,7 +1,7 @@
 import {
-  type AlbumModalRow,
   AlbumModalRowConverter,
   AlbumModalRowType,
+  type AlbumModalRow,
 } from '#lib/components/shared-components/album-selection/album-selection-utils.ts';
 import { AlbumSortBy, SortOrder } from '#lib/stores/preferences.store.ts';
 import { factory } from '#test/unit/factories.ts';

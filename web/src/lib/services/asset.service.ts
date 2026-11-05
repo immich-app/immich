@@ -13,8 +13,7 @@ import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { Route } from '#lib/route.ts';
 import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
-import { getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
-import { downloadUrl } from '#lib/utils.ts';
+import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
 import type { OnFavorite } from '#lib/utils/actions.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
@@ -63,8 +62,7 @@ import {
   mdiTagPlusOutline,
   mdiTune,
 } from '@mdi/js';
-import type { MessageFormatter } from 'svelte-i18n';
-import { t } from 'svelte-i18n';
+import { t, type MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 

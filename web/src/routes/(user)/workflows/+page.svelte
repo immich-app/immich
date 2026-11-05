@@ -7,8 +7,8 @@
   import { Route } from '#lib/route.ts';
   import {
     getWorkflowActions,
-    getWorkflowsActions,
     getWorkflowShowSchemaAction,
+    getWorkflowsActions,
   } from '#lib/services/workflow.service.ts';
   import {
     Badge,

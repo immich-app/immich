@@ -4,7 +4,7 @@
   import { Route } from '#lib/route.ts';
   import { getAlbumActions } from '#lib/services/album.service.ts';
   import { albumViewSettings } from '#lib/stores/preferences.store.ts';
-  import { type AlbumGroup, isAlbumGroupCollapsed, toggleAlbumGroupCollapsing } from '#lib/utils/album-utils.ts';
+  import { isAlbumGroupCollapsed, toggleAlbumGroupCollapsing, type AlbumGroup } from '#lib/utils/album-utils.ts';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { Icon, menuManager, type ActionItem } from '@immich/ui';
   import { mdiChevronRight } from '@mdi/js';

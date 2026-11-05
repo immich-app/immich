@@ -1,7 +1,7 @@
 <script lang="ts">
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
-  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import ClusterGroupUserSelectionModal from '#lib/modals/ClusterGroupUserSelectionModal.svelte';
   import ClusterGroupUsersModal from '#lib/modals/ClusterGroupUsersModal.svelte';
@@ -9,6 +9,7 @@
   import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import {
+    PartnerDirection,
     acceptClusterGroupRequest,
     clusterGroupRegeneratePeople,
     createClusterGroupRequest,
@@ -20,7 +21,6 @@
     getMyUser,
     getPartners,
     leaveClusterGroup,
-    PartnerDirection,
     removePartner,
     searchUsers,
     updatePartner,
@@ -28,7 +28,7 @@
     type PartnerResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, Button, Card, CardBody, HStack, Icon, IconButton, modalManager, Text } from '@immich/ui';
+  import { ActionButton, Button, Card, CardBody, HStack, Icon, IconButton, Text, modalManager } from '@immich/ui';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';

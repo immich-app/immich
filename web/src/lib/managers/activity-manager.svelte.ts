@@ -2,12 +2,12 @@ import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { handlePromiseError } from '#lib/utils.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import {
+  ReactionLevel,
+  ReactionType,
   createActivity,
   deleteActivity,
   getActivities,
   getActivityStatistics,
-  ReactionLevel,
-  ReactionType,
   type ActivityCreateDto,
   type ActivityResponseDto,
 } from '@immich/sdk';

@@ -2,7 +2,7 @@
   import { Route } from '#lib/route.ts';
   import { placesViewSettings } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl } from '#lib/utils.ts';
-  import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '#lib/utils/places-utils.ts';
+  import { isPlacesGroupCollapsed, togglePlacesGroupCollapsing, type PlacesGroup } from '#lib/utils/places-utils.ts';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiChevronRight } from '@mdi/js';
