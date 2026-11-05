@@ -1,11 +1,10 @@
 <script lang="ts">
   import { pluginManager } from '#lib/managers/plugin-manager.svelte.ts';
-  import type { JSONSchemaProperty } from '#lib/types.ts';
-  import { type WorkflowStepDto } from '@immich/sdk';
-  import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
-  import { getTagById } from '@immich/sdk';
   import { getAlbumQuery } from '#lib/queries/album.query.ts';
   import { queryClient } from '#lib/queries/client.ts';
+  import type { JSONSchemaProperty } from '#lib/types.ts';
+  import { getTagById, type WorkflowStepDto } from '@immich/sdk';
+  import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
   import {
     mdiAutoFix,
     mdiDragVertical,

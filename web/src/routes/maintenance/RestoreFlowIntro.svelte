@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Heading, HStack } from '@immich/ui';
+  import { Button, HStack, Heading } from '@immich/ui';
   import { mdiArrowRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
 

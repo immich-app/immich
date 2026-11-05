@@ -1,8 +1,8 @@
 <script lang="ts">
   import { scrollMemory } from '#lib/actions/scroll-memory.svelte.ts';
   import { shortcut } from '#lib/actions/shortcut.ts';
-  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import { QueryParameter, SessionStorageKey } from '#lib/constants.ts';
   import SearchBar from '#lib/elements/SearchBar.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -16,8 +16,6 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
-  import { goto } from '$app/navigation';
-  import { page } from '$app/state';
   import {
     getAllPeople,
     getClusterGroupUsers,
@@ -30,6 +28,8 @@
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import type { PageData } from './$types';
   import PeopleCard from './PeopleCard.svelte';
   import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';

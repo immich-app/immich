@@ -6,15 +6,15 @@
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import StorageTemplateVariablesModal from '#lib/modals/StorageTemplateVariablesModal.svelte';
   import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getAdminConfigQuery, updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
-  import StorageTemplateVariablesModal from '#lib/modals/StorageTemplateVariablesModal.svelte';
   import { Route } from '#lib/route.ts';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
-  import { cloneDeep } from 'lodash-es';
-  import { Code, Heading, IconButton, Link, modalManager, Text } from '@immich/ui';
+  import { Code, Heading, IconButton, Link, Text, modalManager } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import handlebar from 'handlebars';
+  import { cloneDeep } from 'lodash-es';
   import * as luxon from 'luxon';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';

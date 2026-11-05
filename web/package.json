@@ -83,6 +83,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
     "@koddsson/eslint-plugin-tscompat": "^0.4.0",
     "@playwright/test": "1.64.1",
     "@socket.io/component-emitter": "^3.1.0",
@@ -91,7 +92,6 @@
     "@sveltejs/kit": "^3.0.0",
     "@sveltejs/vite-plugin-svelte": "7.3.1",
     "@tailwindcss/vite": "^4.2.4",
-    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/chromecast-caf-sender": "^1.0.11",
     "@types/dom-to-image": "^2.6.7",
     "@types/justified-layout": "^4.1.4",

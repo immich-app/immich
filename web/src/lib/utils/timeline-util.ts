@@ -1,7 +1,7 @@
 import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '#lib/managers/timeline-manager/types.ts';
 import { locale } from '#lib/stores/preferences.store.ts';
 import { getAssetRatio } from '#lib/utils/asset-utils.ts';
-import { AssetTypeEnum, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
+import { AssetOrderBy, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';

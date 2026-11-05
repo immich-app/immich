@@ -2,7 +2,7 @@
   import AppDownloadModal from '#lib/modals/AppDownloadModal.svelte';
   import ObtainiumConfigModal from '#lib/modals/ObtainiumConfigModal.svelte';
   import { Route } from '#lib/route.ts';
-  import { Icon, modalManager, Text } from '@immich/ui';
+  import { Icon, Text, modalManager } from '@immich/ui';
   import {
     mdiCellphoneArrowDownVariant,
     mdiContentDuplicate,

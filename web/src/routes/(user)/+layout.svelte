@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { page } from '$app/state';
-  import UploadCover from './DragAndDropUploadOverlay.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import type { Snippet } from 'svelte';
+  import { page } from '$app/state';
+  import UploadCover from './DragAndDropUploadOverlay.svelte';
+
   interface Props {
     children?: Snippet;
   }
