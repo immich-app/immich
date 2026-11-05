@@ -40,10 +40,12 @@ jobs:
               - 'web/**'
               - 'i18n/**'
               - 'packages/sdk/**'
+              - 'packages/image-editor/**'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
             server:
               - 'server/**'
+              - 'packages/image-editor/**'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
               - 'packages/plugin-core/**'
@@ -197,6 +199,9 @@ jobs:
 
       - name: Run ci-unit
         run: mise run //server:ci-unit
+
+      - name: Test shared image editor
+        run: node --test packages/image-editor/index.test.js
 
   cli-unit-tests:
     name: Unit Test CLI
