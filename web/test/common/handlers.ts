@@ -2,7 +2,7 @@ import type { MockData } from '#test/common/data.ts';
 import { factory } from '#test/common/factories.ts';
 import { fromBase64, minimalMp4, placeholderImage } from '#test/common/helpers.ts';
 import type { Handlers } from '#test/common/types.ts';
-import { AssetUploadAction } from '@immich/sdk';
+import { AssetUploadAction, WorkflowTrigger, WorkflowType } from '@immich/sdk';
 
 const notFound = { status: 404, json: { message: 'Not found', statusCode: 404 } };
 const passwordRequired = { status: 401, json: { message: 'Password required', statusCode: 401 } };
@@ -173,6 +173,18 @@ export const createHandlers = (data: MockData): Handlers => {
       contentType: 'application/zip',
       headers: { 'Content-Disposition': 'attachment; filename="immich.zip"' },
     }),
+
+    searchWorkflows: () => ({ json: data.workflowList() }),
+    getWorkflowTriggers: () => ({
+      json: Object.values(WorkflowTrigger).map((trigger) => ({ trigger, types: [WorkflowType.AssetV1] })),
+    }),
+    createWorkflow: ({ body }) => ({ status: 201, json: data.createWorkflow(body) }),
+    updateWorkflow: ({ params, body }) => {
+      const workflow = data.updateWorkflow(params.id, body);
+      return workflow ? { json: workflow } : notFound;
+    },
+    searchPluginMethods: () => ({ json: data.pluginMethodList() }),
+    searchPluginTemplates: () => ({ json: [] }),
 
     playAssetVideo: () => ({ body: minimalMp4, contentType: 'video/mp4' }),
     viewAsset: ({ params }) => media(params.id),
