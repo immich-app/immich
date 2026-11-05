@@ -17,6 +17,7 @@
   import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '#lib/stores/websocket.ts';
   import { maintenanceShouldRedirect } from '#lib/utils/maintenance.ts';
+  import { getUiTranslations } from '#lib/utils/ui-translations.ts';
   import { getServerConfig } from '@immich/sdk';
   import {
     CommandPaletteProvider,
@@ -30,8 +31,6 @@
     setLocale,
     setTranslations,
     SOCIAL_COMMANDS,
-    Theme,
-    themeManager,
     toastManager,
     TooltipProvider,
   } from '@immich/ui';
@@ -80,34 +79,7 @@
   };
 
   $effect(() => {
-    setTranslations({
-      cancel: $t('cancel'),
-      close: $t('close'),
-      confirm: $t('confirm'),
-      expand: $t('expand'),
-      collapse: $t('collapse'),
-      search_placeholder: $t('search'),
-      search_no_results: $t('no_results'),
-      prompt_default: $t('are_you_sure_to_do_this'),
-      show_password: $t('show_password'),
-      hide_password: $t('hide_password'),
-      dark_theme: themeManager.value === Theme.Dark ? $t('light_theme') : $t('dark_theme'),
-      open_menu: $t('open'),
-      command_palette_prompt_default: $t('command_palette_prompt'),
-      command_palette_to_select: $t('command_palette_to_select'),
-      command_palette_to_navigate: $t('command_palette_to_navigate'),
-      command_palette_to_close: $t('command_palette_to_close'),
-      command_palette_to_show_all: $t('command_palette_to_show_all'),
-      navigate_next: $t('next'),
-      navigate_previous: $t('previous'),
-      open_calendar: $t('open_calendar'),
-      toast_success_title: $t('success'),
-      toast_info_title: $t('info'),
-      toast_warning_title: $t('warning'),
-      toast_danger_title: $t('error'),
-      save: $t('save'),
-      supporter: $t('supporter'),
-    });
+    setTranslations(getUiTranslations($t));
 
     addTranslation($lang, {
       ...MediaChromeDefaults,
