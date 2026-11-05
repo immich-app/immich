@@ -8,6 +8,7 @@
   import { mediaCapabilitiesManager } from '#lib/managers/media-capabilities-manager.svelte.ts';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '#lib/stores/preferences.store.ts';
   import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '#lib/utils.ts';
+  import { applyWakeLock } from '#lib/utils/wakelock.svelte.ts';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon, LoadingSpinner, shortcuts } from '@immich/ui';
   import {
@@ -383,6 +384,7 @@
         {#if publicConfig.ffmpeg.realtime.enabled}
           <hls-video
             bind:this={videoPlayer}
+            {@attach applyWakeLock}
             slot="media"
             loop={$loopVideoPreference && loopVideo}
             autoplay={$autoPlayVideo}
@@ -408,6 +410,7 @@
         {:else}
           <video
             bind:this={videoPlayer}
+            {@attach applyWakeLock}
             slot="media"
             src={assetFileUrl}
             loop={$loopVideoPreference && loopVideo}
