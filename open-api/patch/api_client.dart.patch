@@ -28,3 +28,12 @@
 -      : fromJson(json.decode(value), targetType, growable: growable);
 +      : fromJson(await compute((String j) => json.decode(j), value), targetType, growable: growable);
    }
+
+   // ignore: deprecated_member_use_from_same_package
+@@ -182,4 +182,6 @@
+           final valueString = '$value'.toLowerCase();
+           return valueString == 'true' || valueString == '1';
++        case 'Object':
++          return value;
+         case 'DateTime':
+           return value is DateTime ? value : DateTime.tryParse(value);
