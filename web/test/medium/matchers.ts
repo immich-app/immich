@@ -1,4 +1,4 @@
-import { matchesCall, Spy } from '#test/common/expectations.ts';
+import { Spy, matchesCall } from '#test/common/expectations.ts';
 import { expect as base, type ExpectMatcherState } from '@playwright/test';
 
 declare global {

@@ -3,21 +3,21 @@
 </script>
 
 <script lang="ts">
-  import { page } from '$app/state';
   import { clickOutside } from '#lib/actions/click-outside.ts';
   import NotificationPanel from '#lib/components/shared-components/navigation-bar/NotificationPanel.svelte';
   import SearchBar from '#lib/components/shared-components/search-bar/SearchBar.svelte';
   import SkipLink from '#lib/elements/SkipLink.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
   import { Route } from '#lib/route.ts';
   import { getGlobalActions } from '#lib/services/app.service.ts';
   import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
   import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
-  import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
   import { ActionButton, Button, IconButton, Logo } from '@immich/ui';
-  import { createQuery } from '@tanstack/svelte-query';
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
+  import { page } from '$app/state';
   import ThemeButton from '../ThemeButton.svelte';
   import UserAvatar from '../UserAvatar.svelte';
   import AccountInfoPanel from './AccountInfoPanel.svelte';

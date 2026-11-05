@@ -5,12 +5,16 @@
   import AvatarEditModal from '#lib/modals/AvatarEditModal.svelte';
   import HelpAndFeedbackModal from '#lib/modals/HelpAndFeedbackModal.svelte';
   import { Route } from '#lib/route.ts';
+<<<<<<< HEAD
   import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
+=======
+>>>>>>> 14af4d8 (fix: web import ordering (#32995))
   import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import { page } from '$app/state';
   import UserAvatar from '../UserAvatar.svelte';
 
   type Props = {

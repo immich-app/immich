@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { ImmichOnboardingRestoreFlow } from '@futo-org/backups-orchestrator-ui';
   import RestoreFlowAutoSelectBackup from './RestoreFlowAutoSelectBackup.svelte';
   import RestoreFlowDetectInstall from './RestoreFlowDetectInstall.svelte';
   import RestoreFlowIntro from './RestoreFlowIntro.svelte';
   import RestoreFlowSelectBackup from './RestoreFlowSelectBackup.svelte';
-  import { ImmichOnboardingRestoreFlow } from '@futo-org/backups-orchestrator-ui';
 
   type Props = {
     end: () => void;

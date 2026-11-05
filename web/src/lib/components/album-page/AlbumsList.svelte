@@ -8,8 +8,8 @@
     AlbumGroupBy,
     AlbumSortBy,
     AlbumViewMode,
-    locale,
     SortOrder,
+    locale,
     type AlbumViewSettings,
   } from '#lib/stores/preferences.store.ts';
   import {

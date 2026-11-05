@@ -2,7 +2,7 @@
   import AlbumCover from '#lib/components/album-page/AlbumCover.svelte';
   import { getAlbumQuery } from '#lib/queries/album.query.ts';
   import { queryClient } from '#lib/queries/client.ts';
-  import { IconButton, Text, LoadingSpinner } from '@immich/ui';
+  import { IconButton, LoadingSpinner, Text } from '@immich/ui';
   import { mdiTrashCanOutline } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';

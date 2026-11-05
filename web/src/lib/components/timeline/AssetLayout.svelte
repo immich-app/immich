@@ -1,7 +1,7 @@
 <script lang="ts">
+  import type { VirtualScrollManager } from '#lib/managers/VirtualScrollManager/VirtualScrollManager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import type { ViewerAsset } from '#lib/managers/timeline-manager/viewer-asset.svelte.ts';
-  import type { VirtualScrollManager } from '#lib/managers/VirtualScrollManager/VirtualScrollManager.svelte.ts';
   import { uploadAssetsStore } from '#lib/stores/upload.ts';
   import type { CommonPosition } from '#lib/utils/layout-utils.ts';
   import type { Snippet } from 'svelte';

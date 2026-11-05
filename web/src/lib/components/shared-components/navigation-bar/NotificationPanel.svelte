@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { focusTrap } from '#lib/actions/focus-trap.ts';
   import NotificationItem from '#lib/components/shared-components/navigation-bar/NotificationItem.svelte';
   import { OpenQueryParam } from '#lib/constants.ts';
-  import { Route } from '#lib/route.ts';
   import { executeMutation } from '#lib/queries/client.ts';
   import {
     getNotificationsQuery,
     updateNotificationMutation,
     updateNotificationsMutation,
   } from '#lib/queries/notification.query.ts';
+  import { Route } from '#lib/route.ts';
   import { NotificationType, type NotificationDto } from '@immich/sdk';
   import { Button, Icon, Scrollable, Stack, Text } from '@immich/ui';
   import { mdiBellOutline, mdiCheckAll } from '@mdi/js';
@@ -17,6 +16,7 @@
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
   import { fade } from 'svelte/transition';
+  import { goto } from '$app/navigation';
 
   const query = createQuery(getNotificationsQuery);
   const notifications = $derived(query.data ?? []);

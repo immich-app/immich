@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { themeManager, ThemePreference, ThemeSwitcher } from '@immich/ui';
+  import { ThemePreference, ThemeSwitcher, themeManager } from '@immich/ui';
 </script>
 
 {#if themeManager.preference !== ThemePreference.System}

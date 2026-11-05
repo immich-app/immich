@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Thumbhash from '#lib/components/Thumbhash.svelte';
   import { ProjectionType } from '#lib/constants.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
@@ -24,9 +25,9 @@
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
-  import Thumbhash from '#lib/components/Thumbhash.svelte';
   import ImageThumbnail from './ImageThumbnail.svelte';
   import VideoThumbnail from './VideoThumbnail.svelte';
+
   interface Props {
     asset: TimelineAsset;
     groupIndex?: number;
