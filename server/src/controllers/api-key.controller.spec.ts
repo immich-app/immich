@@ -19,6 +19,20 @@ describe(ApiKeyController.name, () => {
     ctx.reset();
   });
 
+  describe('POST /api-keys', () => {
+    it('should require at least one permission', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/api-keys')
+        .send({ name: 'key', permissions: [] });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: ['permissions'], message: 'Too small: expected array to have >=1 items' },
+        ]),
+      );
+    });
+  });
+
   describe('GET /api-keys/:id', () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/api-keys/123`);

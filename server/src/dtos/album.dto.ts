@@ -1,5 +1,4 @@
 import { ShallowDehydrateObject } from 'kysely';
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import type { MaybeDehydrated } from 'src/types.js';
 import { AlbumUser, AuthSharedLink } from 'src/database.js';
@@ -11,6 +10,7 @@ import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
 import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { stringToBool } from 'src/validation.js';
+import { createZodDto } from 'src/zod.js';
 
 const AlbumUserAddSchema = z
   .object({

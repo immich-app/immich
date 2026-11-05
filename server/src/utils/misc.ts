@@ -8,7 +8,6 @@ import {
   SwaggerModule,
 } from '@nestjs/swagger';
 import { get, isArray, isDate, isEmpty, isObject, orderBy, unset } from 'lodash-es';
-import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
@@ -17,6 +16,7 @@ import { extraModels } from 'src/decorators.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { patchOpenApiParameters, toOpenApiComponents, toOpenApiSchema } from 'src/zod.js';
 
 type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
 type ReferenceOrSchemaObject = Extract<ApiBodyOptions, { schema: unknown }>['schema'];
@@ -227,6 +227,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
   // Allowed in OpenAPI v3.1 (JSON Schema 2020-12), but not in OpenAPI v3.0 (current spec).
   removeOpenApi30IncompatibleKeys(document);
+  patchOpenApiParameters(document);
 
   if (document.components?.schemas) {
     const schemas = document.components.schemas as Record<string, SchemaObject>;
@@ -359,12 +360,15 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
-    extraModels,
     ignoreGlobalPrefix: true,
+    standardSchemaConverter: toOpenApiSchema,
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);
-  const openApiDoc = cleanupOpenApiDoc(specification);
+  specification.components = {
+    ...specification.components,
+    schemas: { ...specification.components?.schemas, ...toOpenApiComponents(extraModels) },
+  };
 
   const customOptions: SwaggerCustomOptions = {
     swaggerOptions: {
@@ -375,7 +379,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     customSiteTitle: 'Immich API Documentation',
   };
 
-  SwaggerModule.setup('doc', app, openApiDoc, customOptions);
+  SwaggerModule.setup('doc', app, specification, customOptions);
 
   // Generate API Documentation only in development mode
   if (!write) {
@@ -383,7 +387,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   }
 
   const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
-  writeFileSync(outputPath, JSON.stringify(canonicalize(patchOpenAPI(openApiDoc)), null, 2), { encoding: 'utf8' });
+  writeFileSync(outputPath, JSON.stringify(canonicalize(patchOpenAPI(specification)), null, 2), { encoding: 'utf8' });
 };
 
 // Offline detection and the re-online check must share one matcher, or an asset flips state on every scan

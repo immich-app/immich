@@ -8,7 +8,7 @@ NestJS + Kysely + PostgreSQL, layered `controllers` → `services` → `reposito
 - Every route has `@Authenticated(...)` and `@Endpoint({ summary, description, history })`; the global `AuthGuard` throws otherwise. Controllers only call one service method with `(auth, dto)`.
 - Services `extends BaseService` and declare no constructor; repositories are available as `this.xRepository`. Call `await this.requireAccess({ auth, permission, ids })` before touching a resource.
 - Repositories are the only I/O layer and return rows. Services interpret results and throw `BadRequestException` etc.; repositories never throw HTTP exceptions.
-- DTOs are Zod schemas via `nestjs-zod` (`createZodDto`, `.describe()`, `.meta({ id })`) in `src/dtos/`, with `mapX()` mappers beside them.
+- DTOs are Zod schemas via `createZodDto` from `src/zod.ts` (`.describe()`, `.meta({ id })`) in `src/dtos/`, with `mapX()` mappers beside them.
 - Enums (`JobName`, `QueueName`, `Permission`, `BootstrapEventPriority`) live in `src/enum.ts`; job payload unions in `src/types.ts`. Admin-editable config and its `defaults` are in `src/dtos/config.dto.ts`; env vars in `src/dtos/env.dto.ts`.
 - Codegen tasks (`migrations`, `sql`, `sync-open-api`) run from `dist/`, so `mise //server:build` first.
 
