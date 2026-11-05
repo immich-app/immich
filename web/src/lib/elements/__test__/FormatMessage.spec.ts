@@ -1,9 +1,8 @@
 import FormatMessage from '#lib/elements/FormatMessage.svelte';
 import FormatTagB from '#lib/elements/__test__/FormatTagB.svelte';
-import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/svelte';
 import { init, locale, register, waitLocale, type Translations } from 'svelte-i18n';
-import { describe } from 'vitest';
+import { describe, expect } from 'vitest';
+import { render } from 'vitest-browser-svelte';
 
 const getSanitizedHTML = (container: HTMLElement) => container.getHTML().replaceAll('<!---->', '');
 
@@ -25,86 +24,81 @@ describe('FormatMessage component', () => {
     await waitLocale('en');
   });
 
-  it('formats a plain text message', () => {
-    render(FormatMessage, {
+  it('formats a plain text message', async () => {
+    const screen = await render(FormatMessage, {
       key: 'hello' as Translations,
       values: { name: 'test' },
     });
-    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
-    expect(screen.getByText('Hello test')).toBeInTheDocument();
+    await expect.element(screen.getByText('Hello test')).toBeInTheDocument();
   });
 
   it('throws an error when locale is empty', async () => {
     await locale.set(undefined);
-    expect(() => render(FormatMessage, { key: '' as Translations })).toThrow();
+    await expect(render(FormatMessage, { key: '' as Translations })).rejects.toThrow();
     await locale.set('en');
   });
 
-  it('shows raw message when value is empty', () => {
-    render(FormatMessage, {
+  it('shows raw message when value is empty', async () => {
+    const screen = await render(FormatMessage, {
       key: 'hello' as Translations,
     });
-    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
-    expect(screen.getByText('Hello {name}')).toBeInTheDocument();
+    await expect.element(screen.getByText('Hello {name}')).toBeInTheDocument();
   });
 
-  it('shows message when slot is empty', () => {
-    render(FormatMessage, {
+  it('shows message when slot is empty', async () => {
+    const screen = await render(FormatMessage, {
       key: 'html' as Translations,
       values: { name: 'test' },
     });
-    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
-    expect(screen.getByText('Hello test')).toBeInTheDocument();
+    await expect.element(screen.getByText('Hello test')).toBeInTheDocument();
   });
 
-  it('renders a message with html', () => {
-    const { container } = render(FormatTagB, {
+  it('renders a message with html', async () => {
+    const { container } = await render(FormatTagB, {
       key: 'html' as Translations,
       values: { name: 'test' },
     });
     expect(getSanitizedHTML(container)).toBe('Hello <strong>test</strong>');
   });
 
-  it('renders a message with html and plural', () => {
-    const { container } = render(FormatTagB, {
+  it('renders a message with html and plural', async () => {
+    const { container } = await render(FormatTagB, {
       key: 'plural' as Translations,
       values: { count: 1 },
     });
     expect(getSanitizedHTML(container)).toBe('You have <strong>1 item</strong>');
   });
 
-  it('protects against XSS injection', () => {
-    render(FormatMessage, {
+  it('protects against XSS injection', async () => {
+    const screen = await render(FormatMessage, {
       key: 'xss' as Translations,
     });
-    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
-    expect(screen.getByText('<image/src/onerror=prompt(8)>')).toBeInTheDocument();
+    await expect.element(screen.getByText('<image/src/onerror=prompt(8)>')).toBeInTheDocument();
   });
 
-  it('displays the message key when not found', () => {
-    render(FormatMessage, { key: 'invalid.key' as Translations });
-    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
-    expect(screen.getByText('invalid.key')).toBeInTheDocument();
+  it('displays the message key when not found', async () => {
+    const screen = await render(FormatMessage, { key: 'invalid.key' as Translations });
+    await expect.element(screen.getByText('invalid.key')).toBeInTheDocument();
   });
 
-  it('supports html tags inside plurals', () => {
-    const { container } = render(FormatTagB, {
+  it('supports html tags inside plurals', async () => {
+    const { container } = await render(FormatTagB, {
       key: 'plural_with_html' as Translations,
       values: { count: 10 },
     });
     expect(getSanitizedHTML(container)).toBe('You have <strong>10</strong> items');
   });
 
-  it('supports html tags inside select', () => {
-    const { container } = render(FormatTagB, {
+  it('supports html tags inside select', async () => {
+    const { container } = await render(FormatTagB, {
       key: 'select_with_html' as Translations,
       values: { status: true },
     });
     expect(getSanitizedHTML(container)).toBe('Item is <strong>disabled</strong>');
   });
 
-  it('supports html tags inside selectordinal', () => {
-    const { container } = render(FormatTagB, {
+  it('supports html tags inside selectordinal', async () => {
+    const { container } = await render(FormatTagB, {
       key: 'ordinal_with_html' as Translations,
       values: { count: 4 },
     });

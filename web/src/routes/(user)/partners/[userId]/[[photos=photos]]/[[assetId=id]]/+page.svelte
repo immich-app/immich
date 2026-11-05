@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
-  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
@@ -11,6 +10,7 @@
   import { ActionButton, CommandPaletteDefaultProvider } from '@immich/ui';
   import { mdiArrowLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
   import type { PageData } from './$types';
 
   interface Props {

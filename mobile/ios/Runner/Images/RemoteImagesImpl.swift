@@ -157,7 +157,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       }
 
       do {
-        let buffer = try vImage_Buffer(cgImage: cgImage, format: rgbaFormat)
+        let buffer = try ImageProcessing.rgbaBuffer(cgImage, format: rgbaFormat)
 
         if request.isCancelled {
           buffer.free()

@@ -1,34 +1,35 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import DetailPanelDate from '#lib/components/asset-viewer/DetailPanelDate.svelte';
   import DetailPanelDescription from '#lib/components/asset-viewer/DetailPanelDescription.svelte';
   import DetailPanelLocation from '#lib/components/asset-viewer/DetailPanelLocation.svelte';
+  import DetailPanelPeople from '#lib/components/asset-viewer/DetailPanelPeople.svelte';
   import DetailPanelRating from '#lib/components/asset-viewer/DetailPanelStarRating.svelte';
   import DetailPanelTags from '#lib/components/asset-viewer/DetailPanelTags.svelte';
   import { timeToLoadTheMap } from '#lib/constants.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getAlbumsByAssetQuery } from '#lib/queries/album.query.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
   import { Route } from '#lib/route.ts';
+  import { faceManager } from '#lib/stores/face.svelte.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl } from '#lib/utils.ts';
   import { delay, getDimensions } from '#lib/utils/asset-utils.ts';
   import { getByteUnitString } from '#lib/utils/byte-units.ts';
+  import { getCameraName } from '#lib/utils/camera-utils.ts';
   import { getParentPath } from '#lib/utils/tree-utils.ts';
   import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { createQuery } from '@tanstack/svelte-query';
   import { Icon, IconButton, Link, LoadingSpinner, Text } from '@immich/ui';
   import { mdiCamera, mdiCameraIris, mdiClose, mdiImageOutline, mdiInformationOutline } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
+  import { goto } from '$app/navigation';
   import PersonSidePanel from '../faces-page/PersonSidePanel.svelte';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
-  import DetailPanelPeople from '#lib/components/asset-viewer/DetailPanelPeople.svelte';
-  import { faceManager } from '#lib/stores/face.svelte.ts';
-  import { getAlbumsByAssetQuery } from '#lib/queries/album.query.ts';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
-  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 
   const query = createPreloadedQuery(getPublicConfigQuery);
   const publicConfig = $derived(query.data);
@@ -203,17 +204,17 @@
 
           <div>
             {#if asset.exifInfo?.make || asset.exifInfo?.model}
+              {const cameraName = $derived(getCameraName(asset.exifInfo.make, asset.exifInfo.model))}
               <p>
                 <a
                   href={Route.search({
                     make: asset.exifInfo?.make ?? undefined,
                     model: asset.exifInfo?.model ?? undefined,
                   })}
-                  title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
+                  title="{$t('search_for')} {cameraName}"
                   class="hover:text-primary"
                 >
-                  {asset.exifInfo.make || ''}
-                  {asset.exifInfo.model || ''}
+                  {cameraName}
                 </a>
               </p>
             {/if}

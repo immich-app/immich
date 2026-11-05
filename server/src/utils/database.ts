@@ -9,6 +9,7 @@ import {
   NotNull,
   OperandValueExpression,
   ReferenceExpression,
+  SafeNullComparisonPlugin,
   SelectQueryBuilder,
   Selectable,
   ShallowDehydrateObject,
@@ -16,10 +17,9 @@ import {
   expressionBuilder,
   sql,
 } from 'kysely';
-import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { PostgresJSDialect } from 'kysely-postgres-js';
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
-import type { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types.js';
 import { LockableProperty, Person, columns, lockableProperties } from 'src/database.js';
 import { DummyValue, GenerateSqlQueries } from 'src/decorators.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
@@ -48,6 +48,7 @@ import {
 } from 'src/repositories/search.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import type { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types.js';
 import { fromChecksum } from 'src/utils/request.js';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
@@ -62,6 +63,7 @@ export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyCon
         },
       }),
     }),
+    plugins: [new SafeNullComparisonPlugin()],
     log(event) {
       if (event.level !== 'error') {
         return;
@@ -123,10 +125,15 @@ export function withExif<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId').select(selectExifInfo);
 }
 
+const selectReturnedExifInfo = (eb: ExpressionBuilder<DB, 'asset'>) =>
+  jsonObjectFrom(eb.selectFrom('asset_exif').select(columns.exif).whereRef('asset_exif.assetId', '=', 'asset.id')).as(
+    'exifInfo',
+  );
+
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb
     .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-    .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo'))
+    .select(selectReturnedExifInfo)
     .$narrowType<{ exifInfo: NotNull }>();
 }
 
@@ -816,7 +823,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       .selectFrom('asset')
       // postgres eliminates the left join when no exif column is referenced, so unused joins are free
       .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-      .$if(!!options.withExif, (qb) => qb.select(selectExifInfo))
+      .$if(!!options.withExif, (qb) => qb.select(selectReturnedExifInfo))
       .$if(scopeGlobally, (qb) => qb.where(ownershipPredicate))
       .where((eb) =>
         eb.or([eb('asset.visibility', '!=', AssetVisibility.Locked), eb('asset.ownerId', '=', scope.lockedOwnerId)]),

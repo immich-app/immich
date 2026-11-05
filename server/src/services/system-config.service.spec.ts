@@ -1,5 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import type { DeepPartial } from 'src/types.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import {
   AudioCodec,
@@ -18,6 +17,7 @@ import {
   VideoContainer,
 } from 'src/enum.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
+import type { DeepPartial } from 'src/types.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
@@ -47,6 +47,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Editor]: { concurrency: 2 },
   },
   backup: {
+    beta: false,
     database: {
       enabled: true,
       cronExpression: '0 02 * * *',

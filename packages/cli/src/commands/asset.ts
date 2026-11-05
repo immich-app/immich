@@ -56,7 +56,6 @@ class UploadFile extends File {
     super([], basename(filepath));
   }
 
-  // @ts-expect-error size is already a property on the new File interface
   get size() {
     return this._size;
   }

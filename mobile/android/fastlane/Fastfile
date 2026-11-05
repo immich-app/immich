@@ -16,14 +16,19 @@
 default_platform(:android)
 
 platform :android do
+  before_all do
+    # Gradle needs Flutter's GeneratedPluginRegistrant generation
+    Dir.chdir("../..") { sh("flutter", "build", "apk", "--release", "--config-only") }
+  end
+
   desc "Build Android and Release Testing"
   lane :beta do
     gradle(
-      task: 'bundle', 
+      task: 'bundle',
       build_type: 'Release',
       properties: {
-        "android.injected.version.code" => 3030000,
-        "android.injected.version.name" => "3.3.0-rc.0",
+        "android.injected.version.code" => 3040000,
+        "android.injected.version.name" => "3.4.0-rc.0",
       }
     )
     upload_to_play_store(skip_upload_apk: true, skip_upload_images: true, skip_upload_screenshots: true, aab: '../build/app/outputs/bundle/release/app-release.aab', track: 'beta')
@@ -32,11 +37,11 @@ platform :android do
   desc "Build and Release Android"
   lane :release do
     gradle(
-      task: 'bundle', 
+      task: 'bundle',
       build_type: 'Release',
       properties: {
-        "android.injected.version.code" => 3030000,
-        "android.injected.version.name" => "3.3.0-rc.0",
+        "android.injected.version.code" => 3040000,
+        "android.injected.version.name" => "3.4.0-rc.0",
       }
     )
     upload_to_play_store(skip_upload_apk: true, skip_upload_images: true, skip_upload_screenshots: true, aab: '../build/app/outputs/bundle/release/app-release.aab')

@@ -6333,7 +6333,7 @@
             "state": "Added"
           }
         ],
-        "x-immich-permission": "clusterGroup.read"
+        "x-immich-permission": "clusterGroup.admin"
       }
     },
     "/cluster-groups/{id}/requests": {
@@ -18594,7 +18594,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.3.0-rc.0",
+    "version": "3.4.0-rc.0",
     "contact": {}
   },
   "tags": [
@@ -18911,6 +18911,10 @@
       },
       "AdminConfigBackupsDto": {
         "properties": {
+          "beta": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "database": {
             "$ref": "#/components/schemas/AdminConfigDatabaseBackupDto"
           }
@@ -23501,7 +23505,8 @@
           "start",
           "end",
           "select_database_restore",
-          "restore_database"
+          "restore_database",
+          "rollback"
         ],
         "type": "string"
       },
@@ -23577,6 +23582,10 @@
             "type": "boolean"
           },
           "error": {
+            "type": "string"
+          },
+          "futoBackupsJobId": {
+            "description": "FUTO Backups job ID",
             "type": "string"
           },
           "progress": {
@@ -25782,6 +25791,7 @@
           "backup.delete",
           "clusterGroup.read",
           "clusterGroup.leave",
+          "clusterGroup.admin",
           "clusterGroupRequest.create",
           "clusterGroupRequest.read",
           "clusterGroupRequest.delete",
@@ -28437,15 +28447,21 @@
       "ServerFeatureLevel": {
         "description": "Server feature level",
         "enum": [
-          1
+          1,
+          2
         ],
         "type": "integer",
         "x-enum-varnames": [
-          "FeatureLevel"
+          "FeatureLevel",
+          "Passkeys"
         ]
       },
       "ServerFeaturesDto": {
         "properties": {
+          "backups": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "configFile": {
             "description": "Whether config file is available",
             "type": "boolean"
@@ -28512,6 +28528,7 @@
           }
         },
         "required": [
+          "backups",
           "configFile",
           "duplicateDetection",
           "email",
@@ -28919,6 +28936,14 @@
           },
           "restoreBackupFilename": {
             "description": "Restore backup filename",
+            "type": "string"
+          },
+          "rollbackRepositoryId": {
+            "description": "Rollback repository ID",
+            "type": "string"
+          },
+          "rollbackSnapshotId": {
+            "description": "Rollback snapshot ID",
             "type": "string"
           }
         },
@@ -34641,6 +34666,7 @@
         "enum": [
           "AssetCreate",
           "AssetMetadataExtraction",
+          "AssetOcrExtraction",
           "AssetTagged"
         ],
         "type": "string"

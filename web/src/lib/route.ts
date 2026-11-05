@@ -1,5 +1,5 @@
 import { OpenQueryParam, type SharedLinkTab } from '#lib/constants.ts';
-import { getBaseUrl, IntegrityReport, QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+import { IntegrityReport, QueueName, getBaseUrl, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
 
 const asQueueSlug = (name: QueueName) => {
@@ -142,6 +142,12 @@ export const Route = {
   workflows: () => '/workflows',
   viewWorkflow: ({ id }: { id: string }) => `/workflows/${id}`,
 
+  // backups
+  backups: () => '/admin/backups',
+  backupSettings: () => '/admin/backups/settings',
+  backupAttempts: () => '/admin/backups/attempts',
+  backupSnapshots: () => '/admin/backups/snapshots',
+
   // queues
   queues: () => '/admin/queues',
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,
@@ -160,4 +166,8 @@ export const Route = {
 
     return resolved;
   },
+};
+
+export const ExternalRoute = {
+  docs: () => 'https://docs.immich.app/overview/quick-start',
 };

@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ComboBoxOption } from '#lib/components/shared-components/Combobox.svelte';
-  import SettingCombobox from './SettingCombobox.svelte';
   import SettingsLanguageSelector from '#lib/components/shared-components/settings/SettingsLanguageSelector.svelte';
   import { fallbackLocale, locales } from '#lib/constants.ts';
   import {
@@ -13,10 +12,11 @@
     showDeleteModal,
   } from '#lib/stores/preferences.store.ts';
   import { createDateFormatter, findLocale } from '#lib/utils.ts';
-  import { Field, Switch, Text, Theme, themeManager, ThemePreference } from '@immich/ui';
+  import { Field, Switch, Text, Theme, ThemePreference, themeManager } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import SettingCombobox from './SettingCombobox.svelte';
 
   let time = $state(new Date());
 

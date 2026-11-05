@@ -166,7 +166,7 @@ class LocalImageApiImpl: LocalImageApi {
       }
 
       do {
-        let buffer = try vImage_Buffer(cgImage: cgImage, format: Self.rgbaFormat)
+        let buffer = try ImageProcessing.rgbaBuffer(cgImage, format: Self.rgbaFormat)
 
         if request.isCancelled {
           buffer.free()

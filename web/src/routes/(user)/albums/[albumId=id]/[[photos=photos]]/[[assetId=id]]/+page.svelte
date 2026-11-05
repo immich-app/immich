@@ -1,16 +1,18 @@
 <script lang="ts">
-  import { goto, onNavigate } from '$app/navigation';
-  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.svelte.ts';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
   import AlbumMap from '#lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '#lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '#lib/components/asset-viewer/ActivityStatus.svelte';
   import ActivityViewer from '#lib/components/asset-viewer/ActivityViewer.svelte';
-  import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
-  import OnEvents from '#lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
   import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '#lib/components/timeline/Timeline.svelte';
   import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -19,27 +21,32 @@
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
   import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
-  import Timeline from '#lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode } from '#lib/constants.ts';
   import { activityManager } from '#lib/managers/activity-manager.svelte.ts';
-  import { assetMultiSelectManager, AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { AssetMultiSelectManager, assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import {
+    deleteAlbumMutation,
+    getAlbumInfoQuery,
+    invalidateAlbum,
+    updateAlbumInfoMutation,
+  } from '#lib/queries/album.query.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAlbumActions, getAlbumAssetsActions, isAlbumEditor, isAlbumOwner } from '#lib/services/album.service.ts';
   import { getGlobalActions } from '#lib/services/app.service.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
   import { handlePromiseError } from '#lib/utils.ts';
+  import { delay } from '#lib/utils/asset-utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '#lib/utils/navigation.ts';
   import { AlbumUserRole, AssetVisibility } from '@immich/sdk';
-
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton } from '@immich/ui';
-
   import {
     mdiAccountEye,
     mdiAccountEyeOutline,
@@ -55,19 +62,10 @@
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
+  import { goto, onNavigate } from '$app/navigation';
   import type { PageProps } from './$types';
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumTitle from './AlbumTitle.svelte';
-  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
-  import { delay } from '#lib/utils/asset-utils.ts';
-  import {
-    deleteAlbumMutation,
-    getAlbumInfoQuery,
-    invalidateAlbum,
-    updateAlbumInfoMutation,
-  } from '#lib/queries/album.query.ts';
-  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
-  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 
   let { params }: PageProps = $props();
 
@@ -289,7 +287,7 @@
 
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close, ...Object.values(Actions)]} />
 
-<div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
+<div class="flex overflow-hidden" {@attach scrollMemoryClearer({ routeStartsWith: Route.albums() })}>
   <div class="relative w-full shrink">
     <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
       <Timeline

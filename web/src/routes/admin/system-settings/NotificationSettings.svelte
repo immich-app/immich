@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { cloneDeep } from 'lodash-es';
-  import TemplateSettings from './TemplateSettings.svelte';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
@@ -13,8 +11,10 @@
   import { handleError } from '#lib/utils/handle-error.ts';
   import { sendTestEmailAdmin } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
+  import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import TemplateSettings from './TemplateSettings.svelte';
 
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);

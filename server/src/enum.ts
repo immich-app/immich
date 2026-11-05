@@ -193,6 +193,7 @@ export enum Permission {
 
   ClusterGroupRead = 'clusterGroup.read',
   ClusterGroupLeave = 'clusterGroup.leave',
+  ClusterGroupAdmin = 'clusterGroup.admin',
   ClusterGroupRequestCreate = 'clusterGroupRequest.create',
   ClusterGroupRequestRead = 'clusterGroupRequest.read',
   ClusterGroupRequestDelete = 'clusterGroupRequest.delete',
@@ -1030,6 +1031,7 @@ export enum DatabaseLock {
   VersionCheck = 800,
   HlsSessionCleanup = 850,
   FacialRecognition = 900,
+  FutoBackupsModuleConfig = 926,
   DuplicateDetection = 1000,
 }
 
@@ -1038,6 +1040,7 @@ export enum MaintenanceAction {
   End = 'end',
   SelectDatabaseRestore = 'select_database_restore',
   RestoreDatabase = 'restore_database',
+  Rollback = 'rollback',
 }
 
 export const MaintenanceActionSchema = z
@@ -1340,6 +1343,7 @@ export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'Searc
 
 export enum ServerFeatureLevel {
   FeatureLevel = 1,
+  Passkeys = 2,
 }
 
 export const ServerFeatureLevelSchema = z

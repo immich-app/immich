@@ -1,11 +1,13 @@
 <script lang="ts">
-  import FaceEditor from '#lib/components/asset-viewer/face-editor/FaceEditor.svelte';
   import VideoRemoteViewer from '#lib/components/asset-viewer/VideoRemoteViewer.svelte';
+  import FaceEditor from '#lib/components/asset-viewer/face-editor/FaceEditor.svelte';
   import { assetViewerFadeDuration } from '#lib/constants.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
-  import { castManager } from '#lib/managers/cast-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { castManager } from '#lib/managers/cast-manager.svelte.ts';
   import { mediaCapabilitiesManager } from '#lib/managers/media-capabilities-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '#lib/stores/preferences.store.ts';
   import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '#lib/utils.ts';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
@@ -44,8 +46,6 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import './immich-time-range';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
-  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 
   const query = createPreloadedQuery(getPublicConfigQuery);
   const publicConfig = $derived(query.data);
@@ -457,7 +457,10 @@
           </media-settings-menu>
         {/if}
 
-        <div class="flex h-32 w-full flex-col justify-end bg-linear-to-b to-black/80 px-4">
+        <div class="relative isolate flex h-32 w-full flex-col justify-end px-4">
+          <div
+            class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-48 bg-black/80 mask-smoothstep-to-top"
+          ></div>
           <media-control-bar part="bottom" class="flex h-10 w-full gap-2">
             <media-play-button class="shrink-0 rounded-full p-2 outline-none">
               <Icon slot="play" icon={mdiPlay} />

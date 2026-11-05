@@ -368,6 +368,10 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.person.checkFaceOwnerAccess(auth.user.id, ids);
     }
 
+    case Permission.ClusterGroupAdmin: {
+      return access.clusterGroup.checkOwnerAccess(auth.user.id, ids);
+    }
+
     case Permission.ClusterGroupRead: {
       const isMember = await access.clusterGroup.checkOwnerAccess(auth.user.id, ids);
       const isInvited = await access.clusterGroup.checkInviteAccess(auth.user.id, ids.difference(isMember));
