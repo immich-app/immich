@@ -1,12 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
-<<<<<<< HEAD
-import type { ArgOf } from 'src/repositories/event.repository.js';
-import type { JobOf, UserMetadataItem } from 'src/types.js';
 import { SALT_ROUNDS } from 'src/constants.js';
-=======
->>>>>>> 532707a (chore: migrate server import sorting back to prettier (#32994))
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';

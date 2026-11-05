@@ -811,11 +811,7 @@ importers:
         version: 4.7.1(prettier@3.9.10)(supports-color@8.1.1)
       '@nestjs/cli':
         specifier: ^12.0.1
-<<<<<<< HEAD
-        version: 12.0.10(@swc/core@1.16.20(@swc/helpers@0.5.23))(@types/node@24.19.2)(fork-ts-checker-webpack-plugin@9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(uglify-js@3.19.3)))(prettier@3.9.10)(tsconfig-paths-webpack-plugin@4.2.0)(webpack-node-externals@3.0.0)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(uglify-js@3.19.3))
-=======
-        version: 12.0.11(@swc/core@1.16.20(@swc/helpers@0.5.23))(@types/node@24.19.2)(fork-ts-checker-webpack-plugin@9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)))(prettier@3.9.10)(tsconfig-paths-webpack-plugin@4.2.0)(webpack-node-externals@3.0.0)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3))
->>>>>>> 532707a (chore: migrate server import sorting back to prettier (#32994))
+        version: 12.0.11(@swc/core@1.16.20(@swc/helpers@0.5.23))(@types/node@24.19.2)(fork-ts-checker-webpack-plugin@9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)))(prettier@3.9.10)(tsconfig-paths-webpack-plugin@4.2.0)(webpack-node-externals@3.0.0)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3))
       '@nestjs/schematics':
         specifier: ^12.0.0
         version: 12.0.10(@typescript/typescript6@6.0.2)(chokidar@6.0.0)(prettier@3.9.10)
@@ -911,14 +907,7 @@ importers:
         version: 4.4.5(eslint-plugin-import-x@4.17.1(@typescript-eslint/utils@8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-import-x:
         specifier: ^4.17.1
-<<<<<<< HEAD
         version: 4.17.1(@typescript-eslint/utils@8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
-      eslint-plugin-prettier:
-        specifier: ^5.1.3
-        version: 5.5.7(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.10)
-=======
-        version: 4.17.1(@typescript-eslint/utils@8.72.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
->>>>>>> 532707a (chore: migrate server import sorting back to prettier (#32994))
       eslint-plugin-unicorn:
         specifier: ^78.0.0
         version: 78.0.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
@@ -936,7 +925,7 @@ importers:
         version: 3.9.10
       prettier-eslint:
         specifier: ^17.1.2
-        version: 17.1.2(@typescript/typescript6@6.0.2)(jiti@2.7.0)(prettier-plugin-svelte@4.1.1(prettier@3.9.10)(svelte@5.57.3(@typescript-eslint/types@8.72.1)))(supports-color@8.1.1)(svelte-eslint-parser@1.10.0(svelte@5.57.3(@typescript-eslint/types@8.72.1)))
+        version: 17.1.2(@typescript/typescript6@6.0.2)(jiti@2.7.0)(prettier-plugin-svelte@4.1.1(prettier@3.9.10)(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(supports-color@8.1.1)(svelte-eslint-parser@1.9.0(svelte@5.57.2(@typescript-eslint/types@8.72.0)))
       sql-formatter:
         specifier: ^15.0.0
         version: 15.9.0
@@ -957,7 +946,7 @@ importers:
         version: 8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
       unplugin-swc:
         specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.16.20(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.62.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3))
+        version: 2.0.0(@swc/core@1.16.20(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.62.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3))
       vitest:
         specifier: ^5.0.0
         version: 5.0.5(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(@vitest/coverage-v8@5.0.5)(happy-dom@21.0.4)(jsdom@26.1.0(canvas@3.2.3)(supports-color@8.1.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -3838,8 +3827,8 @@ packages:
       '@nestjs/core': ^10.0.0 || ^11.0.0 || ^12.0.0
       bullmq: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
 
-  '@nestjs/cli@12.0.10':
-    resolution: {integrity: sha512-sFtiyJaiZe2cPqFCLhgzje5lnU1ANaGuDeaOClWMkECRC20W2m6NkqG6gnUgv+nspejIVyTG9yIyn4mXGJ9Y9g==}
+  '@nestjs/cli@12.0.11':
+    resolution: {integrity: sha512-ExNgbKfhwMNXCV6FbQQnQOcxuubkDPcpYXUh+jkFn5Xm+WkdP+wjYS0KqyZgFSfpY24mST6y50UOEHVsvQME1A==}
     engines: {node: '>= 20.11'}
     hasBin: true
     peerDependencies:
@@ -17231,11 +17220,7 @@ snapshots:
       bullmq: 6.4.0(ioredis@6.0.0(supports-color@8.1.1))(pg@8.23.1)
       tslib: 2.8.1
 
-<<<<<<< HEAD
-  '@nestjs/cli@12.0.10(@swc/core@1.16.20(@swc/helpers@0.5.23))(@types/node@24.19.2)(fork-ts-checker-webpack-plugin@9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(uglify-js@3.19.3)))(prettier@3.9.10)(tsconfig-paths-webpack-plugin@4.2.0)(webpack-node-externals@3.0.0)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(uglify-js@3.19.3))':
-=======
-  '@nestjs/cli@12.0.11(@swc/core@1.16.20(@swc/helpers@0.5.23))(@types/node@24.19.2)(fork-ts-checker-webpack-plugin@9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)))(prettier@3.9.10)(tsconfig-paths-webpack-plugin@4.2.0)(webpack-node-externals@3.0.0)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3))':
->>>>>>> 532707a (chore: migrate server import sorting back to prettier (#32994))
+  '@nestjs/cli@12.0.11(@swc/core@1.16.20(@swc/helpers@0.5.23))(@types/node@24.19.2)(fork-ts-checker-webpack-plugin@9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)))(prettier@3.9.10)(tsconfig-paths-webpack-plugin@4.2.0)(webpack-node-externals@3.0.0)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3))':
     dependencies:
       '@angular-devkit/core': 22.2.3(chokidar@5.0.0)
       '@angular-devkit/schematics': 22.2.3(chokidar@5.0.0)
@@ -17254,9 +17239,9 @@ snapshots:
       typescript: 6.0.3
     optionalDependencies:
       '@swc/core': 1.16.20(@swc/helpers@0.5.23)
-      fork-ts-checker-webpack-plugin: 9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3))
+      fork-ts-checker-webpack-plugin: 9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3))
       tsconfig-paths-webpack-plugin: 4.2.0
-      webpack: 5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)
+      webpack: 5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)
       webpack-node-externals: 3.0.0
     transitivePeerDependencies:
       - '@types/node'
@@ -22058,7 +22043,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  fork-ts-checker-webpack-plugin@9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)):
+  fork-ts-checker-webpack-plugin@9.1.0(@typescript/typescript6@6.0.2)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)):
     dependencies:
       '@babel/code-frame': 7.29.7
       chalk: 4.1.2
@@ -22073,7 +22058,7 @@ snapshots:
       semver: 7.8.5
       tapable: 2.3.3
       typescript: '@typescript/typescript6@6.0.2'
-      webpack: 5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)
+      webpack: 5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)
     optional: true
 
   form-data-encoder@2.1.4: {}
@@ -24340,19 +24325,19 @@ snapshots:
       postcss: 8.5.31
       uglify-js: 3.19.3
 
-  minimizer-webpack-plugin@5.6.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)):
+  minimizer-webpack-plugin@5.6.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.49.0
-      webpack: 5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)
+      webpack: 5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)
     optionalDependencies:
       '@swc/core': 1.16.20(@swc/helpers@0.5.23)
       csso: 5.0.5
       esbuild: 0.28.2
       lightningcss: 1.33.0
-      postcss: 8.5.32
+      postcss: 8.5.31
       uglify-js: 3.19.3
     optional: true
 
@@ -25567,9 +25552,9 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-eslint@17.1.2(@typescript/typescript6@6.0.2)(jiti@2.7.0)(prettier-plugin-svelte@4.1.1(prettier@3.9.10)(svelte@5.57.3(@typescript-eslint/types@8.72.1)))(supports-color@8.1.1)(svelte-eslint-parser@1.10.0(svelte@5.57.3(@typescript-eslint/types@8.72.1))):
+  prettier-eslint@17.1.2(@typescript/typescript6@6.0.2)(jiti@2.7.0)(prettier-plugin-svelte@4.1.1(prettier@3.9.10)(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(supports-color@8.1.1)(svelte-eslint-parser@1.9.0(svelte@5.57.2(@typescript-eslint/types@8.72.0))):
     dependencies:
-      '@typescript-eslint/parser': 8.72.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
+      '@typescript-eslint/parser': 8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
       common-tags: 1.8.2
       eslint: 10.13.0(jiti@2.7.0)(supports-color@8.1.1)
       indent-string: 5.0.0
@@ -25580,8 +25565,8 @@ snapshots:
       tslib: 2.8.1
       vue-eslint-parser: 10.4.1(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
     optionalDependencies:
-      prettier-plugin-svelte: 4.1.1(prettier@3.9.10)(svelte@5.57.3(@typescript-eslint/types@8.72.1))
-      svelte-eslint-parser: 1.10.0(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+      prettier-plugin-svelte: 4.1.1(prettier@3.9.10)(svelte@5.57.2(@typescript-eslint/types@8.72.0))
+      svelte-eslint-parser: 1.9.0(svelte@5.57.2(@typescript-eslint/types@8.72.0))
     transitivePeerDependencies:
       - jiti
       - supports-color
@@ -27724,12 +27709,12 @@ snapshots:
 
   unpipe@1.0.0: {}
 
-  unplugin-swc@2.0.0(@swc/core@1.16.20(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.62.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)):
+  unplugin-swc@2.0.0(@swc/core@1.16.20(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.62.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)):
     dependencies:
       '@rollup/pluginutils': 5.4.0(rollup@4.62.0)
       '@swc/core': 1.16.20(@swc/helpers@0.5.23)
       load-tsconfig: 0.2.5
-      unplugin: 3.3.0(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.62.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3))
+      unplugin: 3.3.0(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.62.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3))
     transitivePeerDependencies:
       - '@farmfe/core'
       - '@rspack/core'
@@ -27741,7 +27726,7 @@ snapshots:
       - vite
       - webpack
 
-  unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.62.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)):
+  unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.62.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.7
@@ -27751,7 +27736,7 @@ snapshots:
       rolldown: 1.2.15
       rollup: 4.62.0
       vite: 8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)
-      webpack: 5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)
+      webpack: 5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)
 
   unrs-resolver@1.12.2:
     dependencies:
@@ -28142,7 +28127,7 @@ snapshots:
       - postcss
       - uglify-js
 
-  webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3):
+  webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3):
     dependencies:
       '@types/estree': 1.0.9
       '@types/json-schema': 7.0.15
@@ -28160,7 +28145,7 @@ snapshots:
       graceful-fs: 4.2.11
       loader-runner: 4.3.2
       mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.6.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3))
+      minimizer-webpack-plugin: 5.6.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)(webpack@5.108.4(@swc/core@1.16.20(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3))
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.3
