@@ -2,9 +2,9 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  type Generated,
   PrimaryGeneratedColumn,
   Table,
+  type Generated,
   type Timestamp,
 } from '@immich/sql-tools';
 import { AuthChallengeType } from 'src/enum.js';
