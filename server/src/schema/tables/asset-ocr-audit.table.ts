@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, type Generated, Table } from '@immich/sql-tools';
+import { Column, CreateDateColumn, Table, type Generated } from '@immich/sql-tools';
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';
 
 @Table('asset_ocr_audit')

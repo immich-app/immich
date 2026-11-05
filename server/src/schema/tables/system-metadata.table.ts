@@ -1,6 +1,6 @@
 import { Column, PrimaryColumn, Table } from '@immich/sql-tools';
-import type { SystemMetadata } from 'src/types.js';
 import { SystemMetadataKey } from 'src/enum.js';
+import type { SystemMetadata } from 'src/types.js';
 
 @Table('system_metadata')
 export class SystemMetadataTable<T extends keyof SystemMetadata = SystemMetadataKey> {

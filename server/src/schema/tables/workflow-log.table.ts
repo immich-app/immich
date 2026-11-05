@@ -2,10 +2,10 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
+  type Generated,
 } from '@immich/sql-tools';
 import { WorkflowResult } from 'src/enum.js';
 import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table.js';

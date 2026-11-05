@@ -16,10 +16,9 @@ import {
   expressionBuilder,
   sql,
 } from 'kysely';
-import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { PostgresJSDialect } from 'kysely-postgres-js';
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
-import type { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types.js';
 import { LockableProperty, Person, columns, lockableProperties } from 'src/database.js';
 import { DummyValue, GenerateSqlQueries } from 'src/decorators.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
@@ -48,6 +47,7 @@ import {
 } from 'src/repositories/search.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
+import type { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types.js';
 import { fromChecksum } from 'src/utils/request.js';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {

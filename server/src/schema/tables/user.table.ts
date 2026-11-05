@@ -4,12 +4,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
-  type Generated,
   Index,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
+  type Generated,
 } from '@immich/sql-tools';
 import { ColumnType } from 'kysely';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';

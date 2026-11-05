@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectKysely } from 'nestjs-kysely';
 import type { InsertQueryBuilder, Insertable, Kysely, QueryCreator, Selectable, Updateable } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database.js';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
