@@ -208,6 +208,7 @@ const createTimeline = (page: Page, data: MockData) => {
     thumbhash: (asset: Asset) => thumbnail(asset).getByTestId('thumbhash'),
     brokenImage: (asset: Asset) => thumbnail(asset).getByText('error_loading_image', { exact: true }),
     archiveIcon: (asset: Asset) => thumbnail(asset).getByTestId('archive-icon'),
+    stackIcon: (asset: Asset) => thumbnail(asset).getByTestId('stack-icon'),
     scrubber: (yearMonth: string) => page.locator(`[data-segment-year-month="${yearMonth}"]`),
 
     select: async (asset: Asset) => {

@@ -90,6 +90,26 @@ test.describe('stack', () => {
     await expect(app.viewer.stackThumbnail(removed)).toHaveCount(0);
   });
 
+  test('an asset removed from a stack has no stack icon back on the timeline', async ({ page, data, api, app }) => {
+    const stack = factory.stack({ assets: [factory.asset(), factory.asset(), factory.asset()] });
+    data.addStacks(stack);
+    const [primary, removed] = stack.assets;
+    await page.goto(Route.photos());
+    await app.timeline.thumbnail(primary).click();
+    await app.viewer.waitForAsset(primary);
+    await app.viewer.stackThumbnail(removed).click();
+    await app.viewer.waitForAsset(removed);
+
+    await app.viewer.removeFromStack();
+    expect(api.removeAssetFromStack).toHaveBeenCalledWith({ params: { id: stack.id, assetId: removed.id } });
+    await app.viewer.backButton.click();
+
+    await expect(app.viewer.root).not.toBeVisible();
+    await expect(app.timeline.thumbnail(removed)).toBeVisible();
+    await expect(app.timeline.stackIcon(removed)).toHaveCount(0);
+    await expect(app.timeline.stackIcon(primary)).toHaveText('2');
+  });
+
   test('setting the primary asset of a stack', async ({ page, data, api, app }) => {
     const stack = factory.stack({ assets: [factory.asset(), factory.asset()] });
     data.addStacks(stack);
