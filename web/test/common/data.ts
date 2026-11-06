@@ -385,6 +385,10 @@ export class MockData {
 
   removeFromAlbum(albumId: string, assetIds: string[]) {
     const members = this.albumAssets.get(albumId);
+    const removed = [...this.activities.values()].filter(({ assetId }) => assetId && assetIds.includes(assetId));
+    for (const { id } of removed) {
+      this.activities.delete(id);
+    }
     return assetIds.map((id) => ({ id, success: members?.delete(id) ?? false }));
   }
 

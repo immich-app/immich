@@ -81,3 +81,20 @@ test('trashing a liked asset removes the like from the album activity', async ({
   });
   expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
 });
+
+test('removing an asset from the album updates the comment count', async ({ page, data, api, app }) => {
+  const { album, asset, other } = setup(data);
+  data.addActivities([
+    factory.activity({ user: other, assetId: asset.id, comment: 'on the asset' }),
+    factory.activity({ user: other, comment: 'on the album' }),
+  ]);
+  await page.goto(Route.viewAlbum(album));
+  await expect(app.album.activity.commentsButton).toHaveText('2');
+  await app.timeline.select(asset);
+
+  await app.timeline.selectionBar.removeFromAlbum();
+
+  await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
+  await expect(app.album.activity.commentsButton).toHaveText('1');
+  expect(api.removeAssetFromAlbum).toHaveBeenCalledWith({ params: { id: album.id }, body: { ids: [asset.id] } });
+});
