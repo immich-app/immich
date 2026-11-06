@@ -120,6 +120,12 @@ export const createHandlers = (data: MockData): Handlers => {
 
     updatePeople: ({ body }) => ({ json: data.updatePeople(body.people) }),
     searchPerson: ({ params }) => ({ json: data.searchPeople(params) }),
+    searchPlaces: ({ params }) => ({ json: data.searchPlaces(params.name) }),
+    getPerson: ({ params }) => {
+      const person = data.getPerson(params.id);
+      return person ? { json: person } : notFound;
+    },
+    getPersonStatistics: ({ params }) => ({ json: data.personStatistics(params.id) }),
     getClusterGroupUsers: ({ params }) => ({ json: data.clusterGroupUsers(params.id) }),
     updatePerson: ({ params, body }) => {
       const person = data.updatePerson(params.id, body);
@@ -127,10 +133,7 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     getFaces: () => ({ json: [] }),
     createFace: () => ({ status: 201 }),
-    getAllPeople: () => {
-      const people = data.getPeople();
-      return { json: { hasNextPage: false, hidden: 0, people, total: people.length } };
-    },
+    getAllPeople: ({ params = {} }) => ({ json: data.peoplePage(params) }),
     getPersonThumbnail: ({ params }) => ({
       body: placeholderImage(undefined, params.id),
       contentType: 'image/svg+xml',

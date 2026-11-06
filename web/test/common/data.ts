@@ -28,6 +28,7 @@ import {
   type MetadataSearchDto,
   type PersonResponseDto,
   type PersonUpdateDto,
+  type PlacesResponseDto,
   type PluginMethodResponseDto,
   type QueueCommandDto,
   type QueueDeleteDto,
@@ -134,6 +135,7 @@ export class MockData {
   private readonly albumAssets = new Map<string, Set<string>>();
   private readonly memories = new Map<string, MemoryResponseDto>();
   private readonly people = new Map<string, PersonResponseDto>();
+  private readonly places: PlacesResponseDto[] = [];
   private readonly stacks = new Map<string, StackResponseDto>();
   private readonly ocr = new Map<string, AssetOcrResponseDto[]>();
   private readonly brokenAssetIds = new Set<string>();
@@ -175,6 +177,25 @@ export class MockData {
 
   getPeople() {
     return [...this.people.values()];
+  }
+
+  getPerson(id: string) {
+    return this.people.get(id);
+  }
+
+  personStatistics(id: string) {
+    return { assets: this.timelineAssets().filter((asset) => asset.people?.some((person) => person.id === id)).length };
+  }
+
+  peoplePage({ withHidden, isHidden }: { withHidden?: boolean; isHidden?: boolean }) {
+    const all = this.getPeople().filter((person) => isHidden === undefined || person.isHidden === isHidden);
+    const people = withHidden || isHidden !== undefined ? all : all.filter((person) => !person.isHidden);
+    return {
+      people,
+      hasNextPage: false,
+      total: all.length,
+      hidden: all.filter((person) => person.isHidden).length,
+    };
   }
 
   searchPeople({ name, withHidden }: { name: string; withHidden?: boolean }) {
@@ -622,6 +643,16 @@ export class MockData {
         return this.queueStates.get(name);
       }
     }
+  }
+
+  addPlaces(places: MaybeArray<PlacesResponseDto>) {
+    this.places.push(...toList(places));
+    return this;
+  }
+
+  searchPlaces(name: string) {
+    const query = name.toLowerCase();
+    return this.places.filter((place) => place.name.toLowerCase().startsWith(query));
   }
 
   addPeople(people: MaybeArray<PersonResponseDto>) {

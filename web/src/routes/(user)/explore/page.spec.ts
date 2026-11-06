@@ -33,3 +33,14 @@ test('recently added preview opens the asset', async ({ data, router, render, se
   expect(api.getAssetInfo).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id }) });
   await expect.element(app.explore.assetViewer).toBeInTheDocument();
 });
+
+test('lists people without asking for hidden ones', async ({ data, router, render, settle, app, api }) => {
+  data.addPeople(factory.person({ name: 'Alice' }));
+  await router.goto(Route.explore());
+
+  await render(Page, load);
+  await settle();
+
+  await expect.element(app.explore.person('Alice')).toBeVisible();
+  expect(api.getAllPeople).toHaveBeenCalledWith({ params: { withHidden: false } });
+});

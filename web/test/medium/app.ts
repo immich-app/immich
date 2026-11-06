@@ -68,6 +68,13 @@ export const createApp = (page: Page, data: MockData) => {
       card: () => page.getByTestId('memory-card'),
     },
 
+    person: {
+      editNameButton: page.getByTitle('edit_name', { exact: true }),
+      nameInput: page.getByPlaceholder('name_or_nickname'),
+      doneButton: page.getByRole('button', { name: 'done', exact: true }),
+      mergeDialog: (name: string) => page.getByRole('dialog').getByText(`merge_people - ${name}`, { exact: true }),
+    },
+
     memory: {
       root: memoryRoot,
       gallery: {
@@ -308,6 +315,7 @@ const createViewer = (page: Page) => {
     rating: page.getByTestId('star-container'),
     editDateButton: page.getByTestId('detail-panel-edit-date-button'),
     editLocationButton: page.getByTitle('edit_location'),
+    addLocationButton: page.getByTitle('add_location'),
     changeDate: {
       dateInput: page.getByLabel('date_and_time', { exact: true }),
       timezoneInput: page.getByRole('combobox', { name: 'timezone' }),
@@ -316,6 +324,8 @@ const createViewer = (page: Page) => {
       latitudeInput: page.getByRole('dialog').getByLabel('latitude', { exact: true }),
       longitudeInput: page.getByRole('dialog').getByLabel('longitude', { exact: true }),
       confirmButton: page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }),
+      searchInput: page.getByRole('dialog').getByPlaceholder('search_places'),
+      place: (label: string) => page.getByRole('dialog').getByRole('button', { name: label, exact: true }),
     },
     navbarActions: page.getByTestId('asset-viewer-navbar-actions'),
     tags: page.getByTestId('detail-panel-tags').getByRole('link'),

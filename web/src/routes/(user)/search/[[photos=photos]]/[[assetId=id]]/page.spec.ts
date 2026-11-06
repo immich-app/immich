@@ -142,12 +142,7 @@ test('unknown state searches for a missing state', async ({ router, render, sett
   expect(submittedTerms(router)).toMatchObject({ state: null });
 });
 
-test('a search for a missing country shows unknown as the selected country', async ({
-  router,
-  render,
-  settle,
-  app,
-}) => {
+test('reopening a missing country search selects unknown', async ({ router, render, settle, app }) => {
   await router.goto(Route.search({ isFavorite: true, country: null }));
   await render(Page, load);
   await settle();
@@ -158,11 +153,11 @@ test('a search for a missing country shows unknown as the selected country', asy
 });
 
 const cameras = [
-  factory.asset({ exifInfo: { make: 'Canon', model: 'EOS R5' } }),
-  factory.asset({ exifInfo: { make: 'Sony', model: 'A7 IV' } }),
+  factory.asset({ exifInfo: { make: 'Canon', model: 'EOS R5', lensModel: 'RF 24-70mm' } }),
+  factory.asset({ exifInfo: { make: 'Sony', model: 'A7 IV', lensModel: 'FE 50mm' } }),
 ];
 
-test('picking a camera make only offers models from that make', async ({ data, router, render, settle, app }) => {
+test('picking a make only offers its models', async ({ data, router, render, settle, app }) => {
   data.addAssets(cameras);
   await router.goto(Route.search({ isFavorite: true }));
   await render(Page, load);
@@ -178,13 +173,7 @@ test('picking a camera make only offers models from that make', async ({ data, r
   await expect.element(app.search.option('A7 IV')).not.toBeInTheDocument();
 });
 
-test('changing the camera make clears a model from the previous make', async ({
-  data,
-  router,
-  render,
-  settle,
-  app,
-}) => {
+test('changing the make clears the old model', async ({ data, router, render, settle, app }) => {
   data.addAssets(cameras);
   await router.goto(Route.search({ isFavorite: true }));
   await render(Page, load);
@@ -203,12 +192,47 @@ test('changing the camera make clears a model from the previous make', async ({
   expect(submittedTerms(router)).not.toHaveProperty('model');
 });
 
+test('picking a model only offers its lenses', async ({ data, router, render, settle, app }) => {
+  data.addAssets(cameras);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.open();
+  await app.search.showAdvanced();
+  await app.search.pick('model', 'A7 IV');
+  await settle();
+
+  await app.search.openCombobox('lens_model');
+
+  await expect.element(app.search.option('FE 50mm')).toBeVisible();
+  await expect.element(app.search.option('RF 24-70mm')).not.toBeInTheDocument();
+});
+
+test('changing the model clears the old lens', async ({ data, router, render, settle, app }) => {
+  data.addAssets(cameras);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.open();
+  await app.search.showAdvanced();
+  await app.search.pick('model', 'EOS R5');
+  await settle();
+  await app.search.pick('lens_model', 'RF 24-70mm');
+
+  await app.search.pick('model', 'A7 IV');
+  await settle();
+  await app.search.submit();
+
+  expect(submittedTerms(router)).toMatchObject({ model: 'A7 IV' });
+  expect(submittedTerms(router)).not.toHaveProperty('lensModel');
+});
+
 const places = [
   factory.asset({ exifInfo: { country: 'France', state: 'Île-de-France', city: 'Paris' } }),
   factory.asset({ exifInfo: { country: 'Japan', state: 'Tokyo', city: 'Shinjuku' } }),
 ];
 
-test('picking a country only offers cities from that country', async ({ data, router, render, settle, app }) => {
+test('picking a country only offers its cities', async ({ data, router, render, settle, app }) => {
   data.addAssets(places);
   await router.goto(Route.search({ isFavorite: true }));
   await render(Page, load);
@@ -223,7 +247,7 @@ test('picking a country only offers cities from that country', async ({ data, ro
   await expect.element(app.search.option('Shinjuku')).not.toBeInTheDocument();
 });
 
-test('changing the country clears a city from the previous country', async ({ data, router, render, settle, app }) => {
+test('changing the country clears the old city', async ({ data, router, render, settle, app }) => {
   data.addAssets(places);
   await router.goto(Route.search({ isFavorite: true }));
   await render(Page, load);
@@ -239,6 +263,39 @@ test('changing the country clears a city from the previous country', async ({ da
 
   expect(submittedTerms(router)).toMatchObject({ country: 'Japan' });
   expect(submittedTerms(router)).not.toHaveProperty('city');
+});
+
+test('picking a country only offers its states', async ({ data, router, render, settle, app }) => {
+  data.addAssets(places);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.openFilter('places');
+  await app.search.pick('country', 'Japan');
+  await settle();
+
+  await app.search.openCombobox('state');
+
+  await expect.element(app.search.option('Tokyo')).toBeVisible();
+  await expect.element(app.search.option('Île-de-France')).not.toBeInTheDocument();
+});
+
+test('changing the country clears the old state', async ({ data, router, render, settle, app }) => {
+  data.addAssets(places);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.openFilter('places');
+  await app.search.pick('country', 'France');
+  await settle();
+  await app.search.pick('state', 'Île-de-France');
+
+  await app.search.pick('country', 'Japan');
+  await settle();
+  await app.search.submit();
+
+  expect(submittedTerms(router)).toMatchObject({ country: 'Japan' });
+  expect(submittedTerms(router)).not.toHaveProperty('state');
 });
 
 describe('ahead of UTC', () => {

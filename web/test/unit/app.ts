@@ -48,6 +48,7 @@ export const createApp = () => {
     explore: {
       recentlyAdded: page.getByRole('button', { name: 'image_alt_text_date', exact: true }),
       assetViewer: page.getByTestId('viewer-content'),
+      person: (name: string) => main.getByRole('link').filter({ hasText: name }),
     },
     places: {
       card: (city: string) => page.getByRole('img', { name: city, exact: true }),
@@ -121,6 +122,7 @@ export const createApp = () => {
     people: {
       nameInput: (index: number) => main.getByPlaceholder('add_a_name').nth(index),
       mergeDialog: (name: string) => page.getByRole('dialog').getByText(`merge_people - ${name}`, { exact: true }),
+      declineMergeButton: page.getByRole('dialog').getByRole('button', { name: 'no', exact: true }),
       manage: {
         hideButtons: page.getByRole('button', { name: 'hide_named_person' }),
         hidden: page.getByRole('button', { pressed: true }),

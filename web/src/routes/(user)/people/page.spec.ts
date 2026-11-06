@@ -21,6 +21,11 @@ test('renaming to an existing name offers a merge', async ({ data, router, rende
   expect(api.searchPerson).toHaveBeenCalledWith({ params: { name: 'alice', withHidden: true } });
   await expect.element(app.people.mergeDialog('Alice')).toBeVisible();
   expect(api.updatePerson).not.toHaveBeenCalled();
+
+  await app.people.declineMergeButton.click();
+  await settle();
+
+  expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: unnamed.id }, body: { name: 'alice' } });
 });
 
 test('renaming a person to a new name saves it', async ({ data, router, render, settle, app, api }) => {
