@@ -322,6 +322,13 @@ const createViewer = (page: Page) => {
 
     faceEditor: createFaceEditor(page),
 
+    activity: {
+      likeButton: root.getByRole('button', { name: 'like', exact: true, pressed: false }),
+      likedButton: root.getByRole('button', { name: 'like', exact: true, pressed: true }),
+      commentsButton: root.getByRole('button', { name: 'activity', exact: true }),
+      commentInput: page.getByPlaceholder('say_something'),
+    },
+
     waitForAsset: (asset: Asset) => expect(media(asset)).toBeVisible(),
 
     openSlideshow: () => moreMenuItem('slideshow'),
