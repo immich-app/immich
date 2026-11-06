@@ -840,7 +840,7 @@ describe(MetadataService.name, () => {
         type: AssetType.Video,
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(asset.ownerId, 512);
-      expect(mocks.storage.createFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
+      expect(mocks.storage.createOrOverwriteFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: asset.id,
         livePhotoVideoId: motionAsset.id,
@@ -892,7 +892,7 @@ describe(MetadataService.name, () => {
         type: AssetType.Video,
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(asset.ownerId, 512);
-      expect(mocks.storage.createFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
+      expect(mocks.storage.createOrOverwriteFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: asset.id,
         livePhotoVideoId: motionAsset.id,
@@ -944,7 +944,7 @@ describe(MetadataService.name, () => {
         type: AssetType.Video,
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(asset.ownerId, 512);
-      expect(mocks.storage.createFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
+      expect(mocks.storage.createOrOverwriteFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: asset.id,
         livePhotoVideoId: motionAsset.id,
@@ -1012,7 +1012,7 @@ describe(MetadataService.name, () => {
       mocks.asset.getByChecksum.mockResolvedValue(motionAsset);
       const video = randomBytes(512);
       mocks.storage.readFile.mockResolvedValue(video);
-      mocks.storage.checkFileExists.mockResolvedValue(true);
+      mocks.storage.stat.mockResolvedValue({ size: 512 } as Stats);
 
       await sut.handleMetadataExtraction({ id: asset.id });
       expect(mocks.asset.create).not.toHaveBeenCalled();
@@ -1066,6 +1066,170 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: asset.id });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+
+    it('should write motion video and queue encoding when motion video file does not exist on disk', async () => {
+      const asset = AssetFactory.create();
+      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.storage.stat.mockImplementation(async (filepath: string) => {
+        if (filepath === asset.originalPath) {
+          return {
+            size: 123_456,
+            mtime: asset.fileModifiedAt,
+            mtimeMs: asset.fileModifiedAt.valueOf(),
+            birthtimeMs: asset.fileCreatedAt.valueOf(),
+          } as Stats;
+        }
+        const error = new Error('File not found') as NodeJS.ErrnoException;
+        error.code = 'ENOENT';
+        throw error;
+      });
+      mockReadTags({
+        Directory: 'foo/bar/',
+        MotionPhoto: 1,
+        MicroVideo: 1,
+        MicroVideoOffset: 1,
+      });
+      mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
+      mocks.asset.create.mockResolvedValue(motionAsset);
+      mocks.crypto.randomUUID.mockReturnValue(motionAsset.id);
+      const video = randomBytes(512);
+      mocks.storage.readFile.mockResolvedValue(video);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.storage.createOrOverwriteFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetEncodeVideo,
+        data: { id: motionAsset.id },
+      });
+    });
+
+    it('should repair truncated motion video when file size does not match extracted video size', async () => {
+      const asset = AssetFactory.create();
+      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.storage.stat.mockImplementation(async (filepath: string) => {
+        if (filepath === asset.originalPath) {
+          return {
+            size: 123_456,
+            mtime: asset.fileModifiedAt,
+            mtimeMs: asset.fileModifiedAt.valueOf(),
+            birthtimeMs: asset.fileCreatedAt.valueOf(),
+          } as Stats;
+        }
+        if (filepath === motionAsset.originalPath) {
+          return {
+            size: 100,
+            mtime: asset.fileModifiedAt,
+            mtimeMs: asset.fileModifiedAt.valueOf(),
+            birthtimeMs: asset.fileCreatedAt.valueOf(),
+          } as Stats;
+        }
+        throw new Error(`Unexpected path: ${filepath}`);
+      });
+      mockReadTags({
+        Directory: 'foo/bar/',
+        MotionPhoto: 1,
+        MicroVideo: 1,
+        MicroVideoOffset: 1,
+      });
+      mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
+      mocks.asset.create.mockResolvedValue(motionAsset);
+      mocks.crypto.randomUUID.mockReturnValue(motionAsset.id);
+      const video = randomBytes(512);
+      mocks.storage.readFile.mockResolvedValue(video);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.storage.createOrOverwriteFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetEncodeVideo,
+        data: { id: motionAsset.id },
+      });
+    });
+
+    it('should not overwrite motion video when existing file size matches extracted video size', async () => {
+      const asset = AssetFactory.create();
+      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.storage.stat.mockImplementation(async (filepath: string) => {
+        if (filepath === asset.originalPath) {
+          return {
+            size: 123_456,
+            mtime: asset.fileModifiedAt,
+            mtimeMs: asset.fileModifiedAt.valueOf(),
+            birthtimeMs: asset.fileCreatedAt.valueOf(),
+          } as Stats;
+        }
+        if (filepath === motionAsset.originalPath) {
+          return {
+            size: 512,
+            mtime: asset.fileModifiedAt,
+            mtimeMs: asset.fileModifiedAt.valueOf(),
+            birthtimeMs: asset.fileCreatedAt.valueOf(),
+          } as Stats;
+        }
+        throw new Error(`Unexpected path: ${filepath}`);
+      });
+      mockReadTags({
+        Directory: 'foo/bar/',
+        MotionPhoto: 1,
+        MicroVideo: 1,
+        MicroVideoOffset: 1,
+      });
+      mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
+      mocks.asset.create.mockResolvedValue(motionAsset);
+      mocks.crypto.randomUUID.mockReturnValue(motionAsset.id);
+      const video = randomBytes(512);
+      mocks.storage.readFile.mockResolvedValue(video);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.storage.createOrOverwriteFile).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalledWith({
+        name: JobName.AssetEncodeVideo,
+        data: { id: motionAsset.id },
+      });
+    });
+
+    it('should propagate unexpected filesystem errors from stat without overwriting', async () => {
+      const asset = AssetFactory.create();
+      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.storage.stat.mockImplementation(async (filepath: string) => {
+        if (filepath === asset.originalPath) {
+          return {
+            size: 123_456,
+            mtime: asset.fileModifiedAt,
+            mtimeMs: asset.fileModifiedAt.valueOf(),
+            birthtimeMs: asset.fileCreatedAt.valueOf(),
+          } as Stats;
+        }
+        const error = new Error('Permission denied') as NodeJS.ErrnoException;
+        error.code = 'EACCES';
+        throw error;
+      });
+      mockReadTags({
+        Directory: 'foo/bar/',
+        MotionPhoto: 1,
+        MicroVideo: 1,
+        MicroVideoOffset: 1,
+      });
+      mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
+      mocks.asset.create.mockResolvedValue(motionAsset);
+      mocks.crypto.randomUUID.mockReturnValue(motionAsset.id);
+      const video = randomBytes(512);
+      mocks.storage.readFile.mockResolvedValue(video);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.storage.createOrOverwriteFile).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalledWith({
+        name: JobName.AssetEncodeVideo,
+        data: { id: motionAsset.id },
+      });
     });
 
     it('should save all metadata', async () => {

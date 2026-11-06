@@ -801,10 +801,20 @@ export class MetadataService extends BaseService {
       }
 
       // write extracted motion video to disk, especially if the encoded-video folder has been deleted
-      const isExistsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
-      if (!isExistsOnDisk) {
+      let shouldWrite = false;
+      try {
+        const motionVideoStats = await this.storageRepository.stat(motionAsset.originalPath);
+        shouldWrite = motionVideoStats?.size !== video.byteLength;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException)?.code !== 'ENOENT') {
+          throw error;
+        }
+        shouldWrite = true;
+      }
+
+      if (shouldWrite) {
         this.storageCore.ensureFolders(motionAsset.originalPath);
-        await this.storageRepository.createFile(motionAsset.originalPath, video);
+        await this.storageRepository.createOrOverwriteFile(motionAsset.originalPath, video);
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
 
         await this.handleMetadataExtraction({ id: motionAsset.id });
