@@ -1,0 +1,4 @@
+*
+!Dockerfile
+!install-wheel.py
+!*.whl

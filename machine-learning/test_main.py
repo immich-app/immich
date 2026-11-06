@@ -19,11 +19,12 @@ import orjson
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
-from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
+from onnxruntime.capi.onnxruntime_pybind11_state import InvalidArgument, InvalidProtobuf
 from PIL import Image
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
+import immich_ml.sessions.ort as ort_module
 import immich_ml.sessions.prepare as prepare_module
 from immich_ml import allocator
 from immich_ml.config import MaxBatchSize, PreloadModelData, Settings, settings
@@ -87,6 +88,32 @@ class TestBase:
         monkeypatch.setenv("MACHINE_LEARNING_WORKER_TIMEOUT", "1200")
 
         assert Settings().worker_timeout == 1200
+
+    def test_defaults_to_tensorrt_rtx_without_optional_cuda_memory_settings(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.delenv("MACHINE_LEARNING_TENSORRT_RTX", raising=False)
+        monkeypatch.delenv("MACHINE_LEARNING_CUDA_USE_EP_LEVEL_UNIFIED_STREAM", raising=False)
+        monkeypatch.delenv("MACHINE_LEARNING_CUDA_ARENA_SHRINKAGE", raising=False)
+
+        defaults = Settings()
+
+        assert defaults.tensorrt_rtx is True
+        assert defaults.cuda_use_ep_level_unified_stream is False
+        assert defaults.cuda_arena_shrinkage is False
+
+    @pytest.mark.parametrize(
+        ("field", "value", "expected"),
+        [
+            ("tensorrt_rtx", "false", False),
+            ("cuda_use_ep_level_unified_stream", "true", True),
+            ("cuda_arena_shrinkage", "true", True),
+        ],
+    )
+    def test_reads_optional_cuda_settings_from_the_environment(
+        self, monkeypatch: MonkeyPatch, field: str, value: str, expected: bool
+    ) -> None:
+        monkeypatch.setenv(f"MACHINE_LEARNING_{field.upper()}", value)
+
+        assert getattr(Settings(), field) is expected
 
     def test_sets_default_cache_dir(self) -> None:
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
@@ -350,6 +377,47 @@ class TestOrtSessions:
 
         assert given_providers(ort_session) == ["nv_tensorrt_rtx", "CPUExecutionProvider"]
 
+    @pytest.mark.providers(TRT_RTX_EP)
+    def test_keeps_cuda_when_tensorrt_rtx_is_disabled(
+        self, ort_session: mock.Mock, providers: list[str], mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(settings, "tensorrt_rtx", False)
+
+        ort_sessions("ViT-B-32__openai")
+
+        assert given_providers(ort_session) == self.CUDA_EP
+
+    def test_skips_importing_and_registering_tensorrt_rtx_when_disabled(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "tensorrt_rtx", False)
+        importer = mocker.patch("builtins.__import__", wraps=__import__)
+        register = mocker.patch("immich_ml.sessions.ort.ort.register_execution_provider_library")
+
+        ort_module._register_tensorrt_rtx()
+
+        assert not any(call.args[0] == "onnxruntime_ep_nv_tensorrt_rtx" for call in importer.call_args_list)
+        register.assert_not_called()
+
+    def test_registers_tensorrt_rtx_when_enabled(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "tensorrt_rtx", True)
+        plugin = mock.Mock()
+        plugin.get_ep_name.return_value = "nv_tensorrt_rtx"
+        plugin.get_library_path.return_value = "/plugins/libtensorrt_rtx.so"
+        mocker.patch.dict(sys.modules, {"onnxruntime_ep_nv_tensorrt_rtx": plugin})
+        register = mocker.patch("immich_ml.sessions.ort.ort.register_execution_provider_library")
+
+        ort_module._register_tensorrt_rtx()
+
+        register.assert_called_once_with("nv_tensorrt_rtx", "/plugins/libtensorrt_rtx.so")
+
+    def test_accepts_an_uninstalled_tensorrt_rtx_plugin(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "tensorrt_rtx", True)
+        mocker.patch.dict(sys.modules, {"onnxruntime_ep_nv_tensorrt_rtx": None})
+        register = mocker.patch("immich_ml.sessions.ort.ort.register_execution_provider_library")
+
+        ort_module._register_tensorrt_rtx()
+
+        register.assert_not_called()
+
     def test_leaves_a_dimension_free_when_the_model_feeds_several_sizes(
         self, ort_session: mock.Mock, mocker: MockerFixture
     ) -> None:
@@ -538,6 +606,184 @@ class TestOrtSessions:
         ort_sessions("ViT-B-32__openai", providers=["CUDAExecutionProvider"])
 
         assert given_options(ort_session) == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
+
+    def test_keeps_default_cuda_options_and_does_not_query_the_device(
+        self, ort_session: mock.Mock, mocker: MockerFixture, monkeypatch: MonkeyPatch
+    ) -> None:
+        mocker.patch.object(settings, "cuda_use_ep_level_unified_stream", False)
+        mocker.patch.object(settings, "cuda_arena_shrinkage", False)
+        monkeypatch.setenv("MACHINE_LEARNING_DEVICE_ID", "1")
+        query = mocker.patch("immich_ml.sessions.ort.ctypes.CDLL")
+
+        graph = ort_sessions("ViT-B-32__openai", providers=self.CUDA_EP).for_shape(Shape(batch=1))
+        graph.infer(None, {})
+
+        assert given_providers(ort_session) == self.CUDA_EP
+        assert given_options(ort_session) == [
+            {"arena_extend_strategy": "kSameAsRequested", "device_id": "1"},
+            {"arena_extend_strategy": "kSameAsRequested"},
+        ]
+        ort_session.return_value.get_provider_options.assert_not_called()
+        ort_session.return_value.run.assert_called_once_with(None, {}, None)
+        query.assert_not_called()
+
+    def test_enables_a_unified_stream_only_for_cuda(
+        self, ort_session: mock.Mock, mocker: MockerFixture, monkeypatch: MonkeyPatch
+    ) -> None:
+        mocker.patch.object(settings, "cuda_use_ep_level_unified_stream", True)
+        monkeypatch.setenv("MACHINE_LEARNING_DEVICE_ID", "1")
+
+        ort_sessions("ViT-B-32__openai", providers=self.CUDA_EP)
+
+        assert given_options(ort_session) == [
+            {"arena_extend_strategy": "kSameAsRequested", "device_id": "1", "use_ep_level_unified_stream": "1"},
+            {"arena_extend_strategy": "kSameAsRequested"},
+        ]
+
+    @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
+    @pytest.mark.parametrize(
+        "provider",
+        [
+            "CPUExecutionProvider",
+            "MIGraphXExecutionProvider",
+            "CoreMLExecutionProvider",
+            "OpenVINOExecutionProvider",
+            "nv_tensorrt_rtx",
+        ],
+    )
+    def test_does_not_add_cuda_options_to_other_providers(
+        self, provider: str, ov_device_ids: list[str], mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(settings, "cuda_use_ep_level_unified_stream", True)
+
+        options = graph_spec(Path("/cache/model.onnx"), [provider]).provider_options
+
+        assert all("use_ep_level_unified_stream" not in entry for entry in options)
+
+    def test_shrinks_the_actual_cuda_device_with_fresh_options_for_each_run(
+        self, ort_session: mock.Mock, mocker: MockerFixture, monkeypatch: MonkeyPatch
+    ) -> None:
+        mocker.patch.object(settings, "cuda_arena_shrinkage", True)
+        monkeypatch.setenv("MACHINE_LEARNING_DEVICE_ID", "0")
+        ort_session.return_value.get_provider_options.return_value = {"CUDAExecutionProvider": {"device_id": "1"}}
+        first, second = mock.Mock(), mock.Mock()
+        options = mocker.patch("immich_ml.sessions.ort.ort.RunOptions", side_effect=[first, second])
+        graph = ort_sessions("ViT-B-32__openai", providers=self.CUDA_EP).for_shape(Shape(batch=1))
+
+        graph.infer(None, {})
+        graph.infer(None, {})
+
+        assert options.call_count == 2
+        first.add_run_config_entry.assert_called_once_with("memory.enable_memory_arena_shrinkage", "gpu:1")
+        second.add_run_config_entry.assert_called_once_with("memory.enable_memory_arena_shrinkage", "gpu:1")
+        assert ort_session.return_value.run.call_args_list == [mock.call(None, {}, first), mock.call(None, {}, second)]
+
+    @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
+    @pytest.mark.parametrize("providers", [CPU_EP, CUDA_EP, ROCM_EP, COREML_EP, OV_EP, TRT_RTX_EP])
+    def test_skips_cuda_arena_shrinkage_without_an_actual_cuda_provider(
+        self, ort_session: mock.Mock, providers: list[str], ov_device_ids: list[str], mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(settings, "cuda_arena_shrinkage", True)
+        ort_session.return_value.get_provider_options.return_value = {
+            "CPUExecutionProvider": {"arena_extend_strategy": "kSameAsRequested"}
+        }
+        options = mocker.patch("immich_ml.sessions.ort.ort.RunOptions")
+        graph = ort_sessions("ViT-B-32__openai", providers=providers).for_shape(Shape(batch=1))
+
+        graph.infer(None, {})
+
+        options.assert_not_called()
+        ort_session.return_value.run.assert_called_once_with(None, {}, None)
+
+    def test_passes_explicit_run_options_through_without_modifying_them(
+        self, ort_session: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(settings, "cuda_arena_shrinkage", True)
+        ort_session.return_value.get_provider_options.return_value = {"CUDAExecutionProvider": {"device_id": "1"}}
+        explicit = mock.Mock(spec=ort.RunOptions)
+        options = mocker.patch("immich_ml.sessions.ort.ort.RunOptions")
+        graph = ort_sessions("ViT-B-32__openai", providers=self.CUDA_EP).for_shape(Shape(batch=1))
+
+        graph.infer(None, {}, explicit)
+
+        options.assert_not_called()
+        explicit.add_run_config_entry.assert_not_called()
+        ort_session.return_value.run.assert_called_once_with(None, {}, explicit)
+
+    def test_retries_without_cuda_arena_shrinkage_after_a_runtime_fallback_to_cpu(
+        self, ort_session: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(settings, "cuda_arena_shrinkage", True)
+        ort_session.return_value.get_provider_options.side_effect = [
+            {"CUDAExecutionProvider": {"device_id": "1"}},
+            {"CPUExecutionProvider": {"arena_extend_strategy": "kSameAsRequested"}},
+        ]
+        result = [np.zeros(1)]
+        ort_session.return_value.run.side_effect = [InvalidArgument("No GPU arena"), result, result]
+        options = mocker.patch("immich_ml.sessions.ort.ort.RunOptions")
+        graph = ort_sessions("ViT-B-32__openai", providers=self.CUDA_EP).for_shape(Shape(batch=1))
+
+        assert graph.infer(None, {}) is result
+        assert graph.infer(None, {}) is result
+
+        options.assert_called_once()
+        options.return_value.add_run_config_entry.assert_called_once_with(
+            "memory.enable_memory_arena_shrinkage", "gpu:1"
+        )
+        assert ort_session.return_value.run.call_args_list == [
+            mock.call(None, {}, options.return_value),
+            mock.call(None, {}, None),
+            mock.call(None, {}, None),
+        ]
+        assert ort_session.return_value.get_provider_options.call_count == 2
+
+    def test_does_not_retry_an_argument_error_while_cuda_is_still_available(
+        self, ort_session: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(settings, "cuda_arena_shrinkage", True)
+        ort_session.return_value.get_provider_options.return_value = {"CUDAExecutionProvider": {"device_id": "1"}}
+        failure = InvalidArgument("Invalid input shape")
+        ort_session.return_value.run.side_effect = failure
+        graph = ort_sessions("ViT-B-32__openai", providers=self.CUDA_EP).for_shape(Shape(batch=1))
+
+        with pytest.raises(InvalidArgument) as raised:
+            graph.infer(None, {})
+
+        assert raised.value is failure
+        ort_session.return_value.run.assert_called_once()
+
+    def test_does_not_retry_an_argument_error_with_explicit_run_options(
+        self, ort_session: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(settings, "cuda_arena_shrinkage", True)
+        ort_session.return_value.get_provider_options.return_value = {"CUDAExecutionProvider": {"device_id": "1"}}
+        failure = InvalidArgument("Invalid explicit configuration")
+        ort_session.return_value.run.side_effect = failure
+        explicit = mock.Mock(spec=ort.RunOptions)
+        graph = ort_sessions("ViT-B-32__openai", providers=self.CUDA_EP).for_shape(Shape(batch=1))
+
+        with pytest.raises(InvalidArgument) as raised:
+            graph.infer(None, {}, explicit)
+
+        assert raised.value is failure
+        explicit.add_run_config_entry.assert_not_called()
+        ort_session.return_value.run.assert_called_once_with(None, {}, explicit)
+        ort_session.return_value.get_provider_options.assert_called_once()
+
+    def test_does_not_query_or_retry_argument_errors_when_cuda_arena_shrinkage_is_disabled(
+        self, ort_session: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(settings, "cuda_arena_shrinkage", False)
+        failure = InvalidArgument("Invalid input shape")
+        ort_session.return_value.run.side_effect = failure
+        graph = ort_sessions("ViT-B-32__openai", providers=self.CUDA_EP).for_shape(Shape(batch=1))
+
+        with pytest.raises(InvalidArgument) as raised:
+            graph.infer(None, {})
+
+        assert raised.value is failure
+        ort_session.return_value.run.assert_called_once_with(None, {}, None)
+        ort_session.return_value.get_provider_options.assert_not_called()
 
     def test_sets_provider_options_for_rocm(self, ort_session: mock.Mock, mocker: MockerFixture) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
