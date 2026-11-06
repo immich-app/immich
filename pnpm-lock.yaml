@@ -563,8 +563,8 @@ importers:
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
       '@futo-org/backups-orchestrator-api':
-        specifier: 1.12.1
-        version: 1.12.1(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@nestjs/platform-socket.io@12.3.2)(@nestjs/schedule@12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2))(@nestjs/swagger@12.0.5(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.3.2)(reflect-metadata@0.2.2)(supports-color@8.1.1)
+        specifier: 1.13.0
+        version: 1.13.0(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@nestjs/platform-socket.io@12.3.2)(@nestjs/schedule@12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2))(@nestjs/swagger@12.0.5(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.3.2)(kysely@0.29.7)(reflect-metadata@0.2.2)(supports-color@8.1.1)
       '@immich/plugin-sdk':
         specifier: workspace:*
         version: link:../packages/plugin-sdk
@@ -2933,15 +2933,29 @@ packages:
   '@futo-org/backups-api-client@1.12.1':
     resolution: {integrity: sha512-y1AtOftdZnFpoU7YRteD6U0qip4zWOg/JuiplGGGotdBnNMipOCSDj7ttU2huWRIEfZRosgAPiUi/lt/Bns/Xg==}
 
-  '@futo-org/backups-orchestrator-api@1.12.1':
-    resolution: {integrity: sha512-qTdKjndwxRmbykJswtbLjSpZ1is3/jAPgdqWeKJ4Kmnc9ZnFjn6tFb3HL4NDztCNIcaSWuLMIDJQpGWcJ3kdAA==}
+  '@futo-org/backups-api-client@1.13.0':
+    resolution: {integrity: sha512-3dvu7KL724vm5P13fqB9fmi0PZGbgit+szd2tLhUWpmhaOPeMFM9gK5uN/3ne5exjf95unH2OykBrKEUUQes3Q==}
+
+  '@futo-org/backups-orchestrator-api@1.13.0':
+    resolution: {integrity: sha512-RQVTzE1PlvFisWnbl8JdQ+UF1zaC9E669fPrDR7fPMqpPm2UwfrEfq9cjXWwlw5HRGBDjVibW1g3+BawwbGwHA==}
     peerDependencies:
+      '@electric-sql/pglite': 0.5.12
+      '@electric-sql/pglite-prepopulatedfs': 0.5.12
       '@nestjs/common': ^12.0.0
       '@nestjs/core': ^12.0.0
       '@nestjs/platform-socket.io': ^12.0.0
       '@nestjs/schedule': ^12.0.0
       '@nestjs/swagger': ^12.0.0
       '@nestjs/websockets': ^12.0.0
+      kysely: ^0.29.5
+      kysely-pglite-dialect: ^1.4.0
+    peerDependenciesMeta:
+      '@electric-sql/pglite':
+        optional: true
+      '@electric-sql/pglite-prepopulatedfs':
+        optional: true
+      kysely-pglite-dialect:
+        optional: true
 
   '@futo-org/backups-orchestrator-ui@1.12.1':
     resolution: {integrity: sha512-GejBWdU3w3dnVfK5llQVn/r6vGLrcZ/0ozzBnFlM5YdiCPr9NJebFcL9WMvghxjvw+CPTfDmYQfVbm35qFAfmA==}
@@ -3175,6 +3189,10 @@ packages:
 
   '@immich/sql-tools@0.6.6':
     resolution: {integrity: sha512-NXxDO0jIzXmNvJAR+somSmN81zOP+11DboGaXRMxxpcZVRBIrWpwGPLZ3dG7SZfpyccKlgZGRBWqQGRm9U5A4w==}
+    hasBin: true
+
+  '@immich/sql-tools@0.7.0':
+    resolution: {integrity: sha512-RWSHO5UEza6zUrF1vncsbkeTT59MuWlUz6Ys47Dkujb+FqjBOsXnzQb0v8d5g4iTtIfXZzQKTWgvfIMY3GbzrA==}
     hasBin: true
 
   '@immich/ui@0.90.0':
@@ -9388,10 +9406,6 @@ packages:
     peerDependenciesMeta:
       postgres:
         optional: true
-
-  kysely@0.28.17:
-    resolution: {integrity: sha512-nbD8lB9EB3wNdMhOCdx5Li8DxnLbvKByylRLcJ1h+4SkrowVeECAyZlyiKMThF7xFdRz0jSQ2MoJr+wXux2y0Q==}
-    engines: {node: '>=20.0.0'}
 
   kysely@0.29.7:
     resolution: {integrity: sha512-fmIq+7kv4WbFm2tcfznRzikqB4cuNpgZ40PSU2fAJ2/OO5XhojqnTPrmgrCjYSRJVwBln03XcRXJGnw9H099IQ==}
@@ -16195,10 +16209,15 @@ snapshots:
     dependencies:
       '@oazapfts/runtime': 1.2.0
 
-  '@futo-org/backups-orchestrator-api@1.12.1(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@nestjs/platform-socket.io@12.3.2)(@nestjs/schedule@12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2))(@nestjs/swagger@12.0.5(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.3.2)(reflect-metadata@0.2.2)(supports-color@8.1.1)':
+  '@futo-org/backups-api-client@1.13.0':
     dependencies:
-      '@futo-org/backups-api-client': 1.12.1
+      '@oazapfts/runtime': 1.2.0
+
+  '@futo-org/backups-orchestrator-api@1.13.0(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@nestjs/platform-socket.io@12.3.2)(@nestjs/schedule@12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2))(@nestjs/swagger@12.0.5(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.3.2)(kysely@0.29.7)(reflect-metadata@0.2.2)(supports-color@8.1.1)':
+    dependencies:
+      '@futo-org/backups-api-client': 1.13.0
       '@futo-org/restic-wrapper': 1.7.0
+      '@immich/sql-tools': 0.7.0
       '@nestjs/common': 12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
       '@nestjs/core': 12.3.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@12.3.2)(@nestjs/websockets@12.3.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/event-emitter': 12.0.1(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)
@@ -16213,8 +16232,8 @@ snapshots:
       event-iterator: 2.0.0
       eventsource-client: 1.2.0
       express: 5.3.0(supports-color@8.1.1)
-      kysely: 0.28.17
-      nestjs-kysely: 3.1.4(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(kysely@0.28.17)(reflect-metadata@0.2.2)
+      kysely: 0.29.7
+      nestjs-kysely: 3.1.4(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(kysely@0.29.7)(reflect-metadata@0.2.2)
       nestjs-zod: 5.5.0(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/swagger@12.0.5(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.4.3)
       openid-client: 6.8.8
       rxjs: 7.8.2
@@ -16445,6 +16464,15 @@ snapshots:
   '@immich/justified-layout-wasm@0.4.5': {}
 
   '@immich/sql-tools@0.6.6':
+    dependencies:
+      commander: 15.0.0
+      graph-data-structure: 4.5.0
+      kysely: 0.29.7
+      kysely-postgres-js: 5.0.1(kysely@0.29.7)(postgres@3.4.9)
+      pg-connection-string: 2.14.1
+      postgres: 3.4.9
+
+  '@immich/sql-tools@0.7.0':
     dependencies:
       commander: 15.0.0
       graph-data-structure: 4.5.0
@@ -23283,8 +23311,6 @@ snapshots:
     optionalDependencies:
       postgres: 3.4.9
 
-  kysely@0.28.17: {}
-
   kysely@0.29.7: {}
 
   latest-version@7.0.0:
@@ -24375,14 +24401,6 @@ snapshots:
       '@nestjs/core': 12.3.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@12.3.2)(@nestjs/websockets@12.3.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       reflect-metadata: 0.2.2
       rxjs: 7.8.2
-
-  nestjs-kysely@3.1.4(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(kysely@0.28.17)(reflect-metadata@0.2.2):
-    dependencies:
-      '@nestjs/common': 12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
-      '@nestjs/core': 12.3.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@12.3.2)(@nestjs/websockets@12.3.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      kysely: 0.28.17
-      reflect-metadata: 0.2.2
-      tslib: 2.8.1
 
   nestjs-kysely@3.1.4(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(kysely@0.29.7)(reflect-metadata@0.2.2):
     dependencies:
