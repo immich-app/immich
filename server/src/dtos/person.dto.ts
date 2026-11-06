@@ -1,7 +1,6 @@
 import { Selectable } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
-import type { ImageDimensions, MaybeDehydrated } from 'src/types.js';
 import { AssetFace, Person, PersonUser, User } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto.js';
@@ -9,6 +8,7 @@ import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
 import { SharingDirectionSchema, SourceTypeSchema } from 'src/enum.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
+import type { ImageDimensions, MaybeDehydrated } from 'src/types.js';
 import { asDateString, asDateTimeString } from 'src/utils/date.js';
 import { hasSomeDefined } from 'src/utils/misc.js';
 import { transformFaceBoundingBox } from 'src/utils/transform.js';

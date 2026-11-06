@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
-  import type { AssetCursor } from '#lib/components/asset-viewer/AssetViewer.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
+  import type { AssetCursor } from '#lib/components/asset-viewer/AssetViewer.svelte';
+  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
   import { AssetAction } from '#lib/constants.ts';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
@@ -14,7 +14,7 @@
   import { handleErrorAsync } from '#lib/utils/handle-error.ts';
   import { navigate } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
+  import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 

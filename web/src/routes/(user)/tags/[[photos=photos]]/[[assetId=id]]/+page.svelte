@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import UserPageLayout, { headerId } from '#lib/components/layouts/UserPageLayout.svelte';
@@ -25,11 +24,12 @@
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { getTagActions } from '#lib/services/tag.service.ts';
-  import { joinPaths, TreeNode } from '#lib/utils/tree-utils.ts';
+  import { TreeNode, joinPaths } from '#lib/utils/tree-utils.ts';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Text } from '@immich/ui';
   import { mdiDotsVertical, mdiTag, mdiTagMultiple } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
   import type { PageData } from './$types';
 
   interface Props {

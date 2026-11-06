@@ -6,9 +6,9 @@
   import { websocketStore } from '#lib/stores/websocket.ts';
   import { semverToName } from '#lib/utils.ts';
   import { type ReleaseEventV1 } from '@immich/sdk';
-  import { Icon, modalManager, Text } from '@immich/ui';
-  import { createQuery } from '@tanstack/svelte-query';
+  import { Icon, Text, modalManager } from '@immich/ui';
   import { mdiAlert, mdiNewBox } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   const { serverVersion, connected } = websocketStore;

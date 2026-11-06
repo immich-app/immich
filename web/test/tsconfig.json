@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noImplicitOverride": true,
+    "paths": {
+      "#i18n/*": ["../../i18n/*"],
+      "#lib/*": ["../src/lib/*"],
+      "#test/*": ["./*"]
+    },
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2022",
+    "types": ["node"]
+  },
+  "exclude": ["./unit/**"],
+  "include": ["./**/*.ts", "../src/app.d.ts", "../playwright.config.ts"]
+}

@@ -2,7 +2,7 @@
   import Combobox, { asComboboxOptions, asSelectedOption } from '#lib/components/shared-components/Combobox.svelte';
   import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import { handlePromiseError } from '#lib/utils.ts';
-  import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
+  import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -62,7 +62,7 @@
   onMount(() => updateCountries());
 </script>
 
-<div id="location-selection">
+<div data-testid="search-location-section">
   <Text>{$t('search_filter_location_description')}</Text>
 
   <div class="mt-5 grid grid-auto-fit-40 gap-5">

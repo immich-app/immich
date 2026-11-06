@@ -1,6 +1,6 @@
+import type { Kysely } from 'kysely';
 import { trim } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
-import type { Kysely } from 'kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';

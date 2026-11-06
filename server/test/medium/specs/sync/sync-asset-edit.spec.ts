@@ -34,7 +34,7 @@ describe(SyncRequestType.AssetEditsV1, () => {
     ]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetEditsV1]);
-    expect(response).toEqual([
+    ctx.assertSyncResponse(response, [
       {
         ack: expect.any(String),
         data: {
@@ -46,7 +46,6 @@ describe(SyncRequestType.AssetEditsV1, () => {
         },
         type: SyncEntityType.AssetEditV1,
       },
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -74,44 +73,41 @@ describe(SyncRequestType.AssetEditsV1, () => {
     ]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetEditsV1]);
-    expect(response).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: {
-            id: expect.any(String),
-            assetId: asset.id,
-            action: AssetEditAction.Crop,
-            parameters: { x: 10, y: 20, width: 100, height: 200 },
-            sequence: 0,
-          },
-          type: SyncEntityType.AssetEditV1,
+    ctx.assertSyncResponse(response, [
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset.id,
+          action: AssetEditAction.Crop,
+          parameters: { x: 10, y: 20, width: 100, height: 200 },
+          sequence: 0,
         },
-        {
-          ack: expect.any(String),
-          data: {
-            id: expect.any(String),
-            assetId: asset.id,
-            action: AssetEditAction.Rotate,
-            parameters: { angle: 90 },
-            sequence: 1,
-          },
-          type: SyncEntityType.AssetEditV1,
+        type: SyncEntityType.AssetEditV1,
+      },
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset.id,
+          action: AssetEditAction.Rotate,
+          parameters: { angle: 90 },
+          sequence: 1,
         },
-        {
-          ack: expect.any(String),
-          data: {
-            id: expect.any(String),
-            assetId: asset.id,
-            action: AssetEditAction.Mirror,
-            parameters: { axis: MirrorAxis.Horizontal },
-            sequence: 2,
-          },
-          type: SyncEntityType.AssetEditV1,
+        type: SyncEntityType.AssetEditV1,
+      },
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset.id,
+          action: AssetEditAction.Mirror,
+          parameters: { axis: MirrorAxis.Horizontal },
+          sequence: 2,
         },
-        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
-      ]),
-    );
+        type: SyncEntityType.AssetEditV1,
+      },
+    ]);
 
     await ctx.syncAckAll(auth, response);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetEditsV1]);
@@ -144,22 +140,19 @@ describe(SyncRequestType.AssetEditsV1, () => {
       .execute();
 
     const response2 = await ctx.syncStream(auth, [SyncRequestType.AssetEditsV1]);
-    expect(response2).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: {
-            id: expect.any(String),
-            assetId: asset.id,
-            action: AssetEditAction.Crop,
-            parameters: { x: 50, y: 60, width: 150, height: 250 },
-            sequence: 0,
-          },
-          type: SyncEntityType.AssetEditV1,
+    ctx.assertSyncResponse(response2, [
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset.id,
+          action: AssetEditAction.Crop,
+          parameters: { x: 50, y: 60, width: 150, height: 250 },
+          sequence: 0,
         },
-        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
-      ]),
-    );
+        type: SyncEntityType.AssetEditV1,
+      },
+    ]);
 
     await ctx.syncAckAll(auth, response2);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetEditsV1]);
@@ -186,18 +179,15 @@ describe(SyncRequestType.AssetEditsV1, () => {
     await assetEditRepo.replaceAll(asset.id, []);
 
     const response2 = await ctx.syncStream(auth, [SyncRequestType.AssetEditsV1]);
-    expect(response2).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: {
-            editId: edits[0].id,
-          },
-          type: SyncEntityType.AssetEditDeleteV1,
+    ctx.assertSyncResponse(response2, [
+      {
+        ack: expect.any(String),
+        data: {
+          editId: edits[0].id,
         },
-        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
-      ]),
-    );
+        type: SyncEntityType.AssetEditDeleteV1,
+      },
+    ]);
 
     await ctx.syncAckAll(auth, response2);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetEditsV1]);
@@ -219,10 +209,8 @@ describe(SyncRequestType.AssetEditsV1, () => {
     ]);
 
     // User 2 should see their own edit
-    await expect(ctx.syncStream(auth2, [SyncRequestType.AssetEditsV1])).resolves.toEqual([
-      expect.objectContaining({ type: SyncEntityType.AssetEditV1 }),
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
-    ]);
+    const response = await ctx.syncStream(auth2, [SyncRequestType.AssetEditsV1]);
+    ctx.assertSyncResponse(response, [expect.objectContaining({ type: SyncEntityType.AssetEditV1 })]);
 
     // User 1 should not see user 2's edit
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetEditsV1]);
@@ -249,33 +237,30 @@ describe(SyncRequestType.AssetEditsV1, () => {
     ]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetEditsV1]);
-    expect(response).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: {
-            id: expect.any(String),
-            assetId: asset1.id,
-            action: AssetEditAction.Crop,
-            parameters: { x: 10, y: 20, width: 100, height: 200 },
-            sequence: 0,
-          },
-          type: SyncEntityType.AssetEditV1,
+    ctx.assertSyncResponse(response, [
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset1.id,
+          action: AssetEditAction.Crop,
+          parameters: { x: 10, y: 20, width: 100, height: 200 },
+          sequence: 0,
         },
-        {
-          ack: expect.any(String),
-          data: {
-            id: expect.any(String),
-            assetId: asset2.id,
-            action: AssetEditAction.Rotate,
-            parameters: { angle: 270 },
-            sequence: 0,
-          },
-          type: SyncEntityType.AssetEditV1,
+        type: SyncEntityType.AssetEditV1,
+      },
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset2.id,
+          action: AssetEditAction.Rotate,
+          parameters: { angle: 270 },
+          sequence: 0,
         },
-        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
-      ]),
-    );
+        type: SyncEntityType.AssetEditV1,
+      },
+    ]);
 
     await ctx.syncAckAll(auth, response);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetEditsV1]);

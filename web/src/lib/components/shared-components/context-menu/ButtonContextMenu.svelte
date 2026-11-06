@@ -138,7 +138,7 @@
 <svelte:document onclick={handleDocumentClick} />
 
 <div
-  use:contextMenuNavigation={{
+  {@attach contextMenuNavigation({
     closeDropdown,
     container: menuContainer,
     isOpen,
@@ -146,7 +146,7 @@
     openDropdown,
     selectedId: $selectedIdStore,
     selectionChanged: (id) => ($selectedIdStore = id),
-  }}
+  })}
   onresize={onResize}
   {...restProps}
 >

@@ -17,8 +17,8 @@
     TableRow,
     Text,
   } from '@immich/ui';
-  import { createQuery } from '@tanstack/svelte-query';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   const queries = {

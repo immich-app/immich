@@ -1,4 +1,4 @@
-import * as sdk from '@immich/sdk';
+import * as sdk from '@futo-org/backups-orchestrator-ui/sdk';
 import { LoginResponseDto, StorageFolder } from '@immich/sdk';
 import { io, Socket } from 'socket.io-client';
 import { createUserDto } from 'src/fixtures';
@@ -17,6 +17,7 @@ describe('/futo-backups', () => {
 
   beforeAll(async () => {
     utils.initSdk();
+    sdk.defaults.baseUrl = baseUrl;
 
     await utils.resetDatabase();
     admin = await utils.adminSetup();
@@ -91,27 +92,13 @@ describe('/futo-backups', () => {
 
   describe('Local Backup', { concurrent: false }, async () => {
     beforeAll(async () => {
-      await sdk.futoBackupsImportRecoveryKey(
-        {
-          importRecoveryKeyRequest: {
-            recoveryKey: '0'.repeat(64),
-          },
-        },
-        requestOpts,
-      );
+      await sdk.futoBackupsImportRecoveryKey({ recoveryKey: '0'.repeat(64) }, requestOpts);
     });
 
     it('configures a local backend', { concurrent: false }, async () => {
       await utils.mkFolder('/local-backend');
 
-      await sdk.futoBackupsCreateLocalBackend(
-        {
-          createLocalBackendRequestDto: {
-            path: '/local-backend',
-          },
-        },
-        requestOpts,
-      );
+      await sdk.futoBackupsCreateLocalBackend({ path: '/local-backend' }, requestOpts);
     });
 
     it('configures Immich backup', { concurrent: false }, async () => {
@@ -119,14 +106,12 @@ describe('/futo-backups', () => {
 
       await sdk.futoBackupsConfigureImmichIntegration(
         {
-          configureImmichIntegrationRequestDto: {
-            name: 'Immich',
-            worm: false,
-            cron: '0 3 * * *',
-            backupConfiguration: true,
-            dataFolders: [StorageFolder.Backups, StorageFolder.Upload],
-            libraries: ['all'],
-          },
+          name: 'Immich',
+          worm: false,
+          cron: '0 3 * * *',
+          backupConfiguration: true,
+          dataFolders: [StorageFolder.Backups, StorageFolder.Upload],
+          libraries: ['all'],
         },
         requestOpts,
       );
@@ -184,14 +169,13 @@ describe('/futo-backups', () => {
 
       filename = await utils.createBackup(admin.accessToken);
 
-      await sdk.futoBackupsCreateBackup({ id }, requestOpts);
+      await sdk.futoBackupsCreateBackup(id, requestOpts);
       await event;
 
-      const { snapshots } = await sdk.futoBackupsGetSnapshots({ id }, requestOpts);
+      const { snapshots } = await sdk.futoBackupsGetSnapshots(id, requestOpts);
       const { id: snapshotId } = snapshots[0];
 
-      await expect(sdk.futoBackupsGetSnapshotListing({ id, snapshot: snapshotId }, requestOpts)).resolves
-        .toMatchInlineSnapshot(`
+      await expect(sdk.futoBackupsGetSnapshotListing(id, snapshotId, {}, requestOpts)).resolves.toMatchInlineSnapshot(`
         {
           "items": [
             {
@@ -208,7 +192,7 @@ describe('/futo-backups', () => {
         }
       `);
 
-      await expect(sdk.futoBackupsGetSnapshotListing({ id, snapshot: snapshotId, path: '/data' }, requestOpts)).resolves
+      await expect(sdk.futoBackupsGetSnapshotListing(id, snapshotId, { path: '/data' }, requestOpts)).resolves
         .toMatchInlineSnapshot(`
         {
           "items": [
@@ -227,7 +211,7 @@ describe('/futo-backups', () => {
       `);
 
       await expect(
-        sdk.futoBackupsGetSnapshotListing({ id, snapshot: snapshotId, path: '/data/backups' }, requestOpts),
+        sdk.futoBackupsGetSnapshotListing(id, snapshotId, { path: '/data/backups' }, requestOpts),
       ).resolves.toEqual(
         expect.objectContaining({
           items: expect.arrayContaining([
@@ -283,25 +267,11 @@ describe('/futo-backups', () => {
 
       await expect(sdk.futoBackupsGetSchedules(maintenanceRequestOpts)).resolves.toEqual({ schedules: [] });
 
-      await sdk.futoBackupsImportRecoveryKey(
-        {
-          importRecoveryKeyRequest: {
-            recoveryKey: '0'.repeat(64),
-          },
-        },
-        maintenanceRequestOpts,
-      );
+      await sdk.futoBackupsImportRecoveryKey({ recoveryKey: '0'.repeat(64) }, maintenanceRequestOpts);
 
       const {
         backend: { id: backendId },
-      } = await sdk.futoBackupsCreateLocalBackend(
-        {
-          createLocalBackendRequestDto: {
-            path: '/local-backend',
-          },
-        },
-        maintenanceRequestOpts,
-      );
+      } = await sdk.futoBackupsCreateLocalBackend({ path: '/local-backend' }, maintenanceRequestOpts);
 
       const { repositories } = await sdk.futoBackupsInspectRepositories({}, maintenanceRequestOpts);
       const { id: repositoryId, snapshots } = repositories[0];
@@ -317,14 +287,12 @@ describe('/futo-backups', () => {
 
       const event = waitForMessage('JobUpdate', ({ job }) => finishedJobStatuses.has(job?.status));
       await sdk.futoBackupsRestoreFromPoint(
+        repositoryId,
+        snapshotId,
+        backendId,
         {
-          id: repositoryId,
-          snapshot: snapshotId,
-          backend: backendId,
-          repositorySnapshotRestoreFromPointRequestDto: {
-            yuccaConfig: '/data/yucca',
-            include: ['/data'],
-          },
+          yuccaConfig: '/data/yucca',
+          include: ['/data'],
         },
         maintenanceRequestOpts,
       );
