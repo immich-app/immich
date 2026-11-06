@@ -670,6 +670,10 @@ export class MetadataService extends BaseService {
     return asset.type === AssetType.Image && !!(tags.MotionPhoto || tags.MicroVideo);
   }
 
+  private isImmichMotionVideo(video: { type: AssetType; isExternal?: boolean; originalPath: string }): boolean {
+    return video.type === AssetType.Video && !video.isExternal && StorageCore.isAndroidMotionPath(video.originalPath);
+  }
+
   private async applyMotionPhotos(asset: Asset, tags: ImmichTags, dates: Dates, stats: Stats) {
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
@@ -801,10 +805,29 @@ export class MetadataService extends BaseService {
       }
 
       // write extracted motion video to disk, especially if the encoded-video folder has been deleted
-      const isExistsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
-      if (!isExistsOnDisk) {
+      let shouldWrite = false;
+      try {
+        const motionVideoStats = await this.storageRepository.stat(motionAsset.originalPath);
+        shouldWrite = motionVideoStats?.size !== video.byteLength;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException)?.code !== 'ENOENT') {
+          throw error;
+        }
+        shouldWrite = true;
+      }
+
+      if (shouldWrite && (isNewMotionAsset || this.isImmichMotionVideo(motionAsset))) {
         this.storageCore.ensureFolders(motionAsset.originalPath);
-        await this.storageRepository.createFile(motionAsset.originalPath, video);
+        const temporaryPath = `${motionAsset.originalPath}.${this.cryptoRepository.randomUUID()}.tmp`;
+        try {
+          await this.storageRepository.createFile(temporaryPath, video);
+          await this.storageRepository.rename(temporaryPath, motionAsset.originalPath);
+        } catch (error) {
+          await this.storageRepository.unlink(temporaryPath).catch((cleanupError) => {
+            this.logger.error(`Failed to clean up temporary motion video ${temporaryPath}: ${cleanupError}`);
+          });
+          throw error;
+        }
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
 
         await this.handleMetadataExtraction({ id: motionAsset.id });
