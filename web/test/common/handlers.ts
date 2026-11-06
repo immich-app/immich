@@ -86,6 +86,7 @@ export const createHandlers = (data: MockData): Handlers => {
 
     getActivities: ({ params }) => ({ json: data.activityList(params) }),
     getActivityStatistics: ({ params }) => ({ json: data.activityStatistics(params) }),
+    createActivity: ({ body }) => ({ status: 201, json: data.createActivity(body) }),
     deleteActivity: ({ params }) => (data.deleteActivity(params.id) ? { status: 204 } : notFound),
 
     getAllTags: () => ({ json: data.tagList() }),

@@ -14,6 +14,7 @@ import {
   WorkflowType,
   type ActivityResponseDto,
   type AlbumResponseDto,
+  type AlbumUserResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
   type MemoryResponseDto,
@@ -24,6 +25,7 @@ import {
   type TagResponseDto,
   type UserAdminResponseDto,
   type UserPreferencesResponseDto,
+  type UserResponseDto,
   type WorkflowResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
@@ -174,20 +176,31 @@ const memory = (overrides: Partial<MemoryResponseDto> = {}): MemoryResponseDto =
   };
 };
 
-const album = (overrides: Partial<AlbumResponseDto> = {}): AlbumResponseDto => {
+type AlbumMembers = { owner: UserResponseDto; editors?: UserResponseDto[]; viewers?: UserResponseDto[] };
+
+const albumUsers = ({ owner, editors = [], viewers = [] }: AlbumMembers): AlbumUserResponseDto[] => [
+  { role: AlbumUserRole.Owner, user: owner },
+  ...editors.map((member) => ({ role: AlbumUserRole.Editor, user: member })),
+  ...viewers.map((member) => ({ role: AlbumUserRole.Viewer, user: member })),
+];
+
+const album = ({
+  albumUsers: members = albumUsers({ owner: user({ id: adminUserId }) }),
+  ...overrides
+}: Partial<AlbumResponseDto> = {}): AlbumResponseDto => {
   const createdAt = pastDate(365);
   return {
     id: crypto.randomUUID(),
     albumName: 'Test Album',
     description: '',
     albumThumbnailAssetId: null,
-    albumUsers: [{ role: AlbumUserRole.Owner, user: user({ id: adminUserId }) }],
+    albumUsers: members,
     assetCount: 0,
     createdAt,
     updatedAt: createdAt,
     hasSharedLink: false,
     isActivityEnabled: true,
-    shared: false,
+    shared: members.length > 1,
     order: AssetOrder.Desc,
     ...overrides,
   };
@@ -547,6 +560,7 @@ export const factory = {
   preferences,
   asset,
   album,
+  albumUsers,
   memory,
   person,
   stack,

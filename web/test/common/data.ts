@@ -6,7 +6,9 @@ import {
   AssetOrder,
   AssetTypeEnum,
   AssetVisibility,
+  ReactionLevel,
   ReactionType,
+  type ActivityCreateDto,
   type ActivityResponseDto,
   type AdminConfigDto,
   type AlbumResponseDto,
@@ -50,6 +52,13 @@ export type TimelineFilter = {
   visibility?: AssetVisibility;
   order?: AssetOrder;
   withStacked?: boolean;
+};
+
+export type ActivityFilter = {
+  assetId?: string;
+  userId?: string;
+  $type?: ReactionType;
+  level?: ReactionLevel;
 };
 
 export type MemoryFilter = {
@@ -419,6 +428,12 @@ export class MockData {
     return this;
   }
 
+  createActivity({ assetId, type, comment }: ActivityCreateDto) {
+    const activity = factory.activity({ user: this.user, assetId: assetId ?? null, type, comment: comment ?? null });
+    this.addActivities(activity);
+    return activity;
+  }
+
   activityStatistics(filter: { assetId?: string } = {}) {
     const activities = this.activityList(filter);
     return {
@@ -427,8 +442,15 @@ export class MockData {
     };
   }
 
-  activityList({ assetId }: { assetId?: string } = {}) {
-    return [...this.activities.values()].filter((activity) => !assetId || activity.assetId === assetId);
+  activityList({ assetId, userId, $type, level }: ActivityFilter = {}) {
+    return [...this.activities.values()].filter(
+      (activity) =>
+        (!assetId || activity.assetId === assetId) &&
+        (!userId || activity.user.id === userId) &&
+        (!$type || activity.type === $type) &&
+        (level !== ReactionLevel.Album || activity.assetId === null) &&
+        (level !== ReactionLevel.Asset || activity.assetId !== null),
+    );
   }
 
   deleteActivity(id: string) {

@@ -40,8 +40,12 @@ export const createApp = () => {
     },
     album: {
       descriptionInput: page.getByTestId('autogrow-textarea'),
-      commentsButton: (count: number) => button(String(count)),
+      commentsButton: button('activity'),
+      likeButton: page.getByRole('button', { name: 'like', exact: true, pressed: false }),
+      likedButton: page.getByRole('button', { name: 'like', exact: true, pressed: true }),
       activity: {
+        commentInput: page.getByPlaceholder('say_something'),
+        sendButton: button('send_message'),
         commentMenu: (index: number) => button('comment_options').nth(index),
         removeMenuItem: page.getByRole('menuitem', { name: 'remove', exact: true }),
       },
