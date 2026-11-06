@@ -23,6 +23,7 @@ class MockRemoteAlbumService extends Mock implements RemoteAlbumService {}
 
 class MockMemoryService extends Mock implements MemoryService {}
 
+class MockTimelineService extends Mock implements TimelineService {}
 
 class MockPlatformDeepLink extends Mock implements PlatformDeepLink {}
 
@@ -178,5 +179,28 @@ void main() {
     expect((route!.args! as MemoryRouteArgs).memories, [_memory]);
     verifyNever(() => memoryService.getMemoryLane(any()));
     verify(() => memoryService.get(_memoryId)).called(1);
+  });
+
+  test('locked photo link opens nothing', () async {
+    when(
+      () => assetService.getRemoteAsset(_assetId),
+    ).thenAnswer((_) async => _asset.copyWith(visibility: AssetVisibility.locked));
+
+    final route = await sut.handleMyImmichApp(link('/photos/$_assetId'), ref);
+
+    expect(route, isNull);
+  });
+
+  test('trashed photo link opens the viewer on a trash timeline', () async {
+    final trashTimeline = MockTimelineService();
+    when(
+      () => assetService.getRemoteAsset(_assetId),
+    ).thenAnswer((_) async => _asset.copyWith(deletedAt: DateTime(2026, 6, 13)));
+    when(() => timelineFactory.fromAssets(any(), TimelineOrigin.trash)).thenReturn(trashTimeline);
+
+    final route = await sut.handleMyImmichApp(link('/photos/$_assetId'), ref);
+
+    expect(route, isA<AssetViewerRoute>());
+    expect((route!.args! as AssetViewerRouteArgs).timelineService, trashTimeline);
   });
 }
