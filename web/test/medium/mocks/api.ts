@@ -1,12 +1,12 @@
 import type { MockData } from '#test/common/data.ts';
 import { Dispatcher, type Response } from '#test/common/dispatcher.ts';
+import { emptyMapStyle } from '#test/common/helpers.ts';
 import type { BrowserContext, Request, Route, WebSocketRoute } from '@playwright/test';
 
 const apiPattern = /^https?:\/\/[^/]+\/api\//;
 const socketPattern = /\/api\/socket\.io\//;
 const customCssPattern = /^https?:\/\/[^/]+\/custom\.css$/;
 const mapStylePattern = /^https:\/\/tiles\.immich\.cloud\//;
-const emptyMapStyle = { version: 8, sources: {}, layers: [] };
 
 const sockets = new WeakMap<BrowserContext, WebSocketRoute>();
 const socketMockedContexts = new WeakSet<BrowserContext>();

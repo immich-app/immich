@@ -1,11 +1,12 @@
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, LazyLock};
 
 pub use moxcms::{CicpColorPrimaries, CicpProfile, TransferCharacteristics};
 use moxcms::{
     ColorProfile, DataColorSpace, Layout, MatrixCoefficients, RenderingIntent,
     Transform16BitExecutor, TransformOptions,
 };
+use quick_cache::sync::Cache;
 
 use crate::image::Pixels;
 
@@ -39,7 +40,27 @@ pub(crate) fn is_hdr(cicp: CicpProfile) -> bool {
 
 /// Builds the transform from an ICC profile to sRGB, and the layout of the 12-bit samples it reads.
 pub(crate) fn to_srgb(icc: &[u8]) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
-    let source = ColorProfile::new_from_slice(icc).ok()?;
+    profile_to_srgb(&ColorProfile::new_from_slice(icc).ok()?)
+}
+
+/// Reuse the transform to sRGB for a given source profile.
+pub(crate) type Transforms<K> = Cache<K, (Arc<Transform16BitExecutor>, Layout)>;
+
+pub(crate) const TRANSFORMS: usize = 8;
+
+/// Rows a transform converts at a time, which keeps a band's samples in cache.
+pub(crate) const BAND: usize = 64;
+
+/// [`to_srgb`], built once per distinct profile.
+pub(crate) fn icc_to_srgb(icc: &[u8]) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
+    static ICCS: LazyLock<Transforms<Vec<u8>>> = LazyLock::new(|| Cache::new(TRANSFORMS));
+    ICCS.get_or_insert_with(icc, || to_srgb(icc).ok_or(())).ok()
+}
+
+/// [`to_srgb`] for a parsed profile.
+pub(crate) fn profile_to_srgb(
+    source: &ColorProfile,
+) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
     let layout = match source.color_space {
         DataColorSpace::Gray => Layout::GrayAlpha,
         _ => Layout::Rgba,
@@ -68,13 +89,12 @@ pub(crate) fn convert_bands(
     let (w, h) = (rgba.width(), rgba.height());
     let buf = rgba.bytes_mut();
     // Narrowing in place keeps peak memory at the wide decode plus one band.
-    let rows = 64;
-    let mut converted = vec![0u16; w * 4 * rows.min(h)];
-    for y in (0..h).step_by(rows) {
+    let mut converted = vec![0u16; w * 4 * BAND.min(h)];
+    for y in (0..h).step_by(BAND) {
         if cancelled.load(Ordering::Relaxed) {
             return None;
         }
-        let n = rows.min(h - y);
+        let n = BAND.min(h - y);
         let band = &buf[y * stride..][..n * stride];
         // SAFETY: any two bytes are a valid u16.
         let ([], src, []) = (unsafe { band.align_to::<u16>() }) else {
@@ -82,11 +102,17 @@ pub(crate) fn convert_bands(
         };
         transform.transform(src, &mut converted[..n * w * 4]).ok()?;
         // Pixels decode at least as wide as RGBA8, so this only overwrites converted rows.
-        let narrowed = &mut buf[y * w * 4..][..n * w * 4];
-        for (dst, &src) in narrowed.iter_mut().zip(&converted) {
-            const NARROW: u32 = ((255 << 16) + 4095 / 2) / 4095;
-            *dst = ((u32::from(src) * NARROW + (1 << 15)) >> 16) as u8;
-        }
+        narrow(&converted, &mut buf[y * w * 4..][..n * w * 4]);
     }
     Some(())
+}
+
+/// Rounds 12-bit samples to 8 bits.
+pub(crate) fn narrow(wide: &[u16], narrowed: &mut [u8]) {
+    const NARROW: u32 = ((255 << 16) + 4095 / 2) / 4095;
+    for (dst, &src) in narrowed.iter_mut().zip(wide) {
+        // Adding 8 first rounds every 12-bit value like adding half after scaling would, and the
+        // min, which never applies, lets the result narrow with a saturating instruction.
+        *dst = (((u32::from(src + 8) * NARROW) >> 16) as u16).min(255) as u8;
+    }
 }

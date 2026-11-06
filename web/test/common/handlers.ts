@@ -2,7 +2,7 @@ import type { MockData } from '#test/common/data.ts';
 import { factory } from '#test/common/factories.ts';
 import { fromBase64, minimalMp4, placeholderImage } from '#test/common/helpers.ts';
 import type { Handlers } from '#test/common/types.ts';
-import { AssetUploadAction } from '@immich/sdk';
+import { AssetUploadAction, WorkflowTrigger, WorkflowType } from '@immich/sdk';
 
 const notFound = { status: 404, json: { message: 'Not found', statusCode: 404 } };
 const passwordRequired = { status: 401, json: { message: 'Password required', statusCode: 401 } };
@@ -78,6 +78,11 @@ export const createHandlers = (data: MockData): Handlers => {
       json: { results: body.assets.map(({ id }) => ({ id, action: AssetUploadAction.Accept })) },
     }),
     getAssetDuplicates: () => ({ json: data.duplicateList() }),
+    resolveDuplicates: ({ body }) => ({ json: data.resolveDuplicates(body) }),
+    deleteDuplicates: ({ body }) => {
+      data.deleteDuplicates(body.ids);
+      return { status: 204 };
+    },
 
     getActivities: ({ params }) => ({ json: data.activityList(params) }),
     getActivityStatistics: ({ params }) => ({ json: data.activityStatistics(params) }),
@@ -107,6 +112,17 @@ export const createHandlers = (data: MockData): Handlers => {
       const stack = data.getStack(params.id);
       return stack ? { json: stack } : notFound;
     },
+    createStack: ({ body }) => ({ status: 201, json: data.createStack(body) }),
+    updateStack: ({ params, body }) => {
+      const stack = data.updateStack(params.id, body);
+      return stack ? { json: stack } : notFound;
+    },
+    removeAssetFromStack: ({ params }) =>
+      data.removeFromStack(params.id, params.assetId) ? { status: 204 } : notFound,
+    deleteStacks: ({ body }) => {
+      data.deleteStacks(body.ids);
+      return { status: 204 };
+    },
 
     getAllAlbums: ({ params = {} }) => ({ json: data.albumList(params.assetId) }),
     createAlbum: ({ body }) => ({ status: 201, json: data.createAlbum(body) }),
@@ -115,6 +131,7 @@ export const createHandlers = (data: MockData): Handlers => {
       return { status: 204 };
     },
     getAlbumMapMarkers: ({ params }) => ({ json: data.mapMarkers(params.id) }),
+    getMapMarkers: () => ({ json: data.mapMarkers() }),
     getAlbumInfo: ({ params }) => {
       const album = data.getAlbum(params.id);
       return album ? { json: album } : notFound;
@@ -174,6 +191,18 @@ export const createHandlers = (data: MockData): Handlers => {
       contentType: 'application/zip',
       headers: { 'Content-Disposition': 'attachment; filename="immich.zip"' },
     }),
+
+    searchWorkflows: () => ({ json: data.workflowList() }),
+    getWorkflowTriggers: () => ({
+      json: Object.values(WorkflowTrigger).map((trigger) => ({ trigger, types: [WorkflowType.AssetV1] })),
+    }),
+    createWorkflow: ({ body }) => ({ status: 201, json: data.createWorkflow(body) }),
+    updateWorkflow: ({ params, body }) => {
+      const workflow = data.updateWorkflow(params.id, body);
+      return workflow ? { json: workflow } : notFound;
+    },
+    searchPluginMethods: () => ({ json: data.pluginMethodList() }),
+    searchPluginTemplates: () => ({ json: [] }),
 
     playAssetVideo: () => ({ body: minimalMp4, contentType: 'video/mp4' }),
     viewAsset: ({ params }) => media(params.id),

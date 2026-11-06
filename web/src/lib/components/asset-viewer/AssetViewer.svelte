@@ -14,6 +14,8 @@
   import { EditToolType, editManager } from '#lib/managers/edit/edit-manager.svelte.ts';
   import { eventManager } from '#lib/managers/event-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getStackQuery } from '#lib/queries/stack.query.ts';
   import { getAssetActions } from '#lib/services/asset.service.ts';
   import { faceManager } from '#lib/stores/face.svelte.ts';
   import { ocrManager } from '#lib/stores/ocr.svelte.ts';
@@ -30,13 +32,13 @@
   import {
     AssetTypeEnum,
     getAssetInfo,
-    getStack,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
   import { CommandPaletteDefaultProvider } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { onDestroy, onMount, untrack } from 'svelte';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
@@ -103,9 +105,16 @@
   const stackSelectedThumbnailSize = 65;
 
   let previewStackedAsset: AssetResponseDto | undefined = $state();
-  let stack: StackResponseDto | undefined = $state();
 
   const asset = $derived(previewStackedAsset ?? cursor.current);
+  const stackId = $derived(withStacked && !authManager.isSharedLink ? cursor.current.stack?.id : undefined);
+  const stackQuery = createQuery(
+    () => ({ ...getStackQuery(stackId ?? ''), enabled: !!stackId }),
+    () => queryClient,
+  );
+  const stack = $derived(
+    stackQuery.data?.assets.some(({ id }) => id === cursor.current.id) ? stackQuery.data : undefined,
+  );
   const nextAsset = $derived(cursor.nextAsset);
   const previousAsset = $derived(cursor.previousAsset);
   let sharedLink = getSharedLink();
@@ -116,20 +125,6 @@
 
   const setPlayOriginalVideo = (value: boolean) => {
     isPlayingOriginalVideo = value;
-  };
-
-  const refreshStack = async () => {
-    if (authManager.isSharedLink || !withStacked) {
-      return;
-    }
-
-    if (asset.stack) {
-      stack = await getStack({ id: asset.stack.id });
-    }
-
-    if (!stack?.assets.some(({ id }) => id === asset.id)) {
-      stack = undefined;
-    }
   };
 
   const handleFavorite = async () => {
@@ -159,22 +154,14 @@
     await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
   };
 
-  const onStackCreate = (createdStack: StackResponseDto) => {
-    if (createdStack.assets.map((a) => a.id).includes(asset.id)) {
-      stack = createdStack;
+  const onStackUpdate = ({ id, assets }: StackResponseDto) => {
+    if (stackId === id && assets.every((stackedAsset) => stackedAsset.id !== cursor.current.id)) {
+      showStackedAsset(assets[0]);
     }
   };
 
-  const onStackUpdate = (updatedStack: StackResponseDto) => {
-    if (stack?.id !== updatedStack.id) {
-      return;
-    }
-
-    stack = updatedStack;
-    if (!stack.assets.map((a) => a.id).includes(asset.id)) {
-      // current asset was removed from stack, go to primary
-      cursor.current = stack.assets[0];
-    }
+  const showStackedAsset = (stackedAsset: AssetResponseDto) => {
+    cursor = { ...cursor, current: { ...stackedAsset, stack: cursor.current.stack } };
   };
 
   const onPersonThumbnailReady = async ({ id: personId }: { id: string }) => {
@@ -299,7 +286,7 @@
     if (nextIndex < 0 || nextIndex >= stack.assets.length) {
       return;
     }
-    cursor.current = stack.assets[nextIndex];
+    showStackedAsset(stack.assets[nextIndex]);
   };
 
   /** Slide show mode */
@@ -392,24 +379,18 @@
     }
   };
 
-  const refresh = async () => {
-    await refreshStack();
+  const refresh = async ({ id }: AssetResponseDto) => {
     ocrManager.clear();
     faceManager.clear();
     if (!sharedLink) {
-      if (previewStackedAsset) {
-        await ocrManager.getAssetOcr(previewStackedAsset.id);
-        await faceManager.getAssetFaces(previewStackedAsset.id);
-      }
-      await ocrManager.getAssetOcr(asset.id);
-      await faceManager.getAssetFaces(asset.id);
+      await ocrManager.getAssetOcr(id);
+      await faceManager.getAssetFaces(id);
     }
   };
 
   $effect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    asset;
-    untrack(() => handlePromiseError(refresh()));
+    const current = asset;
+    untrack(() => handlePromiseError(refresh(current)));
   });
 
   let lastCursor = $state<AssetCursor>();
@@ -491,7 +472,6 @@
 <OnEvents
   {onAssetUpdate}
   {onAssetsUndoArchive}
-  {onStackCreate}
   onStackDelete={() => closeViewer()}
   {onStackUpdate}
   {onPersonThumbnailReady}
@@ -657,7 +637,7 @@
               brokenAssetClass="text-xs"
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
-                cursor.current = stackedAsset;
+                showStackedAsset(stackedAsset);
                 previewStackedAsset = undefined;
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}

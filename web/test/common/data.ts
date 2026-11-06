@@ -17,15 +17,19 @@ import {
   type AssetResponseDto,
   type CreateAlbumDto,
   type DownloadInfoDto,
+  type DuplicateResolveDto,
   type DuplicateResponseDto,
   type MapMarkerResponseDto,
   type MemoryResponseDto,
   type MemoryUpdateDto,
   type MetadataSearchDto,
   type PersonResponseDto,
+  type PluginMethodResponseDto,
   type SearchResponseDto,
   type SharedLinkResponseDto,
+  type StackCreateDto,
   type StackResponseDto,
+  type StackUpdateDto,
   type TagResponseDto,
   type TimeBucketAssetResponseDto,
   type TimeBucketsResponseDto,
@@ -35,6 +39,10 @@ import {
   type UserAdminResponseDto,
   type UserAdminUpdateDto,
   type UserPreferencesResponseDto,
+  type WorkflowCreateDto,
+  type WorkflowResponseDto,
+  type WorkflowStepDto,
+  type WorkflowUpdateDto,
 } from '@immich/sdk';
 
 export type TimelineFilter = {
@@ -43,6 +51,7 @@ export type TimelineFilter = {
   isTrashed?: boolean;
   visibility?: AssetVisibility;
   order?: AssetOrder;
+  withStacked?: boolean;
 };
 
 export type ActivityFilter = {
@@ -65,6 +74,9 @@ const monthKey = (iso: string) => {
 
 type MaybeArray<T> = T | T[];
 const toList = <T>(items: MaybeArray<T>) => (Array.isArray(items) ? items : [items]);
+
+const toWorkflowSteps = (steps: WorkflowStepDto[]) =>
+  steps.map(({ method, config, enabled }) => ({ method, config, enabled }));
 
 const hiddenVisibilities = new Set<AssetVisibility>([AssetVisibility.Hidden, AssetVisibility.Locked]);
 
@@ -98,6 +110,8 @@ export class MockData {
   private readonly sharedLinks = new Map<string, SharedLinkResponseDto>();
   private readonly tags = new Map<string, TagResponseDto>();
   private readonly activities = new Map<string, ActivityResponseDto>();
+  private readonly workflows = new Map<string, WorkflowResponseDto>();
+  private readonly pluginMethods = new Map<string, PluginMethodResponseDto>();
 
   getPreferences() {
     return this.preferences;
@@ -181,7 +195,8 @@ export class MockData {
             ? !hiddenVisibilities.has(asset.visibility)
             : asset.visibility === filter.visibility) &&
           asset.isTrashed === isTrashed &&
-          (filter.isFavorite === undefined || asset.isFavorite === filter.isFavorite),
+          (filter.isFavorite === undefined || asset.isFavorite === filter.isFavorite) &&
+          (!filter.withStacked || !asset.stack || asset.stack.primaryAssetId === asset.id),
       )
       .sort((a, b) => direction * a.fileCreatedAt.localeCompare(b.fileCreatedAt));
   }
@@ -351,6 +366,23 @@ export class MockData {
     return [...groups].map(([duplicateId, assets]) => ({ duplicateId, assets, suggestedKeepAssetIds: [assets[0].id] }));
   }
 
+  resolveDuplicates({ groups }: DuplicateResolveDto) {
+    for (const { duplicateId, trashAssetIds } of groups) {
+      this.deleteDuplicates([duplicateId]);
+      this.deleteAssets(trashAssetIds);
+    }
+    return groups.map(({ duplicateId }) => ({ id: duplicateId, success: true }));
+  }
+
+  deleteDuplicates(duplicateIds: string[]) {
+    const ids = new Set(duplicateIds);
+    const duplicates = [...this.assets.values()].filter(({ duplicateId }) => duplicateId && ids.has(duplicateId));
+    for (const asset of duplicates) {
+      this.assets.set(asset.id, { ...asset, duplicateId: null });
+    }
+    return this;
+  }
+
   removeFromAlbum(albumId: string, assetIds: string[]) {
     const members = this.albumAssets.get(albumId);
     return assetIds.map((id) => ({ id, success: members?.delete(id) ?? false }));
@@ -425,6 +457,45 @@ export class MockData {
     return this.activities.delete(id);
   }
 
+  addWorkflows(workflows: MaybeArray<WorkflowResponseDto>) {
+    for (const workflow of toList(workflows)) {
+      this.workflows.set(workflow.id, workflow);
+    }
+    return this;
+  }
+
+  workflowList() {
+    return [...this.workflows.values()];
+  }
+
+  createWorkflow(dto: WorkflowCreateDto) {
+    const workflow = factory.workflow({ ...dto, steps: toWorkflowSteps(dto.steps ?? []) });
+    this.workflows.set(workflow.id, workflow);
+    return workflow;
+  }
+
+  updateWorkflow(id: string, dto: WorkflowUpdateDto) {
+    const workflow = this.workflows.get(id);
+    if (!workflow) {
+      return;
+    }
+    const steps = dto.steps ? toWorkflowSteps(dto.steps) : workflow.steps;
+    const updated = { ...workflow, ...dto, steps, updatedAt: new Date().toISOString() };
+    this.workflows.set(id, updated);
+    return updated;
+  }
+
+  addPluginMethods(methods: MaybeArray<PluginMethodResponseDto>) {
+    for (const method of toList(methods)) {
+      this.pluginMethods.set(method.key, method);
+    }
+    return this;
+  }
+
+  pluginMethodList() {
+    return [...this.pluginMethods.values()];
+  }
+
   updateAdminConfig(config: AdminConfigDto) {
     this.adminConfig = config;
     return config;
@@ -444,6 +515,43 @@ export class MockData {
         asset.stack = { id: stack.id, assetCount: stack.assets.length, primaryAssetId: stack.primaryAssetId };
         this.assets.set(asset.id, asset);
       }
+    }
+    return this;
+  }
+
+  createStack({ assetIds }: StackCreateDto) {
+    const stack = factory.stack({ assets: assetIds.map((id) => this.assets.get(id)!) });
+    this.addStacks(stack);
+    return stack;
+  }
+
+  updateStack(id: string, { primaryAssetId }: StackUpdateDto) {
+    const stack = this.stacks.get(id);
+    if (!stack) {
+      return;
+    }
+    const updated = { ...stack, primaryAssetId: primaryAssetId ?? stack.primaryAssetId };
+    this.stacks.set(id, updated);
+    return updated;
+  }
+
+  removeFromStack(id: string, assetId: string) {
+    const stack = this.stacks.get(id);
+    const asset = this.assets.get(assetId);
+    if (!stack || !asset) {
+      return;
+    }
+    this.assets.set(assetId, { ...asset, stack: null });
+    this.addStacks({ ...stack, assets: stack.assets.filter((asset) => asset.id !== assetId) });
+    return this;
+  }
+
+  deleteStacks(ids: string[]) {
+    for (const id of ids) {
+      for (const asset of this.stacks.get(id)?.assets ?? []) {
+        this.assets.set(asset.id, { ...asset, stack: null });
+      }
+      this.stacks.delete(id);
     }
     return this;
   }
