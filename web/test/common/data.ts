@@ -9,6 +9,7 @@ import {
   QueueCommand,
   ReactionLevel,
   ReactionType,
+  SearchSuggestionType,
   type ActivityCreateDto,
   type ActivityResponseDto,
   type AdminConfigDto,
@@ -20,6 +21,7 @@ import {
   type DownloadInfoDto,
   type DuplicateResolveDto,
   type DuplicateResponseDto,
+  type ExifResponseDto,
   type MapMarkerResponseDto,
   type MemoryResponseDto,
   type MemoryUpdateDto,
@@ -31,6 +33,7 @@ import {
   type QueueName,
   type QueueResponseDto,
   type QueueUpdateDto,
+  type SearchExploreResponseDto,
   type SearchResponseDto,
   type SharedLinkResponseDto,
   type StackCreateDto,
@@ -67,6 +70,15 @@ export type ActivityFilter = {
   level?: ReactionLevel;
 };
 
+export type SuggestionFilter = {
+  $type: SearchSuggestionType;
+  country?: string;
+  state?: string;
+  make?: string;
+  model?: string;
+  includeNull?: boolean;
+};
+
 export type MemoryFilter = {
   id?: string;
   page?: number;
@@ -85,6 +97,17 @@ const toWorkflowSteps = (steps: WorkflowStepDto[]) =>
   steps.map(({ method, config, enabled }) => ({ method, config, enabled }));
 
 const hiddenVisibilities = new Set<AssetVisibility>([AssetVisibility.Hidden, AssetVisibility.Locked]);
+
+const suggestionFields: Record<SearchSuggestionType, keyof ExifResponseDto> = {
+  [SearchSuggestionType.Country]: 'country',
+  [SearchSuggestionType.State]: 'state',
+  [SearchSuggestionType.City]: 'city',
+  [SearchSuggestionType.CameraMake]: 'make',
+  [SearchSuggestionType.CameraModel]: 'model',
+  [SearchSuggestionType.CameraLensModel]: 'lensModel',
+};
+
+const exploreRecentsLimit = 12;
 
 export class MockData {
   readonly user = factory.user({ id: adminUserId });
@@ -783,7 +806,7 @@ export class MockData {
     return updated;
   }
 
-  searchAssets(dto: MetadataSearchDto): SearchResponseDto {
+  searchAssets(dto: Pick<MetadataSearchDto, 'visibility' | 'isFavorite' | 'size'>): SearchResponseDto {
     const items = this.timelineAssets({ visibility: dto.visibility, isFavorite: dto.isFavorite ?? undefined }).slice(
       0,
       dto.size ?? 250,
@@ -792,5 +815,44 @@ export class MockData {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: { total: items.length, count: items.length, items, facets: [], nextPage: null, nextCursor: null },
     };
+  }
+
+  searchSuggestions({ $type, country, state, make, model, includeNull }: SuggestionFilter) {
+    const matches = (value: string | null | undefined, filter?: string) => filter === undefined || value === filter;
+    const values = this.timelineAssets()
+      .map((asset) => asset.exifInfo)
+      .filter(
+        (exif) =>
+          exif !== undefined &&
+          matches(exif.country, country) &&
+          matches(exif.state, state) &&
+          matches(exif.make, make) &&
+          matches(exif.model, model),
+      )
+      .map((exif) => exif![suggestionFields[$type]])
+      .filter((value): value is string => typeof value === 'string');
+    const suggestions: Array<string | null> = [...new Set(values)].sort();
+    return includeNull ? [...suggestions, null] : suggestions;
+  }
+
+  exploreData(): SearchExploreResponseDto[] {
+    const recents = this.timelineAssets()
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, exploreRecentsLimit);
+    return [
+      { fieldName: 'exifInfo.city', items: this.assetsByCity().map((data) => ({ value: data.exifInfo!.city!, data })) },
+      { fieldName: 'createdAt', items: recents.map((data) => ({ value: data.createdAt, data })) },
+    ];
+  }
+
+  assetsByCity() {
+    const byCity = new Map<string, AssetResponseDto>();
+    for (const asset of this.timelineAssets()) {
+      const city = asset.exifInfo?.city;
+      if (city && !byCity.has(city)) {
+        byCity.set(city, asset);
+      }
+    }
+    return [...byCity.values()];
   }
 }
