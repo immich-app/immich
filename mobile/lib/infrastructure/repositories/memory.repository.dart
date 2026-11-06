@@ -93,6 +93,10 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
   Future<int> getCount() {
     return _db.managers.memoryEntity.count();
   }
+
+  Stream<void> watchChanges() {
+    return _db.tableUpdates(TableUpdateQuery.onAllTables([_db.memoryEntity, _db.memoryAssetEntity]));
+  }
 }
 
 extension on MemoryEntityData {
