@@ -47,6 +47,20 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - The installed driver must be >= 545 (it must support CUDA 12.3).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
+##### Optional CUDA controls
+
+Set these environment variables on the machine-learning service. Defaults preserve existing behavior.
+
+| Variable | Default | Optional behavior |
+| --- | --- | --- |
+| `MACHINE_LEARNING_TENSORRT_RTX` | `true` | Set `false` to skip TensorRT RTX import, registration and selection. |
+| `MACHINE_LEARNING_CUDA_USE_EP_LEVEL_UNIFIED_STREAM` | `false` | Set `true` to share CUDA execution-provider stream resources. |
+| `MACHINE_LEARNING_CUDA_ARENA_SHRINKAGE` | `false` | Set `true` to release unused CUDA arena memory after inference; explicit caller run options remain unchanged. |
+
+For compatible CUDA-only stacks with limited VRAM, combine these overrides with `CUBLAS_WORKSPACE_CONFIG=:16:8` to reduce cuBLAS workspace use. Performance depends on the workload.
+
+These controls can also apply to other NVIDIA GPUs with compatible CUDA stacks. Matching the CUDA version alone is insufficient: the ONNX Runtime wheel must include kernels for the GPU's compute capability and match CUDA/cuDNN, Python/NumPy ABI and the host driver. A GM108 GeForce 940MX (`sm_50`) requires a separately built compatible wheel; these settings cannot add missing kernels. Published CUDA image requirements remain unchanged.
+
 #### ROCm
 
 - On Linux, The [AMDGPU driver module](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/how-to/docker.html) needs to be installed on the server and, if secure boot is used, the signing key of DKMS [needs to be enrolled in UEFI BIOS](https://wiki.debian.org/SecureBoot)

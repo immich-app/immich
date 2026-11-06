@@ -17,7 +17,7 @@ import numpy as np
 import onnxruntime as ort
 from immich_model.runtime import RewriteContext, RewritePlan, plan_rewrites
 from numpy.typing import NDArray
-from onnxruntime.capi.onnxruntime_pybind11_state import Fail, InvalidProtobuf
+from onnxruntime.capi.onnxruntime_pybind11_state import Fail, InvalidArgument, InvalidProtobuf
 from pydantic import BaseModel
 
 from immich_ml.schemas import ModelInput, SessionNode, Shape
@@ -30,15 +30,23 @@ from .policy import ShapePolicy
 DYNAMIC_PROVIDERS = frozenset({"CPUExecutionProvider"})
 PLANNED_AS = {"nv_tensorrt_rtx": "NvTensorRTRTXExecutionProvider"}
 
-try:
-    import onnxruntime_ep_nv_tensorrt_rtx as nv_tensorrt_rtx
-except ImportError:
-    pass
-else:
+
+def _register_tensorrt_rtx() -> None:
+    if not settings.tensorrt_rtx:
+        return
+
     try:
-        ort.register_execution_provider_library(nv_tensorrt_rtx.get_ep_name(), nv_tensorrt_rtx.get_library_path())
-    except Fail as e:
-        log.info(f"TensorRT-RTX is unavailable: {e}")
+        import onnxruntime_ep_nv_tensorrt_rtx as nv_tensorrt_rtx
+    except ImportError:
+        pass
+    else:
+        try:
+            ort.register_execution_provider_library(nv_tensorrt_rtx.get_ep_name(), nv_tensorrt_rtx.get_library_path())
+        except Fail as e:
+            log.info(f"TensorRT-RTX is unavailable: {e}")
+
+
+_register_tensorrt_rtx()
 
 
 def _label(pins: Mapping[str, int]) -> str:
@@ -66,6 +74,11 @@ class OrtGraph:
         self.lock = global_lock if spec.provider == "nv_tensorrt_rtx" else nullcontext()
         with self.lock:
             self._session = spec.session(graph)
+        self._cuda_device_id: str | None = (
+            self._session.get_provider_options().get("CUDAExecutionProvider", {}).get("device_id")
+            if settings.cuda_arena_shrinkage
+            else None
+        )
         image = self._session.get_inputs()[0]
         # whether the graph scales and shifts the image itself, so the host hands over raw pixels
         self.normalizes_input = image.type == "tensor(uint8)"
@@ -97,8 +110,18 @@ class OrtGraph:
     def infer(
         self, output_names: list[str] | None, input_feed: ModelInput, run_options: Any = None
     ) -> list[NDArray[Any]]:
+        cuda_device_id = self._cuda_device_id if run_options is None else None
+        if cuda_device_id is not None:
+            run_options = ort.RunOptions()
+            run_options.add_run_config_entry("memory.enable_memory_arena_shrinkage", f"gpu:{cuda_device_id}")
         with self.lock:
-            outputs: list[NDArray[Any]] = self._session.run(output_names, input_feed, run_options)
+            try:
+                outputs: list[NDArray[Any]] = self._session.run(output_names, input_feed, run_options)
+            except InvalidArgument:
+                if cuda_device_id is None or "CUDAExecutionProvider" in self._session.get_provider_options():
+                    raise
+                self._cuda_device_id = None
+                outputs = self._session.run(output_names, input_feed, None)
         return outputs
 
 
@@ -187,6 +210,8 @@ class GraphSpec:
                     options = {"arena_extend_strategy": "kSameAsRequested"}
                 case "CUDAExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
+                    if settings.cuda_use_ep_level_unified_stream:
+                        options["use_ep_level_unified_stream"] = "1"
                 case "nv_tensorrt_rtx":
                     options = {"device_id": settings.device_id, "nv_runtime_cache_path": self.directory.as_posix()}
                 case "MIGraphXExecutionProvider":
@@ -444,7 +469,11 @@ def _providers_default() -> list[str]:
 
     available_providers = set(ort.get_available_providers())
     log.debug(f"Available ORT providers: {available_providers}")
-    providers = [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
+    providers = [
+        provider
+        for provider in SUPPORTED_PROVIDERS
+        if provider in available_providers and (settings.tensorrt_rtx or provider != "nv_tensorrt_rtx")
+    ]
     if "nv_tensorrt_rtx" in providers:
         providers.remove("CUDAExecutionProvider")  # CUDA EP syncs the legacy stream each run, which a recording fails
     return providers

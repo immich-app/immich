@@ -69,6 +69,9 @@ class Settings(BaseSettings):
     model_inter_op_threads: int = 0
     model_intra_op_threads: int = 0
     model_arena: bool = True
+    tensorrt_rtx: bool = True
+    cuda_use_ep_level_unified_stream: bool = False
+    cuda_arena_shrinkage: bool = False
     ann: bool = True
     ann_fp16_turbo: bool = False
     ann_tuning_level: int = 2
