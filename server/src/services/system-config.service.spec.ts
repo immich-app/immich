@@ -250,6 +250,14 @@ const updatedConfig = Object.freeze<SystemConfig>({
         ignoreCert: false,
       },
     },
+    apprise: {
+      enabled: false,
+      url: '',
+      configId: '',
+      username: '',
+      password: '',
+      timeout: 20,
+    },
   },
   templates: {
     email: {

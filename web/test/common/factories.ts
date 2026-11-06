@@ -46,6 +46,7 @@ const preferences = (overrides: Partial<UserPreferencesResponseDto> = {}): UserP
   cast: { gCastEnabled: false },
   download: { archiveSize: 4_294_967_296, includeEmbeddedVideos: false },
   emailNotifications: { albumInvite: true, albumUpdate: true, enabled: true },
+  appriseNotifications: { albumInvite: true, albumUpdate: true, enabled: false, urls: [] },
   folders: { enabled: false, sidebarWeb: false },
   memories: { enabled: true, duration: 5, sidebarWeb: false },
   people: { enabled: true, sidebarWeb: false, updateStrategy: PersonUpdateStrategy.Everyone },

@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { describe } from 'vitest';
 import { mapUserAdmin } from 'src/dtos/user.dto.js';
-import { JobName, UserStatus } from 'src/enum.js';
+import { JobName, UserMetadataKey, UserStatus } from 'src/enum.js';
 import { UserAdminService } from 'src/services/user-admin.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
@@ -178,6 +178,42 @@ describe(UserAdminService.name, () => {
       mocks.user.restore.mockResolvedValue(userStub.user1);
       await expect(sut.restore(authStub.admin, userStub.user1.id)).resolves.toEqual(mapUserAdmin(userStub.user1));
       expect(mocks.user.restore).toHaveBeenCalledWith(userStub.user1.id);
+    });
+  });
+
+  describe('getPreferences', () => {
+    it("should hide the user's apprise urls", async () => {
+      mocks.user.getMetadata.mockResolvedValue([
+        {
+          key: UserMetadataKey.Preferences,
+          value: { appriseNotifications: { enabled: true, urls: ['tgram://token'] } },
+        },
+      ]);
+
+      const preferences = await sut.getPreferences(authStub.admin, userStub.user1.id);
+
+      expect(preferences.appriseNotifications).toEqual(expect.objectContaining({ enabled: true, urls: [] }));
+    });
+  });
+
+  describe('updatePreferences', () => {
+    it("should keep the user's apprise urls", async () => {
+      mocks.user.get.mockResolvedValue(userStub.user1);
+      mocks.user.getMetadata.mockResolvedValue([
+        {
+          key: UserMetadataKey.Preferences,
+          value: { appriseNotifications: { enabled: true, urls: ['tgram://token'] } },
+        },
+      ]);
+
+      await sut.updatePreferences(authStub.admin, userStub.user1.id, {
+        appriseNotifications: { enabled: false, urls: [] },
+      });
+
+      expect(mocks.user.upsertMetadata).toHaveBeenCalledWith(userStub.user1.id, {
+        key: UserMetadataKey.Preferences,
+        value: { appriseNotifications: { urls: ['tgram://token'] } },
+      });
     });
   });
 });
