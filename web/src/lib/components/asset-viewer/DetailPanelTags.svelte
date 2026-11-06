@@ -4,7 +4,7 @@
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetActions } from '#lib/services/asset.service.ts';
-  import { removeTag } from '#lib/utils/asset-utils.ts';
+  import { untagAssets } from '#lib/utils/asset-utils.ts';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Badge, Link, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -19,7 +19,7 @@
   let tags = $derived(asset.tags || []);
 
   const handleRemove = async (tagId: string) => {
-    const ids = await removeTag({ tagIds: [tagId], assetIds: [asset.id], showNotification: false });
+    const ids = await untagAssets({ tagIds: [tagId], assetIds: [asset.id], showNotification: false });
     if (ids) {
       asset = await getAssetInfo({ id: asset.id });
     }
