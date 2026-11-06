@@ -178,6 +178,16 @@ const createTimeline = (page: Page, data: MockData) => {
         await page.getByRole('menuitem', { name: 'change_date', exact: true }).click();
       },
 
+      stack: async () => {
+        await page.getByLabel('menu', { exact: true }).click();
+        await page.getByRole('menuitem', { name: 'stack', exact: true }).click();
+      },
+
+      unstack: async () => {
+        await page.getByLabel('menu', { exact: true }).click();
+        await page.getByRole('menuitem', { name: 'unstack', exact: true }).click();
+      },
+
       removeFromAlbum: async () => {
         await page.getByLabel('menu', { exact: true }).click();
         await page.getByRole('menuitem', { name: 'remove_from_album', exact: true }).click();
@@ -328,6 +338,9 @@ const createViewer = (page: Page) => {
     download: () => moreMenuItem('download'),
     archive: () => moreMenuItem('to_archive'),
     unarchive: () => moreMenuItem('unarchive'),
+    unstack: () => moreMenuItem('unstack'),
+    setStackPrimary: () => moreMenuItem('set_stack_primary_asset'),
+    removeFromStack: () => moreMenuItem('viewer_remove_from_stack'),
 
     permanentlyDelete: async () => {
       await page.getByLabel('permanently_delete', { exact: true }).click();
