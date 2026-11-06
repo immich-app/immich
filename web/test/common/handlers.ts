@@ -52,6 +52,28 @@ export const createHandlers = (data: MockData): Handlers => {
     getQueuesLegacy: () => ({ json: data.queues }),
     getIntegrityReportSummary: () => ({ json: data.getIntegrityReport() }),
     createJob: () => ({ status: 201 }),
+    getQueues: () => ({ json: data.queueList() }),
+    getQueue: ({ params }) => {
+      const queue = data.getQueue(params.name);
+      return queue ? { json: queue } : notFound;
+    },
+    getQueueJobs: () => ({ json: [] }),
+    updateQueue: ({ params, body }) => {
+      const queue = data.updateQueue(params.name, body);
+      return queue ? { json: queue } : notFound;
+    },
+    emptyQueue: ({ params, body }) => (data.emptyQueue(params.name, body) ? { status: 204 } : notFound),
+    runQueueCommandLegacy: ({ params, body }) => {
+      const queue = data.runQueueCommand(params.name, body);
+      return queue
+        ? {
+            json: {
+              jobCounts: queue.statistics,
+              queueStatus: { isActive: queue.statistics.active > 0, isPaused: queue.isPaused },
+            },
+          }
+        : notFound;
+    },
 
     getTimeBuckets: ({ params = {} }) => ({ json: data.timeBuckets(params) }),
     getTimeBucket: ({ params }) => ({ json: data.timeBucket(params.timeBucket, params) }),

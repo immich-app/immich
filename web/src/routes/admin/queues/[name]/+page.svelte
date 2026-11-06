@@ -1,6 +1,7 @@
 <script lang="ts">
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
-  import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getQueueQuery, getQueuesQuery } from '#lib/queries/queue.query.ts';
   import { Route } from '#lib/route.ts';
   import { asQueueItem, getQueueActions } from '#lib/services/queue.service.ts';
   import {
@@ -16,7 +17,6 @@
     Text,
   } from '@immich/ui';
   import { mdiClockTimeTwoOutline } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import QueueGraph from './QueueGraph.svelte';
@@ -27,12 +27,15 @@
 
   const { data }: Props = $props();
 
-  const queue = $derived(queueManager.queues.find((q) => q.name === data.queue.name) ?? data.queue);
+  const queries = {
+    queues: createPreloadedQuery(getQueuesQuery),
+    queue: createPreloadedQuery(() => getQueueQuery(data.name)),
+  };
+
+  const queue = $derived(queries.queue.data);
 
   const { Pause, Resume, Empty, RemoveFailedJobs } = $derived(getQueueActions($t, queue));
   const item = $derived(asQueueItem($t, queue));
-
-  onMount(() => queueManager.listen());
 </script>
 
 <AdminPageLayout

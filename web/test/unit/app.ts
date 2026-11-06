@@ -4,6 +4,9 @@ export const createApp = () => {
   const button = (name: string) => page.getByRole('button', { name, exact: true });
   const main = page.getByRole('main');
 
+  const queueCard = (title: string) =>
+    page.getByTestId('queue-card').filter({ has: page.getByRole('link', { name: title, exact: true }) });
+
   const sidebar = page.getByTestId('sidebar-parent');
   const searchFilters = page.getByRole('listbox').first();
   const tagsSection = () => page.getByTestId('search-tags-section');
@@ -29,6 +32,29 @@ export const createApp = () => {
       maintenance: {
         restoreBackupButton: page.getByRole('button', { name: /^admin\.maintenance_restore_database_backup/ }),
       },
+      queues: {
+        card: queueCard,
+        pauseButton: (title: string) => queueCard(title).getByRole('button', { name: 'pause', exact: true }),
+        resumeButton: (title: string) => queueCard(title).getByRole('button', { name: 'resume', exact: true }),
+        clearButton: (title: string) => queueCard(title).getByRole('button', { name: 'clear', exact: true }),
+        resetButton: (title: string) => queueCard(title).getByRole('button', { name: 'reset', exact: true }),
+        resumePausedButton: button('resume_paused_jobs'),
+        count: (title: string, count: number) => queueCard(title).getByText(String(count), { exact: true }),
+        pausedBadge: (title: string) => queueCard(title).getByText('paused', { exact: true }),
+        anyPausedBadge: page.getByText('paused', { exact: true }),
+        reprocessAllFacesMessage: page
+          .getByRole('dialog')
+          .getByText('admin.confirm_reprocess_all_faces', { exact: true }),
+      },
+      queue: {
+        heading: (title: string) => page.getByRole('heading', { name: title, exact: true }),
+        pausedBadge: page.getByText('paused', { exact: true }),
+        failedCount: page.getByText('failed_count', { exact: true }),
+        pauseButton: button('pause'),
+        resumeButton: button('resume'),
+        clearButton: button('clear'),
+        removeFailedJobsButton: button('admin.remove_failed_jobs'),
+      },
       settings: {
         open: (title: string) => page.getByRole('button', { name: title, exact: false }).click(),
         numberInput: page.getByRole('spinbutton'),
@@ -51,6 +77,7 @@ export const createApp = () => {
       },
     },
     confirmButton: page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }),
+    cancelButton: page.getByRole('dialog').getByRole('button', { name: 'cancel', exact: true }),
     duplicates: {
       keepToggle: (index: number) => button('keep').nth(index),
       stackButton: button('stack'),

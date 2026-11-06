@@ -12,7 +12,6 @@ import type {
   LoginResponseDto,
   PasskeyResponseDto,
   PersonResponseDto,
-  QueueResponseDto,
   ReleaseEventV1,
   StackResponseDto,
   TagResponseDto,
@@ -63,8 +62,6 @@ export type Events = {
   BackupDeleteStatus: [{ filename: string; isDeleting: boolean }];
   BackupDeleted: [{ filename: string }];
   BackupUpload: [{ progress: number; isComplete: boolean }];
-
-  QueueUpdate: [QueueResponseDto];
 
   StackCreate: [StackResponseDto];
   /** Unstacked, with assets to handle */

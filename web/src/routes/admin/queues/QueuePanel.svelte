@@ -1,16 +1,9 @@
 <script lang="ts">
-  import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { runQueueCommandLegacyMutation } from '#lib/queries/queue.query.ts';
   import { asQueueItem } from '#lib/services/queue.service.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import {
-    QueueCommand,
-    QueueName,
-    runQueueCommandLegacy,
-    type QueueCommandDto,
-    type QueueResponseDto,
-  } from '@immich/sdk';
+  import { QueueCommand, QueueName, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
   import { modalManager, toastManager } from '@immich/ui';
   import type { Component } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -108,20 +101,13 @@
       // no default
     }
 
-    try {
-      await runQueueCommandLegacy({ name, queueCommandDto: dto });
-      await queueManager.refresh();
-
-      switch (dto.command) {
-        case QueueCommand.Empty: {
+    await executeMutation(runQueueCommandLegacyMutation, [{ name, queueCommandDto: dto }], {
+      onSuccess: () => {
+        if (dto.command === QueueCommand.Empty) {
           toastManager.primary($t('admin.cleared_jobs', { values: { job: item.title } }));
-          break;
         }
-        // no default
-      }
-    } catch (error) {
-      handleError(error, $t('admin.failed_job_command', { values: { command: dto.command, job: item.title } }));
-    }
+      },
+    });
   };
 </script>
 

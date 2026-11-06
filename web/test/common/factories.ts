@@ -20,6 +20,8 @@ import {
   type MemoryResponseDto,
   type PersonResponseDto,
   type PluginMethodResponseDto,
+  type QueueResponseDto,
+  type QueueStatisticsDto,
   type SharedLinkResponseDto,
   type StackResponseDto,
   type TagResponseDto,
@@ -335,6 +337,16 @@ const sharedLink = (overrides: Partial<SharedLinkResponseDto> = {}): SharedLinkR
   ...overrides,
 });
 
+const queue = ({
+  statistics,
+  ...overrides
+}: Partial<Omit<QueueResponseDto, 'statistics'>> &
+  Pick<QueueResponseDto, 'name'> & { statistics?: Partial<QueueStatisticsDto> }): QueueResponseDto => ({
+  isPaused: false,
+  statistics: { active: 0, completed: 0, delayed: 0, failed: 0, paused: 0, waiting: 0, ...statistics },
+  ...overrides,
+});
+
 export type MemoryYearSpec = { year: number; assetCount: number };
 
 const many = <T>(count: number, build: (index: number) => T): T[] =>
@@ -569,6 +581,7 @@ export const factory = {
   sharedLink,
   workflow,
   pluginMethod,
+  queue,
   memories,
   timeline,
   many,
