@@ -60,3 +60,24 @@ test('posting a comment on an asset shows it and updates the comment count', asy
     body: { albumId: album.id, assetId: asset.id, type: ReactionType.Comment, comment: 'Great shot' },
   });
 });
+
+test('trashing a liked asset removes the like from the album activity', async ({ page, data, api, app }) => {
+  const { album, asset, sibling } = setup(data);
+  await page.goto(Route.viewAlbum(album));
+  await app.album.activity.commentsButton.click();
+  await app.timeline.thumbnail(asset).click();
+  await app.viewer.waitForAsset(asset);
+  await app.viewer.activity.likeButton.click();
+  await expect(app.viewer.activity.likedButton).toBeVisible();
+  await app.viewer.deleteButton.click();
+  await app.viewer.waitForAsset(sibling);
+
+  await app.viewer.backButton.click();
+
+  await expect(app.viewer.root).not.toBeVisible();
+  await expect(page.getByText('user_liked', { exact: true })).toHaveCount(0);
+  expect(api.createActivity).toHaveBeenCalledWith({
+    body: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
+  });
+  expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
+});

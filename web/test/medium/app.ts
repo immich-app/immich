@@ -59,6 +59,9 @@ export const createApp = (page: Page, data: MockData) => {
       mapButton: labelled('map'),
       mapDialog: page.getByRole('dialog'),
       mapMarkers: page.getByRole('dialog').locator('.maplibregl-marker'),
+      activity: {
+        commentsButton: page.getByRole('button', { name: 'activity', exact: true }),
+      },
     },
 
     memories: {

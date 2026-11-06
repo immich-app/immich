@@ -449,7 +449,8 @@ export class MockData {
         (!userId || activity.user.id === userId) &&
         (!$type || activity.type === $type) &&
         (level !== ReactionLevel.Album || activity.assetId === null) &&
-        (level !== ReactionLevel.Asset || activity.assetId !== null),
+        (level !== ReactionLevel.Asset || activity.assetId !== null) &&
+        (activity.assetId === null || this.assets.get(activity.assetId)?.isTrashed === false),
     );
   }
 
