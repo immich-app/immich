@@ -6,6 +6,7 @@ import { DateTime, Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
+import { validate as isUuid } from 'uuid';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { Asset, AssetFile } from 'src/database.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
@@ -807,13 +808,10 @@ export class MetadataService extends BaseService {
         }
       }
 
-      // write extracted motion video to disk, especially if the encoded-video folder has been deleted
-      const isExistsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
-      if (!isExistsOnDisk) {
-        this.storageCore.ensureFolders(motionAsset.originalPath);
-        await this.storageRepository.createFile(motionAsset.originalPath, video);
-        this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
-
+      if (
+        this.isImmichMotionVideo(motionAsset) &&
+        (await this.restoreMotionVideo(motionAsset.originalPath, video, checksum))
+      ) {
         await this.handleMetadataExtraction({ id: motionAsset.id });
         await this.jobRepository.queue({ name: JobName.AssetEncodeVideo, data: { id: motionAsset.id } });
       }
@@ -824,6 +822,55 @@ export class MetadataService extends BaseService {
         `Failed to extract motion video for ${asset.id}: ${asset.originalPath}: ${error}`,
         error?.stack,
       );
+    }
+  }
+
+  private isImmichMotionVideo(video: Asset): boolean {
+    const pathId = parse(video.originalPath).name.replace(/-MP$/, '');
+    return (
+      video.type === AssetType.Video &&
+      !video.isExternal &&
+      isUuid(pathId) &&
+      video.originalPath === StorageCore.getAndroidMotionPath(video, pathId)
+    );
+  }
+
+  private async restoreMotionVideo(path: string, video: Buffer, checksum: Buffer): Promise<boolean> {
+    if (await this.hasMotionVideoChecksum(path, checksum)) {
+      return false;
+    }
+
+    return this.databaseRepository.withLock(DatabaseLock.MotionPhotoVideo, async () => {
+      if (await this.hasMotionVideoChecksum(path, checksum)) {
+        return false;
+      }
+
+      this.storageCore.ensureFolders(path);
+      const temporaryPath = `${path}.${this.cryptoRepository.randomUUID()}.tmp`;
+      try {
+        await this.storageRepository.createFile(temporaryPath, video);
+        await this.storageRepository.rename(temporaryPath, path);
+      } catch (error) {
+        await this.storageRepository
+          .unlink(temporaryPath)
+          .catch((error) => this.logger.error(`Failed to remove temporary motion video ${temporaryPath}: ${error}`));
+        throw error;
+      }
+
+      this.logger.log(`Wrote motion photo video to ${path}`);
+      return true;
+    });
+  }
+
+  private async hasMotionVideoChecksum(path: string, checksum: Buffer): Promise<boolean> {
+    try {
+      const actualChecksum = await this.cryptoRepository.hashFile(path);
+      return actualChecksum.equals(checksum);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException)?.code !== 'ENOENT') {
+        throw error;
+      }
+      return false;
     }
   }
 

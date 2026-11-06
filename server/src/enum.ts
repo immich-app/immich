@@ -1033,6 +1033,7 @@ export enum DatabaseLock {
   FacialRecognition = 900,
   FutoBackupsModuleConfig = 926,
   DuplicateDetection = 1000,
+  MotionPhotoVideo = 1100,
 }
 
 export enum MaintenanceAction {

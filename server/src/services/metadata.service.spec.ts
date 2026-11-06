@@ -3,6 +3,9 @@ import { DateTime } from 'luxon';
 import { R_OK } from 'node:constants';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
+import { mkdtempDisposable, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { basename, dirname, join } from 'node:path';
 import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core.js';
 import { defaults } from 'src/dtos/config.dto.js';
 import {
@@ -17,7 +20,10 @@ import {
   SourceType,
   StorageFolder,
 } from 'src/enum.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
+import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ImmichTags } from 'src/repositories/metadata.repository.js';
+import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { MetadataService, firstDateTime } from 'src/services/metadata.service.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { PersonGroupFactory } from 'test/factories/person-group.factory.js';
@@ -26,7 +32,7 @@ import { videoInfoStub } from 'test/fixtures/media.stub.js';
 import { tagStub } from 'test/fixtures/tag.stub.js';
 import { getForAsset, getForMetadataExtraction, getForSidecarWrite } from 'test/mappers.js';
 import { factory } from 'test/small.factory.js';
-import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, makeStream, newRandomImage, newTestService } from 'test/utils.js';
 
 const forSidecarJob = (
   asset: {
@@ -83,6 +89,19 @@ describe(MetadataService.name, () => {
     mocks.metadata.readTags.mockReset();
     mocks.metadata.readTags.mockResolvedValueOnce(exifData ?? {});
     mocks.metadata.readTags.mockResolvedValueOnce(sidecarData ?? {});
+  };
+
+  const setupNewMotionAsset = (asset: ThumbnailPathEntity) => {
+    const motionAsset = AssetFactory.create({
+      type: AssetType.Video,
+      visibility: AssetVisibility.Hidden,
+      ownerId: asset.ownerId,
+    });
+    motionAsset.originalPath = StorageCore.getAndroidMotionPath(asset, motionAsset.id);
+    mocks.asset.create.mockResolvedValue(motionAsset);
+    mocks.crypto.randomUUID.mockReturnValueOnce(motionAsset.id);
+    mocks.crypto.hashFile.mockRejectedValue(Object.assign(new Error('File not found'), { code: 'ENOENT' }));
+    return motionAsset;
   };
 
   beforeEach(() => {
@@ -836,7 +855,7 @@ describe(MetadataService.name, () => {
 
     it('should extract the MotionPhotoVideo tag from Samsung HEIC motion photos', async () => {
       const asset = AssetFactory.create();
-      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
+      const motionAsset = setupNewMotionAsset(asset);
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mocks.storage.stat.mockResolvedValue({
         size: 123_456,
@@ -854,8 +873,6 @@ describe(MetadataService.name, () => {
         EmbeddedVideoType: 'MotionPhoto_Data',
       });
       mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
-      mocks.asset.create.mockResolvedValue(motionAsset);
-      mocks.crypto.randomUUID.mockReturnValue(motionAsset.id);
       const video = randomBytes(512);
       mocks.metadata.extractBinaryTag.mockResolvedValue(video);
 
@@ -877,7 +894,8 @@ describe(MetadataService.name, () => {
         type: AssetType.Video,
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(asset.ownerId, 512);
-      expect(mocks.storage.createFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(expect.any(String), video);
+      expect(mocks.storage.rename).toHaveBeenCalledWith(expect.any(String), motionAsset.originalPath);
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: asset.id,
         livePhotoVideoId: motionAsset.id,
@@ -891,7 +909,7 @@ describe(MetadataService.name, () => {
 
     it('should extract the EmbeddedVideo tag from Samsung JPEG motion photos', async () => {
       const asset = AssetFactory.create();
-      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
+      const motionAsset = setupNewMotionAsset(asset);
       mocks.storage.stat.mockResolvedValue({
         size: 123_456,
         mtime: asset.fileModifiedAt,
@@ -906,8 +924,6 @@ describe(MetadataService.name, () => {
         MotionPhoto: 1,
       });
       mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
-      mocks.asset.create.mockResolvedValue(motionAsset);
-      mocks.crypto.randomUUID.mockReturnValue(motionAsset.id);
       const video = randomBytes(512);
       mocks.metadata.extractBinaryTag.mockResolvedValue(video);
 
@@ -929,7 +945,8 @@ describe(MetadataService.name, () => {
         type: AssetType.Video,
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(asset.ownerId, 512);
-      expect(mocks.storage.createFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(expect.any(String), video);
+      expect(mocks.storage.rename).toHaveBeenCalledWith(expect.any(String), motionAsset.originalPath);
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: asset.id,
         livePhotoVideoId: motionAsset.id,
@@ -943,7 +960,7 @@ describe(MetadataService.name, () => {
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
       const asset = AssetFactory.create();
-      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
+      const motionAsset = setupNewMotionAsset(asset);
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mocks.storage.stat.mockResolvedValue({
         size: 123_456,
@@ -958,8 +975,6 @@ describe(MetadataService.name, () => {
         MicroVideoOffset: 1,
       });
       mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
-      mocks.asset.create.mockResolvedValue(motionAsset);
-      mocks.crypto.randomUUID.mockReturnValue(motionAsset.id);
       const video = randomBytes(512);
       mocks.storage.readFile.mockResolvedValue(video);
 
@@ -981,7 +996,8 @@ describe(MetadataService.name, () => {
         type: AssetType.Video,
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(asset.ownerId, 512);
-      expect(mocks.storage.createFile).toHaveBeenCalledWith(motionAsset.originalPath, video);
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(expect.any(String), video);
+      expect(mocks.storage.rename).toHaveBeenCalledWith(expect.any(String), motionAsset.originalPath);
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: asset.id,
         livePhotoVideoId: motionAsset.id,
@@ -1023,7 +1039,7 @@ describe(MetadataService.name, () => {
           MicroVideoOffset: 1,
         });
         mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
-        mocks.asset.create.mockResolvedValue(AssetFactory.create({ type: AssetType.Video }));
+        setupNewMotionAsset(asset);
         const video = randomBytes(512);
         mocks.storage.readFile.mockResolvedValue(video);
 
@@ -1054,7 +1070,8 @@ describe(MetadataService.name, () => {
 
     it('should not create a new motion photo video asset if the hash of the extracted video matches an existing asset', async () => {
       const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
-      const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
+      const asset = AssetFactory.create({ ownerId: motionAsset.ownerId, livePhotoVideoId: motionAsset.id });
+      motionAsset.originalPath = StorageCore.getAndroidMotionPath(asset, motionAsset.id);
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mockReadTags({
         Directory: 'foo/bar/',
@@ -1062,15 +1079,16 @@ describe(MetadataService.name, () => {
         MicroVideo: 1,
         MicroVideoOffset: 1,
       });
-      mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
+      const checksum = randomBytes(512);
+      mocks.crypto.hashSha1.mockReturnValue(checksum);
+      mocks.crypto.hashFile.mockResolvedValue(checksum);
       mocks.asset.getByChecksum.mockResolvedValue(motionAsset);
       const video = randomBytes(512);
       mocks.storage.readFile.mockResolvedValue(video);
-      mocks.storage.checkFileExists.mockResolvedValue(true);
 
       await sut.handleMetadataExtraction({ id: asset.id });
       expect(mocks.asset.create).not.toHaveBeenCalled();
-      expect(mocks.storage.createOrOverwriteFile).not.toHaveBeenCalled();
+      expect(mocks.storage.createFile).not.toHaveBeenCalled();
       // The still asset gets saved by handleMetadataExtraction, but not the video
       expect(mocks.asset.update).toHaveBeenCalledTimes(1);
       expect(mocks.job.queue).not.toHaveBeenCalled();
@@ -1100,12 +1118,14 @@ describe(MetadataService.name, () => {
         id: asset.id,
         livePhotoVideoId: motionAsset.id,
       });
-      expect(mocks.asset.update).toHaveBeenCalledTimes(4);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
+      expect(mocks.storage.createFile).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
 
     it('should not update storage usage if motion photo is external', async () => {
-      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Hidden });
       const asset = AssetFactory.create({ isExternal: true });
+      setupNewMotionAsset(asset);
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mockReadTags({
         Directory: 'foo/bar/',
@@ -1114,12 +1134,192 @@ describe(MetadataService.name, () => {
         MicroVideoOffset: 1,
       });
       mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
-      mocks.asset.create.mockResolvedValue(motionAsset);
       const video = randomBytes(512);
       mocks.storage.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: asset.id });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+
+    describe('motion photo video recovery', () => {
+      const video = Buffer.from('000000186674797069736F6D0000020069736F6D6D7034320000000C6D64617411223344', 'hex');
+      const prefix = video.subarray(0, 24);
+      const sameSizeCorruption = Buffer.concat([video.subarray(0, -1), Buffer.from([0])]);
+
+      const setup = async (
+        folder: string,
+        kind: 'extracted' | 'legacy' | 'uploaded' | 'external' | 'encoded' = 'extracted',
+      ) => {
+        const storage = new StorageRepository(LoggingRepository.create());
+        const crypto = new CryptoRepository();
+        ({ sut, mocks } = newTestService(MetadataService, { storage, crypto }));
+        StorageCore.setMediaLocation(folder);
+
+        const originalPath = join(folder, 'motion-photo.png');
+        const libraryId = kind === 'external' ? factory.uuid() : null;
+        const motion = AssetFactory.create({
+          type: AssetType.Video,
+          visibility: AssetVisibility.Hidden,
+          checksum: crypto.hashSha1(video),
+          libraryId,
+          isExternal: kind === 'external',
+        });
+        const photo = AssetFactory.create({
+          originalPath,
+          ownerId: motion.ownerId,
+          livePhotoVideoId: motion.id,
+          libraryId,
+        });
+        const paths = {
+          extracted: StorageCore.getAndroidMotionPath(photo, motion.id),
+          legacy: StorageCore.getAndroidMotionPath(photo, factory.uuid()),
+          uploaded: StorageCore.getNestedPath(StorageFolder.Upload, motion.ownerId, `${motion.id}.mp4`),
+          external: StorageCore.getAndroidMotionPath(photo, motion.id),
+          encoded: StorageCore.getEncodedVideoPath(motion),
+        };
+        motion.originalPath = paths[kind];
+
+        await writeFile(originalPath, Buffer.concat([newRandomImage(), video]));
+        mocks.metadata.readTags.mockImplementation((path) =>
+          Promise.resolve(path === originalPath ? { MicroVideo: 1, MicroVideoOffset: video.length } : {}),
+        );
+        mocks.asset.getByChecksum.mockResolvedValue(motion);
+        mocks.assetJob.getForMetadataExtraction.mockImplementation((id) =>
+          Promise.resolve(getForMetadataExtraction(id === photo.id ? photo : motion)),
+        );
+        mocks.media.probe.mockResolvedValue(videoInfoStub.noAudioStreams);
+
+        const publishedVideos: Buffer[] = [];
+        mocks.job.queue.mockImplementation(async () => {
+          publishedVideos.push(await readFile(motion.originalPath));
+        });
+
+        const writeMotion = async (contents: Buffer) => {
+          storage.mkdirSync(dirname(motion.originalPath));
+          await writeFile(motion.originalPath, contents);
+        };
+
+        return { storage, crypto, photo, motion, publishedVideos, writeMotion };
+      };
+
+      it.each([
+        { case: 'a partially written video', contents: prefix, kind: 'extracted' },
+        { case: 'a same-size corrupted video', contents: sameSizeCorruption, kind: 'extracted' },
+        { case: 'a missing video', contents: undefined, kind: 'extracted' },
+        { case: 'a partially written legacy video', contents: prefix, kind: 'legacy' },
+      ] as const)('should restore $case and only encode it once', async ({ contents, kind }) => {
+        await using folder = await mkdtempDisposable(join(tmpdir(), 'immich-motion-photo-'));
+        const { photo, motion, publishedVideos, writeMotion } = await setup(folder.path, kind);
+        if (contents) {
+          await writeMotion(contents);
+        }
+
+        await sut.handleMetadataExtraction({ id: photo.id });
+
+        await expect(readFile(motion.originalPath)).resolves.toEqual(video);
+        expect(publishedVideos).toEqual([video]);
+        expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+          name: JobName.AssetEncodeVideo,
+          data: { id: motion.id },
+        });
+        expect(mocks.asset.getByChecksum).toHaveBeenCalledWith({
+          ownerId: photo.ownerId,
+          libraryId: undefined,
+          checksum: motion.checksum,
+        });
+        expect(mocks.asset.create).not.toHaveBeenCalled();
+        expect(mocks.asset.update).not.toHaveBeenCalledWith(
+          expect.objectContaining({ livePhotoVideoId: expect.anything() }),
+        );
+        expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+
+        const repaired = await stat(motion.originalPath);
+        await sut.handleMetadataExtraction({ id: photo.id });
+        await expect(stat(motion.originalPath)).resolves.toMatchObject({
+          ino: repaired.ino,
+          mtimeMs: repaired.mtimeMs,
+        });
+        await expect(readdir(dirname(motion.originalPath))).resolves.toEqual([basename(motion.originalPath)]);
+        expect(mocks.job.queue).toHaveBeenCalledTimes(1);
+        expect(mocks.asset.create).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        { kind: 'extracted', contents: video },
+        { kind: 'uploaded', contents: prefix },
+        { kind: 'external', contents: prefix },
+        { kind: 'encoded', contents: prefix },
+      ] as const)('should leave an existing $kind video untouched', async ({ kind, contents }) => {
+        await using folder = await mkdtempDisposable(join(tmpdir(), 'immich-motion-photo-'));
+        const { photo, motion, writeMotion } = await setup(folder.path, kind);
+        await writeMotion(contents);
+        const before = await stat(motion.originalPath);
+
+        await sut.handleMetadataExtraction({ id: photo.id });
+
+        await expect(readFile(motion.originalPath)).resolves.toEqual(contents);
+        await expect(stat(motion.originalPath)).resolves.toMatchObject({ ino: before.ino, mtimeMs: before.mtimeMs });
+        expect(mocks.asset.create).not.toHaveBeenCalled();
+        expect(mocks.job.queue).not.toHaveBeenCalled();
+      });
+
+      it('should not replace a video when hashing fails with a permissions error', async () => {
+        await using folder = await mkdtempDisposable(join(tmpdir(), 'immich-motion-photo-'));
+        const { crypto, photo, motion, writeMotion } = await setup(folder.path);
+        await writeMotion(prefix);
+        const hash = vi
+          .spyOn(crypto, 'hashFile')
+          .mockRejectedValueOnce(Object.assign(new Error('Permission denied'), { code: 'EACCES' }));
+
+        await sut.handleMetadataExtraction({ id: photo.id });
+
+        expect(hash).toHaveBeenCalledWith(motion.originalPath);
+        await expect(readFile(motion.originalPath)).resolves.toEqual(prefix);
+        expect(mocks.job.queue).not.toHaveBeenCalled();
+      });
+
+      it.each(['write', 'rename'] as const)(
+        'should clean up after a failed %s and recover on retry',
+        async (operation) => {
+          await using folder = await mkdtempDisposable(join(tmpdir(), 'immich-motion-photo-'));
+          const { storage, photo, motion, publishedVideos, writeMotion } = await setup(folder.path);
+          await writeMotion(prefix);
+          const failure = Object.assign(new Error('Failed to publish motion video'), { code: 'EIO' });
+          const create = vi.spyOn(storage, 'createFile');
+          const rename = vi.spyOn(storage, 'rename');
+          if (operation === 'write') {
+            create.mockImplementationOnce(async (path) => {
+              await writeFile(path, prefix, { flag: 'wx' });
+              throw failure;
+            });
+          } else {
+            rename.mockRejectedValueOnce(failure);
+          }
+
+          await sut.handleMetadataExtraction({ id: photo.id });
+
+          expect(create).toHaveBeenCalledExactlyOnceWith(expect.any(String), video);
+          const [[temporaryPath]] = create.mock.calls;
+          expect(temporaryPath).not.toBe(motion.originalPath);
+          expect(dirname(temporaryPath)).toBe(dirname(motion.originalPath));
+          if (operation === 'rename') {
+            expect(rename).toHaveBeenCalledWith(temporaryPath, motion.originalPath);
+          }
+          await expect(readFile(motion.originalPath)).resolves.toEqual(prefix);
+          await expect(readdir(dirname(motion.originalPath))).resolves.toEqual([basename(motion.originalPath)]);
+          expect(mocks.job.queue).not.toHaveBeenCalled();
+
+          await sut.handleMetadataExtraction({ id: photo.id });
+
+          await expect(readFile(motion.originalPath)).resolves.toEqual(video);
+          expect(publishedVideos).toEqual([video]);
+          expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+            name: JobName.AssetEncodeVideo,
+            data: { id: motion.id },
+          });
+          expect(mocks.asset.create).not.toHaveBeenCalled();
+        },
+      );
     });
 
     it('should save all metadata', async () => {
