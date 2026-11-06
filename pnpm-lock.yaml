@@ -268,8 +268,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.1(eslint@10.13.0(jiti@2.7.0)(supports-color@8.1.1))
       '@futo-org/backups-orchestrator-ui':
-        specifier: 1.12.1
-        version: 1.12.1(@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1)))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+        specifier: 1.13.1
+        version: 1.13.1(@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1)))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))
       '@immich/cli':
         specifier: workspace:*
         version: link:../packages/cli
@@ -557,8 +557,8 @@ importers:
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
       '@futo-org/backups-orchestrator-api':
-        specifier: 1.13.0
-        version: 1.13.0(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@nestjs/platform-socket.io@12.3.2)(@nestjs/schedule@12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2))(@nestjs/swagger@12.0.5(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.3.2)(kysely@0.29.7)(reflect-metadata@0.2.2)(supports-color@8.1.1)
+        specifier: 1.13.1
+        version: 1.13.1(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@nestjs/platform-socket.io@12.3.2)(@nestjs/schedule@12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2))(@nestjs/swagger@12.0.5(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.3.2)(kysely@0.29.7)(reflect-metadata@0.2.2)(supports-color@8.1.1)
       '@immich/plugin-sdk':
         specifier: workspace:*
         version: link:../packages/plugin-sdk
@@ -945,8 +945,8 @@ importers:
         specifier: ^3.0.0
         version: 3.5.22
       '@futo-org/backups-orchestrator-ui':
-        specifier: 1.13.0
-        version: 1.13.0(@immich/ui@0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+        specifier: 1.13.1
+        version: 1.13.1(@immich/ui@0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))
       '@immich/justified-layout-wasm':
         specifier: ^0.4.3
         version: 0.4.5
@@ -2918,14 +2918,11 @@ packages:
     resolution: {integrity: sha512-v0BLa0eqg7ubvVWeNSHVBs8fWH/GJicERZoJaxJ3FE/lj67VSqzoMg9pzfZVOfLMX10y0pGwQAuxoRVVH2patg==}
     engines: {node: '>=6'}
 
-  '@futo-org/backups-api-client@1.12.1':
-    resolution: {integrity: sha512-y1AtOftdZnFpoU7YRteD6U0qip4zWOg/JuiplGGGotdBnNMipOCSDj7ttU2huWRIEfZRosgAPiUi/lt/Bns/Xg==}
+  '@futo-org/backups-api-client@1.13.1':
+    resolution: {integrity: sha512-EDp48cJ+7xVsR6KVm1QH+1O/nWSEEAKQ9HjEPH/5Xwu2aa+vSh5yQQcGET+OULCa3z2AlnXss7TmYwZUN8T6ew==}
 
-  '@futo-org/backups-api-client@1.13.0':
-    resolution: {integrity: sha512-3dvu7KL724vm5P13fqB9fmi0PZGbgit+szd2tLhUWpmhaOPeMFM9gK5uN/3ne5exjf95unH2OykBrKEUUQes3Q==}
-
-  '@futo-org/backups-orchestrator-api@1.13.0':
-    resolution: {integrity: sha512-RQVTzE1PlvFisWnbl8JdQ+UF1zaC9E669fPrDR7fPMqpPm2UwfrEfq9cjXWwlw5HRGBDjVibW1g3+BawwbGwHA==}
+  '@futo-org/backups-orchestrator-api@1.13.1':
+    resolution: {integrity: sha512-F99xhe2eDoQOQ+pWZdQ/lR0bnslQoQQ4O4dpvdX7uoYt+wonbS1+ZYdCpZPKr0fe0DTIb8HpUoGcMPMwQl3atQ==}
     peerDependencies:
       '@electric-sql/pglite': 0.5.12
       '@electric-sql/pglite-prepopulatedfs': 0.5.12
@@ -2945,14 +2942,8 @@ packages:
       kysely-pglite-dialect:
         optional: true
 
-  '@futo-org/backups-orchestrator-ui@1.12.1':
-    resolution: {integrity: sha512-GejBWdU3w3dnVfK5llQVn/r6vGLrcZ/0ozzBnFlM5YdiCPr9NJebFcL9WMvghxjvw+CPTfDmYQfVbm35qFAfmA==}
-    peerDependencies:
-      '@immich/ui': ^0.90.0
-      svelte: ^5.0.0
-
-  '@futo-org/backups-orchestrator-ui@1.13.0':
-    resolution: {integrity: sha512-dubA8SKkqiAsSw23yWEIEQ0kq4BjWXmrDDliylisxCMKbPBS/f/Ok5aIHlG8g7hcdkVIr4t824X0HwajADl0cA==}
+  '@futo-org/backups-orchestrator-ui@1.13.1':
+    resolution: {integrity: sha512-YsHb76J6vz0nxFdTxiypwahiKbAjqjYv/BR+8UjmrynE9Yl2nrvUPemEQ5PpMYBptCNjpzZVpD47XKnsx/EL8Q==}
     peerDependencies:
       '@immich/ui': ^0.90.0
       svelte: ^5.0.0
@@ -16219,17 +16210,13 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 7.3.1
 
-  '@futo-org/backups-api-client@1.12.1':
+  '@futo-org/backups-api-client@1.13.1':
     dependencies:
       '@oazapfts/runtime': 1.2.0
 
-  '@futo-org/backups-api-client@1.13.0':
+  '@futo-org/backups-orchestrator-api@1.13.1(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@nestjs/platform-socket.io@12.3.2)(@nestjs/schedule@12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2))(@nestjs/swagger@12.0.5(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.3.2)(kysely@0.29.7)(reflect-metadata@0.2.2)(supports-color@8.1.1)':
     dependencies:
-      '@oazapfts/runtime': 1.2.0
-
-  '@futo-org/backups-orchestrator-api@1.13.0(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@nestjs/platform-socket.io@12.3.2)(@nestjs/schedule@12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2))(@nestjs/swagger@12.0.5(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.3.2)(kysely@0.29.7)(reflect-metadata@0.2.2)(supports-color@8.1.1)':
-    dependencies:
-      '@futo-org/backups-api-client': 1.13.0
+      '@futo-org/backups-api-client': 1.13.1
       '@futo-org/restic-wrapper': 1.7.0
       '@immich/sql-tools': 0.7.0
       '@nestjs/common': 12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
@@ -16259,9 +16246,9 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@futo-org/backups-orchestrator-ui@1.12.1(@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1)))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))':
+  '@futo-org/backups-orchestrator-ui@1.13.1(@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1)))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))':
     dependencies:
-      '@futo-org/backups-api-client': 1.12.1
+      '@futo-org/backups-api-client': 1.13.1
       '@immich/ui': 0.90.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))
       '@lingui/core': 5.9.5
       '@material-symbols/svg-400': 0.48.2
@@ -16284,9 +16271,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@futo-org/backups-orchestrator-ui@1.13.0(@immich/ui@0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))':
+  '@futo-org/backups-orchestrator-ui@1.13.1(@immich/ui@0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))':
     dependencies:
-      '@futo-org/backups-api-client': 1.13.0
+      '@futo-org/backups-api-client': 1.13.1
       '@immich/ui': 0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3)
       '@lingui/core': 5.9.5
       '@material-symbols/svg-400': 0.48.2
