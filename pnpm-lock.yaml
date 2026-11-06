@@ -954,8 +954,8 @@ importers:
         specifier: ^3.0.0
         version: 3.5.22
       '@futo-org/backups-orchestrator-ui':
-        specifier: 1.12.1
-        version: 1.12.1(@immich/ui@0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+        specifier: 1.13.0
+        version: 1.13.0(@immich/ui@0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))
       '@immich/justified-layout-wasm':
         specifier: ^0.4.3
         version: 0.4.5
@@ -2959,6 +2959,12 @@ packages:
 
   '@futo-org/backups-orchestrator-ui@1.12.1':
     resolution: {integrity: sha512-GejBWdU3w3dnVfK5llQVn/r6vGLrcZ/0ozzBnFlM5YdiCPr9NJebFcL9WMvghxjvw+CPTfDmYQfVbm35qFAfmA==}
+    peerDependencies:
+      '@immich/ui': ^0.90.0
+      svelte: ^5.0.0
+
+  '@futo-org/backups-orchestrator-ui@1.13.0':
+    resolution: {integrity: sha512-dubA8SKkqiAsSw23yWEIEQ0kq4BjWXmrDDliylisxCMKbPBS/f/Ok5aIHlG8g7hcdkVIr4t824X0HwajADl0cA==}
     peerDependencies:
       '@immich/ui': ^0.90.0
       svelte: ^5.0.0
@@ -16266,9 +16272,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@futo-org/backups-orchestrator-ui@1.12.1(@immich/ui@0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))':
+  '@futo-org/backups-orchestrator-ui@1.13.0(@immich/ui@0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3))(@lingui/cli@6.10.1(esbuild@0.28.2)(rolldown@1.2.15)(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(supports-color@8.1.1)(svelte@5.57.3(@typescript-eslint/types@8.72.1))':
     dependencies:
-      '@futo-org/backups-api-client': 1.12.1
+      '@futo-org/backups-api-client': 1.13.0
       '@immich/ui': 0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3)
       '@lingui/core': 5.9.5
       '@material-symbols/svg-400': 0.48.2
