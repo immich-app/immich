@@ -138,8 +138,8 @@ const handleKeepThisDeleteOthers = async (stack: StackResponseDto, asset: AssetR
 const handleRemoveFromStack = (stack: StackResponseDto, asset: AssetResponseDto) =>
   executeMutation(removeAssetFromStackMutation, [{ id: stack.id, assetId: asset.id }], {
     onSuccess: () => {
-      eventManager.emit('AssetUpdate', asset);
       eventManager.emit('StackUpdate', { ...stack, assets: stack.assets.filter((a) => a.id !== asset.id) });
+      eventManager.emit('AssetUpdate', { ...asset, stack: null });
     },
   });
 

@@ -49,6 +49,7 @@ export type TimelineFilter = {
   isTrashed?: boolean;
   visibility?: AssetVisibility;
   order?: AssetOrder;
+  withStacked?: boolean;
 };
 
 export type MemoryFilter = {
@@ -185,7 +186,8 @@ export class MockData {
             ? !hiddenVisibilities.has(asset.visibility)
             : asset.visibility === filter.visibility) &&
           asset.isTrashed === isTrashed &&
-          (filter.isFavorite === undefined || asset.isFavorite === filter.isFavorite),
+          (filter.isFavorite === undefined || asset.isFavorite === filter.isFavorite) &&
+          (!filter.withStacked || !asset.stack || asset.stack.primaryAssetId === asset.id),
       )
       .sort((a, b) => direction * a.fileCreatedAt.localeCompare(b.fileCreatedAt));
   }
@@ -517,8 +519,8 @@ export class MockData {
     if (!stack || !asset) {
       return;
     }
-    this.stacks.set(id, { ...stack, assets: stack.assets.filter((asset) => asset.id !== assetId) });
     this.assets.set(assetId, { ...asset, stack: null });
+    this.addStacks({ ...stack, assets: stack.assets.filter((asset) => asset.id !== assetId) });
     return this;
   }
 
