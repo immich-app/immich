@@ -163,10 +163,6 @@ test.describe('FUTO Backups', () => {
     await expect(dialog.filter({ hasText: 'Restoring' })).toBeVisible();
     await expect(dialog.filter({ hasText: 'Restoring' })).toBeHidden({ timeout: 60_000 });
 
-    await page.getByRole('button', { name: 'Continue' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Restore' }).click();
-
-    await page.waitForURL('/maintenance?**');
     await page.waitForURL('/photos', { timeout: 90_000 });
   });
 });
