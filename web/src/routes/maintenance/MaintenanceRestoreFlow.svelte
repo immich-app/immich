@@ -32,7 +32,10 @@
     {end}
   />
 {:else if stage === 'futo-backups'}
-  <ImmichOnboardingRestoreFlow onExit={() => (stage = 'overview')} onFinish={() => (stage = 'auto-select-backup')} />
+  <ImmichOnboardingRestoreFlow
+    onExit={() => (stage = 'overview')}
+    onFinish={({ databaseRestored }) => (databaseRestored ? end() : (stage = 'auto-select-backup'))}
+  />
 {:else if stage === 'detect-install'}
   <RestoreFlowDetectInstall next={() => (stage = 'select-backup')} previous={() => (stage = 'overview')} />
 {:else if stage === 'select-backup'}

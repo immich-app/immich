@@ -23,7 +23,7 @@
   "license": "GNU Affero General Public License version 3",
   "devDependencies": {
     "@eslint/js": "^10.0.0",
-    "@futo-org/backups-orchestrator-ui": "1.12.1",
+    "@futo-org/backups-orchestrator-ui": "1.13.1",
     "@immich/cli": "workspace:*",
     "@immich/e2e-auth-server": "workspace:*",
     "@immich/sdk": "workspace:*",
