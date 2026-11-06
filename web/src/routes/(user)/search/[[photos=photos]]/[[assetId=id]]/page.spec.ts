@@ -142,6 +142,18 @@ test('unknown state searches for a missing state', async ({ router, render, sett
   expect(submittedTerms(router)).toMatchObject({ state: null });
 });
 
+test('unknown city searches for a missing city', async ({ router, render, settle, app }) => {
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.openFilter('places');
+  await app.search.pick('city', 'unknown');
+
+  await app.search.submit();
+
+  expect(submittedTerms(router)).toMatchObject({ city: null });
+});
+
 test('reopening a missing country search selects unknown', async ({ router, render, settle, app }) => {
   await router.goto(Route.search({ isFavorite: true, country: null }));
   await render(Page, load);
