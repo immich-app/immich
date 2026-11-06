@@ -569,8 +569,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/plugin-sdk
       '@immich/sql-tools':
-        specifier: ^0.6.6
-        version: 0.6.6
+        specifier: ^0.7.0
+        version: 0.7.0
       '@nestjs/bullmq':
         specifier: ^12.0.0
         version: 12.0.0(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.2)(bullmq@6.5.1(ioredis@6.0.0(supports-color@8.1.1))(pg@8.23.1))
@@ -3186,10 +3186,6 @@ packages:
 
   '@immich/justified-layout-wasm@0.4.5':
     resolution: {integrity: sha512-jDrrG1A0L9ISzLe68pIhABewvDeZs0EAWR8EVPCjolDklfrgG2E/eveoNLmbzzYwsoeM43ZVUREgupE+EK2rvQ==}
-
-  '@immich/sql-tools@0.6.6':
-    resolution: {integrity: sha512-NXxDO0jIzXmNvJAR+somSmN81zOP+11DboGaXRMxxpcZVRBIrWpwGPLZ3dG7SZfpyccKlgZGRBWqQGRm9U5A4w==}
-    hasBin: true
 
   '@immich/sql-tools@0.7.0':
     resolution: {integrity: sha512-RWSHO5UEza6zUrF1vncsbkeTT59MuWlUz6Ys47Dkujb+FqjBOsXnzQb0v8d5g4iTtIfXZzQKTWgvfIMY3GbzrA==}
@@ -16462,15 +16458,6 @@ snapshots:
     optional: true
 
   '@immich/justified-layout-wasm@0.4.5': {}
-
-  '@immich/sql-tools@0.6.6':
-    dependencies:
-      commander: 15.0.0
-      graph-data-structure: 4.5.0
-      kysely: 0.29.7
-      kysely-postgres-js: 5.0.1(kysely@0.29.7)(postgres@3.4.9)
-      pg-connection-string: 2.14.1
-      postgres: 3.4.9
 
   '@immich/sql-tools@0.7.0':
     dependencies:
