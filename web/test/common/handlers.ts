@@ -119,6 +119,12 @@ export const createHandlers = (data: MockData): Handlers => {
     getSearchSuggestions: ({ params }) => ({ json: data.searchSuggestions(params) as string[] }),
 
     updatePeople: ({ body }) => ({ json: data.updatePeople(body.people) }),
+    searchPerson: ({ params }) => ({ json: data.searchPeople(params) }),
+    getClusterGroupUsers: ({ params }) => ({ json: data.clusterGroupUsers(params.id) }),
+    updatePerson: ({ params, body }) => {
+      const person = data.updatePerson(params.id, body);
+      return person ? { json: person } : notFound;
+    },
     getFaces: () => ({ json: [] }),
     createFace: () => ({ status: 201 }),
     getAllPeople: () => {

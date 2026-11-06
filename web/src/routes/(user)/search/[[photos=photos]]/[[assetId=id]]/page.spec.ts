@@ -104,6 +104,143 @@ test('unknown country searches for a missing country', async ({ router, render, 
   expect(submittedTerms(router)).toMatchObject({ country: null });
 });
 
+test('unknown camera make searches for a missing make', async ({ router, render, settle, app }) => {
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.open();
+  await app.search.showAdvanced();
+  await app.search.pick('make', 'unknown');
+
+  await app.search.submit();
+
+  expect(submittedTerms(router)).toMatchObject({ make: null });
+});
+
+test('unknown camera model searches for a missing model', async ({ router, render, settle, app }) => {
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.open();
+  await app.search.showAdvanced();
+  await app.search.pick('model', 'unknown');
+
+  await app.search.submit();
+
+  expect(submittedTerms(router)).toMatchObject({ model: null });
+});
+
+test('unknown state searches for a missing state', async ({ router, render, settle, app }) => {
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.openFilter('places');
+  await app.search.pick('state', 'unknown');
+
+  await app.search.submit();
+
+  expect(submittedTerms(router)).toMatchObject({ state: null });
+});
+
+test('a search for a missing country shows unknown as the selected country', async ({
+  router,
+  render,
+  settle,
+  app,
+}) => {
+  await router.goto(Route.search({ isFavorite: true, country: null }));
+  await render(Page, load);
+  await settle();
+
+  await app.search.openFilter('places');
+
+  await expect.element(app.search.combobox('country')).toHaveValue('unknown');
+});
+
+const cameras = [
+  factory.asset({ exifInfo: { make: 'Canon', model: 'EOS R5' } }),
+  factory.asset({ exifInfo: { make: 'Sony', model: 'A7 IV' } }),
+];
+
+test('picking a camera make only offers models from that make', async ({ data, router, render, settle, app }) => {
+  data.addAssets(cameras);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.open();
+  await app.search.showAdvanced();
+  await app.search.pick('make', 'Canon');
+  await settle();
+
+  await app.search.openCombobox('model');
+
+  await expect.element(app.search.option('EOS R5')).toBeVisible();
+  await expect.element(app.search.option('A7 IV')).not.toBeInTheDocument();
+});
+
+test('changing the camera make clears a model from the previous make', async ({
+  data,
+  router,
+  render,
+  settle,
+  app,
+}) => {
+  data.addAssets(cameras);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.open();
+  await app.search.showAdvanced();
+  await app.search.pick('make', 'Canon');
+  await settle();
+  await app.search.pick('model', 'EOS R5');
+
+  await app.search.pick('make', 'Sony');
+  await settle();
+  await app.search.submit();
+
+  expect(submittedTerms(router)).toMatchObject({ make: 'Sony' });
+  expect(submittedTerms(router)).not.toHaveProperty('model');
+});
+
+const places = [
+  factory.asset({ exifInfo: { country: 'France', state: 'Île-de-France', city: 'Paris' } }),
+  factory.asset({ exifInfo: { country: 'Japan', state: 'Tokyo', city: 'Shinjuku' } }),
+];
+
+test('picking a country only offers cities from that country', async ({ data, router, render, settle, app }) => {
+  data.addAssets(places);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.openFilter('places');
+  await app.search.pick('country', 'France');
+  await settle();
+
+  await app.search.openCombobox('city');
+
+  await expect.element(app.search.option('Paris')).toBeVisible();
+  await expect.element(app.search.option('Shinjuku')).not.toBeInTheDocument();
+});
+
+test('changing the country clears a city from the previous country', async ({ data, router, render, settle, app }) => {
+  data.addAssets(places);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.openFilter('places');
+  await app.search.pick('country', 'France');
+  await settle();
+  await app.search.pick('city', 'Paris');
+
+  await app.search.pick('country', 'Japan');
+  await settle();
+  await app.search.submit();
+
+  expect(submittedTerms(router)).toMatchObject({ country: 'Japan' });
+  expect(submittedTerms(router)).not.toHaveProperty('city');
+});
+
 describe('ahead of UTC', () => {
   beforeEach(() => {
     Settings.defaultZone = 'Pacific/Auckland';

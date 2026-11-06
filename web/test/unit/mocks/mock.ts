@@ -15,7 +15,7 @@ import { MockFetch } from '#test/unit/mocks/api.ts';
 import { resetPage, setPage } from '#test/unit/mocks/app-state.svelte.ts';
 import { MockConsole } from '#test/unit/mocks/logger.ts';
 import { MockRouter } from '#test/unit/mocks/router.ts';
-import { setTranslations } from '@immich/ui';
+import { modalManager, setTranslations } from '@immich/ui';
 import { isRedirect } from '@sveltejs/kit';
 import { tick, type Component } from 'svelte';
 import { cleanup, render } from 'vitest-browser-svelte';
@@ -40,6 +40,7 @@ export class Mock {
   readonly router = new MockRouter();
   readonly api = createApi(new MockFetch(this.data));
   readonly logger = new MockConsole();
+  readonly #openModals = new Set<() => Promise<void>>();
 
   async setup() {
     document.cookie = 'immich_is_authenticated=true';
@@ -47,6 +48,7 @@ export class Mock {
     this.router.setup();
     this.api.setup();
     this.logger.setup();
+    this.#trackModals();
 
     setTranslations(getUiTranslations(await getFormatter()));
     await queryClient.query(getServerConfigQuery());
@@ -58,6 +60,7 @@ export class Mock {
         await settleExpectations(this.api, this.logger);
       }
       cleanup();
+      await this.#closeModals();
       locale.set('default');
       authManager.reset();
       assetViewerManager.closeActivityPanel();
@@ -79,6 +82,25 @@ export class Mock {
         );
       }
     };
+  }
+
+  #trackModals() {
+    type OpenModal = { onClose: Promise<unknown>; close: () => Promise<void> };
+    const open = modalManager.open.bind(modalManager) as unknown as (...args: unknown[]) => OpenModal;
+    const tracked = (...args: unknown[]) => {
+      const modal = open(...args);
+      const close = () => modal.close();
+      this.#openModals.add(close);
+      void modal.onClose.then(() => this.#openModals.delete(close));
+      return modal;
+    };
+    vi.spyOn(modalManager, 'open').mockImplementation(tracked as unknown as typeof modalManager.open);
+  }
+
+  async #closeModals() {
+    await Promise.all([...this.#openModals].map((close) => close()));
+    this.#openModals.clear();
+    vi.mocked(modalManager.open).mockRestore();
   }
 
   async settle() {

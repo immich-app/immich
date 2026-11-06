@@ -27,6 +27,7 @@ import {
   type MemoryUpdateDto,
   type MetadataSearchDto,
   type PersonResponseDto,
+  type PersonUpdateDto,
   type PluginMethodResponseDto,
   type QueueCommandDto,
   type QueueDeleteDto,
@@ -176,6 +177,31 @@ export class MockData {
     return [...this.people.values()];
   }
 
+  searchPeople({ name, withHidden }: { name: string; withHidden?: boolean }) {
+    const query = name.toLowerCase();
+    return this.getPeople().filter(
+      (person) =>
+        (withHidden || !person.isHidden) &&
+        (person.name.toLowerCase().startsWith(query) || person.name.toLowerCase().includes(` ${query}`)),
+    );
+  }
+
+  updatePerson(id: string, dto: PersonUpdateDto) {
+    const person = this.people.get(id);
+    if (!person) {
+      return;
+    }
+    const updated: PersonResponseDto = {
+      ...person,
+      name: dto.name ?? person.name,
+      isHidden: dto.isHidden ?? person.isHidden,
+      isFavorite: dto.isFavorite ?? person.isFavorite,
+      birthDate: dto.birthDate === undefined ? person.birthDate : dto.birthDate,
+    };
+    this.people.set(id, updated);
+    return updated;
+  }
+
   updatePeople(people: { id: string; isHidden?: boolean }[]) {
     return people.map(({ id, isHidden }) => {
       const person = this.people.get(id);
@@ -303,6 +329,10 @@ export class MockData {
 
   getUser(id: string) {
     return this.users.get(id);
+  }
+
+  clusterGroupUsers(clusterGroupId: string) {
+    return this.userList().filter((user) => user.clusterGroupId === clusterGroupId);
   }
 
   userList({ withDeleted = false }: { withDeleted?: boolean } = {}) {

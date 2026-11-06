@@ -35,6 +35,9 @@ export const createApp = () => {
         await searchFilters.getByRole('combobox', { name: label, exact: true }).click();
         await page.getByRole('option', { name: option, exact: true }).click();
       },
+      combobox: (label: string) => searchFilters.getByRole('combobox', { name: label, exact: true }),
+      openCombobox: (label: string) => searchFilters.getByRole('combobox', { name: label, exact: true }).click(),
+      option: (name: string) => page.getByRole('option', { name, exact: true }),
       removeChipButtons: page.getByRole('button', { name: 'remove_filter', exact: true }),
       tags: {
         section: tagsSection,
@@ -116,6 +119,8 @@ export const createApp = () => {
       manageOauthAccountLink: page.getByRole('link', { name: 'manage_oauth_account', exact: true }),
     },
     people: {
+      nameInput: (index: number) => main.getByPlaceholder('add_a_name').nth(index),
+      mergeDialog: (name: string) => page.getByRole('dialog').getByText(`merge_people - ${name}`, { exact: true }),
       manage: {
         hideButtons: page.getByRole('button', { name: 'hide_named_person' }),
         hidden: page.getByRole('button', { pressed: true }),
