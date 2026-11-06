@@ -1,16 +1,16 @@
-import { Spy } from '#test/medium/mock/helpers.ts';
+import { Spy, matchesCall } from '#test/common/expectations.ts';
 import { expect as base, type ExpectMatcherState } from '@playwright/test';
 
 declare global {
   namespace PlaywrightTest {
     interface Matchers<R, T> {
       toHaveBeenCalled(): R;
-      toHaveBeenCalledWith(expected: T extends Spy<unknown, infer E> ? E : never): R;
+      toHaveBeenCalledWith(expected: T extends Spy<infer C> ? (C extends string ? C | RegExp : C) : never): R;
     }
   }
 }
 
-type AnySpy = Spy<unknown, unknown>;
+type AnySpy = Spy<unknown>;
 
 const assertSpy = (received: unknown): AnySpy => {
   if (received instanceof Spy) {
@@ -34,12 +34,11 @@ const checkCalls = (
   predicate: (value: unknown) => boolean,
 ) => {
   const spy = assertSpy(received);
-  const found = spy.calls.filter((call) => predicate(call));
-  for (const call of found) {
-    spy.markSeen(call);
-  }
-  const pass = found.length > 0;
   const condition = `to have been called${expected === undefined ? '' : ` with ${state.utils.printExpected(expected)}`}`;
+  if (!state.isNot) {
+    spy.expect(`${spy.name} ${condition}`, predicate);
+  }
+  const pass = !state.isNot || spy.calls.some((call) => predicate(call));
   return {
     pass,
     name,
@@ -62,7 +61,7 @@ export const expect = base.extend({
   ),
   toHaveBeenCalledWith: withState((state, received, expected) =>
     checkCalls(state, received, 'toHaveBeenCalledWith', expected, (value) =>
-      assertSpy(received).matches(value, expected),
+      matchesCall(value, expected, (a, b) => base(a).toEqual(b)),
     ),
   ),
 });

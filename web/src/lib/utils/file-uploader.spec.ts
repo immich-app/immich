@@ -2,16 +2,19 @@ import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { uploadManager } from '#lib/managers/upload-manager.svelte.ts';
 import { uploadAssetsStore } from '#lib/stores/upload.ts';
 import { UploadState } from '#lib/types.ts';
-import * as utils from '#lib/utils.ts';
+import { uploadRequest } from '#lib/utils.ts';
 import { factory } from '#test/unit/factories.ts';
-import { AssetMediaStatus, type AssetMediaResponseDto, type UserAdminResponseDto } from '@immich/sdk';
+import { test } from '#test/unit/fixtures.ts';
+import { AssetMediaStatus, type AssetMediaResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fileUploadHandler } from './file-uploader';
+import { beforeEach, describe, expect, vi } from 'vitest';
+import { fileUploadHandler, openFilePicker } from './file-uploader';
+
+vi.mock('#lib/utils.ts', { spy: true });
 
 describe('fileUploader error handling', () => {
-  const mockFile = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
-  const mockUserObject = { id: 'user-123', email: 'test@example.com' } as UserAdminResponseDto;
+  const newFile = () => new File(['content'], `${crypto.randomUUID()}.jpg`, { type: 'image/jpeg' });
+  const mockUserObject = factory.user();
   const mockError = new Error('Upload failed');
   const mockUploadResponse = { id: 'mock-id', status: AssetMediaStatus.Created } as AssetMediaResponseDto;
 
@@ -33,40 +36,58 @@ describe('fileUploader error handling', () => {
         }
       });
 
-      it(`should transition successful uploads to done`, async () => {
-        vi.spyOn(utils, 'uploadRequest').mockResolvedValue({ status: 200, data: mockUploadResponse });
+      test(`should transition successful uploads to done`, async () => {
+        vi.mocked(uploadRequest).mockResolvedValue({ status: 200, data: mockUploadResponse });
 
-        await fileUploadHandler({ files: [mockFile] });
+        await fileUploadHandler({ files: [newFile()] });
 
         const items = get(uploadAssetsStore);
         expect(items.length).toBe(1);
         expect(items[0].state).toBe(UploadState.DONE);
       });
 
-      it('should capture errors', async () => {
-        vi.spyOn(utils, 'uploadRequest').mockRejectedValue(mockError);
+      test('should capture errors', async ({ logger }) => {
+        vi.mocked(uploadRequest).mockRejectedValue(mockError);
 
-        await fileUploadHandler({ files: [mockFile] });
+        await fileUploadHandler({ files: [newFile()] });
 
         const items = get(uploadAssetsStore);
         expect(items.length).toBe(1);
         expect(items[0].state).toBe(UploadState.ERROR);
+        expect(logger.error).toHaveBeenCalledWith(/Upload failed/);
       });
     });
   }
 
-  it('should suppress errors on logout', async () => {
+  test('should suppress errors on logout', async () => {
     authManager.setUser(mockUserObject);
     authManager.setPreferences(factory.preferences());
-    vi.spyOn(utils, 'uploadRequest').mockImplementationOnce(() => {
+    vi.mocked(uploadRequest).mockImplementationOnce(() => {
       authManager.reset();
       return Promise.reject(mockError);
     });
 
-    await fileUploadHandler({ files: [mockFile] });
+    await fileUploadHandler({ files: [newFile()] });
 
     const items = get(uploadAssetsStore);
     expect(items.length).toBe(1);
     expect(items[0].state).toBe(UploadState.STARTED);
+  });
+});
+
+describe('openFilePicker', () => {
+  test('attaches the file input to the document until files are chosen', async () => {
+    const file = new File(['content'], 'photo.jpg', { type: 'image/jpeg' });
+    const picked = openFilePicker({ extensions: ['.jpg'] });
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+
+    expect(input).not.toBeNull();
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    input!.files = transfer.files;
+    input!.dispatchEvent(new Event('change'));
+
+    await expect(picked).resolves.toEqual([file]);
+    expect(document.querySelector('input[type="file"]')).toBeNull();
   });
 });

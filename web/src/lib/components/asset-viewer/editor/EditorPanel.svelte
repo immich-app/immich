@@ -1,6 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '#lib/actions/shortcut.ts';
-  import { editManager, EditToolType } from '#lib/managers/edit/edit-manager.svelte.ts';
+  import { EditToolType, editManager } from '#lib/managers/edit/edit-manager.svelte.ts';
   import { websocketEvents } from '#lib/stores/websocket.ts';
   import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
   import { Button, HStack, IconButton } from '@immich/ui';

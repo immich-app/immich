@@ -1,14 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import aaguids from 'aaguids';
-import { DateTime, Duration } from 'luxon';
-import { IncomingHttpHeaders } from 'node:http';
 import type {
   AuthenticationResponseJSON,
   RegistrationResponseJSON,
   VerifiedAuthenticationResponse,
   VerifiedRegistrationResponse,
 } from '@simplewebauthn/server';
-import type { LoginDetails } from 'src/services/auth.service.js';
+import aaguids from 'aaguids';
+import { DateTime, Duration } from 'luxon';
+import { IncomingHttpHeaders } from 'node:http';
 import { OnJob } from 'src/decorators.js';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
@@ -23,6 +22,7 @@ import {
   mapPasskey,
 } from 'src/dtos/passkey.dto.js';
 import { AuthChallengeType, JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
 import { BaseService } from 'src/services/base.service.js';
 import { findOrFail } from 'src/utils/misc.js';
 

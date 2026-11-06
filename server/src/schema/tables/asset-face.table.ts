@@ -4,13 +4,13 @@ import {
   Column,
   DeleteDateColumn,
   ForeignKeyColumn,
-  type Generated,
   Index,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   TriggerFunction,
   UpdateDateColumn,
+  type Generated,
 } from '@immich/sql-tools';
 import { UpdateIdColumn } from 'src/decorators.js';
 import { AssetVisibility, SourceType } from 'src/enum.js';

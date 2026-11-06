@@ -1,15 +1,15 @@
 <script lang="ts">
   import Combobox, { type ComboBoxOption } from '#lib/components/shared-components/Combobox.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
   import { Button, Text } from '@immich/ui';
+  import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-  import { mdiClose } from '@mdi/js';
   import SearchButton from './SearchButton.svelte';
   import { getSearchTagsTitle } from './search-bar-utils';
-  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
 
   interface Props {
     title: string | undefined;
@@ -63,7 +63,7 @@
 </script>
 
 {#if authManager.authenticated && authManager.preferences.tags.enabled}
-  <div id="location-selection" bind:this={container} tabindex="-1">
+  <div data-testid="search-tags-section" bind:this={container} tabindex="-1">
     <form autocomplete="off" id="create-tag-form">
       <Text class="pb-5">{$t('search_filter_tags_description')}</Text>
       <Combobox

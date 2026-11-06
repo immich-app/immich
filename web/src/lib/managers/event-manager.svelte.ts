@@ -2,6 +2,7 @@ import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { BaseEventManager } from '#lib/utils/base-event-manager.svelte.ts';
 import type { TreeNode } from '#lib/utils/tree-utils.ts';
 import type {
+  AdminConfigDto,
   AlbumResponseDto,
   AlbumUserRole,
   ApiKeyResponseDto,
@@ -14,7 +15,6 @@ import type {
   QueueResponseDto,
   ReleaseEventV1,
   StackResponseDto,
-  AdminConfigDto,
   TagResponseDto,
   UserAdminResponseDto,
 } from '@immich/sdk';

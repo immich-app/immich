@@ -14,9 +14,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import type { LoginDetails } from 'src/services/auth.service.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
-import { type AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
+import { LoginResponseDto, type AuthDto } from 'src/dtos/auth.dto.js';
 import {
   PasskeyAuthenticationFinishDto,
   PasskeyAuthenticationOptionsDto,
@@ -28,6 +27,7 @@ import {
 } from 'src/dtos/passkey.dto.js';
 import { ApiTag, AuthType, ImmichCookie, Permission } from 'src/enum.js';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
 import { PasskeyService } from 'src/services/passkey.service.js';
 import { respondWithCookie } from 'src/utils/response.js';
 import { UUIDParamDto } from 'src/validation.js';

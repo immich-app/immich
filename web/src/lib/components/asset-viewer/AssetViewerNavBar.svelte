@@ -1,11 +1,11 @@
 <script lang="ts">
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
-  import type { OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
+  import LoadingDots from '#lib/components/LoadingDots.svelte';
   import ArchiveAction from '#lib/components/asset-viewer/actions/ArchiveAction.svelte';
   import DeleteAction from '#lib/components/asset-viewer/actions/DeleteAction.svelte';
   import RestoreAction from '#lib/components/asset-viewer/actions/RestoreAction.svelte';
   import SetVisibilityAction from '#lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
-  import LoadingDots from '#lib/components/LoadingDots.svelte';
+  import type { OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';

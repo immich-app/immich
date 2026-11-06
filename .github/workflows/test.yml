@@ -572,7 +572,14 @@ jobs:
 
       - name: Start Docker Compose
         id: docker
-        run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
+        shell: bash
+        run: |
+          for attempt in 1 2 3 4 5; do
+            docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300 2>&1 | tee "${RUNNER_TEMP}/docker-compose-up.log" && exit 0
+            grep -qiE 'toomanyrequests|retry-after' "${RUNNER_TEMP}/docker-compose-up.log" || exit 1
+            sleep $((attempt * 15))
+          done
+          exit 1
         if: ${{ !cancelled() }}
 
       - name: Run e2e tests (api & cli)
@@ -660,7 +667,14 @@ jobs:
 
       - name: Docker build
         id: docker
-        run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
+        shell: bash
+        run: |
+          for attempt in 1 2 3 4 5; do
+            docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300 2>&1 | tee "${RUNNER_TEMP}/docker-compose-up.log" && exit 0
+            grep -qiE 'toomanyrequests|retry-after' "${RUNNER_TEMP}/docker-compose-up.log" || exit 1
+            sleep $((attempt * 15))
+          done
+          exit 1
         if: ${{ !cancelled() }}
 
       - name: Run e2e tests (web)

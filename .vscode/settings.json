@@ -13,7 +13,7 @@
     "editor.wordBasedSuggestions": "off"
   },
   "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
   "[json]": {
@@ -30,7 +30,7 @@
     "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
   "cSpell.words": ["immich"],

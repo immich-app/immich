@@ -9,14 +9,15 @@
 </script>
 
 <script lang="ts">
-  import { afterNavigate } from '$app/navigation';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import MapSettingsModal from '#lib/modals/MapSettingsModal.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
   import { mapSettings } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl, handlePromiseError } from '#lib/utils.ts';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
-  import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
+  import { Alert, Container, Icon, Text, Theme, modalManager, themeManager } from '@immich/ui';
   import { mdiCog, mdiImageMultiple, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
@@ -46,9 +47,8 @@
     Popup,
     ScaleControl,
   } from 'svelte-maplibre';
+  import { afterNavigate } from '$app/navigation';
   import type { SelectionBBox } from './types';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
-  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 
   const query = createPreloadedQuery(getPublicConfigQuery);
   const publicConfig = $derived(query.data);

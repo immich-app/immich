@@ -1,7 +1,5 @@
 <script lang="ts">
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import PeopleInfiniteScroll from '../PeopleInfiniteScroll.svelte';
-  import { goto } from '$app/navigation';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import { ToggleVisibility } from '#lib/constants.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
@@ -12,6 +10,8 @@
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteMap } from 'svelte/reactivity';
+  import { goto } from '$app/navigation';
+  import PeopleInfiniteScroll from '../PeopleInfiniteScroll.svelte';
   import type { PageData } from './$types';
 
   interface Props {

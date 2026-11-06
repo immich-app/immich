@@ -1,6 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type { ArgOf } from 'src/repositories/event.repository.js';
-import type { EmailImageAttachment, JobOf } from 'src/types.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { MapAlbumDto } from 'src/dtos/album.dto.js';
 import { mapAsset } from 'src/dtos/asset-response.dto.js';
@@ -24,7 +22,9 @@ import {
   QueueName,
 } from 'src/enum.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
+import type { EmailImageAttachment, JobOf } from 'src/types.js';
 import { getFilenameExtension } from 'src/utils/file.js';
 import { getExternalDomain } from 'src/utils/misc.js';
 import { isEqualObject } from 'src/utils/object.js';

@@ -3,9 +3,9 @@
   import { defaultLang } from '#lib/constants.ts';
   import { lang } from '#lib/stores/preferences.store.ts';
   import { convertBCP47, getClosestAvailableLocale, langCodes, langs } from '#lib/utils/i18n.ts';
-  import { refreshAll } from '$app/navigation';
   import { Label, Text } from '@immich/ui';
   import { locale as i18nLocale, t } from 'svelte-i18n';
+  import { refreshAll } from '$app/navigation';
 
   interface Props {
     showSettingDescription?: boolean;

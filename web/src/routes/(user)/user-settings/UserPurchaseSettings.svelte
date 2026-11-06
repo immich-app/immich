@@ -1,12 +1,10 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-
   import PurchaseContent from '#lib/components/shared-components/purchasing/PurchaseContent.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import { dateFormats } from '#lib/constants.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
   import { queryClient } from '#lib/queries/client.ts';
+  import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { setSupportBadgeVisibility } from '#lib/utils/purchase-utils.ts';
@@ -22,6 +20,7 @@
   import { mdiKey } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
 
   let isServerProduct = $state(false);
   let serverPurchaseInfo: LicenseResponseDto | null = $state(null);

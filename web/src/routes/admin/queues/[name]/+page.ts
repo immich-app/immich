@@ -1,7 +1,7 @@
-import { fromQueueSlug, Route } from '#lib/route.ts';
+import { Route, fromQueueSlug } from '#lib/route.ts';
 import { authenticate } from '#lib/utils/auth.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
-import { getQueue, getQueueJobs, QueueJobStatus } from '@immich/sdk';
+import { QueueJobStatus, getQueue, getQueueJobs } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
