@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/utils/async_mutex.dart';
 
 /// Provides access to a persistent key-value store with an in-memory cache.
 /// Listens for repository changes to keep the cache updated.
@@ -10,7 +11,8 @@ class StoreService {
 
   /// In-memory cache. Keys are [StoreKey.id]
   final Map<int, Object?> _cache = {};
-  StreamSubscription<List<StoreDto>>? _storeUpdateSubscription;
+  final AsyncMutex _mutex = AsyncMutex();
+  StreamSubscription<void>? _storeUpdateSubscription;
 
   StoreService._({required StoreRepository isarStoreRepository}) : _storeRepository = isarStoreRepository;
 
@@ -31,25 +33,23 @@ class StoreService {
 
   static Future<StoreService> create({required StoreRepository storeRepository, bool listenUpdates = true}) async {
     final instance = StoreService._(isarStoreRepository: storeRepository);
-    await instance.populateCache();
     if (listenUpdates) {
       instance._storeUpdateSubscription = instance._listenForChange();
     }
+    await instance.populateCache();
     return instance;
   }
 
-  Future<void> populateCache() async {
+  Future<void> populateCache() => _mutex.run(() async {
     final storeValues = await _storeRepository.getAll();
+    _cache.clear();
     for (StoreDto storeValue in storeValues) {
       _cache[storeValue.key.id] = storeValue.value;
     }
-  }
-
-  StreamSubscription<List<StoreDto>> _listenForChange() => _storeRepository.watchAll().listen((events) {
-    for (final event in events) {
-      _cache[event.key.id] = event.value;
-    }
   });
+
+  StreamSubscription<void> _listenForChange() =>
+      _storeRepository.watchChanges().listen((_) => unawaited(populateCache()));
 
   /// Disposes the store and cancels the subscription. To reuse the store call init() again
   Future<void> dispose() async {
@@ -81,7 +81,7 @@ class StoreService {
     if (_cache[key.id] == value) {
       return;
     }
-    await _storeRepository.upsert(key, value);
+    await _mutex.run(() => _storeRepository.upsert(key, value));
     _cache[key.id] = value;
   }
 
@@ -90,13 +90,13 @@ class StoreService {
 
   /// Removes the value for [key]
   Future<void> delete<T>(StoreKey<T> key) async {
-    await _storeRepository.deleteValue(key);
+    await _mutex.run(() => _storeRepository.deleteValue(key));
     _cache.remove(key.id);
   }
 
   /// Clears all values from the store (cache and DB)
   Future<void> clear() async {
-    await _storeRepository.deleteAll();
+    await _mutex.run(() => _storeRepository.deleteAll());
     _cache.clear();
   }
 }

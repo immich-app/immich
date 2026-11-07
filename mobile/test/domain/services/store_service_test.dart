@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
@@ -15,10 +18,10 @@ const _kVersion = 2;
 void main() {
   late StoreService sut;
   late StoreRepository mockDriftStoreRepo;
-  late StreamController<List<StoreDto<Object>>> controller;
+  late StreamController<Set<TableUpdate>> controller;
 
   setUp(() async {
-    controller = StreamController<List<StoreDto<Object>>>.broadcast();
+    controller = StreamController<Set<TableUpdate>>.broadcast();
     mockDriftStoreRepo = MockStoreRepository();
     // For generics, we need to provide fallback to each concrete type to avoid runtime errors
     registerFallbackValue(StoreKey.accessToken);
@@ -32,7 +35,7 @@ void main() {
         const StoreDto(StoreKey.version, _kVersion),
       ],
     );
-    when(() => mockDriftStoreRepo.watchAll()).thenAnswer((_) => controller.stream);
+    when(() => mockDriftStoreRepo.watchChanges()).thenAnswer((_) => controller.stream);
 
     sut = await StoreService.create(storeRepository: mockDriftStoreRepo);
   });
@@ -54,12 +57,26 @@ void main() {
 
     test('Listens to stream of store updates', () async {
       final event = StoreDto(StoreKey.accessToken, _kAccessToken.toUpperCase());
-      controller.add([event]);
+      when(() => mockDriftStoreRepo.getAll()).thenAnswer((_) async => [event]);
+      controller.add({});
 
       await pumpEventQueue();
 
-      verify(() => mockDriftStoreRepo.watchAll()).called(1);
+      verify(() => mockDriftStoreRepo.watchChanges()).called(1);
       expect(sut.tryGet(StoreKey.accessToken), _kAccessToken.toUpperCase());
+    });
+
+    test('Drops keys deleted by another store on the same database', () async {
+      final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+      addTearDown(db.close);
+      final store = await StoreService.create(storeRepository: StoreRepository(db));
+      await store.put(StoreKey.accessToken, _kAccessToken);
+      final other = await StoreService.create(storeRepository: StoreRepository(db), listenUpdates: false);
+
+      await other.delete(StoreKey.accessToken);
+      await pumpEventQueue();
+
+      expect(store.tryGet(StoreKey.accessToken), isNull);
     });
   });
 
@@ -91,6 +108,22 @@ void main() {
       final newAccessToken = _kAccessToken.toUpperCase();
       await sut.put(StoreKey.accessToken, newAccessToken);
       verify(() => mockDriftStoreRepo.upsert<String>(StoreKey.accessToken, newAccessToken)).called(1);
+      expect(sut.tryGet(StoreKey.accessToken), newAccessToken);
+    });
+
+    test('Keeps the inserted value when an older read finishes later', () async {
+      final read = Completer<List<StoreDto<Object>>>();
+      when(() => mockDriftStoreRepo.getAll()).thenAnswer((_) => read.future);
+      controller.add({});
+      await pumpEventQueue();
+
+      final newAccessToken = _kAccessToken.toUpperCase();
+      final put = sut.put(StoreKey.accessToken, newAccessToken);
+      await pumpEventQueue();
+      read.complete([const StoreDto(StoreKey.accessToken, _kAccessToken)]);
+      await put;
+      await pumpEventQueue();
+
       expect(sut.tryGet(StoreKey.accessToken), newAccessToken);
     });
   });

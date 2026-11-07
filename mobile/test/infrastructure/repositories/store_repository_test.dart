@@ -139,25 +139,8 @@ void main() {
       await sut.upsert(StoreKey.version, _kTestVersion + 10);
     });
 
-    test('watchAll()', () async {
-      final stream = sut.watchAll();
-      unawaited(
-        expectLater(
-          stream,
-          emitsInOrder([
-            [
-              const StoreDto<Object>(StoreKey.version, _kTestVersion),
-              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
-              const StoreDto<Object>(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting),
-            ],
-            [
-              const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
-              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
-              const StoreDto<Object>(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting),
-            ],
-          ]),
-        ),
-      );
+    test('watchChanges()', () async {
+      unawaited(expectLater(sut.watchChanges(), emits(anything)));
       await sut.upsert(StoreKey.version, _kTestVersion + 10);
     });
   });
