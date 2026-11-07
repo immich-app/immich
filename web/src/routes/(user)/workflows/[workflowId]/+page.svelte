@@ -249,7 +249,13 @@
   });
 
   const { Download, Duplicate, CopyJson, Delete, Logs } = $derived(
-    getWorkflowActions($t, { ...savedWorkflow, ...workflowJsonContent }),
+    getWorkflowActions(
+      $t,
+      { ...savedWorkflow, ...workflowJsonContent },
+      // Deleting this workflow removes the unsaved changes along with it, so the
+      // navigation that follows must not be blocked by the unsaved-changes guard.
+      { onDeleteNavigation: () => (allowNavigation = true) },
+    ),
   );
 </script>
 
