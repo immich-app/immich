@@ -548,14 +548,14 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should download a file', async () => {
-      const asset = AssetFactory.create();
+      const asset = AssetFactory.create({ originalFileName: 'original.jpg', originalPath: '/data/library/stored.jpg' });
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.asset.getForOriginal.mockResolvedValue(asset);
 
       await expect(sut.downloadOriginal(authStub.admin, asset.id, {})).resolves.toEqual(
         new ImmichFileResponse({
           path: asset.originalPath,
-          fileName: asset.originalFileName,
+          fileName: 'stored.jpg',
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithCache,
         }),
@@ -570,12 +570,12 @@ describe(AssetMediaService.name, () => {
         .build();
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([editedAsset.id]));
-      mocks.asset.getForOriginal.mockResolvedValue({ ...editedAsset, editedPath: editedAsset.files[3].path });
+      mocks.asset.getForOriginal.mockResolvedValue({ ...editedAsset, editedPath: '/data/library/edited/edited.jpg' });
 
       await expect(sut.downloadOriginal(AuthFactory.create(), editedAsset.id, {})).resolves.toEqual(
         new ImmichFileResponse({
-          path: editedAsset.files[3].path,
-          fileName: editedAsset.originalFileName,
+          path: '/data/library/edited/edited.jpg',
+          fileName: 'edited.jpg',
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithCache,
         }),
@@ -590,12 +590,12 @@ describe(AssetMediaService.name, () => {
         .build();
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([editedAsset.id]));
-      mocks.asset.getForOriginal.mockResolvedValue({ ...editedAsset, editedPath: editedAsset.files[3].path });
+      mocks.asset.getForOriginal.mockResolvedValue({ ...editedAsset, editedPath: '/data/library/edited/edited.jpg' });
 
       await expect(sut.downloadOriginal(AuthFactory.create(), editedAsset.id, { edited: true })).resolves.toEqual(
         new ImmichFileResponse({
-          path: editedAsset.files[3].path,
-          fileName: editedAsset.originalFileName,
+          path: '/data/library/edited/edited.jpg',
+          fileName: 'edited.jpg',
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithCache,
         }),
@@ -614,7 +614,7 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual(
         new ImmichFileResponse({
           path: fullsizeEdited.path,
-          fileName: editedAsset.originalFileName,
+          fileName: fullsizeEdited.path.split('/').at(-1),
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithCache,
         }),
@@ -622,7 +622,10 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should download original file when edited=false', async () => {
-      const editedAsset = AssetFactory.from()
+      const editedAsset = AssetFactory.from({
+        originalFileName: 'original.jpg',
+        originalPath: '/data/library/stored.jpg',
+      })
         .edit()
         .files([AssetFileType.FullSize, AssetFileType.Preview, AssetFileType.Thumbnail])
         .file({ type: AssetFileType.FullSize, isEdited: true })
@@ -634,7 +637,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.downloadOriginal(AuthFactory.create(), editedAsset.id, { edited: false })).resolves.toEqual(
         new ImmichFileResponse({
           path: editedAsset.originalPath,
-          fileName: editedAsset.originalFileName,
+          fileName: 'stored.jpg',
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithCache,
         }),

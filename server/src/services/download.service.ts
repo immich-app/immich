@@ -13,6 +13,7 @@ import { Permission } from 'src/enum.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
+import { getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
@@ -102,9 +103,11 @@ export class DownloadService extends BaseService {
         continue;
       }
 
-      const { originalPath, editedPath, originalFileName } = asset;
+      const { editedPath, originalPath } = asset;
 
-      let filename = sanitize(originalFileName) || 'unnamed';
+      let path = editedPath ?? originalPath;
+
+      let filename = sanitize(getFileNameWithoutExtension(path) + getFilenameExtension(path)) || 'unnamed';
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
@@ -112,15 +115,13 @@ export class DownloadService extends BaseService {
         filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
-      let realpath = edited && editedPath ? editedPath : originalPath;
-
       try {
-        realpath = await this.storageRepository.realpath(realpath);
+        path = await this.storageRepository.realpath(path);
       } catch {
         this.logger.warn('Unable to resolve realpath', { originalPath });
       }
 
-      zip.addFile(realpath, filename);
+      zip.addFile(path, filename);
     }
 
     void zip.finalize();
