@@ -125,13 +125,16 @@ export class FileUploadInterceptor implements NestInterceptor {
       });
 
       pipeline(file.stream, writeStream, (error) => {
-        if (error) {
+        if (error || size === 0) {
           hash?.destroy();
-          return callback(error);
+          const failure = error || new BadRequestException('File is empty');
+          void this.storageRepository
+            .unlink(path)
+            .catch((error_) => this.logger.error(`Unable to remove file from disk: ${path}`, error_))
+            .finally(() => callback(failure));
+          return;
         }
-        if (size === 0) {
-          return callback(new BadRequestException('File is empty'));
-        }
+
         callback(null, {
           path,
           size,
