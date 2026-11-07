@@ -46,7 +46,11 @@ export const getWorkflowsActions = ($t: MessageFormatter) => {
   return { Create, UseTemplate };
 };
 
-export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowResponseDto) => {
+export const getWorkflowActions = (
+  $t: MessageFormatter,
+  workflow: WorkflowResponseDto,
+  options?: { onDeleteNavigation?: () => void },
+) => {
   const ToggleEnabled: ActionItem = {
     title: workflow.enabled ? $t('disable') : $t('enable'),
     icon: workflow.enabled ? mdiPause : mdiPlay,
@@ -105,7 +109,7 @@ export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowRespo
     title: $t('delete'),
     icon: mdiDeleteOutline,
     color: 'danger',
-    onAction: () => handleDeleteWorkflow(workflow),
+    onAction: () => handleDeleteWorkflow(workflow, options?.onDeleteNavigation),
   };
 
   const Logs: ActionItem = {
@@ -127,13 +131,16 @@ export const getWorkflowShowSchemaAction = (
   onAction: onToggle,
 });
 
-const handleDeleteWorkflow = async (workflow: WorkflowResponseDto) => {
+const handleDeleteWorkflow = async (workflow: WorkflowResponseDto, onDeleteNavigation?: () => void) => {
   const $t = await getFormatter();
 
   await executeMutation(deleteWorkflowMutation, [{ id: workflow.id }], {
     confirm: { prompt: $t('workflow_delete_prompt'), confirmColor: 'danger' },
     onSuccess: () => {
       if (page.params.workflowId === workflow.id) {
+        // The workflow no longer exists, so there is nothing left to discard.
+        // Let the page skip its unsaved-changes guard for this navigation.
+        onDeleteNavigation?.();
         void goto(Route.workflows());
       }
     },
