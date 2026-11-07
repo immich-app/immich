@@ -31,6 +31,10 @@ export const createHandlers = (data: MockData): Handlers => {
     getSupportedMediaTypes: () => ({ json: data.mediaTypes }),
     getMyUser: () => ({ json: data.user }),
     getMyPreferences: () => ({ json: data.getPreferences() }),
+    updateMyPreferences: ({ body }) => ({ json: data.updatePreferences(body) }),
+    getAuthStatus: () => ({ json: data.getAuthStatus() }),
+    searchUsers: () => ({ json: data.searchUsers() }),
+    getPartners: ({ params }) => ({ json: data.partnerList(params.direction) }),
     getNotifications: () => ({ json: data.notifications }),
     searchUsersAdmin: ({ params = {} }) => ({ json: data.userList(params) }),
     createUserAdmin: ({ body }) => ({ status: 201, json: data.createUser(body) }),
@@ -153,6 +157,7 @@ export const createHandlers = (data: MockData): Handlers => {
     untagAssets: ({ params, body }) => ({ json: data.untagAssets(params.id, body.ids) }),
     getSearchSuggestions: ({ params }) => ({ json: data.searchSuggestions(params) as string[] }),
 
+    createPerson: ({ body }) => ({ status: 201, json: data.createPerson(body) }),
     updatePeople: ({ body }) => ({ json: data.updatePeople(body.people) }),
     searchPerson: ({ params }) => ({ json: data.searchPeople(params) }),
     searchPlaces: ({ params }) => ({ json: data.searchPlaces(params.name) }),

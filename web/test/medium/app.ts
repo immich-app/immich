@@ -17,10 +17,16 @@ export const createApp = (page: Page, data: MockData) => {
   const card = (link: { key: string }) => page.locator(`a[href="${Route.viewSharedLink(link)}"]`);
   const memoryRoot = page.getByTestId('memory-viewer');
   const memoryGallery = page.getByTestId('memory-gallery');
+  const dialog = page.getByRole('dialog');
+  const sidebar = page.getByTestId('sidebar-parent');
+  const accountButton = page.getByRole('button').and(page.getByTitle(/\(.+@.+\)$/));
+  const purchasePanel = dialog.filter({
+    has: page.getByRole('heading', { name: 'purchase_panel_title', exact: true }),
+  });
 
   return {
-    dialog: page.getByRole('dialog'),
-    dialogButton: (name: string) => page.getByRole('dialog').getByRole('button', { name, exact: true }),
+    dialog,
+    dialogButton: (name: string) => dialog.getByRole('button', { name, exact: true }),
     toast: (key: string) => page.getByText(key),
 
     admin: {
@@ -140,6 +146,27 @@ export const createApp = (page: Page, data: MockData) => {
       favoritesLink: link('favorites'),
       archiveLink: link('archive'),
       trashLink: link('trash'),
+      purchaseInfo: {
+        buyButton: sidebar.getByRole('button', { name: 'purchase_button_buy_immich' }),
+        panel: purchasePanel,
+        neverShowAgainButton: purchasePanel.getByRole('button', { name: 'purchase_button_never_show_again' }),
+        remindMeButton: purchasePanel.getByRole('button', { name: 'purchase_button_reminder' }),
+      },
+    },
+
+    navbar: {
+      avatar: accountButton,
+      editAvatarButton: button('edit_avatar'),
+      openAvatarEditor: async () => {
+        await accountButton.click();
+        await button('edit_avatar').click();
+      },
+    },
+
+    userPicker: {
+      searchInput: dialog.getByPlaceholder('search', { exact: true }),
+      user: (name: string) => dialog.getByText(name, { exact: true }),
+      addButton: dialog.getByRole('button', { name: 'add', exact: true }),
     },
 
     timeline: createTimeline(page, data),
@@ -443,6 +470,9 @@ const createFaceEditor = (page: Page) => {
     confirmButton: page.getByRole('button', { name: 'confirm', exact: true }),
     cancelButton: page.getByRole('button', { name: 'cancel', exact: true }),
     person: (name: string) => selector.getByText(name),
+    createPersonButton: selector.getByRole('button', { name: 'create_person', exact: true }),
+    newPersonNameInput: page.getByRole('dialog').getByLabel('name', { exact: true }),
+    tagFaceButton: page.getByRole('dialog').getByRole('button', { name: 'tag_face', exact: true }),
     boxRect,
     selectorRect,
 
