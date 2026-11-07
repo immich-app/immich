@@ -329,6 +329,17 @@ const createViewer = (page: Page) => {
     },
     navbarActions: page.getByTestId('asset-viewer-navbar-actions'),
     tags: page.getByTestId('detail-panel-tags').getByRole('link'),
+    tag: (value: string) => page.getByTestId('detail-panel-tags').getByRole('link', { name: value, exact: true }),
+    addTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'add_tag', exact: true }),
+    removeTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'remove_tag', exact: true }),
+    tagAssets: {
+      input: page.getByRole('dialog').getByLabel('tag', { exact: true }),
+      submitButton: page.getByRole('dialog').getByRole('button', { name: 'tag_assets', exact: true }),
+      pick: async (value: string) => {
+        await page.getByRole('dialog').getByLabel('tag', { exact: true }).fill(value);
+        await page.getByRole('dialog').getByLabel('tag', { exact: true }).press('Enter');
+      },
+    },
     media,
     image: (quality: 'thumbnail' | 'preview' | 'original') => content.getByTestId(quality).filter({ visible: true }),
     stackThumbnail: (asset: Asset) => stack.locator(`[data-asset="${asset.id}"]`),

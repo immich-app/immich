@@ -116,6 +116,14 @@ export const createHandlers = (data: MockData): Handlers => {
       const tag = data.getTag(params.id);
       return tag ? { json: tag } : notFound;
     },
+    upsertTags: ({ body }) => ({ json: data.upsertTags(body.tags) }),
+    updateTag: ({ params, body }) => {
+      const tag = data.updateTag(params.id, body);
+      return tag ? { json: tag } : notFound;
+    },
+    deleteTag: ({ params }) => (data.deleteTag(params.id) ? { status: 204 } : notFound),
+    bulkTagAssets: ({ body }) => ({ json: { count: data.tagAssets(body.assetIds, body.tagIds) } }),
+    untagAssets: ({ params, body }) => ({ json: data.untagAssets(params.id, body.ids) }),
     getSearchSuggestions: ({ params }) => ({ json: data.searchSuggestions(params) as string[] }),
 
     updatePeople: ({ body }) => ({ json: data.updatePeople(body.people) }),

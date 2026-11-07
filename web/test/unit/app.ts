@@ -112,6 +112,20 @@ export const createApp = () => {
       groupPosition: (current: number, total: number) => page.getByText(`${current} / ${total}`),
       emptyMessage: page.getByText('no_duplicates_found'),
     },
+    tags: {
+      createButton: button('create_tag'),
+      editButton: button('edit_tag'),
+      deleteButton: button('delete_tag'),
+      explorerLink: (name: string) => sidebar.getByRole('link', { name, exact: true }),
+      child: (name: string) => main.getByRole('button', { name, exact: true }),
+      form: {
+        tagInput: page.getByLabelText('tag', { exact: true }),
+        nameInput: page.getByLabelText('name', { exact: true }),
+        createButton: page.getByRole('dialog').getByRole('button', { name: 'create', exact: true }),
+        saveButton: page.getByRole('dialog').getByRole('button', { name: 'save', exact: true }),
+        deleteButton: page.getByRole('dialog').getByRole('button', { name: 'delete', exact: true }),
+      },
+    },
     trash: {
       emptyTrashButton: button('empty_trash'),
       restoreAllButton: button('restore_all'),
