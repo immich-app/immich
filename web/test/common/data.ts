@@ -42,6 +42,7 @@ import {
   type StackResponseDto,
   type StackUpdateDto,
   type TagResponseDto,
+  type TagUpdateDto,
   type TimeBucketAssetResponseDto,
   type TimeBucketsResponseDto,
   type UpdateAlbumDto,
@@ -504,6 +505,85 @@ export class MockData {
 
   tagList() {
     return [...this.tags.values()];
+  }
+
+  upsertTags(values: string[]) {
+    return values.map((value) => this.upsertTag(value));
+  }
+
+  updateTag(id: string, dto: TagUpdateDto) {
+    const tag = this.tags.get(id);
+    if (!tag) {
+      return;
+    }
+
+    const name = dto.name ?? tag.name;
+    const value = tag.value.slice(0, tag.value.length - tag.name.length) + name;
+    for (const descendant of this.tagList()) {
+      if (descendant.value.startsWith(`${tag.value}/`)) {
+        this.tags.set(descendant.id, { ...descendant, value: value + descendant.value.slice(tag.value.length) });
+      }
+    }
+
+    const updated = { ...tag, name, value, color: dto.color === undefined ? tag.color : (dto.color ?? undefined) };
+    this.tags.set(id, updated);
+    return updated;
+  }
+
+  deleteTag(id: string) {
+    const tag = this.tags.get(id);
+    if (!tag) {
+      return false;
+    }
+
+    for (const descendant of this.tagList()) {
+      if (descendant.id === id || descendant.value.startsWith(`${tag.value}/`)) {
+        this.tags.delete(descendant.id);
+      }
+    }
+    return true;
+  }
+
+  tagAssets(assetIds: string[], tagIds: string[]) {
+    const tags = tagIds.map((id) => this.tags.get(id)).filter((tag) => tag !== undefined);
+    let count = 0;
+    for (const assetId of assetIds) {
+      const asset = this.assets.get(assetId);
+      if (!asset) {
+        continue;
+      }
+
+      const existing = asset.tags ?? [];
+      const added = tags.filter((tag) => existing.every(({ id }) => id !== tag.id));
+      count += added.length;
+      this.assets.set(assetId, { ...asset, tags: [...existing, ...added] });
+    }
+    return count;
+  }
+
+  untagAssets(tagId: string, assetIds: string[]) {
+    return assetIds.map((id) => {
+      const asset = this.assets.get(id);
+      if (!asset?.tags?.some((tag) => tag.id === tagId)) {
+        return { id, success: false };
+      }
+
+      this.assets.set(id, { ...asset, tags: asset.tags.filter((tag) => tag.id !== tagId) });
+      return { id, success: true };
+    });
+  }
+
+  private upsertTag(value: string): TagResponseDto {
+    const existing = this.tagList().find((tag) => tag.value === value);
+    if (existing) {
+      return existing;
+    }
+
+    const separator = value.lastIndexOf('/');
+    const parent = separator === -1 ? undefined : this.upsertTag(value.slice(0, separator));
+    const tag = factory.tag({ name: value.slice(separator + 1), value, parentId: parent?.id });
+    this.tags.set(tag.id, tag);
+    return tag;
   }
 
   addActivities(activities: MaybeArray<ActivityResponseDto>) {
