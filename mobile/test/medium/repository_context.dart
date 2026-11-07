@@ -23,6 +23,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:uuid/uuid.dart';
@@ -37,6 +38,21 @@ class MediumRepositoryContext {
   Future<void> dispose() async {
     await db.close();
   }
+
+  Future<bool> isAssetBackupCandidate(String assetId) async =>
+      await (db.localAssetEntity.select()..where((row) => row.id.equals(assetId)))
+          .map((row) => row.isBackupCandidate)
+          .getSingleOrNull() ==
+      true;
+
+  Future<bool> hasLocalAsset(String assetId) async =>
+      await db.localAssetEntity.count(where: (row) => row.id.equals(assetId)).getSingle() == 1;
+
+  Future<bool> hasLocalAlbum(String albumId) async =>
+      await db.localAlbumEntity.count(where: (row) => row.id.equals(albumId)).getSingle() == 1;
+
+  Future<int> albumAssetCount(String albumId) async =>
+      await db.localAlbumAssetEntity.count(where: (row) => row.albumId.equals(albumId)).getSingle();
 
   static Value<T> _resolveUndefined<T>(T? plain, Option<T>? option, T fallback) {
     if (plain != null) {
@@ -366,9 +382,18 @@ class MediumRepositoryContext {
         );
   }
 
-  Future<void> newLocalAlbumAsset({required String albumId, required String assetId}) => db
-      .into(db.localAlbumAssetEntity)
-      .insert(LocalAlbumAssetEntityCompanion(albumId: .new(albumId), assetId: .new(assetId)));
+  Future<void> newLocalAlbumAsset({
+    required String albumId,
+    required String assetId,
+    bool recomputeBackupCandidates = true,
+  }) async {
+    await db
+        .into(db.localAlbumAssetEntity)
+        .insert(LocalAlbumAssetEntityCompanion(albumId: .new(albumId), assetId: .new(assetId)));
+    if (recomputeBackupCandidates) {
+      await LocalAlbumRepository(db).recomputeBackupCandidatesForAssets([assetId]);
+    }
+  }
 
   Future<MemoryEntityData> newMemory({
     String? id,
