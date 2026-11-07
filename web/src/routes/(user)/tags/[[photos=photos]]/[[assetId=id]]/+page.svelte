@@ -45,7 +45,7 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived({ deferInit: !tag, tagId: tag?.id });
 
-  const handleNavigation = (tag: string) => navigateToView(joinPaths(data.path, tag));
+  const handleNavigation = (child: string) => navigateToView(joinPaths(tag.path, child));
 
   const getLink = (path: string) => Route.tags({ path });
 

@@ -53,6 +53,10 @@ export const createApp = (page: Page, data: MockData) => {
       createAlbumButton: button('create_album'),
     },
 
+    tags: {
+      child: (name: string) => page.getByRole('main').getByRole('button', { name, exact: true }),
+    },
+
     album: {
       summary: page.getByTestId('album-details'),
       selectPhotosButton: button('select_photos'),
