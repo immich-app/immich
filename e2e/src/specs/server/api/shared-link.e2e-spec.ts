@@ -338,6 +338,16 @@ describe('/shared-links', () => {
       );
     });
 
+    it('should not allow uploads unless requested', async () => {
+      const { status, body } = await request(app)
+        .post('/shared-links')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ type: SharedLinkType.Album, albumId: album.id });
+
+      expect(status).toBe(201);
+      expect(body).toEqual(expect.objectContaining({ allowUpload: false, allowDownload: true }));
+    });
+
     it('should create an album shared link when the client sends an empty assetIds array', async () => {
       const { status, body } = await request(app)
         .post('/shared-links')
