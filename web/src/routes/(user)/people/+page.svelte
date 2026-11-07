@@ -8,6 +8,8 @@
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import PeopleFilterModal from '#lib/modals/PeopleFilterModal.svelte';
   import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchPersonQuery } from '#lib/queries/search.query.ts';
   import { Route } from '#lib/route.ts';
   import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
   import { handleUpdatePersonName } from '#lib/services/person.service.ts';
@@ -20,7 +22,6 @@
     getAllPeople,
     getClusterGroupUsers,
     getPerson,
-    searchPerson,
     type PersonResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
@@ -259,7 +260,7 @@
   };
 
   const findPeopleWithSimilarName = async (name: string, personId: string) => {
-    const searchResult = await searchPerson({ name, withHidden: true });
+    const searchResult = await queryClient.query(searchPersonQuery({ name, withHidden: true }));
     const normalizedName = normalizeSearchString(name);
     return searchResult.find(
       (person) => normalizeSearchString(person.name) === normalizedName && person.id !== personId && person.name,

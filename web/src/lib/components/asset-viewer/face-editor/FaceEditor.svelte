@@ -312,20 +312,17 @@
       return;
     }
 
-    const isConfirmed = await modalManager.showDialog({
-      prompt: person.name ? $t('confirm_tag_face', { values: { name: person.name } }) : $t('confirm_tag_face_unnamed'),
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
     const onSuccess = async () => {
       await assetViewerManager.setAssetId(assetId);
       faceManager.clear();
     };
 
     await executeMutation(createFaceMutation, [{ assetFaceCreateDto: { assetId, personId: person.id, ...data } }], {
+      confirm: {
+        prompt: person.name
+          ? $t('confirm_tag_face', { values: { name: person.name } })
+          : $t('confirm_tag_face_unnamed'),
+      },
       onSuccess: () => void onSuccess(),
       onSettled: onClose,
     });

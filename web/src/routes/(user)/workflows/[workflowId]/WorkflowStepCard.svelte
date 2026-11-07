@@ -2,8 +2,9 @@
   import { pluginManager } from '#lib/managers/plugin-manager.svelte.ts';
   import { getAlbumQuery } from '#lib/queries/album.query.ts';
   import { queryClient } from '#lib/queries/client.ts';
+  import { getTagByIdQuery } from '#lib/queries/tag.query.ts';
   import type { JSONSchemaProperty } from '#lib/types.ts';
-  import { getTagById, type WorkflowStepDto } from '@immich/sdk';
+  import { type WorkflowStepDto } from '@immich/sdk';
   import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
   import {
     mdiAutoFix,
@@ -232,7 +233,7 @@
                 {/each}
               {:else if getUiHint(key) === 'TagId'}
                 {#each toIds(value) as tagId (tagId)}
-                  {#await getTagById({ id: tagId })}
+                  {#await queryClient.query(getTagByIdQuery(tagId))}
                     {@render badge($t('tag'), '…')}
                   {:then tag}
                     {@render badge($t('tag'), `"${truncate(tag.name)}"`)}

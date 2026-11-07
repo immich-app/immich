@@ -36,13 +36,13 @@ impl Orientation {
 
 /// Copies `h` rows of `w` pixels, `stride` pixels apart in `src`, into `dst` with `orientation`
 /// applied. `dst` is dense: `orientation.dimensions(w, h)` pixels.
-pub fn rotate(
-    src: &[u32],
+pub fn rotate<T: Copy>(
+    src: &[T],
     stride: usize,
     w: usize,
     h: usize,
     orientation: Orientation,
-    dst: &mut [u32],
+    dst: &mut [T],
 ) {
     assert!(w <= stride && h.saturating_mul(stride) <= src.len() && w * h <= dst.len());
     let (dw, _) = orientation.dimensions(w, h);
@@ -60,7 +60,8 @@ pub fn rotate(
         Orientation::Normal => (0, 1, dw),
     };
     let (src, dst) = (src.as_ptr(), dst.as_mut_ptr());
-    // 32x32 u32 tiles are 4KB, so the scattered writes of a 90/270 transpose stay in L1.
+    // 32x32 tiles of pixels up to 8 bytes are at most 8KB, so the scattered writes of a 90/270
+    // transpose stay in L1.
     for ty in (0..h).step_by(32) {
         for tx in (0..w).step_by(32) {
             for y in ty..(ty + 32).min(h) {

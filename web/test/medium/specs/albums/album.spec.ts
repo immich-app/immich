@@ -31,6 +31,11 @@ test('removing an asset updates the summary and closes the gap in the timeline',
   const firstPosition = await app.timeline.position(first);
 
   await app.timeline.select(first);
+  await app.timeline.selectionBar.openRemoveFromAlbum();
+  await app.dialogButton('cancel').click();
+  await expect(app.dialog).toBeHidden();
+  expect(api.removeAssetFromAlbum).not.toHaveBeenCalled();
+
   await app.timeline.selectionBar.removeFromAlbum();
 
   await expect(app.timeline.thumbnail(first)).toHaveCount(0);
@@ -57,4 +62,28 @@ test('map stays open after viewing an asset from a marker and going back', async
 
   await expect(app.viewer.root).not.toBeVisible();
   await expect(app.album.mapDialog).toBeVisible();
+});
+
+test('removes a user from an album', async ({ page, data, api, app }) => {
+  const viewer = factory.user();
+  const asset = factory.asset();
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user, viewers: [viewer] }) });
+  data.addAssets(asset);
+  data.addAlbums(album).addToAlbum(album.id, [asset]);
+  await page.goto(Route.viewAlbum({ id: album.id }));
+  await app.album.optionsMenuButton.click();
+  await app.album.optionsMenuItem.click();
+
+  await app.album.userRoleSelect('role_viewer').click();
+  await app.album.removeUserOption.click();
+  await app.dialogButton('cancel').click();
+  await expect(app.dialogButton('cancel')).toHaveCount(0);
+  expect(api.removeUserFromAlbum).not.toHaveBeenCalled();
+
+  await app.album.userRoleSelect('role_viewer').click();
+  await app.album.removeUserOption.click();
+  await app.dialogButton('remove_user').click();
+
+  await expect.poll(() => api.removeUserFromAlbum.calls.length).toBe(1);
+  expect(api.removeUserFromAlbum).toHaveBeenCalledWith({ params: { id: album.id, userId: viewer.id } });
 });

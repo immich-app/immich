@@ -1,6 +1,5 @@
 <script lang="ts">
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
-  import OnEvents from '#lib/components/OnEvents.svelte';
   import UserPageLayout, { headerId } from '#lib/components/layouts/UserPageLayout.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import TreeBreadcrumbs from '#lib/components/shared-components/tree/TreeBreadcrumbs.svelte';
@@ -21,11 +20,12 @@
   import SkipLink from '#lib/elements/SkipLink.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAllTagsQuery } from '#lib/queries/tag.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { getTagActions } from '#lib/services/tag.service.ts';
   import { TreeNode, joinPaths } from '#lib/utils/tree-utils.ts';
-  import { getAllTags, type TagResponseDto } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Text } from '@immich/ui';
   import { mdiDotsVertical, mdiTag, mdiTagMultiple } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -38,14 +38,14 @@
 
   let { data }: Props = $props();
 
-  let tags = $derived<TagResponseDto[]>(data.tags);
-  const tree = $derived(TreeNode.fromTags(tags));
+  const query = createPreloadedQuery(getAllTagsQuery);
+  const tree = $derived(TreeNode.fromTags(query.data));
   const tag = $derived(tree.traverse(data.path));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived({ deferInit: !tag, tagId: tag?.id });
 
-  const handleNavigation = (tag: string) => navigateToView(joinPaths(data.path, tag));
+  const handleNavigation = (child: string) => navigateToView(joinPaths(tag.path, child));
 
   const getLink = (path: string) => Route.tags({ path });
 
@@ -56,30 +56,8 @@
     assetMultiSelectManager.clear();
   };
 
-  const onRefresh = async () => {
-    tags = await getAllTags();
-  };
-
-  const onTagUpdate = async (response: TagResponseDto) => {
-    if (response.value !== tag.path) {
-      await navigateToView(response.value || '');
-    }
-
-    await onRefresh();
-  };
-
-  const onTagDelete = async (response: TreeNode) => {
-    if (response.path === tag.path) {
-      await navigateToView(tag.parent ? tag.parent.path : '');
-    }
-
-    await onRefresh();
-  };
-
   const { Create, Update, Delete } = $derived(getTagActions($t, tag));
 </script>
-
-<OnEvents onTagCreate={onRefresh} {onTagUpdate} {onTagDelete} />
 
 <UserPageLayout title={data.meta.title} actions={[Create, Update, Delete]}>
   {#snippet sidebar()}

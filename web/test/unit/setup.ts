@@ -1,4 +1,9 @@
+import { MemoryStorage } from '#test/unit/mocks/storage.ts';
 import { init } from 'svelte-i18n';
+
+for (const name of ['localStorage', 'sessionStorage']) {
+  Object.defineProperty(globalThis, name, { value: new MemoryStorage(), configurable: true });
+}
 
 beforeAll(async () => {
   await init({ fallbackLocale: 'dev' });

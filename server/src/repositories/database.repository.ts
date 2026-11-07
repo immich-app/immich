@@ -291,6 +291,7 @@ export class DatabaseRepository {
       functions: { ignoreExtra: false },
       parameters: { ignoreExtra: true },
       extensions: { ignoreExtra: true },
+      ignorePrefixes: ['futo_backups_'],
     });
 
     return drift;

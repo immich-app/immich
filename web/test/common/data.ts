@@ -6,33 +6,61 @@ import {
   AssetOrder,
   AssetTypeEnum,
   AssetVisibility,
+  QueueCommand,
+  ReactionLevel,
   ReactionType,
+  SearchSuggestionType,
+  type ActivityCreateDto,
   type ActivityResponseDto,
   type AdminConfigDto,
   type AlbumResponseDto,
+  type ApiKeyResponseDto,
   type AssetBulkUpdateDto,
+  type AssetFaceResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
   type CreateAlbumDto,
   type DownloadInfoDto,
+  type DuplicateResolveDto,
   type DuplicateResponseDto,
+  type ExifResponseDto,
+  type LibraryResponseDto,
   type MapMarkerResponseDto,
   type MemoryResponseDto,
   type MemoryUpdateDto,
   type MetadataSearchDto,
+  type PasskeyResponseDto,
   type PersonResponseDto,
+  type PersonUpdateDto,
+  type PlacesResponseDto,
+  type PluginMethodResponseDto,
+  type QueueCommandDto,
+  type QueueDeleteDto,
+  type QueueName,
+  type QueueResponseDto,
+  type QueueUpdateDto,
+  type SearchExploreResponseDto,
   type SearchResponseDto,
+  type SessionResponseDto,
   type SharedLinkResponseDto,
+  type StackCreateDto,
   type StackResponseDto,
+  type StackUpdateDto,
   type TagResponseDto,
+  type TagUpdateDto,
   type TimeBucketAssetResponseDto,
   type TimeBucketsResponseDto,
   type UpdateAlbumDto,
   type UpdateAssetDto,
+  type UpdateLibraryDto,
   type UserAdminCreateDto,
   type UserAdminResponseDto,
   type UserAdminUpdateDto,
   type UserPreferencesResponseDto,
+  type WorkflowCreateDto,
+  type WorkflowResponseDto,
+  type WorkflowStepDto,
+  type WorkflowUpdateDto,
 } from '@immich/sdk';
 
 export type TimelineFilter = {
@@ -41,6 +69,23 @@ export type TimelineFilter = {
   isTrashed?: boolean;
   visibility?: AssetVisibility;
   order?: AssetOrder;
+  withStacked?: boolean;
+};
+
+export type ActivityFilter = {
+  assetId?: string;
+  userId?: string;
+  $type?: ReactionType;
+  level?: ReactionLevel;
+};
+
+export type SuggestionFilter = {
+  $type: SearchSuggestionType;
+  country?: string;
+  state?: string;
+  make?: string;
+  model?: string;
+  includeNull?: boolean;
 };
 
 export type MemoryFilter = {
@@ -57,7 +102,21 @@ const monthKey = (iso: string) => {
 type MaybeArray<T> = T | T[];
 const toList = <T>(items: MaybeArray<T>) => (Array.isArray(items) ? items : [items]);
 
+const toWorkflowSteps = (steps: WorkflowStepDto[]) =>
+  steps.map(({ method, config, enabled }) => ({ method, config, enabled }));
+
 const hiddenVisibilities = new Set<AssetVisibility>([AssetVisibility.Hidden, AssetVisibility.Locked]);
+
+const suggestionFields: Record<SearchSuggestionType, keyof ExifResponseDto> = {
+  [SearchSuggestionType.Country]: 'country',
+  [SearchSuggestionType.State]: 'state',
+  [SearchSuggestionType.City]: 'city',
+  [SearchSuggestionType.CameraMake]: 'make',
+  [SearchSuggestionType.CameraModel]: 'model',
+  [SearchSuggestionType.CameraLensModel]: 'lensModel',
+};
+
+const exploreRecentsLimit = 12;
 
 export class MockData {
   readonly user = factory.user({ id: adminUserId });
@@ -83,12 +142,21 @@ export class MockData {
   private readonly albumAssets = new Map<string, Set<string>>();
   private readonly memories = new Map<string, MemoryResponseDto>();
   private readonly people = new Map<string, PersonResponseDto>();
+  private readonly places: PlacesResponseDto[] = [];
   private readonly stacks = new Map<string, StackResponseDto>();
   private readonly ocr = new Map<string, AssetOcrResponseDto[]>();
   private readonly brokenAssetIds = new Set<string>();
   private readonly sharedLinks = new Map<string, SharedLinkResponseDto>();
   private readonly tags = new Map<string, TagResponseDto>();
   private readonly activities = new Map<string, ActivityResponseDto>();
+  private readonly workflows = new Map<string, WorkflowResponseDto>();
+  private readonly apiKeys = new Map<string, ApiKeyResponseDto>();
+  private readonly libraries = new Map<string, LibraryResponseDto>();
+  private readonly faces = new Map<string, AssetFaceResponseDto[]>();
+  private readonly sessions = new Map<string, SessionResponseDto>();
+  private readonly passkeys = new Map<string, PasskeyResponseDto>();
+  private readonly pluginMethods = new Map<string, PluginMethodResponseDto>();
+  private readonly queueStates = new Map<QueueName, QueueResponseDto>();
 
   getPreferences() {
     return this.preferences;
@@ -121,6 +189,50 @@ export class MockData {
 
   getPeople() {
     return [...this.people.values()];
+  }
+
+  getPerson(id: string) {
+    return this.people.get(id);
+  }
+
+  personStatistics(id: string) {
+    return { assets: this.timelineAssets().filter((asset) => asset.people?.some((person) => person.id === id)).length };
+  }
+
+  peoplePage({ withHidden, isHidden }: { withHidden?: boolean; isHidden?: boolean }) {
+    const all = this.getPeople().filter((person) => isHidden === undefined || person.isHidden === isHidden);
+    const people = withHidden || isHidden !== undefined ? all : all.filter((person) => !person.isHidden);
+    return {
+      people,
+      hasNextPage: false,
+      total: all.length,
+      hidden: all.filter((person) => person.isHidden).length,
+    };
+  }
+
+  searchPeople({ name, withHidden }: { name: string; withHidden?: boolean }) {
+    const query = name.toLowerCase();
+    return this.getPeople().filter(
+      (person) =>
+        (withHidden || !person.isHidden) &&
+        (person.name.toLowerCase().startsWith(query) || person.name.toLowerCase().includes(` ${query}`)),
+    );
+  }
+
+  updatePerson(id: string, dto: PersonUpdateDto) {
+    const person = this.people.get(id);
+    if (!person) {
+      return;
+    }
+    const updated: PersonResponseDto = {
+      ...person,
+      name: dto.name ?? person.name,
+      isHidden: dto.isHidden ?? person.isHidden,
+      isFavorite: dto.isFavorite ?? person.isFavorite,
+      birthDate: dto.birthDate === undefined ? person.birthDate : dto.birthDate,
+    };
+    this.people.set(id, updated);
+    return updated;
   }
 
   updatePeople(people: { id: string; isHidden?: boolean }[]) {
@@ -172,7 +284,8 @@ export class MockData {
             ? !hiddenVisibilities.has(asset.visibility)
             : asset.visibility === filter.visibility) &&
           asset.isTrashed === isTrashed &&
-          (filter.isFavorite === undefined || asset.isFavorite === filter.isFavorite),
+          (filter.isFavorite === undefined || asset.isFavorite === filter.isFavorite) &&
+          (!filter.withStacked || !asset.stack || asset.stack.primaryAssetId === asset.id),
       )
       .sort((a, b) => direction * a.fileCreatedAt.localeCompare(b.fileCreatedAt));
   }
@@ -223,6 +336,10 @@ export class MockData {
     }
   }
 
+  removeSharedLink(id: string) {
+    return this.sharedLinks.delete(id);
+  }
+
   removeSharedLinkAssets(id: string, assetIds: string[]) {
     const link = this.sharedLinks.get(id);
     if (!link) {
@@ -249,6 +366,10 @@ export class MockData {
 
   getUser(id: string) {
     return this.users.get(id);
+  }
+
+  clusterGroupUsers(clusterGroupId: string) {
+    return this.userList().filter((user) => user.clusterGroupId === clusterGroupId);
   }
 
   userList({ withDeleted = false }: { withDeleted?: boolean } = {}) {
@@ -324,6 +445,17 @@ export class MockData {
     return this;
   }
 
+  removeUserFromAlbum(albumId: string, userId: string) {
+    const album = this.albums.get(albumId);
+    if (!album) {
+      return false;
+    }
+
+    const id = userId === 'me' ? this.user.id : userId;
+    this.albums.set(albumId, { ...album, albumUsers: album.albumUsers.filter(({ user }) => user.id !== id) });
+    return true;
+  }
+
   addDuplicates(assets: AssetResponseDto[]) {
     const duplicateId = crypto.randomUUID();
     for (const asset of assets) {
@@ -342,8 +474,29 @@ export class MockData {
     return [...groups].map(([duplicateId, assets]) => ({ duplicateId, assets, suggestedKeepAssetIds: [assets[0].id] }));
   }
 
+  resolveDuplicates({ groups }: DuplicateResolveDto) {
+    for (const { duplicateId, trashAssetIds } of groups) {
+      this.deleteDuplicates([duplicateId]);
+      this.deleteAssets(trashAssetIds);
+    }
+    return groups.map(({ duplicateId }) => ({ id: duplicateId, success: true }));
+  }
+
+  deleteDuplicates(duplicateIds: string[]) {
+    const ids = new Set(duplicateIds);
+    const duplicates = [...this.assets.values()].filter(({ duplicateId }) => duplicateId && ids.has(duplicateId));
+    for (const asset of duplicates) {
+      this.assets.set(asset.id, { ...asset, duplicateId: null });
+    }
+    return this;
+  }
+
   removeFromAlbum(albumId: string, assetIds: string[]) {
     const members = this.albumAssets.get(albumId);
+    const removed = [...this.activities.values()].filter(({ assetId }) => assetId && assetIds.includes(assetId));
+    for (const { id } of removed) {
+      this.activities.delete(id);
+    }
     return assetIds.map((id) => ({ id, success: members?.delete(id) ?? false }));
   }
 
@@ -380,11 +533,212 @@ export class MockData {
     return [...this.tags.values()];
   }
 
+  upsertTags(values: string[]) {
+    return values.map((value) => this.upsertTag(value));
+  }
+
+  updateTag(id: string, dto: TagUpdateDto) {
+    const tag = this.tags.get(id);
+    if (!tag) {
+      return;
+    }
+
+    const name = dto.name ?? tag.name;
+    const value = tag.value.slice(0, tag.value.length - tag.name.length) + name;
+    for (const descendant of this.tagList()) {
+      if (descendant.value.startsWith(`${tag.value}/`)) {
+        this.tags.set(descendant.id, { ...descendant, value: value + descendant.value.slice(tag.value.length) });
+      }
+    }
+
+    const updated = { ...tag, name, value, color: dto.color === undefined ? tag.color : (dto.color ?? undefined) };
+    this.tags.set(id, updated);
+    return updated;
+  }
+
+  deleteTag(id: string) {
+    const tag = this.tags.get(id);
+    if (!tag) {
+      return false;
+    }
+
+    for (const descendant of this.tagList()) {
+      if (descendant.id === id || descendant.value.startsWith(`${tag.value}/`)) {
+        this.tags.delete(descendant.id);
+      }
+    }
+    return true;
+  }
+
+  tagAssets(assetIds: string[], tagIds: string[]) {
+    const tags = tagIds.map((id) => this.tags.get(id)).filter((tag) => tag !== undefined);
+    let count = 0;
+    for (const assetId of assetIds) {
+      const asset = this.assets.get(assetId);
+      if (!asset) {
+        continue;
+      }
+
+      const existing = asset.tags ?? [];
+      const added = tags.filter((tag) => existing.every(({ id }) => id !== tag.id));
+      count += added.length;
+      this.assets.set(assetId, { ...asset, tags: [...existing, ...added] });
+    }
+    return count;
+  }
+
+  untagAssets(tagId: string, assetIds: string[]) {
+    return assetIds.map((id) => {
+      const asset = this.assets.get(id);
+      if (!asset?.tags?.some((tag) => tag.id === tagId)) {
+        return { id, success: false };
+      }
+
+      this.assets.set(id, { ...asset, tags: asset.tags.filter((tag) => tag.id !== tagId) });
+      return { id, success: true };
+    });
+  }
+
+  private upsertTag(value: string): TagResponseDto {
+    const existing = this.tagList().find((tag) => tag.value === value);
+    if (existing) {
+      return existing;
+    }
+
+    const separator = value.lastIndexOf('/');
+    const parent = separator === -1 ? undefined : this.upsertTag(value.slice(0, separator));
+    const tag = factory.tag({ name: value.slice(separator + 1), value, parentId: parent?.id });
+    this.tags.set(tag.id, tag);
+    return tag;
+  }
+
+  addFaces(assetId: string, faces: MaybeArray<AssetFaceResponseDto>) {
+    this.faces.set(assetId, [...(this.faces.get(assetId) ?? []), ...toList(faces)]);
+    return this;
+  }
+
+  getFaces(assetId: string) {
+    return this.faces.get(assetId) ?? [];
+  }
+
+  deleteFace(id: string) {
+    for (const [assetId, faces] of this.faces) {
+      if (faces.some((face) => face.id === id)) {
+        this.faces.set(
+          assetId,
+          faces.filter((face) => face.id !== id),
+        );
+        return true;
+      }
+    }
+    return false;
+  }
+
+  addLibraries(libraries: MaybeArray<LibraryResponseDto>) {
+    for (const library of toList(libraries)) {
+      this.libraries.set(library.id, library);
+    }
+    return this;
+  }
+
+  libraryList() {
+    return [...this.libraries.values()];
+  }
+
+  getLibrary(id: string) {
+    return this.libraries.get(id);
+  }
+
+  updateLibrary(id: string, dto: UpdateLibraryDto) {
+    const library = this.libraries.get(id);
+    if (!library) {
+      return;
+    }
+
+    const updated = { ...library, ...dto, updatedAt: new Date().toISOString() };
+    this.libraries.set(id, updated);
+    return updated;
+  }
+
+  deleteLibrary(id: string) {
+    return this.libraries.delete(id);
+  }
+
+  addApiKeys(apiKeys: MaybeArray<ApiKeyResponseDto>) {
+    for (const apiKey of toList(apiKeys)) {
+      this.apiKeys.set(apiKey.id, apiKey);
+    }
+    return this;
+  }
+
+  apiKeyList() {
+    return [...this.apiKeys.values()];
+  }
+
+  rotateApiKey(id: string) {
+    const apiKey = this.apiKeys.get(id);
+    if (!apiKey) {
+      return;
+    }
+
+    const rotated = { ...apiKey, updatedAt: new Date().toISOString() };
+    this.apiKeys.set(id, rotated);
+    return { ...rotated, apiKey: rotated, secret: 'rotated-secret' };
+  }
+
+  deleteApiKey(id: string) {
+    return this.apiKeys.delete(id);
+  }
+
+  addSessions(sessions: MaybeArray<SessionResponseDto>) {
+    for (const session of toList(sessions)) {
+      this.sessions.set(session.id, session);
+    }
+    return this;
+  }
+
+  sessionList() {
+    return [...this.sessions.values()];
+  }
+
+  deleteSession(id: string) {
+    return this.sessions.delete(id);
+  }
+
+  deleteOtherSessions() {
+    for (const session of this.sessionList()) {
+      if (!session.current) {
+        this.sessions.delete(session.id);
+      }
+    }
+  }
+
+  addPasskeys(passkeys: MaybeArray<PasskeyResponseDto>) {
+    for (const passkey of toList(passkeys)) {
+      this.passkeys.set(passkey.id, passkey);
+    }
+    return this;
+  }
+
+  passkeyList() {
+    return [...this.passkeys.values()];
+  }
+
+  deletePasskey(id: string) {
+    return this.passkeys.delete(id);
+  }
+
   addActivities(activities: MaybeArray<ActivityResponseDto>) {
     for (const activity of toList(activities)) {
       this.activities.set(activity.id, activity);
     }
     return this;
+  }
+
+  createActivity({ assetId, type, comment }: ActivityCreateDto) {
+    const activity = factory.activity({ user: this.user, assetId: assetId ?? null, type, comment: comment ?? null });
+    this.addActivities(activity);
+    return activity;
   }
 
   activityStatistics(filter: { assetId?: string } = {}) {
@@ -395,17 +749,136 @@ export class MockData {
     };
   }
 
-  activityList({ assetId }: { assetId?: string } = {}) {
-    return [...this.activities.values()].filter((activity) => !assetId || activity.assetId === assetId);
+  activityList({ assetId, userId, $type, level }: ActivityFilter = {}) {
+    return [...this.activities.values()].filter(
+      (activity) =>
+        (!assetId || activity.assetId === assetId) &&
+        (!userId || activity.user.id === userId) &&
+        (!$type || activity.type === $type) &&
+        (level !== ReactionLevel.Album || activity.assetId === null) &&
+        (level !== ReactionLevel.Asset || activity.assetId !== null) &&
+        (activity.assetId === null || this.assets.get(activity.assetId)?.isTrashed === false),
+    );
   }
 
   deleteActivity(id: string) {
     return this.activities.delete(id);
   }
 
+  addWorkflows(workflows: MaybeArray<WorkflowResponseDto>) {
+    for (const workflow of toList(workflows)) {
+      this.workflows.set(workflow.id, workflow);
+    }
+    return this;
+  }
+
+  workflowList() {
+    return [...this.workflows.values()];
+  }
+
+  deleteWorkflow(id: string) {
+    return this.workflows.delete(id);
+  }
+
+  createWorkflow(dto: WorkflowCreateDto) {
+    const workflow = factory.workflow({ ...dto, steps: toWorkflowSteps(dto.steps ?? []) });
+    this.workflows.set(workflow.id, workflow);
+    return workflow;
+  }
+
+  updateWorkflow(id: string, dto: WorkflowUpdateDto) {
+    const workflow = this.workflows.get(id);
+    if (!workflow) {
+      return;
+    }
+    const steps = dto.steps ? toWorkflowSteps(dto.steps) : workflow.steps;
+    const updated = { ...workflow, ...dto, steps, updatedAt: new Date().toISOString() };
+    this.workflows.set(id, updated);
+    return updated;
+  }
+
+  addPluginMethods(methods: MaybeArray<PluginMethodResponseDto>) {
+    for (const method of toList(methods)) {
+      this.pluginMethods.set(method.key, method);
+    }
+    return this;
+  }
+
+  pluginMethodList() {
+    return [...this.pluginMethods.values()];
+  }
+
   updateAdminConfig(config: AdminConfigDto) {
     this.adminConfig = config;
     return config;
+  }
+
+  addQueues(queues: MaybeArray<QueueResponseDto>) {
+    for (const queue of toList(queues)) {
+      this.queueStates.set(queue.name, queue);
+    }
+    return this;
+  }
+
+  queueList() {
+    return [...this.queueStates.values()];
+  }
+
+  getQueue(name: QueueName) {
+    return this.queueStates.get(name);
+  }
+
+  updateQueue(name: QueueName, { isPaused }: QueueUpdateDto) {
+    const queue = this.queueStates.get(name);
+    if (queue && isPaused !== undefined) {
+      queue.isPaused = isPaused;
+    }
+    return queue;
+  }
+
+  emptyQueue(name: QueueName, { failed = false }: QueueDeleteDto) {
+    const queue = this.queueStates.get(name);
+    if (queue) {
+      queue.statistics.waiting = 0;
+      queue.statistics.delayed = 0;
+      queue.statistics.paused = 0;
+      if (failed) {
+        queue.statistics.failed = 0;
+      }
+    }
+    return queue;
+  }
+
+  runQueueCommand(name: QueueName, { command }: QueueCommandDto) {
+    switch (command) {
+      case QueueCommand.Pause:
+      case QueueCommand.Resume: {
+        return this.updateQueue(name, { isPaused: command === QueueCommand.Pause });
+      }
+      case QueueCommand.Empty: {
+        return this.emptyQueue(name, { failed: false });
+      }
+      case QueueCommand.ClearFailed: {
+        const queue = this.queueStates.get(name);
+        if (queue) {
+          queue.statistics.failed = 0;
+        }
+        return queue;
+      }
+      case QueueCommand.Start: {
+        return this.queueStates.get(name);
+      }
+    }
+  }
+
+  addPlaces(places: MaybeArray<PlacesResponseDto>) {
+    this.places.push(...toList(places));
+    return this;
+  }
+
+  searchPlaces(name: string) {
+    const query = name.toLowerCase();
+    return this.places.filter((place) => place.name.toLowerCase().startsWith(query));
   }
 
   addPeople(people: MaybeArray<PersonResponseDto>) {
@@ -422,6 +895,43 @@ export class MockData {
         asset.stack = { id: stack.id, assetCount: stack.assets.length, primaryAssetId: stack.primaryAssetId };
         this.assets.set(asset.id, asset);
       }
+    }
+    return this;
+  }
+
+  createStack({ assetIds }: StackCreateDto) {
+    const stack = factory.stack({ assets: assetIds.map((id) => this.assets.get(id)!) });
+    this.addStacks(stack);
+    return stack;
+  }
+
+  updateStack(id: string, { primaryAssetId }: StackUpdateDto) {
+    const stack = this.stacks.get(id);
+    if (!stack) {
+      return;
+    }
+    const updated = { ...stack, primaryAssetId: primaryAssetId ?? stack.primaryAssetId };
+    this.stacks.set(id, updated);
+    return updated;
+  }
+
+  removeFromStack(id: string, assetId: string) {
+    const stack = this.stacks.get(id);
+    const asset = this.assets.get(assetId);
+    if (!stack || !asset) {
+      return;
+    }
+    this.assets.set(assetId, { ...asset, stack: null });
+    this.addStacks({ ...stack, assets: stack.assets.filter((asset) => asset.id !== assetId) });
+    return this;
+  }
+
+  deleteStacks(ids: string[]) {
+    for (const id of ids) {
+      for (const asset of this.stacks.get(id)?.assets ?? []) {
+        this.assets.set(asset.id, { ...asset, stack: null });
+      }
+      this.stacks.delete(id);
     }
     return this;
   }
@@ -583,7 +1093,7 @@ export class MockData {
     return updated;
   }
 
-  searchAssets(dto: MetadataSearchDto): SearchResponseDto {
+  searchAssets(dto: Pick<MetadataSearchDto, 'visibility' | 'isFavorite' | 'size'>): SearchResponseDto {
     const items = this.timelineAssets({ visibility: dto.visibility, isFavorite: dto.isFavorite ?? undefined }).slice(
       0,
       dto.size ?? 250,
@@ -592,5 +1102,44 @@ export class MockData {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: { total: items.length, count: items.length, items, facets: [], nextPage: null, nextCursor: null },
     };
+  }
+
+  searchSuggestions({ $type, country, state, make, model, includeNull }: SuggestionFilter) {
+    const matches = (value: string | null | undefined, filter?: string) => filter === undefined || value === filter;
+    const values = this.timelineAssets()
+      .map((asset) => asset.exifInfo)
+      .filter(
+        (exif) =>
+          exif !== undefined &&
+          matches(exif.country, country) &&
+          matches(exif.state, state) &&
+          matches(exif.make, make) &&
+          matches(exif.model, model),
+      )
+      .map((exif) => exif![suggestionFields[$type]])
+      .filter((value): value is string => typeof value === 'string');
+    const suggestions: Array<string | null> = [...new Set(values)].sort();
+    return includeNull ? [...suggestions, null] : suggestions;
+  }
+
+  exploreData(): SearchExploreResponseDto[] {
+    const recents = this.timelineAssets()
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, exploreRecentsLimit);
+    return [
+      { fieldName: 'exifInfo.city', items: this.assetsByCity().map((data) => ({ value: data.exifInfo!.city!, data })) },
+      { fieldName: 'createdAt', items: recents.map((data) => ({ value: data.createdAt, data })) },
+    ];
+  }
+
+  assetsByCity() {
+    const byCity = new Map<string, AssetResponseDto>();
+    for (const asset of this.timelineAssets()) {
+      const city = asset.exifInfo?.city;
+      if (city && !byCity.has(city)) {
+        byCity.set(city, asset);
+      }
+    }
+    return [...byCity.values()];
   }
 }
