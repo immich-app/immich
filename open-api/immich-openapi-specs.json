@@ -19244,6 +19244,10 @@
       },
       "AdminConfigFacesDto": {
         "properties": {
+          "export": {
+            "description": "Export",
+            "type": "boolean"
+          },
           "import": {
             "description": "Import",
             "type": "boolean"

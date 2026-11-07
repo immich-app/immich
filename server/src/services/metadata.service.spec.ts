@@ -2275,6 +2275,57 @@ describe(MetadataService.name, () => {
       expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, { Rating: 0 });
       expect(mocks.asset.unlockProperties).toHaveBeenCalledWith(asset.id, ['rating']);
     });
+
+    it('should write face regions to sidecar when metadata.faces.export is enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false, export: true } } });
+      const asset = AssetFactory.from()
+        .file({ type: AssetFileType.Sidecar })
+        .exif({ orientation: '1', exifImageWidth: 1000, exifImageHeight: 800 })
+        .build();
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+      mocks.person.getFacesForSidecar.mockResolvedValue([
+        {
+          name: 'John Doe',
+          boundingBoxX1: 100,
+          boundingBoxY1: 200,
+          boundingBoxX2: 300,
+          boundingBoxY2: 400,
+          imageWidth: 1000,
+          imageHeight: 800,
+        },
+      ]);
+
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Success);
+      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {}, [
+        '-overwrite_original',
+        '-RegionInfo=',
+        '-RegionAppliedToDimensionsW=1000',
+        '-RegionAppliedToDimensionsH=800',
+        '-RegionAppliedToDimensionsUnit=pixel',
+        '-RegionAreaX+=0.2',
+        '-RegionAreaY+=0.375',
+        '-RegionAreaW+=0.2',
+        '-RegionAreaH+=0.25',
+        '-RegionAreaUnit+=normalized',
+        '-RegionType+=Face',
+        '-RegionName+=John Doe',
+      ]);
+    });
+
+    it('should skip face regions when metadata.faces.export is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false, export: false } } });
+      const asset = AssetFactory.from()
+        .file({ type: AssetFileType.Sidecar })
+        .exif({ orientation: '1', exifImageWidth: 1000, exifImageHeight: 800 })
+        .build();
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.person.getFacesForSidecar).not.toHaveBeenCalled();
+      expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
+    });
   });
 
   describe('firstDateTime', () => {
