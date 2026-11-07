@@ -71,4 +71,41 @@ test.describe('user administration', () => {
     await expect(app.admin.users.deleteButton).toHaveCount(0);
     await expect(app.admin.users.resetPasswordButton).toHaveCount(0);
   });
+
+  test('resets a user password', async ({ page, data, api, app }) => {
+    const user = factory.user({ name: 'Reset User', email: 'reset@immich.cloud', isAdmin: false });
+    data.addUsers(user);
+    await page.goto(Route.viewUser(user));
+
+    await app.admin.users.resetPasswordButton.click();
+    await app.dialogButton('cancel').click();
+    await expect(app.dialog).toBeHidden();
+    expect(api.updateUserAdmin).not.toHaveBeenCalled();
+
+    await app.admin.users.resetPasswordButton.click();
+    await app.dialogButton('confirm').click();
+
+    await expect.poll(() => api.updateUserAdmin.calls.length).toBe(1);
+    expect(api.updateUserAdmin).toHaveBeenCalledWith({
+      params: { id: user.id },
+      body: { password: expect.any(String), shouldChangePassword: true },
+    });
+  });
+
+  test('resets a user pin code', async ({ page, data, api, app }) => {
+    const user = factory.user({ name: 'Reset User', email: 'reset@immich.cloud', isAdmin: false });
+    data.addUsers(user);
+    await page.goto(Route.viewUser(user));
+
+    await app.admin.users.resetPinCodeButton.click();
+    await app.dialogButton('cancel').click();
+    await expect(app.dialog).toBeHidden();
+    expect(api.updateUserAdmin).not.toHaveBeenCalled();
+
+    await app.admin.users.resetPinCodeButton.click();
+    await app.dialogButton('confirm').click();
+
+    await expect.poll(() => api.updateUserAdmin.calls.length).toBe(1);
+    expect(api.updateUserAdmin).toHaveBeenCalledWith({ params: { id: user.id }, body: { pinCode: null } });
+  });
 });

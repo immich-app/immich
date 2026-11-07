@@ -46,6 +46,12 @@ test('deleting the current tag opens its parent', async ({ data, router, render,
   await settle();
 
   await app.tags.deleteButton.click();
+  await app.cancelButton.click();
+  await settle();
+
+  expect(api.deleteTag).not.toHaveBeenCalled();
+
+  await app.tags.deleteButton.click();
   await app.tags.form.deleteButton.click();
   await settle();
 

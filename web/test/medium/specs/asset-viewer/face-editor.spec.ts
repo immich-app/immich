@@ -60,6 +60,11 @@ test.describe('face editor', () => {
   test('tags the selected person after confirming', async ({ api, app }) => {
     const [alice] = people;
     await app.viewer.faceEditor.person(alice.name).click();
+    await app.dialogButton('cancel').click();
+    await expect(app.dialog).toBeHidden();
+    expect(api.createFace).not.toHaveBeenCalled();
+
+    await app.viewer.faceEditor.person(alice.name).click();
     await expect(app.dialog).toBeVisible();
     await app.viewer.faceEditor.confirmButton.click();
 

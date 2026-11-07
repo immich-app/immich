@@ -40,9 +40,36 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     getUserStatisticsAdmin: () => ({ json: { images: 0, videos: 0, total: 0 } }),
     getUserSessionsAdmin: () => ({ json: [] }),
-    getApiKeys: () => ({ json: [] }),
-    getSessions: () => ({ json: [] }),
-    searchPasskeys: () => ({ json: [] }),
+    getAllLibraries: () => ({ json: data.libraryList() }),
+    getLibrary: ({ params }) => {
+      const library = data.getLibrary(params.id);
+      return library ? { json: library } : notFound;
+    },
+    getLibraryStatistics: ({ params }) => {
+      const library = data.getLibrary(params.id);
+      return library
+        ? { json: { photos: library.assetCount, videos: 0, total: library.assetCount, usage: 0 } }
+        : notFound;
+    },
+    updateLibrary: ({ params, body }) => {
+      const library = data.updateLibrary(params.id, body);
+      return library ? { json: library } : notFound;
+    },
+    deleteLibrary: ({ params }) => (data.deleteLibrary(params.id) ? { status: 204 } : notFound),
+    getApiKeys: () => ({ json: data.apiKeyList() }),
+    rotateApiKey: ({ params }) => {
+      const rotated = data.rotateApiKey(params.id);
+      return rotated ? { status: 201, json: rotated } : notFound;
+    },
+    deleteApiKey: ({ params }) => (data.deleteApiKey(params.id) ? { status: 204 } : notFound),
+    getSessions: () => ({ json: data.sessionList() }),
+    deleteSession: ({ params }) => (data.deleteSession(params.id) ? { status: 204 } : notFound),
+    deleteAllSessions: () => {
+      data.deleteOtherSessions();
+      return { status: 204 };
+    },
+    searchPasskeys: () => ({ json: data.passkeyList() }),
+    deletePasskey: ({ params }) => (data.deletePasskey(params.id) ? { status: 204 } : notFound),
     getUserCalendarHeatmapAdmin: ({ params }) => ({
       json: { from: params.$from ?? '', to: params.to ?? '', series: [], totalCount: 0 },
     }),
@@ -139,7 +166,8 @@ export const createHandlers = (data: MockData): Handlers => {
       const person = data.updatePerson(params.id, body);
       return person ? { json: person } : notFound;
     },
-    getFaces: () => ({ json: [] }),
+    getFaces: ({ params }) => ({ json: data.getFaces(params.id) }),
+    deleteFace: ({ params }) => (data.deleteFace(params.id) ? { status: 204 } : notFound),
     createFace: () => ({ status: 201 }),
     getAllPeople: ({ params = {} }) => ({ json: data.peoplePage(params) }),
     getPersonThumbnail: ({ params }) => ({
@@ -169,6 +197,8 @@ export const createHandlers = (data: MockData): Handlers => {
       data.deleteAlbum(params.id);
       return { status: 204 };
     },
+    removeUserFromAlbum: ({ params }) =>
+      data.removeUserFromAlbum(params.id, params.userId) ? { status: 204 } : notFound,
     getAlbumMapMarkers: ({ params }) => ({ json: data.mapMarkers(params.id) }),
     getMapMarkers: () => ({ json: data.mapMarkers() }),
     getAlbumInfo: ({ params }) => {
@@ -209,6 +239,7 @@ export const createHandlers = (data: MockData): Handlers => {
     getAssetsByCity: () => ({ json: data.assetsByCity() }),
 
     getAllSharedLinks: () => ({ json: data.sharedLinkList() }),
+    removeSharedLink: ({ params }) => (data.removeSharedLink(params.id) ? { status: 204 } : notFound),
     getMySharedLink: ({ params = {} }) => {
       const link = data.getSharedLink(params);
       if (!link) {
@@ -235,6 +266,7 @@ export const createHandlers = (data: MockData): Handlers => {
     }),
 
     searchWorkflows: () => ({ json: data.workflowList() }),
+    deleteWorkflow: ({ params }) => (data.deleteWorkflow(params.id) ? { status: 204 } : notFound),
     getWorkflowTriggers: () => ({
       json: Object.values(WorkflowTrigger).map((trigger) => ({ trigger, types: [WorkflowType.AssetV1] })),
     }),
