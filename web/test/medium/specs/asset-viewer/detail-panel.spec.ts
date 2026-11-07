@@ -71,6 +71,31 @@ test.describe('detail panel', () => {
     expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { latitude: 90, longitude: -180 } });
   });
 
+  test('location editor searches places and uses the chosen one', async ({ data, api, app, page }) => {
+    const asset = factory.asset({
+      exifInfo: { latitude: null, longitude: null, city: null, state: null, country: null },
+    });
+    data.addAssets(asset).addPlaces([
+      { name: 'Paris', admin1name: 'Île-de-France', latitude: 48.8566, longitude: 2.3522 },
+      { name: 'Tokyo', admin1name: 'Tokyo', latitude: 35.6762, longitude: 139.6503 },
+    ]);
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.openDetailPanel();
+    await app.viewer.addLocationButton.click();
+
+    await app.viewer.changeLocation.searchInput.fill('par');
+    await expect(app.viewer.changeLocation.place('Tokyo, Tokyo')).toHaveCount(0);
+    await app.viewer.changeLocation.place('Paris, Île-de-France').click();
+    await app.viewer.changeLocation.confirmButton.click();
+
+    expect(api.searchPlaces).toHaveBeenCalledWith({ params: { name: 'par' } });
+    expect(api.updateAsset).toHaveBeenCalledWith({
+      params: { id: asset.id },
+      body: { latitude: 48.8566, longitude: 2.3522 },
+    });
+  });
+
   test('opens on a shared link and stays closed when metadata is hidden', async ({ page, context, data, app }) => {
     const asset = factory.asset();
     const other = factory.asset();

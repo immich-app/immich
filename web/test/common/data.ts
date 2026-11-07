@@ -9,6 +9,7 @@ import {
   QueueCommand,
   ReactionLevel,
   ReactionType,
+  SearchSuggestionType,
   type ActivityCreateDto,
   type ActivityResponseDto,
   type AdminConfigDto,
@@ -20,17 +21,21 @@ import {
   type DownloadInfoDto,
   type DuplicateResolveDto,
   type DuplicateResponseDto,
+  type ExifResponseDto,
   type MapMarkerResponseDto,
   type MemoryResponseDto,
   type MemoryUpdateDto,
   type MetadataSearchDto,
   type PersonResponseDto,
+  type PersonUpdateDto,
+  type PlacesResponseDto,
   type PluginMethodResponseDto,
   type QueueCommandDto,
   type QueueDeleteDto,
   type QueueName,
   type QueueResponseDto,
   type QueueUpdateDto,
+  type SearchExploreResponseDto,
   type SearchResponseDto,
   type SharedLinkResponseDto,
   type StackCreateDto,
@@ -67,6 +72,15 @@ export type ActivityFilter = {
   level?: ReactionLevel;
 };
 
+export type SuggestionFilter = {
+  $type: SearchSuggestionType;
+  country?: string;
+  state?: string;
+  make?: string;
+  model?: string;
+  includeNull?: boolean;
+};
+
 export type MemoryFilter = {
   id?: string;
   page?: number;
@@ -85,6 +99,17 @@ const toWorkflowSteps = (steps: WorkflowStepDto[]) =>
   steps.map(({ method, config, enabled }) => ({ method, config, enabled }));
 
 const hiddenVisibilities = new Set<AssetVisibility>([AssetVisibility.Hidden, AssetVisibility.Locked]);
+
+const suggestionFields: Record<SearchSuggestionType, keyof ExifResponseDto> = {
+  [SearchSuggestionType.Country]: 'country',
+  [SearchSuggestionType.State]: 'state',
+  [SearchSuggestionType.City]: 'city',
+  [SearchSuggestionType.CameraMake]: 'make',
+  [SearchSuggestionType.CameraModel]: 'model',
+  [SearchSuggestionType.CameraLensModel]: 'lensModel',
+};
+
+const exploreRecentsLimit = 12;
 
 export class MockData {
   readonly user = factory.user({ id: adminUserId });
@@ -110,6 +135,7 @@ export class MockData {
   private readonly albumAssets = new Map<string, Set<string>>();
   private readonly memories = new Map<string, MemoryResponseDto>();
   private readonly people = new Map<string, PersonResponseDto>();
+  private readonly places: PlacesResponseDto[] = [];
   private readonly stacks = new Map<string, StackResponseDto>();
   private readonly ocr = new Map<string, AssetOcrResponseDto[]>();
   private readonly brokenAssetIds = new Set<string>();
@@ -151,6 +177,50 @@ export class MockData {
 
   getPeople() {
     return [...this.people.values()];
+  }
+
+  getPerson(id: string) {
+    return this.people.get(id);
+  }
+
+  personStatistics(id: string) {
+    return { assets: this.timelineAssets().filter((asset) => asset.people?.some((person) => person.id === id)).length };
+  }
+
+  peoplePage({ withHidden, isHidden }: { withHidden?: boolean; isHidden?: boolean }) {
+    const all = this.getPeople().filter((person) => isHidden === undefined || person.isHidden === isHidden);
+    const people = withHidden || isHidden !== undefined ? all : all.filter((person) => !person.isHidden);
+    return {
+      people,
+      hasNextPage: false,
+      total: all.length,
+      hidden: all.filter((person) => person.isHidden).length,
+    };
+  }
+
+  searchPeople({ name, withHidden }: { name: string; withHidden?: boolean }) {
+    const query = name.toLowerCase();
+    return this.getPeople().filter(
+      (person) =>
+        (withHidden || !person.isHidden) &&
+        (person.name.toLowerCase().startsWith(query) || person.name.toLowerCase().includes(` ${query}`)),
+    );
+  }
+
+  updatePerson(id: string, dto: PersonUpdateDto) {
+    const person = this.people.get(id);
+    if (!person) {
+      return;
+    }
+    const updated: PersonResponseDto = {
+      ...person,
+      name: dto.name ?? person.name,
+      isHidden: dto.isHidden ?? person.isHidden,
+      isFavorite: dto.isFavorite ?? person.isFavorite,
+      birthDate: dto.birthDate === undefined ? person.birthDate : dto.birthDate,
+    };
+    this.people.set(id, updated);
+    return updated;
   }
 
   updatePeople(people: { id: string; isHidden?: boolean }[]) {
@@ -280,6 +350,10 @@ export class MockData {
 
   getUser(id: string) {
     return this.users.get(id);
+  }
+
+  clusterGroupUsers(clusterGroupId: string) {
+    return this.userList().filter((user) => user.clusterGroupId === clusterGroupId);
   }
 
   userList({ withDeleted = false }: { withDeleted?: boolean } = {}) {
@@ -571,6 +645,16 @@ export class MockData {
     }
   }
 
+  addPlaces(places: MaybeArray<PlacesResponseDto>) {
+    this.places.push(...toList(places));
+    return this;
+  }
+
+  searchPlaces(name: string) {
+    const query = name.toLowerCase();
+    return this.places.filter((place) => place.name.toLowerCase().startsWith(query));
+  }
+
   addPeople(people: MaybeArray<PersonResponseDto>) {
     for (const person of toList(people)) {
       this.people.set(person.id, person);
@@ -783,7 +867,7 @@ export class MockData {
     return updated;
   }
 
-  searchAssets(dto: MetadataSearchDto): SearchResponseDto {
+  searchAssets(dto: Pick<MetadataSearchDto, 'visibility' | 'isFavorite' | 'size'>): SearchResponseDto {
     const items = this.timelineAssets({ visibility: dto.visibility, isFavorite: dto.isFavorite ?? undefined }).slice(
       0,
       dto.size ?? 250,
@@ -792,5 +876,44 @@ export class MockData {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: { total: items.length, count: items.length, items, facets: [], nextPage: null, nextCursor: null },
     };
+  }
+
+  searchSuggestions({ $type, country, state, make, model, includeNull }: SuggestionFilter) {
+    const matches = (value: string | null | undefined, filter?: string) => filter === undefined || value === filter;
+    const values = this.timelineAssets()
+      .map((asset) => asset.exifInfo)
+      .filter(
+        (exif) =>
+          exif !== undefined &&
+          matches(exif.country, country) &&
+          matches(exif.state, state) &&
+          matches(exif.make, make) &&
+          matches(exif.model, model),
+      )
+      .map((exif) => exif![suggestionFields[$type]])
+      .filter((value): value is string => typeof value === 'string');
+    const suggestions: Array<string | null> = [...new Set(values)].sort();
+    return includeNull ? [...suggestions, null] : suggestions;
+  }
+
+  exploreData(): SearchExploreResponseDto[] {
+    const recents = this.timelineAssets()
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, exploreRecentsLimit);
+    return [
+      { fieldName: 'exifInfo.city', items: this.assetsByCity().map((data) => ({ value: data.exifInfo!.city!, data })) },
+      { fieldName: 'createdAt', items: recents.map((data) => ({ value: data.createdAt, data })) },
+    ];
+  }
+
+  assetsByCity() {
+    const byCity = new Map<string, AssetResponseDto>();
+    for (const asset of this.timelineAssets()) {
+      const city = asset.exifInfo?.city;
+      if (city && !byCity.has(city)) {
+        byCity.set(city, asset);
+      }
+    }
+    return [...byCity.values()];
   }
 }

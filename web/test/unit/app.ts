@@ -1,4 +1,4 @@
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 export const createApp = () => {
   const button = (name: string) => page.getByRole('button', { name, exact: true });
@@ -16,17 +16,42 @@ export const createApp = () => {
       root: sidebar,
       links: sidebar.getByRole('link'),
     },
+    gallery: {
+      selectAll: () => userEvent.keyboard('{Control>}a{/Control}'),
+      selectAllButton: button('select_all'),
+    },
     search: {
       filters: searchFilters,
+      open: () => page.getByRole('combobox', { name: 'search_your_photos' }).click(),
       openFilter: async (name: string) => {
         await page.getByRole('combobox', { name: 'search_your_photos' }).click();
         await searchFilters.getByRole('button', { name, exact: true }).click();
       },
+      submit: () => searchFilters.getByRole('button', { name: 'search', exact: true }).click(),
+      startDate: page.getByRole('spinbutton'),
+      customDateButton: searchFilters.getByRole('button', { name: 'search_filter_date_custom', exact: true }),
+      showAdvanced: () => searchFilters.getByRole('button', { name: 'advanced_filters' }).click(),
+      pick: async (label: string, option: string) => {
+        await searchFilters.getByRole('combobox', { name: label, exact: true }).click();
+        await page.getByRole('option', { name: option, exact: true }).click();
+      },
+      combobox: (label: string) => searchFilters.getByRole('combobox', { name: label, exact: true }),
+      openCombobox: (label: string) => searchFilters.getByRole('combobox', { name: label, exact: true }).click(),
+      option: (name: string) => page.getByRole('option', { name, exact: true }),
+      removeChipButtons: page.getByRole('button', { name: 'remove_filter', exact: true }),
       tags: {
         section: tagsSection,
         chip: (name: string) => tagsSection().getByRole('button', { name, exact: true }),
         untaggedButton: () => tagsSection().getByRole('button', { name: 'untagged', exact: true }),
       },
+    },
+    explore: {
+      recentlyAdded: page.getByRole('button', { name: 'image_alt_text_date', exact: true }),
+      assetViewer: page.getByTestId('viewer-content'),
+      person: (name: string) => main.getByRole('link').filter({ hasText: name }),
+    },
+    places: {
+      card: (city: string) => page.getByRole('img', { name: city, exact: true }),
     },
     admin: {
       maintenance: {
@@ -95,6 +120,9 @@ export const createApp = () => {
       manageOauthAccountLink: page.getByRole('link', { name: 'manage_oauth_account', exact: true }),
     },
     people: {
+      nameInput: (index: number) => main.getByPlaceholder('add_a_name').nth(index),
+      mergeDialog: (name: string) => page.getByRole('dialog').getByText(`merge_people - ${name}`, { exact: true }),
+      declineMergeButton: page.getByRole('dialog').getByRole('button', { name: 'no', exact: true }),
       manage: {
         hideButtons: page.getByRole('button', { name: 'hide_named_person' }),
         hidden: page.getByRole('button', { pressed: true }),
