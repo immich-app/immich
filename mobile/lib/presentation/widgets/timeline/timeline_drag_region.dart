@@ -169,6 +169,14 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
 
 class _CustomLongPressGestureRecognizer extends LongPressGestureRecognizer {
   @override
+  void addAllowedPointer(PointerDownEvent event) {
+    if (TimelineTouchGuard.touchStoppedScroll) {
+      return;
+    }
+    super.addAllowedPointer(event);
+  }
+
+  @override
   void rejectGesture(int pointer) {
     acceptGesture(pointer);
   }
@@ -212,4 +220,15 @@ class _TimelineAssetIndexProxy extends RenderProxyBox {
 @freezed
 abstract class TimelineAssetIndex with _$TimelineAssetIndex {
   const factory TimelineAssetIndex({required int assetIndex, required int segmentIndex}) = _TimelineAssetIndex;
+}
+
+abstract final class TimelineTouchGuard {
+  static bool _scrollEndedInThisEvent = false;
+
+  static void scrollEnded() {
+    _scrollEndedInThisEvent = true;
+    scheduleMicrotask(() => _scrollEndedInThisEvent = false);
+  }
+
+  static bool get touchStoppedScroll => _scrollEndedInThisEvent;
 }
