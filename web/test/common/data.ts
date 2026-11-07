@@ -17,6 +17,8 @@ import {
   type AlbumResponseDto,
   type ApiKeyResponseDto,
   type AssetBulkUpdateDto,
+  type AssetEditActionItemResponseDto,
+  type AssetEditsCreateDto,
   type AssetFaceResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
@@ -153,6 +155,7 @@ export class MockData {
   private readonly places: PlacesResponseDto[] = [];
   private readonly stacks = new Map<string, StackResponseDto>();
   private readonly ocr = new Map<string, AssetOcrResponseDto[]>();
+  private readonly assetEdits = new Map<string, AssetEditActionItemResponseDto[]>();
   private readonly brokenAssetIds = new Set<string>();
   private readonly sharedLinks = new Map<string, SharedLinkResponseDto>();
   private readonly tags = new Map<string, TagResponseDto>();
@@ -1086,6 +1089,11 @@ export class MockData {
       return;
     }
 
+    if (dto.livePhotoVideoId !== undefined) {
+      this.setMotionVisibility(asset.livePhotoVideoId, AssetVisibility.Timeline);
+      this.setMotionVisibility(dto.livePhotoVideoId, AssetVisibility.Hidden);
+    }
+
     const visibility = dto.visibility ?? asset.visibility;
     const updated: AssetResponseDto = {
       ...asset,
@@ -1106,6 +1114,33 @@ export class MockData {
 
     this.assets.set(id, updated);
     return updated;
+  }
+
+  getAssetEdits(assetId: string) {
+    return { assetId, edits: this.assetEdits.get(assetId) ?? [] };
+  }
+
+  editAsset(assetId: string, { edits }: AssetEditsCreateDto) {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return;
+    }
+    this.assetEdits.set(
+      assetId,
+      edits.map((edit) => factory.assetEdit(edit)),
+    );
+    this.assets.set(assetId, { ...asset, isEdited: true });
+    return this.getAssetEdits(assetId);
+  }
+
+  removeAssetEdits(assetId: string) {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return false;
+    }
+    this.assetEdits.delete(assetId);
+    this.assets.set(assetId, { ...asset, isEdited: false });
+    return true;
   }
 
   deleteAssets(ids: string[], force = false) {
@@ -1134,6 +1169,13 @@ export class MockData {
       count++;
     }
     return count;
+  }
+
+  private setMotionVisibility(motionId: string | null | undefined, visibility: AssetVisibility) {
+    const motion = motionId ? this.assets.get(motionId) : undefined;
+    if (motion) {
+      this.assets.set(motion.id, { ...motion, visibility });
+    }
   }
 
   memoryList({ id, page = 1, size = 250 }: MemoryFilter = {}) {
