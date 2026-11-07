@@ -6,6 +6,7 @@ import {
   AssetOrder,
   AssetTypeEnum,
   AssetVisibility,
+  PartnerDirection,
   QueueCommand,
   ReactionLevel,
   ReactionType,
@@ -16,9 +17,13 @@ import {
   type AlbumResponseDto,
   type ApiKeyResponseDto,
   type AssetBulkUpdateDto,
+  type AssetEditActionItemResponseDto,
+  type AssetEditsCreateDto,
   type AssetFaceResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
+  type AssetStatsResponseDto,
+  type AuthStatusResponseDto,
   type CreateAlbumDto,
   type DownloadInfoDto,
   type DuplicateResolveDto,
@@ -29,7 +34,9 @@ import {
   type MemoryResponseDto,
   type MemoryUpdateDto,
   type MetadataSearchDto,
+  type PartnerResponseDto,
   type PasskeyResponseDto,
+  type PersonCreateDto,
   type PersonResponseDto,
   type PersonUpdateDto,
   type PlacesResponseDto,
@@ -57,6 +64,8 @@ import {
   type UserAdminResponseDto,
   type UserAdminUpdateDto,
   type UserPreferencesResponseDto,
+  type UserPreferencesUpdateDto,
+  type UserResponseDto,
   type WorkflowCreateDto,
   type WorkflowResponseDto,
   type WorkflowStepDto,
@@ -135,6 +144,7 @@ export class MockData {
   readonly backups = payload.backups();
 
   private preferences = factory.preferences();
+  private authStatus = factory.authStatus();
   private integrityReport = payload.integrityReport();
   private readonly users = new Map<string, UserAdminResponseDto>([[this.user.id, this.user]]);
   private readonly assets = new Map<string, AssetResponseDto>();
@@ -145,6 +155,7 @@ export class MockData {
   private readonly places: PlacesResponseDto[] = [];
   private readonly stacks = new Map<string, StackResponseDto>();
   private readonly ocr = new Map<string, AssetOcrResponseDto[]>();
+  private readonly assetEdits = new Map<string, AssetEditActionItemResponseDto[]>();
   private readonly brokenAssetIds = new Set<string>();
   private readonly sharedLinks = new Map<string, SharedLinkResponseDto>();
   private readonly tags = new Map<string, TagResponseDto>();
@@ -157,6 +168,10 @@ export class MockData {
   private readonly passkeys = new Map<string, PasskeyResponseDto>();
   private readonly pluginMethods = new Map<string, PluginMethodResponseDto>();
   private readonly queueStates = new Map<QueueName, QueueResponseDto>();
+  private readonly partners: Record<PartnerDirection, Map<string, PartnerResponseDto>> = {
+    [PartnerDirection.SharedBy]: new Map(),
+    [PartnerDirection.SharedWith]: new Map(),
+  };
 
   getPreferences() {
     return this.preferences;
@@ -172,6 +187,24 @@ export class MockData {
 
   setPreferences(preferences: UserPreferencesResponseDto) {
     this.preferences = preferences;
+    return this;
+  }
+
+  updatePreferences({ avatar: _, ...dto }: UserPreferencesUpdateDto) {
+    const sections: Record<string, object> = { ...this.preferences };
+    for (const [key, value] of Object.entries(dto)) {
+      sections[key] = { ...sections[key], ...value };
+    }
+    this.preferences = sections as UserPreferencesResponseDto;
+    return this.preferences;
+  }
+
+  getAuthStatus() {
+    return this.authStatus;
+  }
+
+  setAuthStatus(status: Partial<AuthStatusResponseDto>) {
+    this.authStatus = { ...this.authStatus, ...status };
     return this;
   }
 
@@ -217,6 +250,18 @@ export class MockData {
         (withHidden || !person.isHidden) &&
         (person.name.toLowerCase().startsWith(query) || person.name.toLowerCase().includes(` ${query}`)),
     );
+  }
+
+  createPerson(dto: PersonCreateDto) {
+    const person = factory.person({
+      name: dto.name ?? '',
+      birthDate: dto.birthDate ?? null,
+      color: dto.color ?? undefined,
+      isFavorite: dto.isFavorite ?? false,
+      isHidden: dto.isHidden ?? false,
+    });
+    this.addPeople(person);
+    return person;
   }
 
   updatePerson(id: string, dto: PersonUpdateDto) {
@@ -376,6 +421,17 @@ export class MockData {
     return [...this.users.values()].filter((user) => withDeleted || !user.deletedAt);
   }
 
+  searchUsers(): UserResponseDto[] {
+    return this.userList().map(({ id, name, email, avatarColor, profileImagePath, profileChangedAt }) => ({
+      id,
+      name,
+      email,
+      avatarColor,
+      profileImagePath,
+      profileChangedAt,
+    }));
+  }
+
   createUser(dto: UserAdminCreateDto) {
     const user = factory.user({
       email: dto.email,
@@ -389,11 +445,23 @@ export class MockData {
     return user;
   }
 
-  addUsers(users: MaybeArray<UserAdminResponseDto>) {
-    for (const user of toList(users)) {
+  addUsers(users: MaybeArray<Partial<UserAdminResponseDto>>) {
+    for (const overrides of toList(users)) {
+      const user = factory.user({ isAdmin: false, storageLabel: null, ...overrides });
       this.users.set(user.id, user);
     }
     return this;
+  }
+
+  addPartners(direction: PartnerDirection, partners: MaybeArray<PartnerResponseDto>) {
+    for (const partner of toList(partners)) {
+      this.partners[direction].set(partner.id, partner);
+    }
+    return this;
+  }
+
+  partnerList(direction: PartnerDirection) {
+    return [...this.partners[direction].values()];
   }
 
   updateUser(id: string, dto: UserAdminUpdateDto) {
@@ -1002,6 +1070,12 @@ export class MockData {
     };
   }
 
+  assetStatistics(filter: Pick<TimelineFilter, 'isFavorite' | 'isTrashed' | 'visibility'> = {}): AssetStatsResponseDto {
+    const assets = this.timelineAssets(filter);
+    const count = (type: AssetTypeEnum) => assets.filter((asset) => asset.type === type).length;
+    return { images: count(AssetTypeEnum.Image), videos: count(AssetTypeEnum.Video), total: assets.length };
+  }
+
   updateAssets({ ids, ...dto }: AssetBulkUpdateDto) {
     for (const id of ids) {
       this.updateAsset(id, dto);
@@ -1013,6 +1087,11 @@ export class MockData {
     const asset = this.assets.get(id);
     if (!asset) {
       return;
+    }
+
+    if (dto.livePhotoVideoId !== undefined) {
+      this.setMotionVisibility(asset.livePhotoVideoId, AssetVisibility.Timeline);
+      this.setMotionVisibility(dto.livePhotoVideoId, AssetVisibility.Hidden);
     }
 
     const visibility = dto.visibility ?? asset.visibility;
@@ -1035,6 +1114,33 @@ export class MockData {
 
     this.assets.set(id, updated);
     return updated;
+  }
+
+  getAssetEdits(assetId: string) {
+    return { assetId, edits: this.assetEdits.get(assetId) ?? [] };
+  }
+
+  editAsset(assetId: string, { edits }: AssetEditsCreateDto) {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return;
+    }
+    this.assetEdits.set(
+      assetId,
+      edits.map((edit) => factory.assetEdit(edit)),
+    );
+    this.assets.set(assetId, { ...asset, isEdited: true });
+    return this.getAssetEdits(assetId);
+  }
+
+  removeAssetEdits(assetId: string) {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return false;
+    }
+    this.assetEdits.delete(assetId);
+    this.assets.set(assetId, { ...asset, isEdited: false });
+    return true;
   }
 
   deleteAssets(ids: string[], force = false) {
@@ -1063,6 +1169,13 @@ export class MockData {
       count++;
     }
     return count;
+  }
+
+  private setMotionVisibility(motionId: string | null | undefined, visibility: AssetVisibility) {
+    const motion = motionId ? this.assets.get(motionId) : undefined;
+    if (motion) {
+      this.assets.set(motion.id, { ...motion, visibility });
+    }
   }
 
   memoryList({ id, page = 1, size = 250 }: MemoryFilter = {}) {

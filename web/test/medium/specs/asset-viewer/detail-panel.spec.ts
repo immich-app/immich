@@ -26,7 +26,7 @@ test.describe('detail panel', () => {
     await expect(app.viewer.description).toHaveValue('new description');
   });
 
-  test('date editor shows the asset zone and keeps a chosen one', async ({ page, data, app }) => {
+  test('date editor shows the asset zone and saves a date in a chosen one', async ({ page, data, api, app }) => {
     const asset = factory.asset({
       fileCreatedAt: '2025-12-01T18:30:00.000Z',
       localDateTime: '2025-12-01T11:30:00.000Z',
@@ -50,6 +50,13 @@ test.describe('detail panel', () => {
 
     await app.viewer.changeDate.dateInput.fill('2025-12-01T12:00');
     await expect(app.viewer.changeDate.timezoneInput).toHaveValue('Pacific/Pitcairn (-08:00)');
+    await app.viewer.changeDate.confirmButton.click();
+
+    await expect(app.dialog).toHaveCount(0);
+    expect(api.updateAsset).toHaveBeenCalledWith({
+      params: { id: asset.id },
+      body: { dateTimeOriginal: '2025-12-01T12:00:00.000-08:00' },
+    });
   });
 
   test('location editor clamps coordinates to the valid range', async ({ data, api, app, page }) => {
@@ -152,6 +159,20 @@ test.describe('detail panel', () => {
     await app.viewer.infoButton.click();
     await expect(app.viewer.rating).toBeVisible();
     await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('3');
+  });
+
+  test('rates an asset', async ({ page, data, api, app }) => {
+    data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+    const asset = factory.asset({ exifInfo: { rating: 3 } });
+    data.addAssets(asset);
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.openDetailPanel();
+
+    await app.viewer.ratingStar(5).click();
+
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('5');
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { rating: 5 } });
   });
 
   test('camera follows the asset when moving to the next one', async ({ page, data, app }) => {
