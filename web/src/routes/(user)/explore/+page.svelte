@@ -9,11 +9,13 @@
   import Portal from '#lib/elements/Portal.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getExploreDataQuery } from '#lib/queries/search.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '#lib/utils.ts';
   import { getAltText } from '#lib/utils/thumbnail-util.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { AssetMediaSize, getAssetInfo, type SearchExploreResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
   import { ImageCarousel } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -24,14 +26,17 @@
 
   let { data }: Props = $props();
 
-  const getFieldItems = (items: SearchExploreResponseDto[], field: string) => {
-    const targetField = items.find((item) => item.fieldName === field);
+  const query = createPreloadedQuery(getExploreDataQuery);
+  const explore = $derived(query.data);
+
+  const getFieldItems = (field: string) => {
+    const targetField = explore.find((item) => item.fieldName === field);
     return targetField?.items || [];
   };
 
-  let places = $derived(getFieldItems(data.explore, 'exifInfo.city'));
+  let places = $derived(getFieldItems('exifInfo.city'));
   let recents = $derived(
-    getFieldItems(data.explore, 'createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
+    getFieldItems('createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
   );
   let people = $state(data.people.people);
   let memories = $derived(
