@@ -5,7 +5,7 @@
   },
   "[dart]": {
     "editor.defaultFormatter": "Dart-Code.dart-code",
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "editor.selectionHighlight": false,
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.suggestSelection": "first",
