@@ -156,7 +156,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import-x": "^4.17.1",
-    "eslint-plugin-unicorn": "^78.0.0",
+    "eslint-plugin-unicorn": "^79.0.0",
     "globals": "^17.0.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.7.4",
