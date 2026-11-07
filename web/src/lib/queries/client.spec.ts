@@ -1,8 +1,10 @@
-import { queryClient } from '#lib/queries/client.ts';
+import { executeMutation, queryClient } from '#lib/queries/client.ts';
 import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
 import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { deleteTagMutation } from '#lib/queries/tag.query.ts';
+import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
 import { QueryObserver, type QueryKey, type QueryObserverOptions } from '@tanstack/svelte-query';
 import { noop } from 'lodash-es';
@@ -48,5 +50,36 @@ describe('queryClient', () => {
     test('server config', async ({ data }) => {
       await expect(preloadThenIdle(getServerConfigQuery())).resolves.toEqual(data.serverConfig);
     });
+  });
+});
+
+describe('executeMutation', () => {
+  const confirm = { prompt: 'delete_tag_confirmation_prompt' };
+
+  test('runs the mutation once the confirm is accepted', async ({ data, api, app, settle }) => {
+    const tag = factory.tag();
+    data.addTags(tag);
+    const onSuccess = vi.fn<() => void>();
+
+    const result = executeMutation(deleteTagMutation, [{ id: tag.id }], { confirm, onSuccess });
+    await app.confirmButton.click();
+    await result;
+    await settle();
+
+    expect(api.deleteTag).toHaveBeenCalledWith({ params: { id: tag.id } });
+    expect(onSuccess).toHaveBeenCalled();
+  });
+
+  test('skips the mutation when the confirm is declined', async ({ data, api, app }) => {
+    const tag = factory.tag();
+    data.addTags(tag);
+    const onSuccess = vi.fn<() => void>();
+
+    const result = executeMutation(deleteTagMutation, [{ id: tag.id }], { confirm, onSuccess });
+    await app.cancelButton.click();
+    await result;
+
+    expect(api.deleteTag).not.toHaveBeenCalled();
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 });
