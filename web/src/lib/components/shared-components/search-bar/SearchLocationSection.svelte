@@ -44,6 +44,7 @@
       $type: SearchSuggestionType.City,
       country,
       state,
+      includeNull: true,
     });
 
     cities = results.map((result) => result ?? '');
