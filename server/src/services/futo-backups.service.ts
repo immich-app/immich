@@ -1,10 +1,10 @@
 import { YuccaService as OrchestratorService, type ImmichDatabaseDumpConfig } from '@futo-org/backups-orchestrator-api';
 import { Injectable, Optional } from '@nestjs/common';
+import { basename } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent } from 'src/decorators.js';
 import type { SystemConfig } from 'src/dtos/config.dto.js';
-import { DatabaseLock, ImmichWorker, MaintenanceAction, StorageFolder } from 'src/enum.js';
-import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import { ImmichWorker, MaintenanceAction, StorageFolder } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { LibraryRepository } from 'src/repositories/library.repository.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
@@ -15,7 +15,6 @@ import { getExternalDomain } from 'src/utils/misc.js';
 @Injectable()
 export class FutoBackupsService {
   constructor(
-    private readonly databaseRepository: DatabaseRepository,
     private readonly libraryRepository: LibraryRepository,
     private readonly databaseBackupService: DatabaseBackupService,
     private readonly systemConfigService: SystemConfigService,
@@ -37,8 +36,6 @@ export class FutoBackupsService {
         .filter((library) => !library.deletedAt)
         .map(({ id, name, importPaths, exclusionPatterns }) => ({ id, name, importPaths, exclusionPatterns })),
       hooks: {
-        createDatabaseBackup: (signal) => this.databaseBackupService.createDatabaseBackup('', signal),
-        cleanupDatabaseBackups: () => this.databaseBackupService.cleanupDatabaseBackups(),
         getImmichDatabaseDumpConfig: () => this.getImmichDatabaseDumpConfig(),
         configureImmichDatabaseDump: (databaseDump) => this.configureImmichDatabaseDump(databaseDump),
         enterMaintenanceRollback: (repositoryId, snapshotId) => this.enterMaintenanceRollback(repositoryId, snapshotId),
@@ -71,13 +68,16 @@ export class FutoBackupsService {
   }
 
   @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Api] })
-  async onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
+  onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
     this.updateSystemConfig(newConfig);
     void this.updateLibraryConfig();
 
-    if (await this.databaseRepository.tryLock(DatabaseLock.FutoBackupsModuleConfig)) {
-      this.orchestratorService.acquireLock();
-    }
+    this.orchestratorService.setDatabaseHooks({
+      tagName: 'yucca.v1.immichBackupFileName',
+      dump: (signal) => this.databaseBackupService.createDatabaseBackup('', signal),
+      cleanup: () => this.databaseBackupService.cleanupDatabaseBackups(),
+      restore: (fileName) => this.databaseBackupService.restoreDatabaseBackup(basename(fileName)),
+    });
   }
 
   @OnEvent({ name: 'ConfigUpdate', workers: [ImmichWorker.Api], server: true })

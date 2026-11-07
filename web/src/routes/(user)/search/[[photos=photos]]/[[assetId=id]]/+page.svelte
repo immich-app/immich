@@ -17,8 +17,9 @@
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { getTagByIdQuery } from '#lib/queries/tag.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { lang, locale } from '#lib/stores/preferences.store.ts';
@@ -30,7 +31,6 @@
   import {
     AssetVisibility,
     getPerson,
-    getTagById,
     searchAssets,
     searchSmart,
     type AlbumResponseDto,
@@ -220,7 +220,7 @@
     }
     const tagNames = await Promise.all(
       tagIds.map(async (tagId) => {
-        const tag = await getTagById({ id: tagId });
+        const tag = await queryClient.query(getTagByIdQuery(tagId));
 
         return tag.value;
       }),

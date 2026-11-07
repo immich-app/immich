@@ -112,27 +112,20 @@ const generatePassword = (length: number = 16) => {
 
 const handleResetPasswordUserAdmin = async (user: UserAdminResponseDto) => {
   const $t = await getFormatter();
-  const prompt = $t('admin.confirm_user_password_reset', { values: { user: user.name } });
-  const success = await modalManager.showDialog({ prompt });
-  if (!success) {
-    return;
-  }
-
   const password = generatePassword();
   await executeMutation(
     updateUserAdminMutation,
     [{ id: user.id, userAdminUpdateDto: { password, shouldChangePassword: true } }],
-    { onSuccess: () => void modalManager.show(PasswordResetSuccessModal, { newPassword: password }) },
+    {
+      confirm: { prompt: $t('admin.confirm_user_password_reset', { values: { user: user.name } }) },
+      onSuccess: () => void modalManager.show(PasswordResetSuccessModal, { newPassword: password }),
+    },
   );
 };
 
 const handleResetPinCodeUserAdmin = async (user: UserAdminResponseDto) => {
   const $t = await getFormatter();
-  const prompt = $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } });
-  const success = await modalManager.showDialog({ prompt });
-  if (!success) {
-    return;
-  }
-
-  await executeMutation(updateUserAdminMutation, [{ id: user.id, userAdminUpdateDto: { pinCode: null } }]);
+  await executeMutation(updateUserAdminMutation, [{ id: user.id, userAdminUpdateDto: { pinCode: null } }], {
+    confirm: { prompt: $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } }) },
+  });
 };

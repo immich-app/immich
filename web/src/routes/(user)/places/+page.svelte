@@ -1,17 +1,15 @@
 <script lang="ts">
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAssetsByCityQuery } from '#lib/queries/search.query.ts';
   import { locale, placesViewSettings } from '#lib/stores/preferences.store.ts';
   import { type AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
-  import type { PageData } from './$types';
   import PlacesControls from './PlacesControls.svelte';
   import Places from './PlacesList.svelte';
 
-  interface Props {
-    data: PageData;
-  }
-
-  let { data }: Props = $props();
+  const query = createPreloadedQuery(getAssetsByCityQuery);
+  const items = $derived(query.data);
 
   type AssetWithCity = AssetResponseDto & {
     exifInfo: {
@@ -23,7 +21,7 @@
   let searchResultCount = $state(0);
   let placesGroups: string[] = $state([]);
 
-  let places = $derived(data.items.filter((item): item is AssetWithCity => !!item.exifInfo?.city));
+  let places = $derived(items.filter((item): item is AssetWithCity => !!item.exifInfo?.city));
   let countVisiblePlaces = $derived(searchQuery ? searchResultCount : places.length);
 
   let innerHeight: number = $state(0);

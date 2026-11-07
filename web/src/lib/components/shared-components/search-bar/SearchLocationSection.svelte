@@ -1,65 +1,55 @@
 <script lang="ts">
   import Combobox, { asComboboxOptions, asSelectedOption } from '#lib/components/shared-components/Combobox.svelte';
   import { searchManager } from '#lib/managers/search-manager.svelte.ts';
-  import { handlePromiseError } from '#lib/utils.ts';
-  import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
+  import { getSearchSuggestionsQuery } from '#lib/queries/search.query.ts';
+  import { SearchSuggestionType } from '@immich/sdk';
   import { Text } from '@immich/ui';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   let filters = $derived(searchManager.filter.location);
-  let countries: string[] = $state([]);
-  let states: string[] = $state([]);
-  let cities: string[] = $state([]);
 
-  async function updateCountries() {
-    const results: Array<string | null> = await getSearchSuggestions({
-      $type: SearchSuggestionType.Country,
-      includeNull: true,
-    });
-
-    countries = results.map((result) => result ?? '');
-
-    if (filters.country && !countries.includes(filters.country)) {
-      filters.country = undefined;
-    }
-  }
-
-  async function updateStates(country?: string) {
-    const results: Array<string | null> = await getSearchSuggestions({
-      $type: SearchSuggestionType.State,
-      country,
-      includeNull: true,
-    });
-
-    states = results.map((result) => result ?? '');
-
-    if (filters.state && !states.includes(filters.state)) {
-      filters.state = undefined;
-    }
-  }
-
-  async function updateCities(country?: string, state?: string) {
-    const results: Array<string | null> = await getSearchSuggestions({
-      $type: SearchSuggestionType.City,
-      country,
-      state,
-    });
-
-    cities = results.map((result) => result ?? '');
-
-    if (filters.city && !cities.includes(filters.city)) {
-      filters.city = undefined;
-    }
-  }
   let countryFilter = $derived(filters.country);
   let stateFilter = $derived(filters.state);
 
-  // TODO replace by async $derived, at the latest when it's in stable https://svelte.dev/docs/svelte/await-expressions
-  $effect(() => handlePromiseError(updateStates(countryFilter)));
-  $effect(() => handlePromiseError(updateCities(countryFilter, stateFilter)));
+  const queries = {
+    countries: createQuery(() => getSearchSuggestionsQuery({ $type: SearchSuggestionType.Country, includeNull: true })),
+    states: createQuery(() =>
+      getSearchSuggestionsQuery({ $type: SearchSuggestionType.State, country: countryFilter, includeNull: true }),
+    ),
+    cities: createQuery(() =>
+      getSearchSuggestionsQuery({
+        $type: SearchSuggestionType.City,
+        country: countryFilter,
+        state: stateFilter,
+        includeNull: true,
+      }),
+    ),
+  };
 
-  onMount(() => updateCountries());
+  const asValues = (results: Array<string | null> = []) => results.map((result) => result ?? '');
+
+  const countries = $derived(asValues(queries.countries.data));
+  const states = $derived(asValues(queries.states.data));
+  const cities = $derived(asValues(queries.cities.data));
+
+  $effect(() => {
+    if (queries.countries.data && filters.country && !countries.includes(filters.country)) {
+      filters.country = undefined;
+    }
+  });
+
+  $effect(() => {
+    if (queries.states.data && filters.state && !states.includes(filters.state)) {
+      filters.state = undefined;
+    }
+  });
+
+  $effect(() => {
+    if (queries.cities.data && filters.city && !cities.includes(filters.city)) {
+      filters.city = undefined;
+    }
+  });
 </script>
 
 <div data-testid="search-location-section">

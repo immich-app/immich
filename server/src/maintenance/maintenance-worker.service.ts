@@ -85,9 +85,12 @@ export class MaintenanceWorkerService {
 
     await this.logSecret();
 
-    if (await this.databaseRepository.tryLock(DatabaseLock.FutoBackupsModuleConfig)) {
-      this.moduleRef.get(YuccaService, { strict: false }).acquireLock();
-    }
+    this.moduleRef.get(YuccaService, { strict: false }).setDatabaseHooks({
+      tagName: 'yucca.v1.immichBackupFileName',
+      dump: (signal) => this.databaseBackupService.createDatabaseBackup('', signal),
+      cleanup: () => this.databaseBackupService.cleanupDatabaseBackups(),
+      restore: (fileName) => this.databaseBackupService.restoreDatabaseBackup(basename(fileName)),
+    });
 
     if (state.action) {
       void this.runAction(state.action);

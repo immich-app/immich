@@ -126,6 +126,7 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
       imports: [forwardRef(() => ApiModule)],
       inject: [AuthService],
       useFactory: (authService: AuthService) => ({
+        dialect: getKyselyConfig(database.config).dialect,
         statePath: futoBackupsStatePath,
         cachePath: futoBackupsCachePath,
         requireWsAuth: true,
@@ -153,6 +154,7 @@ export class ApiModule extends BaseModule {}
       imports: [forwardRef(() => MaintenanceModule)],
       inject: [MaintenanceWorkerService],
       useFactory: (maintenanceWorkerService: MaintenanceWorkerService) => ({
+        dialect: getKyselyConfig(database.config).dialect,
         statePath: futoBackupsStatePath,
         cachePath: futoBackupsCachePath,
         externalBaseUrl: 'https://my.immich.app',

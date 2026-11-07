@@ -358,6 +358,7 @@
         <!-- Stacked asset -->
         {#if asset.stack && showStackedIcon}
           <div
+            data-testid="stack-icon"
             class={[
               'absolute z-2 flex place-items-center gap-1 pe-2 pt-2 text-xs font-medium text-white',
               asset.isImage && !asset.livePhotoVideoId ? 'inset-e-0 top-0' : 'inset-e-1 top-7',

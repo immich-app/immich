@@ -108,7 +108,7 @@ class DeepLinkService {
 
   Future<PageRouteInfo?> _buildAssetDeepLink(String assetId, WidgetRef ref, {String? albumId}) async {
     final asset = await _betaAssetService.getRemoteAsset(assetId);
-    if (asset == null) {
+    if (asset == null || asset.isLocked) {
       return null;
     }
 
@@ -117,7 +117,7 @@ class DeepLinkService {
     AssetViewer.setAsset(ref, asset);
     return AssetViewerRoute(
       initialIndex: 0,
-      timelineService: _betaTimelineFactory.fromAssets([asset], TimelineOrigin.deepLink),
+      timelineService: _betaTimelineFactory.fromAssets([asset], asset.isTrashed ? .trash : .deepLink),
       currentAlbum: album,
     );
   }
