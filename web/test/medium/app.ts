@@ -20,6 +20,7 @@ export const createApp = (page: Page, data: MockData) => {
 
   return {
     dialog: page.getByRole('dialog'),
+    dialogButton: (name: string) => page.getByRole('dialog').getByRole('button', { name, exact: true }),
     toast: (key: string) => page.getByText(key),
 
     admin: {
@@ -37,6 +38,7 @@ export const createApp = (page: Page, data: MockData) => {
         editButton: button('edit'),
         deleteButton: button('delete'),
         resetPasswordButton: button('reset_password'),
+        resetPinCodeButton: button('reset_pin_code'),
         form: {
           emailInput: labelled('email'),
           passwordInput: labelled('password'),
@@ -53,6 +55,12 @@ export const createApp = (page: Page, data: MockData) => {
       createAlbumButton: button('create_album'),
     },
 
+    library: {
+      deleteButton: button('delete').filter({ hasText: 'delete' }),
+      rowDeleteButton: (text: string) =>
+        page.getByRole('row').filter({ hasText: text }).getByRole('button', { name: 'delete', exact: true }),
+    },
+
     tags: {
       child: (name: string) => page.getByRole('main').getByRole('button', { name, exact: true }),
     },
@@ -63,6 +71,10 @@ export const createApp = (page: Page, data: MockData) => {
       mapButton: labelled('map'),
       mapDialog: page.getByRole('dialog'),
       mapMarkers: page.getByRole('dialog').locator('.maplibregl-marker'),
+      optionsMenuButton: labelled('album_options'),
+      optionsMenuItem: page.getByRole('menuitem', { name: 'options', exact: true }),
+      userRoleSelect: (role: string) => page.getByRole('dialog').getByText(role, { exact: true }),
+      removeUserOption: page.getByRole('option', { name: 'remove_user', exact: true }),
       activity: {
         commentsButton: page.getByRole('button', { name: 'activity', exact: true }),
       },
@@ -114,6 +126,7 @@ export const createApp = (page: Page, data: MockData) => {
       heading: (name: string) => page.getByRole('heading', { name }),
       confirmRemove: () => button('remove').click(),
       card,
+      deleteButton: labelled('delete_link'),
       cover: (link: { key: string }) => card(link).getByTestId('album-image'),
       brokenCover: (link: { key: string }) => card(link).getByTestId('broken-asset'),
       form: {
@@ -202,6 +215,10 @@ const createTimeline = (page: Page, data: MockData) => {
         await page.getByRole('menuitem', { name: 'unstack', exact: true }).click();
       },
 
+      openRemoveFromAlbum: async () => {
+        await page.getByLabel('menu', { exact: true }).click();
+        await page.getByRole('menuitem', { name: 'remove_from_album', exact: true }).click();
+      },
       removeFromAlbum: async () => {
         await page.getByLabel('menu', { exact: true }).click();
         await page.getByRole('menuitem', { name: 'remove_from_album', exact: true }).click();
@@ -333,6 +350,8 @@ const createViewer = (page: Page) => {
     },
     navbarActions: page.getByTestId('asset-viewer-navbar-actions'),
     tags: page.getByTestId('detail-panel-tags').getByRole('link'),
+    editPeopleButton: page.getByLabel('edit_people', { exact: true }),
+    deleteFaceButton: page.getByLabel('delete_face', { exact: true }),
     tag: (value: string) => page.getByTestId('detail-panel-tags').getByRole('link', { name: value, exact: true }),
     addTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'add_tag', exact: true }),
     removeTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'remove_tag', exact: true }),

@@ -14,7 +14,9 @@ import {
   type ActivityResponseDto,
   type AdminConfigDto,
   type AlbumResponseDto,
+  type ApiKeyResponseDto,
   type AssetBulkUpdateDto,
+  type AssetFaceResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
   type CreateAlbumDto,
@@ -22,10 +24,12 @@ import {
   type DuplicateResolveDto,
   type DuplicateResponseDto,
   type ExifResponseDto,
+  type LibraryResponseDto,
   type MapMarkerResponseDto,
   type MemoryResponseDto,
   type MemoryUpdateDto,
   type MetadataSearchDto,
+  type PasskeyResponseDto,
   type PersonResponseDto,
   type PersonUpdateDto,
   type PlacesResponseDto,
@@ -37,6 +41,7 @@ import {
   type QueueUpdateDto,
   type SearchExploreResponseDto,
   type SearchResponseDto,
+  type SessionResponseDto,
   type SharedLinkResponseDto,
   type StackCreateDto,
   type StackResponseDto,
@@ -47,6 +52,7 @@ import {
   type TimeBucketsResponseDto,
   type UpdateAlbumDto,
   type UpdateAssetDto,
+  type UpdateLibraryDto,
   type UserAdminCreateDto,
   type UserAdminResponseDto,
   type UserAdminUpdateDto,
@@ -144,6 +150,11 @@ export class MockData {
   private readonly tags = new Map<string, TagResponseDto>();
   private readonly activities = new Map<string, ActivityResponseDto>();
   private readonly workflows = new Map<string, WorkflowResponseDto>();
+  private readonly apiKeys = new Map<string, ApiKeyResponseDto>();
+  private readonly libraries = new Map<string, LibraryResponseDto>();
+  private readonly faces = new Map<string, AssetFaceResponseDto[]>();
+  private readonly sessions = new Map<string, SessionResponseDto>();
+  private readonly passkeys = new Map<string, PasskeyResponseDto>();
   private readonly pluginMethods = new Map<string, PluginMethodResponseDto>();
   private readonly queueStates = new Map<QueueName, QueueResponseDto>();
 
@@ -325,6 +336,10 @@ export class MockData {
     }
   }
 
+  removeSharedLink(id: string) {
+    return this.sharedLinks.delete(id);
+  }
+
   removeSharedLinkAssets(id: string, assetIds: string[]) {
     const link = this.sharedLinks.get(id);
     if (!link) {
@@ -428,6 +443,17 @@ export class MockData {
     this.albums.delete(id);
     this.albumAssets.delete(id);
     return this;
+  }
+
+  removeUserFromAlbum(albumId: string, userId: string) {
+    const album = this.albums.get(albumId);
+    if (!album) {
+      return false;
+    }
+
+    const id = userId === 'me' ? this.user.id : userId;
+    this.albums.set(albumId, { ...album, albumUsers: album.albumUsers.filter(({ user }) => user.id !== id) });
+    return true;
   }
 
   addDuplicates(assets: AssetResponseDto[]) {
@@ -586,6 +612,122 @@ export class MockData {
     return tag;
   }
 
+  addFaces(assetId: string, faces: MaybeArray<AssetFaceResponseDto>) {
+    this.faces.set(assetId, [...(this.faces.get(assetId) ?? []), ...toList(faces)]);
+    return this;
+  }
+
+  getFaces(assetId: string) {
+    return this.faces.get(assetId) ?? [];
+  }
+
+  deleteFace(id: string) {
+    for (const [assetId, faces] of this.faces) {
+      if (faces.some((face) => face.id === id)) {
+        this.faces.set(
+          assetId,
+          faces.filter((face) => face.id !== id),
+        );
+        return true;
+      }
+    }
+    return false;
+  }
+
+  addLibraries(libraries: MaybeArray<LibraryResponseDto>) {
+    for (const library of toList(libraries)) {
+      this.libraries.set(library.id, library);
+    }
+    return this;
+  }
+
+  libraryList() {
+    return [...this.libraries.values()];
+  }
+
+  getLibrary(id: string) {
+    return this.libraries.get(id);
+  }
+
+  updateLibrary(id: string, dto: UpdateLibraryDto) {
+    const library = this.libraries.get(id);
+    if (!library) {
+      return;
+    }
+
+    const updated = { ...library, ...dto, updatedAt: new Date().toISOString() };
+    this.libraries.set(id, updated);
+    return updated;
+  }
+
+  deleteLibrary(id: string) {
+    return this.libraries.delete(id);
+  }
+
+  addApiKeys(apiKeys: MaybeArray<ApiKeyResponseDto>) {
+    for (const apiKey of toList(apiKeys)) {
+      this.apiKeys.set(apiKey.id, apiKey);
+    }
+    return this;
+  }
+
+  apiKeyList() {
+    return [...this.apiKeys.values()];
+  }
+
+  rotateApiKey(id: string) {
+    const apiKey = this.apiKeys.get(id);
+    if (!apiKey) {
+      return;
+    }
+
+    const rotated = { ...apiKey, updatedAt: new Date().toISOString() };
+    this.apiKeys.set(id, rotated);
+    return { ...rotated, apiKey: rotated, secret: 'rotated-secret' };
+  }
+
+  deleteApiKey(id: string) {
+    return this.apiKeys.delete(id);
+  }
+
+  addSessions(sessions: MaybeArray<SessionResponseDto>) {
+    for (const session of toList(sessions)) {
+      this.sessions.set(session.id, session);
+    }
+    return this;
+  }
+
+  sessionList() {
+    return [...this.sessions.values()];
+  }
+
+  deleteSession(id: string) {
+    return this.sessions.delete(id);
+  }
+
+  deleteOtherSessions() {
+    for (const session of this.sessionList()) {
+      if (!session.current) {
+        this.sessions.delete(session.id);
+      }
+    }
+  }
+
+  addPasskeys(passkeys: MaybeArray<PasskeyResponseDto>) {
+    for (const passkey of toList(passkeys)) {
+      this.passkeys.set(passkey.id, passkey);
+    }
+    return this;
+  }
+
+  passkeyList() {
+    return [...this.passkeys.values()];
+  }
+
+  deletePasskey(id: string) {
+    return this.passkeys.delete(id);
+  }
+
   addActivities(activities: MaybeArray<ActivityResponseDto>) {
     for (const activity of toList(activities)) {
       this.activities.set(activity.id, activity);
@@ -632,6 +774,10 @@ export class MockData {
 
   workflowList() {
     return [...this.workflows.values()];
+  }
+
+  deleteWorkflow(id: string) {
+    return this.workflows.delete(id);
   }
 
   createWorkflow(dto: WorkflowCreateDto) {

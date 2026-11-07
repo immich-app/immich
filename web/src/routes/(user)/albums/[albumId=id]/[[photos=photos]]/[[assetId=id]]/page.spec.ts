@@ -142,3 +142,47 @@ test('unliking an album removes only my album like', async ({ data, router, rend
   expect(api.deleteActivity).toHaveBeenCalledWith({ params: { id: myLike.id } });
   expect(api.deleteActivity.calls).toHaveLength(1);
 });
+
+test('deletes an album', async ({ data, router, render, settle, api, app }) => {
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user }) });
+  data.addAlbums(album);
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+
+  await app.album.optionsMenuButton.click();
+  await app.album.deleteMenuItem.click();
+  await app.cancelButton.click();
+  await settle();
+
+  expect(api.deleteAlbum).not.toHaveBeenCalled();
+
+  await app.album.optionsMenuButton.click();
+  await app.album.deleteMenuItem.click();
+  await app.confirmButton.click();
+  await settle();
+
+  expect(api.deleteAlbum).toHaveBeenCalledWith({ params: { id: album.id } });
+});
+
+test('leaves an album', async ({ data, router, render, settle, api, app }) => {
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: factory.user(), viewers: [data.user] }) });
+  data.addAlbums(album);
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+
+  await app.album.optionsMenuButton.click();
+  await app.album.leaveMenuItem.click();
+  await app.cancelButton.click();
+  await settle();
+
+  expect(api.removeUserFromAlbum).not.toHaveBeenCalled();
+
+  await app.album.optionsMenuButton.click();
+  await app.album.leaveMenuItem.click();
+  await app.dialogButton('leave').click();
+  await settle();
+
+  expect(api.removeUserFromAlbum).toHaveBeenCalledWith({ params: { id: album.id, userId: 'me' } });
+});
