@@ -92,6 +92,7 @@ const serverFeatures = (overrides: Partial<ResponseOf<'getServerFeatures'>> = {}
   configFile: false,
   email: false,
   realtimeTranscoding: false,
+  oauthAutoRegister: false,
   backups: false,
   ...overrides,
 });
