@@ -7,10 +7,12 @@
   import { timeDebounceOnSearch, timeToLoadTheMap } from '#lib/constants.ts';
   import SearchBar from '#lib/elements/SearchBar.svelte';
   import { geolocationManager } from '#lib/managers/geolocation.manager.svelte.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchPlacesQuery } from '#lib/queries/search.query.ts';
   import type { LatLng } from '#lib/types.ts';
   import { delay } from '#lib/utils/asset-utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
+  import { type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import { ConfirmModal, LoadingSpinner } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -103,7 +105,8 @@
         }
       }
 
-      searchPlaces({ name: searchWord })
+      queryClient
+        .query(searchPlacesQuery({ name: searchWord }))
         .then((searchResult) => {
           // skip result when a newer search is happening
           if (latestSearchTimeout !== searchTimeout) {
