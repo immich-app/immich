@@ -90,6 +90,9 @@ export const createApp = () => {
       card: (name: string) => main.getByTestId('album-card').filter({ has: page.getByTitle(name, { exact: true }) }),
     },
     album: {
+      optionsMenuButton: button('album_options'),
+      deleteMenuItem: page.getByRole('menuitem', { name: 'delete_album', exact: true }),
+      leaveMenuItem: page.getByRole('menuitem', { name: 'leave_album', exact: true }),
       descriptionInput: page.getByTestId('autogrow-textarea'),
       commentsButton: button('activity'),
       likeButton: page.getByRole('button', { name: 'like', exact: true, pressed: false }),
@@ -102,6 +105,7 @@ export const createApp = () => {
       },
     },
     confirmButton: page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }),
+    dialogButton: (name: string) => page.getByRole('dialog').getByRole('button', { name, exact: true }),
     cancelButton: page.getByRole('dialog').getByRole('button', { name: 'cancel', exact: true }),
     duplicates: {
       keepToggle: (index: number) => button('keep').nth(index),
@@ -126,12 +130,23 @@ export const createApp = () => {
         deleteButton: page.getByRole('dialog').getByRole('button', { name: 'delete', exact: true }),
       },
     },
+    workflows: {
+      menuButton: (index: number) => page.getByRole('button', { name: 'open', exact: true }).nth(index),
+      deleteMenuItem: page.getByRole('menuitem', { name: 'delete', exact: true }),
+    },
     trash: {
       emptyTrashButton: button('empty_trash'),
       restoreAllButton: button('restore_all'),
     },
     settings: {
       manageOauthAccountLink: page.getByRole('link', { name: 'manage_oauth_account', exact: true }),
+      section: (title: string) => page.getByRole('button', { name: new RegExp(`^${title}`) }),
+      rotateApiKeyButton: button('rotate_key'),
+      apiKeySecretDoneButton: page.getByRole('dialog').getByRole('button', { name: 'done', exact: true }),
+      deleteApiKeyButton: button('delete_key'),
+      deletePasskeyButton: button('delete_passkey'),
+      logOutDeviceButton: button('log_out'),
+      logOutAllDevicesButton: button('log_out_all_devices'),
     },
     people: {
       nameInput: (index: number) => main.getByPlaceholder('add_a_name').nth(index),

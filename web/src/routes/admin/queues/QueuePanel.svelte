@@ -4,7 +4,7 @@
   import { runQueueCommandLegacyMutation } from '#lib/queries/queue.query.ts';
   import { asQueueItem } from '#lib/services/queue.service.ts';
   import { QueueCommand, QueueName, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
-  import { modalManager, toastManager } from '@immich/ui';
+  import { toastManager } from '@immich/ui';
   import type { Component } from 'svelte';
   import { t } from 'svelte-i18n';
   import QueueCard from './QueueCard.svelte';
@@ -87,21 +87,10 @@
   const handleCommand = async (name: QueueName, dto: QueueCommandDto) => {
     const item = asQueueItem($t, { name });
 
-    switch (name) {
-      case QueueName.FaceDetection:
-      case QueueName.FacialRecognition: {
-        if (dto.force) {
-          const confirmed = await modalManager.showDialog({ prompt: $t('admin.confirm_reprocess_all_faces') });
-          if (!confirmed) {
-            return;
-          }
-          break;
-        }
-      }
-      // no default
-    }
+    const reprocessesAllFaces = dto.force && (name === QueueName.FaceDetection || name === QueueName.FacialRecognition);
 
     await executeMutation(runQueueCommandLegacyMutation, [{ name, queueCommandDto: dto }], {
+      confirm: reprocessesAllFaces && { prompt: $t('admin.confirm_reprocess_all_faces') },
       onSuccess: () => {
         if (dto.command === QueueCommand.Empty) {
           toastManager.primary($t('admin.cleared_jobs', { values: { job: item.title } }));

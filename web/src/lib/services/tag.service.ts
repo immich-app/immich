@@ -33,17 +33,12 @@ export const getTagActions = ($t: MessageFormatter, tag: TreeNode) => {
         return;
       }
 
-      const confirmed = await modalManager.showDialog({
-        title: $t('delete_tag'),
-        prompt: $t('delete_tag_confirmation_prompt', { values: { tagName: tag.value } }),
-        confirmText: $t('delete'),
-      });
-
-      if (!confirmed) {
-        return;
-      }
-
       await executeMutation(deleteTagMutation, [{ id: tagId }], {
+        confirm: {
+          title: $t('delete_tag'),
+          prompt: $t('delete_tag_confirmation_prompt', { values: { tagName: tag.value } }),
+          confirmText: $t('delete'),
+        },
         onSuccess: () => void goto(Route.tags({ path: tag.parent?.path ?? '' })),
       });
     },

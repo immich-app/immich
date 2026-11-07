@@ -15,13 +15,18 @@ import {
   type ActivityResponseDto,
   type AlbumResponseDto,
   type AlbumUserResponseDto,
+  type ApiKeyResponseDto,
+  type AssetFaceResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
+  type LibraryResponseDto,
   type MemoryResponseDto,
+  type PasskeyResponseDto,
   type PersonResponseDto,
   type PluginMethodResponseDto,
   type QueueResponseDto,
   type QueueStatisticsDto,
+  type SessionResponseDto,
   type SharedLinkResponseDto,
   type StackResponseDto,
   type TagResponseDto,
@@ -288,6 +293,59 @@ const tag = (overrides: Partial<TagResponseDto> = {}): TagResponseDto => {
     updatedAt: now,
     ...overrides,
   };
+};
+
+const face = (overrides: Partial<AssetFaceResponseDto> = {}): AssetFaceResponseDto => ({
+  id: crypto.randomUUID(),
+  imageWidth: 4000,
+  imageHeight: 3000,
+  boundingBoxX1: 1000,
+  boundingBoxY1: 800,
+  boundingBoxX2: 1600,
+  boundingBoxY2: 1500,
+  person: null,
+  ...overrides,
+});
+
+const library = (overrides: Partial<LibraryResponseDto> = {}): LibraryResponseDto => {
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    name: 'Library',
+    ownerId: adminUserId,
+    assetCount: 0,
+    importPaths: [],
+    exclusionPatterns: [],
+    createdAt: now,
+    updatedAt: now,
+    refreshedAt: null,
+    ...overrides,
+  };
+};
+
+const apiKey = (overrides: Partial<ApiKeyResponseDto> = {}): ApiKeyResponseDto => {
+  const now = new Date().toISOString();
+  return { id: crypto.randomUUID(), name: 'API Key', permissions: [], createdAt: now, updatedAt: now, ...overrides };
+};
+
+const session = (overrides: Partial<SessionResponseDto> = {}): SessionResponseDto => {
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    appVersion: '3.0.0',
+    deviceOS: 'Android',
+    deviceType: 'Mobile',
+    current: false,
+    isPendingSyncReset: false,
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  };
+};
+
+const passkey = (overrides: Partial<PasskeyResponseDto> = {}): PasskeyResponseDto => {
+  const now = new Date().toISOString();
+  return { id: crypto.randomUUID(), name: 'Passkey', createdAt: now, updatedAt: now, usedAt: now, ...overrides };
 };
 
 const workflow = (overrides: Partial<WorkflowResponseDto> = {}): WorkflowResponseDto => {
@@ -580,6 +638,11 @@ export const factory = {
   tag,
   sharedLink,
   workflow,
+  face,
+  library,
+  apiKey,
+  session,
+  passkey,
   pluginMethod,
   queue,
   memories,

@@ -9,7 +9,7 @@ import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
-import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
+import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { Route } from '#lib/route.ts';
 import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
@@ -603,22 +603,21 @@ const undoArchiveAssets = async (assets: TimelineAsset[]) => {
 const handleBulkRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
   const $t = await getFormatter();
 
-  const isConfirmed = await modalManager.showDialog({
-    prompt: $t('remove_assets_album_confirmation', { values: { count: assetIds.length } }),
+  await handleRemoveAssetsFromAlbum(assetIds, album, {
+    confirm: { prompt: $t('remove_assets_album_confirmation', { values: { count: assetIds.length } }) },
+    onSettled: () => assetMultiSelectManager.clear(),
   });
-
-  if (!isConfirmed) {
-    return;
-  }
-
-  await handleRemoveAssetsFromAlbum(assetIds, album);
-  assetMultiSelectManager.clear();
 };
 
-const handleRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
+const handleRemoveAssetsFromAlbum = async (
+  assetIds: string[],
+  album: AlbumResponseDto,
+  options: { confirm?: ConfirmOptions | false; onSettled?: () => void } = {},
+) => {
   const $t = await getFormatter();
 
   await executeMutation(removeAssetFromAlbumMutation, [{ id: album.id, bulkIdsDto: { ids: assetIds } }], {
+    ...options,
     onSuccess: (results) => {
       const count = results.filter(({ success }) => success).length;
       toastManager.primary($t('assets_removed_count', { values: { count } }));

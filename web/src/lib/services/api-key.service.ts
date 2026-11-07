@@ -44,12 +44,8 @@ export const getApiKeyActions = ($t: MessageFormatter, apiKey: ApiKeyResponseDto
 const handleRotateApiKey = async (apiKey: ApiKeyResponseDto) => {
   const $t = await getFormatter();
 
-  const confirmed = await modalManager.showDialog({ prompt: $t('rotate_api_key_prompt') });
-  if (!confirmed) {
-    return;
-  }
-
   await executeMutation(rotateApiKeyMutation, [{ id: apiKey.id }], {
+    confirm: { prompt: $t('rotate_api_key_prompt') },
     onSuccess: ({ secret }) => void modalManager.show(ApiKeySecretModal, { secret }),
   });
 };
@@ -57,12 +53,8 @@ const handleRotateApiKey = async (apiKey: ApiKeyResponseDto) => {
 const handleDeleteApiKey = async (apiKey: ApiKeyResponseDto) => {
   const $t = await getFormatter();
 
-  const confirmed = await modalManager.showDialog({ prompt: $t('delete_api_key_prompt') });
-  if (!confirmed) {
-    return;
-  }
-
   await executeMutation(deleteApiKeyMutation, [{ id: apiKey.id }], {
+    confirm: { prompt: $t('delete_api_key_prompt') },
     onSuccess: () => toastManager.primary($t('removed_api_key', { values: { name: apiKey.name } })),
   });
 };

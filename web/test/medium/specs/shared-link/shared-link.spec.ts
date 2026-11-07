@@ -116,6 +116,11 @@ test.describe('shared link', () => {
 
     await app.timeline.select(first);
     await app.sharedLink.removeFromSharedLinkButton.click();
+    await app.dialogButton('cancel').click();
+    await expect(app.dialog).toBeHidden();
+    expect(api.removeSharedLinkAssets).not.toHaveBeenCalled();
+
+    await app.sharedLink.removeFromSharedLinkButton.click();
     await app.sharedLink.confirmRemove();
 
     await expect(app.timeline.thumbnail(first)).toHaveCount(0);
@@ -124,5 +129,22 @@ test.describe('shared link', () => {
       params: { id: link.id },
       body: { assetIds: [first.id] },
     });
+  });
+
+  test('deletes a shared link', async ({ page, data, api, app }) => {
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [factory.asset()] });
+    data.addSharedLinks(link);
+    await page.goto(Route.sharedLinks());
+
+    await app.sharedLink.deleteButton.click();
+    await app.dialogButton('cancel').click();
+    await expect(app.dialog).toBeHidden();
+    expect(api.removeSharedLink).not.toHaveBeenCalled();
+
+    await app.sharedLink.deleteButton.click();
+    await app.dialogButton('delete').click();
+
+    await expect(app.sharedLink.card(link)).toHaveCount(0);
+    expect(api.removeSharedLink).toHaveBeenCalledWith({ params: { id: link.id } });
   });
 });

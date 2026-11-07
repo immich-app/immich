@@ -41,12 +41,8 @@ export const getPasskeyActions = ($t: MessageFormatter, passkey: PasskeyResponse
 const handleDeletePasskey = async (passkey: PasskeyResponseDto) => {
   const $t = await getFormatter();
 
-  const confirmed = await modalManager.showDialog({ prompt: $t('delete_passkey_prompt') });
-  if (!confirmed) {
-    return;
-  }
-
   await executeMutation(deletePasskeyMutation, [{ id: passkey.id }], {
+    confirm: { prompt: $t('delete_passkey_prompt') },
     onSuccess: () =>
       toastManager.primary(
         $t('removed_passkey', { values: { name: passkey.name ?? $t('passkeys', { values: { count: 1 } }) } }),
