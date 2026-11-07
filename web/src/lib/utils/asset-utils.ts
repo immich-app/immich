@@ -15,7 +15,6 @@ import {
   AssetVisibility,
   getBaseUrl,
   getDownloadInfo,
-  untagAssets,
   updateAsset,
   updateAssets,
   type AssetResponseDto,
@@ -28,27 +27,6 @@ import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
-
-export const removeTag = async ({
-  assetIds,
-  tagIds,
-  showNotification = true,
-}: {
-  assetIds: string[];
-  tagIds: string[];
-  showNotification?: boolean;
-}) => {
-  for (const tagId of tagIds) {
-    await untagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
-  }
-
-  if (showNotification) {
-    const $t = await getFormatter();
-    toastManager.primary($t('removed_tagged_assets', { values: { count: assetIds.length } }));
-  }
-
-  return assetIds;
-};
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
   const archiveSize = authManager.authenticated ? authManager.preferences.download.archiveSize : undefined;

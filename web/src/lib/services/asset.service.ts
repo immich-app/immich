@@ -22,7 +22,6 @@ import {
   AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
-  bulkTagAssets,
   getAssetInfo,
   runAssetJobs,
   updateAsset,
@@ -544,20 +543,6 @@ const handleRate = async (asset: AssetResponseDto, rating: number) => {
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_set_rating'));
-  }
-};
-
-export const handleTagAssets = async (assetIds: string[], tagIds: string[]) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await bulkTagAssets({ tagBulkAssetsDto: { assetIds, tagIds } });
-    toastManager.primary($t('tagged_assets', { values: { count: response.count } }));
-    eventManager.emit('AssetsTag', assetIds);
-    return true;
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_tag_assets'));
-    return false;
   }
 };
 
