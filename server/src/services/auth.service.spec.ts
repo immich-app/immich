@@ -777,6 +777,24 @@ describe(AuthService.name, () => {
       );
     });
 
+    it('should include shouldChangePassword in the login response', async () => {
+      const user = UserFactory.create({ shouldChangePassword: true });
+      const rawProfile = OAuthProfileFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ rawProfile });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      const response = await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        {},
+        loginDetails,
+      );
+
+      expect(response.shouldChangePassword).toBe(true);
+    });
+
     it('should normalize the email from the OAuth profile before linking', async () => {
       const user = UserFactory.create();
       const rawProfile = OAuthProfileFactory.create({ email: '  TEST@IMMICH.CLOUD  ' });

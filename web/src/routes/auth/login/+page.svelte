@@ -90,6 +90,11 @@
       try {
         const user = await oauth.login(location);
 
+        if (!user.isAdmin && user.shouldChangePassword && publicConfig.passwordLogin.enabled) {
+          await onFirstLogin();
+          return;
+        }
+
         if (!user.isOnboarded) {
           await onOnboarding();
           return;
