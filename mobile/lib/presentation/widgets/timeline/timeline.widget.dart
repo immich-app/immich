@@ -17,7 +17,6 @@ import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/sliver_segmented_list.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_selection.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_pinch_zoom.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -260,10 +259,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
   /// Track whether the timeline is moving fast enough to defer per-row asset loading
   bool _onScrollVelocityNotification(ScrollNotification notification) {
-    if (notification.depth == 0 && notification is ScrollEndNotification) {
-      TimelineTouchGuard.scrollEnded();
-    }
-
     // Only consider the primary timeline ScrollView (no nested views) and update events
     if (notification.depth != 0 || notification is! ScrollUpdateNotification) {
       return false;

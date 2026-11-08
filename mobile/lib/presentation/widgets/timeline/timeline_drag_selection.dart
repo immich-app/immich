@@ -24,9 +24,11 @@ class TimelineDragSelection extends ConsumerStatefulWidget {
 
 class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
   bool _dragging = false;
+  bool _touchStoppedScroll = false;
   TimelineAssetIndex? _dragAnchorIndex;
   final Set<BaseAsset> _draggedAssets = HashSet();
   ScrollPhysics? _scrollPhysics;
+  static const double _velocityThreshold = 10; //pixels/s
 
   void _setDragStartIndex(TimelineAssetIndex index) {
     setState(() {
@@ -95,11 +97,32 @@ class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
     }
   }
 
+  bool _onScrollNotification(ScrollNotification notification) {
+  if (notification.depth != 0) {
+    return false;
+  }
+  if (notification is ScrollEndNotification) {
+    final context = notification.context;
+    final velocity = context == null ? 0.0 : Scrollable.maybeOf(context)?.position.activity?.velocity ?? 0.0;
+    _touchStoppedScroll = velocity.abs() > _velocityThreshold;
+  } else if (notification is ScrollStartNotification || notification is ScrollUpdateNotification) {
+    _touchStoppedScroll = false;
+  }
+  return false;
+}
+
+bool _consumeTouchStoppedScroll() {
+  final stopped = _touchStoppedScroll;
+  _touchStoppedScroll = false;
+  return stopped;
+}
+
   @override
   Widget build(BuildContext context) {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     return TimelineDragRegion(
+      ignoreTouch: _consumeTouchStoppedScroll,
       onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
       onAssetEnter: _handleDragAssetEnter,
       onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
@@ -109,7 +132,10 @@ class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
         // TODO(agg23): When isReadonlyModeEnabled, onEnd has not been set, so there is never a trailing setScrolling(false), sticking to isInteracting until the next interaction
         ref.read(timelineStateProvider.notifier).setScrolling(true);
       },
-      child: widget.builder(_scrollPhysics),
+      child: NotificationListener<ScrollNotification>(
+    onNotification: _onScrollNotification,
+    child: widget.builder(_scrollPhysics),
+      )
     );
   }
 }

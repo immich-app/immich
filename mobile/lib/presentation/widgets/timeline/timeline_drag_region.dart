@@ -16,6 +16,7 @@ class TimelineDragRegion extends StatefulWidget {
   final void Function()? onEnd;
   final void Function()? onScrollStart;
   final void Function(ScrollDirection direction)? onScroll;
+  final bool Function()? ignoreTouch;
 
   const TimelineDragRegion({
     super.key,
@@ -25,6 +26,7 @@ class TimelineDragRegion extends StatefulWidget {
     this.onEnd,
     this.onScrollStart,
     this.onScroll,
+    this.ignoreTouch,
   });
 
   @override
@@ -80,6 +82,7 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
     recognizer.onLongPressMoveUpdate = (details) => _onLongPressMove(details);
     recognizer.onLongPressStart = (details) => _onLongPressStart(details);
     recognizer.onLongPressUp = _onLongPressEnd;
+    recognizer.ignoreTouch = widget.ignoreTouch;
   }
 
   TimelineAssetIndex? _getValueKeyAtPosition(Offset position) {
@@ -168,14 +171,12 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
 }
 
 class _CustomLongPressGestureRecognizer extends LongPressGestureRecognizer {
-  @override
-  void addAllowedPointer(PointerDownEvent event) {
-    if (TimelineTouchGuard.touchStoppedScroll) {
-      return;
-    }
-    super.addAllowedPointer(event);
-  }
+  bool Function()? ignoreTouch;
 
+  @override
+  bool isPointerAllowed(PointerDownEvent event) =>
+      !(ignoreTouch?.call() ?? false) && super.isPointerAllowed(event);
+  
   @override
   void rejectGesture(int pointer) {
     acceptGesture(pointer);
@@ -220,15 +221,4 @@ class _TimelineAssetIndexProxy extends RenderProxyBox {
 @freezed
 abstract class TimelineAssetIndex with _$TimelineAssetIndex {
   const factory TimelineAssetIndex({required int assetIndex, required int segmentIndex}) = _TimelineAssetIndex;
-}
-
-abstract final class TimelineTouchGuard {
-  static bool _scrollEndedInThisEvent = false;
-
-  static void scrollEnded() {
-    _scrollEndedInThisEvent = true;
-    scheduleMicrotask(() => _scrollEndedInThisEvent = false);
-  }
-
-  static bool get touchStoppedScroll => _scrollEndedInThisEvent;
 }
