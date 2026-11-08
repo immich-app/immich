@@ -13,7 +13,8 @@ jni = { version = "0.22", default-features = false }
 jxl = { version = "0.8", default-features = false, features = ["avx512", "neon"] }
 libc = { version = "0.2", default-features = false }
 moxcms = { version = "0.9", default-features = false, features = ["avx_luts", "avx_shaper_optimized_paths", "avx_shaper_paths", "neon_luts", "neon_shaper_optimized_paths", "neon_shaper_paths", "sse_luts", "sse_shaper_optimized_paths", "sse_shaper_paths"] }
-mp4parse = { version = "0.17", default-features = false, features = ["missing-pixi-permitted"] }
+# master has three years of fixes over 0.17.0, the latest release, and public colr fields.
+mp4parse = { version = "0.17", git = "https://github.com/mozilla/mp4parse-rust", rev = "d3a9abfc93b22687e5e5cd9df86697adcb7d5887", default-features = false, features = ["missing-pixi-permitted"] }
 pic-scale = { version = "0.7", default-features = false, features = ["avx512", "rdm", "sse"] }
 quick_cache = { version = "0.7", default-features = false }
 # main has the safe API and the fix for memorysafety/rav1d#1497 until 1.1.1 is on crates.io.
