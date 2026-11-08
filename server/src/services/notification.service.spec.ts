@@ -1,5 +1,6 @@
 import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum.js';
+import { EmailTemplate } from 'src/repositories/email.repository.js';
 import { NotificationService } from 'src/services/notification.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
@@ -278,10 +279,22 @@ describe(NotificationService.name, () => {
 
     it('should be successful', async () => {
       mocks.user.get.mockResolvedValue(userStub.admin);
-      mocks.systemMetadata.get.mockResolvedValue({ server: {} });
+      mocks.systemMetadata.get.mockResolvedValue({
+        server: {},
+        templates: {
+          email: { welcomeTemplate: '<html><body>Hi {displayName}</body></html>', welcomeTemplateStandalone: true },
+        },
+      });
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
 
       await expect(sut.handleUserSignup({ id: '' })).resolves.toBe(JobStatus.Success);
+      expect(mocks.email.renderEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          template: EmailTemplate.WELCOME,
+          customTemplate: '<html><body>Hi {displayName}</body></html>',
+          standalone: true,
+        }),
+      );
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SendMail,
         data: expect.objectContaining({ subject: 'Welcome to Immich' }),

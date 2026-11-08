@@ -78,6 +78,63 @@ describe(EmailRepository.name, () => {
       expect(result.html).toContain('<p>Hey Tom &amp; Jerry O&#39;Brien');
     });
 
+    it('should render a standalone template without the Immich layout', async () => {
+      const request: EmailRenderRequest = {
+        template: EmailTemplate.WELCOME,
+        data: {
+          displayName: 'Alan Turing',
+          username: 'alan@example.com',
+          baseUrl: 'https://immich.example',
+        },
+        customTemplate:
+          '<!doctype html><html><body><h1>Hello {displayName}</h1><a href="{baseUrl}">Open</a></body></html>',
+        standalone: true,
+      };
+
+      const result = await sut.renderEmail(request);
+
+      expect(result.html).toBe(
+        '<!doctype html><html><body><h1>Hello Alan Turing</h1><a href="https://immich.example">Open</a></body></html>',
+      );
+      expect(result.html).not.toContain('immich-logo-inline-light.png');
+      expect(result.html).not.toContain('Login');
+      expect(result.text).toBe('Hello Alan Turing\nOpen');
+    });
+
+    it('should escape template variables in standalone templates', async () => {
+      const request: EmailRenderRequest = {
+        template: EmailTemplate.ALBUM_INVITE,
+        data: {
+          albumName: '<script>alert(1)</script>',
+          albumId: '123',
+          senderName: 'John',
+          recipientName: 'Jane',
+          baseUrl: 'https://immich.example',
+        },
+        customTemplate: '<html><body><p>{albumName}</p></body></html>',
+        standalone: true,
+      };
+
+      const result = await sut.renderEmail(request);
+
+      expect(result.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+      expect(result.html).not.toContain('<script>alert(1)</script>');
+    });
+
+    it('should use the default email when standalone mode has no custom template', async () => {
+      const request: EmailRenderRequest = {
+        template: EmailTemplate.WELCOME,
+        data: { displayName: 'Alan Turing', username: 'alan@example.com', baseUrl: 'https://immich.example' },
+        customTemplate: '',
+        standalone: true,
+      };
+
+      const result = await sut.renderEmail(request);
+
+      expect(result.html).toContain('immich-logo-inline-light.png');
+      expect(result.text).toContain('A new account has been created for you');
+    });
+
     it('should render the email correctly for ALBUM_UPDATE template', async () => {
       const request: EmailRenderRequest = {
         template: EmailTemplate.ALBUM_UPDATE,

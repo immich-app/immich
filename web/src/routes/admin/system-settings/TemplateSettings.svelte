@@ -1,5 +1,6 @@
 <script lang="ts">
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import EmailTemplatePreviewModal from '#lib/modals/EmailTemplatePreviewModal.svelte';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
@@ -22,10 +23,10 @@
 
   let loadingPreview = $state(false);
 
-  const getTemplate = async (name: string, template: string) => {
+  const getTemplate = async (name: string, template: string, standalone: boolean) => {
     try {
       loadingPreview = true;
-      const { html } = await getNotificationTemplateAdmin({ name, templateDto: { template } });
+      const { html } = await getNotificationTemplateAdmin({ name, templateDto: { template, standalone } });
       await modalManager.show(EmailTemplatePreviewModal, { html });
     } catch (error) {
       handleError(error, 'Could not load template.');
@@ -38,18 +39,21 @@
     {
       label: $t('admin.template_email_welcome'),
       templateKey: 'welcomeTemplate' as const,
+      standaloneKey: 'welcomeTemplateStandalone' as const,
       descriptionTags: '{username}, {password}, {displayName}, {baseUrl}',
       templateName: 'welcome',
     },
     {
       label: $t('admin.template_email_invite_album'),
       templateKey: 'albumInviteTemplate' as const,
+      standaloneKey: 'albumInviteTemplateStandalone' as const,
       descriptionTags: '{senderName}, {recipientName}, {albumId}, {albumName}, {baseUrl}',
       templateName: 'album-invite',
     },
     {
       label: $t('admin.template_email_update_album'),
       templateKey: 'albumUpdateTemplate' as const,
+      standaloneKey: 'albumUpdateTemplateStandalone' as const,
       descriptionTags: '{recipientName}, {albumId}, {albumName}, {baseUrl}',
       templateName: 'album-update',
     },
@@ -82,7 +86,7 @@
             <LoadingSpinner />
           {/if}
 
-          {#each templateConfigs as { label, templateKey, descriptionTags, templateName } (templateKey)}
+          {#each templateConfigs as { label, templateKey, standaloneKey, descriptionTags, templateName } (templateKey)}
             <SettingTextarea
               {label}
               description={$t('admin.template_email_available_tags', { values: { tags: descriptionTags } })}
@@ -90,11 +94,24 @@
               isEdited={isEdited(templateKey)}
               disabled={!config.notifications.smtp.enabled}
             />
+            <SettingSwitch
+              title={$t('admin.template_email_standalone')}
+              subtitle={$t('admin.template_email_standalone_description')}
+              disabled={!config.notifications.smtp.enabled}
+              isEdited={config.templates.email[standaloneKey] !== query.data.templates.email[standaloneKey]}
+              checked={config.templates.email[standaloneKey] ?? false}
+              onToggle={(checked) => (config.templates.email[standaloneKey] = checked)}
+            />
             <div class="flex justify-between">
               <Button
                 size="small"
                 shape="round"
-                onclick={() => getTemplate(templateName, config.templates.email[templateKey])}
+                onclick={() =>
+                  getTemplate(
+                    templateName,
+                    config.templates.email[templateKey],
+                    config.templates.email[standaloneKey] ?? false,
+                  )}
                 title={$t('admin.template_email_preview')}
               >
                 <Icon icon={mdiEyeOutline} class="me-1" />

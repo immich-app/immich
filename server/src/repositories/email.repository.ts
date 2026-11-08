@@ -8,6 +8,7 @@ import { TestEmail } from 'src/emails/test.email.js';
 import { WelcomeEmail } from 'src/emails/welcome.email.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import type { EmailImageAttachment } from 'src/types.js';
+import { replaceTemplateTags, templateText } from 'src/utils/replace-template-tags.js';
 
 export type SendEmailOptions = {
   from: string;
@@ -81,16 +82,19 @@ export type EmailRenderRequest =
       template: EmailTemplate.WELCOME;
       data: WelcomeEmailProps;
       customTemplate: string;
+      standalone?: boolean;
     }
   | {
       template: EmailTemplate.ALBUM_INVITE;
       data: AlbumInviteEmailProps;
       customTemplate: string;
+      standalone?: boolean;
     }
   | {
       template: EmailTemplate.ALBUM_UPDATE;
       data: AlbumUpdateEmailProps;
       customTemplate: string;
+      standalone?: boolean;
     };
 
 export type SendEmailResponse = {
@@ -114,10 +118,35 @@ export class EmailRepository {
   }
 
   async renderEmail(request: EmailRenderRequest): Promise<{ html: string; text: string }> {
+    if (request.template !== EmailTemplate.TEST_EMAIL && request.standalone && request.customTemplate) {
+      const variables = this.getTemplateVariables(request);
+      return {
+        html: replaceTemplateTags(request.customTemplate, variables),
+        text: templateText(request.customTemplate, variables),
+      };
+    }
+
     const component = this.render(request);
     const html = await render(component, { pretty: false });
     const text = await render(component, { plainText: true });
     return { html, text };
+  }
+
+  private getTemplateVariables(request: Exclude<EmailRenderRequest, { template: EmailTemplate.TEST_EMAIL }>) {
+    switch (request.template) {
+      case EmailTemplate.WELCOME: {
+        const { displayName, username, password, baseUrl } = request.data;
+        return { displayName, username, password, baseUrl };
+      }
+      case EmailTemplate.ALBUM_INVITE: {
+        const { albumName, recipientName, senderName, albumId, baseUrl } = request.data;
+        return { albumName, recipientName, senderName, albumId, baseUrl };
+      }
+      case EmailTemplate.ALBUM_UPDATE: {
+        const { albumName, recipientName, albumId, baseUrl } = request.data;
+        return { albumName, recipientName, albumId, baseUrl };
+      }
+    }
   }
 
   sendEmail({ to, from, subject, html, text, smtp, imageAttachments }: SendEmailOptions): Promise<SendEmailResponse> {

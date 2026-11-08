@@ -1,4 +1,4 @@
-import { replaceTemplateTags, templatePreview } from 'src/utils/replace-template-tags.js';
+import { replaceTemplateTags, templatePreview, templateText } from 'src/utils/replace-template-tags.js';
 
 describe(replaceTemplateTags.name, () => {
   it('should replace tags', () => {
@@ -36,5 +36,14 @@ describe(templatePreview.name, () => {
 
   it('should strip tags that came from values', () => {
     expect(templatePreview('<p>{name}</p>', { name: '<a href="https://example.com">click</a>' })).toBe('click');
+  });
+});
+
+describe(templateText.name, () => {
+  it('should convert standalone HTML into readable plain text', () => {
+    const html =
+      '<!doctype html><html><head><style>body { color: red; }</style></head><body><h1>{name}</h1><p>First<br>second</p></body></html>';
+
+    expect(templateText(html, { name: 'Tom & Jerry' })).toBe('Tom & Jerry\nFirst\nsecond');
   });
 });

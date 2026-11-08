@@ -56,8 +56,8 @@ export class NotificationAdminService extends BaseService {
     return { messageId };
   }
 
-  async getTemplate(name: EmailTemplate, customTemplate: string) {
-    const { server, templates } = await this.getConfig({ withCache: false });
+  async getTemplate(name: EmailTemplate, customTemplate: string, standalone = false) {
+    const { server } = await this.getConfig({ withCache: false });
 
     let templateResponse: string;
 
@@ -71,7 +71,8 @@ export class NotificationAdminService extends BaseService {
             username: 'john@doe.com',
             password: 'thisIsAPassword123',
           },
-          customTemplate: customTemplate || templates.email.welcomeTemplate,
+          customTemplate,
+          standalone,
         });
 
         templateResponse = _welcomeHtml;
@@ -87,7 +88,8 @@ export class NotificationAdminService extends BaseService {
             recipientName: 'Jane Doe',
             cid: undefined,
           },
-          customTemplate: customTemplate || templates.email.albumInviteTemplate,
+          customTemplate,
+          standalone,
         });
         templateResponse = _updateAlbumHtml;
         break;
@@ -104,7 +106,8 @@ export class NotificationAdminService extends BaseService {
             recipientName: 'Jane Doe',
             cid: undefined,
           },
-          customTemplate: customTemplate || templates.email.albumInviteTemplate,
+          customTemplate,
+          standalone,
         });
         templateResponse = html;
         break;

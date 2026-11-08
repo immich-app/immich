@@ -43,6 +43,15 @@ describe('config visibility', () => {
     expect(AdminConfigDto.schema.safeParse(defaults)).toEqual(expect.objectContaining({ success: true }));
   });
 
+  it('should accept older config payloads without standalone template settings', () => {
+    const config = structuredClone(defaults);
+    delete config.templates.email.welcomeTemplateStandalone;
+    delete config.templates.email.albumInviteTemplateStandalone;
+    delete config.templates.email.albumUpdateTemplateStandalone;
+
+    expect(AdminConfigDto.schema.safeParse(config).success).toBe(true);
+  });
+
   it('should map the defaults onto the user and public schemas', () => {
     expect(UserConfigDto.schema.safeParse(mapUserConfig(defaults))).toEqual(expect.objectContaining({ success: true }));
     expect(PublicConfigDto.schema.safeParse(mapPublicConfig(defaults))).toEqual(

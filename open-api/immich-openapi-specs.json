@@ -20083,13 +20083,25 @@
             "description": "Album invite template",
             "type": "string"
           },
+          "albumInviteTemplateStandalone": {
+            "description": "Render the album invite template as standalone HTML",
+            "type": "boolean"
+          },
           "albumUpdateTemplate": {
             "description": "Album update template",
             "type": "string"
           },
+          "albumUpdateTemplateStandalone": {
+            "description": "Render the album update template as standalone HTML",
+            "type": "boolean"
+          },
           "welcomeTemplate": {
             "description": "Welcome template",
             "type": "string"
+          },
+          "welcomeTemplateStandalone": {
+            "description": "Render the welcome template as standalone HTML",
+            "type": "boolean"
           }
         },
         "required": [
@@ -32974,6 +32986,10 @@
       },
       "TemplateDto": {
         "properties": {
+          "standalone": {
+            "description": "Whether the template is a complete HTML document",
+            "type": "boolean"
+          },
           "template": {
             "description": "Template name",
             "type": "string"

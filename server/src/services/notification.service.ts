@@ -322,6 +322,7 @@ export class NotificationService extends BaseService {
         password,
       },
       customTemplate: templates.email.welcomeTemplate,
+      standalone: templates.email.welcomeTemplateStandalone,
     });
 
     await this.jobRepository.queue({
@@ -371,6 +372,7 @@ export class NotificationService extends BaseService {
         cid: attachment ? attachment.cid : undefined,
       },
       customTemplate: templates.email.albumInviteTemplate,
+      standalone: templates.email.albumInviteTemplateStandalone,
     });
 
     await this.jobRepository.queue({
@@ -427,6 +429,7 @@ export class NotificationService extends BaseService {
         cid: attachment ? attachment.cid : undefined,
       },
       customTemplate: templates.email.albumUpdateTemplate,
+      standalone: templates.email.albumUpdateTemplateStandalone,
     });
 
     await this.jobRepository.queue({

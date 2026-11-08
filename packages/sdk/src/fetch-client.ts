@@ -394,10 +394,16 @@ export type AdminConfigStorageTemplateDto = {
 export type AdminConfigTemplateEmailsDto = {
     /** Album invite template */
     albumInviteTemplate: string;
+    /** Render the album invite template as standalone HTML */
+    albumInviteTemplateStandalone?: boolean;
     /** Album update template */
     albumUpdateTemplate: string;
+    /** Render the album update template as standalone HTML */
+    albumUpdateTemplateStandalone?: boolean;
     /** Welcome template */
     welcomeTemplate: string;
+    /** Render the welcome template as standalone HTML */
+    welcomeTemplateStandalone?: boolean;
 };
 export type AdminConfigTemplatesDto = {
     email: AdminConfigTemplateEmailsDto;
@@ -549,6 +555,8 @@ export type NotificationDto = {
     "type": NotificationType;
 };
 export type TemplateDto = {
+    /** Whether the template is a complete HTML document */
+    standalone?: boolean;
     /** Template name */
     template: string;
 };

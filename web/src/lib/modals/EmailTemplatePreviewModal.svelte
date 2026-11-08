@@ -16,6 +16,7 @@
       <iframe
         title={$t('admin.template_email_preview')}
         srcdoc={html}
+        sandbox=""
         class="absolute top-0 left-0 size-full border-none"
       ></iframe>
     </div>

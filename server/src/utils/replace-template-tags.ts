@@ -23,3 +23,18 @@ export const templatePreview = (template: string, variables: Record<string, stri
   } while (text !== previous);
   return text;
 };
+
+export const templateText = (template: string, variables: Record<string, string | undefined>) => {
+  return replaceTemplateTags(template, variables)
+    .replaceAll(/<(head|style|script)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replaceAll(/<br\s*\/?>/gi, '\n')
+    .replaceAll(/<\/(p|div|h[1-6]|li|tr)>/gi, '\n')
+    .replaceAll(/<[^>]*>/g, '')
+    .replaceAll(/&nbsp;/g, ' ')
+    .replaceAll(/&amp;/g, '&')
+    .replaceAll(/&lt;/g, '<')
+    .replaceAll(/&gt;/g, '>')
+    .replaceAll(/&quot;/g, '"')
+    .replaceAll(/&#39;/g, "'")
+    .trim();
+};

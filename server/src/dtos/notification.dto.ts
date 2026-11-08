@@ -19,6 +19,7 @@ const TemplateResponseSchema = z
 const TemplateSchema = z
   .object({
     template: z.string().describe('Template name'),
+    standalone: z.boolean().optional().describe('Whether the template is a complete HTML document'),
   })
   .meta({ id: 'TemplateDto' });
 

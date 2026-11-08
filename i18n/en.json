@@ -399,6 +399,8 @@
     "template_email_invite_album": "Invite Album Template",
     "template_email_preview": "Preview",
     "template_email_settings": "Email Templates",
+    "template_email_standalone": "Use as a complete HTML email",
+    "template_email_standalone_description": "Replace the Immich email layout and built-in content with this complete HTML document.",
     "template_email_update_album": "Update Album Template",
     "template_email_welcome": "Welcome email template",
     "template_settings": "Notification Templates",

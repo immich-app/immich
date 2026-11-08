@@ -427,8 +427,20 @@ const AdminConfigSchemaWithVisibility = z
         email: z
           .object({
             welcomeTemplate: z.string().describe('Welcome template'),
+            welcomeTemplateStandalone: z
+              .boolean()
+              .optional()
+              .describe('Render the welcome template as standalone HTML'),
             albumInviteTemplate: z.string().describe('Album invite template'),
+            albumInviteTemplateStandalone: z
+              .boolean()
+              .optional()
+              .describe('Render the album invite template as standalone HTML'),
             albumUpdateTemplate: z.string().describe('Album update template'),
+            albumUpdateTemplateStandalone: z
+              .boolean()
+              .optional()
+              .describe('Render the album update template as standalone HTML'),
           })
           .meta({ id: 'AdminConfigTemplateEmailsDto' }),
       })
@@ -811,8 +823,11 @@ export const defaults = Object.freeze<SystemConfig>({
   templates: {
     email: {
       welcomeTemplate: '',
+      welcomeTemplateStandalone: false,
       albumInviteTemplate: '',
+      albumInviteTemplateStandalone: false,
       albumUpdateTemplate: '',
+      albumUpdateTemplateStandalone: false,
     },
   },
   user: {
