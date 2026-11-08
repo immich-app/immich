@@ -56,6 +56,29 @@ class MapUtils {
     heatmapOpacity: 0.7,
   );
 
+  /// Fast, non-interactive lookup used to pick a sensible initial map center.
+  ///
+  /// Returns null when the location service is disabled, the permission has not
+  /// been granted yet, or the OS has no cached fix. Never prompts the user.
+  static Future<LatLng?> getLastKnownPosition() async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        return null;
+      }
+
+      final permission = await Geolocator.checkPermission();
+      if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
+        return null;
+      }
+
+      final position = await Geolocator.getLastKnownPosition();
+      return position == null ? null : LatLng(position.latitude, position.longitude);
+    } catch (error, stack) {
+      _logger.warning("Cannot get last known location", error, stack);
+      return null;
+    }
+  }
+
   static Future<(Position?, LocationPermission?)> checkPermAndGetLocation({
     required BuildContext context,
     bool silent = false,

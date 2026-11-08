@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -6,6 +8,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
@@ -78,7 +81,7 @@ class _PlaceSliverAppBar extends HookWidget {
   }
 }
 
-class _Map extends StatelessWidget {
+class _Map extends HookWidget {
   const _Map({required this.search, this.currentLocation});
 
   final ValueNotifier<String?> search;
@@ -86,24 +89,54 @@ class _Map extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return search.value == null
-        ? SliverPadding(
-            padding: const EdgeInsets.all(16.0),
-            sliver: SliverToBoxAdapter(
-              child: SizedBox(
-                height: 200,
-                width: context.width,
-                child: MapThumbnail(
-                  onTap: (_, _) => context.pushRoute(MapRoute(initialLocation: currentLocation)),
-                  zoom: 8,
-                  centre: currentLocation ?? const LatLng(21.44950, -157.91959),
+    // Prefer the location passed in (e.g. from the asset viewer). Otherwise use
+    // the cached device location when permission was already granted; never
+    // prompt and never pretend the user is in a hard-coded city.
+    final centre = useState<LatLng?>(currentLocation);
+    final resolved = useState(currentLocation != null);
+
+    useEffect(() {
+      if (currentLocation != null) {
+        return null;
+      }
+
+      var cancelled = false;
+      unawaited(
+        MapUtils.getLastKnownPosition().then((position) {
+          if (cancelled) {
+            return;
+          }
+          centre.value = position;
+          resolved.value = true;
+        }),
+      );
+
+      return () => cancelled = true;
+    }, const []);
+
+    if (search.value != null) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    final location = centre.value;
+    return SliverPadding(
+      padding: const EdgeInsets.all(16.0),
+      sliver: SliverToBoxAdapter(
+        child: SizedBox(
+          height: 200,
+          width: context.width,
+          child: resolved.value
+              ? MapThumbnail(
+                  onTap: (_, _) => context.pushRoute(MapRoute(initialLocation: location)),
+                  zoom: location == null ? 1 : 8,
+                  centre: location ?? const LatLng(0, 0),
                   showAttribution: false,
                   themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
-                ),
-              ),
-            ),
-          )
-        : const SliverToBoxAdapter(child: SizedBox.shrink());
+                )
+              : const SizedBox.shrink(),
+        ),
+      ),
+    );
   }
 }
 

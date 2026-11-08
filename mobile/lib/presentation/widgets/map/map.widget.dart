@@ -111,6 +111,15 @@ class _MapViewState extends ConsumerState<MapView> {
       );
     }
 
+    if (widget.initialLocation == null) {
+      final position = await MapUtils.getLastKnownPosition();
+      if (position != null && mounted) {
+        await controller.animateCamera(
+          CameraUpdate.newLatLngZoom(position, MapUtils.mapZoomToAssetLevel),
+        );
+      }
+    }
+
     _debouncer.run(() => setBounds(forceReload: true));
     controller.addListener(onMapMoved);
   }
