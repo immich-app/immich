@@ -219,9 +219,9 @@ checksum = "sha256:b6c17e747ae78cdd6de4d7532b3164b277daee97c007d3eaa2b39cca99882
 url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip"
 
 [[tools.rust]]
-version = "1.98.0"
+version = "1.99.1"
 backend = "core:rust"
-specifiers = ["1.98.0"]
+specifiers = ["1.99.1"]
 
 [tools.rust.options]
 targets = "aarch64-apple-ios,aarch64-apple-ios-sim,aarch64-linux-android,armv7-linux-androideabi,x86_64-apple-ios,x86_64-linux-android"
