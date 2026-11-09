@@ -46,6 +46,7 @@ class StoreService {
   }
 
   StreamSubscription<List<StoreDto>> _listenForChange() => _storeRepository.watchAll().listen((events) {
+    _cache.clear();
     for (final event in events) {
       _cache[event.key.id] = event.value;
     }
