@@ -434,7 +434,7 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
     });
   }
 
-  Future<LocalAsset?> getThumbnail(String albumId) async {
+  Stream<LocalAsset?> watchThumbnail(String albumId) {
     final query =
         _db.localAlbumAssetEntity.select().join([
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
@@ -443,9 +443,7 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
           ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
           ..limit(1);
 
-    final results = await query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
-
-    return results.isNotEmpty ? results.first : null;
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).watchSingleOrNull();
   }
 
   Future<int> getCount() {

@@ -56,6 +56,23 @@ void main() {
     });
   });
 
+  group('watchThumbnail', () {
+    test('follows the newest asset as assets are added and removed', () async {
+      final localAlbumRepo = mediumFactory.getRepository<LocalAlbumRepository>();
+      final album = mediumFactory.localAlbum();
+      await localAlbumRepo.upsert(album, toUpsert: [_localAsset('old')]);
+
+      final thumbnails = StreamQueue(localAlbumRepo.watchThumbnail(album.id).map((asset) => asset?.id));
+      addTearDown(thumbnails.cancel);
+
+      expect(await thumbnails.next, 'old');
+      await localAlbumRepo.upsert(album, toUpsert: [_localAsset('new').copyWith(createdAt: DateTime(2025))]);
+      expect(await thumbnails.next, 'new');
+      await localAlbumRepo.processDelta(updates: [], deletes: ['new'], assetAlbums: {});
+      expect(await thumbnails.next, 'old');
+    });
+  });
+
   group('processDelta', () {
     // Regression for #22844: an asset moved (not copied) into a backup album on
     // Android was dropped. The delta reports only the asset's new album, and the

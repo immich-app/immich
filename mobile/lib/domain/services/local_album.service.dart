@@ -15,8 +15,8 @@ class LocalAlbumService {
     return _repository.watchAll(sortBy: sortBy);
   }
 
-  Future<LocalAsset?> getThumbnail(String albumId) {
-    return _repository.getThumbnail(albumId);
+  Stream<LocalAsset?> watchThumbnail(String albumId) {
+    return _repository.watchThumbnail(albumId);
   }
 
   Future<void> update(LocalAlbum album) {

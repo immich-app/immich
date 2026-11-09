@@ -16,8 +16,8 @@ final localAlbumProvider = StreamProvider<List<LocalAlbum>>(
       .map((albums) => albums.where((album) => album.assetCount > 0).toList()),
 );
 
-final localAlbumThumbnailProvider = FutureProvider.family<LocalAsset?, String>(
-  (ref, albumId) => LocalAlbumService(ref.watch(driftProvider).localAlbumRepository).getThumbnail(albumId),
+final localAlbumThumbnailProvider = StreamProvider.autoDispose.family<LocalAsset?, String>(
+  (ref, albumId) => LocalAlbumService(ref.watch(driftProvider).localAlbumRepository).watchThumbnail(albumId),
 );
 
 final remoteAlbumServiceProvider = Provider<RemoteAlbumService>(
