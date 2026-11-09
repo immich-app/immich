@@ -181,7 +181,7 @@ export const getAssetActions = (
   const sharedLink = getSharedLink();
   const authUser = authManager.authenticated ? authManager.user : undefined;
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
-  const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers[0].user.id);
+  const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers.at(0)?.user.id);
   const smartSearchEnabled = !!authUser && readPreloadedQuery(getUserConfigQuery()).machineLearning.clip.enabled;
 
   const Share: ActionItem = {
