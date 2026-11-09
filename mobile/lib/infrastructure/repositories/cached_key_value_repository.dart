@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/utils/async_mutex.dart';
 // ignore: depend_on_referenced_packages
 import 'package:meta/meta.dart';
 
@@ -12,9 +11,6 @@ abstract class CachedKeyValueRepository<K extends Enum, S> {
   @protected
   set snapshot(S value) => _snapshot = value;
 
-  @protected
-  final AsyncMutex mutex = AsyncMutex();
-
   List<K> get keys;
 
   Object decodeValue(K key, String raw);
@@ -23,11 +19,9 @@ abstract class CachedKeyValueRepository<K extends Enum, S> {
 
   Selectable<({String key, String? value})> selectable();
 
-  Stream<Set<TableUpdate>> watchChanges();
+  Future<void> refresh() async => _snapshot = _build(await selectable().get());
 
-  Future<S> refresh() => mutex.run(() async => _snapshot = _build(await selectable().get()));
-
-  Stream<S> watchSnapshot() => watchChanges().asyncMap((_) => refresh());
+  Stream<S> watchSnapshot() => selectable().watch().map((rows) => _snapshot = _build(rows));
 
   S _build(List<({String key, String? value})> rows) => buildSnapshot(
     rows.fold({}, (overrides, row) {

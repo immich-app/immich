@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/table/local/trashed_asset.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/permission_api.g.dart';
@@ -137,18 +135,6 @@ void main() {
     final asset = await (ctx.db.select(ctx.db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
     expect(asset.createdAt, DateTime.utc(9999, 12, 31));
     expect(Store.tryGet(StoreKey.version), targetVersion);
-  });
-
-  test('settings loaded before the migration show the migrated values', () async {
-    await Store.put(StoreKey.version, 25);
-    await Store.put(StoreKey.legacyThemeMode, 'dark');
-    await Store.put(StoreKey.legacyEnableBackup, true);
-    final settings = await SettingsRepository.ensureInitialized(ctx.db);
-
-    await migrateDatabaseIfNeeded(ctx.db, nativeSyncApi, permissionApi);
-
-    expect(settings.appConfig.theme.mode, ThemeMode.dark);
-    expect(settings.appConfig.backup.enabled, isTrue);
   });
 }
 

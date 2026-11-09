@@ -65,7 +65,7 @@ void main() {
 
   tearDownAll(() async {
     debugDefaultTargetPlatformOverride = null;
-    await Store.dispose();
+    await Store.clear();
     await db.close();
   });
 

@@ -25,7 +25,11 @@ class StoreRepository extends DatabaseAccessor<Drift> with $StoreRepositoryMixin
     return query.asyncMap((entity) => _toUpdateEvent(entity)).get();
   }
 
-  Stream<Set<TableUpdate>> watchChanges() => _db.tableUpdates(TableUpdateQuery.onTable(_db.storeEntity));
+  Stream<List<StoreDto<Object>>> watchAll() {
+    final query = _db.storeEntity.select()..where((entity) => entity.id.isIn(validStoreKeys));
+
+    return query.asyncMap((entity) => _toUpdateEvent(entity)).watch();
+  }
 
   Future<void> deleteValue<T>(StoreKey<T> key) async {
     await _db.storeEntity.deleteWhere((entity) => entity.id.equals(key.id));

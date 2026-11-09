@@ -52,9 +52,6 @@ class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig
   Selectable<({String key, String? value})> selectable() =>
       _db.select(_db.settingsEntity).map((row) => (key: row.key, value: row.value));
 
-  @override
-  Stream<Set<TableUpdate>> watchChanges() => _db.tableUpdates(TableUpdateQuery.onTable(_db.settingsEntity));
-
   AppConfig get appConfig => snapshot;
 
   Future<void> clear(Iterable<SettingsKey> keys) async {
@@ -63,7 +60,7 @@ class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig
     }
 
     final names = keys.map((key) => key.name).toList();
-    await mutex.run(() => (_db.delete(_db.settingsEntity)..where((row) => row.key.isIn(names))).go());
+    await (_db.delete(_db.settingsEntity)..where((row) => row.key.isIn(names))).go();
 
     var config = snapshot;
     for (final key in keys) {
@@ -86,13 +83,11 @@ class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig
       resolvedValue = key.encode(value);
     }
 
-    await mutex.run(
-      () => _db
-          .into(_db.settingsEntity)
-          .insertOnConflictUpdate(
-            SettingsEntityCompanion.insert(key: key.name, value: .new(resolvedValue), updatedAt: .new(DateTime.now())),
-          ),
-    );
+    await _db
+        .into(_db.settingsEntity)
+        .insertOnConflictUpdate(
+          SettingsEntityCompanion.insert(key: key.name, value: .new(resolvedValue), updatedAt: .new(DateTime.now())),
+        );
     snapshot = snapshot.write(key, value);
   }
 

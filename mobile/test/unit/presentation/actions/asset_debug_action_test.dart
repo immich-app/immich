@@ -42,7 +42,7 @@ void main() {
     });
 
     testWidgets('hidden when advanced troubleshooting is off', (tester) async {
-      await tester.runAsync(() => StoreService.I.put(StoreKey.advancedTroubleshooting, false));
+      await StoreService.I.put(StoreKey.advancedTroubleshooting, false);
 
       await tester.pumpTestWidget(
         context,
