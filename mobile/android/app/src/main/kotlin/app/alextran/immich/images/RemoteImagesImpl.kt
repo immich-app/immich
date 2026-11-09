@@ -472,10 +472,6 @@ private class OkHttpImageFetcher private constructor(
 
       val client = HttpClientManager.getClient().newBuilder()
         .cache(Cache(File(dir, "thumbnails"), HttpClientManager.MEDIA_CACHE_SIZE_BYTES))
-        .addNetworkInterceptor {
-          val response = it.proceed(it.request())
-          if (response.code >= 400) response.newBuilder().header("Cache-Control", "no-store").build() else response
-        }
         .build()
 
       return OkHttpImageFetcher(client)
