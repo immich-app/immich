@@ -471,3 +471,20 @@ export const transformToTitleCase = (text: string) => {
   }
   return result.trim();
 };
+
+export const truncateMiddle = (text: string, maxLength = 50): string => {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  const lastSlash = text.lastIndexOf('/');
+  const tail = lastSlash === -1 ? text : text.slice(lastSlash);
+
+  if (tail.length >= maxLength - 3) {
+    const half = Math.floor((maxLength - 3) / 2);
+    return text.slice(0, half) + '...' + text.slice(-half);
+  }
+
+  const headLength = maxLength - 3 - tail.length;
+  return text.slice(0, headLength) + '...' + tail;
+};
