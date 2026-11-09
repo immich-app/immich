@@ -179,7 +179,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     roleClaim: 'immich_role',
   },
   passkey: {
-    enabled: true,
+    enabled: false,
     domain: null,
     additionalDomains: [],
   },
@@ -399,6 +399,21 @@ describe(SystemConfigService.name, () => {
       await expect(sut.getAdminConfig()).resolves.toEqual(defaults);
 
       expect(mocks.systemMetadata.readFile).toHaveBeenCalledWith('immich-config.json');
+    });
+
+    it('should disable passkeys when enabled in the database', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ passkey: { enabled: true } });
+
+      const config = await sut.getAdminConfig();
+      expect(config.passkey.enabled).toBe(false);
+    });
+
+    it('should disable passkeys when enabled in the config file', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ passkey: { enabled: true } }));
+
+      const config = await sut.getAdminConfig();
+      expect(config.passkey.enabled).toBe(false);
     });
 
     it('should allow underscores in the machine learning url', async () => {
