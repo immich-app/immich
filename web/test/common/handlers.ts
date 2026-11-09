@@ -40,6 +40,7 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     getUserStatisticsAdmin: () => ({ json: { images: 0, videos: 0, total: 0 } }),
     getUserSessionsAdmin: () => ({ json: [] }),
+    getPartners: () => ({ json: [] }),
     getApiKeys: () => ({ json: [] }),
     getSessions: () => ({ json: [] }),
     searchPasskeys: () => ({ json: [] }),

@@ -5,11 +5,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-<<<<<<< HEAD
   const duplicates = await getAssetDuplicates();
-=======
-  await queryClient.query({ ...getAssetDuplicatesQuery(), staleTime: 0 });
->>>>>>> 8e7f4ea (fix(web): stale caches (#33131))
   const $t = await getFormatter();
 
   return {

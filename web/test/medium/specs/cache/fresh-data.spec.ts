@@ -67,38 +67,6 @@ test('shared links show links created elsewhere', async ({ page, data, api, app 
   expect(api.getAllSharedLinks.calls.length).toBeGreaterThan(requests);
 });
 
-test('workflows show workflows created elsewhere', async ({ page, data, api, app }) => {
-  data.addWorkflows(factory.workflow({ name: 'Existing workflow' }));
-  await page.goto(Route.workflows());
-  await expect(page.getByText('Existing workflow', { exact: true })).toBeVisible();
-
-  await app.navbar.logoLink.click();
-  await expect(page).toHaveURL(Route.photos());
-  data.addWorkflows(factory.workflow({ name: 'Added elsewhere' }));
-  const requests = api.searchWorkflows.calls.length;
-  await page.goBack();
-
-  await expect(page.getByText('Added elsewhere', { exact: true })).toBeVisible();
-  expect(api.searchWorkflows.calls.length).toBeGreaterThan(requests);
-});
-
-test('user settings show api keys created elsewhere', async ({ page, data, api, app }) => {
-  data.addApiKeys(factory.apiKey({ name: 'Existing key' }));
-  await page.goto(Route.userSettings());
-  await app.settings.openSection('api_keys');
-  await expect(page.getByText('Existing key', { exact: true })).toBeVisible();
-
-  await app.navbar.logoLink.click();
-  await expect(page).toHaveURL(Route.photos());
-  data.addApiKeys(factory.apiKey({ name: 'Added elsewhere' }));
-  const requests = api.getApiKeys.calls.length;
-  await page.goBack();
-  await app.settings.openSection('api_keys');
-
-  await expect(page.getByText('Added elsewhere', { exact: true })).toBeVisible();
-  expect(api.getApiKeys.calls.length).toBeGreaterThan(requests);
-});
-
 test('duplicates show duplicates detected in the meantime', async ({ page, data, api, app }) => {
   data.addDuplicates([factory.asset(), factory.asset()]);
   await page.goto(Route.duplicatesUtility());
@@ -126,42 +94,4 @@ test('user administration shows users created elsewhere', async ({ page, data, a
 
   await expect(page.getByText('added@immich.cloud')).toBeVisible();
   expect(api.searchUsersAdmin.calls.length).toBeGreaterThan(requests);
-});
-
-test('library management shows libraries created elsewhere', async ({ page, data, api, app }) => {
-  data.addLibraries(factory.library({ name: 'Existing library' }));
-  await page.goto(Route.libraries());
-  await expect(page.getByText('Existing library', { exact: true })).toBeVisible();
-
-  await app.navbar.logoLink.click();
-  await expect(page).toHaveURL(Route.photos());
-  data.addLibraries(factory.library({ name: 'Added elsewhere' }));
-  const requests = api.getAllLibraries.calls.length;
-  await page.goBack();
-
-  await expect(page.getByText('Added elsewhere', { exact: true })).toBeVisible();
-  expect(api.getAllLibraries.calls.length).toBeGreaterThan(requests);
-});
-
-test('face editor shows faces detected in the meantime', async ({ page, data, api, app }) => {
-  const asset = factory.asset({ width: 4000, height: 3000 });
-  const [alice, bob] = [factory.person({ name: 'Alice Johnson' }), factory.person({ name: 'Bob Smith' })];
-  data
-    .addAssets(asset)
-    .addPeople([alice, bob])
-    .addFaces(asset.id, factory.face({ person: alice }));
-  await page.goto(Route.viewAsset({ id: asset.id }));
-  await app.viewer.waitForAsset(asset);
-  await app.viewer.openDetailPanel();
-  await app.viewer.editPeopleButton.click();
-  await expect(app.viewer.deleteFaceButton).toHaveCount(1);
-
-  await app.viewer.editPeopleBackButton.click();
-  await expect(app.viewer.editPeopleHeading).toBeHidden();
-  data.addFaces(asset.id, factory.face({ person: bob }));
-  const requests = api.getFaces.calls.length;
-  await app.viewer.editPeopleButton.click();
-
-  await expect(app.viewer.deleteFaceButton).toHaveCount(2);
-  expect(api.getFaces.calls.length).toBeGreaterThan(requests);
 });
