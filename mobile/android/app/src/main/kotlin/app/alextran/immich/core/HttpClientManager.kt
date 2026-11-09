@@ -379,6 +379,7 @@ object HttpClientManager {
       .connectionPool(connectionPool)
       .dispatcher(Dispatcher().apply { maxRequestsPerHost = MAX_REQUESTS_PER_HOST })
       .cache(Cache(cacheDir.apply { mkdirs() }, CACHE_SIZE_BYTES))
+      // Don't cache failures or redirects, allowing future requests to hit the actual resource if available
       .addNetworkInterceptor {
         val response = it.proceed(it.request())
         if (response.isRedirect || response.code >= 400) {
