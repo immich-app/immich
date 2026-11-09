@@ -8,7 +8,7 @@ import type { PageLoad } from './$types';
 export const load = (async ({ url }) => {
   await authenticate(url);
 
-  await Promise.all([queryClient.query(searchWorkflowsQuery()), pluginManager.ready()]);
+  await Promise.all([queryClient.query({ ...searchWorkflowsQuery(), staleTime: 0 }), pluginManager.ready()]);
   const $t = await getFormatter();
 
   return {

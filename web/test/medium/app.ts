@@ -54,6 +54,7 @@ export const createApp = (page: Page, data: MockData) => {
     },
 
     album: {
+      backButton: page.getByTestId('control-bar').getByLabel('Close'),
       summary: page.getByTestId('album-details'),
       selectPhotosButton: button('select_photos'),
       mapButton: labelled('map'),
@@ -113,6 +114,10 @@ export const createApp = (page: Page, data: MockData) => {
       favoritesLink: link('favorites'),
       archiveLink: link('archive'),
       trashLink: link('trash'),
+    },
+
+    navbar: {
+      logoLink: link('Immich logo'),
     },
 
     timeline: createTimeline(page, data),
