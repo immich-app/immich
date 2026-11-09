@@ -24,11 +24,15 @@ class TimelineDragSelection extends ConsumerStatefulWidget {
 
 class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
   bool _dragging = false;
-  bool _touchStoppedScroll = false;
-  static const double _velocityThreshold = 10; //pixels/s
   TimelineAssetIndex? _dragAnchorIndex;
   final Set<BaseAsset> _draggedAssets = HashSet();
   ScrollPhysics? _scrollPhysics;
+  bool _touchStoppedScroll = false;
+  static const double _velocityThreshold = 10; //pixels/s
+  static const Duration _staleVelocityAge = Duration(milliseconds: 100);
+  final Stopwatch _clock = Stopwatch()..start();
+  Duration? _lastUpdateTime;
+  double _lastVelocity = 0;
 
   void _setDragStartIndex(TimelineAssetIndex index) {
     setState(() {
@@ -101,12 +105,27 @@ class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
     if (notification.depth != 0) {
       return false;
     }
-    if (notification is ScrollEndNotification) {
-      final context = notification.context;
-      final velocity = context == null ? 0.0 : Scrollable.maybeOf(context)?.position.activity?.velocity ?? 0.0;
-      _touchStoppedScroll = velocity.abs() > _velocityThreshold;
-    } else if (notification is ScrollStartNotification || notification is ScrollUpdateNotification) {
+
+    if (notification is ScrollStartNotification) {
+      _lastUpdateTime = null;
+      _lastVelocity = 0;
       _touchStoppedScroll = false;
+    } else if (notification is ScrollUpdateNotification) {
+      final now = _clock.elapsed;
+      final last = _lastUpdateTime;
+      final delta = notification.scrollDelta;
+      if (last != null && delta != null) {
+        final seconds = (now - last).inMicroseconds / Duration.microsecondsPerSecond;
+        if (seconds > 0.001) {
+          _lastVelocity = delta / seconds;
+        }
+      }
+      _lastUpdateTime = now;
+      _touchStoppedScroll = false;
+    } else if (notification is ScrollEndNotification) {
+      final last = _lastUpdateTime;
+      final isFresh = last != null && _clock.elapsed - last < _staleVelocityAge;
+      _touchStoppedScroll = isFresh && _lastVelocity.abs() > _velocityThreshold;
     }
     return false;
   }
