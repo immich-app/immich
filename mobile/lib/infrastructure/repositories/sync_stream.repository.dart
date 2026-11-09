@@ -971,8 +971,11 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
 
         // Asset is not owned by the current user or any of their partners and is not part of any (shared) album
         // Likely a stale asset that was previously shared but has been removed
+        final foreignOwners = _db.userEntity.selectOnly()
+          ..addColumns([_db.userEntity.id])
+          ..where(_db.userEntity.id.isNotIn(validUsers));
         await _db.remoteAssetEntity.deleteWhere((asset) {
-          return asset.ownerId.isNotIn(validUsers) &
+          return asset.ownerId.isInQuery(foreignOwners) &
               asset.id.isNotInQuery(
                 _db.remoteAlbumAssetEntity.selectOnly()..addColumns([_db.remoteAlbumAssetEntity.assetId]),
               );

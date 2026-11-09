@@ -113,6 +113,12 @@ abstract final class SyncStreamStub {
     ack: "asset-delete-ack",
   );
 
+  static const syncCompleteV1 = SyncEvent(
+    type: SyncEntityType.syncCompleteV1,
+    data: Object(),
+    ack: "sync-complete-ack",
+  );
+
   static SyncEvent assetTrashed({
     required String id,
     required String checksum,

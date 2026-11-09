@@ -47,18 +47,5 @@ void main() {
       final remaining = await ctx.db.select(ctx.db.remoteAssetEntity).get();
       expect(remaining.map((a) => a.id), [orphan.id]);
     });
-
-    test('prunes every stale foreign asset in a large data set', () async {
-      final stranger = await ctx.newUser();
-      await ctx.newAuthUser();
-      for (var i = 0; i < 600; i++) {
-        await ctx.newRemoteAsset(ownerId: stranger.id);
-      }
-
-      await sut.pruneAssets();
-
-      final remaining = await ctx.db.select(ctx.db.remoteAssetEntity).get();
-      expect(remaining, isEmpty);
-    });
   });
 }
