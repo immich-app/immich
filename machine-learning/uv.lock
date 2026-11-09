@@ -834,7 +834,7 @@ wheels = [
 
 [[package]]
 name = "immich-ml"
-version = "3.4.0rc3"
+version = "3.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
