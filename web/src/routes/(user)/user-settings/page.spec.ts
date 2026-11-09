@@ -116,3 +116,22 @@ test('logs out all devices', async ({ data, router, render, settle, api, app }) 
 
   expect(api.deleteAllSessions).toHaveBeenCalled();
 });
+
+test('offers to set up a PIN code when none is set', async ({ router, render, settle, app }) => {
+  await router.goto(`${Route.userSettings()}?isOpen=user-pin-code-settings`);
+
+  await render(Page, load);
+  await settle();
+
+  await expect.element(app.settings.pinCodeTitle('setup_pin_code')).toBeVisible();
+});
+
+test('offers to change the PIN code when one is set', async ({ data, router, render, settle, app }) => {
+  data.setAuthStatus({ pinCode: true });
+  await router.goto(`${Route.userSettings()}?isOpen=user-pin-code-settings`);
+
+  await render(Page, load);
+  await settle();
+
+  await expect.element(app.settings.pinCodeTitle('change_pin_code')).toBeVisible();
+});

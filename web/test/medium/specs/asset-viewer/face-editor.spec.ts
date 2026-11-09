@@ -75,6 +75,19 @@ test.describe('face editor', () => {
     });
   });
 
+  test('tags the face with a newly created person', async ({ data, api, app }) => {
+    await app.viewer.faceEditor.createPersonButton.click();
+    await app.viewer.faceEditor.newPersonNameInput.fill('Grace Hopper');
+    await app.viewer.faceEditor.tagFaceButton.click();
+
+    await expect(app.viewer.faceEditor.canvas).toBeHidden();
+    const created = data.getPeople().find(({ name }) => name === 'Grace Hopper');
+    expect(api.createPerson).toHaveBeenCalledWith({ body: { name: 'Grace Hopper' } });
+    expect(api.createFace).toHaveBeenCalledWith({
+      body: expect.objectContaining({ assetId: asset.id, personId: created?.id }),
+    });
+  });
+
   test('cancel closes the editor without tagging', async ({ api, app }) => {
     await app.viewer.faceEditor.cancelButton.click();
     await expect(app.viewer.faceEditor.selector).toBeHidden();

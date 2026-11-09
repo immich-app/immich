@@ -31,7 +31,19 @@ export const createHandlers = (data: MockData): Handlers => {
     getSupportedMediaTypes: () => ({ json: data.mediaTypes }),
     getMyUser: () => ({ json: data.user }),
     getMyPreferences: () => ({ json: data.getPreferences() }),
+    updateMyPreferences: ({ body }) => ({ json: data.updatePreferences(body) }),
+    getAuthStatus: () => ({ json: data.getAuthStatus() }),
+    searchUsers: () => ({ json: data.searchUsers() }),
+    getPartners: ({ params }) => ({ json: data.partnerList(params.direction) }),
     getNotifications: () => ({ json: data.notifications }),
+    createProfileImage: () => ({
+      status: 201,
+      json: {
+        userId: data.user.id,
+        profileImagePath: '/profile/image.png',
+        profileChangedAt: new Date().toISOString(),
+      },
+    }),
     searchUsersAdmin: ({ params = {} }) => ({ json: data.userList(params) }),
     createUserAdmin: ({ body }) => ({ status: 201, json: data.createUser(body) }),
     updateUserAdmin: ({ params, body }) => {
@@ -123,6 +135,13 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     restoreAssets: ({ body }) => ({ json: { count: data.restoreAssets(body.ids) } }),
     getAssetOcr: ({ params }) => ({ json: data.getOcr(params.id) }),
+    runAssetJobs: () => ({ status: 204 }),
+    getAssetEdits: ({ params }) => (data.getAsset(params.id) ? { json: data.getAssetEdits(params.id) } : notFound),
+    editAsset: ({ params, body }) => {
+      const edits = data.editAsset(params.id, body);
+      return edits ? { json: edits } : notFound;
+    },
+    removeAssetEdits: ({ params }) => (data.removeAssetEdits(params.id) ? { status: 204 } : notFound),
     checkBulkUpload: ({ body }) => ({
       json: { results: body.assets.map(({ id }) => ({ id, action: AssetUploadAction.Accept })) },
     }),
@@ -153,6 +172,7 @@ export const createHandlers = (data: MockData): Handlers => {
     untagAssets: ({ params, body }) => ({ json: data.untagAssets(params.id, body.ids) }),
     getSearchSuggestions: ({ params }) => ({ json: data.searchSuggestions(params) as string[] }),
 
+    createPerson: ({ body }) => ({ status: 201, json: data.createPerson(body) }),
     updatePeople: ({ body }) => ({ json: data.updatePeople(body.people) }),
     searchPerson: ({ params }) => ({ json: data.searchPeople(params) }),
     searchPlaces: ({ params }) => ({ json: data.searchPlaces(params.name) }),

@@ -8,6 +8,11 @@ export const createApp = () => {
     page.getByTestId('queue-card').filter({ has: page.getByRole('link', { name: title, exact: true }) });
 
   const sidebar = page.getByTestId('sidebar-parent');
+  const dialog = page.getByRole('dialog');
+  const accountButton = page.getByRole('button').and(page.getByTitle(/\(.+@.+\)$/));
+  const purchasePanel = dialog.filter({
+    has: page.getByRole('heading', { name: 'purchase_panel_title', exact: true }),
+  });
   const searchFilters = page.getByRole('listbox').first();
   const tagsSection = () => page.getByTestId('search-tags-section');
 
@@ -15,6 +20,25 @@ export const createApp = () => {
     sidebar: {
       root: sidebar,
       links: sidebar.getByRole('link'),
+      purchaseInfo: {
+        buyButton: sidebar.getByRole('button', { name: 'purchase_button_buy_immich' }),
+        panel: purchasePanel,
+        neverShowAgainButton: purchasePanel.getByRole('button', { name: 'purchase_button_never_show_again' }),
+        remindMeButton: purchasePanel.getByRole('button', { name: 'purchase_button_reminder' }),
+      },
+    },
+    navbar: {
+      avatar: accountButton,
+      editAvatarButton: button('edit_avatar'),
+      openAvatarEditor: async () => {
+        await accountButton.click();
+        await button('edit_avatar').click();
+      },
+    },
+    userPicker: {
+      searchInput: dialog.getByPlaceholder('search', { exact: true }),
+      user: (name: string) => dialog.getByText(name, { exact: true }),
+      addButton: dialog.getByRole('button', { name: 'add', exact: true }),
     },
     gallery: {
       selectAll: () => userEvent.keyboard('{Control>}a{/Control}'),
@@ -147,6 +171,7 @@ export const createApp = () => {
       deletePasskeyButton: button('delete_passkey'),
       logOutDeviceButton: button('log_out'),
       logOutAllDevicesButton: button('log_out_all_devices'),
+      pinCodeTitle: (title: string) => main.getByText(title, { exact: true }),
     },
     people: {
       nameInput: (index: number) => main.getByPlaceholder('add_a_name').nth(index),

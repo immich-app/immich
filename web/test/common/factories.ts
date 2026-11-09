@@ -1,9 +1,11 @@
 import { SeededRandom } from '#test/common/helpers.ts';
 import {
   AlbumUserRole,
+  AssetEditAction,
   AssetOrder,
   AssetTypeEnum,
   AssetVisibility,
+  IntegrityReport,
   MemoryType,
   PersonUpdateStrategy,
   ReactionType,
@@ -16,11 +18,16 @@ import {
   type AlbumResponseDto,
   type AlbumUserResponseDto,
   type ApiKeyResponseDto,
+  type AssetEditActionItemResponseDto,
   type AssetFaceResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
+  type AuthStatusResponseDto,
+  type ClusterGroupRequestResponseDto,
+  type IntegrityReportResponseDto,
   type LibraryResponseDto,
   type MemoryResponseDto,
+  type PartnerResponseDto,
   type PasskeyResponseDto,
   type PersonResponseDto,
   type PluginMethodResponseDto,
@@ -31,6 +38,7 @@ import {
   type StackResponseDto,
   type TagResponseDto,
   type UserAdminResponseDto,
+  type UserLicense,
   type UserPreferencesResponseDto,
   type UserResponseDto,
   type WorkflowResponseDto,
@@ -405,6 +413,57 @@ const queue = ({
   ...overrides,
 });
 
+const partner = (overrides: Partial<PartnerResponseDto> = {}): PartnerResponseDto => {
+  const { id, name, email, avatarColor, profileImagePath, profileChangedAt } = user(overrides);
+  return {
+    id,
+    name,
+    email,
+    avatarColor,
+    profileImagePath,
+    profileChangedAt,
+    inTimeline: overrides.inTimeline ?? false,
+  };
+};
+
+const clusterGroupRequest = (
+  overrides: Partial<ClusterGroupRequestResponseDto> = {},
+): ClusterGroupRequestResponseDto => ({
+  id: crypto.randomUUID(),
+  clusterGroupId: crypto.randomUUID(),
+  userId: crypto.randomUUID(),
+  createdAt: new Date().toISOString(),
+  ...overrides,
+});
+
+const authStatus = (overrides: Partial<AuthStatusResponseDto> = {}): AuthStatusResponseDto => ({
+  pinCode: false,
+  password: true,
+  isElevated: false,
+  ...overrides,
+});
+
+const license = (overrides: Partial<UserLicense> = {}): UserLicense => ({
+  licenseKey: `IMCL-${Array.from({ length: 8 }, () => alphanumeric(4).toUpperCase()).join('-')}`,
+  activationKey: alphanumeric(64),
+  activatedAt: new Date().toISOString(),
+  ...overrides,
+});
+
+const assetEdit = (overrides: Partial<AssetEditActionItemResponseDto> = {}): AssetEditActionItemResponseDto => ({
+  id: crypto.randomUUID(),
+  action: AssetEditAction.Crop,
+  parameters: { x: 0, y: 0, width: 1000, height: 750 },
+  ...overrides,
+});
+
+type IntegrityReportItem = IntegrityReportResponseDto['items'][number];
+
+const integrityReportItem = (overrides: Partial<IntegrityReportItem> = {}): IntegrityReportItem => {
+  const id = overrides.id ?? crypto.randomUUID();
+  return { id, path: `/data/library/${id}.jpg`, type: IntegrityReport.MissingFile, ...overrides };
+};
+
 export type MemoryYearSpec = { year: number; assetCount: number };
 
 const many = <T>(count: number, build: (index: number) => T): T[] =>
@@ -645,6 +704,12 @@ export const factory = {
   passkey,
   pluginMethod,
   queue,
+  partner,
+  clusterGroupRequest,
+  authStatus,
+  license,
+  assetEdit,
+  integrityReportItem,
   memories,
   timeline,
   many,
