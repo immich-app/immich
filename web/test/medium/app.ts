@@ -62,6 +62,15 @@ export const createApp = (page: Page, data: MockData) => {
       createAlbumButton: button('create_album'),
     },
 
+    settings: {
+      openSection: async (title: string) => {
+        const toggle = page.getByRole('button', { name: new RegExp(`^${title}`) });
+        if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+          await toggle.click();
+        }
+      },
+    },
+
     library: {
       deleteButton: button('delete').filter({ hasText: 'delete' }),
       rowDeleteButton: (text: string) =>
@@ -73,6 +82,7 @@ export const createApp = (page: Page, data: MockData) => {
     },
 
     album: {
+      backButton: page.getByTestId('control-bar').getByLabel('Close'),
       summary: page.getByTestId('album-details'),
       selectPhotosButton: button('select_photos'),
       mapButton: labelled('map'),
@@ -160,6 +170,7 @@ export const createApp = (page: Page, data: MockData) => {
     },
 
     navbar: {
+      logoLink: link('Immich logo'),
       avatar: accountButton,
       editAvatarButton: button('edit_avatar'),
       openAvatarEditor: async () => {
@@ -390,6 +401,8 @@ const createViewer = (page: Page) => {
     navbarActions: page.getByTestId('asset-viewer-navbar-actions'),
     tags: page.getByTestId('detail-panel-tags').getByRole('link'),
     editPeopleButton: page.getByLabel('edit_people', { exact: true }),
+    editPeopleHeading: page.getByText('edit_faces', { exact: true }),
+    editPeopleBackButton: page.getByLabel('back', { exact: true }),
     deleteFaceButton: page.getByLabel('delete_face', { exact: true }),
     tag: (value: string) => page.getByTestId('detail-panel-tags').getByRole('link', { name: value, exact: true }),
     addTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'add_tag', exact: true }),
