@@ -9,7 +9,9 @@
 </p>
 
 <p align="center">
-<img src="../design/immich-logo-stacked-light.svg" width="300" title="Immich">
+  <a href="#">
+    <img src="../design/immich-logo-stacked-light.svg" width="300" alt="Immich Logo">
+  </a>
 </p>
 <h3 align="center">ഫോട്ടോകളും വീഡിയോകളും കൈകാര്യം ചെയ്യുന്നതിനുള്ള ഉയർന്ന കാര്യക്ഷമതയുള്ള സെൽഫ്-ഹോസ്റ്റഡ് ആപ്ലിക്കേഷൻ</h3>
 <br/>
