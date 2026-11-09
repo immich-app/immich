@@ -11,9 +11,9 @@ export const load = (async ({ url }) => {
 
   const [$t] = await Promise.all([
     getFormatter(),
-    queryClient.query(getApiKeysQuery()),
-    queryClient.query(getSessionsQuery()),
-    queryClient.query(searchPasskeysQuery()),
+    queryClient.query({ ...getApiKeysQuery(), staleTime: 0 }),
+    queryClient.query({ ...getSessionsQuery(), staleTime: 0 }),
+    queryClient.query({ ...searchPasskeysQuery(), staleTime: 0 }),
   ]);
 
   return {

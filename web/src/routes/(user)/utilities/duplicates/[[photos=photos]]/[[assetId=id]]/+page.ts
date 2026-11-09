@@ -6,7 +6,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-  await queryClient.query(getAssetDuplicatesQuery());
+  await queryClient.query({ ...getAssetDuplicatesQuery(), staleTime: 0 });
   const $t = await getFormatter();
 
   return {

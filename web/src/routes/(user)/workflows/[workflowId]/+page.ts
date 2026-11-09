@@ -10,7 +10,9 @@ import type { PageLoad } from './$types';
 export const load = (async ({ url, params }) => {
   await authenticate(url);
   await Promise.all([
-    queryClient.query(getWorkflowQuery(params.workflowId)).catch(() => redirect(307, Route.workflows())),
+    queryClient
+      .query({ ...getWorkflowQuery(params.workflowId), staleTime: 0 })
+      .catch(() => redirect(307, Route.workflows())),
     pluginManager.ready(),
   ]);
   const $t = await getFormatter();
