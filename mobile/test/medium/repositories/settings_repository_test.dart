@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:drift/drift.dart' hide isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/table/app/settings.drift.dart';
@@ -6,6 +9,19 @@ import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 
 import '../repository_context.dart';
+
+class _HeldReads extends QueryInterceptor {
+  final Future<void> hold;
+
+  _HeldReads(this.hold);
+
+  @override
+  Future<List<Map<String, Object?>>> runSelect(QueryExecutor executor, String statement, List<Object?> args) async {
+    final rows = await executor.runSelect(statement, args);
+    await hold;
+    return rows;
+  }
+}
 
 void main() {
   late MediumRepositoryContext ctx;
@@ -57,6 +73,20 @@ void main() {
 
       final rows = await ctx.db.select(ctx.db.settingsEntity).get();
       expect(rows, isEmpty);
+    });
+
+    test('keeps the written value when an older read finishes later', () async {
+      final release = Completer<void>();
+      await ctx.db.runWithInterceptor(interceptor: _HeldReads(release.future), () async {
+        final refresh = sut.refresh();
+        await pumpEventQueue();
+        final write = sut.write(.themeMode, ThemeMode.dark);
+        await pumpEventQueue();
+        release.complete();
+        await (refresh, write).wait;
+      });
+
+      expect(sut.appConfig.theme.mode, ThemeMode.dark);
     });
   });
 

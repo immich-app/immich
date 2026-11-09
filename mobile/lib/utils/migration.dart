@@ -236,6 +236,8 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.migrateInt(StoreKey.legacyBackupTriggerDelay, SettingsKey.backupTriggerDelay);
   await migrator.migrateBool(StoreKey.legacySyncAlbums, SettingsKey.backupSyncAlbums);
   await migrator.complete();
+
+  await SettingsRepository.instance.refresh();
 }
 
 Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {
