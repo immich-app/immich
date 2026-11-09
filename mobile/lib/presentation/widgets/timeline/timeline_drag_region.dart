@@ -174,9 +174,8 @@ class _CustomLongPressGestureRecognizer extends LongPressGestureRecognizer {
   bool Function()? ignoreTouch;
 
   @override
-  bool isPointerAllowed(PointerDownEvent event) =>
-      !(ignoreTouch?.call() ?? false) && super.isPointerAllowed(event);
-  
+  bool isPointerAllowed(PointerDownEvent event) => !(ignoreTouch?.call() ?? false) && super.isPointerAllowed(event);
+
   @override
   void rejectGesture(int pointer) {
     acceptGesture(pointer);
