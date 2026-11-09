@@ -96,6 +96,7 @@ jobs:
       ALIAS: ${{ secrets.ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+      PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
       # iOS secrets
       APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
       APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
@@ -107,6 +108,7 @@ jobs:
     with:
       ref: ${{ needs.tag.outputs.sha }}
       environment: production
+      rc: ${{ needs.tag.outputs.rc == 'true' }}
 
   draft_release:
     runs-on: ubuntu-latest
