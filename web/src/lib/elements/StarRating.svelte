@@ -60,7 +60,7 @@
 <fieldset
   class="w-fit cursor-default text-primary"
   onmouseleave={() => setHoverRating(null)}
-  use:focusOutside={{ onFocusOut: reset }}
+  {@attach focusOutside({ onFocusOut: reset })}
   use:shortcuts={[
     { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
     { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },

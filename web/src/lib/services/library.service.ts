@@ -123,16 +123,10 @@ const handleDeleteLibrary = async (library: LibraryResponseDto) => {
     return;
   }
 
-  if (library.assetCount > 0) {
-    const isConfirmed = await modalManager.showDialog({
-      prompt: $t('admin.confirm_delete_library_assets', { values: { count: library.assetCount } }),
-    });
-    if (!isConfirmed) {
-      return;
-    }
-  }
-
   await executeMutation(deleteLibraryMutation, [{ id: library.id }], {
+    confirm: library.assetCount > 0 && {
+      prompt: $t('admin.confirm_delete_library_assets', { values: { count: library.assetCount } }),
+    },
     onSuccess: () => void goto(Route.libraries()),
   });
 };
@@ -140,27 +134,17 @@ const handleDeleteLibrary = async (library: LibraryResponseDto) => {
 const handleDeleteLibraryFolder = async (library: LibraryResponseDto, folder: string) => {
   const $t = await getFormatter();
 
-  const confirmed = await modalManager.showDialog({
-    prompt: $t('admin.library_remove_folder_prompt'),
-    confirmText: $t('remove'),
-  });
-
-  if (!confirmed) {
-    return;
-  }
-
   const importPaths = library.importPaths.filter((path) => path !== folder);
-  await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { importPaths } }]);
+  await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { importPaths } }], {
+    confirm: { prompt: $t('admin.library_remove_folder_prompt'), confirmText: $t('remove') },
+  });
 };
 
 const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusionPattern: string) => {
   const $t = await getFormatter();
 
-  const confirmed = await modalManager.showDialog({ prompt: $t('admin.library_remove_exclusion_pattern_prompt') });
-  if (!confirmed) {
-    return;
-  }
-
   const exclusionPatterns = library.exclusionPatterns.filter((pattern) => pattern !== exclusionPattern);
-  await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { exclusionPatterns } }]);
+  await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { exclusionPatterns } }], {
+    confirm: { prompt: $t('admin.library_remove_exclusion_pattern_prompt') },
+  });
 };

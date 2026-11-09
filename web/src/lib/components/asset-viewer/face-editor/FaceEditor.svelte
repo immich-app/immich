@@ -312,20 +312,17 @@
       return;
     }
 
-    const isConfirmed = await modalManager.showDialog({
-      prompt: person.name ? $t('confirm_tag_face', { values: { name: person.name } }) : $t('confirm_tag_face_unnamed'),
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
     const onSuccess = async () => {
       await assetViewerManager.setAssetId(assetId);
       faceManager.clear();
     };
 
     await executeMutation(createFaceMutation, [{ assetFaceCreateDto: { assetId, personId: person.id, ...data } }], {
+      confirm: {
+        prompt: person.name
+          ? $t('confirm_tag_face', { values: { name: person.name } })
+          : $t('confirm_tag_face_unnamed'),
+      },
       onSuccess: () => void onSuccess(),
       onSettled: onClose,
     });
@@ -361,7 +358,7 @@
 <svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose, ignoreInputFields: false }} />
 
 <div
-  id="face-editor-data"
+  data-testid="face-editor-data"
   class="absolute inset-s-0 top-0 z-5 size-full overflow-hidden"
   data-overlay-interactive
   data-face-left={faceBoxPosition.left}
@@ -369,10 +366,10 @@
   data-face-width={faceBoxPosition.width}
   data-face-height={faceBoxPosition.height}
 >
-  <canvas bind:this={canvasEl} id="face-editor" class="absolute inset-s-0 top-0"></canvas>
+  <canvas bind:this={canvasEl} data-testid="face-editor" class="absolute inset-s-0 top-0"></canvas>
 
   <div
-    id="face-selector"
+    data-testid="face-selector"
     bind:this={faceSelectorEl}
     class="absolute inset-s-[calc(50%-125px)] top-[calc(50%-250px)] w-62.5 max-w-62.5 rounded-xl border border-gray-200 bg-white px-2 py-4 backdrop-blur-sm transition-[top,left] duration-200 ease-out dark:border-gray-800 dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >

@@ -12,7 +12,7 @@
   import { zoomImageToBase64 } from '#lib/utils/people-utils.ts';
   import { getPersonNameWithHiddenValue } from '#lib/utils/person.ts';
   import { AssetTypeEnum, createPerson, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, modalManager, toastManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, toastManager } from '@immich/ui';
   import { mdiAccountOff, mdiArrowLeftThin, mdiArrowRightThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
@@ -151,14 +151,8 @@
       return;
     }
 
-    const isConfirmed = await modalManager.showDialog({
-      prompt: $t('confirm_delete_face', { values: { name: person.name } }),
-    });
-    if (!isConfirmed) {
-      return;
-    }
-
     await executeMutation(deleteFaceMutation, [{ id: face.id, assetFaceDeleteDto: { force: false } }], {
+      confirm: { prompt: $t('confirm_delete_face', { values: { name: person.name } }) },
       onSuccess: () => {
         eventManager.emit('PersonAssetDelete', { id: person.id, assetId });
         void assetViewerManager.setAssetId(assetId);
@@ -219,7 +213,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
-          {const personName = face.person ? face.person.name : $t('face_unassigned')}
+          {const personName = $derived(face.person ? face.person.name : $t('face_unassigned'))}
           {const isHighlighted = $derived(assetViewerManager.highlightedFaces.some((b) => b.id === face.id))}
           <div class="relative h-29 w-24">
             <div

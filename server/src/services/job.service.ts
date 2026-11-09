@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type { JobItem } from 'src/types.js';
 import { OnEvent } from 'src/decorators.js';
 import { mapAsset } from 'src/dtos/asset-response.dto.js';
 import { JobCreateDto } from 'src/dtos/job.dto.js';
 import { AssetType, AssetVisibility, IntegrityReport, JobName, JobStatus, ManualJobName } from 'src/enum.js';
 import { ArgsOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
+import type { JobItem } from 'src/types.js';
 import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
 
 const asJobItem = (dto: JobCreateDto): JobItem => {
@@ -98,9 +98,7 @@ export class JobService extends BaseService {
     }
   }
 
-  /**
-   * Queue follow up jobs
-   */
+  /** Queue follow up jobs */
   private async onDone(item: JobItem) {
     switch (item.name) {
       case JobName.SidecarCheck: {

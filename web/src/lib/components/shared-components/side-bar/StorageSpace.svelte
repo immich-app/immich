@@ -1,7 +1,7 @@
 <script lang="ts">
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { locale } from '#lib/stores/preferences.store.ts';
   import { getStorageQuery } from '#lib/queries/server-info.query.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import { getByteUnitString } from '#lib/utils/byte-units.ts';
   import { LoadingSpinner, Meter } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
@@ -25,7 +25,7 @@
 </script>
 
 <div
-  class="ms-4 min-w-52 rounded-lg bg-light-100 p-4 text-sm"
+  class="min-w-52 bg-light-100 p-4 text-sm"
   title={$t('storage_usage', {
     values: {
       used: getByteUnitString(usedBytes, $locale, 3),

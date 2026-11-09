@@ -1,9 +1,10 @@
 <script lang="ts">
   import { cleanClass } from '#lib';
-  import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
+  import { getQueueSnapshotsQuery } from '#lib/queries/queue.query.ts';
   import type { QueueSnapshot } from '#lib/types.ts';
   import type { QueueResponseDto } from '@immich/sdk';
   import { LoadingSpinner, Theme, themeManager } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import uPlot, { type AlignedData, type Axis } from 'uplot';
@@ -52,7 +53,8 @@
     return items;
   };
 
-  const data = $derived(normalizeData(queueManager.snapshots));
+  const snapshotsQuery = createQuery(getQueueSnapshotsQuery);
+  const data = $derived(normalizeData(snapshotsQuery.data));
 
   let chartElement: HTMLDivElement | undefined = $state();
   let isDark = $derived(themeManager.value === Theme.Dark);

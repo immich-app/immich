@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Thumbhash from '#lib/components/Thumbhash.svelte';
   import { ProjectionType } from '#lib/constants.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
@@ -24,9 +25,9 @@
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
-  import Thumbhash from '#lib/components/Thumbhash.svelte';
   import ImageThumbnail from './ImageThumbnail.svelte';
   import VideoThumbnail from './VideoThumbnail.svelte';
+
   interface Props {
     asset: TimelineAsset;
     groupIndex?: number;
@@ -143,36 +144,36 @@
   let startX: number = 0;
   let startY: number = 0;
 
-  function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
-    let didPress = false;
-    const start = (evt: PointerEvent) => {
-      startX = evt.clientX;
-      startY = evt.clientY;
-      didPress = false;
-      // 350ms for longpress. For reference: iOS uses 500ms for default long press, or 200ms for fast long press.
-      timer = setTimeout(() => {
-        onLongPress();
-        element.addEventListener('contextmenu', preventContextMenu, { once: true });
-        disposeables.push(() => element.removeEventListener('contextmenu', preventContextMenu));
-        didPress = true;
-      }, 350);
-    };
-    const click = (e: MouseEvent) => {
-      if (!didPress) {
-        return;
-      }
-      e.stopPropagation();
-      e.preventDefault();
-    };
-    element.addEventListener('click', click);
-    element.addEventListener('pointerdown', start, { capture: true });
-    element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
-    return {
-      destroy: () => {
+  function longPress({ onLongPress }: { onLongPress: () => void }) {
+    return (element: HTMLElement) => {
+      let didPress = false;
+      const start = (evt: PointerEvent) => {
+        startX = evt.clientX;
+        startY = evt.clientY;
+        didPress = false;
+        // 350ms for longpress. For reference: iOS uses 500ms for default long press, or 200ms for fast long press.
+        timer = setTimeout(() => {
+          onLongPress();
+          element.addEventListener('contextmenu', preventContextMenu, { once: true });
+          disposeables.push(() => element.removeEventListener('contextmenu', preventContextMenu));
+          didPress = true;
+        }, 350);
+      };
+      const click = (e: MouseEvent) => {
+        if (!didPress) {
+          return;
+        }
+        e.stopPropagation();
+        e.preventDefault();
+      };
+      element.addEventListener('click', click);
+      element.addEventListener('pointerdown', start, { capture: true });
+      element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
+      return () => {
         element.removeEventListener('click', click);
         element.removeEventListener('pointerdown', start, true);
         element.removeEventListener('pointerup', clearLongPressTimer, true);
-      },
+      };
     };
   }
   function moveHandler(e: PointerEvent) {
@@ -214,7 +215,7 @@
   style:height="{height}px"
   onmouseenter={onMouseEnter}
   onmouseleave={onMouseLeave}
-  use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
+  {@attach longPress({ onLongPress: () => onSelect?.($state.snapshot(asset)) })}
   onkeydown={(evt) => {
     if (evt.key === 'Enter') {
       callClickHandlers();
@@ -320,7 +321,7 @@
         <!-- Favorite asset star -->
         {#if !authManager.isSharedLink && asset.isFavorite}
           <div class="absolute inset-s-2 bottom-2 z-2">
-            <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
+            <Icon data-testid="favorite-icon" icon={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
@@ -334,7 +335,7 @@
 
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
           <div class={['absolute inset-s-2 z-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
-            <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+            <Icon data-testid="archive-icon" icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
@@ -357,6 +358,7 @@
         <!-- Stacked asset -->
         {#if asset.stack && showStackedIcon}
           <div
+            data-testid="stack-icon"
             class={[
               'absolute z-2 flex place-items-center gap-1 pe-2 pt-2 text-xs font-medium text-white',
               asset.isImage && !asset.livePhotoVideoId ? 'inset-e-0 top-0' : 'inset-e-1 top-7',
@@ -384,6 +386,7 @@
 
     {#if selectionCandidate}
       <div
+        data-testid="selection-candidate"
         class={['absolute top-0 z-2 size-full bg-immich-primary opacity-40', { 'rounded-xl': selected }]}
         in:fade={{ duration: 100 }}
         out:fade={{ duration: 100 }}
@@ -402,13 +405,13 @@
         {disabled}
       >
         {#if disabled}
-          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-zinc-800" />
+          <Icon icon={mdiCheckCircle} size="24" class="text-zinc-800" />
         {:else if selected}
           <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-primary" />
+            <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
           </div>
         {:else}
-          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 group-hover/select:text-white" />
+          <Icon icon={mdiCheckCircle} size="24" class="text-white/80 group-hover/select:text-white" />
         {/if}
       </button>
     {/if}

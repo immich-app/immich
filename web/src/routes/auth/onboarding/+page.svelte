@@ -1,16 +1,7 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { page } from '$app/state';
-  import OnboardingBackup from './OnboardingBackup.svelte';
-  import OnboardingCard from './OnboardingCard.svelte';
-  import OnboardingHello from './OnboardingHello.svelte';
-  import OnboardingLocale from './OnboardingLanguage.svelte';
-  import OnboardingMobileApp from './OnboardingMobileApp.svelte';
-  import OnboardingServerPrivacy from './OnboardingServerPrivacy.svelte';
-  import OnboardingStorageTemplate from './OnboardingStorageTemplate.svelte';
-  import OnboardingTheme from './OnboardingTheme.svelte';
-  import OnboardingUserPrivacy from './OnboardingUserPrivacy.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
   import { Route } from '#lib/route.ts';
   import { OnboardingRole } from '#lib/types.ts';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
@@ -23,8 +14,17 @@
     mdiTranslate,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
-  import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+  import OnboardingBackup from './OnboardingBackup.svelte';
+  import OnboardingCard from './OnboardingCard.svelte';
+  import OnboardingHello from './OnboardingHello.svelte';
+  import OnboardingLocale from './OnboardingLanguage.svelte';
+  import OnboardingMobileApp from './OnboardingMobileApp.svelte';
+  import OnboardingServerPrivacy from './OnboardingServerPrivacy.svelte';
+  import OnboardingStorageTemplate from './OnboardingStorageTemplate.svelte';
+  import OnboardingTheme from './OnboardingTheme.svelte';
+  import OnboardingUserPrivacy from './OnboardingUserPrivacy.svelte';
 
   const query = createPreloadedQuery(getServerConfigQuery);
   const serverConfig = $derived(query.data);
@@ -106,25 +106,21 @@
     authManager.user.isAdmin && !serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
   );
 
-  let onboardingStepCount = $derived(onboardingSteps.filter((step) => shouldRunStep(step.role, userRole)).length);
+  let onboardingStepCount = $derived(onboardingSteps.filter((step) => shouldRunStep(step.role)).length);
   let onboardingProgress = $derived(
-    onboardingSteps.filter((step, i) => shouldRunStep(step.role, userRole) && i <= index).length - 1,
+    onboardingSteps.filter((step, i) => shouldRunStep(step.role) && i <= index).length - 1,
   );
 
-  const shouldRunStep = (stepRole: OnboardingRole, userRole: OnboardingRole) => {
+  const shouldRunStep = (stepRole: OnboardingRole) => {
     return (
       stepRole === OnboardingRole.USER ||
       (stepRole === OnboardingRole.SERVER && userRole === OnboardingRole.SERVER && !serverConfig.isOnboarded)
     );
   };
 
-  const previousStepIndex = $derived(
-    onboardingSteps.findLastIndex((step, i) => shouldRunStep(step.role, userRole) && i < index),
-  );
+  const previousStepIndex = $derived(onboardingSteps.findLastIndex((step, i) => shouldRunStep(step.role) && i < index));
 
-  const nextStepIndex = $derived(
-    onboardingSteps.findIndex((step, i) => shouldRunStep(step.role, userRole) && i > index),
-  );
+  const nextStepIndex = $derived(onboardingSteps.findIndex((step, i) => shouldRunStep(step.role) && i > index));
 
   const handleNextClicked = async () => {
     if (nextStepIndex === -1) {

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/native_core", "crates/native_core_ffi"]
+members = ["crates/codecs", "crates/native_core", "crates/native_core_ffi"]
 
 [workspace.package]
 version = "0.1.0"
@@ -10,12 +10,16 @@ license = "AGPL-3.0-only"
 [workspace.dependencies]
 cbindgen = { version = "0.29", default-features = false }
 jni = { version = "0.22", default-features = false }
-jxl = { version = "0.8", default-features = false, features = ["neon"] }
+jxl = { version = "0.8", default-features = false, features = ["avx512", "neon"] }
 libc = { version = "0.2", default-features = false }
-moxcms = { version = "0.9", default-features = false, features = ["neon_luts", "neon_shaper_paths"] }
-pic-scale = { version = "0.7", default-features = false, features = ["neon", "rdm"] }
+moxcms = { version = "0.9", default-features = false, features = ["avx_luts", "avx_shaper_optimized_paths", "avx_shaper_paths", "neon_luts", "neon_shaper_optimized_paths", "neon_shaper_paths", "sse_luts", "sse_shaper_optimized_paths", "sse_shaper_paths"] }
+mp4parse = { version = "0.17", default-features = false, features = ["missing-pixi-permitted"] }
+pic-scale = { version = "0.7", default-features = false, features = ["avx512", "rdm", "sse"] }
 quick_cache = { version = "0.7", default-features = false }
+# main has the safe API and the fix for memorysafety/rav1d#1497 until 1.1.1 is on crates.io.
+rav1d = { version = "1.1.1", git = "https://github.com/memorysafety/rav1d", rev = "2e7216c20ac2a75de204d6c8d7268b75a45959b4", default-features = false, features = ["bitdepth_8", "bitdepth_16"] }
 rayon = { version = "1.11", default-features = false }
+yuv = { version = "0.8", default-features = false, features = ["avx", "rdm", "sse"] }
 
 [workspace.lints.clippy]
 undocumented_unsafe_blocks = "deny"
@@ -25,3 +29,7 @@ undocumented_unsafe_blocks = "deny"
 lto = true
 codegen-units = 1
 strip = true
+
+# rav1d decodes untiled images on the caller's thread, whose stack it overflows on Android when unoptimized.
+[profile.dev.package.rav1d]
+opt-level = 3

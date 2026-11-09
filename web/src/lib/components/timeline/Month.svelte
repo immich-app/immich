@@ -1,11 +1,11 @@
 <script lang="ts">
   import AssetLayout from '#lib/components/timeline/AssetLayout.svelte';
+  import type { VirtualScrollManager } from '#lib/managers/VirtualScrollManager/VirtualScrollManager.svelte.ts';
   import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
   import type { TimelineMonth } from '#lib/managers/timeline-manager/timeline-month.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import { assetsSnapshot, filterIsInOrNearViewport } from '#lib/managers/timeline-manager/utils.svelte.ts';
-  import type { VirtualScrollManager } from '#lib/managers/VirtualScrollManager/VirtualScrollManager.svelte.ts';
   import { uploadAssetsStore } from '#lib/stores/upload.ts';
   import type { CommonPosition } from '#lib/utils/layout-utils.ts';
   import { fromTimelinePlainDate, getDateLocaleString } from '#lib/utils/timeline-util.ts';
@@ -62,7 +62,7 @@
   <section
     class={[{ 'transition-all': !timelineMonth.timelineManager.suspendTransitions }]}
     style:transition-delay={timelineMonth.timelineManager.suspendTransitions ? undefined : `${transitionDuration}ms`}
-    data-group
+    data-testid="timeline-day"
     style:position="absolute"
     style:inset-inline-start={timelineDay.start + 'px'}
     style:top={timelineDay.top + 'px'}
@@ -79,6 +79,7 @@
         <div
           class="w-0 overflow-hidden transition-all duration-200 ease-out hover:cursor-pointer"
           class:w-8={hoveredTimelineDay === timelineDay.groupTitle || isTimelineDaySelected}
+          data-testid="select-day"
           onclick={() => onTimelineDaySelect(timelineDay, assetsSnapshot(timelineDay.getAssets()))}
           onkeydown={() => onTimelineDaySelect(timelineDay, assetsSnapshot(timelineDay.getAssets()))}
         >

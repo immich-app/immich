@@ -1,5 +1,4 @@
 import { matchesShortcut } from '#lib/actions/shortcut.ts';
-import type { ActionReturn } from 'svelte/action';
 
 interface Options {
   onOutclick?: () => void;
@@ -7,44 +6,41 @@ interface Options {
 }
 
 /**
- * Calls a function when a click occurs outside of the element, or when the escape key is pressed.
- * @param node
- * @param options Object containing onOutclick and onEscape functions
- * @returns
- */
-export function clickOutside(node: HTMLElement, options: Options = {}): ActionReturn<Options> {
-  const handleClick = (event: MouseEvent) => {
-    const { onOutclick } = options;
-    const targetNode = event.target as Node | null;
-    if (node.contains(targetNode)) {
-      return;
-    }
+Calls a function when a click occurs outside of the element, or when the escape key is pressed.
+@param node
+@param options Object containing onOutclick and onEscape functions
+@returns
+*/
+export function clickOutside(options: Options = {}) {
+  return (node: HTMLElement) => {
+    const handleClick = (event: MouseEvent) => {
+      const { onOutclick } = options;
+      const targetNode = event.target as Node | null;
+      if (node.contains(targetNode)) {
+        return;
+      }
 
-    onOutclick?.();
-  };
+      onOutclick?.();
+    };
 
-  const handleKey = (event: KeyboardEvent) => {
-    const { onEscape } = options;
-    if (!matchesShortcut(event, { key: 'Escape' })) {
-      return;
-    }
+    const handleKey = (event: KeyboardEvent) => {
+      const { onEscape } = options;
+      if (!matchesShortcut(event, { key: 'Escape' })) {
+        return;
+      }
 
-    if (onEscape) {
-      event.stopPropagation();
-      onEscape();
-    }
-  };
+      if (onEscape) {
+        event.stopPropagation();
+        onEscape();
+      }
+    };
 
-  document.addEventListener('mousedown', handleClick, { capture: false });
-  node.addEventListener('keydown', handleKey, { capture: false });
+    document.addEventListener('mousedown', handleClick, { capture: false });
+    node.addEventListener('keydown', handleKey, { capture: false });
 
-  return {
-    update(newOptions: Options) {
-      options = newOptions;
-    },
-    destroy() {
+    return () => {
       document.removeEventListener('mousedown', handleClick, false);
       node.removeEventListener('keydown', handleKey, false);
-    },
+    };
   };
 }

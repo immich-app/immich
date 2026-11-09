@@ -1,6 +1,6 @@
 import { authenticate } from '#lib/utils/auth.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
-import { getIntegrityReport, IntegrityReport } from '@immich/sdk';
+import { IntegrityReport, getIntegrityReport } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {

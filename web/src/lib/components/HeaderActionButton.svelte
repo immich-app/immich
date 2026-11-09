@@ -7,13 +7,13 @@
     variant?: Variants;
   };
 
-  const { action, variant }: Props = $props();
+  const { action, variant = 'ghost' }: Props = $props();
   const { title, icon, color = 'secondary', onAction } = $derived(action);
 </script>
 
 {#if action.$if?.() ?? true}
   <Button
-    variant={variant ?? 'ghost'}
+    {variant}
     size="small"
     {color}
     leadingIcon={icon}

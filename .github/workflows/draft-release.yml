@@ -154,8 +154,8 @@ jobs:
           previous=$(grep -A1 -xF "${TAG}" <<< "${tags}" | tail -1)
           echo "generating notes from ${previous}"
 
-          mise //:notes --tag "${TAG}" --previous "${previous}" > "${RUNNER_TEMP}/notes.md"
-          cat "${RUNNER_TEMP}/notes.md"
+          mise //:notes --tag "${TAG}" --previous "${previous}"
+          cat misc/release/notes.md
 
       - name: Create draft release
         env:
@@ -171,7 +171,7 @@ jobs:
             --draft \
             --verify-tag \
             --prerelease="${PRERELEASE}" \
-            --notes-file "${RUNNER_TEMP}/notes.md" \
+            --notes-file misc/release/notes.md \
             docker/docker-compose.yml \
             docker/docker-compose.rootless.yml \
             docker/example.env \

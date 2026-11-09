@@ -1,6 +1,5 @@
 import {
   getContentMetrics,
-  getNaturalSize,
   mapNormalizedRectToContent,
   mapNormalizedToContent,
   scaleToCover,
@@ -13,19 +12,6 @@ const mockImage = (props: {
   width: number;
   height: number;
 }): HTMLImageElement => props as unknown as HTMLImageElement;
-
-const mockVideo = (props: {
-  videoWidth: number;
-  videoHeight: number;
-  clientWidth: number;
-  clientHeight: number;
-}): HTMLVideoElement => {
-  const element = Object.create(HTMLVideoElement.prototype);
-  for (const [key, value] of Object.entries(props)) {
-    Object.defineProperty(element, key, { value, writable: true, configurable: true });
-  }
-  return element;
-};
 
 describe('scaleToFit', () => {
   it('should return full width when image is wider than container', () => {
@@ -76,27 +62,6 @@ describe('getContentMetrics', () => {
     expect(metrics.contentHeight).toBe(400);
     expect(metrics.offsetX).toBe(0);
     expect(metrics.offsetY).toBe(100);
-  });
-
-  it('should use clientWidth/clientHeight for video elements', () => {
-    const video = mockVideo({ videoWidth: 1920, videoHeight: 1080, clientWidth: 800, clientHeight: 600 });
-    const metrics = getContentMetrics(video);
-    expect(metrics.contentWidth).toBe(800);
-    expect(metrics.contentHeight).toBe(450);
-    expect(metrics.offsetX).toBe(0);
-    expect(metrics.offsetY).toBe(75);
-  });
-});
-
-describe('getNaturalSize', () => {
-  it('should return naturalWidth/naturalHeight for images', () => {
-    const img = mockImage({ naturalWidth: 4000, naturalHeight: 3000, width: 800, height: 600 });
-    expect(getNaturalSize(img)).toEqual({ width: 4000, height: 3000 });
-  });
-
-  it('should return videoWidth/videoHeight for videos', () => {
-    const video = mockVideo({ videoWidth: 1920, videoHeight: 1080, clientWidth: 800, clientHeight: 600 });
-    expect(getNaturalSize(video)).toEqual({ width: 1920, height: 1080 });
   });
 });
 

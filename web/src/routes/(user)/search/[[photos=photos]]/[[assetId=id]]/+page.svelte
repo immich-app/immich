@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
-  import { page } from '$app/state';
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import GalleryViewer from '#lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
   import SearchBar from '#lib/components/shared-components/search-bar/SearchBar.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -14,11 +13,13 @@
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
   import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import { QueryParameter } from '#lib/constants.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { getTagByIdQuery } from '#lib/queries/tag.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { lang, locale } from '#lib/stores/preferences.store.ts';
@@ -28,22 +29,21 @@
   import { isAlbumsRoute, isPeopleRoute } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import {
-    type AlbumResponseDto,
-    type AssetResponseDto,
     AssetVisibility,
     getPerson,
-    getTagById,
-    type MetadataSearchDto,
     searchAssets,
     searchSmart,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+    type MetadataSearchDto,
     type SmartSearchDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { onMount, tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
-  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { afterNavigate, goto } from '$app/navigation';
+  import { page } from '$app/state';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);
@@ -220,7 +220,7 @@
     }
     const tagNames = await Promise.all(
       tagIds.map(async (tagId) => {
-        const tag = await getTagById({ id: tagId });
+        const tag = await queryClient.query(getTagByIdQuery(tagId));
 
         return tag.value;
       }),

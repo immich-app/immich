@@ -8,6 +8,7 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:immich_mobile/utils/camera.utils.dart';
 
 const _kSeparator = '  •  ';
 
@@ -114,12 +115,7 @@ class TechnicalDetails extends ConsumerWidget {
     if (exifInfo == null) {
       return null;
     }
-    return switch ((exifInfo.make, exifInfo.model)) {
-      (null, null) => null,
-      (final String make, null) => make,
-      (null, final String model) => model,
-      (final String make, final String model) => '$make $model',
-    };
+    return getCameraName(exifInfo.make, exifInfo.model);
   }
 
   static String? _getCameraInfoSubtitle(ExifInfo? exifInfo) {

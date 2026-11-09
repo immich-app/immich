@@ -4,13 +4,18 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[features]
+convert = []
+rotate = ["codecs"]
+thumbhash = []
+# native_core_ffi turns this on for every target except 32-bit ARM, where rav1d needs nightly Rust.
+avif = ["codecs/avif"]
+jxl = ["codecs/jxl"]
+# One group per target.
+flutter = ["convert", "rotate", "thumbhash", "jxl"]
+
 [dependencies]
-jxl = { workspace = true }
-libc = { workspace = true }
-moxcms = { workspace = true }
-pic-scale = { workspace = true }
-quick_cache = { workspace = true }
-rayon = { workspace = true }
+codecs = { path = "../codecs", default-features = false, optional = true }
 
 [lints]
 workspace = true

@@ -1,8 +1,10 @@
 import { createZodDto } from 'nestjs-zod';
+import sanitize from 'sanitize-filename';
 import z from 'zod';
-import type { UserMetadataItem } from 'src/types.js';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
 import { ImmichCookie, UserMetadataKey } from 'src/enum.js';
+import type { UserMetadataItem } from 'src/types.js';
+import { HumanReadableSize } from 'src/utils/bytes.js';
 import { toEmail } from 'src/validation.js';
 
 export type CookieResponse = {
@@ -22,6 +24,65 @@ export type AuthDto = {
 export const isMetadataHidden = (auth?: AuthDto) => !!auth?.sharedLink && !auth.sharedLink.showExif;
 
 export const isEditedOnly = (auth: AuthDto, edited = false) => !!auth.sharedLink || edited;
+
+const storageLabelClaimSchema = z
+  .string()
+  .optional()
+  .transform((label) => {
+    if (label === undefined) {
+      return;
+    }
+
+    return label ? sanitize(label) : null;
+  })
+  .catch(undefined);
+const quotaSizeInBytesSchema = z.coerce
+  .number()
+  .int()
+  .min(-1)
+  .nullable()
+  .optional()
+  .transform((quota) => {
+    if (quota === undefined) {
+      return;
+    }
+
+    return quota === null || quota === -1 ? null : quota * HumanReadableSize.GiB;
+  })
+  .catch(undefined);
+
+export const OAuthProfileSchema = z.object({
+  defaults: z.object({
+    immich_quota_bytes: quotaSizeInBytesSchema,
+  }),
+  sub: z.string(),
+  email: z.string().trim().toLowerCase().optional().catch(undefined),
+  email_verified: z.coerce.boolean().optional().catch(undefined),
+  name: z.string().trim().optional().catch(undefined),
+  given_name: z.string().trim().optional().catch(undefined),
+  family_name: z.string().trim().optional().catch(undefined),
+  preferred_username: z.string().trim().optional().catch(undefined),
+  picture: z.string().optional().catch(undefined),
+  immich_storage_label: storageLabelClaimSchema,
+  immich_quota_bytes: quotaSizeInBytesSchema,
+  immich_role: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((value) => {
+      if (!value) {
+        return;
+      }
+
+      const roles = Array.isArray(value) ? value : [value];
+      if (roles.includes('admin')) {
+        return 'admin';
+      }
+
+      return 'user';
+    })
+    .catch(undefined),
+});
+export type OAuthProfile = z.infer<typeof OAuthProfileSchema>;
 
 const LoginCredentialSchema = z
   .object({

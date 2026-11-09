@@ -1,5 +1,4 @@
 <script lang="ts">
-  import ShareCover from './ShareCover.svelte';
   import { Route } from '#lib/route.ts';
   import { getSharedLinkActions } from '#lib/services/shared-link.service.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
@@ -7,6 +6,7 @@
   import { ActionButton, ContextMenuButton, MenuItemType, Text } from '@immich/ui';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
+  import ShareCover from './ShareCover.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -16,7 +16,7 @@
 
   let now = DateTime.now();
   let expiresAt = $derived(sharedLink.expiresAt ? DateTime.fromISO(sharedLink.expiresAt) : undefined);
-  let isExpired = $derived(expiresAt ? now > expiresAt : false);
+  let isExpired = $derived(expiresAt && now > expiresAt);
 
   const getCountDownExpirationDate = (expiresAtDate: DateTime, now: DateTime) => {
     const relativeUnits: ToRelativeUnit[] = ['days', 'hours', 'minutes', 'seconds'];

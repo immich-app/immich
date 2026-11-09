@@ -6,8 +6,6 @@ import { DateTime, Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
-import type { ArgOf } from 'src/repositories/event.repository.js';
-import type { JobOf } from 'src/types.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { Asset, AssetFile } from 'src/database.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
@@ -24,11 +22,13 @@ import {
   QueueName,
   SourceType,
 } from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository.js';
 import { ImmichTags } from 'src/repositories/metadata.repository.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { BaseService } from 'src/services/base.service.js';
+import type { JobOf } from 'src/types.js';
 import { getAssetFiles } from 'src/utils/asset.util.js';
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
 import { mergeTimeZone } from 'src/utils/date.js';
@@ -298,7 +298,7 @@ export class MetadataService extends BaseService {
         exifTags.Author ??
         null,
       fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
-      iso: validate(exifTags.RecommendedExposureIndex ?? exifTags.StandardOutputSensitivity ?? exifTags.ISO) as number,
+      iso: validate(exifTags.RecommendedExposureIndex || exifTags.StandardOutputSensitivity || exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: getLensModel(exifTags),
       fNumber: validate(exifTags.FNumber),
@@ -717,6 +717,13 @@ export class MetadataService extends BaseService {
       }
       // Default video extraction
       else {
+        if (length <= 0 || padding < 0 || position < 0) {
+          this.logger.warn(
+            `Skipping motion photo video extraction for asset ${asset.id}: video range is outside the file`,
+          );
+          return;
+        }
+
         video = await this.storageRepository.readFile(asset.originalPath, {
           buffer: Buffer.alloc(length),
           position,
@@ -789,9 +796,12 @@ export class MetadataService extends BaseService {
         // (if it did, getByChecksum() would've returned a motionAsset with the same ID as livePhotoVideoId)
         // note asset.livePhotoVideoId is not motionAsset.id yet
         if (asset.livePhotoVideoId) {
+          // the old motion may be the user's own file (linked by livePhotoCID or manually), only remove ones Immich extracted
+          const oldMotion = await this.assetRepository.getById(asset.livePhotoVideoId);
+          const deleteOnDisk = !!oldMotion && StorageCore.isAndroidMotionPath(oldMotion.originalPath);
           await this.jobRepository.queue({
             name: JobName.AssetDelete,
-            data: { id: asset.livePhotoVideoId, deleteOnDisk: true },
+            data: { id: asset.livePhotoVideoId, deleteOnDisk },
           });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
         }

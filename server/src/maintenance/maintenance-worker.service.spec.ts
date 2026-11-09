@@ -10,12 +10,14 @@ import { AutoMocked, ServiceMocks, automock, getMocks } from 'test/utils.js';
 describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;
   let mocks: ServiceMocks;
+  let moduleRefMock: { get: ReturnType<typeof vitest.fn> };
   let maintenanceWebsocketRepositoryMock: AutoMocked<MaintenanceWebsocketRepository>;
   let maintenanceHealthRepositoryMock: AutoMocked<MaintenanceHealthRepository>;
   let databaseBackupServiceMock: AutoMocked<DatabaseBackupService>;
 
   beforeEach(() => {
     mocks = getMocks();
+    moduleRefMock = { get: vitest.fn() };
     maintenanceWebsocketRepositoryMock = automock(MaintenanceWebsocketRepository, {
       args: [mocks.logger],
       strict: false,
@@ -50,6 +52,7 @@ describe(MaintenanceWorkerService.name, () => {
       mocks.process,
       mocks.database as never,
       databaseBackupServiceMock,
+      moduleRefMock as never,
     );
 
     sut.mock({
@@ -282,9 +285,7 @@ describe(MaintenanceWorkerService.name, () => {
 
   describe.skip('setAction'); // just calls setStatus+runAction
 
-  /**
-   * Actions
-   */
+  /** Actions */
 
   describe('action: start', () => {
     it('should not do anything', async () => {

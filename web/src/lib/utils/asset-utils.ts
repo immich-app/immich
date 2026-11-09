@@ -15,7 +15,6 @@ import {
   AssetVisibility,
   getBaseUrl,
   getDownloadInfo,
-  untagAssets,
   updateAsset,
   updateAssets,
   type AssetResponseDto,
@@ -28,27 +27,6 @@ import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
-
-export const removeTag = async ({
-  assetIds,
-  tagIds,
-  showNotification = true,
-}: {
-  assetIds: string[];
-  tagIds: string[];
-  showNotification?: boolean;
-}) => {
-  for (const tagId of tagIds) {
-    await untagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
-  }
-
-  if (showNotification) {
-    const $t = await getFormatter();
-    toastManager.primary($t('removed_tagged_assets', { values: { count: assetIds.length } }));
-  }
-
-  return assetIds;
-};
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
   const archiveSize = authManager.authenticated ? authManager.preferences.download.archiveSize : undefined;
@@ -100,18 +78,16 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
 };
 
 /**
- * Returns the lowercase filename extension without a dot (.) and
- * an empty string when not found.
- */
+Returns the lowercase filename extension without a dot (.) and
+an empty string when not found.
+*/
 export function getFilenameExtension(filename: string): string {
   const lastIndex = Math.max(0, filename.lastIndexOf('.'));
   const startIndex = (lastIndex || Infinity) + 1;
   return filename.slice(startIndex).toLowerCase();
 }
 
-/**
- * Returns the filename of an asset including file extension
- */
+/** Returns the filename of an asset including file extension */
 export function getAssetFilename(asset: AssetResponseDto): string {
   const fileExtension = getFilenameExtension(asset.originalPath);
   return `${asset.originalFileName}.${fileExtension}`;
@@ -152,9 +128,7 @@ export function getAssetResolution(asset: AssetResponseDto): string {
   return `${asset.width} × ${asset.height}`;
 }
 
-/**
- * Returns aspect ratio for the asset
- */
+/** Returns aspect ratio for the asset */
 export function getAssetRatio(asset: AssetResponseDto) {
   return asset.width && asset.height ? asset.width / asset.height : null;
 }
@@ -222,9 +196,7 @@ async function addSupportedMimeTypes(): Promise<void> {
 // eslint-disable-next-line unicorn/no-top-level-side-effects
 void addSupportedMimeTypes();
 
-/**
- * Returns true if the asset is an image supported by web browsers, false otherwise
- */
+/** Returns true if the asset is an image supported by web browsers, false otherwise */
 export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
   if (!asset.originalMimeType) {
     return false;

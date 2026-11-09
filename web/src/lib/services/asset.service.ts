@@ -9,12 +9,12 @@ import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
-import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
+import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { Route } from '#lib/route.ts';
 import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
-import { getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
-import { downloadUrl } from '#lib/utils.ts';
+import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
+import type { OnFavorite } from '#lib/utils/actions.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import {
@@ -22,7 +22,6 @@ import {
   AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
-  bulkTagAssets,
   getAssetInfo,
   runAssetJobs,
   updateAsset,
@@ -62,7 +61,8 @@ import {
   mdiTagPlusOutline,
   mdiTune,
 } from '@mdi/js';
-import type { MessageFormatter } from 'svelte-i18n';
+import { t, type MessageFormatter } from 'svelte-i18n';
+import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 
 export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
@@ -496,6 +496,35 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
   }
 };
 
+export const toggleFavoriteAssets = async (
+  assets: Pick<AssetResponseDto, 'id' | 'isFavorite'>[],
+  isFavorite: boolean,
+  onFavorite?: OnFavorite,
+) => {
+  const ids = assets.map((a) => a.id);
+  const $t = get(t);
+
+  try {
+    if (ids.length > 0) {
+      await updateAssets({ assetBulkUpdateDto: { ids, isFavorite } });
+    }
+
+    for (const asset of assets) {
+      asset.isFavorite = isFavorite;
+    }
+
+    onFavorite?.(ids, isFavorite);
+
+    toastManager.primary(
+      isFavorite
+        ? $t('added_to_favorites_count', { values: { count: ids.length } })
+        : $t('removed_from_favorites_count', { values: { count: ids.length } }),
+    );
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: isFavorite } }));
+  }
+};
+
 const handleRate = async (asset: AssetResponseDto, rating: number) => {
   const $t = await getFormatter();
 
@@ -514,20 +543,6 @@ const handleRate = async (asset: AssetResponseDto, rating: number) => {
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_set_rating'));
-  }
-};
-
-export const handleTagAssets = async (assetIds: string[], tagIds: string[]) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await bulkTagAssets({ tagBulkAssetsDto: { assetIds, tagIds } });
-    toastManager.primary($t('tagged_assets', { values: { count: response.count } }));
-    eventManager.emit('AssetsTag', assetIds);
-    return true;
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_tag_assets'));
-    return false;
   }
 };
 
@@ -588,22 +603,21 @@ const undoArchiveAssets = async (assets: TimelineAsset[]) => {
 const handleBulkRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
   const $t = await getFormatter();
 
-  const isConfirmed = await modalManager.showDialog({
-    prompt: $t('remove_assets_album_confirmation', { values: { count: assetIds.length } }),
+  await handleRemoveAssetsFromAlbum(assetIds, album, {
+    confirm: { prompt: $t('remove_assets_album_confirmation', { values: { count: assetIds.length } }) },
+    onSettled: () => assetMultiSelectManager.clear(),
   });
-
-  if (!isConfirmed) {
-    return;
-  }
-
-  await handleRemoveAssetsFromAlbum(assetIds, album);
-  assetMultiSelectManager.clear();
 };
 
-const handleRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
+const handleRemoveAssetsFromAlbum = async (
+  assetIds: string[],
+  album: AlbumResponseDto,
+  options: { confirm?: ConfirmOptions | false; onSettled?: () => void } = {},
+) => {
   const $t = await getFormatter();
 
   await executeMutation(removeAssetFromAlbumMutation, [{ id: album.id, bulkIdsDto: { ids: assetIds } }], {
+    ...options,
     onSuccess: (results) => {
       const count = results.filter(({ success }) => success).length;
       toastManager.primary($t('assets_removed_count', { values: { count } }));

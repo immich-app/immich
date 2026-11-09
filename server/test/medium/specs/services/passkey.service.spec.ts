@@ -49,6 +49,7 @@ const authenticationResponse = {
   },
 };
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(PasskeyService, {
     database: db || defaultDatabase,

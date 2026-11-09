@@ -1,3 +1,5 @@
+#![cfg(feature = "thumbhash")]
+
 use native_core::thumbhash::decode;
 
 // Expected pixels come from the old Swift decoder patched to round like the Java did (it truncated),

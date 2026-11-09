@@ -1,19 +1,16 @@
 <script lang="ts">
   import { ProgressBarStatus } from '#lib/constants.ts';
   import { handlePromiseError } from '#lib/utils.ts';
-
   import { onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
 
   interface Props {
     /**
-     * Autoplay on mount
-     * @default false
-     */
+    Autoplay on mount
+    @default false
+    */
     autoplay?: boolean;
-    /**
-     * Progress bar status
-     */
+    /** Progress bar status */
     status?: ProgressBarStatus;
     hidden?: boolean;
     duration?: number;

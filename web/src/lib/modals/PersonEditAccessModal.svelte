@@ -6,9 +6,9 @@
   import { getPersonUserActions, getPersonUsersActions } from '#lib/services/person-user.service.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import {
+    SharingDirection,
     getClusterGroupUsers,
     getUsersForPeople,
-    SharingDirection,
     type PersonResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';

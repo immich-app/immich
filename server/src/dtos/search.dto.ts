@@ -323,9 +323,9 @@ export const isFullyAlbumConfined = (filter: SearchFilter): boolean =>
   isAlbumConfined(filter) || (!!filter.or?.length && filter.or.every((branch) => isAlbumConfined(branch)));
 
 /**
- * The structured shape and the deprecated flat search fields are mutually exclusive
- * TODO(v4): remove together with the deprecated flat fields.
- */
+The structured shape and the deprecated flat search fields are mutually exclusive
+TODO(v4): remove together with the deprecated flat fields.
+*/
 const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) => {
   const deprecatedFields = Object.keys(schema.shape).filter(
     (field) => (schema.shape[field] as z.ZodType).meta()?.deprecated,

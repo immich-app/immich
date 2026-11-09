@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
-import z from 'zod';
 import type { SemVer } from 'semver';
+import z from 'zod';
 import { ExtraModel, HistoryBuilder } from 'src/decorators.js';
 import { ServerFeatureLevel, ServerFeatureLevelSchema } from 'src/enum.js';
 import { isoDatetimeToDate } from 'src/validation.js';
@@ -142,6 +142,7 @@ const ServerFeaturesSchema = z
     configFile: z.boolean().describe('Whether config file is available'),
     facialRecognition: z.boolean().describe('Whether facial recognition is enabled'),
     map: z.boolean().describe('Whether map feature is enabled'),
+    backups: z.boolean().describe('Whether the backups feature is enabled'),
     trash: z.boolean().describe('Whether trash feature is enabled'),
     reverseGeocoding: z.boolean().describe('Whether reverse geocoding is enabled'),
     importFaces: z.boolean().describe('Whether face import is enabled'),

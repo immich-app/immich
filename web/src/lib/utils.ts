@@ -132,7 +132,7 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
     options = { url: options };
   }
 
-  const { signal, method, url, data: body, onDownloadProgress: onProgress } = options;
+  const { signal, method = 'GET', url, data: body, onDownloadProgress: onProgress } = options;
 
   return new Promise<{ data: Blob; status: number }>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -155,7 +155,7 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
       signal.addEventListener('abort', () => xhr.abort());
     }
 
-    xhr.open(method || 'GET', url);
+    xhr.open(method, url);
     xhr.responseType = 'blob';
 
     if (body) {
