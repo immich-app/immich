@@ -11,8 +11,8 @@
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin } from '@immich/sdk';
-  import { Button, IconButton, Link, Text, modalManager, toastManager } from '@immich/ui';
-  import { mdiPlus, mdiRestart, mdiTrashCanOutline } from '@mdi/js';
+  import { Button, Link, Text, modalManager, toastManager } from '@immich/ui';
+  import { mdiRestart } from '@mdi/js';
   import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -301,67 +301,6 @@
                 />
               {/if}
             {/if}
-          </div>
-        </SettingAccordion>
-
-        <SettingAccordion
-          key="passkey"
-          title={$t('admin.passkey_settings')}
-          subtitle={$t('admin.passkey_settings_description')}
-        >
-          <div class="ms-4 mt-4 flex flex-col gap-4">
-            <SettingSwitch
-              title={$t('admin.passkey_enable_description')}
-              {disabled}
-              bind:checked={configToEdit.passkey.enabled}
-            />
-
-            <hr />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              label={$t('admin.passkey_domain')}
-              description={$t('admin.passkey_domain_description')}
-              placeholder="https://"
-              bind:value={
-                () => configToEdit.passkey.domain ?? '', (value) => (configToEdit.passkey.domain = value || null)
-              }
-              required={false}
-              disabled={disabled || !configToEdit.passkey.enabled}
-              isEdited={configToEdit.passkey.domain !== config.passkey.domain}
-            />
-
-            <div class="flex flex-col gap-2">
-              {#each configToEdit.passkey.additionalDomains as _, i (i)}
-                <SettingInputField
-                  inputType={SettingInputFieldType.TEXT}
-                  label={i === 0 ? $t('admin.passkey_additional_domains') : undefined}
-                  description={i === 0 ? $t('admin.passkey_additional_domains_description') : undefined}
-                  bind:value={configToEdit.passkey.additionalDomains[i]}
-                  disabled={disabled || !configToEdit.passkey.enabled}
-                >
-                  {#snippet trailingSnippet()}
-                    <IconButton
-                      aria-label=""
-                      onclick={() => configToEdit.passkey.additionalDomains.splice(i, 1)}
-                      icon={mdiTrashCanOutline}
-                      color="danger"
-                    />
-                  {/snippet}
-                </SettingInputField>
-              {/each}
-            </div>
-
-            <div class="flex justify-end">
-              <Button
-                class="mb-2"
-                size="small"
-                shape="round"
-                leadingIcon={mdiPlus}
-                onclick={() => void configToEdit.passkey.additionalDomains.push('')}
-                disabled={disabled || !configToEdit.passkey.enabled}>{$t('add_url')}</Button
-              >
-            </div>
           </div>
         </SettingAccordion>
 
