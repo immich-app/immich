@@ -26,8 +26,8 @@ Future<String?> showDateTimePicker({
   );
 }
 
-String _getFormattedOffset(int offsetInMilli, tz.Location location) {
-  return "${location.name} (${Duration(milliseconds: offsetInMilli).formatAsOffset()})";
+String _getFormattedOffset(Duration offset, tz.Location location) {
+  return "${location.name} (${offset.formatAsOffset()})";
 }
 
 class _DateTimePicker extends HookWidget {
@@ -49,10 +49,9 @@ class _DateTimePicker extends HookWidget {
     final Duration? tzOffset = initialTZOffset ?? initialDateTime?.timeZoneOffset;
 
     if (tzOffset != null) {
-      final offsetInMilli = tzOffset.inMilliseconds;
       // get all locations with matching offset
       final locations = tz.timeZoneDatabase.locations.values.where(
-        (location) => location.currentTimeZone.offset == offsetInMilli,
+        (location) => location.currentTimeZone.offset == tzOffset,
       );
       // Prefer locations with abbreviation first
       final location =
@@ -110,8 +109,7 @@ class _DateTimePicker extends HookWidget {
 
     void popWithDateTime() {
       final formattedDateTime = DateFormat("yyyy-MM-dd'T'HH:mm:ss", 'en').format(date.value);
-      final dtWithOffset =
-          formattedDateTime + Duration(milliseconds: tzOffset.value.offsetInMilliseconds).formatAsOffset();
+      final dtWithOffset = formattedDateTime + tzOffset.value.offset.formatAsOffset();
       context.pop(dtWithOffset);
     }
 
@@ -181,11 +179,11 @@ abstract class _TimeZoneOffset with _$TimeZoneOffset implements Comparable<_Time
   factory _TimeZoneOffset.fromLocation(tz.Location l) =>
       _TimeZoneOffset(display: _getFormattedOffset(l.currentTimeZone.offset, l), location: l);
 
-  int get offsetInMilliseconds => location.currentTimeZone.offset;
+  Duration get offset => location.currentTimeZone.offset;
 
   @override
   int compareTo(_TimeZoneOffset other) {
-    final offset = offsetInMilliseconds.compareTo(other.offsetInMilliseconds);
-    return offset != 0 ? offset : location.name.compareTo(other.location.name);
+    final byOffset = offset.compareTo(other.offset);
+    return byOffset != 0 ? byOffset : location.name.compareTo(other.location.name);
   }
 }
