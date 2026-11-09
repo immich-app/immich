@@ -726,7 +726,7 @@ export const defaults = Object.freeze<SystemConfig>({
     allowInsecureRequests: false,
   },
   passkey: {
-    enabled: true,
+    enabled: false,
     domain: null,
     additionalDomains: [],
   },

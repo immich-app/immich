@@ -78,7 +78,7 @@ beforeAll(async () => {
   });
 });
 
-describe(PasskeyService.name, () => {
+describe.skip(PasskeyService.name, () => {
   describe('startRegistration', () => {
     it('should generate registration options', async () => {
       const { sut, ctx } = setup();

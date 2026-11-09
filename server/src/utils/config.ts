@@ -133,5 +133,7 @@ const buildConfig = async (repos: RepoDeps) => {
     config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec);
   }
 
+  config.passkey.enabled = false;
+
   return config;
 };

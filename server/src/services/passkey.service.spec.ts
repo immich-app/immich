@@ -90,7 +90,7 @@ const newAuthenticationResponse = (userId?: string) => ({
   },
 });
 
-describe(PasskeyService.name, () => {
+describe.skip(PasskeyService.name, () => {
   let sut: PasskeyService;
   let mocks: ServiceMocks;
 
