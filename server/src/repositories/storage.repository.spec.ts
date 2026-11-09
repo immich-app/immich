@@ -10,10 +10,15 @@ const mocks = vitest.hoisted(() => {
   };
   watcher.on.mockReturnValue(watcher);
 
-  return { watch: vitest.fn(() => watcher), watcher };
+  return { watch: vitest.fn(() => watcher), watcher, statfs: vitest.fn() };
 });
 
 vitest.mock('chokidar', () => ({ watch: mocks.watch }));
+
+vitest.mock('node:fs/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs/promises')>();
+  return { ...actual, default: { ...actual.default, statfs: mocks.statfs } };
+});
 
 const getHandler = (event: string) => {
   const handler = mocks.watcher.on.mock.calls.find(([name]) => name === event)?.[1];
@@ -30,6 +35,7 @@ describe(StorageRepository.name, () => {
     // eslint-disable-next-line no-sparse-arrays
     sut = new StorageRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
     mocks.watch.mockReset().mockReturnValue(mocks.watcher);
+    mocks.statfs.mockReset();
     mocks.watcher.on.mockReset().mockReturnValue(mocks.watcher);
     mocks.watcher.close.mockReset().mockResolvedValue(undefined);
   });
@@ -85,6 +91,27 @@ describe(StorageRepository.name, () => {
         getHandler('unlink')('/photos/unlink.jpg');
         getHandler('error')(new Error('watch error'));
       }).not.toThrow();
+    });
+  });
+
+  describe('checkDiskUsage', () => {
+    it('should return disk usage in bytes', async () => {
+      mocks.statfs.mockResolvedValue({
+        type: 0,
+        bsize: 4096,
+        blocks: 300,
+        bfree: 200,
+        bavail: 100,
+        files: 0,
+        ffree: 0,
+      });
+
+      await expect(sut.checkDiskUsage('/photos')).resolves.toEqual({
+        available: 409_600,
+        free: 819_200,
+        total: 1_228_800,
+      });
+      expect(mocks.statfs).toHaveBeenCalledWith('/photos');
     });
   });
 });
