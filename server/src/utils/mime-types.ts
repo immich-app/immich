@@ -54,7 +54,7 @@ const webUnsupportedImage = {
   ...raw,
   '.heic': ['image/heic'],
   '.heif': ['image/heif'],
-  '.hif': ['image/hif'],
+  '.hif': ['image/heif'],
   '.insp': ['image/jpeg'],
   '.jp2': ['image/jp2'],
   '.jpe': ['image/jpeg'],
