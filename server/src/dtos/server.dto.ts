@@ -1,9 +1,9 @@
-import { createZodDto } from 'nestjs-zod';
 import type { SemVer } from 'semver';
 import z from 'zod';
 import { ExtraModel, HistoryBuilder } from 'src/decorators.js';
 import { ServerFeatureLevel, ServerFeatureLevelSchema } from 'src/enum.js';
 import { isoDatetimeToDate } from 'src/validation.js';
+import { createZodDto } from 'src/zod.js';
 
 const ServerPingResponseSchema = z
   .object({

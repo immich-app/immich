@@ -1,7 +1,6 @@
 import { Controller, Delete, Get, Header, Headers, HttpCode, HttpStatus, Next, Param, Res } from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
 import type { NextFunction, Response } from 'express';
-import { ZodValidationException } from 'nestjs-zod';
 import { HLS_PLAYLIST_CONTENT_TYPE } from 'src/constants.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
@@ -56,11 +55,6 @@ export class VideoStreamController {
     @Param() { id, sessionId, variantIndex }: HlsVariantParamDto,
     @Headers() headers: HlsPlaylistHeaderDto,
   ) {
-    try {
-      headers = HlsPlaylistHeaderDto.create(headers);
-    } catch (error) {
-      throw new ZodValidationException(error);
-    }
     return this.service.getMediaPlaylist(auth, id, sessionId, variantIndex, headers[ImmichHeader.HlsPosition]);
   }
 
@@ -79,11 +73,6 @@ export class VideoStreamController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    try {
-      headers = HlsSegmentHeaderDto.create(headers);
-    } catch (error) {
-      throw new ZodValidationException(error);
-    }
     await sendFile(
       res,
       next,
