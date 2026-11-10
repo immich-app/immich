@@ -9,7 +9,9 @@
 </p>
 
 <p align="center">
-<img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
+  <a href="#">
+    <img src="../design/immich-logo-stacked-light.svg" width="300" alt="Immich Logo">
+  </a>
 </p>
 <h3 align="center">高性能的照片和视频自托管解决方案</h3>
 <br/>
