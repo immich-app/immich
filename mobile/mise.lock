@@ -218,6 +218,45 @@ url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c55847602
 checksum = "sha256:b6c17e747ae78cdd6de4d7532b3164b277daee97c007d3eaa2b39cca99882664"
 url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip"
 
+[[tools.ruby]]
+version = "3.4.12"
+backend = "core:ruby"
+specifiers = ["3.4.12"]
+
+[tools.ruby."platforms.windows-x64"]
+checksum = "sha256:3806f164377824bcb17e1cf39b17d967e2bdc01e8547ce0254cd786dbe2cfe13"
+url = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.4.12-1/rubyinstaller-3.4.12-1-x64.7z"
+
+[[tools.ruby]]
+version = "3.4.12"
+backend = "core:ruby"
+specifiers = ["3.4.12"]
+
+[tools.ruby.options]
+compile = "false"
+precompiled_url = "jdx/ruby"
+ruby_build_repo = "https://github.com/rbenv/ruby-build.git"
+ruby_install = "false"
+
+[tools.ruby."platforms.linux-arm64"]
+checksum = "sha256:c098862e9416148e0d5c8851ce222323ef93c23d6176e12ab5c0effc06268f49"
+url = "https://github.com/jdx/ruby/releases/download/3.4.12-1/ruby-3.4.12.arm64_linux.tar.gz"
+provenance = "github-attestations"
+
+[tools.ruby."platforms.linux-x64"]
+checksum = "sha256:12bbaa27dd857892daa21d5c57e1a48908c37b03540388474cf96974d03770d1"
+url = "https://github.com/jdx/ruby/releases/download/3.4.12-1/ruby-3.4.12.x86_64_linux.tar.gz"
+provenance = "github-attestations"
+
+[tools.ruby."platforms.macos-arm64"]
+checksum = "sha256:865b429c511c40a96fe3c25466bbf9b300e5cae22c70c7dd68e0af003b849de4"
+url = "https://github.com/jdx/ruby/releases/download/3.4.12-1/ruby-3.4.12.macos.tar.gz"
+provenance = "github-attestations"
+
+[tools.ruby."platforms.macos-x64"]
+checksum = "sha256:5e5d85ad93b0adcccbad47733680f4892bd0078e3342437f7babce01c1872479"
+url = "https://cache.ruby-lang.org/pub/ruby/3.4/ruby-3.4.12.tar.gz"
+
 [[tools.rust]]
 version = "1.99.1"
 backend = "core:rust"
