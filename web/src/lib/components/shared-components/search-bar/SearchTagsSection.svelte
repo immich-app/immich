@@ -15,7 +15,6 @@
     title: string | undefined;
   }
 
-  // eslint-disable-next-line no-useless-assignment
   let { title = $bindable() }: Props = $props();
 
   let container = $state<HTMLDivElement>();
