@@ -45,7 +45,7 @@ export class DownloadService extends BaseService {
 
     const addToArchive = ({ id, size }: { id: string; size: number | null }) => {
       archive.assetIds.push(id);
-      archive.size += Number(size || 0);
+      archive.size += size || 0;
 
       if (archive.size <= targetSize) {
         return;

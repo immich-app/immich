@@ -48,7 +48,7 @@
   };
 
   const getConfigEntries = (config: WorkflowStepDto['config']) =>
-    Object.entries(config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== '');
+    Object.entries(config ?? {}).filter(([, value]) => ![null, undefined, ''].includes(value));
 
   const asciiSummary = $derived.by(() => {
     const lines: string[] = [];

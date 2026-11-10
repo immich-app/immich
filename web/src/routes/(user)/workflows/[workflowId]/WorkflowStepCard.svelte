@@ -42,7 +42,7 @@
   const isFilter = $derived(method?.uiHints?.includes('Filter') ?? false);
   const schema = $derived(method?.schema as JSONSchemaProperty | undefined);
   const configEntries = $derived(
-    Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
+    Object.entries(step.config ?? {}).filter(([, value]) => ![null, undefined, ''].includes(value)),
   );
   const isGhost = $derived(step.id === 'ghost');
 

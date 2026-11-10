@@ -224,7 +224,7 @@
               onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
             >
               <div class="relative">
-                {#if selectedPersonToCreate[face.id]}
+                {#if Object.hasOwn(selectedPersonToCreate, face.id)}
                   <ImageThumbnail
                     curve
                     shadow
@@ -235,7 +235,7 @@
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
                   />
-                {:else if selectedPersonToReassign[face.id]}
+                {:else if Object.hasOwn(selectedPersonToReassign, face.id)}
                   <ImageThumbnail
                     curve
                     shadow
@@ -300,7 +300,7 @@
               {/if}
 
               <div class="absolute -inset-e-2.25 -top-2.25 flex flex-col gap-1 rounded-full">
-                {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
+                {#if Object.hasOwn(selectedPersonToCreate, face.id) || Object.hasOwn(selectedPersonToReassign, face.id)}
                   <IconButton
                     shape="round"
                     variant="ghost"

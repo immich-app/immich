@@ -109,7 +109,7 @@
     "eslint-plugin-compat": "^7.0.0",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-svelte": "^3.23.1",
-    "eslint-plugin-unicorn": "^78.0.0",
+    "eslint-plugin-unicorn": "^79.0.0",
     "globals": "^17.0.0",
     "parse5": "^8.0.1",
     "playwright": "1.64.1",
