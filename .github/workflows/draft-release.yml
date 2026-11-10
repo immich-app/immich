@@ -108,7 +108,7 @@ jobs:
     with:
       ref: ${{ needs.tag.outputs.sha }}
       environment: production
-      rc: ${{ needs.tag.outputs.rc == 'true' }}
+      rc: ${{ fromJSON(needs.tag.outputs.rc) }}
 
   draft_release:
     runs-on: ubuntu-latest
