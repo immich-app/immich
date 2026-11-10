@@ -11,6 +11,10 @@ on:
         required: true
         default: 'development'
         type: string
+      rc:
+        required: false
+        default: false
+        type: boolean
     secrets:
       PUSH_O_MATIC_APP_CLIENT_ID:
         required: true
@@ -23,6 +27,8 @@ on:
       ANDROID_KEY_PASSWORD:
         required: true
       ANDROID_STORE_PASSWORD:
+        required: true
+      PLAY_STORE_JSON_KEY:
         required: true
       APP_STORE_CONNECT_API_KEY_ID:
         required: true
@@ -123,12 +129,23 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
 
+      - name: Install Ruby gems
+        working-directory: ./mobile/android
+        run: bundle install
+
       - name: Create the Keystore
         if: ${{ !github.event.pull_request.head.repo.fork }}
         env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
         working-directory: ./mobile
         run: printf "%s" $KEY_JKS | base64 -d > android/key.jks
+
+      - name: Create the Play Store key
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        env:
+          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+        working-directory: ./mobile
+        run: printf "%s" $PLAY_STORE_JSON_KEY | base64 -d > android/immich-play-store-key.json
 
       - name: Restore Gradle Cache
         id: cache-gradle-restore
@@ -173,6 +190,21 @@ jobs:
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
+
+      - name: Build and deploy to Google Play
+        env:
+          ALIAS: ${{ secrets.ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ENVIRONMENT: ${{ inputs.environment || 'development' }}
+          RC: ${{ inputs.rc }}
+        working-directory: ./mobile/android
+        run: |
+          if [[ "$ENVIRONMENT" == 'production' && "$RC" == 'true' ]]; then
+            bundle exec fastlane beta
+          elif [[ "$ENVIRONMENT" == 'production' ]]; then
+            bundle exec fastlane release
+          fi
 
       - name: Comment APK download link on PR
         if: ${{ github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork }}
@@ -266,12 +298,9 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
-        with:
-          ruby-version: '3.4'
-          bundler-cache: true # zizmor: ignore[cache-poisoning] release branches cannot read caches written by pull requests
-          working-directory: ./mobile/ios
+      - name: Install Ruby gems
+        working-directory: ./mobile/ios
+        run: bundle install
 
       - name: Install dependencies
         run: mise //mobile:install:ci
