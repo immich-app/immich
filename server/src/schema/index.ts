@@ -14,7 +14,7 @@ import {
   asset_face_audit,
   asset_metadata_audit,
   asset_ocr_delete_audit,
-  asset_ocr_reset_audit,
+  asset_ocr_set_is_pending_reset,
   f_concat_ws,
   f_unaccent,
   immich_uuid_v7,
@@ -49,7 +49,6 @@ import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table.js
 import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.table.js';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table.js';
 import { AssetOcrAuditTable } from 'src/schema/tables/asset-ocr-audit.table.js';
-import { AssetOcrResetAuditTable } from 'src/schema/tables/asset-ocr-reset-audit.table.js';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { AuthChallengeTable } from 'src/schema/tables/auth-challenge.table.js';
@@ -124,7 +123,6 @@ export class ImmichDatabase {
     AssetJobStatusTable,
     AssetOcrTable,
     AssetOcrAuditTable,
-    AssetOcrResetAuditTable,
     AssetTable,
     AuthChallengeTable,
     AssetFileTable,
@@ -196,7 +194,7 @@ export class ImmichDatabase {
     asset_metadata_audit,
     asset_face_audit,
     asset_ocr_delete_audit,
-    asset_ocr_reset_audit,
+    asset_ocr_set_is_pending_reset,
     album_user_delete,
   ];
 
@@ -243,7 +241,6 @@ export interface DB {
   asset_job_status: AssetJobStatusTable;
   asset_ocr: AssetOcrTable;
   asset_ocr_audit: AssetOcrAuditTable;
-  asset_ocr_reset_audit: AssetOcrResetAuditTable;
   asset_audio: AssetAudioTable;
   asset_video: AssetVideoTable;
   asset_keyframe: AssetKeyframeTable;

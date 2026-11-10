@@ -381,13 +381,15 @@ export const asset_edit_audit = registerFunction({
     END`,
 });
 
-export const asset_ocr_reset_audit = registerFunction({
-  name: 'asset_ocr_reset_audit',
+export const asset_ocr_set_is_pending_reset = registerFunction({
+  name: 'asset_ocr_set_is_pending_reset',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO asset_ocr_reset_audit DEFAULT VALUES;
+      UPDATE session_sync_checkpoint 
+      SET "isPendingReset" = true 
+      WHERE type = 'AssetOcrV1';
       TRUNCATE asset_ocr_audit;
       RETURN NULL;
     END`,

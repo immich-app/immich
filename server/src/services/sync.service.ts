@@ -1010,12 +1010,12 @@ export class SyncService extends BaseService {
     checkpointMap: CheckpointMap,
     auth: AuthDto,
   ) {
-    const resetType = SyncEntityType.AssetOcrResetV1;
-    const reset = await this.syncRepository.assetOcr.getReset({ ...options, ack: checkpointMap[resetType] });
+    // const resetType = SyncEntityType.AssetOcrResetV1;
+    // const reset = await this.syncRepository.assetOcr.getReset({ ...options, ack: checkpointMap[resetType] });
 
-    if (reset) {
-      await send(response, { type: resetType, ids: [reset.id], data: {} });
-    }
+    // if (reset) {
+    //   await send(response, { type: resetType, ids: [reset.id], data: {} });
+    // }
 
     const deleteType = SyncEntityType.AssetOcrDeleteV1;
     const deletes = this.syncRepository.assetOcr.getDeletes(
