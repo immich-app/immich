@@ -15,7 +15,6 @@
     parentPromise: Promise<PersonResponseDto[]> | undefined;
   }
 
-  // eslint-disable-next-line no-useless-assignment
   let { title = $bindable(), parentPromise }: Props = $props();
 
   let selectedPeople = $derived(searchManager.filter.personIds);
