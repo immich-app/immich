@@ -10,6 +10,7 @@ import 'package:immich_mobile/data/store.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
 // ignore: library_prefixes
 import 'package:immich_mobile/entities/store.entity.dart' as dbStore;
@@ -299,17 +300,49 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       final uploadService = _ref?.read(foregroundUploadServiceProvider);
       var failed = 0;
+      var unlinked = 0;
+      var shouldSyncAlbums = false;
+      Future<void>? albumSync;
+      final albumSyncTimer = Timer.periodic(const Duration(minutes: 1), (_) => shouldSyncAlbums = true);
       await uploadService?.uploadCandidates(
         currentUser.id,
         _cancellationToken,
-        callbacks: UploadCallbacks(onError: (_, _) => failed++),
+        callbacks: UploadCallbacks(
+          onSuccess: (_, _) {
+            unlinked++;
+            if (shouldSyncAlbums && albumSync == null) {
+              shouldSyncAlbums = false;
+              unlinked = 0;
+              albumSync = _syncLinkedAlbums(currentUser.id, pullUploads: true).whenComplete(() => albumSync = null);
+            }
+          },
+          onError: (_, _) => failed++,
+        ),
         useSequentialUpload: true,
       );
+      albumSyncTimer.cancel();
+      await albumSync;
       _logger.info("Background backup finished, $failed uploads failed");
+      await _syncLinkedAlbums(currentUser.id, pullUploads: unlinked > 0);
       // Retry when at least one upload failed
       return failed > 0;
     }, (error, stack) => dPrint(() => "Error in backup zone $error, $stack"));
     return needsRetry ?? true;
+  }
+
+  Future<void> _syncLinkedAlbums(String userId, {required bool pullUploads}) async {
+    if (_cancellationToken.isCompleted || !SettingsRepository.instance.appConfig.backup.syncAlbums) {
+      return;
+    }
+
+    try {
+      if (pullUploads) {
+        await _remoteSyncService.sync();
+      }
+      await _ref?.read(syncLinkedAlbumServiceProvider).syncLinkedAlbums(userId, cancellation: _cancellationToken);
+    } catch (error, stack) {
+      _logger.warning("Failed to sync linked albums", error, stack);
+    }
   }
 
   Future<bool> _syncAssets({Duration? hashTimeout}) async {
