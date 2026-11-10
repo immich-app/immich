@@ -1,6 +1,5 @@
 <script lang="ts">
   import { scrollMemory } from '#lib/actions/scroll-memory.svelte.ts';
-  import { shortcut } from '#lib/actions/shortcut.ts';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import { QueryParameter, SessionStorageKey } from '#lib/constants.ts';
@@ -25,7 +24,7 @@
     type PersonResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import { ActionButton, Button, Icon, IconButton, modalManager, shortcut } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -343,7 +342,7 @@
             class="mt-2 w-full rounded-2xl border-gray-100 bg-white py-2 text-center text-sm text-primary placeholder-gray-400 dark:border-gray-900 dark:bg-immich-dark-gray"
             value={person.name}
             placeholder={$t('add_a_name')}
-            use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
+            {@attach shortcut({ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() })}
             onfocusin={() => onNameChangeInputFocus(person)}
             onfocusout={() => onNameChangeSubmit(newName, person)}
             oninput={(event) => onNameChangeInputUpdate(event)}

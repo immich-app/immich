@@ -334,7 +334,7 @@
 </script>
 
 <svelte:body
-  use:shortcuts={[
+  {@attach shortcuts([
     {
       shortcut: { key: ' ' },
       onShortcut: () => (videoPlayer?.paused ? videoPlayer?.play() : videoPlayer?.pause()),
@@ -351,7 +351,7 @@
           ? (videoPlayer.currentTime = Math.min(videoPlayer.currentTime + 0.4, videoPlayer.duration))
           : undefined,
     },
-  ]}
+  ])}
 />
 
 {#if showVideo}

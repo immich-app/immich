@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { shortcuts } from '#lib/actions/shortcut.ts';
   import { EditToolType, editManager } from '#lib/managers/edit/edit-manager.svelte.ts';
   import { websocketEvents } from '#lib/stores/websocket.ts';
   import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
-  import { Button, HStack, IconButton } from '@immich/ui';
+  import { Button, HStack, IconButton, shortcuts } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -47,11 +46,11 @@
   let { asset = $bindable(), onClose }: Props = $props();
 </script>
 
-<svelte:document
-  use:shortcuts={[
+<svelte:window
+  {@attach shortcuts([
     { shortcut: { key: 'Escape' }, onShortcut: onClose },
     { shortcut: { key: 'Enter' }, onShortcut: applyEdits },
-  ]}
+  ])}
 />
 
 <section class="dark relative flex h-full flex-col p-2 pt-3 dark:bg-immich-dark-bg dark:text-immich-dark-fg">

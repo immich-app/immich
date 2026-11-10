@@ -1,7 +1,6 @@
 <script lang="ts">
   import { focusOutside } from '#lib/actions/focus-outside.ts';
-  import { shortcuts } from '#lib/actions/shortcut.ts';
-  import { Icon } from '@immich/ui';
+  import { Icon, shortcuts } from '@immich/ui';
   import { mdiStar, mdiStarOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -61,10 +60,10 @@
   class="w-fit cursor-default text-primary"
   onmouseleave={() => setHoverRating(null)}
   {@attach focusOutside({ onFocusOut: reset })}
-  use:shortcuts={[
+  {@attach shortcuts([
     { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
     { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
-  ]}
+  ])}
 >
   <legend class="sr-only">{$t('rating')}</legend>
   <div class="flex flex-row" data-testid="star-container">

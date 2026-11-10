@@ -1,4 +1,4 @@
-import { matchesShortcut } from '#lib/actions/shortcut.ts';
+import { matchesShortcut } from '@immich/ui';
 
 interface Options {
   onOutclick?: () => void;
