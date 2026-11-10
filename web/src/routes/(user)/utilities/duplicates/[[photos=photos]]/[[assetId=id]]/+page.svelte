@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { shortcuts } from '#lib/actions/shortcut.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { languageManager } from '#lib/managers/language-manager.svelte.ts';
@@ -17,7 +16,7 @@
   import { locale } from '#lib/stores/preferences.store.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { updateAssets, type AssetResponseDto } from '@immich/sdk';
-  import { Button, HStack, IconButton, Text, modalManager, toastManager } from '@immich/ui';
+  import { Button, HStack, IconButton, Text, modalManager, shortcuts, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
     mdiChevronLeft,
@@ -212,13 +211,15 @@
     goto(Route.duplicatesUtility({ index: correctDuplicatesIndex(index) }));
 </script>
 
-<svelte:document
-  use:shortcuts={assetViewerManager.isViewing
-    ? []
-    : [
-        { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePrevious },
-        { shortcut: { key: 'ArrowRight' }, onShortcut: handleNext },
-      ]}
+<svelte:window
+  {@attach shortcuts(
+    assetViewerManager.isViewing
+      ? []
+      : [
+          { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePrevious },
+          { shortcut: { key: 'ArrowRight' }, onShortcut: handleNext },
+        ],
+  )}
 />
 
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>

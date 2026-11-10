@@ -1,6 +1,5 @@
 <script lang="ts">
   import { focusTrap } from '#lib/actions/focus-trap.ts';
-  import { shortcuts } from '#lib/actions/shortcut.ts';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import AssetViewerNavBar from '#lib/components/asset-viewer/AssetViewerNavBar.svelte';
   import { preloadManager } from '#lib/components/asset-viewer/PreloadManager.svelte.ts';
@@ -43,7 +42,7 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { CommandPaletteDefaultProvider } from '@immich/ui';
+  import { CommandPaletteDefaultProvider, shortcuts } from '@immich/ui';
   import { createQuery, type MutationMeta } from '@tanstack/svelte-query';
   import { onDestroy, onMount, untrack } from 'svelte';
   import type { SwipeCustomEvent } from 'svelte-gestures';
@@ -493,10 +492,10 @@
 
 <svelte:document
   bind:fullscreenElement
-  use:shortcuts={[
+  {@attach shortcuts([
     { shortcut: { key: 'ArrowUp' }, onShortcut: () => navigateStack('previous') },
     { shortcut: { key: 'ArrowDown' }, onShortcut: () => navigateStack('next') },
-  ]}
+  ])}
 ></svelte:document>
 
 <section

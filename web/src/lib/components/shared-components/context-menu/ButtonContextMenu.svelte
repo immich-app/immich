@@ -1,6 +1,5 @@
 <script lang="ts">
   import { contextMenuNavigation } from '#lib/actions/context-menu-navigation.ts';
-  import { shortcuts } from '#lib/actions/shortcut.ts';
   import ContextMenu from '#lib/components/shared-components/context-menu/ContextMenu.svelte';
   import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import { optionClickCallbackStore, selectedIdStore } from '#lib/stores/context-menu.store.ts';
@@ -9,7 +8,7 @@
     getContextMenuPositionFromEvent,
     type Align,
   } from '#lib/utils/context-menu.ts';
-  import { IconButton, type Color, type Size, type Variants } from '@immich/ui';
+  import { IconButton, shortcuts, type Color, type Size, type Variants } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
 
@@ -168,7 +167,7 @@
   </div>
   {#if isOpen || !hideContent}
     <div
-      use:shortcuts={[
+      {@attach shortcuts([
         {
           shortcut: { key: 'Tab' },
           onShortcut: closeDropdown,
@@ -179,7 +178,7 @@
           onShortcut: closeDropdown,
           preventDefault: false,
         },
-      ]}
+      ])}
     >
       <ContextMenu
         {direction}
