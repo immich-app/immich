@@ -18,7 +18,7 @@ import { DB } from 'src/schema/index.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table.js';
-import { dummy } from 'src/utils/database.js';
+import { anyUuid, dummy } from 'src/utils/database.js';
 
 export type SharedLinkSearchOptions = {
   userId: string;
@@ -34,14 +34,6 @@ const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
     .where('asset.deletedAt', 'is', null)
     .selectAll('asset')
     .orderBy('asset.fileCreatedAt', 'asc');
-};
-
-const withFirstSharedAsset = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
-  return eb
-    .selectFrom(withSharedAssets(eb).clearOrderBy().offset(0).as('asset'))
-    .selectAll('asset')
-    .orderBy('asset.fileCreatedAt', 'asc')
-    .limit(1);
 };
 
 export const withExifInfo = (eb: ExpressionBuilder<DB, 'asset'>) => {
@@ -101,19 +93,62 @@ export class SharedLinkRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] })
-  getAll({ userId, id, albumId }: SharedLinkSearchOptions) {
+  @GenerateSql(
+    { params: [{ userId: DummyValue.UUID }] },
+    { name: 'album', params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] },
+  )
+  async getAll({ userId, id, albumId }: SharedLinkSearchOptions) {
+    const individualLinks = albumId
+      ? []
+      : await this.db
+          .selectFrom('shared_link')
+          .select('id')
+          .where('userId', '=', userId)
+          .where('type', '=', sql.lit(SharedLinkType.Individual))
+          .execute();
+
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
-      .select((eb) => jsonArrayFrom(withFirstSharedAsset(eb)).as('assets'))
+      .$if(!albumId, (qb) =>
+        qb
+          .leftJoin(
+            (eb) =>
+              eb
+                .selectFrom('shared_link_asset')
+                .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
+                .where('shared_link_asset.sharedLinkId', '=', anyUuid(individualLinks.map(({ id }) => id)))
+                .where('asset.deletedAt', 'is', null)
+                .select((eb) => [
+                  'shared_link_asset.sharedLinkId',
+                  eb.fn.min('asset.fileCreatedAt').as('fileCreatedAt'),
+                ])
+                .groupBy('shared_link_asset.sharedLinkId')
+                .as('cover'),
+            (join) => join.onRef('cover.sharedLinkId', '=', 'shared_link.id'),
+          )
+          .select((eb) =>
+            jsonArrayFrom(
+              eb
+                .selectFrom('shared_link_asset')
+                .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
+                .whereRef('shared_link_asset.sharedLinkId', '=', 'shared_link.id')
+                .whereRef('asset.fileCreatedAt', '=', 'cover.fileCreatedAt')
+                .where('asset.deletedAt', 'is', null)
+                .selectAll('asset')
+                .limit(sql.lit(1)),
+            ).as('assets'),
+          ),
+      )
       .where('shared_link.userId', '=', userId)
       .leftJoinLateral(
         (eb) => withSharedLinkAlbum(eb).select(withAlbumOwner).as('album'),
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('album').$castTo<ShallowDehydrateObject<Album> | null>().as('album'))
-      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
+      .where((eb) =>
+        eb.or([eb('shared_link.type', '=', sql.lit(SharedLinkType.Individual)), eb('album.id', 'is not', null)]),
+      )
       .$if(!!albumId, (eb) => eb.where('shared_link.albumId', '=', albumId!))
       .$if(!!id, (eb) => eb.where('shared_link.id', '=', id!))
       .orderBy('shared_link.createdAt', 'desc')
