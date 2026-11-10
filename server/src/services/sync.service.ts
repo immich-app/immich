@@ -93,6 +93,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.UserMetadataV1,
   SyncRequestType.AssetMetadataV1,
   SyncRequestType.AssetEditsV1,
+  SyncRequestType.PendingResetV1,
 ];
 
 const throwSessionRequired = () => {
@@ -183,6 +184,15 @@ export class SyncService extends BaseService {
       return;
     }
 
+    const pendingResetTypes = checkpoints.filter((row) => row.isPendingReset).map((row) => row.type);
+    if (pendingResetTypes.length > 0 && dto.types.includes(SyncRequestType.PendingResetV1)) {
+      await send(response, {
+        type: SyncEntityType.SyncPendingResetV1,
+        ids: ['reset'],
+        data: { types: pendingResetTypes },
+      });
+    }
+
     const { nowId } = await this.syncCheckpointRepository.getNow();
     const options: SyncQueryOptions = { nowId, userId: auth.user.id };
 
@@ -222,6 +232,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.AssetFacesV3]: () => this.syncAssetFacesV3(options, response, checkpointMap),
       [SyncRequestType.UserMetadataV1]: () => this.syncUserMetadataV1(options, response, checkpointMap),
       [SyncRequestType.AssetOcrV1]: () => this.syncAssetOcrV1(options, response, checkpointMap, auth),
+      [SyncRequestType.PendingResetV1]: () => this.syncPendingResetV1(),
     } as const;
 
     for (const type of SYNC_TYPES_ORDER) {
@@ -1010,13 +1021,6 @@ export class SyncService extends BaseService {
     checkpointMap: CheckpointMap,
     auth: AuthDto,
   ) {
-    // const resetType = SyncEntityType.AssetOcrResetV1;
-    // const reset = await this.syncRepository.assetOcr.getReset({ ...options, ack: checkpointMap[resetType] });
-
-    // if (reset) {
-    //   await send(response, { type: resetType, ids: [reset.id], data: {} });
-    // }
-
     const deleteType = SyncEntityType.AssetOcrDeleteV1;
     const deletes = this.syncRepository.assetOcr.getDeletes(
       { ...options, ack: checkpointMap[deleteType] },
@@ -1036,6 +1040,10 @@ export class SyncService extends BaseService {
     for await (const { updateId, ...data } of upserts) {
       await send(response, { type: upsertType, ids: [updateId], data });
     }
+  }
+
+  private async syncPendingResetV1(): Promise<void> {
+    // Empty on purpose: the reset event is sent before the handler loop.
   }
 
   private async upsertBackfillCheckpoint(item: { type: SyncEntityType; sessionId: string; createId: string }) {

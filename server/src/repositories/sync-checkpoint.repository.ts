@@ -14,7 +14,7 @@ export class SyncCheckpointRepository {
   getAll(sessionId: string) {
     return this.db
       .selectFrom('session_sync_checkpoint')
-      .select(['type', 'ack'])
+      .select(['type', 'ack', 'isPendingReset'])
       .where('sessionId', '=', sessionId)
       .execute();
   }

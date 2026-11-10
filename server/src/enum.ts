@@ -1089,6 +1089,7 @@ export enum SyncRequestType {
   AssetFacesV2 = 'AssetFacesV2',
   AssetFacesV3 = 'AssetFacesV3',
   UserMetadataV1 = 'UserMetadataV1',
+  PendingResetV1 = 'PendingResetV1',
 }
 
 export const SyncRequestTypeSchema = z
@@ -1114,7 +1115,6 @@ export enum SyncEntityType {
   AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',
   AssetOcrV1 = 'AssetOcrV1',
   AssetOcrDeleteV1 = 'AssetOcrDeleteV1',
-  AssetOcrResetV1 = 'AssetOcrResetV1',
 
   PartnerV1 = 'PartnerV1',
   PartnerDeleteV1 = 'PartnerDeleteV1',
@@ -1184,6 +1184,7 @@ export enum SyncEntityType {
   SyncAckV1 = 'SyncAckV1',
   SyncResetV1 = 'SyncResetV1',
   SyncCompleteV1 = 'SyncCompleteV1',
+  SyncPendingResetV1 = 'SyncPendingResetV1',
 }
 
 export const SyncEntityTypeSchema = z.enum(SyncEntityType).describe('Sync entity type').meta({ id: 'SyncEntityType' });

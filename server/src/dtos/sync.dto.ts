@@ -404,6 +404,10 @@ const SyncAckV1Schema = z.object({}).meta({ id: 'SyncAckV1' });
 const SyncResetV1Schema = z.object({}).meta({ id: 'SyncResetV1' });
 const SyncCompleteV1Schema = z.object({}).meta({ id: 'SyncCompleteV1' });
 
+const SyncPendingResetV1Schema = z
+  .object({ types: z.array(SyncEntityTypeSchema).describe('Sync reset types') })
+  .meta({ id: 'SyncPendingResetV1' });
+
 @ExtraModel()
 class SyncMemoryV1 extends createZodDto(SyncMemoryV1Schema) {}
 @ExtraModel()
@@ -444,16 +448,11 @@ const SyncAssetOcrDeleteV1Schema = z
   })
   .meta({ id: 'SyncAssetOcrDeleteV1' });
 
-const SyncAssetOcrResetV1Schema = z.object({}).meta({ id: 'SyncAssetOcrResetV1' });
-
 @ExtraModel()
 class SyncAssetOcrV1 extends createZodDto(SyncAssetOcrV1Schema) {}
 
 @ExtraModel()
 class SyncAssetOcrDeleteV1 extends createZodDto(SyncAssetOcrDeleteV1Schema) {}
-
-@ExtraModel()
-class SyncAssetOcrResetV1 extends createZodDto(SyncAssetOcrResetV1Schema) {}
 
 @ExtraModel()
 class SyncStackV1 extends createZodDto(SyncStackV1Schema) {}
@@ -479,6 +478,8 @@ class SyncAckV1 extends createZodDto(SyncAckV1Schema) {}
 class SyncResetV1 extends createZodDto(SyncResetV1Schema) {}
 @ExtraModel()
 class SyncCompleteV1 extends createZodDto(SyncCompleteV1Schema) {}
+@ExtraModel()
+class SyncPendingResetV1 extends createZodDto(SyncPendingResetV1Schema) {}
 
 export type SyncItem = {
   [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
@@ -494,7 +495,6 @@ export type SyncItem = {
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.AssetOcrV1]: SyncAssetOcrV1;
   [SyncEntityType.AssetOcrDeleteV1]: SyncAssetOcrDeleteV1;
-  [SyncEntityType.AssetOcrResetV1]: SyncAssetOcrResetV1;
   [SyncEntityType.AssetEditV1]: SyncAssetEditV1;
   [SyncEntityType.AssetEditDeleteV1]: SyncAssetEditDeleteV1;
   [SyncEntityType.PartnerAssetV2]: SyncAssetV2;
@@ -539,6 +539,7 @@ export type SyncItem = {
   [SyncEntityType.SyncAckV1]: SyncAckV1;
   [SyncEntityType.SyncCompleteV1]: SyncCompleteV1;
   [SyncEntityType.SyncResetV1]: SyncResetV1;
+  [SyncEntityType.SyncPendingResetV1]: SyncPendingResetV1;
 };
 
 const SyncStreamSchema = z
