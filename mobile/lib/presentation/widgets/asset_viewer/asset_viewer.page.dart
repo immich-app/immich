@@ -165,6 +165,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       thumbnailSize: ref.read(assetViewerProvider).thumbnailSize,
     );
     _handleCasting();
+    unawaited(
+      ModalRoute.of(context)?.popped.then(
+        (_) => EventStream.shared.emit(ViewerClosedEvent(ref.read(timelineServiceProvider), _currentPage)),
+      ),
+    );
   }
 
   Future<void> _onAssetChanged(int index) async {

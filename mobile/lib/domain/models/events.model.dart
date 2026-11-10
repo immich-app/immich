@@ -1,3 +1,4 @@
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 
 // Timeline Events
@@ -18,6 +19,13 @@ class ScrollToDateEvent extends Event {
 // Asset Viewer Events
 class ViewerShowDetailsEvent extends Event {
   const ViewerShowDetailsEvent();
+}
+
+class ViewerClosedEvent extends Event {
+  final TimelineService timelineService;
+  final int index;
+
+  const ViewerClosedEvent(this.timelineService, this.index);
 }
 
 // Multi-Select Events
