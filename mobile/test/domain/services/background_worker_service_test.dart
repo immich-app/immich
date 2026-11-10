@@ -13,6 +13,7 @@ import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
+import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
@@ -32,19 +33,26 @@ class MockSyncStreamService extends Mock implements SyncStreamService {}
 
 class MockHashService extends Mock implements HashService {}
 
+class MockSyncLinkedAlbumService extends Mock implements SyncLinkedAlbumService {}
+
 void main() {
   late BackgroundWorkerBgService sut;
   late MockSyncStreamService mockRemoteSyncService;
   late MockBackgroundUploadService mockBackgroundUploadService;
+  late MockForegroundUploadService mockForegroundUploadService;
+  late MockSyncLinkedAlbumService mockSyncLinkedAlbumService;
   late Drift db;
 
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    registerFallbackValue(Completer<void>());
+    registerFallbackValue(const UploadCallbacks());
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await SettingsRepository.ensureInitialized(db);
     await SettingsRepository.instance.write(SettingsKey.backupEnabled, true);
+    await SettingsRepository.instance.write(SettingsKey.backupSyncAlbums, true);
   });
 
   tearDownAll(() async {
@@ -58,6 +66,8 @@ void main() {
     final mockUserService = MockUserService();
     mockRemoteSyncService = MockSyncStreamService();
     mockBackgroundUploadService = MockBackgroundUploadService();
+    mockForegroundUploadService = MockForegroundUploadService();
+    mockSyncLinkedAlbumService = MockSyncLinkedAlbumService();
 
     when(() => mockLocalSyncService.sync()).thenAnswer((_) async {});
     when(() => mockHashService.hashAssets()).thenAnswer((_) async {});
@@ -75,10 +85,112 @@ void main() {
         syncStreamServiceProvider.overrideWithValue(mockRemoteSyncService),
         hashServiceProvider.overrideWithValue(mockHashService),
         currentUserProvider.overrideWith((ref) => CurrentUserProvider(mockUserService)),
-        foregroundUploadServiceProvider.overrideWithValue(MockForegroundUploadService()),
+        foregroundUploadServiceProvider.overrideWithValue(mockForegroundUploadService),
         backgroundUploadServiceProvider.overrideWithValue(mockBackgroundUploadService),
+        syncLinkedAlbumServiceProvider.overrideWithValue(mockSyncLinkedAlbumService),
       ],
     );
+  });
+
+  group('onAndroidUpload', () {
+    late int albumSteps;
+
+    setUp(() {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      albumSteps = 0;
+      when(() => mockRemoteSyncService.sync()).thenAnswer((_) async => true);
+      when(
+        () => mockSyncLinkedAlbumService.syncLinkedAlbums(any(), cancellation: any(named: 'cancellation')),
+      ).thenAnswer((_) async => albumSteps++);
+    });
+
+    tearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.iOS);
+
+    void stubUploads(Future<void> Function(UploadCallbacks callbacks) uploads) {
+      when(
+        () => mockForegroundUploadService.uploadCandidates(
+          any(),
+          any(),
+          callbacks: any(named: 'callbacks'),
+          useSequentialUpload: true,
+        ),
+      ).thenAnswer((invocation) => uploads(invocation.namedArguments[#callbacks] as UploadCallbacks));
+    }
+
+    test('syncs again and adds the uploads to their albums when the run ends', () async {
+      stubUploads((callbacks) async => callbacks.onSuccess?.call('local-1', 'remote-1'));
+
+      await sut.onAndroidUpload(20);
+
+      verify(() => mockRemoteSyncService.sync()).called(2);
+      expect(albumSteps, 1);
+    });
+
+    test('adds to albums without a second sync when nothing was uploaded', () async {
+      stubUploads((_) async {});
+
+      await sut.onAndroidUpload(20);
+
+      verify(() => mockRemoteSyncService.sync()).called(1);
+      expect(albumSteps, 1);
+    });
+
+    test('adds the uploads to their albums every minute during the run', () {
+      fakeAsync((async) {
+        stubUploads((callbacks) async {
+          callbacks.onSuccess?.call('local-1', 'remote-1');
+          await Future<void>.delayed(const Duration(minutes: 1));
+          callbacks.onSuccess?.call('local-2', 'remote-2');
+          await Future<void>.delayed(const Duration(minutes: 5));
+        });
+
+        unawaited(sut.onAndroidUpload(20));
+        async.elapse(const Duration(minutes: 2));
+
+        expect(albumSteps, 1);
+      });
+    });
+
+    test('runs one album step at a time', () {
+      fakeAsync((async) {
+        final albumStep = Completer<void>();
+        when(
+          () => mockSyncLinkedAlbumService.syncLinkedAlbums(any(), cancellation: any(named: 'cancellation')),
+        ).thenAnswer((_) {
+          albumSteps++;
+          return albumStep.future;
+        });
+        stubUploads((callbacks) async {
+          callbacks.onSuccess?.call('local-1', 'remote-1');
+          await Future<void>.delayed(const Duration(minutes: 1));
+          callbacks.onSuccess?.call('local-2', 'remote-2');
+          await Future<void>.delayed(const Duration(minutes: 1));
+          callbacks.onSuccess?.call('local-3', 'remote-3');
+        });
+
+        unawaited(sut.onAndroidUpload(20));
+        async.elapse(const Duration(minutes: 3));
+        expect(albumSteps, 1);
+
+        albumStep.complete();
+        async.flushMicrotasks();
+        expect(albumSteps, 2);
+      });
+    });
+
+    test('leaves the albums alone when the run times out', () {
+      fakeAsync((async) {
+        stubUploads((callbacks) async {
+          callbacks.onSuccess?.call('local-1', 'remote-1');
+          await Future<void>.delayed(const Duration(minutes: 20));
+        });
+
+        unawaited(sut.onAndroidUpload(20));
+        async.elapse(const Duration(minutes: 21));
+
+        expect(albumSteps, 0);
+      });
+    });
   });
 
   group('onIosUpload', () {
