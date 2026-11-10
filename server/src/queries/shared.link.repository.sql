@@ -125,15 +125,22 @@ select
         select
           "asset".*
         from
-          "shared_link_asset"
-          inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
-        where
-          "shared_link"."id" = "shared_link_asset"."sharedLinkId"
-          and "asset"."deletedAt" is null
+          (
+            select
+              "asset".*
+            from
+              "shared_link_asset"
+              inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
+            where
+              "shared_link"."id" = "shared_link_asset"."sharedLinkId"
+              and "asset"."deletedAt" is null
+            offset
+              $1
+          ) as "asset"
         order by
           "asset"."fileCreatedAt" asc
         limit
-          $1
+          $2
       ) as agg
   ) as "assets",
   to_json("album") as "album"
@@ -183,12 +190,12 @@ from
       and "album"."deletedAt" is null
   ) as "album" on true
 where
-  "shared_link"."userId" = $2
+  "shared_link"."userId" = $3
   and (
-    "shared_link"."type" = $3
+    "shared_link"."type" = $4
     or "album"."id" is not null
   )
-  and "shared_link"."albumId" = $4
+  and "shared_link"."albumId" = $5
 order by
   "shared_link"."createdAt" desc
 

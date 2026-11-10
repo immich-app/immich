@@ -36,6 +36,14 @@ const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
     .orderBy('asset.fileCreatedAt', 'asc');
 };
 
+const withFirstSharedAsset = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
+  return eb
+    .selectFrom(withSharedAssets(eb).clearOrderBy().offset(0).as('asset'))
+    .selectAll('asset')
+    .orderBy('asset.fileCreatedAt', 'asc')
+    .limit(1);
+};
+
 export const withExifInfo = (eb: ExpressionBuilder<DB, 'asset'>) => {
   return eb
     .selectFrom('asset_exif')
@@ -98,7 +106,7 @@ export class SharedLinkRepository {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
-      .select((eb) => jsonArrayFrom(withSharedAssets(eb).limit(1)).as('assets'))
+      .select((eb) => jsonArrayFrom(withFirstSharedAsset(eb)).as('assets'))
       .where('shared_link.userId', '=', userId)
       .leftJoinLateral(
         (eb) => withSharedLinkAlbum(eb).select(withAlbumOwner).as('album'),
