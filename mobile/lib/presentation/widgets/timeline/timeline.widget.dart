@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
@@ -197,9 +198,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         _scrollToTop();
       case final ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
-      case ViewerClosedEvent(:final timelineService, :final index)
-          when timelineService == ref.read(timelineServiceProvider):
-        _scrollToAssetIfOffScreen(index);
+      case ViewerClosedEvent(:final asset):
+        final routeData = context.findAncestorWidgetOfExactType<RouteDataScope>()?.routeData;
+        final index = ref.read(timelineServiceProvider).getIndex(asset.heroTag);
+        if (routeData != null && routeData.router.root.topRoute == routeData && index != null) {
+          _scrollToAssetIfOffScreen(index);
+        }
       case TimelineReloadEvent():
         setState(() {});
       default:
@@ -227,7 +231,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
   }
 
   ({double top, double bottom})? _getAssetRowPosition(List<Segment> segments, int assetIndex) {
-    final targetSegment = segments.lastWhereOrNull((segment) => segment.firstAssetIndex <= assetIndex);
+    final targetSegment = segments.firstWhereOrNull(
+      (segment) => assetIndex < segment.firstAssetIndex + segment.bucket.assetCount,
+    );
     if (targetSegment == null) {
       return null;
     }
@@ -254,15 +260,17 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     }
 
     final position = _scrollController.position;
+    final topInset = math.max(list.constraints.overlap, context.padding.top);
+    final bottomInset = context.padding.bottom;
     final top = list.constraints.precedingScrollExtent + row.top;
-    final visibleTop = position.pixels + list.constraints.overlap;
+    final visibleTop = position.pixels + topInset;
     final bottom = list.constraints.precedingScrollExtent + row.bottom;
-    final visibleBottom = position.pixels + position.viewportDimension;
+    final visibleBottom = position.pixels + position.viewportDimension - bottomInset;
     if (top >= visibleTop && bottom <= visibleBottom) {
       return;
     }
 
-    final target = top < visibleTop ? top - list.constraints.overlap : bottom - position.viewportDimension;
+    final target = top < visibleTop ? top - topInset : bottom - position.viewportDimension + bottomInset;
     _scrollController.jumpTo(target.clamp(0.0, position.maxScrollExtent));
   }
 

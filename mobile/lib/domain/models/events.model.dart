@@ -1,4 +1,4 @@
-import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 
 // Timeline Events
@@ -22,10 +22,9 @@ class ViewerShowDetailsEvent extends Event {
 }
 
 class ViewerClosedEvent extends Event {
-  final TimelineService timelineService;
-  final int index;
+  final BaseAsset asset;
 
-  const ViewerClosedEvent(this.timelineService, this.index);
+  const ViewerClosedEvent(this.asset);
 }
 
 // Multi-Select Events
