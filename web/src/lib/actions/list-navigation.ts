@@ -1,4 +1,4 @@
-import { shortcuts } from '#lib/actions/shortcut.ts';
+import { shortcuts } from '@immich/ui';
 
 /**
 Enables keyboard navigation (up and down arrows) for a list of elements.
@@ -26,10 +26,10 @@ export const listNavigation = (container?: HTMLElement) => {
       }
     };
 
-    const { destroy } = shortcuts(node, [
+    const destroy = shortcuts([
       { shortcut: { key: 'ArrowUp' }, onShortcut: () => moveFocus('up'), ignoreInputFields: false },
       { shortcut: { key: 'ArrowDown' }, onShortcut: () => moveFocus('down'), ignoreInputFields: false },
-    ]);
+    ])(node);
 
     return destroy;
   };

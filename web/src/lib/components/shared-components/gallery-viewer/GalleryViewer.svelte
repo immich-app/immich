@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { shortcuts, type ShortcutOptions } from '#lib/actions/shortcut.ts';
   import type { AssetCursor } from '#lib/components/asset-viewer/AssetViewer.svelte';
   import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
   import Thumbnail from '#lib/components/assets/thumbnail/Thumbnail.svelte';
@@ -24,7 +23,7 @@
   import { isTimelineAsset, toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { TUNABLES } from '#lib/utils/tunables.ts';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { modalManager, shortcuts, type ShortcutOptions } from '@immich/ui';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
@@ -324,7 +323,8 @@
   });
 </script>
 
-<svelte:document onselectstart={onSelectStart} use:shortcuts={shortcutList} onscroll={() => updateSlidingWindow()} />
+<svelte:window {@attach shortcuts(shortcutList)} />
+<svelte:document onselectstart={onSelectStart} onscroll={() => updateSlidingWindow()} />
 
 {#if assets.length > 0}
   <div

@@ -96,7 +96,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: () => (isOpen = false) }} />
+<svelte:window {@attach shortcut({ shortcut: { key: 'Escape' }, onShortcut: () => (isOpen = false) })} />
 
 {#if isOpen}
   <aside

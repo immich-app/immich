@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { shortcut } from '#lib/actions/shortcut.ts';
   import AlbumMap from '#lib/components/album-page/AlbumMap.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
@@ -18,7 +17,7 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { fileUploadHandler, openFileUploadDialog } from '#lib/utils/file-uploader.ts';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
-  import { ActionButton, IconButton, Logo } from '@immich/ui';
+  import { ActionButton, IconButton, Logo, shortcut } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
@@ -66,14 +65,14 @@
 </script>
 
 <svelte:document
-  use:shortcut={{
+  {@attach shortcut({
     shortcut: { key: 'Escape' },
     onShortcut: () => {
       if (!assetViewerManager.isViewing && assetMultiSelectManager.selectionActive) {
         assetMultiSelectManager.clear();
       }
     },
-  }}
+  })}
 />
 
 <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">

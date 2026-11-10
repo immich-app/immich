@@ -1,11 +1,10 @@
 <script lang="ts">
   import { focusOutside } from '#lib/actions/focus-outside.ts';
-  import { shortcuts } from '#lib/actions/shortcut.ts';
   import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import { Route } from '#lib/route.ts';
   import { searchStore } from '#lib/stores/search.svelte.ts';
   import { handlePromiseError } from '#lib/utils.ts';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, shortcuts } from '@immich/ui';
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -135,7 +134,7 @@
   };
 </script>
 
-<svelte:document use:shortcuts={[{ shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input?.select() }]} />
+<svelte:window {@attach shortcuts([{ shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input?.select() }])} />
 
 <div class="relative z-auto w-full" {@attach focusOutside({ onFocusOut })} tabindex="-1">
   <form
@@ -171,13 +170,13 @@
         aria-activedescendant={selectedId ?? ''}
         aria-expanded={showSuggestions}
         aria-autocomplete="list"
-        use:shortcuts={[
+        {@attach shortcuts([
           { shortcut: { key: 'Escape' }, onShortcut: onEscape },
           { shortcut: { key: 'ArrowUp' }, onShortcut: () => onArrow(-1) },
           { shortcut: { key: 'ArrowDown' }, onShortcut: () => onArrow(1) },
           { shortcut: { key: 'Enter' }, onShortcut: onEnter, preventDefault: false },
           { shortcut: { key: 'ArrowDown', alt: true }, onShortcut: openDropdown },
-        ]}
+        ])}
       />
 
       <SearchFilters

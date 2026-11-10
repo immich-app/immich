@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { shortcut } from '#lib/actions/shortcut.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { executeMutation } from '#lib/queries/client.ts';
   import { removeSharedLinkAssetsMutation } from '#lib/queries/shared-link.query.ts';
   import { type SharedLinkResponseDto } from '@immich/sdk';
-  import { IconButton, toastManager } from '@immich/ui';
+  import { IconButton, shortcut, toastManager } from '@immich/ui';
   import { mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -32,7 +31,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Delete' }, onShortcut: onAction }} />
+<svelte:window {@attach shortcut({ shortcut: { key: 'Delete' }, onShortcut: onAction })} />
 
 <IconButton
   shape="round"
