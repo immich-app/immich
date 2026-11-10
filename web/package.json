@@ -100,7 +100,7 @@
     "@types/node": "^26.6.6",
     "@types/qrcode": "^1.5.5",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "@vitest/browser-playwright": "5.0.5",
+    "@vitest/browser-playwright": "5.1.0",
     "@vitest/coverage-v8": "^5.0.0",
     "dotenv": "^18.0.0",
     "eslint": "^10.2.1",
