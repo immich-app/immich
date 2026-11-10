@@ -170,8 +170,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -1074,8 +1072,8 @@ importers:
         specifier: ^3.5.0
         version: 3.7.0
       tailwind-variants:
-        specifier: ^3.2.2
-        version: 3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.3)
+        specifier: ^4.0.0
+        version: 4.0.1
       thumbhash:
         specifier: ^0.1.1
         version: 0.1.1
@@ -8794,6 +8792,7 @@ packages:
   image-size@2.0.2:
     resolution: {integrity: sha512-IRqXKlaXwgSMAMtpNzZa1ZAe8m+Sa1770Dhk8VkSsP9LS+iHD62Zd8FQKs8fbPiagBE7BzoFX23cxFnwshpV6w==}
     engines: {node: '>=16.x'}
+    deprecated: Use latest 2.x please
     hasBin: true
 
   imagetools-core@12.0.0:
@@ -12460,6 +12459,10 @@ packages:
         optional: true
       tailwindcss:
         optional: true
+
+  tailwind-variants@4.0.1:
+    resolution: {integrity: sha512-VumzgPklIwpneDWtskGuhEqPlfZZ2DeN1nIb2um9DRhk9XBX580s4N84A533j+oHN+dLz274HkKvSjr+64fggA==}
+    engines: {node: '>=16.9.x', pnpm: '>=7.x'}
 
   tailwindcss-email-variants@3.0.6:
     resolution: {integrity: sha512-jNIiMTxmNJG9Xp1lNmkmg1KBngAKGYkG9WGlenhykP1YudMIK6cY+NbFSn0K1DF/CJC+hjE8ghDTYmrJFbwadg==}
@@ -16483,7 +16486,7 @@ snapshots:
       svelte: 5.57.3(@typescript-eslint/types@8.72.1)
       svelte-highlight: 7.11.0
       tailwind-merge: 3.7.0
-      tailwind-variants: 3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.3)
+      tailwind-variants: 3.3.1(tailwind-merge@3.7.0)
       tailwindcss: 4.3.3
 
   '@immich/ui@0.91.1(@sveltejs/kit@3.1.0(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3)':
@@ -16499,7 +16502,7 @@ snapshots:
       svelte: 5.57.3(@typescript-eslint/types@8.72.1)
       svelte-highlight: 7.11.0
       tailwind-merge: 3.7.0
-      tailwind-variants: 3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.3)
+      tailwind-variants: 3.3.1(tailwind-merge@3.7.0)
       tailwindcss: 4.3.3
     transitivePeerDependencies:
       - zod
@@ -18874,7 +18877,7 @@ snapshots:
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 17.0.45
+      '@types/node': 26.6.6
 
   '@types/semver@7.8.0': {}
 
@@ -18889,7 +18892,7 @@ snapshots:
 
   '@types/serve-index@1.9.4':
     dependencies:
-      '@types/express': 4.17.25
+      '@types/express': 5.0.6
 
   '@types/serve-static@1.15.10':
     dependencies:
@@ -21702,18 +21705,19 @@ snapshots:
   exiftool-vendored.exe@13.60.0:
     optional: true
 
-  exiftool-vendored.pl@13.60.0: {}
+  exiftool-vendored.pl@13.60.0:
+    optional: true
 
   exiftool-vendored@39.1.0:
     dependencies:
       '@photostructure/tz-lookup': 11.7.0
       '@types/luxon': 3.7.6
       batch-cluster: 19.5.0
-      exiftool-vendored.pl: 13.60.0
       he: 2.0.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.60.0
+      exiftool-vendored.pl: 13.60.0
 
   expand-template@2.0.3: {}
 
@@ -27031,9 +27035,14 @@ snapshots:
 
   tailwind-merge@3.7.0: {}
 
-  tailwind-variants@3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.3):
+  tailwind-variants@3.3.1(tailwind-merge@3.7.0):
+    dependencies:
+      tailwindcss: 4.3.3
     optionalDependencies:
       tailwind-merge: 3.7.0
+
+  tailwind-variants@4.0.1:
+    dependencies:
       tailwindcss: 4.3.3
 
   tailwindcss-email-variants@3.0.6(tailwindcss@3.4.19(tsx@4.23.15)(yaml@2.9.1)):
