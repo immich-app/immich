@@ -392,7 +392,7 @@
           {allowCreate ? searchQuery : $t('no_results')}
         </li>
       {/if}
-      {#each filteredOptions as option, index (option.id || option.label)}
+      {#each filteredOptions as option, index (option.id ?? `${option.value}:${option.label}`)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           aria-selected={index === selectedIndex}
