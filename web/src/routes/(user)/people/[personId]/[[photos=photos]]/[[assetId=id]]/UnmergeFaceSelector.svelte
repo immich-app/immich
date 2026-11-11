@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { handleError } from '$lib/utils/handle-error';
+  import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import {
     createPerson,
     getAllPeople,
@@ -14,7 +14,7 @@
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
+  import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
   import FaceThumbnail from './FaceThumbnail.svelte';
   import PeopleList from './PeopleList.svelte';
 

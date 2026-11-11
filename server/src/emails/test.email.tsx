@@ -1,4 +1,4 @@
-import { Link, Row, Text } from '@react-email/components';
+import { Link, Row, Text } from 'react-email';
 import * as React from 'react';
 import ImmichLayout from 'src/emails/components/immich.layout.js';
 import { TestEmailProps } from 'src/repositories/email.repository.js';

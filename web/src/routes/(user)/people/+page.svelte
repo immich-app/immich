@@ -1,23 +1,23 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { scrollMemory } from '$lib/actions/scroll-memory';
-  import { shortcut } from '$lib/actions/shortcut';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import { QueryParameter, SessionStorageKey } from '$lib/constants';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import PeopleFilterModal from '$lib/modals/PeopleFilterModal.svelte';
-  import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
-  import { Route } from '$lib/route';
-  import { getPeopleUserActions } from '$lib/services/person-user.service';
-  import { handleUpdatePersonName } from '$lib/services/person.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { websocketEvents } from '$lib/stores/websocket';
-  import { handlePromiseError } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { scrollMemory } from '#lib/actions/scroll-memory.ts';
+  import { shortcut } from '#lib/actions/shortcut.ts';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import { QueryParameter, SessionStorageKey } from '#lib/constants.ts';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import PeopleFilterModal from '#lib/modals/PeopleFilterModal.svelte';
+  import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
+  import { Route } from '#lib/route.ts';
+  import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
+  import { handleUpdatePersonName } from '#lib/services/person.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { websocketEvents } from '#lib/stores/websocket.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
   import {
     getAllPeople,
     getClusterGroupUsers,
@@ -123,14 +123,15 @@
   };
 
   const handleSearchByName = async () => {
-    const getSearchedPeople = page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
+    const url = new URL(page.url.href);
+    const getSearchedPeople = url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople !== searchName) {
       if (searchName) {
-        page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
+        url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
       } else {
-        page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
+        url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
       }
-      await goto(page.url, { keepFocus: true, replaceState: true, invalidateAll: true });
+      await goto(url, { reset: false, replace: true, refreshAll: true });
     }
   };
 
@@ -180,7 +181,7 @@
       return;
     }
 
-    const url = new URL(page.url);
+    const url = new URL(page.url.href);
     for (const [key, value] of [
       [QueryParameter.SHARED_BY_ID, filter.sharedById],
       [QueryParameter.SHARED_WITH_ID, filter.sharedWithId],
@@ -194,7 +195,7 @@
       }
     }
 
-    await goto(url, { keepFocus: true });
+    await goto(url, { reset: false });
     currentPage = 1;
     nextPage = data.people.hasNextPage ? 2 : null;
   };

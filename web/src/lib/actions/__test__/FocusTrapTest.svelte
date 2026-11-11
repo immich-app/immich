@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { focusTrap } from '$lib/actions/focus-trap';
+  import { focusTrap } from '#lib/actions/focus-trap.ts';
 
   interface Props {
     show: boolean;

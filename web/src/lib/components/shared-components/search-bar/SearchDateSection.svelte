@@ -3,7 +3,7 @@
   import { DatePicker, Text } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import SearchButton from './SearchButton.svelte';
 
   let filters = $derived(searchManager.filter.date);

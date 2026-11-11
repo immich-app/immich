@@ -1,5 +1,5 @@
 import { createSubscriber } from 'svelte/reactivity';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 type PersistedBaseOptions<T> = {
   read: (key: string) => T | undefined;

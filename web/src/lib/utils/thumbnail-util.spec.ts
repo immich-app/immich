@@ -1,7 +1,7 @@
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { getAltText } from '#lib/utils/thumbnail-util.ts';
 import { AssetVisibility } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { getAltText } from '$lib/utils/thumbnail-util';
 
 interface Person {
   name: string;
@@ -15,7 +15,7 @@ const fourPeople: Person[] = [{ name: 'person1' }, { name: 'person2' }, { name: 
 describe('getAltText', () => {
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });
-    register('en-US', () => import('$i18n/en.json'));
+    register('en-US', () => import('#i18n/en.json'));
     await waitLocale('en-US');
   });
 

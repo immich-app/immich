@@ -1,8 +1,4 @@
 /* eslint-disable unicorn/no-unnecessary-global-this */
-/// <reference types="@sveltejs/kit" />
-/// <reference no-default-lib="true"/>
-/// <reference lib="esnext" />
-/// <reference lib="webworker" />
 import { handleCancel } from './request';
 
 const sw = globalThis as unknown as ServiceWorkerGlobalScope;

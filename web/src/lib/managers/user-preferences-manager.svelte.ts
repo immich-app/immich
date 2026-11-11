@@ -1,5 +1,5 @@
+import { PersistedLocalStorage } from '#lib/utils/persisted.ts';
 import { isEqual } from 'lodash-es';
-import { PersistedLocalStorage } from '$lib/utils/persisted';
 
 export type MemoriesPreferences = {
   showUpcoming: boolean;

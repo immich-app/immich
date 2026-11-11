@@ -1,7 +1,7 @@
+import { QueryParameter } from '#lib/constants.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { getAllTags } from '@immich/sdk';
-import { QueryParameter } from '$lib/constants';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

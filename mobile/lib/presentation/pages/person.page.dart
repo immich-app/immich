@@ -82,8 +82,7 @@ class _PersonPageState extends ConsumerState<PersonPage> {
             throw Exception('User must be logged in to view person timeline');
           }
 
-          final users = ref.watch(timelineUsersProvider).valueOrNull ?? [user.id];
-          final timelineService = ref.watch(timelineFactoryProvider).person(users, _person.id);
+          final timelineService = ref.watch(timelineFactoryProvider).person(user.id, _person.id);
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),

@@ -755,7 +755,6 @@
   "image_alt_text_date_place_3_people": "{isVideo, select, true {Video} other {Image}} {city}, {country} లో {person1}, {person2}, మరియు {person3} లతో {date}న తీయబడింది",
   "image_alt_text_date_place_4_or_more_people": "{isVideo, select, true {Video} other {Image}} {city}, {country} లో {person1}, {person2}, మరియు {additionalCount, number} others తో {date}న తీయబడింది",
   "immich_logo": "ఇమ్మిచ్ లోగో",
-  "immich_web_interface": "ఇమ్మిచ్ వెబ్ ఇంటర్‌ఫేస్",
   "import_from_json": "JSON నుండి దిగుమతి చేయండి",
   "import_path": "దిగుమతి మార్గం",
   "in_albums": "{count, plural, one {# album} other {# album}} లో",

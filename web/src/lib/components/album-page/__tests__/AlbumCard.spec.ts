@@ -1,8 +1,8 @@
+import { sdkMock } from '#lib/__mocks__/sdk.mock.ts';
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';
-import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { albumFactory } from '@test-data/factories/album-factory';
+import { albumFactory } from '#test-data/factories/album-factory';
 import AlbumCard from '../AlbumCard.svelte';
 
 describe('AlbumCard component', () => {
@@ -10,7 +10,7 @@ describe('AlbumCard component', () => {
 
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });
-    register('en-US', () => import('$i18n/en.json'));
+    register('en-US', () => import('#i18n/en.json'));
     await waitLocale('en-US');
   });
 
@@ -43,15 +43,21 @@ describe('AlbumCard component', () => {
     const albumDetailsElement = sut.getByTestId('album-details');
     const detailsText = `${count} items` + (shared ? ' . Shared' : '');
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('src');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
     expect(sdkMock.viewAsset).not.toHaveBeenCalled();
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumNameElement).toHaveTextContent(album.albumName);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumDetailsElement).toHaveTextContent(new RegExp(detailsText));
   });
 
@@ -66,10 +72,14 @@ describe('AlbumCard component', () => {
     const albumNameElement = sut.getByTestId('album-name');
     const albumDetailsElement = sut.getByTestId('album-details');
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumImgElement).toHaveAttribute('src');
 
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumNameElement).toHaveTextContent('some album name');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(albumDetailsElement).toHaveTextContent(`${album.assetCount} item`);
   });
 
@@ -78,6 +88,7 @@ describe('AlbumCard component', () => {
     sut = render(AlbumCard, { album });
 
     const contextButtonParent = sut.queryByTestId('context-button-parent');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(contextButtonParent).not.toBeInTheDocument();
   });
 });

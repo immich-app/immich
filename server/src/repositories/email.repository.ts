@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { render } from '@react-email/render';
 import { createTransport } from 'nodemailer';
 import React, { createElement } from 'react';
+import { render } from 'react-email';
 import type { EmailImageAttachment } from 'src/types.js';
 import { AlbumInviteEmail } from 'src/emails/album-invite.email.js';
 import { AlbumUpdateEmail } from 'src/emails/album-update.email.js';

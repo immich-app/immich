@@ -1,7 +1,7 @@
 <script lang="ts">
-  import AssetCover from '$lib/components/sharedlinks-page/covers/AssetCover.svelte';
-  import NoCover from '$lib/components/sharedlinks-page/covers/NoCover.svelte';
-  import { getAssetMediaUrl } from '$lib/utils';
+  import AssetCover from '#lib/components/sharedlinks-page/covers/AssetCover.svelte';
+  import NoCover from '#lib/components/sharedlinks-page/covers/NoCover.svelte';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 

@@ -7,15 +7,23 @@ import Photos
 final class RemoteImageRequest: ImageRequest {
   var task: URLSessionDataTask?
   let id: Int64
+  /// Lets cancellation stop a native decode partway through.
+  let decodeCancelled = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
 
   init(id: Int64, completion: @escaping @Sendable (Result<[String: Int64]?, any Error>) -> Void) {
     self.id = id
     super.init(completion: completion)
+    decodeCancelled.initialize(to: false)
+  }
+
+  deinit {
+    decodeCancelled.deallocate()
   }
 
   override func cancel() {
     super.cancel()
     task?.cancel()
+    NativeCore.cancel(decodeCancelled)
   }
 }
 
@@ -65,6 +73,38 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       return request.completion(.failure(PigeonError(code: "", message: "No data received", details: nil)))
     }
 
+    // Flutter can't decode JPEG XL and older iOS versions can't either, so this applies to encoded requests too.
+    if response?.mimeType == "image/jxl" {
+      ImageProcessing.queue.addOperation {
+        if request.isCancelled {
+          return request.completion(ImageProcessing.cancelledResult)
+        }
+
+        guard let (width, height, pointer) = NativeCore.decodeImage(data, targetWidth: width, targetHeight: height, maxPixelSize: ImageProcessing.maxPixelSize, cancelled: request.decodeCancelled) else {
+          registry.remove(requestId: request.id)
+          if request.isCancelled {
+            return request.completion(ImageProcessing.cancelledResult)
+          }
+          return request.completion(.failure(PigeonError(code: "", message: "Failed to decode JPEG XL image", details: nil)))
+        }
+
+        if request.isCancelled {
+          free(pointer)
+          return request.completion(ImageProcessing.cancelledResult)
+        }
+
+        registry.remove(requestId: request.id)
+        request.completion(
+          .success([
+            "pointer": Int64(Int(bitPattern: pointer)),
+            "width": Int64(width),
+            "height": Int64(height),
+            "rowBytes": Int64(width * 4),
+          ]))
+      }
+      return
+    }
+
     if encoded {
       let length = data.count
       let pointer = malloc(length)!
@@ -108,7 +148,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       }
 
       do {
-        let buffer = try vImage_Buffer(cgImage: cgImage, format: rgbaFormat)
+        let buffer = try ImageProcessing.rgbaBuffer(cgImage, format: rgbaFormat)
 
         if request.isCancelled {
           buffer.free()

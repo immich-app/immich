@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Public } from 'src/types.js';
@@ -15,6 +15,7 @@ const REPO = 'immich-app/immich';
 const Files = {
   Config: join(root, '.github/release.yml'),
   Template: join(root, 'misc/release/notes.tmpl'),
+  Output: join(root, 'misc/release/notes.md'),
 };
 
 export type NotesOptions = {
@@ -54,6 +55,12 @@ type PullRequestNode = {
 
 const PULL_REQUEST_BATCH = 50;
 const SEARCH_BATCH = 20;
+
+export class FileSystem {
+  writeFileSync(path: string, data: string) {
+    writeFileSync(path, data);
+  }
+}
 
 export class GitClient {
   log(previous: string, tag: string) {
@@ -189,6 +196,7 @@ export class GitHubClient {
 
 export class NotesService {
   constructor(
+    private fs: Public<FileSystem>,
     private git: Public<GitClient>,
     private github: Public<GitHubClient>,
   ) {}
@@ -198,8 +206,9 @@ export class NotesService {
     const pulls = await this.getPullRequests(commits);
     const changes = this.selectChanges(commits, pulls);
     const firstTimers = await this.getFirstTimers(changes);
+    const notes = this.render({ tag, previous, changes, firstTimers });
 
-    return this.render({ tag, previous, changes, firstTimers });
+    this.fs.writeFileSync(Files.Output, notes);
   }
 
   private parseCommits(log: string): Commit[] {

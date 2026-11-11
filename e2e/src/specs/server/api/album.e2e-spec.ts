@@ -628,25 +628,19 @@ describe('/albums', () => {
       ]);
     });
 
-    it('should not be able to remove foreign asset from foreign album', async () => {
+    it('should be able to remove foreign asset from shared album as an editor', async () => {
       const { status, body } = await request(app)
         .delete(`/albums/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ ids: [user1Asset1.id] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([
-        expect.objectContaining({
-          id: user1Asset1.id,
-          success: false,
-          error: 'no_permission',
-        }),
-      ]);
+      expect(body).toEqual([expect.objectContaining({ id: user1Asset1.id, success: true })]);
     });
 
     it('should be able to remove own asset from own album', async () => {
       const { status, body } = await request(app)
-        .delete(`/albums/${user1Albums[0].id}/assets`)
+        .delete(`/albums/${user1Albums[2].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ ids: [user1Asset1.id] });
 

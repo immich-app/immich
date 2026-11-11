@@ -80,7 +80,7 @@ test.describe('Shared Links', () => {
     const input = page.getByPlaceholder('Password');
     await input.fill('test-password');
     await page.getByRole('button', { name: 'Show password' }).click();
-    // await page.getByText('test-password', { exact: true }).waitFor();
+    // await page.getByText('test-password').waitFor();
     await expect(input).toHaveAttribute('type', 'text');
   });
 
@@ -103,7 +103,7 @@ test.describe('Shared Links', () => {
 
   test('show error for invalid shared link', async ({ page }) => {
     await page.goto('/share/invalid');
-    await page.getByRole('heading', { name: 'Invalid share key' }).waitFor();
+    await page.getByRole('heading', { name: 'Page not found' }).waitFor();
   });
 
   test('auth on navigation from shared link to timeline', async ({ context, page }) => {

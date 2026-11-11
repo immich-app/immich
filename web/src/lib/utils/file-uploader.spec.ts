@@ -1,12 +1,12 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { uploadManager } from '#lib/managers/upload-manager.svelte.ts';
+import { uploadAssetsStore } from '#lib/stores/upload.ts';
+import { UploadState } from '#lib/types.ts';
+import * as utils from '#lib/utils.ts';
 import { AssetMediaStatus, type AssetMediaResponseDto, type UserAdminResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { uploadManager } from '$lib/managers/upload-manager.svelte';
-import { uploadAssetsStore } from '$lib/stores/upload';
-import { UploadState } from '$lib/types';
-import * as utils from '$lib/utils';
-import { preferencesFactory } from '@test-data/factories/preferences-factory';
+import { preferencesFactory } from '#test-data/factories/preferences-factory';
 import { fileUploadHandler } from './file-uploader';
 
 describe('fileUploader error handling', () => {

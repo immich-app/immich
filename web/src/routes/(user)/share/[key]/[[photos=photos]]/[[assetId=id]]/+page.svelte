@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SharedLinkPage from '$lib/components/pages/SharedLinkPage.svelte';
+  import SharedLinkPage from '#lib/components/pages/SharedLinkPage.svelte';
   import type { PageData } from './$types';
 
   type Props = {

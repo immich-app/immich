@@ -1,30 +1,30 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import BirthdayConfetti from '$lib/components/memories/BirthdayConfetti.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { memoryManager } from '$lib/managers/memory-manager.svelte';
-  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
-  import { Route } from '$lib/route';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
-  import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import BirthdayConfetti from '#lib/components/memories/BirthdayConfetti.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import GalleryViewer from '#lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
+  import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '#lib/utils.ts';
+  import { fromISODateTimeUTC, toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo, MemoryType } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text } from '@immich/ui';
   import {
@@ -91,7 +91,7 @@
       return;
     }
 
-    await goto(href, { noScroll: true, keepFocus: true, ...options });
+    await goto(href, { reset: false, ...options });
   };
 
   const setProgressDuration = (asset: TimelineAsset) => {
@@ -246,7 +246,7 @@
       return;
     }
 
-    handlePromiseError(goto(memoryManager.memoriesHref, { replaceState: true, noScroll: true }));
+    handlePromiseError(goto(memoryManager.memoriesHref, { replace: true, reset: false }));
   });
 
   $effect(() => {
@@ -274,10 +274,12 @@
       ]}
 />
 
+<OnEvents onAssetsArchive={handleHideAssets} />
+
 {#if assetMultiSelectManager.selectionActive}
   <div class="dark sticky top-0 z-1">
     <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t)}
+      {const Actions = $derived(getAssetBulkActions($t))}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 
       <ActionButton action={Actions.CreateSharedLink} />
@@ -299,7 +301,7 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={handleHideAssets} />
+        <ActionMenuItem action={Actions.Archive} />
         <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets menuItem onAssetDelete={handleHideAssets} />
       </ButtonContextMenu>
@@ -309,7 +311,7 @@
 
 <section
   id="memory-viewer"
-  data-sveltekit-noscroll
+  data-sveltekit-reset={false}
   class="dark w-full bg-immich-dark-gray text-white"
   use:scrollMemoryClearer={{ routeStartsWith: Route.memories() }}
   bind:this={memoryWrapper}

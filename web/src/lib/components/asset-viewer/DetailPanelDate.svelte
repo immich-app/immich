@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
-  import { locale } from '$lib/stores/preferences.store';
-  import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import AssetChangeDateModal from '#lib/modals/AssetChangeDateModal.svelte';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { type AssetResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
   import { mdiCalendar, mdiPencil } from '@mdi/js';

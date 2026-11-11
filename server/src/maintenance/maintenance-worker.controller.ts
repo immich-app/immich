@@ -43,9 +43,7 @@ export class MaintenanceWorkerController {
     private databaseBackupService: DatabaseBackupService,
   ) {}
 
-  /**
-   * {@link _ServerController.getServerConfig }
-   */
+  /** {@link _ServerController.getServerConfig } */
   @Get('server/config')
   getServerConfig(): ServerConfigDto {
     return this.service.getSystemConfig();
@@ -61,18 +59,14 @@ export class MaintenanceWorkerController {
     return this.service.getVersion();
   }
 
-  /**
-   * {@link _DatabaseBackupController.listDatabaseBackups}
-   */
+  /** {@link _DatabaseBackupController.listDatabaseBackups} */
   @Get('admin/database-backups')
   @MaintenanceRoute()
   listDatabaseBackups(): Promise<DatabaseBackupListResponseDto> {
     return this.databaseBackupService.listBackups();
   }
 
-  /**
-   * {@link _DatabaseBackupController.downloadDatabaseBackup}
-   */
+  /** {@link _DatabaseBackupController.downloadDatabaseBackup} */
   @Get('admin/database-backups/:filename')
   @MaintenanceRoute()
   async downloadDatabaseBackup(
@@ -83,18 +77,14 @@ export class MaintenanceWorkerController {
     await sendFile(res, next, () => this.databaseBackupService.downloadBackup(filename), this.logger);
   }
 
-  /**
-   * {@link _DatabaseBackupController.deleteDatabaseBackup}
-   */
+  /** {@link _DatabaseBackupController.deleteDatabaseBackup} */
   @Delete('admin/database-backups')
   @MaintenanceRoute()
   async deleteDatabaseBackup(@Body() dto: DatabaseBackupDeleteDto): Promise<void> {
     return this.databaseBackupService.deleteBackup(dto.backups);
   }
 
-  /**
-   * {@link _DatabaseBackupController.uploadDatabaseBackup}
-   */
+  /** {@link _DatabaseBackupController.uploadDatabaseBackup} */
   @Post('admin/database-backups/upload')
   @MaintenanceRoute()
   @UseInterceptors(FileInterceptor('file'))

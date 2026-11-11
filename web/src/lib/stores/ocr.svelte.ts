@@ -1,5 +1,5 @@
-import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
-import { CancellableTask } from '$lib/utils/cancellable-task';
+import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.ts';
+import { CancellableTask } from '#lib/utils/cancellable-task.ts';
 
 export type OcrBoundingBox = {
   id: string;

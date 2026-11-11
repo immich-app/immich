@@ -52,8 +52,8 @@ export const handleRelease = ({ type }: ReleaseOptions) => {
   }
 
   // machine-learning
-  execSync(`uv version --directory machine-learning ${newVersionRaw}`, {
-    cwd: root,
+  execSync(`mise exec -- uv version ${newVersionRaw}`, {
+    cwd: join(root, 'machine-learning'),
     stdio: 'inherit',
   });
 

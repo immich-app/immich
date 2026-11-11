@@ -1,21 +1,21 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import RemoveFromSharedLink from '$lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { AssetAction } from '$lib/constants';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { Viewport } from '$lib/managers/timeline-manager/types';
-  import { Route } from '$lib/route';
-  import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { downloadArchive } from '$lib/utils/asset-utils';
-  import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { handleError } from '$lib/utils/handle-error';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import RemoveFromSharedLink from '#lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import { AssetAction } from '#lib/constants.ts';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import type { Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { Route } from '#lib/route.ts';
+  import { dragAndDropFilesStore } from '#lib/stores/drag-and-drop-files.store.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { downloadArchive } from '#lib/utils/asset-utils.ts';
+  import { fileUploadHandler, openFileUploadDialog } from '#lib/utils/file-uploader.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Logo, toastManager } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
@@ -139,7 +139,7 @@
   </header>
 {:else if assets.length === 1}
   {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
-    {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+    {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
       <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
     {/await}
   {/await}

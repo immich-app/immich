@@ -1,8 +1,8 @@
 <script lang="ts">
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
-  import { semverToName } from '$lib/utils';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import VersionAnnouncementModal from '#lib/modals/VersionAnnouncementModal.svelte';
+  import { semverToName } from '#lib/utils.ts';
   import { ReleaseType, type ReleaseEventV1 } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
 

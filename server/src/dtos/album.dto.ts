@@ -6,6 +6,7 @@ import { AlbumUser, AuthSharedLink } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
 import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum.js';
 import { asDateTimeString } from 'src/utils/date.js';
@@ -229,7 +230,7 @@ export type MapAlbumDto = {
   order: AssetOrder;
 };
 
-export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto => {
+export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>, { auth }: { auth?: AuthDto } = {}): AlbumResponseDto => {
   const albumUsers: AlbumUserResponseDto[] = [];
 
   if (entity.albumUsers) {
@@ -262,7 +263,7 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     createdAt: asDateTimeString(entity.createdAt),
     updatedAt: asDateTimeString(entity.updatedAt),
     id: entity.id,
-    albumUsers,
+    albumUsers: auth?.sharedLink ? [] : albumUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
     startDate: asDateTimeString(startDate),

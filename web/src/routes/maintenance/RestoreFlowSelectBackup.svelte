@@ -2,7 +2,7 @@
   import { Button, Heading, HStack, Scrollable } from '@immich/ui';
   import { mdiArrowLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import MaintenanceBackupsList from '$lib/components/maintenance/MaintenanceBackupsList.svelte';
+  import MaintenanceBackupsList from '#lib/components/maintenance/MaintenanceBackupsList.svelte';
 
   type Props = {
     previous: () => void;

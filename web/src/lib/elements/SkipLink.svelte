@@ -1,20 +1,14 @@
 <script lang="ts">
-  import { getTabbable } from '$lib/utils/focus-util';
+  import { getTabbable } from '#lib/utils/focus-util.ts';
   import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    /**
-     * Target for the skip link to move focus to.
-     */
+    /** Target for the skip link to move focus to. */
     target?: string;
-    /**
-     * Text for the skip link button.
-     */
+    /** Text for the skip link button. */
     text?: string;
-    /**
-     * Breakpoint at which the skip link is visible. Defaults to always being visible.
-     */
+    /** Breakpoint at which the skip link is visible. Defaults to always being visible. */
     breakpoint?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   }
 

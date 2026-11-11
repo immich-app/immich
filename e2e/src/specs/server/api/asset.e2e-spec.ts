@@ -355,7 +355,7 @@ describe('/asset', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ livePhotoVideoId: asset.id });
 
-      expect(body).toEqual(errorDto.badRequest('Live photo video does not belong to the user'));
+      expect(body).toEqual(errorDto.badRequest('Not found or no asset.update access'));
       expect(status).toEqual(400);
     });
 

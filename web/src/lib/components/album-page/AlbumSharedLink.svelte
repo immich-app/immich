@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { getSharedLinkActions } from '$lib/services/shared-link.service';
-  import { locale } from '$lib/stores/preferences.store';
+  import { getSharedLinkActions } from '#lib/services/shared-link.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
   import { ActionButton, Text } from '@immich/ui';
   import { DateTime } from 'luxon';

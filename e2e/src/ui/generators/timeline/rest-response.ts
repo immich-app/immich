@@ -1,6 +1,4 @@
-/**
- * REST API output functions for converting timeline data to API response formats
- */
+/** REST API output functions for converting timeline data to API response formats */
 
 import {
   AlbumUserRole,
@@ -19,9 +17,7 @@ import { signupDto } from 'src/fixtures.js';
 import { parseTimeBucketKey } from 'src/ui/generators/timeline/utils.js';
 import type { MockTimelineAsset, MockTimelineData } from './timeline-config';
 
-/**
- * Convert timeline/asset models to columnar format (parallel arrays)
- */
+/** Convert timeline/asset models to columnar format (parallel arrays) */
 export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetResponseDto {
   const result: TimeBucketAssetResponseDto = {
     id: [],
@@ -70,11 +66,11 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
 }
 
 /**
- * Extract a single bucket from timeline data (mimics getTimeBucket API)
- * Automatically handles both ISO timestamp and simple month formats
- * Returns data in columnar format matching the actual API
- * When albumId is provided, only returns assets from that album
- */
+Extract a single bucket from timeline data (mimics getTimeBucket API)
+Automatically handles both ISO timestamp and simple month formats
+Returns data in columnar format matching the actual API
+When albumId is provided, only returns assets from that album
+*/
 export function getTimeBucket(
   timelineData: MockTimelineData,
   timeBucket: string,
@@ -141,16 +137,16 @@ export type Changes = {
 };
 
 /**
- * Helper function to determine if an asset should be included based on filter criteria
- * @param asset - The asset to check
- * @param isTrashed - Filter for trashed status (undefined means no filter)
- * @param isArchived - Filter for archived status (undefined means no filter)
- * @param isFavorite - Filter for favorite status (undefined means no filter)
- * @param deletedAssetIds - Set of IDs for assets that have been deleted
- * @param archivedAssetIds - Set of IDs for assets that have been archived
- * @param favoritedAssetIds - Set of IDs for assets that have been favorited
- * @returns true if the asset matches all filter criteria
- */
+Helper function to determine if an asset should be included based on filter criteria
+@param asset - The asset to check
+@param isTrashed - Filter for trashed status (undefined means no filter)
+@param isArchived - Filter for archived status (undefined means no filter)
+@param isFavorite - Filter for favorite status (undefined means no filter)
+@param deletedAssetIds - Set of IDs for assets that have been deleted
+@param archivedAssetIds - Set of IDs for assets that have been archived
+@param favoritedAssetIds - Set of IDs for assets that have been favorited
+@returns true if the asset matches all filter criteria
+*/
 function shouldIncludeAsset(
   asset: MockTimelineAsset,
   isTrashed: boolean | undefined,
@@ -175,9 +171,9 @@ function shouldIncludeAsset(
   return isFavorite === undefined || actuallyFavorited === isFavorite;
 }
 /**
- * Get summary for all buckets (mimics getTimeBuckets API)
- * When albumId is provided, only includes buckets that contain assets from that album
- */
+Get summary for all buckets (mimics getTimeBuckets API)
+When albumId is provided, only includes buckets that contain assets from that album
+*/
 export function getTimeBuckets(
   timelineData: MockTimelineData,
   isTrashed: boolean | undefined,
@@ -279,9 +275,9 @@ const createDefaultOwner = (ownerId: string) => {
 };
 
 /**
- * Convert a TimelineAssetConfig to a full AssetResponseDto
- * This matches the response from GET /api/assets/:id
- */
+Convert a TimelineAssetConfig to a full AssetResponseDto
+This matches the response from GET /api/assets/:id
+*/
 export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserResponseDto): AssetResponseDto {
   const now = new Date().toISOString();
 
@@ -292,7 +288,7 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
     make: null,
     model: null,
     exifImageWidth: asset.ratio > 1 ? 4000 : 3000,
-    exifImageHeight: asset.ratio > 1 ? Math.round(4000 / asset.ratio) : Math.round(3000 * asset.ratio),
+    exifImageHeight: Math.round(asset.ratio > 1 ? 4000 : 3000 / asset.ratio),
     fileSizeInByte: asset.fileSizeInByte,
     orientation: '1',
     dateTimeOriginal: asset.fileCreatedAt,
@@ -348,9 +344,9 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
 }
 
 /**
- * Get a single asset by ID from timeline data
- * This matches the response from GET /api/assets/:id
- */
+Get a single asset by ID from timeline data
+This matches the response from GET /api/assets/:id
+*/
 export function getAsset(
   timelineData: MockTimelineData,
   assetId: string,
@@ -368,9 +364,9 @@ export function getAsset(
 }
 
 /**
- * Get a mock album from timeline data
- * This matches the response from GET /api/albums/:id
- */
+Get a mock album from timeline data
+This matches the response from GET /api/albums/:id
+*/
 export function getAlbum(
   timelineData: MockTimelineData,
   ownerId: string,

@@ -1,6 +1,6 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { updateMyPreferences } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { authManager } from '$lib/managers/auth-manager.svelte';
 
 export const getButtonVisibility = (): boolean => {
   if (!authManager.authenticated) {

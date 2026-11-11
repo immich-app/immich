@@ -7,20 +7,29 @@ import {
   AlbumsAddAssetsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
+  MapAlbumDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
   mapAlbum,
 } from 'src/dtos/album.dto.js';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
 import { AlbumUserRole, Permission } from 'src/enum.js';
-import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository.js';
+import { AlbumAssetCount } from 'src/repositories/album.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { addAssets, removeAssets } from 'src/utils/asset.util.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { findOrFail } from 'src/utils/misc.js';
 import { getPreferences } from 'src/utils/preferences.js';
+
+const mapAlbumMetadata = (metadata?: AlbumAssetCount) => ({
+  startDate: asDateTimeString(metadata?.startDate ?? undefined),
+  endDate: asDateTimeString(metadata?.endDate ?? undefined),
+  assetCount: metadata?.assetCount ?? 0,
+  // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
+  lastModifiedAssetTimestamp: asDateTimeString(metadata?.lastModifiedAssetTimestamp ?? undefined),
+});
 
 @Injectable()
 export class AlbumService extends BaseService {
@@ -60,38 +69,30 @@ export class AlbumService extends BaseService {
     return albums.map((album) => ({
       ...mapAlbum(album),
       sharedLinks: undefined,
-      startDate: asDateTimeString(albumMetadata[album.id]?.startDate ?? undefined),
-      endDate: asDateTimeString(albumMetadata[album.id]?.endDate ?? undefined),
-      assetCount: albumMetadata[album.id]?.assetCount ?? 0,
-      // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
-      lastModifiedAssetTimestamp: asDateTimeString(albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined),
+      ...mapAlbumMetadata(albumMetadata[album.id]),
     }));
   }
 
   async get(auth: AuthDto, id: string): Promise<AlbumResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
     await this.albumRepository.updateThumbnails();
-    const album = await this.findOrFail(id, auth.user.id, { withAssets: false });
-    const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
+    const album = await this.findOrFail(id, auth.user.id);
 
     const hasSharedUsers = album.albumUsers && album.albumUsers.length > 1;
     const hasSharedLink = album.sharedLinks && album.sharedLinks.length > 0;
     const isShared = hasSharedUsers || hasSharedLink;
 
     return {
-      ...mapAlbum(album),
-      startDate: asDateTimeString(albumMetadataForIds?.startDate ?? undefined),
-      endDate: asDateTimeString(albumMetadataForIds?.endDate ?? undefined),
-      assetCount: albumMetadataForIds?.assetCount ?? 0,
-      lastModifiedAssetTimestamp: asDateTimeString(albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined),
-      contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
+      ...(await this.mapWithMetadata(album, auth)),
+      contributorCounts:
+        isShared && !auth.sharedLink ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
   }
 
   async getMapMarkers(auth: AuthDto, id: string): Promise<MapMarkerResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
 
-    if (auth.sharedLink && !auth.sharedLink.showExif) {
+    if (isMetadataHidden(auth)) {
       return [];
     }
 
@@ -134,13 +135,13 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id: album.id, userId, senderName: auth.user.name });
     }
 
-    return mapAlbum(album);
+    return this.mapWithMetadata(album);
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [id] });
 
-    const album = await this.findOrFail(id, auth.user.id, { withAssets: true });
+    const album = await this.findOrFail(id, auth.user.id);
 
     if (dto.albumThumbnailAssetId) {
       const results = await this.albumRepository.getAssetIds(id, [dto.albumThumbnailAssetId]);
@@ -161,7 +162,7 @@ export class AlbumService extends BaseService {
       auth.user.id,
     );
 
-    return mapAlbum({ ...updatedAlbum, assets: album.assets });
+    return this.mapWithMetadata(updatedAlbum);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
@@ -170,7 +171,7 @@ export class AlbumService extends BaseService {
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    const album = await this.findOrFail(id, auth.user.id, { withAssets: false });
+    const album = await this.findOrFail(id, auth.user.id);
     await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [id] });
 
     const results = await addAssets(
@@ -229,7 +230,7 @@ export class AlbumService extends BaseService {
       if (notPresentAssetIds.length === 0) {
         continue;
       }
-      const album = await this.findOrFail(albumId, auth.user.id, { withAssets: false });
+      const album = await this.findOrFail(albumId, auth.user.id);
       results.error = undefined;
       results.success = true;
 
@@ -261,7 +262,7 @@ export class AlbumService extends BaseService {
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumAssetDelete, ids: [id] });
 
-    const album = await this.findOrFail(id, auth.user.id, { withAssets: false });
+    const album = await this.findOrFail(id, auth.user.id);
     const results = await removeAssets(
       auth,
       { access: this.accessRepository, bulk: this.albumRepository },
@@ -287,7 +288,7 @@ export class AlbumService extends BaseService {
   async addUsers(auth: AuthDto, id: string, { albumUsers }: AddUsersDto): Promise<AlbumResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
 
-    const album = await this.findOrFail(id, auth.user.id, { withAssets: false });
+    const album = await this.findOrFail(id, auth.user.id);
 
     for (const { userId, role } of albumUsers) {
       if (role === AlbumUserRole.Owner) {
@@ -309,7 +310,7 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id, userId, senderName: auth.user.name });
     }
 
-    return mapAlbum(await this.findOrFail(id, auth.user.id, { withAssets: true }));
+    return this.mapWithMetadata(await this.findOrFail(id, auth.user.id));
   }
 
   async removeUser(auth: AuthDto, id: string, userId: string | 'me'): Promise<void> {
@@ -317,7 +318,7 @@ export class AlbumService extends BaseService {
       userId = auth.user.id;
     }
 
-    const album = await this.findOrFail(id, auth.user.id, { withAssets: false });
+    const album = await this.findOrFail(id, auth.user.id);
 
     const exists = album.albumUsers.find(({ user: { id } }) => id === userId);
     if (!exists) {
@@ -342,7 +343,7 @@ export class AlbumService extends BaseService {
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
 
-    const album = await this.findOrFail(id, userId, { withAssets: false });
+    const album = await this.findOrFail(id, userId);
     const owner = album.albumUsers[0];
 
     if (owner.user.id === userId) {
@@ -352,7 +353,12 @@ export class AlbumService extends BaseService {
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 
-  private findOrFail(id: string, authUserId: string, options: AlbumInfoOptions) {
-    return findOrFail(() => this.albumRepository.getById(id, options, authUserId), 'Album');
+  private findOrFail(id: string, authUserId: string) {
+    return findOrFail(() => this.albumRepository.getById(id, authUserId), 'Album');
+  }
+
+  private async mapWithMetadata(album: MapAlbumDto, auth?: AuthDto): Promise<AlbumResponseDto> {
+    const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
+    return { ...mapAlbum(album, { auth }), ...mapAlbumMetadata(metadata) };
   }
 }

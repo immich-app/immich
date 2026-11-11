@@ -1,11 +1,11 @@
-import type { AlbumResponseDto } from '@immich/sdk';
 import {
   type AlbumModalRow,
   AlbumModalRowConverter,
   AlbumModalRowType,
-} from '$lib/components/shared-components/album-selection/album-selection-utils';
-import { AlbumSortBy, SortOrder } from '$lib/stores/preferences.store';
-import { albumFactory } from '@test-data/factories/album-factory';
+} from '#lib/components/shared-components/album-selection/album-selection-utils.ts';
+import { AlbumSortBy, SortOrder } from '#lib/stores/preferences.store.ts';
+import type { AlbumResponseDto } from '@immich/sdk';
+import { albumFactory } from '#test-data/factories/album-factory';
 
 // Some helper functions to make tests below more readable
 const createNewAlbumRow = (selected: boolean) => ({

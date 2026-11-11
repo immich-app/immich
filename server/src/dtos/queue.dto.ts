@@ -54,7 +54,16 @@ export const QueueStatisticsSchema = z
     failed: z.int().describe('Number of failed jobs'),
     delayed: z.int().describe('Number of delayed jobs'),
     waiting: z.int().describe('Number of waiting jobs'),
-    paused: z.int().describe('Number of paused jobs'),
+    paused: z
+      .int()
+      .describe('Number of paused jobs')
+      .meta(
+        new HistoryBuilder()
+          .added('v2.0.0')
+          .updated('v4.0.0', 'A paused queue will now also shows its job as `waiting`')
+          .deprecated('v4.0.0')
+          .getExtensions(),
+      ),
   })
   .meta({ id: 'QueueStatisticsDto' });
 

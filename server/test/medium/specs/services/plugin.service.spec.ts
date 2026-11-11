@@ -13,6 +13,7 @@ let defaultDatabase: Kysely<DB>;
 const wasmBytes = Buffer.from('some-wasm-binary-data');
 const sha256hash = Buffer.from('some-manifest-hash');
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(PluginService, {
     database: db || defaultDatabase,

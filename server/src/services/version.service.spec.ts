@@ -65,12 +65,15 @@ describe(VersionService.name, () => {
 
   describe('getVersion', () => {
     it('should respond the server version', () => {
-      expect(sut.getVersion()).toEqual({
+      const version = sut.getVersion();
+      expect(version).toEqual({
         major: 3,
         minor: 0,
         patch: 0,
         prerelease: null,
+        featureLevel: expect.any(Number),
       });
+      expect(Number.isSafeInteger(version.featureLevel)).toBe(true);
     });
   });
 
@@ -175,6 +178,7 @@ describe(VersionService.name, () => {
         minor: 0,
         patch: 0,
         prerelease: null,
+        featureLevel: expect.any(Number),
       });
       expect(mocks.websocket.clientSend).toHaveBeenCalledTimes(1);
     });
@@ -187,6 +191,7 @@ describe(VersionService.name, () => {
         minor: 0,
         patch: 0,
         prerelease: null,
+        featureLevel: expect.any(Number),
       });
       expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
     });
@@ -199,6 +204,7 @@ describe(VersionService.name, () => {
         minor: 0,
         patch: 0,
         prerelease: null,
+        featureLevel: expect.any(Number),
       });
       expect(mocks.websocket.clientSend).not.toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
     });

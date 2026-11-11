@@ -1,12 +1,12 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
+import type { ImageLoaderStatus } from '#lib/utils/adaptive-image-loader.svelte.ts';
+import { canCopyImageToClipboard } from '#lib/utils/asset-utils.ts';
+import { BaseEventManager } from '#lib/utils/base-event-manager.svelte.ts';
+import type { AssetGridRouteSearchParams } from '#lib/utils/navigation.ts';
 import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 import { cubicOut } from 'svelte/easing';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
-import type { ImageLoaderStatus } from '$lib/utils/adaptive-image-loader.svelte';
-import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
-import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
-import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 
 export interface Faces {
   id: string;

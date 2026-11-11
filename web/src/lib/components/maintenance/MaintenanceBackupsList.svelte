@@ -1,8 +1,8 @@
 <script lang="ts">
-  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
-  import MaintenanceBackupEntry from '$lib/components/maintenance/MaintenanceBackupEntry.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import { handleUploadDatabaseBackup } from '$lib/services/database-backups.service';
+  import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
+  import MaintenanceBackupEntry from '#lib/components/maintenance/MaintenanceBackupEntry.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import { getDatabaseBackupDateTime, handleUploadDatabaseBackup } from '#lib/services/database-backups.service.ts';
   import type { DatabaseBackupDto } from '@immich/sdk';
   import { listDatabaseBackups } from '@immich/sdk';
   import { Card, CardBody, HStack, Icon, ProgressBar, Stack, Text } from '@immich/ui';
@@ -51,13 +51,12 @@
     const unknownDateKey = $t('unknown_date');
 
     for (const backup of backups) {
-      const timezone = backup.timezone;
-      const dateMatch = backup.filename.match(/\d+T\d+/);
+      const backupDateTime = getDatabaseBackupDateTime(backup.filename, backup.timezone);
       let dateKey: string;
       let dt: DateTime;
 
-      if (dateMatch) {
-        dt = DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: timezone });
+      if (backupDateTime) {
+        dt = backupDateTime;
         dateKey = dt.toFormat('LLLL d, yyyy');
       } else {
         dt = DateTime.fromMillis(0);

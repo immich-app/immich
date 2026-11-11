@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { eventManager, type Events } from '$lib/managers/event-manager.svelte';
-  import type { EventCallback, EventMap } from '$lib/utils/base-event-manager.svelte';
+  import { eventManager, type Events } from '#lib/managers/event-manager.svelte.ts';
+  import type { EventCallback, EventMap } from '#lib/utils/base-event-manager.svelte.ts';
   import { onMount } from 'svelte';
 
   type Props = {

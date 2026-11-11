@@ -57,9 +57,7 @@ export type MonthSpec = {
   pattern: DayPattern;
 };
 
-/**
- * Configuration for timeline data generation
- */
+/** Configuration for timeline data generation */
 export type TimelineConfig = {
   ownerId?: string;
   months: MonthSpec[];
@@ -88,9 +86,7 @@ export type SerializedTimelineData = {
   album: MockAlbum;
 };
 
-/**
- * Validates a TimelineConfig object to ensure all values are within expected ranges
- */
+/** Validates a TimelineConfig object to ensure all values are within expected ranges */
 export function validateTimelineConfig(config: TimelineConfig): void {
   if (!config.months || config.months.length === 0) {
     throw new Error('TimelineConfig must contain at least one month');
@@ -146,9 +142,7 @@ export function validateTimelineConfig(config: TimelineConfig): void {
   }
 }
 
-/**
- * Create a default timeline configuration
- */
+/** Create a default timeline configuration */
 export function createDefaultTimelineConfig(): TimelineConfig {
   const months: MonthSpec[] = [
     // 2024 - Mix of patterns

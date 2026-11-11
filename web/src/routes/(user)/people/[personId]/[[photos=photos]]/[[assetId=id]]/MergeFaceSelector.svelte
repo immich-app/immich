@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { Route } from '$lib/route';
-  import { handleError } from '$lib/utils/handle-error';
+  import { Route } from '#lib/route.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { getAllPeople, getPerson, mergePeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
@@ -10,7 +10,7 @@
   import { flip } from 'svelte/animate';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
+  import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
   import FaceThumbnail from './FaceThumbnail.svelte';
   import PeopleList from './PeopleList.svelte';
 

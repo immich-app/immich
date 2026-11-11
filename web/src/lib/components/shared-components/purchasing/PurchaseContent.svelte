@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
-  import { Button, Heading, LoadingSpinner } from '@immich/ui';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { activateProduct, getActivationKey } from '#lib/utils/license-utils.ts';
+  import { Button, Heading, LoadingSpinner, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import UserPurchaseOptionCard from './IndividualPurchaseOptionCard.svelte';
   import ServerPurchaseOptionCard from './ServerPurchaseOptionCard.svelte';
@@ -41,6 +41,9 @@
       {$t('purchase_option_title')}
     </Heading>
   {/if}
+
+  <Text>{$t('purchase_product_key_description')}</Text>
+  <Text fontWeight="bold">{$t('purchase_product_key_excludes_backups')}</Text>
 
   {#if showMessage}
     <div class="mt-2">

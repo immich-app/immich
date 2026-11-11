@@ -1,9 +1,9 @@
+import AlbumCover from '#lib/components/album-page/AlbumCover.svelte';
+import { getAssetMediaUrl } from '#lib/utils.ts';
 import { render } from '@testing-library/svelte';
-import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
-import { getAssetMediaUrl } from '$lib/utils';
-import { albumFactory } from '@test-data/factories/album-factory';
+import { albumFactory } from '#test-data/factories/album-factory';
 
-vi.mock('$lib/utils');
+vi.mock('#lib/utils.js');
 
 describe('AlbumCover component', () => {
   it('renders an image when the album has a thumbnail', () => {

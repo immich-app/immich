@@ -1,6 +1,6 @@
 <script lang="ts">
-  import TreeItems from '$lib/components/shared-components/tree/TreeItems.svelte';
-  import { TreeNode } from '$lib/utils/tree-utils';
+  import TreeItems from '#lib/components/shared-components/tree/TreeItems.svelte';
+  import { TreeNode } from '#lib/utils/tree-utils.ts';
   import { Icon } from '@immich/ui';
   import { mdiChevronDown, mdiChevronRight } from '@mdi/js';
 
@@ -27,7 +27,7 @@
   href={getLink(node.path)}
   title={node.value}
   class={`flex grow place-items-center rounded-lg py-1 ps-2 text-sm hover:bg-slate-200 hover:font-semibold dark:hover:bg-slate-800 ${isTarget ? 'bg-slate-100 font-semibold text-primary dark:bg-slate-700' : 'dark:text-gray-200'}`}
-  data-sveltekit-keepfocus
+  data-sveltekit-reset={false}
 >
   {#if node.size > 0}
     <button type="button" {onclick}>

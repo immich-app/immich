@@ -1,4 +1,4 @@
-import mockfs from 'mock-fs';
+import mockfs, { symlink } from 'mock-fs';
 import { R_OK } from 'node:constants';
 import { mkdtempDisposable, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -220,6 +220,25 @@ describe(StorageRepository.name, () => {
     mockfs.restore();
   });
 
+  it.each(['crawl', 'walk'] as const)('%s should skip symbolic links to files and directories', async (method) => {
+    mockfs({
+      '/photos/image.jpg': '',
+      '/photos/subfolder/image.jpg': '',
+      '/outside/secret.txt': 'secret',
+      '/outside/album/image.jpg': '',
+      '/photos/file-link.jpg': symlink({ path: '/outside/secret.txt' }),
+      '/photos/directory-link': symlink({ path: '/outside/album' }),
+      '/photos/internal-file-link.jpg': symlink({ path: '/photos/image.jpg' }),
+      '/photos/internal-directory-link': symlink({ path: '/photos/subfolder' }),
+      '/photos/broken-link.jpg': symlink({ path: '/outside/missing.jpg' }),
+    });
+
+    const options = { pathsToCrawl: ['/photos'], take: 1 };
+    const batches = method === 'crawl' ? [await sut.crawl(options)] : await Array.fromAsync(sut.walk(options));
+
+    expect(batches.flat().toSorted()).toEqual(['/photos/image.jpg', '/photos/subfolder/image.jpg']);
+  });
+
   describe('crawl', () => {
     for (const { test, options, files } of tests) {
       it(test, async () => {
@@ -290,7 +309,10 @@ describe(StorageRepository.name, () => {
       const onError = vitest.fn();
       const close = sut.watch(['/photos'], {}, { onAdd, onChange, onError, onReady, onUnlink });
 
-      expect(mocks.watch).toHaveBeenCalledWith(['/photos'], expect.objectContaining({ ignored: expect.any(Function) }));
+      expect(mocks.watch).toHaveBeenCalledWith(
+        ['/photos'],
+        expect.objectContaining({ followSymlinks: false, ignored: expect.any(Function) }),
+      );
 
       const error = new Error('watch error');
       getHandler('ready')();

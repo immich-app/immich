@@ -1,5 +1,6 @@
 import { BrowserContext } from '@playwright/test';
 import { playwrightHost } from 'src/../playwright.config.js';
+import { adminConfig, publicConfig, userConfig } from 'src/ui/mock-network/config-fixtures.js';
 
 export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserId: string) => {
   await context.addCookies([
@@ -113,6 +114,27 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
       },
     });
   });
+  await context.route('**/api/public/config', async (route) => {
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      json: publicConfig,
+    });
+  });
+  await context.route('**/api/config', async (route) => {
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      json: userConfig,
+    });
+  });
+  await context.route('**/api/admin/config', async (route) => {
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      json: adminConfig,
+    });
+  });
   await context.route('**/api/server/features', async (route) => {
     return route.fulfill({
       status: 200,
@@ -121,6 +143,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
         smartSearch: false,
         facialRecognition: false,
         duplicateDetection: false,
+        backups: false,
         map: true,
         reverseGeocoding: true,
         importFaces: false,

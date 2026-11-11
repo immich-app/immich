@@ -14,9 +14,7 @@ type DayDistributionStrategy = (
   rng: SeededRandom,
 ) => MockTimelineAsset[];
 
-/**
- * Strategies for determining total asset count per month
- */
+/** Strategies for determining total asset count per month */
 export const ASSET_DISTRIBUTION: Record<MonthDistribution, AssetDistributionStrategy | null> = {
   empty: null, // Special case - handled separately
   sparse: (rng) => rng.nextInt(3, 9), // 3-8 assets
@@ -25,9 +23,7 @@ export const ASSET_DISTRIBUTION: Record<MonthDistribution, AssetDistributionStra
   'very-dense': (rng) => rng.nextInt(80, 151), // 80-150 assets
 };
 
-/**
- * Strategies for distributing assets across days within a month
- */
+/** Strategies for distributing assets across days within a month */
 export const DAY_DISTRIBUTION: Record<DayPattern, DayDistributionStrategy> = {
   'single-day': (year, month, daysInMonth, totalAssets, ownerId, rng) => {
     // All assets on one day in the middle of the month

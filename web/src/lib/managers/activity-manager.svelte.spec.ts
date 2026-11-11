@@ -1,3 +1,4 @@
+import { activityManager } from '#lib/managers/activity-manager.svelte.ts';
 import {
   deleteActivity,
   getActivities,
@@ -5,7 +6,6 @@ import {
   ReactionType,
   type ActivityResponseDto,
 } from '@immich/sdk';
-import { activityManager } from '$lib/managers/activity-manager.svelte';
 
 vi.mock('@immich/sdk', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@immich/sdk')>()),

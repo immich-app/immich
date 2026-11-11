@@ -1,7 +1,7 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { GCastDestination } from '#lib/utils/cast/gcast-destination.svelte.ts';
 import { createSession, type SessionCreateResponseDto } from '@immich/sdk';
 import { DateTime, Duration } from 'luxon';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 
 // follows chrome.cast.media.PlayerState
 export enum CastState {

@@ -1,15 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/state';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
+  import { page, type ReadonlyURLSearchParams } from '$app/state';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import SharedLinkCard from './SharedLinkCard.svelte';
-  import { type SharedLinkTab } from '$lib/constants';
-  import GroupTab from '$lib/elements/GroupTab.svelte';
-  import { Route } from '$lib/route';
-  import { getAllSharedLinks, SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
+  import { type SharedLinkTab } from '#lib/constants.ts';
+  import GroupTab from '#lib/elements/GroupTab.svelte';
+  import { Route } from '#lib/route.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAllSharedLinksQuery } from '#lib/queries/shared-link.query.ts';
+  import { SharedLinkType } from '@immich/sdk';
   import { Container } from '@immich/ui';
-  import { onMount, type Snippet } from 'svelte';
+  import { type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { LayoutData } from './$types';
 
@@ -20,15 +21,8 @@
 
   const { children, data }: Props = $props();
 
-  let sharedLinks: SharedLinkResponseDto[] = $state([]);
-
-  const refresh = async () => {
-    sharedLinks = await getAllSharedLinks({});
-  };
-
-  onMount(async () => {
-    await refresh();
-  });
+  const query = createPreloadedQuery(getAllSharedLinksQuery);
+  const sharedLinks = $derived(query.data);
 
   const filterMap: Record<SharedLinkTab, string> = {
     all: $t('all'),
@@ -39,7 +33,7 @@
   let filters = Object.keys(filterMap);
   let labels = Object.values(filterMap);
 
-  const getActiveTab = (url: URL) => {
+  const getActiveTab = (url: { searchParams: ReadonlyURLSearchParams | URLSearchParams }) => {
     const filter = url.searchParams.get('filter');
     return filter && filters.includes(filter) ? filter : 'all';
   };
@@ -54,20 +48,7 @@
         (type === SharedLinkType.Individual && selectedTab === 'individual'),
     ),
   );
-
-  const onSharedLinkUpdate = (sharedLink: SharedLinkResponseDto) => {
-    const index = sharedLinks.findIndex((link) => link.id === sharedLink.id);
-    if (index !== -1) {
-      sharedLinks[index] = sharedLink;
-    }
-  };
-
-  const onSharedLinkDelete = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinks = sharedLinks.filter(({ id }) => id !== sharedLink.id);
-  };
 </script>
-
-<OnEvents {onSharedLinkUpdate} {onSharedLinkDelete} />
 
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}

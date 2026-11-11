@@ -1,10 +1,10 @@
+import en from '#i18n/en.json';
+import { getAssetUrl, memoryLaneTitle, semverToName } from '#lib/utils.ts';
 import { AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
 import { addMessages, init } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import en from '$i18n/en.json';
-import { getAssetUrl, memoryLaneTitle, semverToName } from '$lib/utils';
-import { assetFactory } from '@test-data/factories/asset-factory';
-import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
+import { assetFactory } from '#test-data/factories/asset-factory.ts';
+import { sharedLinkFactory } from '#test-data/factories/shared-link-factory.ts';
 
 describe('utils', () => {
   describe(getAssetUrl.name, () => {
@@ -166,11 +166,11 @@ describe('utils', () => {
   });
   describe('semverToName', () => {
     it('should not append release candidate tag if prelease is not set', () => {
-      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: null })).toEqual('v3.0.0');
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: null, featureLevel: 1 })).toEqual('v3.0.0');
     });
 
     it('should append release candidate if set', () => {
-      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0 })).toEqual('v3.0.0-rc.0');
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0, featureLevel: 1 })).toEqual('v3.0.0-rc.0');
     });
   });
 

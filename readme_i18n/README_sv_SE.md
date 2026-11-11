@@ -34,6 +34,7 @@
   <a href="README_uk_UA.md">Українська</a>
   <a href="README_ru_RU.md">Русский</a>
   <a href="README_bg_BG.md">Български</a>
+  <a href="README_pl_PL.md">Polski</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_ar_JO.md">العربية</a>
   <a href="README_th_TH.md">ภาษาไทย</a>
@@ -111,14 +112,4 @@ lösenord: demo
 
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
-</a>
-
-## Stjärn-Historik
-
-<a href="https://star-history.com/#immich-app/immich&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
- </picture>
 </a>

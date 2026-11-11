@@ -36,7 +36,7 @@ export class WorkflowTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @UpdateIdColumn()
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 
   @Column({ type: 'boolean', default: true })

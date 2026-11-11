@@ -1,6 +1,4 @@
-/**
- * Generator functions for timeline model objects
- */
+/** Generator functions for timeline model objects */
 
 import { faker } from '@faker-js/faker';
 import { AssetVisibility } from '@immich/sdk';
@@ -12,9 +10,7 @@ import { ASSET_DISTRIBUTION, DAY_DISTRIBUTION } from './distribution-patterns';
 import type { MockTimelineAsset, MockTimelineData, SerializedTimelineData, TimelineConfig } from './timeline-config';
 import { ASPECT_RATIO_WEIGHTS, GENERATION_CONSTANTS, validateTimelineConfig } from './timeline-config';
 
-/**
- * Generate a random aspect ratio based on weighted probabilities
- */
+/** Generate a random aspect ratio based on weighted probabilities */
 export function generateAspectRatio(rng: SeededRandom): string {
   const random = rng.next();
   let cumulative = 0;
@@ -89,9 +85,7 @@ export function generateAsset(
   return asset;
 }
 
-/**
- * Generate assets for a specific day
- */
+/** Generate assets for a specific day */
 export function generateDayAssets(
   year: number,
   month: number,
@@ -104,10 +98,10 @@ export function generateDayAssets(
 }
 
 /**
- * Distribute assets evenly across consecutive days
- *
- * @returns Array of generated timeline assets
- */
+Distribute assets evenly across consecutive days
+
+@returns Array of generated timeline assets
+*/
 export function generateConsecutiveDays(
   year: number,
   month: number,
@@ -133,9 +127,7 @@ export function generateConsecutiveDays(
   return assets;
 }
 
-/**
- * Generate assets for a month with specified distribution pattern
- */
+/** Generate assets for a month with specified distribution pattern */
 export function generateMonthAssets(
   year: number,
   month: number,
@@ -173,9 +165,7 @@ export function generateMonthAssets(
   return assets;
 }
 
-/**
- * Main generator function for timeline data
- */
+/** Main generator function for timeline data */
 export function generateTimelineData(config: TimelineConfig): MockTimelineData {
   validateTimelineConfig(config);
 

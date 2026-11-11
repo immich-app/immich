@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:intl/intl.dart';
 
@@ -11,11 +12,11 @@ sealed class DateFilterInputModel {
     // If date range is less than 24 hours, set the end date to the end of the day
     final date = asDateTimeRange();
     if (date.end.difference(date.start).inHours < 24) {
-      return DateFormat.yMMMd().format(date.start.toLocal());
+      return DateFormat.yMMMd(resolvedDateTimeLocale()).format(date.start.toLocal());
     } else {
       return context.t.search_filter_date_interval(
-        start: DateFormat.yMMMd().format(date.start.toLocal()),
-        end: DateFormat.yMMMd().format(date.end.toLocal()),
+        start: DateFormat.yMMMd(resolvedDateTimeLocale()).format(date.start.toLocal()),
+        end: DateFormat.yMMMd(resolvedDateTimeLocale()).format(date.end.toLocal()),
       );
     }
   }

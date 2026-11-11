@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { LoadingSpinner } from '@immich/ui';
 
   void authManager.logout();
