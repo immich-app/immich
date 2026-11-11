@@ -24,7 +24,7 @@ const angledVector = (step: number) =>
   JSON.stringify(
     Array.from({ length: 512 }, (_, i) => (i === 0 ? Math.cos(step * 0.3) : i === 1 ? Math.sin(step * 0.3) : 0)),
   );
-  
+
 // eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SearchService, {

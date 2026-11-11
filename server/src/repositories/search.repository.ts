@@ -21,7 +21,7 @@ import {
   searchStatisticsV3Examples,
   withExifInner,
 } from 'src/utils/database.js';
-import { type CursorPaginationOptions, paginationHelper } from 'src/utils/pagination.js';
+import { paginationHelper, type CursorPaginationOptions } from 'src/utils/pagination.js';
 import { MetadataCursor, SmartCursor } from 'src/utils/search-cursor.js';
 
 export interface SearchAssetIdOptions {
