@@ -7,13 +7,13 @@
     value: string;
   };
 
-  export const asComboboxOptions = (values: string[]): ComboBoxOption[] =>
+  export const asComboboxOptions = (values: string[]) =>
     values.map((value) => {
       if (value === '') {
-        return { id: value, label: get(t)('unknown'), value: '' };
+        return { label: get(t)('unknown'), value: '' };
       }
 
-      return { id: value, label: value, value };
+      return { label: value, value };
     });
 
   export const asSelectedOption = (value?: string) => (value === undefined ? undefined : asComboboxOptions([value])[0]);
