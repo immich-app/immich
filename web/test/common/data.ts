@@ -1206,11 +1206,11 @@ export class MockData {
     return updated;
   }
 
-  searchAssets(dto: Pick<MetadataSearchDto, 'visibility' | 'isFavorite' | 'size'>): SearchResponseDto {
-    const items = this.timelineAssets({ visibility: dto.visibility, isFavorite: dto.isFavorite ?? undefined }).slice(
-      0,
-      dto.size ?? 250,
-    );
+  searchAssets({ filter, size = 250 }: Pick<MetadataSearchDto, 'filter' | 'size'>): SearchResponseDto {
+    const items = this.timelineAssets({
+      visibility: filter?.visibility?.eq,
+      isFavorite: filter?.isFavorite?.eq,
+    }).slice(0, size);
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: { total: items.length, count: items.length, items, facets: [], nextPage: null, nextCursor: null },

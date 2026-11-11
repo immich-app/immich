@@ -209,8 +209,10 @@
               <p>
                 <a
                   href={Route.search({
-                    make: asset.exifInfo?.make ?? undefined,
-                    model: asset.exifInfo?.model ?? undefined,
+                    filter: {
+                      make: asset.exifInfo.make ? { eq: asset.exifInfo.make } : undefined,
+                      model: asset.exifInfo.model ? { eq: asset.exifInfo.model } : undefined,
+                    },
                   })}
                   title="{$t('search_for')} {cameraName}"
                   class="hover:text-primary"
@@ -241,7 +243,7 @@
             {#if asset.exifInfo?.lensModel}
               <p>
                 <a
-                  href={Route.search({ lensModel: asset.exifInfo.lensModel })}
+                  href={Route.search({ filter: { lensModel: { eq: asset.exifInfo.lensModel } } })}
                   title="{$t('search_for')} {asset.exifInfo.lensModel}"
                   class="line-clamp-1 hover:text-primary"
                 >

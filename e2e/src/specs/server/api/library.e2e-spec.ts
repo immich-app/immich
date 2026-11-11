@@ -36,8 +36,10 @@ describe('/libraries', () => {
       await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
-        originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
-        libraryId: library.id,
+        filter: {
+          originalPath: { eq: `${testAssetDirInternal}/temp/directoryA/assetA.png` },
+          libraryId: { eq: library.id },
+        },
       });
       expect(assets.count).toBe(1);
       const asset = assets.items[0];
@@ -62,9 +64,7 @@ describe('/libraries', () => {
 
       await utils.scan(admin.accessToken, library.id);
 
-      const { assets } = await utils.searchAssets(admin.accessToken, {
-        libraryId: library.id,
-      });
+      const { assets } = await utils.searchAssets(admin.accessToken, { filter: { libraryId: { eq: library.id } } });
 
       expect(assets.count).toEqual(1);
 
@@ -103,9 +103,7 @@ describe('/libraries', () => {
 
       await utils.scan(admin.accessToken, library.id);
 
-      const { assets } = await utils.searchAssets(admin.accessToken, {
-        libraryId: library.id,
-      });
+      const { assets } = await utils.searchAssets(admin.accessToken, { filter: { libraryId: { eq: library.id } } });
 
       expect(assets.count).toEqual(1);
 
