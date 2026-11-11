@@ -1,6 +1,7 @@
 <script lang="ts">
   import DetailPanelDate from '#lib/components/asset-viewer/DetailPanelDate.svelte';
   import DetailPanelDescription from '#lib/components/asset-viewer/DetailPanelDescription.svelte';
+  import DetailPanelFileInfo from '#lib/components/asset-viewer/DetailPanelFileInfo.svelte';
   import DetailPanelLocation from '#lib/components/asset-viewer/DetailPanelLocation.svelte';
   import DetailPanelPeople from '#lib/components/asset-viewer/DetailPanelPeople.svelte';
   import DetailPanelRating from '#lib/components/asset-viewer/DetailPanelStarRating.svelte';
@@ -14,18 +15,15 @@
   import { Route } from '#lib/route.ts';
   import { faceManager } from '#lib/stores/face.svelte.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
-  import { getAssetMediaUrl, truncateMiddle } from '#lib/utils.ts';
-  import { delay, getDimensions } from '#lib/utils/asset-utils.ts';
-  import { getByteUnitString } from '#lib/utils/byte-units.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
+  import { delay } from '#lib/utils/asset-utils.ts';
   import { getCameraName } from '#lib/utils/camera-utils.ts';
-  import { getParentPath } from '#lib/utils/tree-utils.ts';
   import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { Icon, IconButton, Link, LoadingSpinner, Text } from '@immich/ui';
-  import { mdiCamera, mdiCameraIris, mdiClose, mdiImageOutline, mdiInformationOutline } from '@mdi/js';
+  import { mdiCamera, mdiCameraIris, mdiClose } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
   import PersonSidePanel from '../faces-page/PersonSidePanel.svelte';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
@@ -75,26 +73,11 @@
     previousId = asset.id;
   });
 
-  const getMegapixel = (width: number, height: number): number | undefined => {
-    const megapixel = Math.round((height * width) / 1_000_000);
-
-    if (megapixel) {
-      return megapixel;
-    }
-
-    return undefined;
-  };
-
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
     assetViewerManager.closeEditFacesPanel();
     faceManager.clear();
     await faceManager.getAssetFaces(asset.id);
-  };
-
-  const getAssetFolderHref = (asset: AssetResponseDto) => {
-    // Remove the last part of the path to get the parent path
-    return Route.folders({ path: getParentPath(asset.originalPath) });
   };
 
   onDestroy(() => {
@@ -152,52 +135,7 @@
       {/if}
 
       <DetailPanelDate {asset} />
-
-      <div class="flex gap-4 py-4">
-        <div><Icon icon={mdiImageOutline} size="24" /></div>
-
-        <div>
-          <div class="flex place-items-start justify-between gap-2 break-all whitespace-pre-wrap">
-            <Text title={asset.originalFileName}>{truncateMiddle(asset.originalFileName)}</Text>
-            {#if isOwner}
-              <IconButton
-                icon={mdiInformationOutline}
-                aria-label={$t('show_file_location')}
-                class="shrink-0"
-                size="small"
-                shape="round"
-                color="secondary"
-                variant="ghost"
-                onclick={() => assetViewerManager.toggleAssetPath()}
-              />
-            {/if}
-          </div>
-          {#if assetViewerManager.isShowAssetPath}
-            <p class="pb-2 text-xs break-all opacity-50 hover:text-primary" transition:slide={{ duration: 250 }}>
-              <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
-              <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
-                {asset.originalPath}
-              </a>
-            </p>
-          {/if}
-          {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
-            <div class="flex gap-2 text-sm">
-              {#if asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageWidth}
-                {#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
-                  <p>
-                    {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
-                  </p>
-                {/if}
-                {const { width, height } = $derived(getDimensions(asset.exifInfo))}
-                <p>{width} × {height}</p>
-              {/if}
-              {#if asset.exifInfo?.fileSizeInByte}
-                <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
-              {/if}
-            </div>
-          {/if}
-        </div>
-      </div>
+      <DetailPanelFileInfo {asset} />
 
       {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.exposureTime || asset.exifInfo?.iso}
         <div class="flex gap-4 py-4">
