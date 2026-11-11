@@ -1,22 +1,5 @@
 <script lang="ts" module>
-  import { get } from 'svelte/store';
-
-  export type ComboBoxOption = {
-    id?: string;
-    label: string;
-    value: string;
-  };
-
-  export const asComboboxOptions = (values: string[]) =>
-    values.map((value) => {
-      if (value === '') {
-        return { label: get(t)('unknown'), value: '' };
-      }
-
-      return { label: value, value };
-    });
-
-  export const asSelectedOption = (value?: string) => (value === undefined ? undefined : asComboboxOptions([value])[0]);
+  export * from './combobox-utils.ts';
 </script>
 
 <script lang="ts">
@@ -27,6 +10,7 @@
   import { t } from 'svelte-i18n';
   import type { FormEventHandler } from 'svelte/elements';
   import { fly } from 'svelte/transition';
+  import type { ComboBoxOption } from './combobox-utils.ts';
 
   interface Props {
     label: string;
@@ -392,7 +376,7 @@
           {allowCreate ? searchQuery : $t('no_results')}
         </li>
       {/if}
-      {#each filteredOptions as option, index (option.id || option.label)}
+      {#each filteredOptions as option, index (option.id ?? `${option.value}:${option.label}`)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           aria-selected={index === selectedIndex}
