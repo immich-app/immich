@@ -136,6 +136,9 @@
     searchManager.filter.display.isArchive ||
       searchManager.filter.display.isFavorite ||
       searchManager.filter.display.isNotInAlbum ||
+      searchManager.filter.camera.make !== undefined ||
+      searchManager.filter.camera.model !== undefined ||
+      searchManager.filter.camera.lensModel !== undefined ||
       searchManager.filter.rating,
   );
 
