@@ -5,12 +5,12 @@
   import HelpAndFeedbackModal from '#lib/modals/HelpAndFeedbackModal.svelte';
   import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
   import { Route } from '#lib/route.ts';
-  import { page } from '$app/state';
   import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import { page } from '$app/state';
   import UserAvatar from '../UserAvatar.svelte';
 
   type Props = {

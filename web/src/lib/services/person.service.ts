@@ -5,8 +5,8 @@ import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import {
-  getPerson,
   PersonUpdateStrategy,
+  getPerson,
   updatePerson,
   type AssetResponseDto,
   type PersonResponseDto,

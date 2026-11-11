@@ -1,6 +1,4 @@
-#![cfg(feature = "rotate")]
-
-use native_core::rotate::{Orientation, rotate};
+use codecs::rotate::{Orientation, rotate};
 
 #[test]
 fn exif_orientations() {

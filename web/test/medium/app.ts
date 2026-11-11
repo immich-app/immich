@@ -17,10 +17,18 @@ export const createApp = (page: Page, data: MockData) => {
   const card = (link: { key: string }) => page.locator(`a[href="${Route.viewSharedLink(link)}"]`);
   const memoryRoot = page.getByTestId('memory-viewer');
   const memoryGallery = page.getByTestId('memory-gallery');
+  const dialog = page.getByRole('dialog');
+  const sidebar = page.getByTestId('sidebar-parent');
+  const accountButton = page.getByRole('button').and(page.getByTitle(/\(.+@.+\)$/));
+  const purchasePanel = dialog.filter({
+    has: page.getByRole('heading', { name: 'purchase_panel_title', exact: true }),
+  });
 
   return {
-    dialog: page.getByRole('dialog'),
+    dialog,
+    dialogButton: (name: string) => dialog.getByRole('button', { name, exact: true }),
     toast: (key: string) => page.getByText(key),
+    undoButton: page.getByRole('button', { name: 'undo', exact: true }),
 
     admin: {
       maintenance: {
@@ -37,6 +45,7 @@ export const createApp = (page: Page, data: MockData) => {
         editButton: button('edit'),
         deleteButton: button('delete'),
         resetPasswordButton: button('reset_password'),
+        resetPinCodeButton: button('reset_pin_code'),
         form: {
           emailInput: labelled('email'),
           passwordInput: labelled('password'),
@@ -53,16 +62,54 @@ export const createApp = (page: Page, data: MockData) => {
       createAlbumButton: button('create_album'),
     },
 
+    settings: {
+      openSection: async (title: string) => {
+        const toggle = page.getByRole('button', { name: new RegExp(`^${title}`) });
+        if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+          await toggle.click();
+        }
+      },
+    },
+
+    library: {
+      deleteButton: button('delete').filter({ hasText: 'delete' }),
+      rowDeleteButton: (text: string) =>
+        page.getByRole('row').filter({ hasText: text }).getByRole('button', { name: 'delete', exact: true }),
+    },
+
+    tags: {
+      child: (name: string) => page.getByRole('main').getByRole('button', { name, exact: true }),
+    },
+
     album: {
+      backButton: page.getByTestId('control-bar').getByLabel('Close'),
       summary: page.getByTestId('album-details'),
       selectPhotosButton: button('select_photos'),
       mapButton: labelled('map'),
       mapDialog: page.getByRole('dialog'),
       mapMarkers: page.getByRole('dialog').locator('.maplibregl-marker'),
+      optionsMenuButton: labelled('album_options'),
+      optionsMenuItem: page.getByRole('menuitem', { name: 'options', exact: true }),
+      userRoleSelect: (role: string) => page.getByRole('dialog').getByText(role, { exact: true }),
+      removeUserOption: page.getByRole('option', { name: 'remove_user', exact: true }),
+      removeUserConfirmButton: page
+        .getByRole('dialog')
+        .filter({ hasText: 'album_remove_user' })
+        .getByRole('button', { name: 'remove_user', exact: true }),
+      activity: {
+        commentsButton: page.getByRole('button', { name: 'activity', exact: true }),
+      },
     },
 
     memories: {
       card: () => page.getByTestId('memory-card'),
+    },
+
+    person: {
+      editNameButton: page.getByTitle('edit_name', { exact: true }),
+      nameInput: page.getByPlaceholder('name_or_nickname'),
+      doneButton: page.getByRole('button', { name: 'done', exact: true }),
+      mergeDialog: (name: string) => page.getByRole('dialog').getByText(`merge_people - ${name}`, { exact: true }),
     },
 
     memory: {
@@ -100,6 +147,7 @@ export const createApp = (page: Page, data: MockData) => {
       heading: (name: string) => page.getByRole('heading', { name }),
       confirmRemove: () => button('remove').click(),
       card,
+      deleteButton: labelled('delete_link'),
       cover: (link: { key: string }) => card(link).getByTestId('album-image'),
       brokenCover: (link: { key: string }) => card(link).getByTestId('broken-asset'),
       form: {
@@ -113,6 +161,28 @@ export const createApp = (page: Page, data: MockData) => {
       favoritesLink: link('favorites'),
       archiveLink: link('archive'),
       trashLink: link('trash'),
+      purchaseInfo: {
+        buyButton: sidebar.getByRole('button', { name: 'purchase_button_buy_immich' }),
+        panel: purchasePanel,
+        neverShowAgainButton: purchasePanel.getByRole('button', { name: 'purchase_button_never_show_again' }),
+        remindMeButton: purchasePanel.getByRole('button', { name: 'purchase_button_reminder' }),
+      },
+    },
+
+    navbar: {
+      logoLink: link('Immich logo'),
+      avatar: accountButton,
+      editAvatarButton: button('edit_avatar'),
+      openAvatarEditor: async () => {
+        await accountButton.click();
+        await button('edit_avatar').click();
+      },
+    },
+
+    userPicker: {
+      searchInput: dialog.getByPlaceholder('search', { exact: true }),
+      user: (name: string) => dialog.getByText(name, { exact: true }),
+      addButton: dialog.getByRole('button', { name: 'add', exact: true }),
     },
 
     timeline: createTimeline(page, data),
@@ -127,10 +197,22 @@ export const createApp = (page: Page, data: MockData) => {
 
 export type App = ReturnType<typeof createApp>;
 
+const createLocationPicker = (page: Page) => ({
+  latitudeInput: page.getByRole('dialog').getByLabel('latitude', { exact: true }),
+  longitudeInput: page.getByRole('dialog').getByLabel('longitude', { exact: true }),
+  confirmButton: page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }),
+  searchInput: page.getByRole('dialog').getByPlaceholder('search_places'),
+  place: (label: string) => page.getByRole('dialog').getByRole('button', { name: label, exact: true }),
+});
+
 const createTimeline = (page: Page, data: MockData) => {
   const grid = page.locator('#asset-grid');
   const thumbnails = page.locator('[data-thumbnail-focus-container]');
   const thumbnail = (asset: Asset) => page.locator(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
+  const menuItem = async (name: string) => {
+    await page.getByLabel('menu', { exact: true }).click();
+    await page.getByRole('menuitem', { name, exact: true }).click();
+  };
 
   const alignedWith = (asset: Asset, edge: 'top' | 'bottom') =>
     expect(async () => {
@@ -163,24 +245,28 @@ const createTimeline = (page: Page, data: MockData) => {
       // TODO: wire the app translations into the @immich/ui ControlBar so this can target the `close` key
       closeButton: page.getByTestId('control-bar').getByLabel('Close'),
 
-      archive: async () => {
-        await page.getByLabel('menu', { exact: true }).click();
-        await page.getByRole('menuitem', { name: 'to_archive', exact: true }).click();
+      archive: () => menuItem('to_archive'),
+      trash: () => menuItem('delete'),
+      changeDate: () => menuItem('change_date'),
+      changeDescription: () => menuItem('change_description'),
+      changeLocation: () => menuItem('change_location'),
+      download: () => menuItem('download'),
+      linkLivePhoto: () => menuItem('link_motion_video'),
+      unlinkLivePhoto: () => menuItem('unlink_motion_video'),
+      stack: () => menuItem('stack'),
+      unstack: () => menuItem('unstack'),
+
+      moveToLockedFolder: async () => {
+        await menuItem('move_to_locked_folder');
+        await page.getByRole('dialog').getByRole('button', { name: 'move', exact: true }).click();
       },
 
-      trash: async () => {
-        await page.getByLabel('menu', { exact: true }).click();
-        await page.getByRole('menuitem', { name: 'delete', exact: true }).click();
-      },
-
-      changeDate: async () => {
-        await page.getByLabel('menu', { exact: true }).click();
-        await page.getByRole('menuitem', { name: 'change_date', exact: true }).click();
-      },
-
-      removeFromAlbum: async () => {
+      openRemoveFromAlbum: async () => {
         await page.getByLabel('menu', { exact: true }).click();
         await page.getByRole('menuitem', { name: 'remove_from_album', exact: true }).click();
+      },
+      removeFromAlbum: async () => {
+        await menuItem('remove_from_album');
         await page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }).click();
       },
     },
@@ -193,11 +279,17 @@ const createTimeline = (page: Page, data: MockData) => {
       minutesInput: page.getByPlaceholder('minutes', { exact: true }),
       confirmButton: page.getByRole('button', { name: 'confirm', exact: true }),
     },
+    changeDescription: {
+      input: page.getByRole('dialog').getByLabel('description', { exact: true }),
+      saveButton: page.getByRole('dialog').getByRole('button', { name: 'save', exact: true }),
+    },
+    changeLocation: createLocationPicker(page),
     disabledSelection: (asset: Asset) => thumbnail(asset).and(page.locator('[data-selected][data-disabled]')),
     favoriteIcon: (asset: Asset) => thumbnail(asset).getByTestId('favorite-icon'),
     thumbhash: (asset: Asset) => thumbnail(asset).getByTestId('thumbhash'),
     brokenImage: (asset: Asset) => thumbnail(asset).getByText('error_loading_image', { exact: true }),
     archiveIcon: (asset: Asset) => thumbnail(asset).getByTestId('archive-icon'),
+    stackIcon: (asset: Asset) => thumbnail(asset).getByTestId('stack-icon'),
     scrubber: (yearMonth: string) => page.locator(`[data-segment-year-month="${yearMonth}"]`),
 
     select: async (asset: Asset) => {
@@ -294,18 +386,37 @@ const createViewer = (page: Page) => {
     rating: page.getByTestId('star-container'),
     editDateButton: page.getByTestId('detail-panel-edit-date-button'),
     editLocationButton: page.getByTitle('edit_location'),
+    addLocationButton: page.getByTitle('add_location'),
+    ratingStar: (count: number) =>
+      page
+        .getByTestId('star-container')
+        .getByTestId('star')
+        .nth(count - 1),
     changeDate: {
       dateInput: page.getByLabel('date_and_time', { exact: true }),
       timezoneInput: page.getByRole('combobox', { name: 'timezone' }),
-    },
-    changeLocation: {
-      latitudeInput: page.getByRole('dialog').getByLabel('latitude', { exact: true }),
-      longitudeInput: page.getByRole('dialog').getByLabel('longitude', { exact: true }),
       confirmButton: page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }),
     },
+    changeLocation: createLocationPicker(page),
     navbarActions: page.getByTestId('asset-viewer-navbar-actions'),
     tags: page.getByTestId('detail-panel-tags').getByRole('link'),
+    editPeopleButton: page.getByLabel('edit_people', { exact: true }),
+    editPeopleHeading: page.getByText('edit_faces', { exact: true }),
+    editPeopleBackButton: page.getByLabel('back', { exact: true }),
+    deleteFaceButton: page.getByLabel('delete_face', { exact: true }),
+    tag: (value: string) => page.getByTestId('detail-panel-tags').getByRole('link', { name: value, exact: true }),
+    addTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'add_tag', exact: true }),
+    removeTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'remove_tag', exact: true }),
+    tagAssets: {
+      input: page.getByRole('dialog').getByLabel('tag', { exact: true }),
+      submitButton: page.getByRole('dialog').getByRole('button', { name: 'tag_assets', exact: true }),
+      pick: async (value: string) => {
+        await page.getByRole('dialog').getByLabel('tag', { exact: true }).fill(value);
+        await page.getByRole('dialog').getByLabel('tag', { exact: true }).press('Enter');
+      },
+    },
     media,
+    video: content.locator('video'),
     image: (quality: 'thumbnail' | 'preview' | 'original') => content.getByTestId(quality).filter({ visible: true }),
     stackThumbnail: (asset: Asset) => stack.locator(`[data-asset="${asset.id}"]`),
     stackAssets: stack.locator('[data-asset]'),
@@ -322,12 +433,41 @@ const createViewer = (page: Page) => {
 
     faceEditor: createFaceEditor(page),
 
+    editor: {
+      openButton: page.getByRole('button', { name: 'editor', exact: true }),
+      rotateRightButton: page.getByLabel('editor_rotate_right', { exact: true }),
+      saveButton: root.getByRole('button', { name: 'save', exact: true }),
+      resetButton: root.getByRole('button', { name: 'editor_reset_all_changes', exact: true }),
+    },
+
+    profilePicture: {
+      saveButton: page.getByRole('dialog').getByRole('button', { name: 'save', exact: true }),
+    },
+
+    activity: {
+      likeButton: root.getByRole('button', { name: 'like', exact: true, pressed: false }),
+      likedButton: root.getByRole('button', { name: 'like', exact: true, pressed: true }),
+      commentsButton: root.getByRole('button', { name: 'activity', exact: true }),
+      commentInput: page.getByPlaceholder('say_something'),
+    },
+
     waitForAsset: (asset: Asset) => expect(media(asset)).toBeVisible(),
 
     openSlideshow: () => moreMenuItem('slideshow'),
     download: () => moreMenuItem('download'),
     archive: () => moreMenuItem('to_archive'),
     unarchive: () => moreMenuItem('unarchive'),
+    unstack: () => moreMenuItem('unstack'),
+    setStackPrimary: () => moreMenuItem('set_stack_primary_asset'),
+    removeFromStack: () => moreMenuItem('viewer_remove_from_stack'),
+    restore: () => moreMenuItem('restore'),
+    setProfilePicture: () => moreMenuItem('set_as_profile_picture'),
+    runJob: (name: string) => moreMenuItem(name),
+
+    moveToLockedFolder: async () => {
+      await moreMenuItem('move_to_locked_folder');
+      await page.getByRole('dialog').getByRole('button', { name: 'move', exact: true }).click();
+    },
 
     permanentlyDelete: async () => {
       await page.getByLabel('permanently_delete', { exact: true }).click();
@@ -375,6 +515,9 @@ const createFaceEditor = (page: Page) => {
     confirmButton: page.getByRole('button', { name: 'confirm', exact: true }),
     cancelButton: page.getByRole('button', { name: 'cancel', exact: true }),
     person: (name: string) => selector.getByText(name),
+    createPersonButton: selector.getByRole('button', { name: 'create_person', exact: true }),
+    newPersonNameInput: page.getByRole('dialog').getByLabel('name', { exact: true }),
+    tagFaceButton: page.getByRole('dialog').getByRole('button', { name: 'tag_face', exact: true }),
     boxRect,
     selectorRect,
 

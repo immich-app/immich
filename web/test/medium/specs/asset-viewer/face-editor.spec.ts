@@ -60,6 +60,11 @@ test.describe('face editor', () => {
   test('tags the selected person after confirming', async ({ api, app }) => {
     const [alice] = people;
     await app.viewer.faceEditor.person(alice.name).click();
+    await app.dialogButton('cancel').click();
+    await expect(app.dialog).toBeHidden();
+    expect(api.createFace).not.toHaveBeenCalled();
+
+    await app.viewer.faceEditor.person(alice.name).click();
     await expect(app.dialog).toBeVisible();
     await app.viewer.faceEditor.confirmButton.click();
 
@@ -67,6 +72,19 @@ test.describe('face editor', () => {
     await expect(app.viewer.faceEditor.canvas).toBeHidden();
     expect(api.createFace).toHaveBeenCalledWith({
       body: expect.objectContaining({ assetId: asset.id, personId: alice.id }),
+    });
+  });
+
+  test('tags the face with a newly created person', async ({ data, api, app }) => {
+    await app.viewer.faceEditor.createPersonButton.click();
+    await app.viewer.faceEditor.newPersonNameInput.fill('Grace Hopper');
+    await app.viewer.faceEditor.tagFaceButton.click();
+
+    await expect(app.viewer.faceEditor.canvas).toBeHidden();
+    const created = data.getPeople().find(({ name }) => name === 'Grace Hopper');
+    expect(api.createPerson).toHaveBeenCalledWith({ body: { name: 'Grace Hopper' } });
+    expect(api.createFace).toHaveBeenCalledWith({
+      body: expect.objectContaining({ assetId: asset.id, personId: created?.id }),
     });
   });
 

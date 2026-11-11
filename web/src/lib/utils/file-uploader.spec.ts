@@ -8,7 +8,7 @@ import { test } from '#test/unit/fixtures.ts';
 import { AssetMediaStatus, type AssetMediaResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, vi } from 'vitest';
-import { fileUploadHandler } from './file-uploader';
+import { fileUploadHandler, openFilePicker } from './file-uploader';
 
 vi.mock('#lib/utils.ts', { spy: true });
 
@@ -72,5 +72,22 @@ describe('fileUploader error handling', () => {
     const items = get(uploadAssetsStore);
     expect(items.length).toBe(1);
     expect(items[0].state).toBe(UploadState.STARTED);
+  });
+});
+
+describe('openFilePicker', () => {
+  test('attaches the file input to the document until files are chosen', async () => {
+    const file = new File(['content'], 'photo.jpg', { type: 'image/jpeg' });
+    const picked = openFilePicker({ extensions: ['.jpg'] });
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+
+    expect(input).not.toBeNull();
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    input!.files = transfer.files;
+    input!.dispatchEvent(new Event('change'));
+
+    await expect(picked).resolves.toEqual([file]);
+    expect(document.querySelector('input[type="file"]')).toBeNull();
   });
 });

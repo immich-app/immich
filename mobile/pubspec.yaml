@@ -6,7 +6,7 @@ version: 3.4.0-rc.0+3040000
 
 environment:
   sdk: '>=3.12.0 <4.0.0'
-  flutter: 3.47.2
+  flutter: 3.47.9
 
 dependencies:
   async: ^2.13.1
@@ -70,7 +70,7 @@ dependencies:
   sliver_tools: ^0.2.12
   stream_transform: ^2.1.1
   sqlite3: ^3.4.0
-  sqlite_async: 0.14.2
+  sqlite_async: 0.14.8
   sqlite3_connection_pool: ^0.2.13
   timezone: ^0.9.4
   url_launcher: ^6.3.2
@@ -90,7 +90,7 @@ dependencies:
   ok_http:
     git:
       url: https://github.com/mertalev/http
-      ref: '549c24b0a4d3881a9a44b70f4873450d43c1c4af' # https://github.com/dart-lang/http/pull/1877
+      ref: '4af3095d842cf8604ab25c72613ce79ea44fbf2a' # https://github.com/dart-lang/http/pull/1877
       path: pkgs/ok_http/
   freezed_annotation: ^3.1.0
 

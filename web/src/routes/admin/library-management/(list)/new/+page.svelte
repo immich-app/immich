@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { createLibraryMutation } from '#lib/queries/library.query.ts';
@@ -8,6 +7,7 @@
   import { Field, FormModal, HelperText, Select } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
 
   let ownerId: string = $state(authManager.user.id);
   const query = createPreloadedQuery(searchUsersAdminQuery);

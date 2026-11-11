@@ -11,7 +11,7 @@
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin } from '@immich/sdk';
-  import { Button, IconButton, Link, modalManager, Text, toastManager } from '@immich/ui';
+  import { Button, IconButton, Link, Text, modalManager, toastManager } from '@immich/ui';
   import { mdiPlus, mdiRestart, mdiTrashCanOutline } from '@mdi/js';
   import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';

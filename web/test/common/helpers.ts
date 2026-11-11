@@ -32,6 +32,13 @@ export const fromBase64 = (value: string): Uint8Array<ArrayBuffer> =>
 
 export const minimalMp4 = fromBase64(minimalMp4Base64);
 
+export const opaquePng = fromBase64(
+  'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEUlEQVR4nGNwWJCAFTEMLQkAOplQAZmc5EIAAAAASUVORK5CYII=',
+);
+
+export const emptyMapStyle = { version: 8, sources: {}, layers: [] };
+export const emptyMapStyleUrl = `data:application/json,${JSON.stringify(emptyMapStyle)}`;
+
 export const placeholderImage = (asset: AssetResponseDto | undefined, id: string) => {
   const width = asset?.width ?? 1200;
   const height = asset?.height ?? 800;

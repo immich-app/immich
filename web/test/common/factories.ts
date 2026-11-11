@@ -1,26 +1,47 @@
 import { SeededRandom } from '#test/common/helpers.ts';
 import {
   AlbumUserRole,
+  AssetEditAction,
   AssetOrder,
   AssetTypeEnum,
   AssetVisibility,
+  IntegrityReport,
   MemoryType,
+  PersonUpdateStrategy,
   ReactionType,
   SharedLinkType,
-  PersonUpdateStrategy,
   UserAvatarColor,
   UserStatus,
+  WorkflowTrigger,
+  WorkflowType,
   type ActivityResponseDto,
   type AlbumResponseDto,
+  type AlbumUserResponseDto,
+  type ApiKeyResponseDto,
+  type AssetEditActionItemResponseDto,
+  type AssetFaceResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
+  type AuthStatusResponseDto,
+  type ClusterGroupRequestResponseDto,
+  type IntegrityReportResponseDto,
+  type LibraryResponseDto,
   type MemoryResponseDto,
+  type PartnerResponseDto,
+  type PasskeyResponseDto,
   type PersonResponseDto,
+  type PluginMethodResponseDto,
+  type QueueResponseDto,
+  type QueueStatisticsDto,
+  type SessionResponseDto,
   type SharedLinkResponseDto,
   type StackResponseDto,
   type TagResponseDto,
   type UserAdminResponseDto,
+  type UserLicense,
   type UserPreferencesResponseDto,
+  type UserResponseDto,
+  type WorkflowResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
 
@@ -29,6 +50,7 @@ export const adminUserId = '0d9a7a2e-0000-4000-8000-00000000ad01';
 let assetIndex = 0;
 let personIndex = 0;
 let tagIndex = 0;
+let pluginMethodIndex = 0;
 const random = new SeededRandom(7);
 
 const names = ['Alice Johnson', 'Bob Smith', 'Charlie Brown', 'Diana Prince', 'Eve Adams', 'Frank Castle'];
@@ -169,20 +191,31 @@ const memory = (overrides: Partial<MemoryResponseDto> = {}): MemoryResponseDto =
   };
 };
 
-const album = (overrides: Partial<AlbumResponseDto> = {}): AlbumResponseDto => {
+type AlbumMembers = { owner: UserResponseDto; editors?: UserResponseDto[]; viewers?: UserResponseDto[] };
+
+const albumUsers = ({ owner, editors = [], viewers = [] }: AlbumMembers): AlbumUserResponseDto[] => [
+  { role: AlbumUserRole.Owner, user: owner },
+  ...editors.map((member) => ({ role: AlbumUserRole.Editor, user: member })),
+  ...viewers.map((member) => ({ role: AlbumUserRole.Viewer, user: member })),
+];
+
+const album = ({
+  albumUsers: members = albumUsers({ owner: user({ id: adminUserId }) }),
+  ...overrides
+}: Partial<AlbumResponseDto> = {}): AlbumResponseDto => {
   const createdAt = pastDate(365);
   return {
     id: crypto.randomUUID(),
     albumName: 'Test Album',
     description: '',
     albumThumbnailAssetId: null,
-    albumUsers: [{ role: AlbumUserRole.Owner, user: user({ id: adminUserId }) }],
+    albumUsers: members,
     assetCount: 0,
     createdAt,
     updatedAt: createdAt,
     hasSharedLink: false,
     isActivityEnabled: true,
-    shared: false,
+    shared: members.length > 1,
     order: AssetOrder.Desc,
     ...overrides,
   };
@@ -270,6 +303,89 @@ const tag = (overrides: Partial<TagResponseDto> = {}): TagResponseDto => {
   };
 };
 
+const face = (overrides: Partial<AssetFaceResponseDto> = {}): AssetFaceResponseDto => ({
+  id: crypto.randomUUID(),
+  imageWidth: 4000,
+  imageHeight: 3000,
+  boundingBoxX1: 1000,
+  boundingBoxY1: 800,
+  boundingBoxX2: 1600,
+  boundingBoxY2: 1500,
+  person: null,
+  ...overrides,
+});
+
+const library = (overrides: Partial<LibraryResponseDto> = {}): LibraryResponseDto => {
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    name: 'Library',
+    ownerId: adminUserId,
+    assetCount: 0,
+    importPaths: [],
+    exclusionPatterns: [],
+    createdAt: now,
+    updatedAt: now,
+    refreshedAt: null,
+    ...overrides,
+  };
+};
+
+const apiKey = (overrides: Partial<ApiKeyResponseDto> = {}): ApiKeyResponseDto => {
+  const now = new Date().toISOString();
+  return { id: crypto.randomUUID(), name: 'API Key', permissions: [], createdAt: now, updatedAt: now, ...overrides };
+};
+
+const session = (overrides: Partial<SessionResponseDto> = {}): SessionResponseDto => {
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    appVersion: '3.0.0',
+    deviceOS: 'Android',
+    deviceType: 'Mobile',
+    current: false,
+    isPendingSyncReset: false,
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  };
+};
+
+const passkey = (overrides: Partial<PasskeyResponseDto> = {}): PasskeyResponseDto => {
+  const now = new Date().toISOString();
+  return { id: crypto.randomUUID(), name: 'Passkey', createdAt: now, updatedAt: now, usedAt: now, ...overrides };
+};
+
+const workflow = (overrides: Partial<WorkflowResponseDto> = {}): WorkflowResponseDto => {
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    name: 'Workflow',
+    description: null,
+    enabled: true,
+    logging: false,
+    trigger: WorkflowTrigger.AssetCreate,
+    steps: [],
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  };
+};
+
+const pluginMethod = (overrides: Partial<PluginMethodResponseDto> = {}): PluginMethodResponseDto => {
+  const key = overrides.key ?? `plugin#method-${pluginMethodIndex++}`;
+  return {
+    key,
+    name: key,
+    title: key,
+    description: '',
+    hostFunctions: false,
+    types: [WorkflowType.AssetV1],
+    uiHints: [],
+    ...overrides,
+  };
+};
+
 const sharedLink = (overrides: Partial<SharedLinkResponseDto> = {}): SharedLinkResponseDto => ({
   id: crypto.randomUUID(),
   key: alphanumeric(64),
@@ -286,6 +402,67 @@ const sharedLink = (overrides: Partial<SharedLinkResponseDto> = {}): SharedLinkR
   createdAt: new Date().toISOString(),
   ...overrides,
 });
+
+const queue = ({
+  statistics,
+  ...overrides
+}: Partial<Omit<QueueResponseDto, 'statistics'>> &
+  Pick<QueueResponseDto, 'name'> & { statistics?: Partial<QueueStatisticsDto> }): QueueResponseDto => ({
+  isPaused: false,
+  statistics: { active: 0, completed: 0, delayed: 0, failed: 0, paused: 0, waiting: 0, ...statistics },
+  ...overrides,
+});
+
+const partner = (overrides: Partial<PartnerResponseDto> = {}): PartnerResponseDto => {
+  const { id, name, email, avatarColor, profileImagePath, profileChangedAt } = user(overrides);
+  return {
+    id,
+    name,
+    email,
+    avatarColor,
+    profileImagePath,
+    profileChangedAt,
+    inTimeline: overrides.inTimeline ?? false,
+  };
+};
+
+const clusterGroupRequest = (
+  overrides: Partial<ClusterGroupRequestResponseDto> = {},
+): ClusterGroupRequestResponseDto => ({
+  id: crypto.randomUUID(),
+  clusterGroupId: crypto.randomUUID(),
+  userId: crypto.randomUUID(),
+  createdAt: new Date().toISOString(),
+  ...overrides,
+});
+
+const authStatus = (overrides: Partial<AuthStatusResponseDto> = {}): AuthStatusResponseDto => ({
+  pinCode: false,
+  password: true,
+  isElevated: false,
+  ...overrides,
+});
+
+const license = (overrides: Partial<UserLicense> = {}): UserLicense => ({
+  licenseKey: `IMCL-${Array.from({ length: 8 }, () => alphanumeric(4).toUpperCase()).join('-')}`,
+  activationKey: alphanumeric(64),
+  activatedAt: new Date().toISOString(),
+  ...overrides,
+});
+
+const assetEdit = (overrides: Partial<AssetEditActionItemResponseDto> = {}): AssetEditActionItemResponseDto => ({
+  id: crypto.randomUUID(),
+  action: AssetEditAction.Crop,
+  parameters: { x: 0, y: 0, width: 1000, height: 750 },
+  ...overrides,
+});
+
+type IntegrityReportItem = IntegrityReportResponseDto['items'][number];
+
+const integrityReportItem = (overrides: Partial<IntegrityReportItem> = {}): IntegrityReportItem => {
+  const id = overrides.id ?? crypto.randomUUID();
+  return { id, path: `/data/library/${id}.jpg`, type: IntegrityReport.MissingFile, ...overrides };
+};
 
 export type MemoryYearSpec = { year: number; assetCount: number };
 
@@ -512,12 +689,27 @@ export const factory = {
   preferences,
   asset,
   album,
+  albumUsers,
   memory,
   person,
   stack,
   ocr,
   tag,
   sharedLink,
+  workflow,
+  face,
+  library,
+  apiKey,
+  session,
+  passkey,
+  pluginMethod,
+  queue,
+  partner,
+  clusterGroupRequest,
+  authStatus,
+  license,
+  assetEdit,
+  integrityReportItem,
   memories,
   timeline,
   many,

@@ -1,15 +1,15 @@
+import { queryClient } from '#lib/queries/client.ts';
+import { getAssetsByCityQuery } from '#lib/queries/search.query.ts';
 import { authenticate } from '#lib/utils/auth.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
-import { getAssetsByCity } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-  const items = await getAssetsByCity();
+  await queryClient.query({ ...getAssetsByCityQuery(), staleTime: 0 });
   const $t = await getFormatter();
 
   return {
-    items,
     meta: {
       title: $t('places'),
     },

@@ -5,7 +5,7 @@
   import { type JSONSchemaProperty, type SchemaConfig } from '#lib/types.ts';
   import { getWorkflowDefaultConfig } from '#lib/utils/workflow.ts';
   import { WorkflowTrigger, type WorkflowStepDto } from '@immich/sdk';
-  import { Button, FormModal, modalManager, Stack, Text, Textarea } from '@immich/ui';
+  import { Button, FormModal, Stack, Text, Textarea, modalManager } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 

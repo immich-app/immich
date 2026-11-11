@@ -4,7 +4,7 @@
   import type { PeopleFilter } from '#lib/types.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { getClusterGroupUsers, type UserResponseDto } from '@immich/sdk';
-  import { Button, Checkbox, FormModal, Label, modalManager, Stack, Text } from '@immich/ui';
+  import { Button, Checkbox, FormModal, Label, Stack, Text, modalManager } from '@immich/ui';
   import { mdiClose, mdiTune } from '@mdi/js';
   import { onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';

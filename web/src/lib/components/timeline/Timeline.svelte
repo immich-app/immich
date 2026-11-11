@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate } from '$app/navigation';
-  import { page } from '$app/state';
   import Thumbnail from '#lib/components/assets/thumbnail/Thumbnail.svelte';
   import Month from '#lib/components/timeline/Month.svelte';
   import Scrubber from '#lib/components/timeline/Scrubber.svelte';
@@ -13,10 +11,10 @@
   import Skeleton from '#lib/elements/Skeleton.svelte';
   import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
-  import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
   import { isIntersecting } from '#lib/managers/timeline-manager/internal/intersection-support.svelte.ts';
-  import type { TimelineMonth } from '#lib/managers/timeline-manager/timeline-month.svelte.ts';
+  import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type { TimelineMonth } from '#lib/managers/timeline-manager/timeline-month.svelte.ts';
   import type {
     TimelineAsset,
     TimelineManagerOptions,
@@ -31,6 +29,8 @@
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, tick, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
+  import { afterNavigate, beforeNavigate } from '$app/navigation';
+  import { page } from '$app/state';
 
   interface Props {
     isSelectionMode?: boolean;

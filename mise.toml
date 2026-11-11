@@ -16,8 +16,8 @@ config_roots = [
 ]
 
 [tools]
-node = "24.22.1"
-pnpm = "12.16.1"
+node = "26.13.0"
+pnpm = "12.18.0"
 terragrunt = "1.2.1"
 opentofu = "1.13.2"
 "npm:@openapitools/openapi-generator-cli" = "2.42.0"
@@ -25,7 +25,7 @@ opentofu = "1.13.2"
 "github:extism/cli" = "1.6.3"
 "github:webassembly/binaryen" = "version_124"
 "github:extism/js-pdk" = "v1.7.0"
-restic = "0.19.0"
+restic = "0.19.1"
 java = "21.0.13+9.0.LTS"
 
 [tools."github:jellyfin/jellyfin-ffmpeg"]

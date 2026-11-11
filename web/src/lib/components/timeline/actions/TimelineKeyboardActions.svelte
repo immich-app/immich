@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { shortcuts, type ShortcutOptions } from '#lib/actions/shortcut.ts';
   import {
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
@@ -21,8 +20,8 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { deleteAssets } from '#lib/utils/actions.ts';
   import { selectAllAssets } from '#lib/utils/asset-utils.ts';
+  import { isModalOpen, modalManager, shortcuts, type ShortcutOptions } from '@immich/ui';
   import { goto } from '$app/navigation';
-  import { isModalOpen, modalManager } from '@immich/ui';
 
   type Props = {
     timelineManager: TimelineManager;
@@ -145,4 +144,4 @@
   });
 </script>
 
-<svelte:document onselectstart={onSelectStart} use:shortcuts={shortcutList} />
+<svelte:window onselectstart={onSelectStart} {@attach shortcuts(shortcutList)} />

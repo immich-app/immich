@@ -1209,8 +1209,8 @@ packages:
     dependency: "direct main"
     description:
       path: "pkgs/ok_http"
-      ref: "549c24b0a4d3881a9a44b70f4873450d43c1c4af"
-      resolved-ref: "549c24b0a4d3881a9a44b70f4873450d43c1c4af"
+      ref: "4af3095d842cf8604ab25c72613ce79ea44fbf2a"
+      resolved-ref: "4af3095d842cf8604ab25c72613ce79ea44fbf2a"
       url: "https://github.com/mertalev/http"
     source: git
     version: "0.1.1-wip"
@@ -1671,34 +1671,34 @@ packages:
     dependency: "direct main"
     description:
       name: sqlite3
-      sha256: "61c7930bebf32c552ac5808c91bf33802e66711c9216090d3b5579c9f862e80c"
+      sha256: b1ec21d306ddbec59a88ae3682ad81728561f7105db78fea0fdd67f06911a519
       url: "https://pub.dev"
     source: hosted
-    version: "3.4.0"
+    version: "3.9.0"
   sqlite3_connection_pool:
     dependency: "direct main"
     description:
       name: sqlite3_connection_pool
-      sha256: ad8413d9100598ee9ef1a27628f5673b7d9212fb9d15b2742f7fde690f743832
+      sha256: "0813880ccff75e3d1a91ff4b15be09b3d29f937acc29fae0a62cd1b3591dc97c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.13"
+    version: "0.2.17"
   sqlite3_web:
     dependency: transitive
     description:
       name: sqlite3_web
-      sha256: fab6f6921f8fc3f703536c018d709ccb4ad5654d92f53e9b206c222f77c50021
+      sha256: "7e63fde368321eb24ccbf972814868b57c94d904ac68daa503ff7ef6a06ffa05"
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.1"
+    version: "0.9.6"
   sqlite_async:
     dependency: "direct main"
     description:
       name: sqlite_async
-      sha256: e3e486e536253e17260c52b6f824b749adff3f1fed878d4abe629796b858290b
+      sha256: c91643c3332b79783c2f3a3b24f1a22c7f5a88f05c7a40ff2604c658b2fdb9b1
       url: "https://pub.dev"
     source: hosted
-    version: "0.14.2"
+    version: "0.14.8"
   sqlparser:
     dependency: transitive
     description:
@@ -2045,4 +2045,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.13.0 <4.0.0"
-  flutter: "3.47.2"
+  flutter: "3.47.9"

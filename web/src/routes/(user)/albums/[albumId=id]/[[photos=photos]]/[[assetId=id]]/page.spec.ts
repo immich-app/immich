@@ -1,7 +1,7 @@
 import { Route } from '#lib/route.ts';
 import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
-import { AlbumUserRole } from '@immich/sdk';
+import { ReactionType } from '@immich/sdk';
 import { expect } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import Page from './+page.svelte';
@@ -23,7 +23,7 @@ test('shows the album date range', async ({ data, router, render }) => {
 });
 
 test('owner saves a new description when leaving the field', async ({ data, router, render, settle, api, app }) => {
-  const album = factory.album({ albumUsers: [{ role: AlbumUserRole.Owner, user: data.user }] });
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user }) });
   data.addAlbums(album);
   await router.goto(Route.viewAlbum(album), { albumId: album.id });
   await render(Page, load);
@@ -39,13 +39,7 @@ test('owner saves a new description when leaving the field', async ({ data, rout
 });
 
 test('editor can edit the description', async ({ data, router, render, settle, app }) => {
-  const album = factory.album({
-    shared: true,
-    albumUsers: [
-      { role: AlbumUserRole.Owner, user: factory.user() },
-      { role: AlbumUserRole.Editor, user: data.user },
-    ],
-  });
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: factory.user(), editors: [data.user] }) });
   data.addAlbums(album);
   await router.goto(Route.viewAlbum(album), { albumId: album.id });
 
@@ -56,13 +50,7 @@ test('editor can edit the description', async ({ data, router, render, settle, a
 });
 
 test('viewer cannot edit the description', async ({ data, router, render, settle, api, app }) => {
-  const album = factory.album({
-    shared: true,
-    albumUsers: [
-      { role: AlbumUserRole.Owner, user: factory.user() },
-      { role: AlbumUserRole.Viewer, user: data.user },
-    ],
-  });
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: factory.user(), viewers: [data.user] }) });
   data.addAlbums(album);
   await router.goto(Route.viewAlbum(album), { albumId: album.id });
 
@@ -74,19 +62,13 @@ test('viewer cannot edit the description', async ({ data, router, render, settle
 });
 
 test('deleting a comment keeps the other comments', async ({ data, router, render, settle, api, app }) => {
-  const album = factory.album({
-    shared: true,
-    albumUsers: [
-      { role: AlbumUserRole.Owner, user: data.user },
-      { role: AlbumUserRole.Editor, user: factory.user() },
-    ],
-  });
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user, editors: [factory.user()] }) });
   const comments = ['first', 'second', 'third'].map((comment) => factory.activity({ user: data.user, comment }));
   data.addAlbums(album).addActivities(comments);
   await router.goto(Route.viewAlbum(album), { albumId: album.id });
   await render(Page, load);
   await settle();
-  await app.album.commentsButton(3).click();
+  await app.album.commentsButton.click();
   await expect.element(page.getByText('second', { exact: true })).toBeVisible();
 
   await app.album.activity.commentMenu(1).click();
@@ -97,4 +79,110 @@ test('deleting a comment keeps the other comments', async ({ data, router, rende
   await expect.element(page.getByText('first', { exact: true })).toBeVisible();
   await expect.element(page.getByText('third', { exact: true })).toBeVisible();
   expect(api.deleteActivity).toHaveBeenCalledWith({ params: { id: comments[1].id } });
+});
+
+test('posting a comment shows it and updates the comment count', async ({ data, router, render, settle, api, app }) => {
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user, editors: [factory.user()] }) });
+  data.addAlbums(album).addActivities(factory.activity({ user: data.user, comment: 'first' }));
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+  await app.album.commentsButton.click();
+
+  await app.album.activity.commentInput.fill('second');
+  await userEvent.keyboard('{Enter}');
+  await settle();
+
+  await expect.element(page.getByText('second', { exact: true })).toBeVisible();
+  await expect.element(app.album.commentsButton).toHaveTextContent('2');
+  expect(api.createActivity).toHaveBeenCalledWith({
+    body: { albumId: album.id, type: ReactionType.Comment, comment: 'second' },
+  });
+});
+
+test('liking an album and liking it again removes the like', async ({ data, router, render, settle, api, app }) => {
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user, editors: [factory.user()] }) });
+  data.addAlbums(album);
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+
+  await app.album.likeButton.click();
+  await expect.element(app.album.likedButton).toBeVisible();
+  await settle();
+  const [{ id }] = data.activityList();
+  await app.album.likedButton.click();
+  await expect.element(app.album.likeButton).toBeVisible();
+  await settle();
+
+  expect(api.createActivity).toHaveBeenCalledWith({ body: { albumId: album.id, type: ReactionType.Like } });
+  expect(api.deleteActivity).toHaveBeenCalledWith({ params: { id } });
+});
+
+test('unliking an album removes only my album like', async ({ data, router, render, settle, api, app }) => {
+  const other = factory.user();
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user, editors: [other] }) });
+  const myLike = factory.activity({ user: data.user, type: ReactionType.Like, comment: null });
+  data
+    .addAlbums(album)
+    .addActivities([
+      factory.activity({ user: other, type: ReactionType.Like, comment: null }),
+      factory.activity({ user: data.user, type: ReactionType.Like, comment: null, assetId: crypto.randomUUID() }),
+      factory.activity({ user: data.user, comment: 'nice' }),
+      myLike,
+    ]);
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+  await expect.element(app.album.likedButton).toBeVisible();
+
+  await app.album.likedButton.click();
+  await settle();
+
+  expect(api.deleteActivity).toHaveBeenCalledWith({ params: { id: myLike.id } });
+  expect(api.deleteActivity.calls).toHaveLength(1);
+});
+
+test('deletes an album', async ({ data, router, render, settle, api, app }) => {
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user }) });
+  data.addAlbums(album);
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+
+  await app.album.optionsMenuButton.click();
+  await app.album.deleteMenuItem.click();
+  await app.cancelButton.click();
+  await settle();
+
+  expect(api.deleteAlbum).not.toHaveBeenCalled();
+
+  await app.album.optionsMenuButton.click();
+  await app.album.deleteMenuItem.click();
+  await app.confirmButton.click();
+  await settle();
+
+  expect(api.deleteAlbum).toHaveBeenCalledWith({ params: { id: album.id } });
+});
+
+test('leaves an album', async ({ data, router, render, settle, api, app }) => {
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: factory.user(), viewers: [data.user] }) });
+  data.addAlbums(album);
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+
+  await app.album.optionsMenuButton.click();
+  await app.album.leaveMenuItem.click();
+  await app.cancelButton.click();
+  await settle();
+
+  expect(api.removeUserFromAlbum).not.toHaveBeenCalled();
+
+  await app.album.optionsMenuButton.click();
+  await app.album.leaveMenuItem.click();
+  await app.dialogButton('leave').click();
+  await settle();
+
+  expect(api.removeUserFromAlbum).toHaveBeenCalledWith({ params: { id: album.id, userId: 'me' } });
 });

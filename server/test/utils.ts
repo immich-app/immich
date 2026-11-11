@@ -1,14 +1,13 @@
 /* eslint-disable unicorn/no-this-outside-of-class */
 import { DatabaseConnectionParams, createPostgres } from '@immich/sql-tools';
 import { CallHandler, ExecutionContext, Provider } from '@nestjs/common';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
 import { Test } from '@nestjs/testing';
 import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
 import multer, { memoryStorage } from 'multer';
 import { ClsService } from 'nestjs-cls';
-import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Duplex, Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
@@ -18,6 +17,7 @@ import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor.
 import { AuthGuard } from 'src/middleware/auth.guard.js';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor.js';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter.js';
+import { GlobalValidationPipe } from 'src/middleware/global-validation.pipe.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { ActivityRepository } from 'src/repositories/activity.repository.js';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
@@ -82,6 +82,7 @@ import { AuthService } from 'src/services/auth.service.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { RepositoryInterface } from 'src/types.js';
 import { getKyselyConfig } from 'src/utils/database.js';
+import { registerSchemas } from 'src/zod.js';
 import { ClusterGroupFactory } from 'test/factories/cluster-group.factory.js';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock.js';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock.js';
@@ -125,12 +126,13 @@ export const controllerSetup = async (controller: ControllerClass | ControllerCl
       return next.handle();
     },
   };
+  const controllers = Array.isArray(controller) ? controller : [controller];
+  registerSchemas({ controllers });
   const moduleRef = await Test.createTestingModule({
-    controllers: Array.isArray(controller) ? controller : [controller],
+    controllers,
     providers: [
       { provide: APP_FILTER, useClass: GlobalExceptionFilter },
-      { provide: APP_PIPE, useClass: ZodValidationPipe },
-      { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
+      { provide: APP_PIPE, useClass: GlobalValidationPipe },
       { provide: APP_GUARD, useClass: AuthGuard },
       { provide: LoggingRepository, useValue: LoggingRepository.create() },
       { provide: ClsService, useValue: { getId: vi.fn() } },

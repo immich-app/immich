@@ -1,37 +1,28 @@
 <script lang="ts">
   import Combobox, { type ComboBoxOption } from '#lib/components/shared-components/Combobox.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { getAllTags, type TagResponseDto } from '@immich/sdk';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
+  import { getAllTagsQuery } from '#lib/queries/tag.query.ts';
   import { Button, Text } from '@immich/ui';
-  import { onMount } from 'svelte';
+  import { mdiClose } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-  import { mdiClose } from '@mdi/js';
   import SearchButton from './SearchButton.svelte';
   import { getSearchTagsTitle } from './search-bar-utils';
-  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
 
   interface Props {
     title: string | undefined;
-    parentPromise: Promise<TagResponseDto[]> | undefined;
   }
 
-  // eslint-disable-next-line no-useless-assignment
-  let { title = $bindable(), parentPromise }: Props = $props();
+  let { title = $bindable() }: Props = $props();
 
   let container = $state<HTMLDivElement>();
   let selectedTags = $derived(searchManager.filter.tagIds);
-  let allTags: TagResponseDto[] = $state([]);
+  const query = createQuery(getAllTagsQuery);
+  const allTags = $derived(query.data ?? []);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
   let selectedOption = $state(undefined);
-
-  onMount(() => {
-    if (parentPromise) {
-      void parentPromise.then((res) => (allTags = res));
-    } else {
-      void getAllTags().then((res) => (allTags = res));
-    }
-  });
 
   const handleSelect = (option?: ComboBoxOption) => {
     if (!option || !option.id || selectedTags === null) {

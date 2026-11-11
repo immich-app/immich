@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { shortcut } from '#lib/actions/shortcut.ts';
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import FaceCreateTagModal from '#lib/modals/CreateFaceModal.svelte';
@@ -11,7 +10,7 @@
   import { handleError } from '#lib/utils/handle-error.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Input, modalManager, toastManager } from '@immich/ui';
+  import { Button, Input, modalManager, shortcut, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { clamp } from 'lodash-es';
   import { onDestroy, onMount, tick } from 'svelte';
@@ -312,20 +311,17 @@
       return;
     }
 
-    const isConfirmed = await modalManager.showDialog({
-      prompt: person.name ? $t('confirm_tag_face', { values: { name: person.name } }) : $t('confirm_tag_face_unnamed'),
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
     const onSuccess = async () => {
       await assetViewerManager.setAssetId(assetId);
       faceManager.clear();
     };
 
     await executeMutation(createFaceMutation, [{ assetFaceCreateDto: { assetId, personId: person.id, ...data } }], {
+      confirm: {
+        prompt: person.name
+          ? $t('confirm_tag_face', { values: { name: person.name } })
+          : $t('confirm_tag_face_unnamed'),
+      },
       onSuccess: () => void onSuccess(),
       onSettled: onClose,
     });
@@ -358,7 +354,7 @@
   });
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose, ignoreInputFields: false }} />
+<svelte:window {@attach shortcut({ shortcut: { key: 'Escape' }, onShortcut: onClose, ignoreInputFields: false })} />
 
 <div
   data-testid="face-editor-data"

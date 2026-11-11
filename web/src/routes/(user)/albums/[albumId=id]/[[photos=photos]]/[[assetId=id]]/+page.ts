@@ -6,7 +6,7 @@ import type { PageLoad } from './$types';
 export const load = (async ({ params, url }) => {
   await authenticate(url);
 
-  const album = await queryClient.query(getAlbumInfoQuery(params.albumId));
+  const album = await queryClient.query({ ...getAlbumInfoQuery(params.albumId), staleTime: 0 });
 
   return {
     meta: {

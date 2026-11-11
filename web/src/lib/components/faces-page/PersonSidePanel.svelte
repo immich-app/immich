@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { shortcut } from '#lib/actions/shortcut.ts';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
@@ -12,7 +11,7 @@
   import { zoomImageToBase64 } from '#lib/utils/people-utils.ts';
   import { getPersonNameWithHiddenValue } from '#lib/utils/person.ts';
   import { AssetTypeEnum, createPerson, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, modalManager, toastManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, shortcut, toastManager } from '@immich/ui';
   import { mdiAccountOff, mdiArrowLeftThin, mdiArrowRightThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
@@ -151,14 +150,8 @@
       return;
     }
 
-    const isConfirmed = await modalManager.showDialog({
-      prompt: $t('confirm_delete_face', { values: { name: person.name } }),
-    });
-    if (!isConfirmed) {
-      return;
-    }
-
     await executeMutation(deleteFaceMutation, [{ id: face.id, assetFaceDeleteDto: { force: false } }], {
+      confirm: { prompt: $t('confirm_delete_face', { values: { name: person.name } }) },
       onSuccess: () => {
         eventManager.emit('PersonAssetDelete', { id: person.id, assetId });
         void assetViewerManager.setAssetId(assetId);
@@ -169,8 +162,8 @@
 
 <OnEvents {onPersonThumbnailReady} />
 
-<svelte:document
-  use:shortcut={{
+<svelte:window
+  {@attach shortcut({
     shortcut: { key: 'Escape' },
     onShortcut: () => {
       if (showSelectedFaces) {
@@ -179,7 +172,7 @@
         onClose();
       }
     },
-  }}
+  })}
 />
 
 <section
@@ -231,7 +224,7 @@
               onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
             >
               <div class="relative">
-                {#if selectedPersonToCreate[face.id]}
+                {#if Object.hasOwn(selectedPersonToCreate, face.id)}
                   <ImageThumbnail
                     curve
                     shadow
@@ -242,7 +235,7 @@
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
                   />
-                {:else if selectedPersonToReassign[face.id]}
+                {:else if Object.hasOwn(selectedPersonToReassign, face.id)}
                   <ImageThumbnail
                     curve
                     shadow
@@ -307,7 +300,7 @@
               {/if}
 
               <div class="absolute -inset-e-2.25 -top-2.25 flex flex-col gap-1 rounded-full">
-                {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
+                {#if Object.hasOwn(selectedPersonToCreate, face.id) || Object.hasOwn(selectedPersonToReassign, face.id)}
                   <IconButton
                     shape="round"
                     variant="ghost"

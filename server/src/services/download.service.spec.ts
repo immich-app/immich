@@ -77,7 +77,7 @@ describe(DownloadService.name, () => {
         finalize: vitest.fn(),
         stream: new Readable(),
       };
-      const asset = AssetFactory.create();
+      const asset = AssetFactory.create({ originalFileName: 'foo.heic' });
       const editedPath = '/data/edited.jpg';
 
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
@@ -190,7 +190,9 @@ describe(DownloadService.name, () => {
       { input: 'stored?.jpg', expected: 'stored.jpg' },
       { input: String.raw`C:\temp\abs3.jpg`, expected: 'Ctempabs3.jpg' },
       { input: String.raw`..\..\win1.jpg`, expected: '....win1.jpg' },
-      { input: '..', expected: 'unnamed' },
+      { input: '/etc/passwd', expected: 'etcpasswd.jpg' },
+      { input: '..', expected: 'unnamed.jpg' },
+      { input: '', expected: 'unnamed.jpg' },
     ])('should sanitize stored filename "$input" to "$expected"', async ({ input, expected }) => {
       const archiveMock = {
         addFile: vitest.fn(),

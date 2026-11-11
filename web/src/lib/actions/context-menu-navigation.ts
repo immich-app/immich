@@ -1,4 +1,4 @@
-import { shortcuts } from '#lib/actions/shortcut.ts';
+import { shortcuts } from '@immich/ui';
 import { tick } from 'svelte';
 
 interface Options {
@@ -81,13 +81,13 @@ export const contextMenuNavigation = (options: Options) => {
       currentEl?.click();
     };
 
-    const { destroy } = shortcuts(node, [
+    const destroy = shortcuts([
       { shortcut: { key: 'ArrowUp' }, onShortcut: (event) => moveSelection('up', event) },
       { shortcut: { key: 'ArrowDown' }, onShortcut: (event) => moveSelection('down', event) },
       { shortcut: { key: 'Escape' }, onShortcut: (event) => onEscape(event), preventDefault: false },
       { shortcut: { key: ' ' }, onShortcut: (event) => handleClick(event) },
       { shortcut: { key: 'Enter' }, onShortcut: (event) => handleClick(event) },
-    ]);
+    ])(node);
 
     return destroy;
   };

@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { parse } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { AuthDto, isEditedOnly } from 'src/dtos/auth.dto.js';
@@ -46,7 +45,7 @@ export class DownloadService extends BaseService {
 
     const addToArchive = ({ id, size }: { id: string; size: number | null }) => {
       archive.assetIds.push(id);
-      archive.size += Number(size || 0);
+      archive.size += size || 0;
 
       if (archive.size <= targetSize) {
         return;
@@ -107,18 +106,20 @@ export class DownloadService extends BaseService {
 
       let path = editedPath ?? originalPath;
 
-      let filename = sanitize(getFileNameWithoutExtension(path) + getFilenameExtension(path)) || 'unnamed';
+      const name = sanitize(getFileNameWithoutExtension(path)) || 'unnamed';
+      const extension = getFilenameExtension(path);
+      let filename = name + extension;
+
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
-        const parsedFilename = parse(filename);
-        filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
+        filename = `${name}+${count}${extension}`;
       }
 
       try {
         path = await this.storageRepository.realpath(path);
       } catch {
-        this.logger.warn('Unable to resolve realpath', { originalPath });
+        this.logger.warn('Unable to resolve realpath', { realpath });
       }
 
       zip.addFile(path, filename);
