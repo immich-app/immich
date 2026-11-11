@@ -98,6 +98,7 @@ export class SharedLinkRepository {
     { name: 'album', params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] },
   )
   async getAll({ userId, id, albumId }: SharedLinkSearchOptions) {
+    // This is a separate query so the second query's planner can do MCV lookups for the cover assets using these IDs
     const individualLinks = albumId
       ? []
       : await this.db
@@ -107,7 +108,7 @@ export class SharedLinkRepository {
           .where('type', '=', sql.lit(SharedLinkType.Individual))
           .execute();
 
-    return this.db
+    return await this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
       .$if(!albumId, (qb) =>
