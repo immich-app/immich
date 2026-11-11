@@ -202,17 +202,37 @@ const methods = wrapper<Manifest>({
   },
 
   assetTagFilter: ({ config, data }) => {
-    const assetTags = data.asset.tags.map((tag) => tag.id);
+    const assetTagIds: string[] = [];
+    const assetTagValues: string[] = [];
 
-    for (const tag of config.tags) {
-      if (assetTags.includes(tag)) {
+    for (const tag of data.asset.tags) {
+      assetTagIds.push(tag.id);
+      assetTagValues.push(tag.value);
+    }
+
+    const shouldContinue = (includesTag: boolean) => {
+      if (includesTag) {
         if (config.matching === 'any') {
-          return { workflow: { continue: true } };
+          return true;
         } else if (config.matching === 'none') {
-          return { workflow: { continue: false } };
+          return false;
         }
       } else if (config.matching === 'all') {
-        return { workflow: { continue: false } };
+        return false;
+      }
+    };
+
+    for (const tag of config.tags ?? []) {
+      const matches = shouldContinue(assetTagIds.includes(tag));
+      if (matches !== undefined) {
+        return { workflow: { continue: matches } };
+      }
+    }
+
+    for (const tag of config.tagValues ?? []) {
+      const matches = shouldContinue(assetTagValues.some((value) => value === tag || value.startsWith(`${tag}/`)));
+      if (matches !== undefined) {
+        return { workflow: { continue: matches } };
       }
     }
 
