@@ -101,7 +101,10 @@ export class SharedLinkEditDto extends createZodDto(SharedLinkEditSchema) {}
 export class SharedLinkLoginDto extends createZodDto(SharedLinkLoginSchema) {}
 export class SharedLinkResponseDto extends createZodDto(SharedLinkResponseSchema) {}
 
-export function mapSharedLink(sharedLink: SharedLink, { auth }: { auth: AuthDto }): SharedLinkResponseDto {
+export function mapSharedLink(
+  sharedLink: Omit<SharedLink, 'assets'> & Partial<Pick<SharedLink, 'assets'>>,
+  { auth }: { auth: AuthDto },
+): SharedLinkResponseDto {
   const assets = sharedLink.assets || [];
 
   const response = {
