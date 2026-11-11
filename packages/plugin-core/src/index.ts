@@ -8,6 +8,24 @@ type MatchValueConfig = {
   caseSensitive?: boolean;
 };
 
+type ListMatching = 'all' | 'any' | 'none';
+
+const listMatching = <T>(matching: ListMatching, items: T[], isMatch: (item: T) => boolean) => {
+  switch (matching) {
+    case 'any': {
+      return items.some((item) => isMatch(item));
+    }
+
+    case 'all': {
+      return items.every((item) => isMatch(item));
+    }
+
+    case 'none': {
+      return !items.some((item) => isMatch(item));
+    }
+  }
+};
+
 const matchValueResult = (value: string | null, config: MatchValueConfig) => {
   const { pattern = '', matchType = 'contains', caseSensitive = false } = config;
 
@@ -196,47 +214,26 @@ const methods = wrapper<Manifest>({
 
   assetOcrFilter: ({ config, data }) => {
     const entries = (data.asset.ocr ?? []).filter((ocr) => ocr.textScore >= (config.minScore ?? 0));
-    const texts = config.matchScope === 'full' ? [entries.map((ocr) => ocr.text).join(' ')] : entries.map((ocr) => ocr.text);
+    const texts =
+      config.matchScope === 'full' ? [entries.map((ocr) => ocr.text).join(' ')] : entries.map((ocr) => ocr.text);
     const matched = texts.some((t) => matchValueResult(t, config).workflow?.continue);
     return { workflow: { continue: matched } };
   },
 
   assetTagFilter: ({ config, data }) => {
-    const assetTagIds: string[] = [];
-    const assetTagValues: string[] = [];
+    const assetTagIds = new Set(data.asset.tags.map((tag) => tag.id));
+    const assetTagValues = data.asset.tags.map((tag) => tag.value);
+    const isTagStringMatch = (tagValue: string) =>
+      assetTagValues.some((value) => value === tagValue || value.startsWith(`${tagValue}/`));
 
-    for (const tag of data.asset.tags) {
-      assetTagIds.push(tag.id);
-      assetTagValues.push(tag.value);
+    const idsMatch = listMatching(config.matching, config.tags ?? [], (id) => assetTagIds.has(id));
+    const valuesMatch = listMatching(config.matching, config.tagValues ?? [], isTagStringMatch);
+
+    if (config.matching === 'any' && (idsMatch || valuesMatch)) {
+      return { workflow: { continue: true } };
     }
 
-    const shouldContinue = (includesTag: boolean) => {
-      if (includesTag) {
-        if (config.matching === 'any') {
-          return true;
-        } else if (config.matching === 'none') {
-          return false;
-        }
-      } else if (config.matching === 'all') {
-        return false;
-      }
-    };
-
-    for (const tag of config.tags ?? []) {
-      const matches = shouldContinue(assetTagIds.includes(tag));
-      if (matches !== undefined) {
-        return { workflow: { continue: matches } };
-      }
-    }
-
-    for (const tag of config.tagValues ?? []) {
-      const matches = shouldContinue(assetTagValues.some((value) => value === tag || value.startsWith(`${tag}/`)));
-      if (matches !== undefined) {
-        return { workflow: { continue: matches } };
-      }
-    }
-
-    return { workflow: { continue: config.matching !== 'any' } };
+    return { workflow: { continue: idsMatch && valuesMatch } };
   },
 
   assetTypeFilter: ({ config, data }) => {
