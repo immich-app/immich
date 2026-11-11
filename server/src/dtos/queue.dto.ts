@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import { HistoryBuilder } from 'src/decorators.js';
 import { JobNameSchema, QueueCommandSchema, QueueJobStatusSchema, QueueNameSchema } from 'src/enum.js';
+import { queryParamArray } from 'src/validation.js';
 
 const QueueNameParamSchema = z
   .object({
@@ -34,7 +35,7 @@ const QueueDeleteSchema = z
 
 const QueueJobSearchSchema = z
   .object({
-    status: z.array(QueueJobStatusSchema).optional().describe('Filter jobs by status'),
+    status: queryParamArray(QueueJobStatusSchema).optional().describe('Filter jobs by status'),
   })
   .meta({ id: 'QueueJobSearchDto' });
 

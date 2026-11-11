@@ -248,3 +248,6 @@ export const hexColor = z
 export const sanitizeFilename = z.string().transform((val) => sanitize(val));
 
 export const uniqueIds = z.array(z.uuid()).refine((ids) => ids.length === new Set(ids).size, 'Items must be unique');
+
+export const queryParamArray = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (typeof value === 'string' ? value.split(',') : value), z.array(schema));
