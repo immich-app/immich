@@ -108,21 +108,21 @@ export class DownloadService extends BaseService {
 
       const name = sanitize(getFileNameWithoutExtension(path)) || 'unnamed';
       const extension = getFilenameExtension(path);
-      let filename = name + extension;
+      let fileName = name + extension;
 
-      const count = paths[filename] || 0;
-      paths[filename] = count + 1;
+      const count = paths[fileName] || 0;
+      paths[fileName] = count + 1;
       if (count !== 0) {
-        filename = `${name}+${count}${extension}`;
+        fileName = `${name}+${count}${extension}`;
       }
 
       try {
         path = await this.storageRepository.realpath(path);
       } catch {
-        this.logger.warn('Unable to resolve realpath', { realpath });
+        this.logger.warn('Unable to resolve realpath', { realpath: path });
       }
 
-      zip.addFile(path, filename);
+      zip.addFile(path, fileName);
     }
 
     void zip.finalize();

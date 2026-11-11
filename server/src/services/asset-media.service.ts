@@ -248,9 +248,13 @@ export class AssetMediaService extends BaseService {
 
     const path = editedPath ?? originalPath;
 
+    const name = sanitize(getFileNameWithoutExtension(path)) || 'unnamed';
+    const extension = getFilenameExtension(path);
+    const fileName = name + extension;
+
     return new ImmichFileResponse({
       path,
-      fileName: sanitize(getFileNameWithoutExtension(path) + getFilenameExtension(path)) || 'unnamed',
+      fileName,
       contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
     });

@@ -190,9 +190,9 @@ describe(DownloadService.name, () => {
       { input: 'stored?.jpg', expected: 'stored.jpg' },
       { input: String.raw`C:\temp\abs3.jpg`, expected: 'Ctempabs3.jpg' },
       { input: String.raw`..\..\win1.jpg`, expected: '....win1.jpg' },
-      { input: '/etc/passwd', expected: 'etcpasswd.jpg' },
-      { input: '..', expected: 'unnamed.jpg' },
-      { input: '', expected: 'unnamed.jpg' },
+      { input: '/etc/passwd.jpg', expected: 'passwd.jpg' },
+      { input: '..heic', expected: 'unnamed.heic' },
+      { input: ' .jpg', expected: 'unnamed.jpg' },
     ])('should sanitize stored filename "$input" to "$expected"', async ({ input, expected }) => {
       const archiveMock = {
         addFile: vitest.fn(),
