@@ -27,8 +27,8 @@ platform :android do
       task: 'bundle',
       build_type: 'Release',
       properties: {
-        "android.injected.version.code" => 3040099,
-        "android.injected.version.name" => "3.4.0",
+        "android.injected.version.code" => 3040199,
+        "android.injected.version.name" => "3.4.1",
       }
     )
     upload_to_play_store(skip_upload_apk: true, skip_upload_images: true, skip_upload_screenshots: true, aab: '../build/app/outputs/bundle/release/app-release.aab', track: 'beta')
@@ -40,8 +40,8 @@ platform :android do
       task: 'bundle',
       build_type: 'Release',
       properties: {
-        "android.injected.version.code" => 3040099,
-        "android.injected.version.name" => "3.4.0",
+        "android.injected.version.code" => 3040199,
+        "android.injected.version.name" => "3.4.1",
       }
     )
     upload_to_play_store(skip_upload_apk: true, skip_upload_images: true, skip_upload_screenshots: true, aab: '../build/app/outputs/bundle/release/app-release.aab')
