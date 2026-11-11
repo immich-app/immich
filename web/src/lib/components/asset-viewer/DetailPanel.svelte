@@ -157,14 +157,14 @@
         <div><Icon icon={mdiImageOutline} size="24" /></div>
 
         <div>
-          <div class="flex place-items-start gap-2 break-all whitespace-pre-wrap">
+          <div class="flex place-items-start justify-between gap-2 break-all whitespace-pre-wrap">
             <Text title={asset.originalFileName}>{truncateMiddle(asset.originalFileName)}</Text>
             {#if isOwner}
               <IconButton
                 icon={mdiInformationOutline}
                 aria-label={$t('show_file_location')}
                 class="shrink-0"
-                size="tiny"
+                size="small"
                 shape="round"
                 color="secondary"
                 variant="ghost"
