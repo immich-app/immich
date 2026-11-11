@@ -1,8 +1,12 @@
+import type { IntegrityReport } from '@immich/sdk';
 import { page, userEvent } from 'vitest/browser';
 
 export const createApp = () => {
   const button = (name: string) => page.getByRole('button', { name, exact: true });
   const main = page.getByRole('main');
+
+  const statisticCard = (title: string) => page.getByTestId('statistic-card').filter({ hasText: title });
+  const tableRow = (text: string) => page.getByRole('row').filter({ hasText: text });
 
   const queueCard = (title: string) =>
     page.getByTestId('queue-card').filter({ has: page.getByRole('link', { name: title, exact: true }) });
@@ -80,6 +84,23 @@ export const createApp = () => {
     admin: {
       maintenance: {
         restoreBackupButton: page.getByRole('button', { name: /^admin\.maintenance_restore_database_backup/ }),
+        startButton: button('admin.maintenance_start'),
+        checkButton: (report: IntegrityReport) =>
+          statisticCard(`admin.maintenance_integrity_${report}`).getByRole('button', {
+            name: 'admin.maintenance_integrity_check',
+            exact: true,
+          }),
+        backup: (filename: string) => page.getByText(filename, { exact: true }),
+        backupRestoreButton: page.getByRole('list').getByRole('button', { name: 'restore', exact: true }),
+        backupMenuButton: page.getByRole('list').getByRole('button', { name: 'open', exact: true }),
+        deleteMenuItem: page.getByRole('menuitem', { name: 'delete', exact: true }),
+      },
+      integrityReport: {
+        row: tableRow,
+        rowMenuButton: (path: string) => tableRow(path).getByRole('button', { name: 'open', exact: true }),
+        deleteMenuItem: page.getByRole('menuitem', { name: 'delete', exact: true }),
+        deleteAllButton: button('trash_page_delete_all'),
+        loadMoreButton: button('load_more'),
       },
       queues: {
         card: queueCard,
@@ -161,6 +182,12 @@ export const createApp = () => {
     trash: {
       emptyTrashButton: button('empty_trash'),
       restoreAllButton: button('restore_all'),
+      restoreSelectedButton: button('restore'),
+    },
+    maintenanceMode: {
+      loggedInAs: page.getByText('maintenance_logged_in_as', { exact: true }),
+      endButton: button('maintenance_end'),
+      restoreFromBackupButton: button('maintenance_restore_from_backup'),
     },
     settings: {
       manageOauthAccountLink: page.getByRole('link', { name: 'manage_oauth_account', exact: true }),
@@ -172,6 +199,18 @@ export const createApp = () => {
       logOutDeviceButton: button('log_out'),
       logOutAllDevicesButton: button('log_out_all_devices'),
       pinCodeTitle: (title: string) => main.getByText(title, { exact: true }),
+      partners: {
+        addButton: button('add_partner'),
+        removeButton: button('stop_sharing_photos_with_user'),
+        showInTimelineSwitch: page.getByRole('switch', { name: 'show_in_timeline', exact: true }),
+      },
+      clusterGroup: {
+        addUserButton: button('add_user'),
+        leaveButton: button('leave'),
+        facialRecognitionButton: button('cluster_group_facial_recognition'),
+        viewGroupButton: button('view_group'),
+        cancelRequestButton: main.getByRole('button', { name: 'cancel', exact: true }),
+      },
     },
     people: {
       nameInput: (index: number) => main.getByPlaceholder('add_a_name').nth(index),
