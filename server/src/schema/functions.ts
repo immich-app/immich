@@ -389,7 +389,7 @@ export const asset_ocr_set_is_pending_reset = registerFunction({
     BEGIN
       UPDATE session_sync_checkpoint 
       SET "isPendingReset" = true 
-      WHERE type = 'AssetOcrV1';
+      WHERE type in ('AssetOcrV1', 'AssetOcrDeleteV1');
       TRUNCATE asset_ocr_audit;
       RETURN NULL;
     END`,
