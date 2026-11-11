@@ -295,6 +295,10 @@ const createViewer = (page: Page) => {
     infoButton: page.getByLabel('info', { exact: true }),
     moreButton: page.getByLabel('more', { exact: true }),
     exitSlideshowButton: page.getByLabel('exit_slideshow', { exact: true }),
+    slideshowPlayPauseButton: page
+      .getByRole('navigation')
+      .filter({ has: page.getByLabel('exit_slideshow', { exact: true }) })
+      .getByRole('button', { name: /^(play|pause)$/ }),
     description: page.getByPlaceholder('add_a_description'),
     rating: page.getByTestId('star-container'),
     editDateButton: page.getByTestId('detail-panel-edit-date-button'),
