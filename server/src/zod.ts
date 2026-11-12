@@ -17,13 +17,15 @@ export const createZodDto = <S extends z.ZodType>(schema: S): DtoClass<S> =>
   } as unknown as DtoClass<S>;
 
 type JsonSchema = Record<string, unknown>;
-type GeneratedSchema = { $ref?: string; definitions?: Record<string, JsonSchema> } & JsonSchema;
+type GeneratedSchema = { $ref?: string; $schema?: string; $defs?: Record<string, JsonSchema> } & JsonSchema;
 type SchemaObject = Extract<ApiBodyOptions, { schema: unknown }>['schema'];
 type SchemaReference = { '~standard': z.ZodType['~standard']; schema: z.ZodType; name?: string };
 type RouteArgument = { index: number; data?: unknown; factory?: unknown; schema?: unknown };
 type SwaggerSchema = { in?: string; type?: unknown; standardSchema?: unknown };
 type Parameter = { description?: string; schema?: unknown };
 
+const COMPOSITE_SCHEMA_KEYWORDS = new Set(['$ref', 'enum', 'const', 'anyOf', 'oneOf', 'allOf', 'not']);
+const TYPE_LIST_NULLABLE_TYPES = new Set(['string', 'number', 'integer', 'boolean', 'array']);
 const API_PARAMETERS_METADATA = 'swagger/apiParameters';
 const API_RESPONSE_METADATA = 'swagger/apiResponse';
 
@@ -151,17 +153,17 @@ const patchOpenApiParameter = <T extends Parameter>(parameter: T): T => {
 };
 
 const convert = ({ schema, name }: SchemaReference) => {
-  const { root, definitions } = inlineRoot(z.toJSONSchema(schema, { target: 'openapi-3.0', io: 'input' }));
+  const { root, definitions } = inlineRoot(z.toJSONSchema(schema, { target: 'draft-2020-12', io: 'input' }));
   const components = normalize(name ? { ...definitions, [name]: root } : definitions) as Record<string, SchemaObject>;
   return { schema: name ? { $ref: `#/components/schemas/${name}` } : normalize(root), components };
 };
 
-const inlineRoot = ({ definitions = {}, ...root }: GeneratedSchema) => {
+const inlineRoot = ({ $defs: definitions = {}, $schema: _, ...root }: GeneratedSchema) => {
   if (typeof root.$ref !== 'string') {
     return { root, definitions };
   }
 
-  const id = root.$ref.replace('#/definitions/', '');
+  const id = root.$ref.replace('#/$defs/', '');
   const { [id]: rootDefinition, ...rest } = definitions;
   return { root: rootDefinition, definitions: rest };
 };
@@ -175,21 +177,43 @@ const normalize = (value: unknown): unknown => {
     return value;
   }
 
-  const { allOf, ...rest } = value as JsonSchema;
   const result = Object.fromEntries(
-    Object.entries(rest).map(([key, item]) => [
+    Object.entries(value).map(([key, item]) => [
       key,
-      key === '$ref' ? String(item).replace('#/definitions/', '#/components/schemas/') : normalize(item),
+      key === '$ref' ? String(item).replace('#/$defs/', '#/components/schemas/') : normalize(item),
     ]),
   );
-  if (!Array.isArray(allOf)) {
-    return result;
+  return normalizeNullable(result);
+};
+
+const normalizeNullable = (schema: JsonSchema) => {
+  const { anyOf, ...rest } = schema;
+  const value = getNullableValue(anyOf);
+  if (!value) {
+    return schema;
   }
 
-  const [only] = allOf as JsonSchema[];
-  const isBareReference = allOf.length === 1 && Object.keys(only).join(',') === '$ref';
-  const isNullableOnly = Object.keys(result).join(',') === 'nullable';
-  return isBareReference && !isNullableOnly
-    ? { ...result, $ref: String(only.$ref).replace('#/definitions/', '#/components/schemas/') }
-    : { ...result, allOf: normalize(allOf) };
+  // TODO: remove once https://github.com/OpenAPITools/openapi-generator/pull/25074 is released;
+  // until then the generator leaks descriptions and nullability between identical inline anyOf branches
+  if (isTypeListNullable(value)) {
+    return { ...value, ...rest, type: [value.type, 'null'] };
+  }
+
+  const { description, ...valueRest } = value;
+  return description === undefined ? schema : { description, ...rest, anyOf: [valueRest, { type: 'null' }] };
 };
+
+const getNullableValue = (anyOf: unknown) => {
+  if (!Array.isArray(anyOf) || anyOf.length !== 2) {
+    return;
+  }
+
+  const branches = anyOf as JsonSchema[];
+  return branches.some((branch) => branch.type === 'null')
+    ? branches.find((branch) => branch.type !== 'null')
+    : undefined;
+};
+
+const isTypeListNullable = (schema: JsonSchema) =>
+  TYPE_LIST_NULLABLE_TYPES.has(String(schema.type)) &&
+  Object.keys(schema).every((key) => !COMPOSITE_SCHEMA_KEYWORDS.has(key));

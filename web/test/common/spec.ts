@@ -12,7 +12,7 @@ export type Operation = {
   hasBody: boolean;
 };
 
-type SpecParameter = { name: string; in: string; schema?: { type?: string } };
+type SpecParameter = { name: string; in: string; schema?: { type?: string | string[] } };
 type SpecOperation = {
   operationId?: string;
   parameters?: SpecParameter[];
@@ -77,7 +77,7 @@ const toOperation = (path: string, method: string, operation: SpecOperation, sha
   const queryParameters: Record<string, ParameterType> = {};
   for (const parameter of [...shared, ...(operation.parameters ?? [])]) {
     if (parameter.in === 'query') {
-      queryParameters[parameter.name] = (parameter.schema?.type as ParameterType | undefined) ?? 'string';
+      queryParameters[parameter.name] = toParameterType(parameter.schema?.type);
     }
   }
 
@@ -91,6 +91,9 @@ const toOperation = (path: string, method: string, operation: SpecOperation, sha
     hasBody: operation.requestBody !== undefined,
   };
 };
+
+const toParameterType = (type: string | string[] | undefined) =>
+  ([type].flat().find((item) => item !== 'null') as ParameterType | undefined) ?? 'string';
 
 const escapeRegExp = (value: string) => value.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 
