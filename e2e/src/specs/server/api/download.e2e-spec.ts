@@ -44,9 +44,7 @@ describe('/download', () => {
 
       await writeFile(`${tempDir}/archive.zip`, body);
       await utils.unzip(`${tempDir}/archive.zip`, `${tempDir}/archive`);
-      const assets = await Promise.all(
-        [asset1, asset2].map(({ id }) => utils.getAssetInfo(admin.accessToken, id)),
-      );
+      const assets = await Promise.all([asset1, asset2].map(({ id }) => utils.getAssetInfo(admin.accessToken, id)));
       for (const asset of assets) {
         const bytes = await readFile(`${tempDir}/archive/${basename(asset.originalPath)}`);
         expect(utils.sha1(bytes)).toBe(asset.checksum);
