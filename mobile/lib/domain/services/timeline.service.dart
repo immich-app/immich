@@ -106,6 +106,8 @@ class TimelineService {
   int _totalAssets = 0;
   int get totalAssets => _totalAssets;
 
+  List<BaseAsset> get loadedAssets => _buffer;
+
   TimelineService(TimelineQuery query)
     : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, origin: query.origin);
 
