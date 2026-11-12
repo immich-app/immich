@@ -20,7 +20,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { PersonGroupTable } from 'src/schema/tables/person-group.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
-import { anyUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database.js';
+import { anyUuid, dummy, inSharedAlbum, removeUndefinedKeys, withEdits, withFilePath } from 'src/utils/database.js';
 import { isLeapDayObserved } from 'src/utils/date.js';
 import { paginationHelper, type PaginationOptions } from 'src/utils/pagination.js';
 
@@ -573,6 +573,7 @@ export class PersonRepository {
         'asset_exif.orientation as exifOrientation',
       ])
       .select((eb) => withFilePath(eb, AssetFileType.Preview).as('previewPath'))
+      .select((eb) => withEdits(eb))
       .where('person.ownerId', '=', ownerId)
       .where('person.personGroupId', '=', personGroupId)
       .where('asset_face.deletedAt', 'is', null)
