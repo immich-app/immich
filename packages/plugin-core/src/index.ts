@@ -8,6 +8,24 @@ type MatchValueConfig = {
   caseSensitive?: boolean;
 };
 
+type ListMatching = 'all' | 'any' | 'none';
+
+const listMatching = <T>(matching: ListMatching, items: T[], isMatch: (item: T) => boolean) => {
+  switch (matching) {
+    case 'any': {
+      return items.some((item) => isMatch(item));
+    }
+
+    case 'all': {
+      return items.every((item) => isMatch(item));
+    }
+
+    case 'none': {
+      return !items.some((item) => isMatch(item));
+    }
+  }
+};
+
 const matchValueResult = (value: string | null, config: MatchValueConfig) => {
   const { pattern = '', matchType = 'contains', caseSensitive = false } = config;
 
@@ -196,27 +214,26 @@ const methods = wrapper<Manifest>({
 
   assetOcrFilter: ({ config, data }) => {
     const entries = (data.asset.ocr ?? []).filter((ocr) => ocr.textScore >= (config.minScore ?? 0));
-    const texts = config.matchScope === 'full' ? [entries.map((ocr) => ocr.text).join(' ')] : entries.map((ocr) => ocr.text);
+    const texts =
+      config.matchScope === 'full' ? [entries.map((ocr) => ocr.text).join(' ')] : entries.map((ocr) => ocr.text);
     const matched = texts.some((t) => matchValueResult(t, config).workflow?.continue);
     return { workflow: { continue: matched } };
   },
 
   assetTagFilter: ({ config, data }) => {
-    const assetTags = data.asset.tags.map((tag) => tag.id);
+    const assetTagIds = new Set(data.asset.tags.map((tag) => tag.id));
+    const assetTagValues = data.asset.tags.map((tag) => tag.value);
+    const isTagStringMatch = (tagValue: string) =>
+      assetTagValues.some((value) => value === tagValue || value.startsWith(`${tagValue}/`));
 
-    for (const tag of config.tags) {
-      if (assetTags.includes(tag)) {
-        if (config.matching === 'any') {
-          return { workflow: { continue: true } };
-        } else if (config.matching === 'none') {
-          return { workflow: { continue: false } };
-        }
-      } else if (config.matching === 'all') {
-        return { workflow: { continue: false } };
-      }
+    const idsMatch = listMatching(config.matching, config.tags ?? [], (id) => assetTagIds.has(id));
+    const valuesMatch = listMatching(config.matching, config.tagValues ?? [], isTagStringMatch);
+
+    if (config.matching === 'any' && (idsMatch || valuesMatch)) {
+      return { workflow: { continue: true } };
     }
 
-    return { workflow: { continue: config.matching !== 'any' } };
+    return { workflow: { continue: idsMatch && valuesMatch } };
   },
 
   assetTypeFilter: ({ config, data }) => {
