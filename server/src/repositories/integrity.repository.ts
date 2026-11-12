@@ -222,7 +222,7 @@ export class IntegrityRepository {
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.STRING], stream: true })
+  @GenerateSql({ params: ['assetId', IntegrityReport.MissingFile], stream: true })
   streamIntegrityReportsByProperty(property?: 'assetId' | 'fileAssetId', filterType?: IntegrityReport) {
     return this.db
       .selectFrom('integrity_report')

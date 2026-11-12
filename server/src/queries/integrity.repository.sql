@@ -188,7 +188,8 @@ select
 from
   "integrity_report"
 where
-  "abcdefghi" is not null
+  "type" = $1
+  and "assetId" is not null
 
 -- IntegrityRepository.deleteById
 delete from "integrity_report"
