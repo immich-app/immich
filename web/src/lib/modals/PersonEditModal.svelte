@@ -48,7 +48,8 @@
     <Field label={$t('date_of_birth')}>
       <DatePicker
         bind:value={
-          () => (birthDate ? DateTime.fromISO(birthDate) : undefined), (value) => (birthDate = value?.toISO() ?? null)
+          () => (birthDate ? DateTime.fromISO(birthDate) : undefined),
+          (value) => (birthDate = value?.toISODate() ?? null)
         }
         maxDate={DateTime.now()}
       />
