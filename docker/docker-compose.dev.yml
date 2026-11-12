@@ -19,7 +19,7 @@ services:
     tmpfs:
       - /tmp
     volumes:
-      - ..:/usr/src/app
+      - ..:/usr/src/app:z
       # - ../../ui:/usr/src/ui
       - build_cache:/buildcache
       - server_node_modules:/usr/src/app/server/node_modules
@@ -71,9 +71,9 @@ services:
       target: dev
     restart: unless-stopped
     volumes:
-      - ${UPLOAD_LOCATION}/photos:/data
+      - ${UPLOAD_LOCATION}/photos:/data:Z
       - /etc/localtime:/etc/localtime:ro
-      - ../packages/plugin-core:/build/plugins/immich-plugin-core
+      - ../packages/plugin-core:/build/plugins/immich-plugin-core:Z
     env_file:
       - .env
     environment:
@@ -169,7 +169,7 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
-      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data:Z
     ports:
       - 5432:5432
     shm_size: 128mb
@@ -182,7 +182,7 @@ services:
   #     - 9090:9090
   #   image: prom/prometheus
   #   volumes:
-  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml:Z
   #     - prometheus_data:/prometheus
 
   # first login uses admin/admin
@@ -194,7 +194,7 @@ services:
   #     - 3000:3000
   #   image: grafana/grafana:10.3.3-ubuntu
   #   volumes:
-  #     - grafana_data:/var/lib/grafana
+  #     - grafana_data:/var/lib/grafana:Z
 
 volumes:
   model_cache:
