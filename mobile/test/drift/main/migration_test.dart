@@ -5,6 +5,7 @@ import 'package:drift_dev/api/migrations_native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -57,8 +58,9 @@ void main() {
         ''');
 
         final db = Drift(schema.newConnection());
-        await verifier.migrateAndValidate(db, 35);
+        await verifier.migrateAndValidate(db, db.schemaVersion);
         await backfillAssetGroupDates(db);
+        await LocalAlbumRepository(db).recomputeAllBackupCandidates();
 
         final result = await loadBuckets(db);
         expect(result.map((b) => (b as TimeBucket).date.year), [9999, 2026]);
@@ -77,12 +79,13 @@ void main() {
         ''');
 
         final db = Drift(schema.newConnection());
-        await verifier.migrateAndValidate(db, 35);
+        await verifier.migrateAndValidate(db, db.schemaVersion);
 
         await db.customStatement(
           "UPDATE local_asset_entity SET created_at = updated_at WHERE julianday(created_at) > julianday(updated_at)",
         );
         await backfillAssetGroupDates(db);
+        await LocalAlbumRepository(db).recomputeAllBackupCandidates();
 
         expect(
           (await loadBuckets(db)).single,
