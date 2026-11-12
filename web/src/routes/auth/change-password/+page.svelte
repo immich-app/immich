@@ -20,7 +20,9 @@
   const valid = $derived(currentPassword.length > 0 && password === passwordConfirm && passwordConfirm.length > 0);
   const errorMessage = $derived(passwordConfirm.length === 0 || valid ? '' : $t('password_does_not_match'));
 
-  const onSubmit = async () => {
+  const onSubmit = async (event: Event) => {
+    event.preventDefault();
+
     if (!valid) {
       return;
     }
