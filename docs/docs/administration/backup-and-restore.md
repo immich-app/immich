@@ -310,7 +310,7 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
 
 :::danger
 Do not touch the files inside these folders under any circumstances except taking a backup. Changing or removing an asset can cause untracked and missing files.
-You can think of it as App-Which-Must-Not-Be-Named, the only access to viewing, changing and deleting assets is only through the mobile or browser interface.
+You can think of it as Do-Not-Violate-The-Prime-Directive-App -- you must not interfere! The only access to viewing, changing and deleting assets is only through the mobile or browser interface.
 :::
 
 ## Backup ordering
