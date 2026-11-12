@@ -4,27 +4,16 @@ import { expect } from 'vitest';
 import Page from './+page.svelte';
 import { load } from './+page.ts';
 
-const preventNativeFormSubmit = () => {
-  const listener = (event: Event) => event.preventDefault();
-  document.addEventListener('submit', listener);
-  return () => document.removeEventListener('submit', listener);
-};
-
 test('changes the password and logs out', async ({ data, router, render, settle, api, app }) => {
   data.user.shouldChangePassword = true;
   await router.goto(Route.changePassword());
   await render(Page, load);
-  const restoreFormSubmit = preventNativeFormSubmit();
 
-  try {
-    await app.auth.input('password').fill('old-password');
-    await app.auth.input('new_password').fill('new-password');
-    await app.auth.input('confirm_password').fill('new-password');
-    await app.auth.changePasswordButton.click();
-    await settle();
-  } finally {
-    restoreFormSubmit();
-  }
+  await app.auth.input('password').fill('old-password');
+  await app.auth.input('new_password').fill('new-password');
+  await app.auth.input('confirm_password').fill('new-password');
+  await app.auth.changePasswordButton.click();
+  await settle();
 
   expect(api.changePassword).toHaveBeenCalledWith({ body: { password: 'old-password', newPassword: 'new-password' } });
   expect(router.url.pathname).toBe(Route.logout());
