@@ -17,9 +17,8 @@ import { createZodDto } from 'src/zod.js';
 const PersonCreateSchema = z
   .object({
     name: z.string().optional().describe('Person name'),
-    birthDate: z
-      .string()
-      .meta({ format: 'date' })
+    birthDate: z.iso
+      .date()
       .nullable()
       .optional()
       .refine((val) => !val || new Date(val) <= new Date(), { error: 'Birth date cannot be in the future' })

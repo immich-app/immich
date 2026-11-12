@@ -154,6 +154,26 @@ describe(PersonController.name, () => {
       );
     });
 
+    it.each(['', '2024-02-30', '2024-01-01T00:00:00.000+01:00', '01/01/2024'])(
+      'should not accept a birth date that is not a calendar date (%s)',
+      async (birthDate) => {
+        const { status, body } = await request(ctx.getHttpServer())
+          .put(`/people/${factory.uuid()}`)
+          .send({ birthDate });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.validationError([{ path: ['birthDate'], message: 'Invalid ISO date' }]));
+        expect(service.update).not.toHaveBeenCalled();
+      },
+    );
+
+    it('should accept a calendar birth date', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .put(`/people/${factory.uuid()}`)
+        .send({ birthDate: '1990-01-01' });
+      expect(status).toBe(200);
+      expect(service.update).toHaveBeenCalledWith(undefined, expect.any(String), { birthDate: '1990-01-01' });
+    });
+
     it('should not accept a birth date in the future)', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/people/${factory.uuid()}`)
