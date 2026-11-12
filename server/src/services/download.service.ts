@@ -90,6 +90,8 @@ export class DownloadService extends BaseService {
   async downloadArchive(auth: AuthDto, dto: DownloadArchiveDto): Promise<ImmichReadStream> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
 
+    const config = await this.getConfig({ withCache: true });
+
     const edited = isEditedOnly(auth, dto.edited);
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getForOriginals(dto.assetIds, edited);
@@ -102,27 +104,28 @@ export class DownloadService extends BaseService {
         continue;
       }
 
-      const { originalPath, editedPath, originalFileName } = asset;
+      const { editedPath, originalPath, originalFileName } = asset;
 
-      const name = getFileNameWithoutExtension(sanitize(originalFileName) || 'unnamed');
-      const extension = getFilenameExtension(editedPath || originalPath);
-      let filename = name + extension;
+      let path = editedPath ?? originalPath;
 
-      const count = paths[filename] || 0;
-      paths[filename] = count + 1;
+      const name =
+        sanitize(getFileNameWithoutExtension(config.storageTemplate.enabled ? path : originalFileName)) || 'unnamed';
+      const extension = getFilenameExtension(path);
+      let fileName = name + extension;
+
+      const count = paths[fileName] || 0;
+      paths[fileName] = count + 1;
       if (count !== 0) {
-        filename = `${name}+${count}${extension}`;
+        fileName = `${name}+${count}${extension}`;
       }
-
-      let realpath = editedPath || originalPath;
 
       try {
-        realpath = await this.storageRepository.realpath(realpath);
+        path = await this.storageRepository.realpath(path);
       } catch {
-        this.logger.warn('Unable to resolve realpath', { realpath });
+        this.logger.warn('Unable to resolve realpath', { realpath: path });
       }
 
-      zip.addFile(realpath, filename);
+      zip.addFile(path, fileName);
     }
 
     void zip.finalize();

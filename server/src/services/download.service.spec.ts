@@ -186,11 +186,11 @@ describe(DownloadService.name, () => {
     });
 
     it.each([
-      { input: '../../../../tmp/pwn.jpg', expected: '........tmppwn.jpg' },
+      { input: '../../../../tmp/pwn.jpg', expected: 'pwn.jpg' },
       { input: String.raw`C:\temp\abs3.jpg`, expected: 'Ctempabs3.jpg' },
-      { input: 'a/../../b.jpg', expected: 'a....b.jpg' },
+      { input: 'a/../../b.jpg', expected: 'b.jpg' },
       { input: String.raw`..\..\win1.jpg`, expected: '....win1.jpg' },
-      { input: '/etc/passwd', expected: 'etcpasswd.jpg' },
+      { input: '/etc/passwd', expected: 'passwd.jpg' },
       { input: '..', expected: 'unnamed.jpg' },
       { input: '', expected: 'unnamed.jpg' },
     ])('should sanitize unsafe originalFileName "$input" to "$expected"', async ({ input, expected }) => {
@@ -236,8 +236,8 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/a.jpg', '......tmppwn.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/b.jpg', '......tmppwn+1.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/a.jpg', 'pwn.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/b.jpg', 'pwn+1.jpg');
     });
 
     it('should resolve symlinks', async () => {
