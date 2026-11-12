@@ -1,4 +1,4 @@
-import { OpenQueryParam } from '#lib/constants.ts';
+import { OpenQueryParam, QueryParameter } from '#lib/constants.ts';
 import { Route } from '#lib/route.ts';
 import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
@@ -196,6 +196,7 @@ test('links the OAuth account from the callback url', async ({ data, router, ren
 
     expect(api.linkOAuthAccount).toHaveBeenCalledWith({ body: { url: location.href } });
     expect(router.url.pathname).toBe(Route.userSettings());
+    expect(router.url.searchParams.get(QueryParameter.IS_OPEN)).toBe(OpenQueryParam.OAUTH);
   } finally {
     history.replaceState({}, '', path);
   }
