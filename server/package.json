@@ -101,7 +101,7 @@
     "openid-client": "^6.3.3",
     "pg": "^8.11.3",
     "picomatch": "^4.0.2",
-    "postgres": "3.4.9",
+    "postgres": "4.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-email": "^6.0.0",
