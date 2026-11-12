@@ -244,11 +244,17 @@ export class AssetMediaService extends BaseService {
   async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
-    const { editedPath, originalPath } = await this.assetRepository.getForOriginal(id, isEditedOnly(auth, dto.edited));
+    const config = await this.getConfig({ withCache: true });
+
+    const { editedPath, originalPath, originalFileName } = await this.assetRepository.getForOriginal(
+      id,
+      isEditedOnly(auth, dto.edited),
+    );
 
     const path = editedPath ?? originalPath;
 
-    const name = sanitize(getFileNameWithoutExtension(path)) || 'unnamed';
+    const name =
+      sanitize(getFileNameWithoutExtension(config.storageTemplate.enabled ? path : originalFileName)) || 'unnamed';
     const extension = getFilenameExtension(path);
     const fileName = name + extension;
 

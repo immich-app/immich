@@ -90,6 +90,8 @@ export class DownloadService extends BaseService {
   async downloadArchive(auth: AuthDto, dto: DownloadArchiveDto): Promise<ImmichReadStream> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
 
+    const config = await this.getConfig({ withCache: true });
+
     const edited = isEditedOnly(auth, dto.edited);
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getForOriginals(dto.assetIds, edited);
@@ -102,11 +104,12 @@ export class DownloadService extends BaseService {
         continue;
       }
 
-      const { editedPath, originalPath } = asset;
+      const { editedPath, originalPath, originalFileName } = asset;
 
       let path = editedPath ?? originalPath;
 
-      const name = sanitize(getFileNameWithoutExtension(path)) || 'unnamed';
+      const name =
+        sanitize(getFileNameWithoutExtension(config.storageTemplate.enabled ? path : originalFileName)) || 'unnamed';
       const extension = getFilenameExtension(path);
       let fileName = name + extension;
 

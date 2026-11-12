@@ -1,6 +1,5 @@
 import { AssetMediaResponseDto, LoginResponseDto } from '@immich/sdk';
 import { readFile, writeFile } from 'node:fs/promises';
-import { basename } from 'node:path';
 import { app, tempDir, utils } from 'src/utils.js';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -44,9 +43,13 @@ describe('/download', () => {
 
       await writeFile(`${tempDir}/archive.zip`, body);
       await utils.unzip(`${tempDir}/archive.zip`, `${tempDir}/archive`);
-      const assets = await Promise.all([asset1, asset2].map(({ id }) => utils.getAssetInfo(admin.accessToken, id)));
-      for (const asset of assets) {
-        const bytes = await readFile(`${tempDir}/archive/${basename(asset.originalPath)}`);
+      const files = [
+        { filename: 'example.png', id: asset1.id },
+        { filename: 'example+1.png', id: asset2.id },
+      ];
+      for (const { id, filename } of files) {
+        const bytes = await readFile(`${tempDir}/archive/${filename}`);
+        const asset = await utils.getAssetInfo(admin.accessToken, id);
         expect(utils.sha1(bytes)).toBe(asset.checksum);
       }
     });
