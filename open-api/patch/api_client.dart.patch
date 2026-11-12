@@ -30,10 +30,11 @@
    }
 
    // ignore: deprecated_member_use_from_same_package
-@@ -182,4 +182,6 @@
+@@ -182,4 +182,7 @@
            final valueString = '$value'.toLowerCase();
            return valueString == 'true' || valueString == '1';
 +        case 'Object':
++        case 'Object?':
 +          return value;
          case 'DateTime':
            return value is DateTime ? value : DateTime.tryParse(value);
