@@ -1067,7 +1067,7 @@ jobs:
 
       - name: Generate new migrations
         continue-on-error: true
-        run: pnpm --filter migrations:generate src/TestMigration
+        run: pnpm --filter immich migrations:generate src/TestMigration
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
