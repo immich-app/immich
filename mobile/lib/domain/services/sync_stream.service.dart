@@ -295,6 +295,14 @@ class SyncStreamService {
       // Request to reset the client state. Clear everything related to remote entities
       case SyncEntityType.syncResetV1:
         return _syncStreamRepository.reset();
+      case SyncEntityType.syncPendingResetV1:
+        if (data.cast<SyncPendingResetV1>().any(
+          (item) =>
+              item.types.contains(SyncEntityType.assetOcrV1) || item.types.contains(SyncEntityType.assetOcrDeleteV1),
+        )) {
+          return _syncStreamRepository.resetAssetOcrV1();
+        }
+        return;
       case SyncEntityType.memoryV1:
       case SyncEntityType.memoryV2:
         return _syncStreamRepository.updateMemoriesV2(data.cast());
@@ -334,8 +342,6 @@ class SyncStreamService {
         return _syncStreamRepository.updateAssetOcrV1(data.cast());
       case SyncEntityType.assetOcrDeleteV1:
         return _syncStreamRepository.deleteAssetOcrV1(data.cast());
-      case SyncEntityType.assetOcrResetV1:
-        return _syncStreamRepository.resetAssetOcrV1();
     }
   }
 
