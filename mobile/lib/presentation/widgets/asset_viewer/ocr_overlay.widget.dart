@@ -245,11 +245,10 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
       );
     }
 
-    _textArea = textArea;
-    // Dim the image, with the text boxes punched out by the even-odd rule
-    _scrim = Path.from(textArea)
-      ..fillType = PathFillType.evenOdd
-      ..addRect(Offset.zero & _imageSize);
+    // Combine overlapping shapes
+    _textArea = Path.combine(PathOperation.union, textArea, Path());
+    // Dim the image, with the text boxes punched out
+    _scrim = Path.combine(PathOperation.difference, Path()..addRect(Offset.zero & _imageSize), _textArea);
     _lines = Stack(clipBehavior: Clip.none, children: lines);
   }
 
@@ -359,13 +358,16 @@ class _OcrBoxesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawPath(scrim, Paint()..color = Colors.black54);
+    canvas.save();
+    canvas.clipPath(scrim);
     canvas.drawPath(
       boxes,
       Paint()
         ..color = Colors.white.withValues(alpha: 0.8)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = scale > 0 ? 1.5 / scale : 1.5,
+        ..strokeWidth = scale > 0 ? 2 / scale : 2,
     );
+    canvas.restore();
   }
 
   @override
