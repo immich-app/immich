@@ -145,7 +145,7 @@ jobs:
         env:
           PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
         working-directory: ./mobile
-        run: printf "%s" $PLAY_STORE_JSON_KEY | base64 -d > android/immich-play-store-key.json
+        run: printf "%s" "$PLAY_STORE_JSON_KEY" > android/immich-play-store-key.json
 
       - name: Restore Gradle Cache
         id: cache-gradle-restore
