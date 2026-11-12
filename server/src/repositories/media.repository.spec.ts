@@ -1,4 +1,4 @@
-import { mkdtempDisposableSync, statSync } from 'node:fs';
+import { mkdtempDisposableSync, readFileSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
@@ -7,6 +7,8 @@ import { Colorspace, ImageFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { automock } from 'test/utils.js';
+
+const securityLimitFixture = readFileSync(new URL('../../test/fixtures/security-limit.avif', import.meta.url));
 
 const getPixelColor = async (buffer: Buffer, x: number, y: number) => {
   const metadata = await sharp(buffer).metadata();
@@ -321,6 +323,30 @@ describe(MediaRepository.name, () => {
   });
 
   describe('generateThumbnail', () => {
+    it('processes an AVIF with more items than the libheif security limit', async () => {
+      const metadata = await sut.getImageMetadata(securityLimitFixture);
+      expect(metadata).toEqual({ width: 1, height: 1, isTransparent: false });
+
+      const decoded = await sut.decodeImage(securityLimitFixture, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+      const dir = mkdtempDisposableSync(join(tmpdir(), 'media-repository-'));
+      const file = join(dir.path, 'test.webp');
+      await sut.generateThumbnail(
+        decoded,
+        {
+          colorspace: Colorspace.P3,
+          quality: 80,
+          format: ImageFormat.Webp,
+          processInvalidImages: false,
+          decodingTier: 0,
+        },
+        file,
+      );
+      expect(statSync(file).size).toBeGreaterThan(0);
+    });
+
     it('should process random Authentik thumbnail image', async () => {
       const response = await fetch(
         'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NHB4IiBoZWlnaHQ9IjY0cHgiIHZpZXdCb3g9IjAgMCA2NCA2NCIgdmVyc2lvbj0iMS4xIj48cmVjdCBmaWxsPSIjMzc3YjM3IiBjeD0iMzIiIGN5PSIzMiIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByPSIzMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBzdHlsZT0iY29sb3I6ICNmZmY7IGxpbmUtaGVpZ2h0OiAxOyBmb250LWZhbWlseTogJ1JlZEhhdFRleHQnLCdPdmVycGFzcycsb3ZlcnBhc3MsaGVsdmV0aWNhLGFyaWFsLHNhbnMtc2VyaWY7ICIgZmlsbD0iI2ZmZiIgYWxpZ25tZW50LWJhc2VsaW5lPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI0MDAiIGR5PSIuMWVtIj5BQTwvdGV4dD48L3N2Zz4=',
