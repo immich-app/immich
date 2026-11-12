@@ -128,6 +128,7 @@ export const createApp = () => {
       settings: {
         open: (title: string) => page.getByRole('button', { name: title, exact: false }).click(),
         numberInput: page.getByRole('spinbutton'),
+        unlinkAllOAuthAccountsButton: button('admin.unlink_all_oauth_accounts'),
       },
     },
     albums: {
@@ -189,7 +190,17 @@ export const createApp = () => {
       endButton: button('maintenance_end'),
       restoreFromBackupButton: button('maintenance_restore_from_backup'),
     },
+    auth: {
+      input: (label: string) => page.getByLabelText(label, { exact: true }),
+      loginButton: button('to_login'),
+      signUpButton: button('sign_up'),
+      changePasswordButton: button('to_change_password'),
+      button,
+      text: (text: string) => page.getByText(text, { exact: true }),
+    },
     settings: {
+      unlinkOauthButton: button('unlink_oauth'),
+      forgotPinCodeButton: button('forgot_pin_code_question'),
       manageOauthAccountLink: page.getByRole('link', { name: 'manage_oauth_account', exact: true }),
       section: (title: string) => page.getByRole('button', { name: new RegExp(`^${title}`) }),
       rotateApiKeyButton: button('rotate_key'),

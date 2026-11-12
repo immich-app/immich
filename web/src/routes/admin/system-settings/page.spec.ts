@@ -44,3 +44,25 @@ describe('transcoding settings', () => {
     }
   });
 });
+
+describe('authentication settings', () => {
+  test('unlinks all OAuth accounts after confirmation', async ({ data, router, render, settle, api, app }) => {
+    data.adminConfig.oauth.enabled = true;
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+    await app.admin.settings.open('admin.authentication_settings');
+    await app.admin.settings.open('admin.oauth_settings');
+
+    await app.admin.settings.unlinkAllOAuthAccountsButton.click();
+    await app.cancelButton.click();
+    await settle();
+
+    expect(api.unlinkAllOAuthAccountsAdmin).not.toHaveBeenCalled();
+
+    await app.admin.settings.unlinkAllOAuthAccountsButton.click();
+    await app.confirmButton.click();
+    await settle();
+
+    expect(api.unlinkAllOAuthAccountsAdmin).toHaveBeenCalled();
+  });
+});
