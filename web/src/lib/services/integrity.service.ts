@@ -6,13 +6,12 @@ import { IntegrityReport, ManualJobName, createJob, deleteIntegrityReport } from
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { goto } from '$app/navigation';
 
 export const getIntegrityReportActions = ($t: MessageFormatter, reportType: IntegrityReport) => {
   const Download: ActionItem = {
     title: $t('admin.download_csv'),
     icon: mdiDownload,
-    onAction: () => goto(Route.integrityReportCsv(reportType)),
+    onAction: () => globalThis.location?.assign(Route.integrityReportCsv(reportType)),
   };
 
   const Delete: ActionItem = {
@@ -29,7 +28,7 @@ export const getIntegrityReportItemActions = ($t: MessageFormatter, reportId: st
   const Download: ActionItem = {
     title: $t('download'),
     icon: mdiDownload,
-    onAction: () => goto(Route.integrityReportFile(reportId)),
+    onAction: () => globalThis.location?.assign(Route.integrityReportFile(reportId)),
     $if: () => reportType === IntegrityReport.UntrackedFile || reportType === IntegrityReport.ChecksumMismatch,
   };
 
