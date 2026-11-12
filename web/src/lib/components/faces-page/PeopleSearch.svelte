@@ -47,7 +47,7 @@
 
   let {
     searchName = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
+
     searchedPeopleLocal = $bindable(),
     type,
     numberPeopleToSearch = maximumLengthSearchPeople,
@@ -113,6 +113,6 @@
     {placeholder}
     bind:value={searchName}
     oninput={() => searchPeople(false)}
-    use:initInput
+    {@attach initInput}
   />
 {/if}

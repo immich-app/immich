@@ -5,7 +5,6 @@ import { Stats } from 'node:fs';
 import { resolve } from 'node:path';
 import { Writable } from 'node:stream';
 import { Mocked } from 'vitest';
-import type { ClassConstructor, ClassConstructorsToInstances, UploadFile } from 'src/types.js';
 import { AssetFace } from 'src/database.js';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
@@ -93,6 +92,7 @@ import { UserTable } from 'src/schema/tables/user.table.js';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service.js';
 import { MetadataService } from 'src/services/metadata.service.js';
 import { SyncService } from 'src/services/sync.service.js';
+import type { ClassConstructor, ClassConstructorsToInstances, UploadFile } from 'src/types.js';
 import { getConfig, updateConfig } from 'src/utils/config.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock.js';
@@ -425,10 +425,17 @@ export class SyncTestContext extends MediumTestContext<typeof SyncService> {
     return stream.getResponse();
   }
 
+  assertSyncResponse(response: unknown[], records: unknown[]) {
+    const completeAck = response.at(-1);
+    const items = response.slice(0, -1);
+
+    expect(completeAck).toEqual(expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }));
+    expect(items).toEqual(expect.arrayContaining(records));
+    expect(items).toHaveLength(records.length);
+  }
+
   async assertSyncIsComplete(auth: AuthDto, types: SyncRequestType[]) {
-    await expect(this.syncStream(auth, types)).resolves.toEqual([
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
-    ]);
+    this.assertSyncResponse(await this.syncStream(auth, types), []);
   }
 
   async syncAckAll(auth: AuthDto, response: Array<{ type: string; ack: string }>) {

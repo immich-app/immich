@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { ImmichOnboardingRestoreFlow } from '@futo-org/backups-orchestrator-ui';
   import RestoreFlowAutoSelectBackup from './RestoreFlowAutoSelectBackup.svelte';
   import RestoreFlowDetectInstall from './RestoreFlowDetectInstall.svelte';
   import RestoreFlowIntro from './RestoreFlowIntro.svelte';
   import RestoreFlowSelectBackup from './RestoreFlowSelectBackup.svelte';
-  import { ImmichOnboardingRestoreFlow } from '@futo-org/backups-orchestrator-ui';
 
   type Props = {
     end: () => void;
@@ -32,7 +32,10 @@
     {end}
   />
 {:else if stage === 'futo-backups'}
-  <ImmichOnboardingRestoreFlow onExit={() => (stage = 'overview')} onFinish={() => (stage = 'auto-select-backup')} />
+  <ImmichOnboardingRestoreFlow
+    onExit={() => (stage = 'overview')}
+    onFinish={({ databaseRestored }) => (databaseRestored ? end() : (stage = 'auto-select-backup'))}
+  />
 {:else if stage === 'detect-install'}
   <RestoreFlowDetectInstall next={() => (stage = 'select-backup')} previous={() => (stage = 'overview')} />
 {:else if stage === 'select-backup'}

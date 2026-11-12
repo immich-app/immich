@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 
@@ -47,6 +46,7 @@ class StoreService {
   }
 
   StreamSubscription<List<StoreDto>> _listenForChange() => _storeRepository.watchAll().listen((events) {
+    _cache.clear();
     for (final event in events) {
       _cache[event.key.id] = event.value;
     }
@@ -96,7 +96,6 @@ class StoreService {
   }
 
   /// Clears all values from the store (cache and DB)
-  @visibleForTesting
   Future<void> clear() async {
     await _storeRepository.deleteAll();
     _cache.clear();

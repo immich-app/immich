@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { page } from '$app/state';
-  import { scrollMemory } from '#lib/actions/scroll-memory.ts';
-  import { shortcut } from '#lib/actions/shortcut.ts';
-  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import { scrollMemory } from '#lib/actions/scroll-memory.svelte.ts';
   import OnEvents from '#lib/components/OnEvents.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import { QueryParameter, SessionStorageKey } from '#lib/constants.ts';
   import SearchBar from '#lib/elements/SearchBar.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import PeopleFilterModal from '#lib/modals/PeopleFilterModal.svelte';
   import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchPersonQuery } from '#lib/queries/search.query.ts';
   import { Route } from '#lib/route.ts';
   import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
   import { handleUpdatePersonName } from '#lib/services/person.service.ts';
@@ -22,14 +21,15 @@
     getAllPeople,
     getClusterGroupUsers,
     getPerson,
-    searchPerson,
     type PersonResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import { ActionButton, Button, Icon, IconButton, modalManager, shortcut } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import type { PageData } from './$types';
   import PeopleCard from './PeopleCard.svelte';
   import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';
@@ -61,15 +61,15 @@
     }
   });
 
-  onDestroy(() => {
+  onMount(() =>
     websocketEvents.on('on_person_thumbnail', (personId: string) => {
       for (const person of people) {
         if (person.id === personId) {
           person.updatedAt = new Date().toISOString();
         }
       }
-    });
-  });
+    }),
+  );
 
   const loadInitialScroll = () =>
     new Promise<void>((resolve) => {
@@ -98,6 +98,8 @@
           resolve();
         }
         sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+      } else {
+        resolve();
       }
     });
 
@@ -257,7 +259,7 @@
   };
 
   const findPeopleWithSimilarName = async (name: string, personId: string) => {
-    const searchResult = await searchPerson({ name, withHidden: true });
+    const searchResult = await queryClient.query(searchPersonQuery({ name, withHidden: true }));
     const normalizedName = normalizeSearchString(name);
     return searchResult.find(
       (person) => normalizeSearchString(person.name) === normalizedName && person.id !== personId && person.name,
@@ -281,23 +283,18 @@
 <UserPageLayout
   title={$t('people')}
   description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
-  use={[
-    [
-      scrollMemory,
-      {
-        routeStartsWith: Route.people(),
-        beforeSave: () => {
-          if (currentPage) {
-            sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());
-          }
-        },
-        beforeClear: () => {
-          sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
-        },
-        beforeLoad: loadInitialScroll,
-      },
-    ],
-  ]}
+  {@attach scrollMemory({
+    routeStartsWith: Route.people(),
+    beforeSave: () => {
+      if (currentPage) {
+        sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());
+      }
+    },
+    beforeClear: () => {
+      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+    },
+    beforeScroll: loadInitialScroll,
+  })}
 >
   {#snippet buttons()}
     <div class="flex items-center justify-center gap-2">
@@ -345,7 +342,7 @@
             class="mt-2 w-full rounded-2xl border-gray-100 bg-white py-2 text-center text-sm text-primary placeholder-gray-400 dark:border-gray-900 dark:bg-immich-dark-gray"
             value={person.name}
             placeholder={$t('add_a_name')}
-            use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
+            {@attach shortcut({ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() })}
             onfocusin={() => onNameChangeInputFocus(person)}
             onfocusout={() => onNameChangeSubmit(newName, person)}
             oninput={(event) => onNameChangeInputUpdate(event)}

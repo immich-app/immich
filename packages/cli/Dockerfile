@@ -1,9 +1,9 @@
-FROM node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea AS core
+FROM node:26.12.1-trixie-slim@sha256:94816674c62774da0d099a947bf4613b9e1972a2733abd0d0cd80e795f8411d0 AS core
 
 WORKDIR /usr/src/app
 COPY package* pnpm* .pnpmfile.cjs ./
 COPY ./packages ./packages/
-RUN corepack enable pnpm && \
+RUN npm install --global corepack@latest && corepack enable pnpm && \
   pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile && \
   pnpm --filter @immich/sdk --filter @immich/cli build
 

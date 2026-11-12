@@ -1,9 +1,11 @@
 // TODO: Dedupe against lib/utils/map_utils.dart
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -109,7 +111,46 @@ class MapUtils {
       return (null, LocationPermission.unableToDetermine);
     }
   }
+
+  /// Joins every source's attribution from the loaded style into one
+  static Future<MapAttribution?> getAttribution(MapLibreMapController controller) async {
+    try {
+      final sourceIds = await controller.getSourceIds();
+
+      final sources = await Future.wait(sourceIds.map(controller.getSourceProperties));
+      final attributions = await Future.wait(sources.nonNulls.map(_getSourceAttribution));
+
+      // Combine multiple attributions into one (should only occur on custom setups)
+      final attribution = _parseAttribution(attributions.nonNulls.toSet().join(' '));
+      return attribution.text.isEmpty ? null : attribution;
+    } catch (error, stack) {
+      _logger.warning("Cannot load map attributions", error, stack);
+      return null;
+    }
+  }
+
+  static Future<String?> _getSourceAttribution(Map<String, dynamic> source) async {
+    final attribution = source['attribution'] as String?;
+    final url = source['url'] as String?;
+
+    if (attribution != null || url == null || !url.startsWith('http')) {
+      return attribution;
+    }
+
+    // Fall back to fetching attribution info
+    final response = await NetworkRepository.client.get(Uri.parse(url));
+    return (jsonDecode(response.body) as Map<String, dynamic>)['attribution'] as String?;
+  }
+
+  static MapAttribution _parseAttribution(String html) {
+    final link = RegExp(r'href="([^"]+)"').firstMatch(html)?.group(1);
+    final text = html.replaceAll(RegExp(r'<[^>]*>'), '').replaceAll('&copy;', '©').replaceAll('&amp;', '&').trim();
+
+    return (text: text, url: link == null ? null : Uri.tryParse(link));
+  }
 }
+
+typedef MapAttribution = ({String text, Uri? url});
 
 class _LocationServiceDisabledDialog extends ConfirmDialog {
   _LocationServiceDisabledDialog(BuildContext context)

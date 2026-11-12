@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { shortcuts } from '#lib/actions/shortcut.ts';
   import { zoomImageAction } from '#lib/actions/zoom-image.ts';
   import AdaptiveImage from '#lib/components/AdaptiveImage.svelte';
-  import FaceEditor from '#lib/components/asset-viewer/face-editor/FaceEditor.svelte';
-  import OcrBoundingBox from '#lib/components/asset-viewer/OcrBoundingBox.svelte';
   import AssetViewerEvents from '#lib/components/AssetViewerEvents.svelte';
   import Thumbhash from '#lib/components/Thumbhash.svelte';
+  import OcrBoundingBox from '#lib/components/asset-viewer/OcrBoundingBox.svelte';
+  import FaceEditor from '#lib/components/asset-viewer/face-editor/FaceEditor.svelte';
   import { assetViewerManager, type Faces } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { castManager } from '#lib/managers/cast-manager.svelte.ts';
   import { faceManager } from '#lib/stores/face.svelte.ts';
@@ -18,7 +17,7 @@
   import { getOcrBoundingBoxes } from '#lib/utils/ocr-utils.ts';
   import { getBoundingBox, type BoundingBox } from '#lib/utils/people-utils.ts';
   import { type SharedLinkResponseDto } from '@immich/sdk';
-  import { toastManager } from '@immich/ui';
+  import { shortcuts, toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
@@ -206,13 +205,13 @@
 
 <AssetViewerEvents {onCopy} {onZoom} {onFaceEditModeChange} />
 
-<svelte:document
-  use:shortcuts={[
+<svelte:window
+  {@attach shortcuts([
     { shortcut: { key: 'z' }, onShortcut: onZoom, preventDefault: true },
     { shortcut: { key: 's' }, onShortcut: onPlaySlideshow, preventDefault: true },
     { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
-  ]}
+  ])}
 />
 
 <div
@@ -222,7 +221,7 @@
   bind:clientHeight={containerHeight}
   role="presentation"
   ondblclick={onZoom}
-  use:zoomImageAction={{ zoomTarget: adaptiveImage }}
+  {@attach zoomImageAction({ zoomTarget: adaptiveImage })}
   {...useSwipe((event) => onSwipe?.(event))}
 >
   <AdaptiveImage

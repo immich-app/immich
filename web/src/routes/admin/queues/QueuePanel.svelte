@@ -1,21 +1,14 @@
 <script lang="ts">
-  import QueueCard from './QueueCard.svelte';
-  import QueueStorageMigrationDescription from './QueueStorageMigrationDescription.svelte';
-  import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { runQueueCommandLegacyMutation } from '#lib/queries/queue.query.ts';
   import { asQueueItem } from '#lib/services/queue.service.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import {
-    QueueCommand,
-    type QueueCommandDto,
-    QueueName,
-    type QueueResponseDto,
-    runQueueCommandLegacy,
-  } from '@immich/sdk';
-  import { modalManager, toastManager } from '@immich/ui';
+  import { QueueCommand, QueueName, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
+  import { toastManager } from '@immich/ui';
   import type { Component } from 'svelte';
   import { t } from 'svelte-i18n';
+  import QueueCard from './QueueCard.svelte';
+  import QueueStorageMigrationDescription from './QueueStorageMigrationDescription.svelte';
 
   type Props = {
     queues: QueueResponseDto[];
@@ -94,34 +87,16 @@
   const handleCommand = async (name: QueueName, dto: QueueCommandDto) => {
     const item = asQueueItem($t, { name });
 
-    switch (name) {
-      case QueueName.FaceDetection:
-      case QueueName.FacialRecognition: {
-        if (dto.force) {
-          const confirmed = await modalManager.showDialog({ prompt: $t('admin.confirm_reprocess_all_faces') });
-          if (!confirmed) {
-            return;
-          }
-          break;
-        }
-      }
-      // no default
-    }
+    const reprocessesAllFaces = dto.force && (name === QueueName.FaceDetection || name === QueueName.FacialRecognition);
 
-    try {
-      await runQueueCommandLegacy({ name, queueCommandDto: dto });
-      await queueManager.refresh();
-
-      switch (dto.command) {
-        case QueueCommand.Empty: {
+    await executeMutation(runQueueCommandLegacyMutation, [{ name, queueCommandDto: dto }], {
+      confirm: reprocessesAllFaces && { prompt: $t('admin.confirm_reprocess_all_faces') },
+      onSuccess: () => {
+        if (dto.command === QueueCommand.Empty) {
           toastManager.primary($t('admin.cleared_jobs', { values: { job: item.title } }));
-          break;
         }
-        // no default
-      }
-    } catch (error) {
-      handleError(error, $t('admin.failed_job_command', { values: { command: dto.command, job: item.title } }));
-    }
+      },
+    });
   };
 </script>
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { dateFormats } from '#lib/constants.ts';
   import Portal from '#lib/elements/Portal.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -10,6 +9,7 @@
   import { Icon, menuManager } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
 
   type Props = {
     album: AlbumResponseDto;

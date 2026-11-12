@@ -1,8 +1,6 @@
 import { CronExpression } from '@nestjs/schedule';
 import { validateCronExpression } from 'cron';
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
-import type { DeepPartial } from 'src/types.js';
 import {
   AudioCodec,
   AudioCodecSchema,
@@ -32,6 +30,8 @@ import {
   VideoContainer,
   VideoContainerSchema,
 } from 'src/enum.js';
+import type { DeepPartial } from 'src/types.js';
+import { createZodDto } from 'src/zod.js';
 
 const { Admin, User, Public } = ConfigVisibility;
 
@@ -70,8 +70,7 @@ const httpsDomain = (label: string) =>
       }
     }, `${label} must not include a path, query, or fragment`);
 
-const emptyOrUrl = (error: string) =>
-  z.string().refine((url) => url.length === 0 || z.url().safeParse(url).success, { error });
+const emptyOrUrl = (error: string) => z.string().refine((url) => url.length === 0 || z.url().validate(url), { error });
 
 const AdminConfigIntegrityJobSchema = z
   .object({
@@ -324,7 +323,7 @@ const AdminConfigSchemaWithVisibility = z
           return value;
         }
 
-        if (!z.url().safeParse(value.mobileRedirectUri).success) {
+        if (!z.url().validate(value.mobileRedirectUri)) {
           ctx.issues.push({
             code: 'custom',
             message: 'Mobile redirect URI must be an empty string or a valid URL',
@@ -545,7 +544,6 @@ const UserConfigSchema = applyVisibility(User)! as z.ZodType<DeepPartial<SystemC
 const PublicConfigSchema = applyVisibility(Public)! as z.ZodType<DeepPartial<SystemConfig>>;
 
 // prevent visibility metadata from leaking to openapi spec
-// eslint-disable-next-line unicorn/no-top-level-side-effects
 stripVisibilityMetadata(AdminConfigSchemaWithVisibility);
 
 const ConfigTemplateStorageOptionSchema = z

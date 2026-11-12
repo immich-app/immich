@@ -2,7 +2,7 @@
   import { pluginManager } from '#lib/managers/plugin-manager.svelte.ts';
   import { getTriggerName } from '#lib/utils/workflow.ts';
   import type { WorkflowStepDto, WorkflowTrigger } from '@immich/sdk';
-  import { Icon, IconButton, shortcut, Text } from '@immich/ui';
+  import { Icon, IconButton, Text, shortcut } from '@immich/ui';
   import { mdiCheck, mdiClose, mdiContentCopy, mdiViewDashboardOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -48,7 +48,7 @@
   };
 
   const getConfigEntries = (config: WorkflowStepDto['config']) =>
-    Object.entries(config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== '');
+    Object.entries(config ?? {}).filter(([, value]) => ![null, undefined, ''].includes(value));
 
   const asciiSummary = $derived.by(() => {
     const lines: string[] = [];
@@ -96,7 +96,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: () => (isOpen = false) }} />
+<svelte:window {@attach shortcut({ shortcut: { key: 'Escape' }, onShortcut: () => (isOpen = false) })} />
 
 {#if isOpen}
   <aside

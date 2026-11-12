@@ -1,20 +1,18 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.ts';
-  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.svelte.ts';
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
-  import BirthdayConfetti from '#lib/components/memories/BirthdayConfetti.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
+  import BirthdayConfetti from '#lib/components/memories/BirthdayConfetti.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
   import GalleryViewer from '#lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
-  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -25,8 +23,8 @@
   import { locale } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '#lib/utils.ts';
   import { fromISODateTimeUTC, toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { AssetMediaSize, AssetTypeEnum, getAssetInfo, MemoryType } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text } from '@immich/ui';
+  import { AssetMediaSize, AssetTypeEnum, MemoryType, getAssetInfo } from '@immich/sdk';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text, shortcuts } from '@immich/ui';
   import {
     mdiCakeVariant,
     mdiCardsOutline,
@@ -52,6 +50,7 @@
   import { t } from 'svelte-i18n';
   import type { Attachment } from 'svelte/attachments';
   import { Tween } from 'svelte/motion';
+  import { goto } from '$app/navigation';
   import MemoryPhotoViewer from './MemoryPhotoViewer.svelte';
   import MemoryVideoViewer from './MemoryVideoViewer.svelte';
 
@@ -262,16 +261,18 @@
   });
 </script>
 
-<svelte:document
-  use:shortcuts={assetViewerManager.isViewing
-    ? []
-    : [
-        { shortcut: { key: 'ArrowRight' }, onShortcut: () => handleNavigate(current?.nextHref) },
-        { shortcut: { key: 'd' }, onShortcut: () => handleNavigate(current?.nextHref) },
-        { shortcut: { key: 'ArrowLeft' }, onShortcut: () => handleNavigate(current?.previousHref) },
-        { shortcut: { key: 'a' }, onShortcut: () => handleNavigate(current?.previousHref) },
-        { shortcut: { key: 'Escape' }, onShortcut: () => handleEscape() },
-      ]}
+<svelte:window
+  {@attach shortcuts(
+    assetViewerManager.isViewing
+      ? []
+      : [
+          { shortcut: { key: 'ArrowRight' }, onShortcut: () => handleNavigate(current?.nextHref) },
+          { shortcut: { key: 'd' }, onShortcut: () => handleNavigate(current?.nextHref) },
+          { shortcut: { key: 'ArrowLeft' }, onShortcut: () => handleNavigate(current?.previousHref) },
+          { shortcut: { key: 'a' }, onShortcut: () => handleNavigate(current?.previousHref) },
+          { shortcut: { key: 'Escape' }, onShortcut: () => handleEscape() },
+        ],
+  )}
 />
 
 <OnEvents onAssetsArchive={handleHideAssets} />
@@ -310,10 +311,10 @@
 {/if}
 
 <section
-  id="memory-viewer"
+  data-testid="memory-viewer"
   data-sveltekit-reset={false}
   class="dark w-full bg-immich-dark-gray text-white"
-  use:scrollMemoryClearer={{ routeStartsWith: Route.memories() }}
+  {@attach scrollMemoryClearer({ routeStartsWith: Route.memories() })}
   bind:this={memoryWrapper}
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
@@ -626,7 +627,7 @@
       />
     </div>
 
-    <div id="gallery-memory" {@attach galleryObserver} bind:this={memoryGallery}>
+    <div data-testid="memory-gallery" {@attach galleryObserver} bind:this={memoryGallery}>
       <GalleryViewer
         assets={currentTimelineAssets}
         viewerAssets={current.viewerAssets}

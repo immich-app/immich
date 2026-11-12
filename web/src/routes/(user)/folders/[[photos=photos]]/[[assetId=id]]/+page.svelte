@@ -26,10 +26,10 @@
   import { isAssetViewerRoute } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { joinPaths } from '#lib/utils/tree-utils.ts';
-  import { afterNavigate, beforeNavigate, goto, refreshAll } from '$app/navigation';
   import { ActionButton, CommandPaletteDefaultProvider, IconButton, Text } from '@immich/ui';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { afterNavigate, beforeNavigate, goto, refreshAll } from '$app/navigation';
   import type { PageData } from './$types';
 
   interface Props {

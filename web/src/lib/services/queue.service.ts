@@ -1,20 +1,10 @@
 import { OpenQueryParam } from '#lib/constants.ts';
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
-import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
 import JobCreateModal from '#lib/modals/JobCreateModal.svelte';
+import { executeMutation } from '#lib/queries/client.ts';
+import { emptyQueueMutation, runQueueCommandLegacyMutation, updateQueueMutation } from '#lib/queries/queue.query.ts';
 import { Route } from '#lib/route.ts';
 import type { HeaderButtonActionItem } from '#lib/types.ts';
-import { handleError } from '#lib/utils/handle-error.ts';
-import { getFormatter } from '#lib/utils/i18n.ts';
-import {
-  emptyQueue,
-  getQueue,
-  QueueCommand,
-  QueueName,
-  runQueueCommandLegacy,
-  updateQueue,
-  type QueueResponseDto,
-} from '@immich/sdk';
+import { QueueCommand, QueueName, type QueueResponseDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem, type IconLike } from '@immich/ui';
 import {
   mdiClose,
@@ -56,7 +46,13 @@ export const getQueuesActions = ($t: MessageFormatter, queues: QueueResponseDto[
     title: $t('resume_paused_jobs', { values: { count: pausedQueues.length } }),
     $if: () => pausedQueues.length > 0,
     icon: mdiPlay,
-    onAction: () => handleResumePausedJobs(pausedQueues),
+    onAction: async () => {
+      for (const name of pausedQueues) {
+        await executeMutation(runQueueCommandLegacyMutation, [
+          { name, queueCommandDto: { command: QueueCommand.Resume, force: false } },
+        ]);
+      }
+    },
     data: {
       title: pausedQueues.join(', '),
     },
@@ -84,80 +80,38 @@ export const getQueueActions = ($t: MessageFormatter, queue: QueueResponseDto) =
     icon: mdiPause,
     title: $t('pause'),
     $if: () => !queue.isPaused,
-    onAction: () => handlePauseQueue(queue),
+    onAction: () => executeMutation(updateQueueMutation, [{ name: queue.name, queueUpdateDto: { isPaused: true } }]),
   };
 
   const Resume: ActionItem = {
     icon: mdiPlay,
     title: $t('resume'),
     $if: () => queue.isPaused,
-    onAction: () => handleResumeQueue(queue),
+    onAction: () => executeMutation(updateQueueMutation, [{ name: queue.name, queueUpdateDto: { isPaused: false } }]),
   };
 
   const Empty: ActionItem = {
     icon: mdiClose,
     title: $t('clear'),
-    onAction: () => handleEmptyQueue(queue),
+    onAction: () =>
+      executeMutation(emptyQueueMutation, [{ name: queue.name, queueDeleteDto: { failed: false } }], {
+        onSuccess: () =>
+          toastManager.primary($t('admin.cleared_jobs', { values: { job: asQueueItem($t, queue).title } })),
+      }),
   };
 
   const RemoveFailedJobs: ActionItem = {
     icon: mdiTrashCanOutline,
     color: 'danger',
     title: $t('admin.remove_failed_jobs'),
-    onAction: () => handleRemoveFailedJobs(queue),
+    onAction: () =>
+      executeMutation(
+        () => emptyQueueMutation({ success: { toast: true } }),
+        [{ name: queue.name, queueDeleteDto: { failed: true } }],
+      ),
   };
 
   return { Pause, Resume, Empty, RemoveFailedJobs };
-};
-
-export const handlePauseQueue = async (queue: QueueResponseDto) => {
-  const response = await updateQueue({ name: queue.name, queueUpdateDto: { isPaused: true } });
-  eventManager.emit('QueueUpdate', response);
-};
-
-export const handleResumeQueue = async (queue: QueueResponseDto) => {
-  const response = await updateQueue({ name: queue.name, queueUpdateDto: { isPaused: false } });
-  eventManager.emit('QueueUpdate', response);
-};
-
-export const handleEmptyQueue = async (queue: QueueResponseDto) => {
-  const $t = await getFormatter();
-  const item = asQueueItem($t, queue);
-
-  try {
-    await emptyQueue({ name: queue.name, queueDeleteDto: { failed: false } });
-    const response = await getQueue({ name: queue.name });
-    eventManager.emit('QueueUpdate', response);
-    toastManager.primary($t('admin.cleared_jobs', { values: { job: item.title } }));
-  } catch (error) {
-    handleError(error, $t('errors.something_went_wrong'));
-  }
-};
-
-const handleResumePausedJobs = async (queues: QueueName[]) => {
-  const $t = await getFormatter();
-
-  try {
-    for (const name of queues) {
-      await runQueueCommandLegacy({ name, queueCommandDto: { command: QueueCommand.Resume, force: false } });
-    }
-    await queueManager.refresh();
-  } catch (error) {
-    handleError(error, $t('admin.failed_job_command', { values: { command: 'resume', job: 'paused jobs' } }));
-  }
-};
-
-const handleRemoveFailedJobs = async (queue: QueueResponseDto) => {
-  const $t = await getFormatter();
-
-  try {
-    await emptyQueue({ name: queue.name, queueDeleteDto: { failed: true } });
-    const response = await getQueue({ name: queue.name });
-    eventManager.emit('QueueUpdate', response);
-    toastManager.primary();
-  } catch (error) {
-    handleError(error, $t('errors.something_went_wrong'));
-  }
 };
 
 export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): QueueItem => {

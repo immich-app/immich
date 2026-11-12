@@ -1,5 +1,8 @@
-import type { CommonLayoutOptions, CommonPosition } from '#lib/utils/layout-utils.ts';
-import { getJustifiedLayoutFromAssets } from '#lib/utils/layout-utils.ts';
+import {
+  getJustifiedLayoutFromAssets,
+  type CommonLayoutOptions,
+  type CommonPosition,
+} from '#lib/utils/layout-utils.ts';
 import { getOrderingDate, plainDateTimeCompare } from '#lib/utils/timeline-util.ts';
 import { TUNABLES } from '#lib/utils/tunables.ts';
 import { AssetOrder, AssetOrderBy } from '@immich/sdk';

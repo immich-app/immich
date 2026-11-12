@@ -1,20 +1,19 @@
 <script lang="ts">
-  import { shortcut } from '#lib/actions/shortcut.ts';
   import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
-  import { activityManager } from '#lib/managers/activity-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { createActivityMutation, deleteActivityMutation, getActivitiesQuery } from '#lib/queries/activity.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import { Route } from '#lib/route.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl } from '#lib/utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
   import { isTenMinutesApart } from '#lib/utils/timesince.ts';
   import { AssetTypeEnum, ReactionType, type ActivityResponseDto, type AlbumUserResponseDto } from '@immich/sdk';
-  import { ContextMenuButton, Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
+  import { ContextMenuButton, Icon, IconButton, LoadingSpinner, Textarea, shortcut } from '@immich/ui';
   import { mdiClose, mdiSend, mdiThumbUp, mdiTrashCanOutline } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
-  import { fromAction } from 'svelte/attachments';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -46,6 +45,9 @@
 
   let { assetId = undefined, albumId, assetType = undefined, albumUsers, disabled }: Props = $props();
 
+  const query = createQuery(() => getActivitiesQuery({ albumId, assetId }));
+  const activities = $derived(query.data ?? []);
+
   let innerHeight: number = $state(0);
   let activityHeight: number = $state(0);
   let chatHeight: number = $state(0);
@@ -66,18 +68,16 @@
     hour12: false,
   };
 
-  const handleDeleteReaction = async (reaction: ActivityResponseDto) => {
-    try {
-      await activityManager.deleteActivity(reaction);
-
-      const deleteMessages: Record<ReactionType, string> = {
-        [ReactionType.Comment]: $t('comment_deleted'),
-        [ReactionType.Like]: $t('like_deleted'),
-      };
-      toastManager.primary(deleteMessages[reaction.type]);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_remove_reaction'));
-    }
+  const handleDeleteReaction = (reaction: ActivityResponseDto) => {
+    const successToast = reaction.type === ReactionType.Comment ? 'comment_deleted' : 'like_deleted';
+    return executeMutation(
+      () =>
+        deleteActivityMutation({
+          success: { toast: successToast },
+          error: { toast: 'errors.unable_to_remove_reaction' },
+        }),
+      [{ id: reaction.id }],
+    );
   };
 
   const handleSendComment = async () => {
@@ -85,15 +85,12 @@
       return;
     }
     const timeout = setTimeout(() => (isSendingMessage = true), timeBeforeShowLoadingSpinner);
-    try {
-      await activityManager.addActivity({ albumId, assetId, type: ReactionType.Comment, comment: message });
-
-      message = '';
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_comment'));
-    } finally {
-      clearTimeout(timeout);
-    }
+    await executeMutation(
+      createActivityMutation,
+      [{ activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message } }],
+      { onSuccess: () => (message = '') },
+    );
+    clearTimeout(timeout);
     isSendingMessage = false;
   };
 
@@ -105,7 +102,7 @@
   });
 
   $effect(() => {
-    if (scrollContainer && activityManager.activities.length > 0 && !hasScrolledToBottom) {
+    if (scrollContainer && activities.length > 0 && !hasScrolledToBottom) {
       hasScrolledToBottom = true;
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
@@ -158,7 +155,7 @@
         class="relative w-full immich-scrollbar overflow-y-auto px-2"
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
-        {#each activityManager.activities as reaction, index (reaction.id)}
+        {#each activities as reaction, index (reaction.id)}
           {#if reaction.type === ReactionType.Comment}
             <div class="mt-3 flex justify-start gap-4 rounded-lg bg-gray-200 p-3 dark:bg-gray-800">
               <div class="flex items-center">
@@ -178,7 +175,7 @@
               {@render reactionMenu(reaction, $t('comment_options'))}
             </div>
 
-            {#if (index !== activityManager.activities.length - 1 && !shouldGroup(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
+            {#if (index !== activities.length - 1 && !shouldGroup(activities[index].createdAt, activities[index + 1].createdAt)) || index === activities.length - 1}
               <div
                 class="w-full px-2 pt-1 text-right text-sm text-gray-500 dark:text-gray-300"
                 title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
@@ -208,7 +205,7 @@
                 {/if}
                 {@render reactionMenu(reaction, $t('reaction_options'))}
               </div>
-              {#if (index !== activityManager.activities.length - 1 && isTenMinutesApart(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
+              {#if (index !== activities.length - 1 && isTenMinutesApart(activities[index].createdAt, activities[index + 1].createdAt)) || index === activities.length - 1}
                 <div
                   class="w-full px-2 pt-1 text-right text-sm text-gray-500 dark:text-gray-300"
                   title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}
@@ -236,10 +233,10 @@
             rows={1}
             grow
             placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
-            {@attach fromAction(shortcut, () => ({
+            {@attach shortcut({
               shortcut: { key: 'Enter' },
               onShortcut: () => handleSendComment(),
-            }))}
+            })}
             class="{disabled
               ? 'cursor-not-allowed'
               : ''} max-h-56 w-full resize-none items-center overflow-y-auto bg-gray-200 pe-2 leading-4 ring-0! outline-none dark:bg-gray-200"

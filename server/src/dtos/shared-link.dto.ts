@@ -1,4 +1,3 @@
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import { SharedLink } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
@@ -7,6 +6,7 @@ import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum.js';
 import { isoDatetimeToDate } from 'src/validation.js';
+import { createZodDto } from 'src/zod.js';
 
 const SharedLinkSearchSchema = z
   .object({
@@ -101,7 +101,10 @@ export class SharedLinkEditDto extends createZodDto(SharedLinkEditSchema) {}
 export class SharedLinkLoginDto extends createZodDto(SharedLinkLoginSchema) {}
 export class SharedLinkResponseDto extends createZodDto(SharedLinkResponseSchema) {}
 
-export function mapSharedLink(sharedLink: SharedLink, { auth }: { auth: AuthDto }): SharedLinkResponseDto {
+export function mapSharedLink(
+  sharedLink: Omit<SharedLink, 'assets'> & Partial<Pick<SharedLink, 'assets'>>,
+  { auth }: { auth: AuthDto },
+): SharedLinkResponseDto {
   const assets = sharedLink.assets || [];
 
   const response = {

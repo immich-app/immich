@@ -5,12 +5,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
-  type Generated,
   Index,
   PrimaryGeneratedColumn,
   Table,
-  type Timestamp,
   UpdateDateColumn,
+  type Generated,
+  type Timestamp,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum.js';

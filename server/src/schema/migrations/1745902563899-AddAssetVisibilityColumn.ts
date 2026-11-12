@@ -23,15 +23,15 @@ export async function down(db: Kysely<any>): Promise<void> {
   await sql`ALTER TABLE "assets" ADD COLUMN "isVisible" BOOLEAN NOT NULL DEFAULT TRUE;`.execute(db);
 
   await sql`
-      UPDATE "assets"
-      SET
-        "isArchived" = ("visibility" = 'archive'::asset_visibility_enum),
-        "isVisible" = CASE
-                        WHEN "visibility" = 'timeline'::asset_visibility_enum THEN TRUE
-                        WHEN "visibility" = 'archive'::asset_visibility_enum THEN TRUE
-                        ELSE FALSE
-                      END;
-    `.execute(db);
+    UPDATE "assets"
+    SET
+      "isArchived" = ("visibility" = 'archive'::asset_visibility_enum),
+      "isVisible" = CASE
+                      WHEN "visibility" = 'timeline'::asset_visibility_enum THEN TRUE
+                      WHEN "visibility" = 'archive'::asset_visibility_enum THEN TRUE
+                      ELSE FALSE
+                    END;
+  `.execute(db);
   await sql`ALTER TABLE "assets" DROP COLUMN "visibility";`.execute(db);
   await sql`DROP TYPE "asset_visibility_enum";`.execute(db);
 }

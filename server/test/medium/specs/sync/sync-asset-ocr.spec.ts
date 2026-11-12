@@ -341,6 +341,7 @@ describe(SyncEntityType.AssetOcrV1, () => {
       asset.id,
       [],
       [factory.assetOcr({ id: ocrId, assetId: asset.id, text: 'Hello World' })],
+      '',
     );
 
     const updatedResponse = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1]);

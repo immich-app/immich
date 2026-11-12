@@ -1,6 +1,6 @@
 import js from '@eslint/js';
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import { importX } from 'eslint-plugin-import-x';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import { defineConfig } from 'eslint/config';
 import globals from 'globals';
@@ -53,6 +53,7 @@ export default defineConfig([
       'unicorn/prefer-uint8array-base64': 'off',
       'unicorn/max-nested-calls': 'off',
       'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/prefer-smaller-scope': 'off',
       'unicorn/no-unreadable-object-destructuring': 'off',
       'unicorn/single-line-block-comment-style': ['error', 'single-line'],
       // maybe we do want to enable this later. TBD
@@ -80,15 +81,6 @@ export default defineConfig([
       'object-shorthand': ['error', 'always'],
       eqeqeq: 'error',
       'import-x/no-named-as-default': 'off',
-      'import-x/order': [
-        'error',
-        {
-          groups: [['builtin', 'external'], 'index', ['parent', 'sibling', 'type']],
-          alphabetize: { order: 'asc' },
-          named: true,
-        },
-      ],
-      'import-x/newline-after-import': 'error',
       'import-x/no-empty-named-blocks': 'error',
 
       'no-restricted-imports': [
@@ -112,5 +104,5 @@ export default defineConfig([
       ],
     },
   },
-  eslintPluginPrettierRecommended,
+  eslintConfigPrettier,
 ]);

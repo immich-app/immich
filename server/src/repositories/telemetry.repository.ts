@@ -68,7 +68,7 @@ export const bootstrapTelemetry = (port: number) => {
       [ATTR_SERVICE_NAME]: `immich`,
       [ATTR_SERVICE_VERSION]: serverVersion.toString(),
     }),
-    metricReaders: [new PrometheusExporter({ port })],
+    metricReaders: [new PrometheusExporter({ port, host: '0.0.0.0' })],
     contextManager: new AsyncLocalStorageContextManager(),
     instrumentations: [
       new HttpInstrumentation({

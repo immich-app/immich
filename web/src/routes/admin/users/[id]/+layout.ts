@@ -14,7 +14,7 @@ export const load = (async ({ params, url }) => {
     redirect(307, Route.users());
   }
 
-  await queryClient.query(getUserAdminQuery(params.id)).catch(() => redirect(307, Route.users()));
+  await queryClient.query({ ...getUserAdminQuery(params.id), staleTime: 0 }).catch(() => redirect(307, Route.users()));
 
   const $t = await getFormatter();
 

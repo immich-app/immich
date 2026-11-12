@@ -76,7 +76,7 @@ describe(DownloadService.name, () => {
         finalize: vitest.fn(),
         stream: new Readable(),
       };
-      const asset = AssetFactory.create();
+      const asset = AssetFactory.create({ originalFileName: 'foo.heic' });
       const editedPath = '/data/edited.jpg';
 
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
@@ -90,7 +90,7 @@ describe(DownloadService.name, () => {
       });
 
       expect(mocks.asset.getForOriginals).toHaveBeenCalledWith([asset.id], true);
-      expect(archiveMock.addFile).toHaveBeenCalledWith(editedPath, asset.originalFileName);
+      expect(archiveMock.addFile).toHaveBeenCalledWith(editedPath, 'foo.jpg');
     });
 
     it('should log a warning if the original path could not be resolved', async () => {
@@ -190,9 +190,9 @@ describe(DownloadService.name, () => {
       { input: String.raw`C:\temp\abs3.jpg`, expected: 'Ctempabs3.jpg' },
       { input: 'a/../../b.jpg', expected: 'a....b.jpg' },
       { input: String.raw`..\..\win1.jpg`, expected: '....win1.jpg' },
-      { input: '/etc/passwd', expected: 'etcpasswd' },
-      { input: '..', expected: 'unnamed' },
-      { input: '', expected: 'unnamed' },
+      { input: '/etc/passwd', expected: 'etcpasswd.jpg' },
+      { input: '..', expected: 'unnamed.jpg' },
+      { input: '', expected: 'unnamed.jpg' },
     ])('should sanitize unsafe originalFileName "$input" to "$expected"', async ({ input, expected }) => {
       const archiveMock = {
         addFile: vitest.fn(),

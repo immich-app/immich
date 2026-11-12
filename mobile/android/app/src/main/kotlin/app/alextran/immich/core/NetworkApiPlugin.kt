@@ -84,4 +84,8 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
   override fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>, token: String?) {
     HttpClientManager.setRequestHeaders(headers, serverUrls, token)
   }
+
+  override fun clearCookies() {
+    HttpClientManager.clearCookies()
+  }
 }

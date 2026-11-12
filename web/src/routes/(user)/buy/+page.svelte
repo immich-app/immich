@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import LicenseActivationSuccess from '#lib/components/shared-components/purchasing/PurchaseActivationSuccess.svelte';
   import LicenseContent from '#lib/components/shared-components/purchasing/PurchaseContent.svelte';
-  import SupporterBadge from './SupporterBadge.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { Route } from '#lib/route.ts';
   import { Alert, Container, Stack } from '@immich/ui';
   import { mdiAlertCircleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
   import type { PageData } from './$types';
+  import SupporterBadge from './SupporterBadge.svelte';
 
   interface Props {
     data: PageData;

@@ -21,8 +21,7 @@
 
 <script lang="ts">
   import { focusOutside } from '#lib/actions/focus-outside.ts';
-  import { shortcuts } from '#lib/actions/shortcut.ts';
-  import { Icon, IconButton, Label } from '@immich/ui';
+  import { Icon, IconButton, Label, shortcuts } from '@immich/ui';
   import { mdiChevronDown, mdiClose, mdiMagnify } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -257,8 +256,8 @@
 {/if}
 <div
   class="relative w-full text-base text-gray-700 dark:text-gray-300"
-  use:focusOutside={{ onFocusOut: deactivate }}
-  use:shortcuts={[
+  {@attach focusOutside({ onFocusOut: deactivate })}
+  {@attach shortcuts([
     {
       shortcut: { key: 'Escape' },
       onShortcut: (event) => {
@@ -266,7 +265,7 @@
         closeDropdown();
       },
     },
-  ]}
+  ])}
 >
   <div>
     {#if isActive}
@@ -297,8 +296,8 @@
       role="combobox"
       type="text"
       value={searchQuery}
-      use:forceFocusInput
-      use:shortcuts={[
+      {@attach forceFocusInput}
+      {@attach shortcuts([
         {
           shortcut: { key: 'ArrowUp' },
           onShortcut: () => {
@@ -339,7 +338,7 @@
             closeDropdown();
           },
         },
-      ]}
+      ])}
     />
 
     <div
@@ -393,7 +392,7 @@
           {allowCreate ? searchQuery : $t('no_results')}
         </li>
       {/if}
-      {#each filteredOptions as option, index (option.id || option.label)}
+      {#each filteredOptions as option, index (option.id ?? `${option.value}:${option.label}`)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           aria-selected={index === selectedIndex}

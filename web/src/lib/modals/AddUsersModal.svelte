@@ -80,7 +80,7 @@
         class="border-b-4 border-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:focus:border-immich-dark-primary"
         placeholder={$t('search')}
         bind:value={search}
-        use:initInput
+        {@attach initInput}
       />
       {#each filteredUsers as user (user.id)}
         <ListButton selected={selectedUsers.has(user.id)} onclick={() => handleToggle(user)}>

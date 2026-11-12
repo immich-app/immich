@@ -116,6 +116,13 @@ order by
 
 -- SharedLinkRepository.getAll
 select
+  "id"
+from
+  "shared_link"
+where
+  "userId" = $1
+  and "type" = 'INDIVIDUAL'
+select
   "shared_link".*,
   (
     select
@@ -128,14 +135,84 @@ select
           "shared_link_asset"
           inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
         where
-          "shared_link"."id" = "shared_link_asset"."sharedLinkId"
+          "shared_link_asset"."sharedLinkId" = "shared_link"."id"
+          and "asset"."fileCreatedAt" = "cover"."fileCreatedAt"
           and "asset"."deletedAt" is null
-        order by
-          "asset"."fileCreatedAt" asc
         limit
-          $1
+          1
       ) as agg
   ) as "assets",
+  to_json("album") as "album"
+from
+  "shared_link"
+  left join (
+    select
+      "shared_link_asset"."sharedLinkId",
+      min("asset"."fileCreatedAt") as "fileCreatedAt"
+    from
+      "shared_link_asset"
+      inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
+    where
+      "shared_link_asset"."sharedLinkId" = any ($1::uuid[])
+      and "asset"."deletedAt" is null
+    group by
+      "shared_link_asset"."sharedLinkId"
+  ) as "cover" on "cover"."sharedLinkId" = "shared_link"."id"
+  left join lateral (
+    select
+      "album".*,
+      (
+        select
+          coalesce(json_agg(agg), '[]')
+        from
+          (
+            select
+              "album_user"."role",
+              (
+                select
+                  to_json(obj)
+                from
+                  (
+                    select
+                      "id",
+                      "name",
+                      "email",
+                      "avatarColor",
+                      "profileImagePath",
+                      "profileChangedAt"
+                    from
+                      (
+                        select
+                          1
+                      ) as "dummy"
+                  ) as obj
+              ) as "user"
+            from
+              "album_user"
+              inner join "user" on "user"."id" = "album_user"."userId"
+            where
+              "album_user"."role" = 'owner'
+              and "album_user"."albumId" = "album"."id"
+          ) as agg
+      ) as "albumUsers"
+    from
+      "album"
+    where
+      "album"."id" = "shared_link"."albumId"
+      and "album"."deletedAt" is null
+  ) as "album" on true
+where
+  "shared_link"."userId" = $2
+  and (
+    "shared_link"."type" = 'INDIVIDUAL'
+    or "album"."id" is not null
+  )
+order by
+  "shared_link"."createdAt" desc
+
+-- SharedLinkRepository.getAll (album)
+select
+  "shared_link".*,
   to_json("album") as "album"
 from
   "shared_link"
@@ -183,12 +260,12 @@ from
       and "album"."deletedAt" is null
   ) as "album" on true
 where
-  "shared_link"."userId" = $2
+  "shared_link"."userId" = $1
   and (
-    "shared_link"."type" = $3
+    "shared_link"."type" = 'INDIVIDUAL'
     or "album"."id" is not null
   )
-  and "shared_link"."albumId" = $4
+  and "shared_link"."albumId" = $2
 order by
   "shared_link"."createdAt" desc
 

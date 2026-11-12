@@ -9,7 +9,9 @@
 </p>
 
 <p align="center">
-<img src="../design/immich-logo-stacked-light.svg" width="150" title="Immich Logo">
+  <a href="#">
+    <img src="../design/immich-logo-stacked-light.svg" width="150" alt="Immich Logo">
+  </a>
 </p>
 <h3 align="center">Solução self-hosted de alta performance para backup de fotos e vídeos</h3>
 <br/>
