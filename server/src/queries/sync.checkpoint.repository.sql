@@ -3,7 +3,8 @@
 -- SyncCheckpointRepository.getAll
 select
   "type",
-  "ack"
+  "ack",
+  "isPendingReset"
 from
   "session_sync_checkpoint"
 where

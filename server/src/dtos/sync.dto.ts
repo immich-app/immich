@@ -453,7 +453,6 @@ class SyncAssetOcrV1 extends createZodDto(SyncAssetOcrV1Schema) {}
 
 @ExtraModel()
 class SyncAssetOcrDeleteV1 extends createZodDto(SyncAssetOcrDeleteV1Schema) {}
-
 @ExtraModel()
 class SyncStackV1 extends createZodDto(SyncStackV1Schema) {}
 @ExtraModel()

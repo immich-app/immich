@@ -3981,7 +3981,6 @@ export type SyncAssetOcrDeleteV1 = {
     /** Audit row ID of the deleted OCR entry */
     id: string;
 };
-export type SyncAssetOcrResetV1 = {};
 export type SyncAssetOcrV1 = {
     /** Asset ID */
     assetId: string;
@@ -4230,6 +4229,10 @@ export type SyncPartnerV1 = {
     sharedById: string;
     /** Shared with ID */
     sharedWithId: string;
+};
+export type SyncPendingResetV1 = {
+    /** Sync reset types */
+    types: SyncEntityType[];
 };
 export type SyncPersonDeleteV1 = {
     /** Person ID */
@@ -9808,7 +9811,6 @@ export enum SyncEntityType {
     AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
     AssetOcrV1 = "AssetOcrV1",
     AssetOcrDeleteV1 = "AssetOcrDeleteV1",
-    AssetOcrResetV1 = "AssetOcrResetV1",
     PartnerV1 = "PartnerV1",
     PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",
@@ -9857,7 +9859,8 @@ export enum SyncEntityType {
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
     SyncResetV1 = "SyncResetV1",
-    SyncCompleteV1 = "SyncCompleteV1"
+    SyncCompleteV1 = "SyncCompleteV1",
+    SyncPendingResetV1 = "SyncPendingResetV1"
 }
 export enum SyncRequestType {
     AlbumsV1 = "AlbumsV1",
@@ -9890,7 +9893,8 @@ export enum SyncRequestType {
     AssetFacesV1 = "AssetFacesV1",
     AssetFacesV2 = "AssetFacesV2",
     AssetFacesV3 = "AssetFacesV3",
-    UserMetadataV1 = "UserMetadataV1"
+    UserMetadataV1 = "UserMetadataV1",
+    PendingResetV1 = "PendingResetV1"
 }
 export enum AssetOrderBy {
     TakenAt = "takenAt",

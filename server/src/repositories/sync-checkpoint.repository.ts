@@ -48,4 +48,13 @@ export class SyncCheckpointRepository {
       ])
       .executeTakeFirstOrThrow();
   }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  deletePendingResets(sessionId: string) {
+    return this.db
+      .deleteFrom('session_sync_checkpoint')
+      .where('sessionId', '=', sessionId)
+      .where('isPendingReset', '=', true)
+      .execute();
+  }
 }
