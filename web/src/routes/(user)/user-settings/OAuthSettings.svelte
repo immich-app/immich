@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { OpenQueryParam } from '#lib/constants.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { Route } from '#lib/route.ts';
   import { oauth } from '#lib/utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { Button, LoadingSpinner, toastManager } from '@immich/ui';
@@ -25,7 +27,7 @@
       } catch (error) {
         handleError(error, $t('errors.unable_to_link_oauth_account'));
       } finally {
-        await goto('?open=oauth');
+        await goto(Route.userSettings({ isOpen: OpenQueryParam.OAUTH }));
       }
     }
 
