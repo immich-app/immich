@@ -41,6 +41,7 @@ void main() {
   late MockBackgroundUploadService mockBackgroundUploadService;
   late MockForegroundUploadService mockForegroundUploadService;
   late MockSyncLinkedAlbumService mockSyncLinkedAlbumService;
+  late int albumSteps;
   late Drift db;
 
   setUpAll(() async {
@@ -76,6 +77,10 @@ void main() {
     when(() => mockBackgroundUploadService.getActiveTasks(kBackupGroup)).thenAnswer((_) async => []);
     when(() => mockBackgroundUploadService.uploadBackupCandidates(any())).thenAnswer((_) async {});
     when(() => mockBackgroundUploadService.resume()).thenAnswer((_) async {});
+    albumSteps = 0;
+    when(
+      () => mockSyncLinkedAlbumService.syncLinkedAlbums(any(), cancellation: any(named: 'cancellation')),
+    ).thenAnswer((_) async => albumSteps++);
 
     sut = BackgroundWorkerBgService(
       dataController: MockDataController(),
@@ -93,15 +98,9 @@ void main() {
   });
 
   group('onAndroidUpload', () {
-    late int albumSteps;
-
     setUp(() {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
-      albumSteps = 0;
       when(() => mockRemoteSyncService.sync()).thenAnswer((_) async => true);
-      when(
-        () => mockSyncLinkedAlbumService.syncLinkedAlbums(any(), cancellation: any(named: 'cancellation')),
-      ).thenAnswer((_) async => albumSteps++);
     });
 
     tearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.iOS);
@@ -126,26 +125,25 @@ void main() {
       expect(albumSteps, 1);
     });
 
-    test('adds to albums without a second sync when nothing was uploaded', () async {
+    test('adds earlier uploads to their albums when nothing was uploaded', () async {
       stubUploads((_) async {});
 
       await sut.onAndroidUpload(20);
 
-      verify(() => mockRemoteSyncService.sync()).called(1);
       expect(albumSteps, 1);
     });
 
-    test('adds the uploads to their albums every minute during the run', () {
+    test('adds the uploads to their albums every 50 uploads', () {
       fakeAsync((async) {
         stubUploads((callbacks) async {
-          callbacks.onSuccess?.call('local-1', 'remote-1');
-          await Future<void>.delayed(const Duration(minutes: 1));
-          callbacks.onSuccess?.call('local-2', 'remote-2');
+          for (var i = 0; i < 50; i++) {
+            callbacks.onSuccess?.call('local-$i', 'remote-$i');
+          }
           await Future<void>.delayed(const Duration(minutes: 5));
         });
 
         unawaited(sut.onAndroidUpload(20));
-        async.elapse(const Duration(minutes: 2));
+        async.elapse(const Duration(seconds: 10));
 
         expect(albumSteps, 1);
       });
@@ -161,15 +159,13 @@ void main() {
           return albumStep.future;
         });
         stubUploads((callbacks) async {
-          callbacks.onSuccess?.call('local-1', 'remote-1');
-          await Future<void>.delayed(const Duration(minutes: 1));
-          callbacks.onSuccess?.call('local-2', 'remote-2');
-          await Future<void>.delayed(const Duration(minutes: 1));
-          callbacks.onSuccess?.call('local-3', 'remote-3');
+          for (var i = 0; i < 100; i++) {
+            callbacks.onSuccess?.call('local-$i', 'remote-$i');
+          }
         });
 
         unawaited(sut.onAndroidUpload(20));
-        async.elapse(const Duration(minutes: 3));
+        async.flushMicrotasks();
         expect(albumSteps, 1);
 
         albumStep.complete();
@@ -243,6 +239,23 @@ void main() {
 
       remoteSync.complete(true);
       await upload;
+    });
+
+    test('adds earlier uploads to their albums after the remote sync', () async {
+      final remoteSync = Completer<bool>();
+      when(() => mockRemoteSyncService.sync()).thenAnswer((_) => remoteSync.future);
+      when(
+        () => mockBackgroundUploadService.getActiveTasks(kBackupGroup),
+      ).thenAnswer((_) async => [UploadTask(url: 'https://example.com', filename: 'photo.jpg')]);
+
+      final upload = sut.onIosUpload(true, 20);
+      await pumpEventQueue();
+      verify(() => mockRemoteSyncService.sync()).called(1);
+      expect(albumSteps, 0);
+
+      remoteSync.complete(true);
+      await upload;
+      expect(albumSteps, 1);
     });
   });
 }

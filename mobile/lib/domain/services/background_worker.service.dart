@@ -295,50 +295,46 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       if (CurrentPlatform.isIOS) {
         await _ref?.read(backupProvider.notifier).startBackupWithURLSession(currentUser.id, remoteSync);
+        await remoteSync;
+        await _syncLinkedAlbums(currentUser.id);
         return false;
       }
 
       final uploadService = _ref?.read(foregroundUploadServiceProvider);
       var failed = 0;
       var unlinked = 0;
-      var shouldSyncAlbums = false;
       Future<void>? albumSync;
-      final albumSyncTimer = Timer.periodic(const Duration(minutes: 1), (_) => shouldSyncAlbums = true);
       await uploadService?.uploadCandidates(
         currentUser.id,
         _cancellationToken,
         callbacks: UploadCallbacks(
           onSuccess: (_, _) {
             unlinked++;
-            if (shouldSyncAlbums && albumSync == null) {
-              shouldSyncAlbums = false;
+            if (unlinked >= 50 && albumSync == null) {
               unlinked = 0;
-              albumSync = _syncLinkedAlbums(currentUser.id, pullUploads: true).whenComplete(() => albumSync = null);
+              albumSync = _syncLinkedAlbums(currentUser.id).whenComplete(() => albumSync = null);
             }
           },
           onError: (_, _) => failed++,
         ),
         useSequentialUpload: true,
       );
-      albumSyncTimer.cancel();
       await albumSync;
       _logger.info("Background backup finished, $failed uploads failed");
-      await _syncLinkedAlbums(currentUser.id, pullUploads: unlinked > 0);
+      await _syncLinkedAlbums(currentUser.id);
       // Retry when at least one upload failed
       return failed > 0;
     }, (error, stack) => dPrint(() => "Error in backup zone $error, $stack"));
     return needsRetry ?? true;
   }
 
-  Future<void> _syncLinkedAlbums(String userId, {required bool pullUploads}) async {
+  Future<void> _syncLinkedAlbums(String userId) async {
     if (_cancellationToken.isCompleted || !SettingsRepository.instance.appConfig.backup.syncAlbums) {
       return;
     }
 
     try {
-      if (pullUploads) {
-        await _remoteSyncService.sync();
-      }
+      await _remoteSyncService.sync();
       await _ref?.read(syncLinkedAlbumServiceProvider).syncLinkedAlbums(userId, cancellation: _cancellationToken);
     } catch (error, stack) {
       _logger.warning("Failed to sync linked albums", error, stack);
