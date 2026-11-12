@@ -559,7 +559,6 @@ where
 -- AssetRepository.getForOriginal
 select
   "asset"."id",
-  "originalFileName",
   "asset_file"."path" as "editedPath",
   "originalPath"
 from
@@ -573,7 +572,6 @@ where
 -- AssetRepository.getForOriginals
 select
   "asset"."id",
-  "originalFileName",
   "asset_file"."path" as "editedPath",
   "originalPath"
 from
