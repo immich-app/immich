@@ -134,6 +134,22 @@ export const createHandlers = (data: MockData): Handlers => {
     getIntegrityReportSummary: () => ({ json: data.getIntegrityReport() }),
     getIntegrityReport: ({ params }) => ({ json: data.integrityReportPage(params) }),
     deleteIntegrityReport: ({ params }) => (data.deleteIntegrityReportItem(params.id) ? { status: 200 } : notFound),
+    getIntegrityReportFile: ({ params }) => {
+      const item = data.getIntegrityReportItem(params.id);
+      if (!item) {
+        return notFound;
+      }
+      return {
+        body: '',
+        contentType: 'application/octet-stream',
+        headers: { 'Content-Disposition': `attachment; filename="${item.path.split('/').at(-1)}"` },
+      };
+    },
+    getIntegrityReportCsv: ({ params }) => ({
+      body: 'id,type,path\n',
+      contentType: 'text/csv',
+      headers: { 'Content-Disposition': `attachment; filename="${params.$type}.csv"` },
+    }),
     createJob: () => ({ status: 201 }),
     getQueues: () => ({ json: data.queueList() }),
     getQueue: ({ params }) => {

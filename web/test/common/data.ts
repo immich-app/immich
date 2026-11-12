@@ -212,6 +212,10 @@ export class MockData {
     return { items: page, nextCursor: items[start + integrityReportPageSize]?.id };
   }
 
+  getIntegrityReportItem(id: string) {
+    return this.integrityReportItems.get(id);
+  }
+
   deleteIntegrityReportItem(id: string) {
     return this.integrityReportItems.delete(id);
   }
