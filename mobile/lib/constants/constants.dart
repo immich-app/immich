@@ -7,6 +7,7 @@ const int kLogTruncateLimit = 2000;
 
 // Sync
 const int kSyncEventBatchSize = 5000;
+final DateTime kLocalAlbumNeverSynced = .utc(1);
 
 // Hash batch limits
 final int kBatchHashFileLimit = Platform.isIOS ? 32 : 512;
