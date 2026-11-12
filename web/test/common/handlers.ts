@@ -33,6 +33,31 @@ export const createHandlers = (data: MockData): Handlers => {
     getMyPreferences: () => ({ json: data.getPreferences() }),
     updateMyPreferences: ({ body }) => ({ json: data.updatePreferences(body) }),
     getAuthStatus: () => ({ json: data.getAuthStatus() }),
+    login: () => ({ status: 201, json: data.loginResponse() }),
+    logout: () => ({ json: { successful: true, redirectUri: '/auth/login' } }),
+    signUpAdmin: ({ body }) => ({ status: 201, json: data.signUpAdmin(body) }),
+    changePassword: () => ({ json: data.changePassword() }),
+    setupPinCode: () => {
+      data.setAuthStatus({ pinCode: true });
+      return { status: 204 };
+    },
+    changePinCode: () => ({ status: 204 }),
+    resetPinCode: () => {
+      data.setAuthStatus({ pinCode: false, isElevated: false });
+      return { status: 204 };
+    },
+    unlockAuthSession: () => {
+      data.setAuthStatus({ isElevated: true });
+      return { status: 204 };
+    },
+    lockAuthSession: () => {
+      data.setAuthStatus({ isElevated: false });
+      return { status: 204 };
+    },
+    finishOAuth: () => ({ status: 201, json: data.loginResponse() }),
+    linkOAuthAccount: () => ({ json: data.setOAuthId('oauth-user') }),
+    unlinkOAuthAccount: () => ({ json: data.setOAuthId('') }),
+    unlinkAllOAuthAccountsAdmin: () => ({ status: 204 }),
     searchUsers: () => ({ json: data.searchUsers() }),
     getPartners: ({ params }) => ({ json: data.partnerList(params.direction) }),
     createPartner: ({ body }) => {

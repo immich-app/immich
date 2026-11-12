@@ -34,6 +34,7 @@ import {
   type IntegrityReport,
   type IntegrityReportResponseDto,
   type LibraryResponseDto,
+  type LoginResponseDto,
   type MaintenanceStatusResponseDto,
   type MapMarkerResponseDto,
   type MemoryResponseDto,
@@ -150,6 +151,7 @@ export class MockData {
   readonly queues = payload.queues();
   readonly notifications = payload.notifications();
   readonly backups = payload.backups();
+  isOnboarded = true;
 
   private preferences = factory.preferences();
   private authStatus = factory.authStatus();
@@ -248,6 +250,36 @@ export class MockData {
   setAuthStatus(status: Partial<AuthStatusResponseDto>) {
     this.authStatus = { ...this.authStatus, ...status };
     return this;
+  }
+
+  loginResponse(): LoginResponseDto {
+    const { id: userId, email: userEmail, name, profileImagePath, isAdmin, shouldChangePassword } = this.user;
+    return {
+      accessToken: 'access-token',
+      userId,
+      userEmail,
+      name,
+      profileImagePath,
+      isAdmin,
+      shouldChangePassword,
+      isOnboarded: this.isOnboarded,
+    };
+  }
+
+  signUpAdmin(dto: { email: string; name: string }) {
+    Object.assign(this.user, { email: dto.email, name: dto.name, isAdmin: true });
+    this.serverConfig.isInitialized = true;
+    return this.user;
+  }
+
+  changePassword() {
+    this.user.shouldChangePassword = false;
+    return this.user;
+  }
+
+  setOAuthId(oauthId: string) {
+    this.user.oauthId = oauthId;
+    return this.user;
   }
 
   getAsset(id: string) {
