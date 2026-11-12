@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/add_to_album.action.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
@@ -17,11 +16,8 @@ import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
-import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class RemoteAlbumBottomSheet extends ConsumerStatefulWidget {
   final RemoteAlbum album;
@@ -49,26 +45,6 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
   @override
   Widget build(BuildContext context) {
     final ownsAlbum = ref.watch(currentUserProvider)?.id == widget.album.ownerId;
-
-    Future<void> addToAlbum(RemoteAlbum album) async {
-      final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
-
-      if (!context.mounted) {
-        return;
-      }
-
-      if (!result.success) {
-        ImmichToast.show(context: context, msg: context.t.scaffold_body_error_occurred, toastType: ToastType.error);
-        return;
-      }
-
-      ImmichToast.show(
-        context: context,
-        msg: result.count == 0
-            ? context.t.add_to_album_bottom_sheet_already_exists(album: album.name)
-            : context.t.add_to_album_bottom_sheet_added(album: album.name),
-      );
-    }
 
     Future<void> onKeyboardExpand() {
       return sheetController.animateTo(0.85, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
@@ -107,9 +83,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           ),
         ],
       ],
-      slivers: ownsAlbum
-          ? [const AddToAlbumHeader(), AlbumSelector(onAlbumSelected: addToAlbum, onKeyboardExpanded: onKeyboardExpand)]
-          : null,
+      slivers: ownsAlbum ? [AddToAlbumSlivers(onKeyboardExpanded: onKeyboardExpand)] : null,
     );
   }
 }
