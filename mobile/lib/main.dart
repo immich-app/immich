@@ -49,7 +49,7 @@ import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:timezone/data/latest.dart';
+import 'package:timezone/data/latest_all.dart';
 
 void main() async {
   try {
@@ -168,7 +168,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     await _setNavigationBarColor();
 
     await FlutterLocalNotificationsPlugin().initialize(
-      const InitializationSettings(
+      settings: const InitializationSettings(
         android: AndroidInitializationSettings('@drawable/notification_icon'),
         iOS: DarwinInitializationSettings(),
       ),
