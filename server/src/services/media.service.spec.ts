@@ -3409,7 +3409,7 @@ describe(MediaService.name, () => {
             '-v',
             'verbose',
             '-vf',
-            'format=nv12,hwupload=extra_hw_frames=64,scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12',
+            'format=nv12,hwupload=extra_hw_frames=64,scale_vaapi=-2:720:mode=hq:format=nv12',
             '-compression_level',
             '7',
             '-rc_mode',
@@ -3581,7 +3581,7 @@ describe(MediaService.name, () => {
             '-hwaccel_device',
             '/dev/dri/renderD128',
           ]),
-          outputOptions: expect.arrayContaining([expect.stringContaining('scale_vaapi=-2:720:mode=hq:out_range=pc')]),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale_vaapi=-2:720:mode=hq')]),
           twoPass: false,
         }),
       );
