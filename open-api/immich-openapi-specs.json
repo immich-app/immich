@@ -32544,7 +32544,8 @@
           "UserMetadataDeleteV1",
           "SyncAckV1",
           "SyncResetV1",
-          "SyncCompleteV1"
+          "SyncCompleteV1",
+          "SyncPendingResetV1"
         ],
         "type": "string"
       },
@@ -32865,6 +32866,21 @@
         ],
         "type": "object"
       },
+      "SyncPendingResetV1": {
+        "properties": {
+          "types": {
+            "description": "Sync reset types",
+            "items": {
+              "$ref": "#/components/schemas/SyncEntityType"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "types"
+        ],
+        "type": "object"
+      },
       "SyncPersonDeleteV1": {
         "properties": {
           "personId": {
@@ -32991,7 +33007,8 @@
           "AssetFacesV1",
           "AssetFacesV2",
           "AssetFacesV3",
-          "UserMetadataV1"
+          "UserMetadataV1",
+          "PendingResetV1"
         ],
         "type": "string"
       },

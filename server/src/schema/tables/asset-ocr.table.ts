@@ -5,11 +5,12 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
+  TriggerFunction,
   UpdateDateColumn,
   type Generated,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
-import { asset_ocr_delete_audit } from 'src/schema/functions.js';
+import { asset_ocr_delete_audit, asset_ocr_set_is_pending_reset } from 'src/schema/functions.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table('asset_ocr')
@@ -19,6 +20,12 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
   function: asset_ocr_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
+})
+@TriggerFunction({
+  timing: 'after',
+  actions: ['truncate'],
+  scope: 'statement',
+  function: asset_ocr_set_is_pending_reset,
 })
 export class AssetOcrTable {
   @PrimaryGeneratedColumn()

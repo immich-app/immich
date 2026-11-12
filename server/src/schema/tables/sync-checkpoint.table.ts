@@ -32,4 +32,7 @@ export class SessionSyncCheckpointTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column({ type: 'boolean', default: false })
+  isPendingReset!: Generated<boolean>;
 }

@@ -14,6 +14,7 @@ import {
   asset_face_audit,
   asset_metadata_audit,
   asset_ocr_delete_audit,
+  asset_ocr_set_is_pending_reset,
   f_concat_ws,
   f_unaccent,
   immich_uuid_v7,
@@ -193,6 +194,7 @@ export class ImmichDatabase {
     asset_metadata_audit,
     asset_face_audit,
     asset_ocr_delete_audit,
+    asset_ocr_set_is_pending_reset,
     album_user_delete,
   ];
 

@@ -3872,6 +3872,10 @@ export type SyncPartnerV1 = {
     /** Shared with ID */
     sharedWithId: string;
 };
+export type SyncPendingResetV1 = {
+    /** Sync reset types */
+    types: SyncEntityType[];
+};
 export type SyncPersonDeleteV1 = {
     /** Person ID */
     personId: string;
@@ -8779,7 +8783,8 @@ export enum SyncEntityType {
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
     SyncResetV1 = "SyncResetV1",
-    SyncCompleteV1 = "SyncCompleteV1"
+    SyncCompleteV1 = "SyncCompleteV1",
+    SyncPendingResetV1 = "SyncPendingResetV1"
 }
 export enum SyncRequestType {
     AlbumsV1 = "AlbumsV1",
@@ -8812,7 +8817,8 @@ export enum SyncRequestType {
     AssetFacesV1 = "AssetFacesV1",
     AssetFacesV2 = "AssetFacesV2",
     AssetFacesV3 = "AssetFacesV3",
-    UserMetadataV1 = "UserMetadataV1"
+    UserMetadataV1 = "UserMetadataV1",
+    PendingResetV1 = "PendingResetV1"
 }
 export enum AssetOrderBy {
     TakenAt = "takenAt",

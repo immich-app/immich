@@ -404,6 +404,10 @@ const SyncAckV1Schema = z.object({}).meta({ id: 'SyncAckV1' });
 const SyncResetV1Schema = z.object({}).meta({ id: 'SyncResetV1' });
 const SyncCompleteV1Schema = z.object({}).meta({ id: 'SyncCompleteV1' });
 
+const SyncPendingResetV1Schema = z
+  .object({ types: z.array(SyncEntityTypeSchema).describe('Sync reset types') })
+  .meta({ id: 'SyncPendingResetV1' });
+
 @ExtraModel()
 class SyncMemoryV1 extends createZodDto(SyncMemoryV1Schema) {}
 @ExtraModel()
@@ -473,6 +477,8 @@ class SyncAckV1 extends createZodDto(SyncAckV1Schema) {}
 class SyncResetV1 extends createZodDto(SyncResetV1Schema) {}
 @ExtraModel()
 class SyncCompleteV1 extends createZodDto(SyncCompleteV1Schema) {}
+@ExtraModel()
+class SyncPendingResetV1 extends createZodDto(SyncPendingResetV1Schema) {}
 
 export type SyncItem = {
   [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
@@ -532,6 +538,7 @@ export type SyncItem = {
   [SyncEntityType.SyncAckV1]: SyncAckV1;
   [SyncEntityType.SyncCompleteV1]: SyncCompleteV1;
   [SyncEntityType.SyncResetV1]: SyncResetV1;
+  [SyncEntityType.SyncPendingResetV1]: SyncPendingResetV1;
 };
 
 const SyncStreamSchema = z

@@ -14,7 +14,7 @@ export class SyncCheckpointRepository {
   getAll(sessionId: string) {
     return this.db
       .selectFrom('session_sync_checkpoint')
-      .select(['type', 'ack'])
+      .select(['type', 'ack', 'isPendingReset'])
       .where('sessionId', '=', sessionId)
       .execute();
   }
@@ -47,5 +47,14 @@ export class SyncCheckpointRepository {
         eb.fn<string>('immich_uuid_v7', [sql.raw<Date>("now() - interval '1 millisecond'")]).as('nowId'),
       ])
       .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  deletePendingResets(sessionId: string) {
+    return this.db
+      .deleteFrom('session_sync_checkpoint')
+      .where('sessionId', '=', sessionId)
+      .where('isPendingReset', '=', true)
+      .execute();
   }
 }
