@@ -155,7 +155,7 @@ where
 
 -- TagRepository.upsertAssetIds
 insert into
-  "tag_asset" ("assetId", "tagIds")
+  "tag_asset" ("assetId", "tagId")
 values
   ($1, $2)
 on conflict do nothing

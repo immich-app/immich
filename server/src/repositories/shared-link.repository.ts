@@ -161,7 +161,7 @@ export class SharedLinkRepository {
     return this.authBuilder().where('shared_link.key', '=', key).executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.BUFFER] })
+  @GenerateSql({ params: [DummyValue.STRING] })
   getBySlug(slug: string) {
     return this.authBuilder().where('shared_link.slug', '=', slug).executeTakeFirst();
   }
