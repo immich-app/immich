@@ -121,3 +121,27 @@ test('finishes an OAuth login from the callback url', async ({ data, router, ren
     history.replaceState({}, '', path);
   }
 });
+
+test('sends an unlinked OAuth account to the link page', async ({ data, router, render, settle, api }) => {
+  data.publicConfig.oauth.enabled = true;
+  await queryClient.refetchQueries({ queryKey: getPublicConfigQuery().queryKey, exact: true });
+  api.on({
+    finishOAuth: () => ({
+      status: 403,
+      json: { message: 'oauth_account_link_required', userEmail: 'user@immich.cloud', statusCode: 403 },
+    }),
+  });
+  const path = location.pathname;
+  history.replaceState({}, '', '?code=oauth-code&state=oauth-state');
+
+  try {
+    await router.goto(Route.login());
+    await render(Page, load);
+    await settle();
+
+    expect(api.finishOAuth).toHaveBeenCalledWith({ body: { url: location.href } });
+    expect(router.url.pathname + router.url.search).toBe(Route.authLink({ email: 'user@immich.cloud' }));
+  } finally {
+    history.replaceState({}, '', path);
+  }
+});
