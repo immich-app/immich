@@ -88,6 +88,7 @@ describe(NotesService.name, () => {
       return found;
     });
     github.getFirstTimers.mockResolvedValue(firstTimers);
+    github.getCreditBodies.mockResolvedValue(new Map());
   };
 
   const run = async () => {
@@ -98,7 +99,11 @@ describe(NotesService.name, () => {
   beforeEach(() => {
     fs = { writeFileSync: vi.fn() };
     git = { log: vi.fn() };
-    github = { getPullRequests: vi.fn(), getFirstTimers: vi.fn() };
+    github = {
+      getPullRequests: vi.fn(),
+      getFirstTimers: vi.fn(),
+      getCreditBodies: vi.fn(),
+    };
     sut = new NotesService(fs, git, github);
   });
 
@@ -257,5 +262,111 @@ describe(NotesService.name, () => {
       **Full Changelog**: https://github.com/immich-app/immich/compare/v3.2.4...v3.3.0
       "
     `);
+  });
+
+  it('should credit users named on a credit line in the body', async () => {
+    setup([{ number: 1, body: 'Takes over an older change.\n\nCredit: @bob' }]);
+
+    const notes = await run();
+
+    expect(body(notes)).toBe(
+      changelog(
+        '### 🐛 Bug fixes',
+        `* fix: change 1 by @alice and @bob in ${link(1)}`,
+      ),
+    );
+  });
+
+  it('should credit several users once and skip the author', async () => {
+    setup([
+      { number: 1, body: 'Credit: @bob, @alice\r\ncredit: @carol, @bob' },
+    ]);
+
+    const notes = await run();
+
+    expect(body(notes)).toBe(
+      changelog(
+        '### 🐛 Bug fixes',
+        `* fix: change 1 by @alice, @bob, and @carol in ${link(1)}`,
+      ),
+    );
+  });
+
+  it('should only read handles from a credit line', async () => {
+    setup([
+      {
+        number: 1,
+        body: 'cc @carol\nCredit: Bob <bob@example.com>, @bob\nThe credit: @dave',
+      },
+    ]);
+
+    const notes = await run();
+
+    expect(body(notes)).toBe(
+      changelog(
+        '### 🐛 Bug fixes',
+        `* fix: change 1 by @alice and @bob in ${link(1)}`,
+      ),
+    );
+  });
+
+  it('should credit users named on the original of a backport', async () => {
+    setup([
+      { number: 2, original: 1 },
+      { number: 1, commit: false, body: 'Credit: @bob' },
+    ]);
+
+    const notes = await run();
+
+    expect(body(notes)).toBe(
+      changelog(
+        '### 🐛 Bug fixes',
+        `* fix: change 1 by @alice and @bob in ${link(1)}`,
+      ),
+    );
+  });
+
+  it('should look up first contributions for credited users', async () => {
+    setup([{ number: 2, body: 'Credit: @bob' }, { number: 1 }]);
+
+    await run();
+
+    expect(github.getFirstTimers).toHaveBeenCalledWith([
+      { author: alice, number: 1, mergedAt: '2026-01-01T00:00:00Z' },
+      { author: bob, number: 2, mergedAt: '2026-01-02T00:00:00Z' },
+    ]);
+  });
+
+  it('should not render a new contributor who was credited before', async () => {
+    const contributor = {
+      author: bob,
+      number: 1,
+      mergedAt: '2026-01-01T00:00:00Z',
+    };
+    setup([{ number: 1, author: bob }], [contributor]);
+    github.getCreditBodies.mockResolvedValue(
+      new Map([['bob', ['Credit: @alice, @Bob']]]),
+    );
+
+    const notes = await run();
+
+    expect(github.getCreditBodies).toHaveBeenCalledWith([contributor]);
+    expect(body(notes)).toBe(changelog('### 🐛 Bug fixes', fix(1, bob)));
+  });
+
+  it('should render a new contributor who was only mentioned before', async () => {
+    setup(
+      [{ number: 1, author: bob }],
+      [{ author: bob, number: 1, mergedAt: '2026-01-01T00:00:00Z' }],
+    );
+    github.getCreditBodies.mockResolvedValue(
+      new Map([['bob', ['Thanks @bob, credit where it is due']]]),
+    );
+
+    const notes = await run();
+
+    expect(notes).toContain(
+      `* @bob made their first contribution in ${link(1)}`,
+    );
   });
 });
