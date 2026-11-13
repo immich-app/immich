@@ -31,6 +31,7 @@
   import { handleError } from '#lib/utils/handle-error.ts';
   import { InvocationTracker } from '#lib/utils/invocationTracker.ts';
   import { navigate } from '#lib/utils/navigation.ts';
+  import { isRawAsset } from '#lib/utils/raw-asset.ts';
   import { SlideshowHistory } from '#lib/utils/slideshow-history.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import {
@@ -645,20 +646,33 @@
             class={['relative inline-block px-1 pb-2 transition-all']}
             style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
           >
-            <Thumbnail
-              imageClass={stackedAsset.id === asset.id ? 'border-2 border-white' : 'brightness-70'}
-              brokenAssetClass="text-xs"
-              asset={toTimelineAsset(stackedAsset)}
-              onClick={() => {
-                showStackedAsset(stackedAsset);
-                previewStackedAsset = undefined;
-              }}
-              onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
-              readonly
-              thumbnailSize={stackedAsset.id === asset.id ? stackSelectedThumbnailSize : stackThumbnailSize}
-              showStackedIcon={false}
-              disableLinkMouseOver
-            />
+            <div class="relative">
+              <Thumbnail
+                imageClass={stackedAsset.id === asset.id ? 'border-2 border-white' : 'brightness-70'}
+                brokenAssetClass="text-xs"
+                asset={toTimelineAsset(stackedAsset)}
+                onClick={() => {
+                  showStackedAsset(stackedAsset);
+                  previewStackedAsset = undefined;
+                }}
+                onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
+                readonly
+                thumbnailSize={stackedAsset.id === asset.id ? stackSelectedThumbnailSize : stackThumbnailSize}
+                showStackedIcon={false}
+                disableLinkMouseOver
+              />
+              {#if isRawAsset(stackedAsset)}
+                <div
+                  class="pointer-events-none absolute inset-0 flex items-center justify-center"
+                  data-testid="raw-badge"
+                  aria-hidden="true"
+                >
+                  <span class="rounded-full bg-black/35 px-2 py-0.5 text-sm leading-none font-bold text-white/75"
+                    >RAW</span
+                  >
+                </div>
+              {/if}
+            </div>
 
             {#if stackedAsset.id === asset.id}
               <div class="flex w-full place-content-center place-items-center">
