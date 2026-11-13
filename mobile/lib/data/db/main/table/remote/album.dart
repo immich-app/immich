@@ -4,6 +4,9 @@ import 'package:immich_mobile/data/db/util/datetime_clamp_type.dart';
 import 'package:immich_mobile/data/db/util/defaults_mixin.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 
+@TableIndex.sql(
+  'CREATE INDEX IF NOT EXISTS idx_remote_album_thumbnail_asset_id ON remote_album_entity (thumbnail_asset_id)',
+)
 class RemoteAlbumEntity extends Table with DriftDefaultsMixin {
   const RemoteAlbumEntity();
 
