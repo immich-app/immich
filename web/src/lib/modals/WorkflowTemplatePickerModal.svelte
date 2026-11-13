@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { pluginManager } from '#lib/managers/plugin-manager.svelte.ts';
   import { executeMutation } from '#lib/queries/client.ts';
   import { createWorkflowMutation } from '#lib/queries/workflow.query.ts';
@@ -8,6 +7,7 @@
   import { Badge, FormModal, Icon, ListButton, Text } from '@immich/ui';
   import { mdiFlashOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
 
   type Props = {
     onClose: () => void;

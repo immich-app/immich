@@ -9,12 +9,11 @@ import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
-import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
+import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { Route } from '#lib/route.ts';
 import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
-import { getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
-import { downloadUrl } from '#lib/utils.ts';
+import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
 import type { OnFavorite } from '#lib/utils/actions.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
@@ -23,8 +22,6 @@ import {
   AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
-  bulkTagAssets,
-  bulkTagUntagAssets,
   getAssetInfo,
   runAssetJobs,
   updateAsset,
@@ -64,8 +61,7 @@ import {
   mdiTagPlusOutline,
   mdiTune,
 } from '@mdi/js';
-import type { MessageFormatter } from 'svelte-i18n';
-import { t } from 'svelte-i18n';
+import { t, type MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 
@@ -184,7 +180,7 @@ export const getAssetActions = (
   const sharedLink = getSharedLink();
   const authUser = authManager.authenticated ? authManager.user : undefined;
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
-  const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers[0].user.id);
+  const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers.at(0)?.user.id);
   const smartSearchEnabled = !!authUser && readPreloadedQuery(getUserConfigQuery()).machineLearning.clip.enabled;
 
   const Share: ActionItem = {
@@ -550,41 +546,6 @@ const handleRate = async (asset: AssetResponseDto, rating: number) => {
   }
 };
 
-export const handleTagAssets = async (assetIds: string[], tagIds: string[]) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await bulkTagAssets({ tagBulkAssetsDto: { assetIds, tagIds } });
-    toastManager.primary($t('tagged_assets', { values: { count: response.count } }));
-    eventManager.emit('AssetsTag', assetIds);
-    return true;
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_tag_assets'));
-    return false;
-  }
-};
-
-export const handleTagUntagAssets = async (assetIds: string[], tagIdsToAdd: string[], tagIdsToRemove: string[]) => {
-  const $t = await getFormatter();
-
-  try {
-    const { addedCount, removedCount } = await bulkTagUntagAssets({
-      tagBulkAddRemoveAssetsDto: { tagIdsToAdd, tagIdsToRemove, assetIds },
-    });
-    if (addedCount) {
-      toastManager.primary($t('tagged_assets', { values: { count: addedCount } }));
-    }
-    if (removedCount) {
-      toastManager.primary($t('removed_tagged_assets', { values: { count: removedCount } }));
-    }
-    eventManager.emit('AssetsTag', assetIds);
-    return true;
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_tag_assets'));
-    return false;
-  }
-};
-
 const handleSetVisibility = async (assets: TimelineAsset[], visibility: AssetVisibility) => {
   const $t = await getFormatter();
   const ids = assets.map((asset) => asset.id);
@@ -642,22 +603,21 @@ const undoArchiveAssets = async (assets: TimelineAsset[]) => {
 const handleBulkRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
   const $t = await getFormatter();
 
-  const isConfirmed = await modalManager.showDialog({
-    prompt: $t('remove_assets_album_confirmation', { values: { count: assetIds.length } }),
+  await handleRemoveAssetsFromAlbum(assetIds, album, {
+    confirm: { prompt: $t('remove_assets_album_confirmation', { values: { count: assetIds.length } }) },
+    onSettled: () => assetMultiSelectManager.clear(),
   });
-
-  if (!isConfirmed) {
-    return;
-  }
-
-  await handleRemoveAssetsFromAlbum(assetIds, album);
-  assetMultiSelectManager.clear();
 };
 
-const handleRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
+const handleRemoveAssetsFromAlbum = async (
+  assetIds: string[],
+  album: AlbumResponseDto,
+  options: { confirm?: ConfirmOptions | false; onSettled?: () => void } = {},
+) => {
   const $t = await getFormatter();
 
   await executeMutation(removeAssetFromAlbumMutation, [{ id: album.id, bulkIdsDto: { ids: assetIds } }], {
+    ...options,
     onSuccess: (results) => {
       const count = results.filter(({ success }) => success).length;
       toastManager.primary($t('assets_removed_count', { values: { count } }));

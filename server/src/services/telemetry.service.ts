@@ -1,7 +1,7 @@
 import { snakeCase } from 'lodash-es';
-import type { ArgOf, ArgsOf } from 'src/repositories/event.repository.js';
 import { OnEvent } from 'src/decorators.js';
 import { ImmichWorker, JobStatus } from 'src/enum.js';
+import type { ArgOf, ArgsOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 
 export class TelemetryService extends BaseService {
@@ -52,6 +52,7 @@ export class TelemetryService extends BaseService {
   onJobComplete(...[queueName]: ArgsOf<'JobComplete'>) {
     const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
     this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
+    this.telemetryRepository.jobs.addToCounter(`immich.queues.${snakeCase(queueName)}.completed`, 1);
   }
 
   @OnEvent({ name: 'QueueStart' })

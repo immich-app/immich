@@ -1,18 +1,17 @@
 <script lang="ts">
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
-  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
-  import { cloneDeep } from 'lodash-es';
-  import SettingSelect from './SettingSelect.svelte';
-  import { Colorspace, ImageFormat } from '@immich/sdk';
-  import { fade } from 'svelte/transition';
-
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
   import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+  import { Colorspace, ImageFormat } from '@immich/sdk';
+  import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import SettingSelect from './SettingSelect.svelte';
 
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);

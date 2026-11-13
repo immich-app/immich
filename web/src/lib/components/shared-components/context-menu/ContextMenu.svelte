@@ -72,7 +72,7 @@
   style:max-height={isVisible ? `${position.maxHeight}px` : '0px'}
   style:transition-property="max-height"
   style:scrollbar-color="rgba(85, 86, 87, 0.408) transparent"
-  use:clickOutside={{ onOutclick: onClose }}
+  {@attach clickOutside({ onOutclick: onClose })}
   tabindex="-1"
 >
   <ul

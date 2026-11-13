@@ -3,7 +3,7 @@ import { enhancedImages } from '@sveltejs/enhanced-img';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
-import { svelteTesting } from '@testing-library/svelte/vite';
+import { playwright } from '@vitest/browser-playwright';
 import dotenv from 'dotenv';
 import { defaultTreeAdapter, parse, type DefaultTreeAdapterMap } from 'parse5';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -11,6 +11,7 @@ import { defineConfig, type Plugin, type ProxyOptions, type UserConfig } from 'v
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 
 const buildDir = 'build';
 const inlineTags = ['script', 'style'];
@@ -49,6 +50,26 @@ const cspManifest = (): Plugin => ({
   },
 });
 
+const notFoundGetLine = /^404 (GET|HEAD) /;
+
+const testing = (): Plugin => ({
+  name: 'immich:test',
+  apply: () => !!process.env.VITEST,
+  configureServer: (server) => {
+    const { logger } = server.config;
+    const error = logger.error.bind(logger);
+    logger.error = (message, options) => {
+      if (isUnmockedMediaOrDownload(message)) {
+        return;
+      }
+
+      error(message, options);
+    };
+  },
+});
+
+const isUnmockedMediaOrDownload = (message: string) => notFoundGetLine.test(stripVTControlCharacters(message));
+
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
   secure: true,
@@ -80,7 +101,7 @@ export default defineConfig({
   // '@immich/ui': path.resolve(import.meta.dirname, '../../ui/packages/ui'),
   server: {
     // connect to a remote backend during web-only development
-    proxy,
+    proxy: process.env.VITEST ? {} : proxy,
     allowedHosts: true,
   },
   preview: {
@@ -113,6 +134,7 @@ export default defineConfig({
       },
     }),
     cspManifest(),
+    testing(),
 
     process.env.BUILD_STATS === 'true'
       ? visualizer({
@@ -120,17 +142,12 @@ export default defineConfig({
           filename: 'stats.html',
         })
       : undefined,
-    svelteTesting(),
   ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
   },
   test: {
-    name: 'web:unit',
-    include: ['src/**/*.{test,spec}.{js,ts}'],
     globals: true,
-    environment: 'happy-dom',
-    setupFiles: ['./test/unit/setup.ts'],
     sequence: {
       hooks: 'list',
     },
@@ -141,6 +158,15 @@ export default defineConfig({
       deps: {
         inline: ['@futo-org/backups-orchestrator-ui', '@material-symbols/svg-400'],
       },
+    },
+    name: 'web:unit',
+    include: ['src/**/*.{test,spec}.{js,ts}'],
+    setupFiles: ['./test/unit/setup.ts'],
+    browser: {
+      enabled: true,
+      headless: true,
+      provider: playwright({ contextOptions: { timezoneId: 'UTC', locale: 'en-US' } }),
+      instances: [{ browser: 'chromium' }],
     },
   },
 } as UserConfig);

@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import 'zod/compile';
 import { configureExpress, configureTelemetry } from 'src/app.common.js';
 import { MaintenanceModule } from 'src/app.module.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';

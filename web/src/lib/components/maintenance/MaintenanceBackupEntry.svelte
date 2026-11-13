@@ -1,6 +1,6 @@
 <script lang="ts">
-  import MaintenanceBackupCard from '#lib/components/maintenance/MaintenanceBackupCard.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
+  import MaintenanceBackupCard from '#lib/components/maintenance/MaintenanceBackupCard.svelte';
   import { getDatabaseBackupActions, handleRestoreDatabaseBackup } from '#lib/services/database-backups.service.ts';
   import { Button, ContextMenuButton } from '@immich/ui';
   import { t } from 'svelte-i18n';

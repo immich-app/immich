@@ -1,7 +1,5 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
-import type { MaybeDehydrated } from 'src/types.js';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
@@ -18,9 +16,11 @@ import {
   AssetVisibilitySchema,
   ChecksumAlgorithm,
 } from 'src/enum.js';
+import type { MaybeDehydrated } from 'src/types.js';
 import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
+import { createZodDto } from 'src/zod.js';
 
 const SanitizedAssetResponseSchema = z
   .object({

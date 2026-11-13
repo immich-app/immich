@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { SemVer, diff, intersects, lt } from 'semver';
-import type { ArgOf } from 'src/repositories/event.repository.js';
-import type { VersionCheckMetadata } from 'src/types.js';
 import { serverVersion } from 'src/constants.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { ReleaseEventV1, ReleaseType, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
@@ -16,7 +14,9 @@ import {
   ReleaseChannel,
   SystemMetadataKey,
 } from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
+import type { VersionCheckMetadata } from 'src/types.js';
 import { handlePromiseError } from 'src/utils/misc.js';
 
 const asNotification = (

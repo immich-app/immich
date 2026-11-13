@@ -1,8 +1,6 @@
 <script lang="ts">
-  import type { Shortcut } from '#lib/actions/shortcut.ts';
-  import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '#lib/actions/shortcut.ts';
   import { optionClickCallbackStore, selectedIdStore } from '#lib/stores/context-menu.store.ts';
-  import { Icon, type IconLike } from '@immich/ui';
+  import { Icon, shortcutLabel as computeShortcutLabel, shortcuts, type IconLike, type Shortcut } from '@immich/ui';
 
   interface Props {
     text: string;
@@ -38,12 +36,9 @@
   if (shortcut && !shortcutLabel) {
     shortcutLabel = computeShortcutLabel(shortcut);
   }
-  const bindShortcutIfSet = shortcut
-    ? (n: HTMLElement) => bindShortcut(n, { shortcut, onShortcut: onClick })
-    : () => {};
 </script>
 
-<svelte:document use:bindShortcutIfSet />
+<svelte:window {@attach shortcuts(shortcut ? [{ shortcut, onShortcut: onClick }] : [])} />
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->

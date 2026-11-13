@@ -9,7 +9,9 @@
 </p>
 
 <p align="center">
-<img src="../design/immich-logo-stacked-light.svg" width="300" title="Login met aangepaste URL">
+  <a href="#">
+    <img src="../design/immich-logo-stacked-light.svg" width="300" alt="Immich Logo">
+  </a>
 </p>
 <h3 align="center">Immich - Hoogwaardige, self-hosted back-up oplossing voor foto's en video's</h3>
 <br/>

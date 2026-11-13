@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { shortcuts, type ShortcutOptions } from '#lib/actions/shortcut.ts';
   import ProgressBar from '#lib/components/shared-components/progress-bar/ProgressBar.svelte';
   import { ProgressBarStatus } from '#lib/constants.ts';
   import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import SlideshowSettingsModal from '#lib/modals/SlideshowSettingsModal.svelte';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
   import { AssetTypeEnum } from '@immich/sdk';
-  import { IconButton, modalManager } from '@immich/ui';
+  import { IconButton, modalManager, shortcuts, type ShortcutOptions } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { useSwipe } from 'svelte-gestures';
@@ -31,8 +30,15 @@
     onSetToFullScreen = () => {},
   }: Props = $props();
 
-  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowState } =
-    slideshowStore;
+  const {
+    restartProgress,
+    stopProgress,
+    slideshowDelay,
+    showProgressBar,
+    slideshowNavigation,
+    slideshowState,
+    slideshowAutoplay,
+  } = slideshowStore;
 
   let progressBarStatus: ProgressBarStatus | undefined = $state();
   let progressBar = $state<ReturnType<typeof ProgressBar>>();
@@ -40,6 +46,7 @@
   let timer: NodeJS.Timeout;
   let isOverControls = $state(false);
   const isVideoSlide = $derived(assetType === AssetTypeEnum.Video);
+  const showPlayPause = $derived(!isVideoSlide && $slideshowAutoplay);
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
@@ -161,7 +168,7 @@
     ];
 
     // For videos, allow the native HTML5 element to handle space for play/pause
-    if (!isVideoSlide) {
+    if (showPlayPause) {
       bindings.push({
         shortcut: { key: ' ' },
         onShortcut: togglePause,
@@ -173,7 +180,7 @@
   });
 </script>
 
-<svelte:document onmousemove={showControlBar} use:shortcuts={shortcutBindings} />
+<svelte:window onmousemove={showControlBar} {@attach shortcuts(shortcutBindings)} />
 
 {/* @ts-expect-error https://github.com/Rezi/svelte-gestures/issues/38#issuecomment-3315953573 */ null}
 <svelte:body {@attach swipe} {onswipe} {onswipedown} />
@@ -195,7 +202,7 @@
       aria-label={$t('exit_slideshow')}
     />
 
-    {#if !isVideoSlide}
+    {#if showPlayPause}
       <IconButton
         variant="ghost"
         shape="round"

@@ -1,8 +1,8 @@
 <script lang="ts">
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
-  import ServerStatisticsPanel from './ServerStatisticsPanel.svelte';
   import { Container } from '@immich/ui';
   import type { PageData } from './$types';
+  import ServerStatisticsPanel from './ServerStatisticsPanel.svelte';
 
   type Props = {
     data: PageData;

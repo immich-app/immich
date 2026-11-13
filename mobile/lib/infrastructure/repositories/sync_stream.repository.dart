@@ -409,7 +409,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
       await _db.batch((batch) {
         for (final metadata in data) {
           if (metadata.key == kMobileMetadataKey) {
-            final map = metadata.value as Map<String, Object?>;
+            final map = metadata.value;
             final companion = RemoteAssetCloudIdEntityCompanion(
               cloudId: Value(map['iCloudId']?.toString()),
               createdAt: Value(map['createdAt'] != null ? DateTime.parse(map['createdAt']! as String) : null),
@@ -441,7 +441,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             id: Value(edit.id),
             assetId: Value(edit.assetId),
             action: Value(edit.action.toAssetEditAction()),
-            parameters: Value(edit.parameters as Map<String, Object?>),
+            parameters: Value(edit.parameters),
             sequence: Value(edit.sequence),
           );
 
@@ -464,7 +464,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             id: Value(edit.id),
             assetId: Value(edit.assetId),
             action: Value(edit.action.toAssetEditAction()),
-            parameters: Value(edit.parameters as Map<String, Object?>),
+            parameters: Value(edit.parameters),
             sequence: Value(edit.sequence),
           );
 
@@ -755,7 +755,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     try {
       await _db.batch((batch) {
         for (final userMetadata in data) {
-          final companion = UserMetadataEntityCompanion(value: Value(userMetadata.value as Map<String, Object?>));
+          final companion = UserMetadataEntityCompanion(value: Value(userMetadata.value));
 
           batch.insert(
             _db.userMetadataEntity,

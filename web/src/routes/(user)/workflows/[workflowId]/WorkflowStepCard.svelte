@@ -1,11 +1,11 @@
 <script lang="ts">
   import { pluginManager } from '#lib/managers/plugin-manager.svelte.ts';
+  import { getAlbumQuery } from '#lib/queries/album.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getTagByIdQuery } from '#lib/queries/tag.query.ts';
   import type { JSONSchemaProperty } from '#lib/types.ts';
   import { type WorkflowStepDto } from '@immich/sdk';
   import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
-  import { getTagById } from '@immich/sdk';
-  import { getAlbumQuery } from '#lib/queries/album.query.ts';
-  import { queryClient } from '#lib/queries/client.ts';
   import {
     mdiAutoFix,
     mdiDragVertical,
@@ -42,7 +42,7 @@
   const isFilter = $derived(method?.uiHints?.includes('Filter') ?? false);
   const schema = $derived(method?.schema as JSONSchemaProperty | undefined);
   const configEntries = $derived(
-    Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
+    Object.entries(step.config ?? {}).filter(([, value]) => ![null, undefined, ''].includes(value)),
   );
   const isGhost = $derived(step.id === 'ghost');
 
@@ -233,7 +233,7 @@
                 {/each}
               {:else if getUiHint(key) === 'TagId'}
                 {#each toIds(value) as tagId (tagId)}
-                  {#await getTagById({ id: tagId })}
+                  {#await queryClient.query(getTagByIdQuery(tagId))}
                     {@render badge($t('tag'), '…')}
                   {:then tag}
                     {@render badge($t('tag'), `"${truncate(tag.name)}"`)}

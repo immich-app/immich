@@ -138,6 +138,7 @@ export default defineConfig(
       'unicorn/prefer-uint8array-base64': 'off',
       'unicorn/max-nested-calls': 'off',
       'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/prefer-smaller-scope': 'off',
       'unicorn/no-unreadable-object-destructuring': 'off',
       // not yet compatible with all our supported browsers
       'unicorn/prefer-promise-with-resolvers': 'off',
@@ -201,9 +202,10 @@ export default defineConfig(
     },
   },
   {
-    files: ['test/**/*.ts'],
+    files: ['test/**/*.ts', 'src/**/*.spec.ts'],
     rules: {
       'no-empty-pattern': 'off',
+      'unicorn/no-document-cookie': 'off',
       'compat/compat': 'off',
       'tscompat/tscompat': 'off',
     },

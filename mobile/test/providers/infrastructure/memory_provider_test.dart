@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -48,6 +50,7 @@ void main() {
     userService = MockUserService();
 
     when(() => memoryRepository.getAll('user-1')).thenAnswer((_) async => []);
+    when(() => memoryRepository.watchChanges()).thenAnswer((_) => const Stream.empty());
     when(() => userService.tryGetMyUser()).thenReturn(user());
     when(() => userService.watchMyUser()).thenAnswer((_) => const Stream.empty());
   });
@@ -68,6 +71,22 @@ void main() {
         async.elapse(const Duration(hours: 25));
         async.flushMicrotasks();
         verify(() => memoryRepository.getAll('user-1')).called(greaterThanOrEqualTo(1));
+      });
+    });
+
+    test('re-queries when the memory tables change', () {
+      fakeAsync((async) {
+        final changes = StreamController<void>.broadcast();
+        when(() => memoryRepository.watchChanges()).thenAnswer((_) => changes.stream);
+        final container = makeContainer();
+        container.listen(memoryLaneProvider, (_, _) {});
+        async.flushMicrotasks();
+        verify(() => memoryRepository.getAll('user-1')).called(1);
+
+        changes.add(null);
+        async.elapse(Duration.zero);
+        verify(() => memoryRepository.getAll('user-1')).called(1);
+        unawaited(changes.close());
       });
     });
 

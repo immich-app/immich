@@ -1,8 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import sanitize from 'sanitize-filename';
-import type { LoginDetails } from 'src/services/auth.service.js';
-import type { ClassConstructor } from 'src/types.js';
 import { SALT_ROUNDS } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { UserAdmin } from 'src/database.js';
@@ -68,6 +66,8 @@ import { WebAuthnRepository } from 'src/repositories/webauthn.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
+import type { ClassConstructor } from 'src/types.js';
 import {
   AccessPersonRequest,
   AccessRequest,

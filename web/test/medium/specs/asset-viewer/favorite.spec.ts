@@ -9,7 +9,7 @@ test('favorite and unfavorite an asset from the viewer by button and shortcut', 
   await app.viewer.waitForAsset(asset);
   await app.viewer.favoriteButton.click();
   await expect(app.viewer.unfavoriteButton).toBeVisible();
-  await expect(page.getByText('added_to_favorites')).toBeVisible();
+  await expect(app.toast('added_to_favorites')).toBeVisible();
 
   await app.viewer.unfavoriteButton.click();
   await expect(app.viewer.favoriteButton).toBeVisible();

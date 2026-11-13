@@ -7,7 +7,6 @@ import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
 import { basename } from 'node:path';
-import type { MaintenanceModeState } from 'src/types.js';
 import { serverVersion } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import {
@@ -32,6 +31,7 @@ import { type BaseService as _BaseService } from 'src/services/base.service.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 import { type ServerService as _ServerService } from 'src/services/server.service.js';
 import { type VersionService as _VersionService } from 'src/services/version.service.js';
+import type { MaintenanceModeState } from 'src/types.js';
 import { getConfig } from 'src/utils/config.js';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance.js';
 import { getExternalDomain } from 'src/utils/misc.js';
@@ -85,9 +85,12 @@ export class MaintenanceWorkerService {
 
     await this.logSecret();
 
-    if (await this.databaseRepository.tryLock(DatabaseLock.FutoBackupsModuleConfig)) {
-      this.moduleRef.get(YuccaService, { strict: false }).acquireLock();
-    }
+    this.moduleRef.get(YuccaService, { strict: false }).setDatabaseHooks({
+      tagName: 'yucca.v1.immichBackupFileName',
+      dump: (signal) => this.databaseBackupService.createDatabaseBackup('', signal),
+      cleanup: () => this.databaseBackupService.cleanupDatabaseBackups(),
+      restore: (fileName) => this.databaseBackupService.restoreDatabaseBackup(basename(fileName)),
+    });
 
     if (state.action) {
       void this.runAction(state.action);

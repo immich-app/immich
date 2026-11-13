@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { handleTagUntagAssets } from '#lib/services/asset.service.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
   import {
-    getAllTags,
-    queryTagsForAssets,
-    upsertTags,
-    type TagResponseDto,
-    type TagsForAssetsResponseDto,
-  } from '@immich/sdk';
-  import { FormModal, modalManager } from '@immich/ui';
+    bulkTagUntagAssetsMutation,
+    getAllTagsQuery,
+    getTagsForAssetsQuery,
+    upsertTagsMutation,
+  } from '#lib/queries/tag.query.ts';
+  import type { TagsForAssetsResponseDto } from '@immich/sdk';
+  import { FormModal, toastManager } from '@immich/ui';
   import { mdiTag } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
   import Combobox, { type ComboBoxOption } from '../components/shared-components/Combobox.svelte';
@@ -22,88 +22,117 @@
 
   let { onClose, assetIds }: Props = $props();
 
-  let allTags: TagResponseDto[] = $state([]);
+  const query = createQuery(getAllTagsQuery, () => queryClient);
+  const assignmentsQuery = createQuery(
+    () => getTagsForAssetsQuery(assetIds),
+    () => queryClient,
+  );
+  const allTags = $derived(query.data ?? []);
+  const tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
+  const selectedTags = new SvelteSet<{ id: string; count: number; partial: boolean }>();
   let existingTagsForAssets: TagsForAssetsResponseDto[] = $state([]);
-  let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
-  let selectedTags = new SvelteSet<{ id: string; count: number; partial: boolean }>();
-  let allowCreate: boolean = $state(true);
+  let initialized = $state(false);
+  let saving = $state(false);
+  let creating = $state(false);
+  const ready = $derived(initialized && query.isSuccess && assignmentsQuery.isSuccess);
 
-  onMount(async () => {
-    allTags = await getAllTags();
-    existingTagsForAssets = await queryTagsForAssets({ tagsForAssetsDto: { assetIds } });
-
-    for (const tagForAsset of existingTagsForAssets) {
-      selectedTags.add({
-        id: tagForAsset.tagId,
-        count: tagForAsset.assetIds?.length || 0,
-        partial: (tagForAsset.assetIds?.length || 0) < assetIds.length,
-      });
+  $effect(() => {
+    if (
+      !initialized &&
+      assignmentsQuery.isSuccess &&
+      assignmentsQuery.isFetchedAfterMount &&
+      !assignmentsQuery.isFetching
+    ) {
+      existingTagsForAssets = assignmentsQuery.data.map((tag) => ({ ...tag, assetIds: [...(tag.assetIds ?? [])] }));
+      for (const tag of existingTagsForAssets) {
+        const count = tag.assetIds?.length ?? 0;
+        selectedTags.add({ id: tag.tagId, count, partial: count < assetIds.length });
+      }
+      initialized = true;
     }
   });
 
-  const tagIsSelected = (tagId: string, excludePartials: boolean) => {
-    for (const tag of selectedTags) {
-      if (tag.id === tagId && (!excludePartials || !tag.partial)) {
-        return true;
-      }
-    }
-    return false;
-  };
+  const tagIsSelected = (tagId: string, excludePartials: boolean) =>
+    [...selectedTags].some((tag) => tag.id === tagId && (!excludePartials || !tag.partial));
 
   const onSubmit = async () => {
-    // Only add tags from the selected tags list that are not partials and are not in the existing tags list. This ensures only newly added tags are sent server-side.
+    if (!ready || saving || creating) {
+      return;
+    }
+
     const tagIdsToAdd = [...selectedTags]
       .filter(
         (tag) =>
           !tag.partial &&
-          existingTagsForAssets.every((t) => t.tagId !== tag.id || t.assetIds?.length !== assetIds.length),
+          existingTagsForAssets.every(
+            (existing) => existing.tagId !== tag.id || existing.assetIds?.length !== assetIds.length,
+          ),
       )
       .map((tag) => tag.id);
+    const tagIdsToRemove = existingTagsForAssets
+      .filter((tag) => !tagIsSelected(tag.tagId, false))
+      .map((tag) => tag.tagId);
 
-    // Only remove tags that were in the existing tags list, but are no longer in the selected tags list. This ensures only removed tags are sent server-side.
-    const tagIdsToRemove: string[] = existingTagsForAssets
-      .filter((tagForAsset) => !tagIsSelected(tagForAsset.tagId, false))
-      .map((tagForAsset) => tagForAsset.tagId);
-
-    const isConfirmed =
-      assetIds.length <= 40 ||
-      (await modalManager.showDialog({
-        prompt: $t('modify_tags_confirmation', { values: { count: assetIds.length } }),
-      }));
-
-    if (isConfirmed && (tagIdsToAdd.length > 0 || tagIdsToRemove.length > 0)) {
-      onClose(await handleTagUntagAssets(assetIds, tagIdsToAdd, tagIdsToRemove));
-    } else {
+    if (tagIdsToAdd.length === 0 && tagIdsToRemove.length === 0) {
       onClose(false);
+      return;
+    }
+
+    saving = true;
+    try {
+      await executeMutation(
+        bulkTagUntagAssetsMutation,
+        [{ tagBulkAddRemoveAssetsDto: { assetIds, tagIdsToAdd, tagIdsToRemove } }],
+        {
+          confirm: assetIds.length > 40 && {
+            prompt: $t('modify_tags_confirmation', { values: { count: assetIds.length } }),
+          },
+          onSuccess: ({ addedCount, removedCount }) => {
+            if (addedCount) {
+              toastManager.primary($t('tagged_assets', { values: { count: addedCount } }));
+            }
+            if (removedCount) {
+              toastManager.primary($t('removed_tagged_assets', { values: { count: removedCount } }));
+            }
+            onClose(true);
+          },
+        },
+      );
+    } finally {
+      saving = false;
+    }
+  };
+
+  const handleRemove = (id: string) => {
+    for (const tag of selectedTags) {
+      if (tag.id === id) {
+        selectedTags.delete(tag);
+        break;
+      }
     }
   };
 
   const handleSelect = async (option?: ComboBoxOption) => {
-    if (!option) {
+    if (!option || !ready || saving || creating) {
       return;
     }
 
     if (option.id) {
-      for (const item of selectedTags) {
-        if (item.id === option.id) {
-          selectedTags.delete(item);
-          break;
-        }
-      }
-      selectedTags.add({ id: option.id, count: assetIds.length, partial: false });
-    } else {
-      const [newTag] = await upsertTags({ tagUpsertDto: { tags: [option.label] } });
-      allTags.push(newTag);
-      selectedTags.add({ id: newTag.id, count: assetIds.length, partial: false });
+      handleRemove(option.value);
+      selectedTags.add({ id: option.value, count: assetIds.length, partial: false });
+      return;
     }
-  };
 
-  const handleRemove = (tag: { id: string; count: number; partial: boolean }) => {
-    for (const item of selectedTags) {
-      if (item.id === tag.id) {
-        selectedTags.delete(item);
-        break;
-      }
+    creating = true;
+    try {
+      await executeMutation(upsertTagsMutation, [{ tagUpsertDto: { tags: [option.label] } }], {
+        onSuccess: ([newTag]) => {
+          handleRemove(newTag.id);
+          selectedTags.add({ id: newTag.id, count: assetIds.length, partial: false });
+        },
+      });
+    } finally {
+      creating = false;
     }
   };
 </script>
@@ -116,13 +145,17 @@
   {onSubmit}
   submitText={$t('save') + ' ' + $t('tags')}
   onOpenAutoFocus={(event) => event.preventDefault()}
-  disabled={selectedTags.size === 0 && existingTagsForAssets.length === 0}
+  disabled={!ready || saving || creating || (selectedTags.size === 0 && existingTagsForAssets.length === 0)}
 >
+  {#if query.isError || assignmentsQuery.isError}
+    <p role="alert">{$t('errors.failed_to_tag_assets')}</p>
+  {/if}
   <div class="my-4 flex flex-col gap-2">
     <Combobox
       onSelect={handleSelect}
       label={$t('tag')}
-      {allowCreate}
+      allowCreate
+      disabled={!ready || saving || creating}
       defaultFirstOption
       options={allTags
         .filter((tag) => !tagIsSelected(tag.id, true))
@@ -142,7 +175,11 @@
             : assetIds.length > 1
               ? `All ${assetIds.length} selected assets have this tag`
               : undefined}
-          onRemove={() => handleRemove({ id, count, partial })}
+          onRemove={() => {
+            if (!saving) {
+              handleRemove(id);
+            }
+          }}
         />
       {/if}
     {/each}

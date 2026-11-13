@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { page } from '$app/state';
-  import { shouldIgnoreEvent } from '#lib/actions/shortcut.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { dragAndDropFilesStore } from '#lib/stores/drag-and-drop-files.store.ts';
   import { fileUploadHandler } from '#lib/utils/file-uploader.ts';
   import { isAlbumsRoute, isLockedFolderRoute } from '#lib/utils/navigation.ts';
-  import { Logo } from '@immich/ui';
+  import { Logo, shouldIgnoreEvent } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import { page } from '$app/state';
 
   let albumId = $derived(isAlbumsRoute(page.route?.id) ? page.params.albumId : undefined);
   let isInLockedFolder = $derived(isLockedFolderRoute(page.route.id));

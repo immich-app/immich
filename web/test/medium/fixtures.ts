@@ -1,8 +1,7 @@
+import type { MockData } from '#test/common/data.ts';
 import { createApp, type App } from '#test/medium/app.ts';
-import type { MockApi } from '#test/medium/mock/api.ts';
-import type { MockData } from '#test/medium/mock/data.ts';
-import type { BrowserLogger } from '#test/medium/mock/logger.ts';
-import { Mock } from '#test/medium/mock/mock.ts';
+import type { MockConsole } from '#test/medium/mocks/logger.ts';
+import { Mock } from '#test/medium/mocks/mock.ts';
 import {
   test as base,
   type BrowserContext,
@@ -13,15 +12,12 @@ import {
 } from '@playwright/test';
 
 export { expect } from '#test/medium/matchers.ts';
-export type { MockApi } from '#test/medium/mock/api.ts';
-export type { MockData } from '#test/medium/mock/data.ts';
-export type { BrowserLogger } from '#test/medium/mock/logger.ts';
 
 type Fixtures = {
   mock: Mock;
   data: MockData;
-  api: MockApi;
-  logger: BrowserLogger;
+  api: Mock['api'];
+  logger: MockConsole;
   app: App;
 };
 
@@ -76,16 +72,10 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
   },
   mock: [
     async ({ context, workerPage, baseURL }, use, testInfo) => {
-      await context.addCookies([{ name: 'immich_is_authenticated', value: 'true', url: baseURL }]);
       const mock = new Mock(context);
-      await mock.install(workerPage);
+      const teardown = await mock.setup({ page: workerPage, baseURL });
       await use(mock);
-      await mock.uninstall();
-      await context.clearCookies();
-      // skipped for failed tests so the report shows the real failure instead of the requests it never reached
-      if (testInfo.status === 'passed') {
-        mock.assertClean();
-      }
+      await teardown({ passed: testInfo.status === 'passed' });
     },
     { auto: true },
   ],

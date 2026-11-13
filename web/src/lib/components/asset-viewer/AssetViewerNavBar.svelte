@@ -1,11 +1,11 @@
 <script lang="ts">
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
-  import type { OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
+  import LoadingDots from '#lib/components/LoadingDots.svelte';
   import ArchiveAction from '#lib/components/asset-viewer/actions/ArchiveAction.svelte';
   import DeleteAction from '#lib/components/asset-viewer/actions/DeleteAction.svelte';
   import RestoreAction from '#lib/components/asset-viewer/actions/RestoreAction.svelte';
   import SetVisibilityAction from '#lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
-  import LoadingDots from '#lib/components/LoadingDots.svelte';
+  import type { OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -84,8 +84,9 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
 <div
-  class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)] transition-transform duration-200"
+  class="relative isolate flex h-16 place-items-center justify-between px-3 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)] transition-transform duration-200"
 >
+  <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-24 bg-black/40 mask-smoothstep-to-bottom"></div>
   <div class="dark">
     <ActionButton action={Close} />
   </div>

@@ -3,18 +3,16 @@ import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, applyDecorators, forwardRef } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
-import { ApiExtension, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
-import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { commandsAndQuestions } from 'src/commands/index.js';
 import { IWorker } from 'src/constants.js';
 import { controllers } from 'src/controllers/index.js';
-import { HistoryBuilder } from 'src/decorators.js';
-import { ApiTag, ImmichEnvironment, ImmichWorker } from 'src/enum.js';
+import { ImmichEnvironment, ImmichWorker } from 'src/enum.js';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
@@ -24,6 +22,7 @@ import { AuthGuard, Authenticated } from 'src/middleware/auth.guard.js';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor.js';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor.js';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter.js';
+import { GlobalValidationPipe } from 'src/middleware/global-validation.pipe.js';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -45,13 +44,13 @@ import { QueueService } from 'src/services/queue.service.js';
 import { getKyselyConfig } from 'src/utils/database.js';
 import { configureUserAgent } from 'src/utils/fetch.js';
 import { detectMediaLocation, getBackupsStatePath } from 'src/utils/storage.js';
+import { registerSchemas } from 'src/zod.js';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
 const commonMiddleware = [
   { provide: APP_FILTER, useClass: GlobalExceptionFilter },
-  { provide: APP_PIPE, useClass: ZodValidationPipe },
-  { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
+  { provide: APP_PIPE, useClass: GlobalValidationPipe },
   { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
 ];
@@ -65,14 +64,8 @@ const isFutoBackupsDevelopmentMode = environment !== ImmichEnvironment.Productio
 const futoBackupsStatePath = getBackupsStatePath(storage.mediaLocation);
 const futoBackupsCachePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'restic-cache');
 
-const futoBackupsHistory = new HistoryBuilder().added('v3.4.0').internal('v3.4.0').getExtensions();
-
 for (const controller of futoBackupsControllers) {
-  applyDecorators(
-    Authenticated({ admin: true }),
-    ApiTags(ApiTag.Backups),
-    ...Object.entries(futoBackupsHistory).map(([key, value]) => ApiExtension(key, value)),
-  )(controller);
+  applyDecorators(Authenticated({ admin: true }), ApiExcludeController())(controller);
 }
 
 const commonImports = [
@@ -83,7 +76,6 @@ const commonImports = [
 
 const bullImports = [BullModule.forRoot(bull.config), BullModule.registerQueue(...bull.queues)];
 
-// eslint-disable-next-line unicorn/no-top-level-side-effects
 configureUserAgent();
 
 export class BaseModule implements OnModuleInit, OnModuleDestroy {
@@ -131,6 +123,7 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
       imports: [forwardRef(() => ApiModule)],
       inject: [AuthService],
       useFactory: (authService: AuthService) => ({
+        dialect: getKyselyConfig(database.config).dialect,
         statePath: futoBackupsStatePath,
         cachePath: futoBackupsCachePath,
         requireWsAuth: true,
@@ -149,7 +142,11 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
   providers: [...common, ...apiMiddleware, { provide: IWorker, useValue: ImmichWorker.Api }],
   exports: [AuthService, WebsocketRepository],
 })
-export class ApiModule extends BaseModule {}
+export class ApiModule extends BaseModule {
+  static {
+    registerSchemas({ controllers });
+  }
+}
 
 @Module({
   imports: [
@@ -158,6 +155,7 @@ export class ApiModule extends BaseModule {}
       imports: [forwardRef(() => MaintenanceModule)],
       inject: [MaintenanceWorkerService],
       useFactory: (maintenanceWorkerService: MaintenanceWorkerService) => ({
+        dialect: getKyselyConfig(database.config).dialect,
         statePath: futoBackupsStatePath,
         cachePath: futoBackupsCachePath,
         externalBaseUrl: 'https://my.immich.app',
@@ -192,6 +190,10 @@ export class ApiModule extends BaseModule {}
   exports: [MaintenanceWorkerService, MaintenanceWebsocketRepository],
 })
 export class MaintenanceModule {
+  static {
+    registerSchemas({ controllers: [MaintenanceWorkerController] });
+  }
+
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,

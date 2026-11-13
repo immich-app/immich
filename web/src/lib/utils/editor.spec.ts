@@ -47,280 +47,40 @@ function compareEditAffines(editsA: EditActions, editsB: EditActions): boolean {
   );
 }
 
-describe('edit normalization', () => {
-  it('should handle no edits', () => {
-    const edits: EditActions = [];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle a single 90° rotation', () => {
-    const edits: EditActions = [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle a single 180° rotation', () => {
-    const edits: EditActions = [{ action: AssetEditAction.Rotate, parameters: { angle: 180 } }];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle a single 270° rotation', () => {
-    const edits: EditActions = [{ action: AssetEditAction.Rotate, parameters: { angle: 270 } }];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle a single horizontal mirror', () => {
-    const edits: EditActions = [{ action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } }];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle a single vertical mirror', () => {
-    const edits: EditActions = [{ action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } }];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle 90° rotation + horizontal mirror', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle 90° rotation + vertical mirror', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle 90° rotation + both mirrors', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle 180° rotation + horizontal mirror', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Rotate, parameters: { angle: 180 } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle 180° rotation + vertical mirror', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Rotate, parameters: { angle: 180 } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle 180° rotation + both mirrors', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Rotate, parameters: { angle: 180 } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle 270° rotation + horizontal mirror', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Rotate, parameters: { angle: 270 } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle 270° rotation + vertical mirror', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Rotate, parameters: { angle: 270 } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle 270° rotation + both mirrors', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Rotate, parameters: { angle: 270 } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle horizontal mirror + 90° rotation', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-      { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle horizontal mirror + 180° rotation', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-      { action: AssetEditAction.Rotate, parameters: { angle: 180 } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle horizontal mirror + 270° rotation', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-      { action: AssetEditAction.Rotate, parameters: { angle: 270 } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle vertical mirror + 90° rotation', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-      { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle vertical mirror + 180° rotation', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-      { action: AssetEditAction.Rotate, parameters: { angle: 180 } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle vertical mirror + 270° rotation', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-      { action: AssetEditAction.Rotate, parameters: { angle: 270 } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle both mirrors + 90° rotation', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-      { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle both mirrors + 180° rotation', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-      { action: AssetEditAction.Rotate, parameters: { angle: 180 } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
-  });
-
-  it('should handle both mirrors + 270° rotation', () => {
-    const edits: EditActions = [
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
-      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
-      { action: AssetEditAction.Rotate, parameters: { angle: 270 } },
-    ];
-
-    const result = normalizeTransformEdits(edits);
-    const normalizedEdits = normalizedToEdits(result);
-
-    expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
+const rotate = (angle: number): EditActions[number] => ({ action: AssetEditAction.Rotate, parameters: { angle } });
+const mirror = (axis: MirrorAxis): EditActions[number] => ({ action: AssetEditAction.Mirror, parameters: { axis } });
+const horizontal = mirror(MirrorAxis.Horizontal);
+const vertical = mirror(MirrorAxis.Vertical);
+
+describe('normalizeTransformEdits', () => {
+  it.each<{ name: string; edits: EditActions }>([
+    { name: 'no edits', edits: [] },
+    { name: '90° rotation', edits: [rotate(90)] },
+    { name: '180° rotation', edits: [rotate(180)] },
+    { name: '270° rotation', edits: [rotate(270)] },
+    { name: 'horizontal mirror', edits: [horizontal] },
+    { name: 'vertical mirror', edits: [vertical] },
+    { name: '90° rotation then horizontal mirror', edits: [rotate(90), horizontal] },
+    { name: '90° rotation then vertical mirror', edits: [rotate(90), vertical] },
+    { name: '90° rotation then both mirrors', edits: [rotate(90), horizontal, vertical] },
+    { name: '180° rotation then horizontal mirror', edits: [rotate(180), horizontal] },
+    { name: '180° rotation then vertical mirror', edits: [rotate(180), vertical] },
+    { name: '180° rotation then both mirrors', edits: [rotate(180), horizontal, vertical] },
+    { name: '270° rotation then horizontal mirror', edits: [rotate(270), horizontal] },
+    { name: '270° rotation then vertical mirror', edits: [rotate(270), vertical] },
+    { name: '270° rotation then both mirrors', edits: [rotate(270), horizontal, vertical] },
+    { name: 'horizontal mirror then 90° rotation', edits: [horizontal, rotate(90)] },
+    { name: 'horizontal mirror then 180° rotation', edits: [horizontal, rotate(180)] },
+    { name: 'horizontal mirror then 270° rotation', edits: [horizontal, rotate(270)] },
+    { name: 'vertical mirror then 90° rotation', edits: [vertical, rotate(90)] },
+    { name: 'vertical mirror then 180° rotation', edits: [vertical, rotate(180)] },
+    { name: 'vertical mirror then 270° rotation', edits: [vertical, rotate(270)] },
+    { name: 'both mirrors then 90° rotation', edits: [horizontal, vertical, rotate(90)] },
+    { name: 'both mirrors then 180° rotation', edits: [horizontal, vertical, rotate(180)] },
+    { name: 'both mirrors then 270° rotation', edits: [horizontal, vertical, rotate(270)] },
+  ])('keeps the same transform for $name', ({ edits }) => {
+    const normalized = normalizedToEdits(normalizeTransformEdits(edits));
+
+    expect(compareEditAffines(normalized, edits)).toBe(true);
   });
 });

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectKysely } from 'nestjs-kysely';
 import type { InsertQueryBuilder, Insertable, Kysely, QueryCreator, Selectable, Updateable } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database.js';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -187,7 +187,7 @@ export class TagRepository {
     await this.db.deleteFrom('tag_asset').where('tagId', '=', tagId).where('assetId', 'in', assetIds).execute();
   }
 
-  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagIds: DummyValue.UUID }]] })
+  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagId: DummyValue.UUID }]] })
   @Chunked()
   upsertAssetIds(items: Insertable<TagAssetTable>[]) {
     if (items.length === 0) {

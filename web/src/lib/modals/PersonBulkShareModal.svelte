@@ -12,10 +12,10 @@
     Field,
     FormModal,
     LoadingSpinner,
-    modalManager,
     Select,
     Switch,
     Text,
+    modalManager,
     type ActionItem,
   } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiPencilOutline } from '@mdi/js';

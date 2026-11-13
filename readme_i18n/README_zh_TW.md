@@ -9,7 +9,9 @@
 </p>
 
 <p align="center">
-<img src="../design/immich-logo-stacked-light.svg" width="300" title="以自訂 URL 登入">
+  <a href="#">
+    <img src="../design/immich-logo-stacked-light.svg" width="300" alt="Immich Logo">
+  </a>
 </p>
 <h3 align="center">高效能的自架照片和影片管理解決方案</h3>
 <br/>

@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { parse } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { AuthDto, isEditedOnly } from 'src/dtos/auth.dto.js';
@@ -13,6 +12,7 @@ import { Permission } from 'src/enum.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
+import { getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
@@ -45,7 +45,7 @@ export class DownloadService extends BaseService {
 
     const addToArchive = ({ id, size }: { id: string; size: number | null }) => {
       archive.assetIds.push(id);
-      archive.size += Number(size || 0);
+      archive.size += size || 0;
 
       if (archive.size <= targetSize) {
         return;
@@ -104,20 +104,22 @@ export class DownloadService extends BaseService {
 
       const { originalPath, editedPath, originalFileName } = asset;
 
-      let filename = sanitize(originalFileName) || 'unnamed';
+      const name = getFileNameWithoutExtension(sanitize(originalFileName) || 'unnamed');
+      const extension = getFilenameExtension(editedPath || originalPath);
+      let filename = name + extension;
+
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
-        const parsedFilename = parse(filename);
-        filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
+        filename = `${name}+${count}${extension}`;
       }
 
-      let realpath = edited && editedPath ? editedPath : originalPath;
+      let realpath = editedPath || originalPath;
 
       try {
         realpath = await this.storageRepository.realpath(realpath);
       } catch {
-        this.logger.warn('Unable to resolve realpath', { originalPath });
+        this.logger.warn('Unable to resolve realpath', { realpath });
       }
 
       zip.addFile(realpath, filename);

@@ -1,8 +1,8 @@
 import { Route } from '#lib/route.ts';
+import { factory } from '#test/common/factories.ts';
+import { adjacentAsset, adjacentYearMonths, yearMonthOf, yearMonthsOf } from '#test/common/timeline.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
-import { factory } from '#test/medium/mock/factories.ts';
-import { adjacentAsset, adjacentYearMonths, yearMonthOf, yearMonthsOf } from '#test/medium/mock/timeline.ts';
-import { AssetVisibility } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility } from '@immich/sdk';
 
 test.describe('timeline', () => {
   test.describe('/photos', () => {
@@ -119,6 +119,17 @@ test.describe('timeline', () => {
       }
     });
 
+    test('tab skips the checkbox of a selected thumbnail', async ({ page, data, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+
+      await app.timeline.select(assets[1]);
+      await page.keyboard.press('Tab');
+      await expect(app.timeline.thumbnail(assets[2])).toBeFocused();
+      await page.keyboard.press('Shift+Tab');
+      await expect(app.timeline.thumbnail(assets[1])).toBeFocused();
+    });
+
     test('navigate to date with g', async ({ page, data, app }) => {
       data.addTimeline({ years: 3 });
       await page.goto(Route.photos());
@@ -159,6 +170,152 @@ test.describe('timeline', () => {
       await expect(app.timeline.selected).toHaveCount(0);
     });
 
+    test('add to album shows the selection count title', async ({ page, data, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+
+      await app.timeline.select(assets[0]);
+      await app.timeline.selectionBar.addToAlbumButton.click();
+      await expect(app.timeline.albumPicker.title).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(app.timeline.albumPicker.title).toHaveCount(0);
+
+      await app.timeline.thumbnail(assets[1]).click();
+      await expect(app.timeline.selected).toHaveCount(2);
+      await app.timeline.selectionBar.addToAlbumButton.click();
+      await expect(app.timeline.albumPicker.title).toBeVisible();
+      await expect(app.timeline.albumPicker.selectAlbumsTitle).toHaveCount(0);
+    });
+
+    test('change date sends the chosen date in the chosen time zone', async ({ page, data, api, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+
+      await app.timeline.select(assets[0]);
+      await app.timeline.selectionBar.changeDate();
+      await app.timeline.changeDate.dateInput.fill('2024-07-01T00:00');
+      await app.timeline.changeDate.timezoneInput.fill('Europe/Berlin');
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Enter');
+      await app.timeline.changeDate.confirmButton.click();
+
+      await expect(app.timeline.selected).toHaveCount(0);
+      expect(api.updateAssets).toHaveBeenCalledWith({
+        body: { ids: [assets[0].id], dateTimeOriginal: '2024-07-01T00:00:00.000+02:00' },
+      });
+    });
+
+    test('change date by offset sends the offset in minutes', async ({ page, data, api, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+
+      await app.timeline.select(assets[0]);
+      await app.timeline.thumbnail(assets[1]).click();
+      await app.timeline.selectionBar.changeDate();
+      await app.timeline.changeDate.offsetSwitch.click();
+      await app.timeline.changeDate.daysInput.fill('5');
+      await app.timeline.changeDate.hoursInput.fill('4');
+      await app.timeline.changeDate.minutesInput.fill('3');
+      await app.timeline.changeDate.confirmButton.click();
+
+      await expect(app.timeline.selected).toHaveCount(0);
+      expect(api.updateAssets).toHaveBeenCalledWith({
+        body: expect.objectContaining({
+          ids: [assets[0].id, assets[1].id],
+          dateTimeRelative: 5 * 24 * 60 + 4 * 60 + 3,
+        }),
+      });
+    });
+
+    test('links a live photo', async ({ page, data, api, app }) => {
+      const photo = factory.asset({ fileCreatedAt: '2025-06-01T12:00:00.000Z' });
+      const video = factory.asset({ type: AssetTypeEnum.Video, fileCreatedAt: '2025-06-01T12:00:01.000Z' });
+      data.addAssets([photo, video]);
+      await page.goto(Route.photos());
+
+      await app.timeline.select(photo);
+      await app.timeline.thumbnail(video).click();
+      await app.timeline.selectionBar.linkLivePhoto();
+
+      await expect(app.timeline.thumbnail(video)).toHaveCount(0);
+      await expect(app.timeline.thumbnail(photo)).toBeVisible();
+      expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: photo.id }, body: { livePhotoVideoId: video.id } });
+    });
+
+    test('unlinks a live photo', async ({ page, data, api, app }) => {
+      const photo = factory.asset({ fileCreatedAt: '2025-06-01T12:00:00.000Z' });
+      const video = factory.asset({ type: AssetTypeEnum.Video, fileCreatedAt: '2025-06-01T12:00:01.000Z' });
+      data.addAssets([photo, video]);
+      data.updateAsset(photo.id, { livePhotoVideoId: video.id });
+      await page.goto(Route.photos());
+      await expect(app.timeline.thumbnail(video)).toHaveCount(0);
+
+      await app.timeline.select(photo);
+      await app.timeline.selectionBar.unlinkLivePhoto();
+
+      await expect(app.timeline.thumbnail(video)).toBeVisible();
+      expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: photo.id }, body: { livePhotoVideoId: null } });
+    });
+
+    test('moves assets to the locked folder', async ({ page, data, api, app }) => {
+      const [asset, next] = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+
+      await app.timeline.select(asset);
+      await app.timeline.selectionBar.moveToLockedFolder();
+
+      await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
+      await expect(app.timeline.thumbnail(next)).toBeVisible();
+      expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], visibility: AssetVisibility.Locked } });
+    });
+
+    test('changes the location of assets', async ({ page, data, api, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+
+      await app.timeline.select(assets[0]);
+      await app.timeline.thumbnail(assets[1]).click();
+      await app.timeline.selectionBar.changeLocation();
+      await app.timeline.changeLocation.latitudeInput.fill('48.8566');
+      await app.timeline.changeLocation.longitudeInput.fill('2.3522');
+      await app.timeline.changeLocation.confirmButton.click();
+
+      await expect(app.timeline.selected).toHaveCount(0);
+      expect(api.updateAssets).toHaveBeenCalledWith({
+        body: { ids: [assets[0].id, assets[1].id], latitude: 48.8566, longitude: 2.3522 },
+      });
+    });
+
+    test('changes the description of assets', async ({ page, data, api, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+
+      await app.timeline.select(assets[0]);
+      await app.timeline.thumbnail(assets[1]).click();
+      await app.timeline.selectionBar.changeDescription();
+      await app.timeline.changeDescription.input.fill('Summer trip');
+      await app.timeline.changeDescription.saveButton.click();
+
+      await expect(app.timeline.selected).toHaveCount(0);
+      expect(api.updateAssets).toHaveBeenCalledWith({
+        body: { ids: [assets[0].id, assets[1].id], description: 'Summer trip' },
+      });
+    });
+
+    test('downloads a single selected asset', async ({ page, data, api, app }) => {
+      const asset = factory.asset({ originalFileName: 'holiday.jpg' });
+      data.addAssets(asset);
+      await page.goto(Route.photos());
+
+      await app.timeline.select(asset);
+      const [download] = await Promise.all([page.waitForEvent('download'), app.timeline.selectionBar.download()]);
+
+      expect(download.suggestedFilename()).toBe('holiday.jpg');
+      await expect(app.timeline.selected).toHaveCount(0);
+      expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: asset.id } });
+      expect(api.downloadAsset).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id }) });
+    });
+
     test('shift-click selects ranges', async ({ page, data, app }) => {
       const assets = data.addTimeline({ years: 1 });
       await page.goto(Route.photos());
@@ -166,9 +323,7 @@ test.describe('timeline', () => {
       await app.timeline.select(assets[0]);
       await page.keyboard.down('Shift');
       await app.timeline.thumbnail(assets[2]).hover();
-      await expect(
-        app.timeline.thumbnails.locator('.absolute.top-0.size-full.bg-immich-primary.opacity-40'),
-      ).toHaveCount(3);
+      await expect(app.timeline.selectionCandidates).toHaveCount(3);
       await app.timeline.select(assets[2]);
       await page.keyboard.up('Shift');
       await expect(app.timeline.selected).toHaveCount(3);
@@ -252,7 +407,8 @@ test.describe('timeline', () => {
       data.addTimeline({ years: 2 });
       const members = data.sampleAssets(20);
       const last = members.at(-1)!;
-      const album = data.addAlbum(factory.album(), members);
+      const album = factory.album();
+      data.addAlbums(album).addToAlbum(album.id, members);
 
       await page.goto(Route.viewAlbum({ id: album.id }));
       await expect(app.timeline.thumbnail(members[0])).toBeInViewport();
@@ -265,7 +421,8 @@ test.describe('timeline', () => {
     test('add photos pre-selects existing album assets', async ({ page, data, app }) => {
       data.addTimeline({ years: 2 });
       const [asset] = data.sampleAssets(20);
-      const album = data.addAlbum(factory.album(), data.sampleAssets(20));
+      const album = factory.album();
+      data.addAlbums(album).addToAlbum(album.id, data.sampleAssets(20));
       await page.goto(Route.viewAlbum({ id: album.id }));
 
       await app.timeline.addPhotosButton.click();
@@ -276,14 +433,29 @@ test.describe('timeline', () => {
     });
   });
 
+  test.describe('thumbnail', () => {
+    test('broken image shows the thumbhash and the error message', async ({ page, data, logger, app }) => {
+      const [asset] = data.addTimeline({ years: 1 });
+      data.markBroken(asset);
+      await page.goto(Route.photos());
+
+      await expect(app.timeline.brokenImage(asset)).toBeVisible();
+      await expect(app.timeline.thumbhash(asset)).toBeVisible();
+      expect(logger.error).toHaveBeenCalledWith(/404/);
+    });
+  });
+
   test.describe('/trash', () => {
     test('trash from /photos, restore from /trash', async ({ page, data, api, app }) => {
-      const [asset] = data.addTimeline({ years: 1 });
+      const [asset, next] = data.addTimeline({ years: 1 });
       await page.goto(Route.photos());
+      const position = await app.timeline.position(asset);
+      expect(await app.timeline.position(next)).not.toEqual(position);
 
       await app.timeline.select(asset);
       await app.timeline.selectionBar.trash();
       await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
+      await expect.poll(() => app.timeline.position(next)).toEqual(position);
       expect(api.deleteAssets).toHaveBeenCalledWith({ body: { force: false, ids: [asset.id] } });
 
       await app.sidebar.trashLink.click();
@@ -300,7 +472,8 @@ test.describe('timeline', () => {
     test('trash from album, restore from /trash', async ({ page, data, api, app }) => {
       data.addTimeline({ years: 2 });
       const [asset] = data.sampleAssets(20);
-      const album = data.addAlbum(factory.album(), data.sampleAssets(20));
+      const album = factory.album();
+      data.addAlbums(album).addToAlbum(album.id, data.sampleAssets(20));
       await page.goto(Route.viewAlbum({ id: album.id }));
 
       await app.timeline.select(asset);
@@ -346,6 +519,22 @@ test.describe('timeline', () => {
       await expect(app.timeline.thumbnail(asset)).toBeInViewport();
     });
 
+    test('undoes an archive from the toast', async ({ page, data, api, app }) => {
+      const [asset] = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+
+      await app.timeline.select(asset);
+      await app.timeline.selectionBar.archive();
+      await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
+      await app.undoButton.click();
+
+      await expect(app.timeline.thumbnail(asset)).toBeVisible();
+      expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], visibility: AssetVisibility.Archive } });
+      expect(api.updateAssets).toHaveBeenCalledWith({
+        body: { ids: [asset.id], visibility: AssetVisibility.Timeline },
+      });
+    });
+
     test('favorite and unfavorite from /archive', async ({ page, data, api, app }) => {
       const [asset] = data.addTimeline({ years: 1 });
       data.updateAssets({ ids: [asset.id], visibility: AssetVisibility.Archive });
@@ -366,7 +555,8 @@ test.describe('timeline', () => {
     test('archive from album, unarchive from /archive', async ({ page, data, api, app }) => {
       data.addTimeline({ years: 2 });
       const [asset] = data.sampleAssets(20);
-      const album = data.addAlbum(factory.album(), data.sampleAssets(20));
+      const album = factory.album();
+      data.addAlbums(album).addToAlbum(album.id, data.sampleAssets(20));
       await page.goto(Route.viewAlbum({ id: album.id }));
 
       await app.timeline.select(asset);
@@ -415,7 +605,8 @@ test.describe('timeline', () => {
     test('favorite from album, unfavorite from /favorites', async ({ page, data, api, app }) => {
       data.addTimeline({ years: 2 });
       const [asset] = data.sampleAssets(20);
-      const album = data.addAlbum(factory.album(), data.sampleAssets(20));
+      const album = factory.album();
+      data.addAlbums(album).addToAlbum(album.id, data.sampleAssets(20));
       await page.goto(Route.viewAlbum({ id: album.id }));
 
       await app.timeline.select(asset);

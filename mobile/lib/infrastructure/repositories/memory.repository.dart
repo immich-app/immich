@@ -38,7 +38,12 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
       query.where(_db.memoryEntity.hideAt.isNull() | _db.memoryEntity.hideAt.isBiggerOrEqualValue(localUtc));
     }
 
-    query.orderBy([OrderingTerm.desc(_db.memoryEntity.memoryAt), OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
+    query.orderBy([
+      OrderingTerm.asc(_db.memoryEntity.showAt.isNull()),
+      OrderingTerm.desc(_db.memoryEntity.showAt),
+      OrderingTerm.desc(_db.memoryEntity.memoryAt),
+      OrderingTerm.asc(_db.remoteAssetEntity.createdAt),
+    ]);
 
     final rows = await query.get();
     if (rows.isEmpty) {
@@ -92,6 +97,10 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
 
   Future<int> getCount() {
     return _db.managers.memoryEntity.count();
+  }
+
+  Stream<void> watchChanges() {
+    return _db.tableUpdates(TableUpdateQuery.onAllTables([_db.memoryEntity, _db.memoryAssetEntity]));
   }
 }
 
