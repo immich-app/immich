@@ -16216,16 +16216,16 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2",
-            "state": "Added"
+            "state": "Added",
+            "version": "v2"
           },
           {
-            "version": "v2",
-            "state": "Beta"
+            "state": "Beta",
+            "version": "v2"
           },
           {
-            "version": "v2",
-            "state": "Stable"
+            "state": "Stable",
+            "version": "v2"
           }
         ],
         "x-immich-permission": "tag.asset",
@@ -16274,16 +16274,16 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2",
-            "state": "Added"
+            "state": "Added",
+            "version": "v2"
           },
           {
-            "version": "v2",
-            "state": "Beta"
+            "state": "Beta",
+            "version": "v2"
           },
           {
-            "version": "v2",
-            "state": "Stable"
+            "state": "Stable",
+            "version": "v2"
           }
         ],
         "x-immich-permission": "tag.asset",
@@ -16395,16 +16395,16 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2",
-            "state": "Added"
+            "state": "Added",
+            "version": "v2"
           },
           {
-            "version": "v2",
-            "state": "Beta"
+            "state": "Beta",
+            "version": "v2"
           },
           {
-            "version": "v2",
-            "state": "Stable"
+            "state": "Stable",
+            "version": "v2"
           }
         ],
         "x-immich-permission": "tag.read",
