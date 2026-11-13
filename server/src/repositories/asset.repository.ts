@@ -780,12 +780,28 @@ export class AssetRepository {
               .where('album_asset.albumId', '=', asUuid(options.albumId!)),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.withStacked, (qb) =>
+          .$if(!!options.withStacked && !options.albumId, (qb) =>
             qb
               .leftJoin('stack', (join) =>
                 join.onRef('stack.id', '=', 'asset.stackId').onRef('stack.primaryAssetId', '=', 'asset.id'),
               )
               .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
+          )
+          .$if(!!options.withStacked && !!options.albumId, (qb) =>
+            qb.where((eb) =>
+              eb.not(
+                eb.exists(
+                  eb
+                    .selectFrom('stack')
+                    .innerJoin('asset as primary_asset', 'primary_asset.id', 'stack.primaryAssetId')
+                    .innerJoin('album_asset as primary_album_asset', 'primary_album_asset.assetId', 'primary_asset.id')
+                    .where('primary_album_asset.albumId', '=', asUuid(options.albumId!))
+                    .where('primary_asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+                    .whereRef('stack.id', '=', 'asset.stackId')
+                    .whereRef('stack.primaryAssetId', '!=', 'asset.id'),
+                ),
+              ),
+            ),
           )
           .$if(!!options.userIds, (qb) =>
             qb.where((eb) => {
@@ -895,14 +911,31 @@ export class AssetRepository {
           .$if(!!options.withStacked, (qb) =>
             qb
               .where((eb) =>
-                eb.not(
-                  eb.exists(
-                    eb
-                      .selectFrom('stack')
-                      .whereRef('stack.id', '=', 'asset.stackId')
-                      .whereRef('stack.primaryAssetId', '!=', 'asset.id'),
-                  ),
-                ),
+                options.albumId
+                  ? eb.not(
+                      eb.exists(
+                        eb
+                          .selectFrom('stack')
+                          .innerJoin('asset as primary_asset', 'primary_asset.id', 'stack.primaryAssetId')
+                          .innerJoin(
+                            'album_asset as primary_album_asset',
+                            'primary_album_asset.assetId',
+                            'primary_asset.id',
+                          )
+                          .where('primary_album_asset.albumId', '=', asUuid(options.albumId!))
+                          .where('primary_asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+                          .whereRef('stack.id', '=', 'asset.stackId')
+                          .whereRef('stack.primaryAssetId', '!=', 'asset.id'),
+                      ),
+                    )
+                  : eb.not(
+                      eb.exists(
+                        eb
+                          .selectFrom('stack')
+                          .whereRef('stack.id', '=', 'asset.stackId')
+                          .whereRef('stack.primaryAssetId', '!=', 'asset.id'),
+                      ),
+                    ),
               )
               .leftJoinLateral(
                 (eb) =>

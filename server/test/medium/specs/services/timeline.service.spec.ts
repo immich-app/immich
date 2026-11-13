@@ -286,4 +286,62 @@ describe(TimelineService.name, () => {
     const response = JSON.parse(rawResponse);
     expect(response).not.toEqual(expect.objectContaining({ city: expect.any(Array), country: expect.any(Array) }));
   });
+
+  describe('album stacks', () => {
+    it('keeps a stack member visible when its primary is not in the album', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user: { id: user.id } });
+      const { album } = await ctx.newAlbum({ ownerId: user.id });
+
+      const makeAsset = async (originalFileName: string, localDateTime: string, deletedAt?: Date) => {
+        const { asset } = await ctx.newAsset({
+          ownerId: user.id,
+          originalFileName,
+          localDateTime: new Date(localDateTime),
+          deletedAt,
+        });
+        await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+        return asset;
+      };
+
+      const jpgInAlbum = await makeAsset('paired.jpg', '1970-02-10T00:00:00.000Z');
+      const rawInAlbum = await makeAsset('paired.cr3', '1970-02-11T00:00:00.000Z');
+      const jpgOutside = await makeAsset('outside.jpg', '1970-02-12T00:00:00.000Z');
+      const rawAlone = await makeAsset('alone.cr3', '1970-02-13T00:00:00.000Z');
+      const loose = await makeAsset('loose.jpg', '1970-02-14T00:00:00.000Z');
+      const trashedPrimary = await makeAsset('trashed.jpg', '1970-02-15T00:00:00.000Z', new Date());
+      const rawWithTrashedPrimary = await makeAsset('trashed.cr3', '1970-02-16T00:00:00.000Z');
+
+      await ctx.newStack({ ownerId: user.id }, [jpgInAlbum.id, rawInAlbum.id]);
+      await ctx.newStack({ ownerId: user.id }, [jpgOutside.id, rawAlone.id]);
+      await ctx.newStack({ ownerId: user.id }, [trashedPrimary.id, rawWithTrashedPrimary.id]);
+
+      for (const assetId of [
+        jpgInAlbum.id,
+        rawInAlbum.id,
+        rawAlone.id,
+        loose.id,
+        trashedPrimary.id,
+        rawWithTrashedPrimary.id,
+      ]) {
+        await ctx.newAlbumAsset({ albumId: album.id, assetId });
+      }
+
+      const albumBucket = JSON.parse(
+        await sut.getTimeBucket(auth, { albumId: album.id, timeBucket: '1970-02-01', withStacked: true }),
+      );
+      expect(albumBucket.id).toEqual([rawWithTrashedPrimary.id, loose.id, rawAlone.id, jpgInAlbum.id]);
+
+      await expect(sut.getTimeBuckets(auth, { albumId: album.id, withStacked: true })).resolves.toEqual([
+        { count: 4, timeBucket: '1970-02-01' },
+      ]);
+
+      const expandedAlbum = JSON.parse(await sut.getTimeBucket(auth, { albumId: album.id, timeBucket: '1970-02-01' }));
+      expect(expandedAlbum.id).toEqual([rawWithTrashedPrimary.id, loose.id, rawAlone.id, rawInAlbum.id, jpgInAlbum.id]);
+
+      const timelineBucket = JSON.parse(await sut.getTimeBucket(auth, { timeBucket: '1970-02-01', withStacked: true }));
+      expect(timelineBucket.id).toEqual([loose.id, jpgOutside.id, jpgInAlbum.id]);
+    });
+  });
 });
