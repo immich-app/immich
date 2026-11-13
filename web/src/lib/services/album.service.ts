@@ -14,6 +14,7 @@ import {
 } from '#lib/queries/album.query.ts';
 import { executeMutation } from '#lib/queries/client.ts';
 import { Route } from '#lib/route.ts';
+import { expandStackAssetIds } from '#lib/services/asset.service.ts';
 import { createAlbumAndRedirect } from '#lib/utils/album-utils.ts';
 import { downloadArchive } from '#lib/utils/asset-utils.ts';
 import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
@@ -136,8 +137,10 @@ export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponse
     color: 'primary',
     icon: mdiPlusBoxOutline,
     $if: () => assets.length > 0,
-    onAction: () =>
-      executeMutation(addAssetsToAlbumsMutation, { albumIds: [album.id], assetIds: assets.map(({ id }) => id) }),
+    onAction: async () => {
+      const assetIds = await expandStackAssetIds(assets);
+      return executeMutation(addAssetsToAlbumsMutation, { albumIds: [album.id], assetIds });
+    },
   };
 
   const Upload: ActionItem = {

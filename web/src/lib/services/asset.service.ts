@@ -23,6 +23,7 @@ import {
   AssetTypeEnum,
   AssetVisibility,
   getAssetInfo,
+  getStack,
   runAssetJobs,
   updateAsset,
   updateAssets,
@@ -65,6 +66,21 @@ import { t, type MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 
+export const expandStackAssetIds = async (assets: TimelineAsset[]): Promise<string[]> => {
+  const results: string[] = [];
+  for (const asset of assets) {
+    if (asset.stack) {
+      const stack = await getStack({ id: asset.stack.id });
+      for (const member of stack.assets) {
+        results.push(member.id);
+      }
+    } else {
+      results.push(asset.id);
+    }
+  }
+  return results;
+};
+
 export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
   const assetIds = assetMultiSelectManager.assets.map((asset) => asset.id);
   const ownedAssets = assetMultiSelectManager.ownedAssets;
@@ -79,7 +95,10 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds }),
+    onAction: async () => {
+      const assetIds = await expandStackAssetIds(assetMultiSelectManager.assets);
+      return modalManager.show(AssetAddToAlbumModal, { assetIds });
+    },
   };
 
   const Archive: ActionItem = {
@@ -106,7 +125,10 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     icon: mdiImageRemoveOutline,
     shortcuts: [{ key: 'l', shift: true }],
     $if: () => !!album && (isAlbumOwner || assetMultiSelectManager.isAllUserOwned),
-    onAction: () => handleBulkRemoveAssetsFromAlbum(assetIds, album!),
+    onAction: async () => {
+      const assetIds = await expandStackAssetIds(assetMultiSelectManager.assets);
+      return handleBulkRemoveAssetsFromAlbum(assetIds, album!);
+    },
   };
 
   const Tag: ActionItem = {
@@ -264,7 +286,16 @@ export const getAssetActions = (
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
     $if: () => asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
-    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds: [asset.id] }),
+    onAction: async () => {
+      let assetIds: string[];
+      if (asset.stack) {
+        const stack = await getStack({ id: asset.stack.id });
+        assetIds = stack.assets.map((a) => a.id);
+      } else {
+        assetIds = [asset.id];
+      }
+      return modalManager.show(AssetAddToAlbumModal, { assetIds });
+    },
   };
 
   const RemoveFromAlbum: ActionItem = {
