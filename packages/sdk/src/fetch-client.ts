@@ -441,6 +441,38 @@ export type AdminConfigDto = {
     trash: AdminConfigTrashDto;
     user: AdminConfigUserDto;
 };
+export type StorageTemplatePresetDto = {
+    /** Example path rendered from the preset */
+    preview: string;
+    /** Preset storage template */
+    template: string;
+};
+export type StorageTemplateOptionsResponseDto = {
+    /** Available day format options for storage template */
+    dayOptions: string[];
+    /** Available hour format options for storage template */
+    hourOptions: string[];
+    /** Available minute format options for storage template */
+    minuteOptions: string[];
+    /** Available month format options for storage template */
+    monthOptions: string[];
+    /** Preset storage templates with an example path */
+    presets: StorageTemplatePresetDto[];
+    /** Available second format options for storage template */
+    secondOptions: string[];
+    /** Available week format options for storage template */
+    weekOptions: string[];
+    /** Available year format options for storage template */
+    yearOptions: string[];
+};
+export type StorageTemplatePreviewDto = {
+    /** Storage template */
+    template: string;
+};
+export type StorageTemplatePreviewResponseDto = {
+    /** Example path rendered from the template */
+    preview: string;
+};
 export type DatabaseBackupDeleteDto = {
     /** Backup filenames to delete */
     backups: string[];
@@ -4059,6 +4091,32 @@ export function getAdminConfigDefaults(opts?: Oazapfts.RequestOpts) {
     }>("/admin/config/defaults", {
         ...opts
     }));
+}
+/**
+ * Get storage template options
+ */
+export function getAdminStorageTemplateOptions(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTemplateOptionsResponseDto;
+    }>("/admin/config/storage-template", {
+        ...opts
+    }));
+}
+/**
+ * Preview a storage template
+ */
+export function previewStorageTemplate({ storageTemplatePreviewDto }: {
+    storageTemplatePreviewDto: StorageTemplatePreviewDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTemplatePreviewResponseDto;
+    }>("/admin/config/storage-template/preview", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: storageTemplatePreviewDto
+    })));
 }
 /**
  * Delete database backup

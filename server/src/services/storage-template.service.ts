@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
-import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto.js';
+import {
+  ConfigTemplateStorageOptionDto,
+  StorageTemplateOptionsResponseDto,
+  StorageTemplatePreviewDto,
+  StorageTemplatePreviewResponseDto,
+} from 'src/dtos/config.dto.js';
 import {
   AssetFileType,
   AssetPathType,
@@ -73,6 +78,23 @@ interface RenderMetadata {
   lensModel: string | null;
 }
 
+const exampleMetadata: RenderMetadata = {
+  asset: {
+    fileCreatedAt: new Date('2022-02-03T04:56:05.250'),
+    originalPath: '/upload/test/IMAGE_56437.jpg',
+    type: AssetType.Image,
+    id: 'a8312960-e277-447d-b4ea-56717ccba856',
+  } as StorageAsset,
+  filename: 'IMAGE_56437',
+  extension: 'jpg',
+  albumName: 'Album Name',
+  albumStartDate: new Date('2021-12-31T05:32:41.750'),
+  albumEndDate: new Date('2023-05-06T09:15:17.100'),
+  make: 'FUJIFILM',
+  model: 'X-T50',
+  lensModel: 'XF27mm F2.8 R WR',
+};
+
 @Injectable()
 export class StorageTemplateService extends BaseService {
   private _template: {
@@ -108,23 +130,7 @@ export class StorageTemplateService extends BaseService {
   @OnEvent({ name: 'ConfigValidate' })
   onConfigValidate({ newConfig }: ArgOf<'ConfigValidate'>) {
     try {
-      const { compiled } = this.compile(newConfig.storageTemplate.template);
-      this.render(compiled, {
-        asset: {
-          fileCreatedAt: new Date(),
-          originalPath: '/upload/test/IMG_123.jpg',
-          type: AssetType.Image,
-          id: 'd587e44b-f8c0-4832-9ba3-43268bbf5d4e',
-        } as StorageAsset,
-        filename: 'IMG_123',
-        extension: 'jpg',
-        albumName: 'album',
-        albumStartDate: new Date(),
-        albumEndDate: new Date(),
-        make: 'FUJIFILM',
-        model: 'X-T50',
-        lensModel: 'XF27mm F2.8 R WR',
-      });
+      this.renderExample(newConfig.storageTemplate.template);
     } catch (error) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
       throw new Error('Invalid storage template', { cause: error });
@@ -133,6 +139,21 @@ export class StorageTemplateService extends BaseService {
 
   getStorageTemplateOptions(): ConfigTemplateStorageOptionDto {
     return { ...storageTokens, presetOptions: storagePresets };
+  }
+
+  getAdminStorageTemplateOptions(): StorageTemplateOptionsResponseDto {
+    return {
+      ...storageTokens,
+      presets: storagePresets.map((template) => ({ template, preview: this.renderExample(template) })),
+    };
+  }
+
+  previewStorageTemplate({ template }: StorageTemplatePreviewDto): StorageTemplatePreviewResponseDto {
+    try {
+      return { preview: this.renderExample(template) };
+    } catch {
+      throw new BadRequestException('Invalid storage template');
+    }
   }
 
   @OnEvent({ name: 'AssetMetadataExtracted' })
@@ -398,6 +419,10 @@ export class StorageTemplateService extends BaseService {
       this.logger.error(`Unable to get template path for ${filename}: ${error}`);
       return asset.originalPath;
     }
+  }
+
+  private renderExample(template: string) {
+    return this.render(this.compile(template).compiled, exampleMetadata);
   }
 
   private compile(template: string) {

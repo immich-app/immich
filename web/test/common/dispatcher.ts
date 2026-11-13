@@ -11,6 +11,7 @@ const readOperations = new Set<OperationId>([
   'getDownloadInfo',
   'downloadArchive',
   'checkBulkUpload',
+  'previewStorageTemplate',
 ]);
 
 export type Response = {

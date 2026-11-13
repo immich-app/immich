@@ -4,6 +4,7 @@ import { ConfigAdminController } from 'src/controllers/config-admin.controller.j
 import { ConfigPublicController } from 'src/controllers/config-public.controller.js';
 import { ConfigUserController } from 'src/controllers/config-user.controller.js';
 import { defaults, mapPublicConfig, mapUserConfig } from 'src/dtos/config.dto.js';
+import { StorageTemplateService } from 'src/services/storage-template.service.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
 import { errorDto } from 'test/medium/responses.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
@@ -25,17 +26,22 @@ function validConfig() {
 describe('config controllers', () => {
   let ctx: ControllerContext;
   const service = mockBaseService(SystemConfigService);
+  const storageTemplateService = mockBaseService(StorageTemplateService);
 
   beforeAll(async () => {
     ctx = await controllerSetup(
       [ConfigAdminController, ConfigUserController, ConfigPublicController],
-      [{ provide: SystemConfigService, useValue: service }],
+      [
+        { provide: SystemConfigService, useValue: service },
+        { provide: StorageTemplateService, useValue: storageTemplateService },
+      ],
     );
     return () => ctx.close();
   });
 
   beforeEach(() => {
     service.resetAllMocks();
+    storageTemplateService.resetAllMocks();
     ctx.reset();
   });
 
@@ -76,6 +82,33 @@ describe('config controllers', () => {
         ]),
       );
       expect(service.updateAdminConfig).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /admin/config/storage-template/preview', () => {
+    it('should return the preview', async () => {
+      storageTemplateService.previewStorageTemplate.mockReturnValue({ preview: '2022/IMAGE_56437' });
+
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/admin/config/storage-template/preview')
+        .send({ template: '{{y}}/{{filename}}' });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ preview: '2022/IMAGE_56437' });
+    });
+
+    it('should require a template', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/admin/config/storage-template/preview')
+        .send({});
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['template'], message: 'Invalid input: expected string, received undefined' },
+        ]),
+      );
+      expect(storageTemplateService.previewStorageTemplate).not.toHaveBeenCalled();
     });
   });
 
