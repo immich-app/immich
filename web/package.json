@@ -111,6 +111,7 @@
     "eslint-plugin-svelte": "^3.23.1",
     "eslint-plugin-unicorn": "^79.0.0",
     "globals": "^17.0.0",
+    "helmet": "^8.1.0",
     "parse5": "^8.0.1",
     "playwright": "1.64.1",
     "prettier": "^3.7.4",
