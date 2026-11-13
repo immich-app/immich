@@ -21,7 +21,9 @@ test.describe('detail panel tags', () => {
 
     await expect(app.viewer.tag('Travel')).toBeVisible();
     expect(api.upsertTags).not.toHaveBeenCalled();
-    expect(api.bulkTagAssets).toHaveBeenCalledWith({ body: { assetIds: [asset.id], tagIds: [travel.id] } });
+    expect(api.bulkTagUntagAssets).toHaveBeenCalledWith({
+      body: { assetIds: [asset.id], tagIdsToAdd: [travel.id], tagIdsToRemove: [] },
+    });
   });
 
   test('tagging with a new tag creates it and shows it in the panel', async ({ page, data, api, app }) => {
@@ -38,7 +40,9 @@ test.describe('detail panel tags', () => {
     await expect(app.viewer.tag('Japan')).toBeVisible();
     expect(api.upsertTags).toHaveBeenCalledWith({ body: { tags: ['Japan'] } });
     const [japan] = data.tagList();
-    expect(api.bulkTagAssets).toHaveBeenCalledWith({ body: { assetIds: [asset.id], tagIds: [japan.id] } });
+    expect(api.bulkTagUntagAssets).toHaveBeenCalledWith({
+      body: { assetIds: [asset.id], tagIdsToAdd: [japan.id], tagIdsToRemove: [] },
+    });
   });
 
   test('removing a tag drops it from the panel', async ({ page, data, api, app }) => {
