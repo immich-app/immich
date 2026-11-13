@@ -40,7 +40,7 @@ export class MaintenanceAuthGuard implements CanActivate {
       return true;
     }
 
-    request.auth = await this.service.authenticate(request.headers);
+    request.auth = await this.service.authenticate(request.headers, request.method);
 
     return true;
   }

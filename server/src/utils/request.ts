@@ -23,3 +23,24 @@ export const getUserAgentDetails = (headers: IncomingHttpHeaders) => {
     appVersion,
   };
 };
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+export const isCrossOriginRequest = (headers: IncomingHttpHeaders, method?: string): boolean => {
+  const isWebsocket = headers.upgrade?.toLowerCase() === 'websocket';
+  if (method && SAFE_METHODS.has(method) && !isWebsocket) {
+    return false;
+  }
+
+  const site = headers['sec-fetch-site'];
+  if (site) {
+    return site !== 'same-origin' && site !== 'none';
+  }
+
+  const { origin, host } = headers;
+  if (!origin) {
+    return false;
+  }
+
+  return !URL.canParse(origin) || new URL(origin).host !== host;
+};
