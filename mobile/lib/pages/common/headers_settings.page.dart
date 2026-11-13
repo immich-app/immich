@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/services/widget.service.dart';
 
 class SettingsHeader {
   String key = "";
@@ -95,6 +96,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     final apiService = ref.read(apiServiceProvider);
     await ref.read(settingsProvider).write(.networkCustomHeaders, headersMap);
     await apiService.updateHeaders();
+    await ref.read(widgetServiceProvider).updateCustomHeaders(headersMap);
   }
 }
 

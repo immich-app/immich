@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -139,8 +137,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _apiService.updateHeaders();
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-    final headerMap = _ref.read(appConfigProvider).network.customHeaders;
-    final customHeaders = headerMap.isEmpty ? null : jsonEncode(headerMap);
+    final customHeaders = _ref.read(appConfigProvider).network.customHeaders;
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
     // Get the deviceid from the store if it exists, otherwise generate a new one

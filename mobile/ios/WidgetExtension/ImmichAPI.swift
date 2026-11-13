@@ -241,9 +241,27 @@ class ImmichAPI {
       throw .invalidURL
     }
 
-    guard let imageSource = CGImageSourceCreateWithURL(fetchURL as CFURL, nil)
+    var request = URLRequest(url: fetchURL)
+    request.httpMethod = "GET"
+    applyCustomHeaders(for: &request)
+
+    let data: Data
+    let response: URLResponse
+    do {
+      (data, response) = try await URLSession.shared.data(for: request)
+    } catch {
+      throw .fetchFailed
+    }
+
+    guard let httpResponse = response as? HTTPURLResponse,
+      (200..<300).contains(httpResponse.statusCode)
     else {
-      throw .invalidURL
+      throw .fetchFailed
+    }
+
+    guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil)
+    else {
+      throw .invalidImage
     }
     var maxPixelSize = 512
     // Decoding to fill the widget, a panorama's long edge can exceed the memory limit.

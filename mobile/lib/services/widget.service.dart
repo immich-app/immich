@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/repositories/widget.repository.dart';
@@ -11,17 +13,24 @@ class WidgetService {
 
   const WidgetService(this._repository);
 
-  Future<void> writeCredentials(String serverURL, String sessionKey, String? customHeaders) async {
+  Future<void> writeCredentials(String serverURL, String sessionKey, Map<String, String> customHeaders) async {
     await _repository.setAppGroupId();
     await _repository.saveData(kWidgetServerEndpoint, serverURL);
     await _repository.saveData(kWidgetAuthToken, sessionKey);
-
-    if (customHeaders != null && customHeaders.isNotEmpty) {
-      await _repository.saveData(kWidgetCustomHeaders, customHeaders);
-    }
+    await _saveCustomHeaders(customHeaders);
 
     // wait 3 seconds to ensure the widget is updated, dont block
     Future.delayed(const Duration(seconds: 3), refreshWidgets);
+  }
+
+  Future<void> updateCustomHeaders(Map<String, String> customHeaders) async {
+    await _repository.setAppGroupId();
+    await _saveCustomHeaders(customHeaders);
+    await refreshWidgets();
+  }
+
+  Future<void> _saveCustomHeaders(Map<String, String> customHeaders) {
+    return _repository.saveData(kWidgetCustomHeaders, customHeaders.isEmpty ? "" : jsonEncode(customHeaders));
   }
 
   Future<void> clearCredentials() async {
