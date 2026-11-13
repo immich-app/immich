@@ -1,506 +1,258 @@
-import { getAnimateMock } from '#lib/__mocks__/animate.mock.ts';
-import { getIntersectionObserverMock } from '#lib/__mocks__/intersection-observer.mock.ts';
-import { getVisualViewportMock } from '#lib/__mocks__/visual-viewport.mock.ts';
-import { handleTagUntagAssets } from '#lib/services/asset.service.ts';
-import {
-  getAllTags,
-  queryTagsForAssets,
-  upsertTags,
-  type TagResponseDto,
-  type TagsForAssetsResponseDto,
-} from '@immich/sdk';
+import { factory } from '#test/unit/factories.ts';
+import { test } from '#test/unit/fixtures.ts';
+import type { Mock } from '#test/unit/mocks/mock.ts';
+import type { TagResponseDto, TagsForAssetsResponseDto } from '@immich/sdk';
 import { modalManager } from '@immich/ui';
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { tick } from 'svelte';
+import { expect, vi } from 'vitest';
+import { render } from 'vitest-browser-svelte';
+import { page, userEvent } from 'vitest/browser';
 import AssetTagModal from './AssetTagModal.svelte';
 
-vi.mock('@immich/sdk', () => {
-  return {
-    getAllTags: vi.fn(),
-    queryTagsForAssets: vi.fn(),
-    upsertTags: vi.fn(),
-  };
+const simpleTag = factory.tag({ id: 'tag-id', name: 'Tag', value: 'Tag' });
+const parentTag = factory.tag({ id: 'tag-id-parent', name: 'TagParent', value: 'TagParent' });
+const childTag = factory.tag({
+  id: 'tag-id-child',
+  name: 'TagChild',
+  value: 'TagParent/TagChild',
+  parentId: parentTag.id,
 });
-vi.mock('#lib/services/asset.service', () => {
-  return {
-    handleTagUntagAssets: vi.fn(),
-  };
-});
-const mockHandleTagUntagAssets = vi.mocked(handleTagUntagAssets);
-const mockGetAllTags = vi.mocked(getAllTags);
-const mockQueryTagsForAssets = vi.mocked(queryTagsForAssets);
-const mockUpsertTags = vi.mocked(upsertTags);
+const tags = [simpleTag, parentTag, childTag];
+const pills = () => page.getByTestId('tag-pill-label');
+const options = () => page.getByRole('option');
+const combobox = () => page.getByRole('combobox');
+const save = () => page.getByRole('button', { name: 'save tags' });
+const saveChanges = async () => {
+  (save().element() as HTMLElement).focus();
+  await tick();
+  await save().click();
+};
 
-describe('AssetTagModal component', () => {
+const setup = async (
+  api: Mock['api'],
+  settle: Mock['settle'],
+  assetIds = ['asset-id'],
+  assignments: TagsForAssetsResponseDto[] = [],
+  allTags: TagResponseDto[] = tags,
+) => {
+  api.on({ getAllTags: () => ({ json: allTags }), queryTagsForAssets: () => ({ json: assignments }) });
   const onClose = vi.fn();
+  await render(AssetTagModal, { assetIds, onClose });
+  await settle();
+  expect(api.queryTagsForAssets).toHaveBeenCalledWith({ body: { assetIds } });
+  await expect.element(combobox()).toBeEnabled();
+  return onClose;
+};
 
-  const getTagPills = () => screen.queryAllByTestId('tag-pill-label');
-  const getTagPillRemoveButtons = () => screen.queryAllByTestId('tag-pill-remove-button');
-  const getTagsCombobox = () => screen.getByRole('combobox');
-  const getTagComboboxOptions = () => screen.queryAllByRole('option');
+const openOptions = async () => {
+  await combobox().click();
+};
 
-  const simpleTag: TagResponseDto = {
-    id: 'tag-id',
-    value: 'Tag',
-    color: '#ff0000',
-    parentId: undefined,
-    name: 'Tag',
-    createdAt: '',
-    updatedAt: '',
-  };
+const expectOptions = (values: string[]) => {
+  expect(
+    options()
+      .elements()
+      .map((element) => element.textContent?.trim()),
+  ).toEqual(values);
+};
 
-  const parentTag: TagResponseDto = {
-    id: 'tag-id-parent',
-    value: 'TagParent',
-    color: '#ff0000',
-    parentId: undefined,
-    name: 'TagParent',
-    createdAt: '',
-    updatedAt: '',
-  };
+test('renders available tags and no pills when no tags are assigned', async ({ api, settle }) => {
+  await setup(api, settle);
+  expect(pills().elements()).toHaveLength(0);
+  await openOptions();
+  expectOptions(tags.map(({ value }) => value));
+});
 
-  const childTag: TagResponseDto = {
-    id: 'tag-id-child',
-    value: 'TagParent/TagChild',
-    color: '#ff0000',
-    parentId: 'tag-id-parent',
-    name: 'TagChild',
-    createdAt: '',
-    updatedAt: '',
-  };
-
-  const tagDtos = [simpleTag, parentTag, childTag] as TagResponseDto[];
-
-  beforeEach(() => {
-    vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
-    vi.stubGlobal('visualViewport', getVisualViewportMock());
-    vi.resetAllMocks();
-    mockHandleTagUntagAssets.mockResolvedValue(true);
-    Element.prototype.animate = getAnimateMock();
-  });
-
-  afterAll(async () => {
-    await waitFor(() => {
-      expect(document.body.style.pointerEvents).not.toBe('none');
-    });
-  });
-
-  test('renders combobox with available tags', async () => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
-
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id'],
-        onClose,
-      },
-    });
-
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    await fireEvent.focus(getTagsCombobox());
-    const options = getTagComboboxOptions();
-    expect(options.length).toBe(tagDtos.length);
-    expect(options[0].textContent).toContain(simpleTag.value);
-    expect(options[1].textContent).toContain(parentTag.value);
-    expect(options[2].textContent).toContain(childTag.value);
-  });
-
-  test('does not render tag pills if no existing tags present', async () => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
-
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id'],
-        onClose,
-      },
-    });
-
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    const tagPills = getTagPills();
-    expect(tagPills.length).toBe(0);
-  });
-
-  test('renders tag pills if existing tags are present', async () => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([
+test('renders existing tags and returns removed tags to the combobox', async ({ api, settle }) => {
+  await setup(
+    api,
+    settle,
+    ['asset-id'],
+    [
       { tagId: simpleTag.id, assetIds: ['asset-id'] },
       { tagId: parentTag.id, assetIds: ['asset-id'] },
-    ] as TagsForAssetsResponseDto[]);
+    ],
+  );
+  expect(
+    pills()
+      .elements()
+      .map((element) => element.textContent?.trim()),
+  ).toEqual([simpleTag.value, parentTag.value]);
+  await page.getByTestId('tag-pill-remove-button').first().click();
+  expect(
+    pills()
+      .elements()
+      .map((element) => element.textContent?.trim()),
+  ).toEqual([parentTag.value]);
+  await openOptions();
+  expectOptions([simpleTag.value, childTag.value]);
+});
 
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id'],
-        onClose,
-      },
-    });
+test('moves selected options into pills', async ({ api, settle }) => {
+  await setup(api, settle);
+  await openOptions();
+  await options().first().click();
+  await expect.element(pills().first()).toHaveTextContent(simpleTag.value);
+  await openOptions();
+  expectOptions([parentTag.value, childTag.value]);
+  await options().first().click();
+  expect(
+    pills()
+      .elements()
+      .map((element) => element.textContent?.trim()),
+  ).toEqual([simpleTag.value, parentTag.value]);
+  await openOptions();
+  expectOptions([childTag.value]);
+});
 
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    const tagPills = getTagPills();
-    expect(tagPills.length).toBe(2);
-    expect(tagPills[0].textContent).toContain(simpleTag.value);
-    expect(tagPills[1].textContent).toContain(parentTag.value);
-  });
-
-  test('removes available tags from combobox as they are selected and displays as pills', async () => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
-
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id'],
-        onClose,
-      },
-    });
-
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    // Select first option (simpleTag)
-    await fireEvent.focus(getTagsCombobox());
-    let options = getTagComboboxOptions();
-    await fireEvent.click(options[0]);
-
-    // Check simpleTag is added as pill
-    let tagPills = getTagPills();
-    expect(tagPills.length).toBe(1);
-    expect(tagPills[0].textContent).toContain(simpleTag.value);
-
-    // Check simpleTag is removed from options
-    await fireEvent.focus(getTagsCombobox());
-    options = getTagComboboxOptions();
-    expect(options.length).toBe(tagDtos.length - 1);
-    expect(options[0].textContent).toContain(parentTag.value);
-    expect(options[1].textContent).toContain(childTag.value);
-
-    // Select second option (parentTag)
-    await fireEvent.click(options[0]);
-
-    // Check parentTag is added as pill
-    tagPills = getTagPills();
-    expect(tagPills.length).toBe(2);
-    expect(tagPills[1].textContent).toContain(parentTag.value);
-
-    // Check parentTag is removed from options
-    await fireEvent.focus(getTagsCombobox());
-    options = getTagComboboxOptions();
-    expect(options.length).toBe(tagDtos.length - 2);
-    expect(options[0].textContent).toContain(childTag.value);
-  });
-
-  test('makes tags available in combobox if the remove button is clicked on pill', async () => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([
-      { tagId: simpleTag.id, assetIds: ['asset-id'] },
-      { tagId: parentTag.id, assetIds: ['asset-id'] },
-    ] as TagsForAssetsResponseDto[]);
-
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id'],
-        onClose,
-      },
-    });
-
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    const tagPillRemoveButtons = getTagPillRemoveButtons();
-    expect(tagPillRemoveButtons.length).toBe(2);
-
-    // Click remove button on first pill (simpleTag)
-    await fireEvent.click(tagPillRemoveButtons[0]);
-
-    // Check simpleTag pill is removed
-    const tagPills = getTagPills();
-    expect(tagPills.length).toBe(1);
-    expect(tagPills[0].textContent).toContain(parentTag.value);
-
-    // Check simpleTag is back in options
-    await fireEvent.focus(getTagsCombobox());
-    const options = getTagComboboxOptions();
-    expect(options.length).toBe(tagDtos.length - 1);
-    expect(options[0].textContent).toContain(simpleTag.value);
-    expect(options[1].textContent).toContain(childTag.value);
-  });
-
-  test('renders pill as partial if only some assets have that tag', async () => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([
+test('shows partial tags and allows them to be promoted to full tags', async ({ api, settle }) => {
+  await setup(
+    api,
+    settle,
+    ['asset-id', 'asset-id2'],
+    [
       { tagId: simpleTag.id, assetIds: ['asset-id', 'asset-id2'] },
       { tagId: parentTag.id, assetIds: ['asset-id'] },
-    ] as TagsForAssetsResponseDto[]);
+    ],
+  );
+  await expect.element(pills().first()).toHaveClass('bg-primary');
+  await expect.element(pills().nth(1)).toHaveClass('bg-gray-500');
+  await openOptions();
+  expectOptions([parentTag.value, childTag.value]);
+  await options().first().click();
+  await expect.element(pills().nth(1)).toHaveClass('bg-primary');
+  await openOptions();
+  expectOptions([childTag.value]);
+});
 
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id', 'asset-id2'],
-        onClose,
-      },
-    });
+test('filters available tags', async ({ api, settle }) => {
+  await setup(api, settle);
+  await combobox().fill('TagParent');
+  expectOptions([parentTag.value, childTag.value]);
+});
 
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    // One tag should have bg-primary class, the other should have bg-grey-500 class indicating partial
-    const tagPills = getTagPills();
-    expect(tagPills.length).toBe(2);
-    expect(tagPills[0].classList.contains('bg-primary')).toBe(true);
-    expect(tagPills[1].classList.contains('bg-gray-500')).toBe(true);
+test('creates a new tag and selects it', async ({ api, settle }) => {
+  const newTag = factory.tag({ id: 'new-tag-id', name: 'NewTag', value: 'NewTag' });
+  const allTags = [...tags];
+  await setup(api, settle, ['asset-id'], [], allTags);
+  api.on({
+    upsertTags: () => {
+      allTags.push(newTag);
+      return { json: [newTag] };
+    },
   });
+  await combobox().fill('NewTag');
+  await userEvent.keyboard('{Enter}');
+  await settle();
+  expect(api.upsertTags).toHaveBeenCalledWith({ body: { tags: ['NewTag'] } });
+  await expect.element(pills().first()).toHaveTextContent('NewTag');
+  await expect.element(pills().first()).toHaveClass('bg-primary');
+});
 
-  test('allows partial tag to be selected in dropdown, and turns into full tag when selected', async () => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([
-      { tagId: simpleTag.id, assetIds: ['asset-id', 'asset-id2'] },
-      { tagId: parentTag.id, assetIds: ['asset-id'] },
-    ] as TagsForAssetsResponseDto[]);
-
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id', 'asset-id2'],
-        onClose,
-      },
-    });
-
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    // Partial tag should be available in tag dropdown, full tag should not
-    await fireEvent.focus(getTagsCombobox());
-    let options = getTagComboboxOptions();
-    expect(options.length).toBe(2);
-    expect(options[0].textContent).toContain(parentTag.value);
-    expect(options[1].textContent).toContain(childTag.value);
-
-    // Select partial tag option (parentTag)
-    await fireEvent.click(options[0]);
-
-    // Both tag pills should now have bg primary class indicating they are full tags
-    const tagPills = getTagPills();
-    expect(tagPills.length).toBe(2);
-    expect(tagPills[0].classList.contains('bg-primary')).toBe(true);
-    expect(tagPills[1].classList.contains('bg-primary')).toBe(true);
-
-    // Partial tag (that is now full) should be removed from tag dropdown
-    await fireEvent.focus(getTagsCombobox());
-    options = getTagComboboxOptions();
-    expect(options.length).toBe(1);
-    expect(options[0].textContent).toContain(childTag.value);
-  });
-
-  test('filters the list of available tags in the combobox when search string entered', async () => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
-
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id'],
-        onClose,
-      },
-    });
-
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    const combobox = getTagsCombobox();
-    await fireEvent.focus(combobox);
-    await fireEvent.input(combobox, { target: { value: 'TagParent' } });
-    const options = getTagComboboxOptions();
-    expect(options.length).toBe(2);
-    expect(options[0].textContent).toContain(parentTag.value);
-    expect(options[1].textContent).toContain(childTag.value);
-  });
-
-  test('adds a new tag when text entered in the combobox does not match an existing tag', async () => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
-    mockUpsertTags.mockResolvedValueOnce([
-      {
-        id: 'new-tag-id',
-        value: 'NewTag',
-        color: '#ff0000',
-        parentId: undefined,
-        name: 'NewTag',
-        createdAt: '',
-        updatedAt: '',
-      },
-    ] as TagResponseDto[]);
-
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id'],
-        onClose,
-      },
-    });
-
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    const combobox = getTagsCombobox();
-    await fireEvent.focus(combobox);
-    await fireEvent.input(combobox, { target: { value: 'NewTag' } });
-    await fireEvent.keyDown(combobox, { key: 'Enter', code: 'Enter' });
-
-    expect(mockUpsertTags).toHaveBeenCalledWith({ tagUpsertDto: { tags: ['NewTag'] } });
-
-    const tagPills = getTagPills();
-    expect(tagPills.length).toBe(1);
-    expect(tagPills[0].classList.contains('bg-primary')).toBe(true);
-    expect(tagPills[0].textContent).toContain('NewTag');
-  });
-
-  test.each([
-    { count: 40, confirmed: true },
-    { count: 41, confirmed: true },
-    { count: 41, confirmed: false },
-  ])('saves tags for $count assets when confirmation is $confirmed', async ({ count, confirmed }) => {
+for (const { count, confirmed } of [
+  { count: 40, confirmed: true },
+  { count: 41, confirmed: true },
+  { count: 41, confirmed: false },
+]) {
+  test(`saves tags for ${count} assets when confirmation is ${confirmed}`, async ({ api, settle }) => {
     const showDialog = vi
       .spyOn(modalManager, 'showDialog')
       .mockReturnValueOnce(Promise.resolve(confirmed) as ReturnType<typeof modalManager.showDialog>);
-    const assetIds = Array.from({ length: count }, (_, index) => `asset-id-${index}`);
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([]);
-
-    render(AssetTagModal, { props: { assetIds, onClose } });
-
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalledWith({ tagsForAssetsDto: { assetIds } });
-    });
-
-    await fireEvent.focus(getTagsCombobox());
-    await fireEvent.click(getTagComboboxOptions()[0]);
-    await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
-
-    await waitFor(() => {
-      expect(onClose).toHaveBeenCalledExactlyOnceWith(confirmed);
-    });
-    if (count > 40) {
-      expect(showDialog).toHaveBeenCalledExactlyOnceWith({ prompt: 'modify_tags_confirmation' });
-    } else {
-      expect(showDialog).not.toHaveBeenCalled();
+    try {
+      const assetIds = Array.from({ length: count }, (_, index) => `asset-id-${index}`);
+      const onClose = await setup(api, settle, assetIds);
+      await openOptions();
+      await options().first().click();
+      await saveChanges();
+      await settle();
+      if (count > 40) {
+        await vi.waitFor(() =>
+          expect(showDialog).toHaveBeenCalledExactlyOnceWith({ prompt: 'modify_tags_confirmation' }),
+        );
+      } else {
+        expect(showDialog).not.toHaveBeenCalled();
+      }
+      if (confirmed) {
+        expect(api.bulkTagUntagAssets).toHaveBeenCalledWith({
+          body: { assetIds, tagIdsToAdd: [simpleTag.id], tagIdsToRemove: [] },
+        });
+        await vi.waitFor(() => expect(onClose).toHaveBeenCalledExactlyOnceWith(true));
+      } else {
+        expect(api.bulkTagUntagAssets).not.toHaveBeenCalled();
+        expect(onClose).not.toHaveBeenCalled();
+      }
+    } finally {
+      showDialog.mockRestore();
     }
-    if (confirmed) {
-      expect(mockHandleTagUntagAssets).toHaveBeenCalledExactlyOnceWith(assetIds, [simpleTag.id], []);
-    } else {
-      expect(mockHandleTagUntagAssets).not.toHaveBeenCalled();
-    }
-    showDialog.mockRestore();
   });
+}
 
-  test.each([true, false])('closes with the service result %s after promoting a partial tag', async (updated) => {
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([{ tagId: simpleTag.id, assetIds: ['asset-id'] }]);
-    mockHandleTagUntagAssets.mockResolvedValueOnce(updated);
-    const assetIds = ['asset-id', 'asset-id2'];
-
-    render(AssetTagModal, { props: { assetIds, onClose } });
-
-    await waitFor(() => expect(getTagPills()).toHaveLength(1));
-    await fireEvent.focus(getTagsCombobox());
-    await fireEvent.click(getTagComboboxOptions()[0]);
-    await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
-
-    await waitFor(() => expect(onClose).toHaveBeenCalledExactlyOnceWith(updated));
-    expect(mockHandleTagUntagAssets).toHaveBeenCalledExactlyOnceWith(assetIds, [simpleTag.id], []);
+test('saves a promoted partial tag', async ({ api, settle }) => {
+  const assetIds = ['asset-id', 'asset-id2'];
+  const onClose = await setup(api, settle, assetIds, [{ tagId: simpleTag.id, assetIds: ['asset-id'] }]);
+  await openOptions();
+  await options().first().click();
+  await saveChanges();
+  await settle();
+  expect(api.bulkTagUntagAssets).toHaveBeenCalledWith({
+    body: { assetIds, tagIdsToAdd: [simpleTag.id], tagIdsToRemove: [] },
   });
+  await vi.waitFor(() => expect(onClose).toHaveBeenCalledExactlyOnceWith(true));
+});
 
-  test('closes without updating when full and partial tags are unchanged', async () => {
-    const assetIds = ['asset-id', 'asset-id2'];
-    mockGetAllTags.mockResolvedValueOnce(tagDtos);
-    mockQueryTagsForAssets.mockResolvedValueOnce([
+test('keeps the modal open when saving a promoted partial tag fails', async ({ api, settle, logger }) => {
+  const assetIds = ['asset-id', 'asset-id2'];
+  const onClose = await setup(api, settle, assetIds, [{ tagId: simpleTag.id, assetIds: ['asset-id'] }]);
+  api.on({ bulkTagUntagAssets: () => ({ status: 500, json: { message: 'Failed', statusCode: 500 } }) });
+  await openOptions();
+  await options().first().click();
+  await saveChanges();
+  await settle();
+  expect(api.bulkTagUntagAssets).toHaveBeenCalledWith({
+    body: { assetIds, tagIdsToAdd: [simpleTag.id], tagIdsToRemove: [] },
+  });
+  expect(onClose).not.toHaveBeenCalled();
+  expect(logger.error).toHaveBeenCalledWith(/\[handleError\].*500/);
+});
+
+test('closes without updating when full and partial tags are unchanged', async ({ api, settle }) => {
+  const assetIds = ['asset-id', 'asset-id2'];
+  const onClose = await setup(api, settle, assetIds, [
+    { tagId: simpleTag.id, assetIds },
+    { tagId: parentTag.id, assetIds: ['asset-id'] },
+  ]);
+  await save().click();
+  expect(api.bulkTagUntagAssets).not.toHaveBeenCalled();
+  expect(onClose).toHaveBeenCalledExactlyOnceWith(false);
+});
+
+test('saves only added and removed tag ids, leaving unchanged partial tags alone', async ({ api, settle }) => {
+  const addedTag1 = factory.tag({ id: 'tag-id-added1', name: 'TagAdded1', value: 'TagAdded1' });
+  const addedTag2 = factory.tag({ id: 'tag-id-added2', name: 'TagAdded2', value: 'TagAdded2' });
+  const assetIds = ['asset-id', 'asset-id2', 'asset-id3'];
+  const onClose = await setup(
+    api,
+    settle,
+    assetIds,
+    [
       { tagId: simpleTag.id, assetIds },
-      { tagId: parentTag.id, assetIds: ['asset-id'] },
-    ]);
-
-    render(AssetTagModal, { props: { assetIds, onClose } });
-
-    await waitFor(() => expect(getTagPills()).toHaveLength(2));
-    await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
-
-    expect(mockHandleTagUntagAssets).not.toHaveBeenCalled();
-    expect(onClose).toHaveBeenCalledExactlyOnceWith(false);
-  });
-
-  test('calls handleTagUntagAssets correctly with the correct set of tag/asset ids', async () => {
-    const addedTag1: TagResponseDto = {
-      id: 'tag-id-added1',
-      value: 'TagAdded1',
-      color: '#ff0000',
-      parentId: undefined,
-      name: 'TagAdded1',
-      createdAt: '',
-      updatedAt: '',
-    };
-    const addedTag2: TagResponseDto = {
-      id: 'tag-id-added2',
-      value: 'TagAdded2',
-      color: '#ff0000',
-      parentId: undefined,
-      name: 'TagAdded2',
-      createdAt: '',
-      updatedAt: '',
-    };
-    const tagDtosLocal = [...tagDtos, addedTag1, addedTag2] as TagResponseDto[];
-
-    mockGetAllTags.mockResolvedValueOnce(tagDtosLocal);
-    mockQueryTagsForAssets.mockResolvedValueOnce([
-      { tagId: simpleTag.id, assetIds: ['asset-id', 'asset-id2', 'asset-id3'] },
       { tagId: parentTag.id, assetIds: ['asset-id', 'asset-id2'] },
       { tagId: childTag.id, assetIds: ['asset-id'] },
-    ] as TagsForAssetsResponseDto[]);
-
-    render(AssetTagModal, {
-      props: {
-        assetIds: ['asset-id', 'asset-id2', 'asset-id3'],
-        onClose,
-      },
-    });
-
-    await waitFor(() => {
-      expect(mockQueryTagsForAssets).toHaveBeenCalled();
-    });
-
-    // Remove an existing full tag and partial tag first
-    const tagPillRemoveButtons = getTagPillRemoveButtons();
-    expect(tagPillRemoveButtons.length).toBe(3);
-    await fireEvent.click(tagPillRemoveButtons[0]);
-    await fireEvent.click(tagPillRemoveButtons[1]);
-
-    // Add two new tags using the combobox
-    await fireEvent.focus(getTagsCombobox());
-    let options = getTagComboboxOptions();
-    expect(options.length).toBe(5);
-    await fireEvent.click(options[4]);
-    await fireEvent.focus(getTagsCombobox());
-    options = getTagComboboxOptions();
-    expect(options.length).toBe(4);
-    await fireEvent.click(options[3]);
-
-    // Click save button
-    await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
-
-    // Check the service is called with only the changed tag and asset ids
-    // The partial tag ID should not be included in the tag ids to add.
-    expect(mockHandleTagUntagAssets).toHaveBeenCalledExactlyOnceWith(
-      ['asset-id', 'asset-id2', 'asset-id3'],
-      [addedTag2.id, addedTag1.id],
-      [simpleTag.id, parentTag.id],
-    );
-    expect(onClose).toHaveBeenCalledExactlyOnceWith(true);
+    ],
+    [...tags, addedTag1, addedTag2],
+  );
+  await page.getByTestId('tag-pill-remove-button').nth(0).click();
+  await page.getByTestId('tag-pill-remove-button').nth(0).click();
+  await openOptions();
+  expect(options().elements()).toHaveLength(5);
+  await page.getByRole('option', { name: addedTag2.value }).click();
+  await openOptions();
+  expect(options().elements()).toHaveLength(4);
+  await page.getByRole('option', { name: addedTag1.value }).click();
+  await saveChanges();
+  await settle();
+  expect(api.bulkTagUntagAssets).toHaveBeenCalledWith({
+    body: { assetIds, tagIdsToAdd: [addedTag2.id, addedTag1.id], tagIdsToRemove: [simpleTag.id, parentTag.id] },
   });
+  await vi.waitFor(() => expect(onClose).toHaveBeenCalledExactlyOnceWith(true));
 });
