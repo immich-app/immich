@@ -11,6 +11,8 @@ export class Mock {
   readonly logger = new MockConsole();
 
   constructor(private readonly context: BrowserContext) {
+    const { lightStyle, darkStyle } = this.data.adminConfig.map;
+    this.data.publicConfig.map = { ...this.data.publicConfig.map, lightStyle, darkStyle };
     this.api = createApi(new MockNetwork(context, this.data));
   }
 
@@ -19,7 +21,7 @@ export class Mock {
     if (baseURL) {
       await this.context.addCookies([{ name: 'immich_is_authenticated', value: 'true', url: baseURL }]);
     }
-    await this.api.setup();
+    await this.api.setup(baseURL);
     if (page) {
       this.logger.setup(page);
       page.on('download', onDownload);

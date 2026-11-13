@@ -1170,6 +1170,9 @@ importers:
       globals:
         specifier: ^17.0.0
         version: 17.14.0
+      helmet:
+        specifier: ^8.1.0
+        version: 8.3.0
       parse5:
         specifier: ^8.0.1
         version: 8.1.0
