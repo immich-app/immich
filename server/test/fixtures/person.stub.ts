@@ -15,6 +15,7 @@ export const personThumbnailStub = {
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    edits: [],
   }),
   newThumbnailMiddle: Object.freeze({
     ownerId: userStub.admin.id,
@@ -28,6 +29,7 @@ export const personThumbnailStub = {
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    edits: [],
   }),
   newThumbnailEnd: Object.freeze({
     ownerId: userStub.admin.id,
@@ -41,6 +43,7 @@ export const personThumbnailStub = {
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    edits: [],
   }),
   rawEmbeddedThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
@@ -54,6 +57,7 @@ export const personThumbnailStub = {
     originalPath: '/original/path.dng',
     exifOrientation: '1',
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    edits: [],
   }),
   negativeCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
@@ -67,6 +71,7 @@ export const personThumbnailStub = {
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    edits: [],
   }),
   overflowingCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
@@ -80,6 +85,7 @@ export const personThumbnailStub = {
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    edits: [],
   }),
   videoThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
@@ -93,5 +99,23 @@ export const personThumbnailStub = {
     originalPath: '/original/path.mp4',
     exifOrientation: '1',
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    edits: [],
+  }),
+  editedThumbnailMiddle: Object.freeze({
+    ownerId: userStub.admin.id,
+    x1: 100,
+    y1: 100,
+    x2: 200,
+    y2: 200,
+    oldHeight: 500,
+    oldWidth: 400,
+    type: AssetType.Image,
+    originalPath: '/original/path.jpg',
+    exifOrientation: '1',
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    edits: [
+      { action: 'crop', parameters: { x: 10, y: 10, width: 380, height: 480 } },
+      { action: 'rotate', parameters: { angle: 90 } },
+    ],
   }),
 };
