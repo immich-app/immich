@@ -5,25 +5,47 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { playwright } from '@vitest/browser-playwright';
 import dotenv from 'dotenv';
-import { defaultTreeAdapter, parse, type DefaultTreeAdapterMap } from 'parse5';
+import { defaultTreeAdapter, parse, parseFragment, type DefaultTreeAdapterMap } from 'parse5';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, type Plugin, type ProxyOptions, type UserConfig } from 'vite';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
 
 const buildDir = 'build';
 const inlineTags = ['script', 'style'];
+const shadowTemplatePackages = /\/node_modules\/(media-chrome|custom-media-element)\/dist\//;
+const shadowTemplateModules = new Set<string>();
+const pinInputStyle = '';
+
+type ShadowTemplate = { getTemplateHTML: (attributes: Record<string, string>) => string };
+
+const hasShadowTemplate = (value: unknown): value is ShadowTemplate =>
+  typeof value === 'function' && 'getTemplateHTML' in value && typeof value.getTemplateHTML === 'function';
 
 const cspManifest = (): Plugin => ({
   name: 'immich:csp-manifest',
   apply: 'build',
+  generateBundle(_, bundle) {
+    for (const chunk of Object.values(bundle)) {
+      for (const id of chunk.type === 'chunk' ? chunk.moduleIds : []) {
+        if (shadowTemplatePackages.test(id)) {
+          shadowTemplateModules.add(id);
+        }
+      }
+    }
+  },
   buildApp: {
     order: 'post',
     async handler() {
       const indexHtml = path.join(buildDir, 'index.html');
-      const hashes: Record<string, string[]> = Object.fromEntries(inlineTags.map((tag) => [`${tag}-src`, []]));
+      const hashes: Record<string, Set<string>> = Object.fromEntries(
+        inlineTags.map((tag) => [`${tag}-src`, new Set()]),
+      );
+      const addHash = (tag: string, content: string) =>
+        hashes[`${tag}-src`].add(`'sha256-${createHash('sha256').update(content).digest('base64')}'`);
 
       const walk = (node: DefaultTreeAdapterMap['node']) => {
         if (
@@ -33,7 +55,7 @@ const cspManifest = (): Plugin => ({
         ) {
           const [child] = node.childNodes;
           const content = child && defaultTreeAdapter.isTextNode(child) ? child.value : '';
-          hashes[`${node.tagName}-src`].push(`'sha256-${createHash('sha256').update(content).digest('base64')}'`);
+          addHash(node.tagName, content);
         }
 
         if ('childNodes' in node) {
@@ -44,8 +66,18 @@ const cspManifest = (): Plugin => ({
       };
 
       walk(parse(readFileSync(indexHtml, 'utf8')));
+      addHash('style', pinInputStyle);
 
-      writeFileSync(path.join(buildDir, '.csp.json'), JSON.stringify(hashes, undefined, 2) + '\n');
+      for (const id of shadowTemplateModules) {
+        for (const value of Object.values(await import(pathToFileURL(id).href))) {
+          if (hasShadowTemplate(value)) {
+            walk(parseFragment(value.getTemplateHTML({})));
+          }
+        }
+      }
+
+      const manifest = JSON.stringify(hashes, (_, value) => (value instanceof Set ? [...value] : value), 2);
+      writeFileSync(path.join(buildDir, '.csp.json'), manifest + '\n');
     },
   },
 });
