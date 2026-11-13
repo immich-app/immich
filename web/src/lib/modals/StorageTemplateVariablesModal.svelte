@@ -1,12 +1,12 @@
 <script lang="ts">
   import SupportedDatetimePanel from '#lib/components/admin-settings/SupportedDatetimePanel.svelte';
   import SupportedVariablesPanel from '#lib/components/admin-settings/SupportedVariablesPanel.svelte';
-  import type { SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
+  import type { StorageTemplateOptionsResponseDto } from '@immich/sdk';
   import { BasicModal, Stack } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    options: SystemConfigTemplateStorageOptionDto;
+    options: StorageTemplateOptionsResponseDto;
     onClose: () => void;
   };
 

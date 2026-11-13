@@ -482,6 +482,110 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/config/storage-template": {
+      "get": {
+        "description": "Retrieve the storage template variables and the preset templates, each with an example path.",
+        "operationId": "getAdminStorageTemplateOptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageTemplateOptionsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get storage template options",
+        "tags": [
+          "Config (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "state": "Added",
+            "version": "v4.0.0"
+          },
+          {
+            "state": "Alpha",
+            "version": "v4.0.0"
+          }
+        ],
+        "x-immich-permission": "adminConfig.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/config/storage-template/preview": {
+      "post": {
+        "description": "Render an example path from the provided storage template.",
+        "operationId": "previewStorageTemplate",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageTemplatePreviewDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageTemplatePreviewResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Preview a storage template",
+        "tags": [
+          "Config (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "state": "Added",
+            "version": "v4.0.0"
+          },
+          {
+            "state": "Alpha",
+            "version": "v4.0.0"
+          }
+        ],
+        "x-immich-permission": "adminConfig.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/database-backups": {
       "delete": {
         "description": "Delete a backup by its filename",
@@ -15746,6 +15850,7 @@
     },
     "/system-config/storage-template-options": {
       "get": {
+        "deprecated": true,
         "description": "Retrieve exemplary storage template options.",
         "operationId": "getStorageTemplateOptions",
         "parameters": [],
@@ -15774,7 +15879,8 @@
         ],
         "summary": "Get storage template options",
         "tags": [
-          "System config"
+          "System config",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -15789,10 +15895,15 @@
           {
             "state": "Stable",
             "version": "v2"
+          },
+          {
+            "replacementId": "getAdminStorageTemplateOptions",
+            "state": "Deprecated",
+            "version": "v4.0.0"
           }
         ],
         "x-immich-permission": "systemConfig.read",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/system-metadata/admin-onboarding": {
@@ -30912,6 +31023,118 @@
           "backups"
         ],
         "type": "string"
+      },
+      "StorageTemplateOptionsResponseDto": {
+        "properties": {
+          "dayOptions": {
+            "description": "Available day format options for storage template",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "hourOptions": {
+            "description": "Available hour format options for storage template",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "minuteOptions": {
+            "description": "Available minute format options for storage template",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "monthOptions": {
+            "description": "Available month format options for storage template",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "presets": {
+            "description": "Preset storage templates with an example path",
+            "items": {
+              "$ref": "#/components/schemas/StorageTemplatePresetDto"
+            },
+            "type": "array"
+          },
+          "secondOptions": {
+            "description": "Available second format options for storage template",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "weekOptions": {
+            "description": "Available week format options for storage template",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "yearOptions": {
+            "description": "Available year format options for storage template",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dayOptions",
+          "hourOptions",
+          "minuteOptions",
+          "monthOptions",
+          "presets",
+          "secondOptions",
+          "weekOptions",
+          "yearOptions"
+        ],
+        "type": "object"
+      },
+      "StorageTemplatePresetDto": {
+        "properties": {
+          "preview": {
+            "description": "Example path rendered from the preset",
+            "type": "string"
+          },
+          "template": {
+            "description": "Preset storage template",
+            "type": "string"
+          }
+        },
+        "required": [
+          "preview",
+          "template"
+        ],
+        "type": "object"
+      },
+      "StorageTemplatePreviewDto": {
+        "properties": {
+          "template": {
+            "description": "Storage template",
+            "type": "string"
+          }
+        },
+        "required": [
+          "template"
+        ],
+        "type": "object"
+      },
+      "StorageTemplatePreviewResponseDto": {
+        "properties": {
+          "preview": {
+            "description": "Example path rendered from the template",
+            "type": "string"
+          }
+        },
+        "required": [
+          "preview"
+        ],
+        "type": "object"
       },
       "StringFilter": {
         "properties": {

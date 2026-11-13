@@ -559,12 +559,40 @@ const ConfigTemplateStorageOptionSchema = z
   })
   .meta({ id: 'SystemConfigTemplateStorageOptionDto' });
 
+const StorageTemplatePresetSchema = z
+  .object({
+    template: z.string().describe('Preset storage template'),
+    preview: z.string().describe('Example path rendered from the preset'),
+  })
+  .meta({ id: 'StorageTemplatePresetDto' });
+
+const StorageTemplateOptionsResponseSchema = ConfigTemplateStorageOptionSchema.omit({ presetOptions: true })
+  .extend({
+    presets: z.array(StorageTemplatePresetSchema).describe('Preset storage templates with an example path'),
+  })
+  .meta({ id: 'StorageTemplateOptionsResponseDto' });
+
+const StorageTemplatePreviewSchema = z
+  .object({
+    template: z.string().describe('Storage template'),
+  })
+  .meta({ id: 'StorageTemplatePreviewDto' });
+
+const StorageTemplatePreviewResponseSchema = z
+  .object({
+    preview: z.string().describe('Example path rendered from the template'),
+  })
+  .meta({ id: 'StorageTemplatePreviewResponseDto' });
+
 export class AdminConfigDto extends createZodDto(AdminConfigSchema) {}
 export class UserConfigDto extends createZodDto(UserConfigSchema) {}
 export class PublicConfigDto extends createZodDto(PublicConfigSchema) {}
 export class ConfigFFmpegDto extends createZodDto(AdminConfigFFmpegSchema) {}
 export class ConfigSmtpDto extends createZodDto(AdminConfigSmtpSchema) {}
 export class ConfigTemplateStorageOptionDto extends createZodDto(ConfigTemplateStorageOptionSchema) {}
+export class StorageTemplateOptionsResponseDto extends createZodDto(StorageTemplateOptionsResponseSchema) {}
+export class StorageTemplatePreviewDto extends createZodDto(StorageTemplatePreviewSchema) {}
+export class StorageTemplatePreviewResponseDto extends createZodDto(StorageTemplatePreviewResponseSchema) {}
 
 /** @deprecated the `/system-config` endpoints these are named after are on their way out */
 export { AdminConfigDto as SystemConfigDto, ConfigSmtpDto as SystemConfigSmtpDto };
