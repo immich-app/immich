@@ -166,7 +166,7 @@ describe(SharedLinkService.name, () => {
         userId: authStub.admin.user.id,
         albumId: album.id,
         allowDownload: true,
-        allowUpload: true,
+        allowUpload: false,
         description: null,
         expiresAt: null,
         slug: null,
