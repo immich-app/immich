@@ -218,7 +218,7 @@ export const createHandlers = (data: MockData): Handlers => {
     queryTagsForAssets: ({ body }) => ({
       json: data.tagList().flatMap((tag) => {
         const assetIds = body.assetIds.filter((id) => data.getAsset(id)?.tags?.some(({ id }) => id === tag.id));
-        return assetIds.length > 0 ? [{ tagId: tag.id, assetIds }] : [];
+        return assetIds.length > 0 ? { tagId: tag.id, assetIds } : [];
       }),
     }),
     bulkTagUntagAssets: ({ body }) => ({

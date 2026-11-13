@@ -14,8 +14,8 @@ import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetVisibility,
   bulkTagAssets,
-  bulkUntagAssets,
   bulkTagUntagAssets,
+  bulkUntagAssets,
   getBaseUrl,
   getDownloadInfo,
   updateAsset,
