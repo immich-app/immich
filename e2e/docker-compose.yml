@@ -34,6 +34,7 @@ services:
       IMMICH_ENV: testing
       IMMICH_PORT: '2285'
       IMMICH_IGNORE_MOUNT_CHECK_ERRORS: 'true'
+      IMMICH_HELMET_FILE: 'true'
     volumes:
       - ./test-assets:/test-assets
     depends_on:
