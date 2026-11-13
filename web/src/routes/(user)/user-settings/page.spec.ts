@@ -184,6 +184,17 @@ test('unlinks the OAuth account', async ({ data, router, render, settle, api, ap
   await expect.element(app.auth.button('link_to_oauth')).toBeVisible();
 });
 
+test('starts linking an OAuth account from the login page', async ({ data, router, render, settle, app }) => {
+  data.userConfig.oauth.enabled = true;
+  await router.goto(Route.userSettings({ isOpen: OpenQueryParam.OAUTH }));
+  await render(Page, load);
+
+  await app.auth.button('link_to_oauth').click();
+  await settle();
+
+  expect(router.url.pathname + router.url.search).toBe(Route.login({ autoLaunch: 1 }));
+});
+
 test('adds a partner', async ({ data, router, render, settle, api, app }) => {
   const user = factory.user({ name: 'Alice' });
   data.addUsers(user);
