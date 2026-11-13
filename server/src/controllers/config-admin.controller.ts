@@ -65,7 +65,7 @@ export class ConfigAdminController {
   }
 
   @Post('storage-template/preview')
-  @Authenticated({ permission: Permission.AdminConfigRead, admin: true })
+  @Authenticated({ permission: Permission.AdminConfigUpdate, admin: true })
   @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Preview a storage template',

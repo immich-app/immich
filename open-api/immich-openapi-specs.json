@@ -582,7 +582,7 @@
             "version": "v4.0.0"
           }
         ],
-        "x-immich-permission": "adminConfig.read",
+        "x-immich-permission": "adminConfig.update",
         "x-immich-state": "Alpha"
       }
     },
