@@ -1,5 +1,6 @@
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
+import { NotificationAdminService } from 'src/services/notification-admin.service.js';
 import { NotificationService } from 'src/services/notification.service.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
@@ -7,6 +8,7 @@ import { ServiceMocks, newTestService } from 'test/utils.js';
 const smtpTransport = Object.freeze<SystemConfig>({
   ...defaults,
   notifications: {
+    ...defaults.notifications,
     smtp: {
       ...defaults.notifications.smtp,
       enabled: true,
@@ -107,6 +109,34 @@ describe(NotificationService.name, () => {
           replyTo: 'demo@immich.app',
         }),
       );
+    });
+  });
+});
+
+describe(NotificationAdminService.name, () => {
+  let sut: NotificationAdminService;
+  let mocks: ServiceMocks;
+
+  const apprise = { ...defaults.notifications.apprise, enabled: true, url: 'http://apprise:8000', configId: 'immich' };
+
+  beforeEach(() => {
+    ({ sut, mocks } = newTestService(NotificationAdminService));
+  });
+
+  describe('sendTestApprise', () => {
+    it('checks the connection without sending anything', async () => {
+      mocks.apprise.verify.mockResolvedValue();
+
+      await expect(sut.sendTestApprise(apprise)).resolves.toBeUndefined();
+
+      expect(mocks.apprise.verify).toHaveBeenCalledWith(expect.objectContaining({ url: 'http://apprise:8000' }));
+      expect(mocks.apprise.notify).not.toHaveBeenCalled();
+    });
+
+    it('reports a failed verification as a bad request', async () => {
+      mocks.apprise.verify.mockRejectedValue(new Error('Authentication failed'));
+
+      await expect(sut.sendTestApprise(apprise)).rejects.toThrow('Apprise check failed: Authentication failed');
     });
   });
 });
