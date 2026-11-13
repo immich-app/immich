@@ -41,6 +41,7 @@ export type Events = {
   AssetsDelete: [string[]];
   AssetEditsApplied: [string];
   AssetsTag: [string[]];
+  AssetsUntag: [string[]];
 
   AlbumAddAssets: [{ assetIds: string[]; albumIds: string[] }];
   AlbumRemoveAssets: [{ assetIds: string[]; albumIds: string[] }];

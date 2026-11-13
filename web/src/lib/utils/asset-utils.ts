@@ -13,6 +13,9 @@ import { asQueryString } from '#lib/utils/shared-links.ts';
 import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetVisibility,
+  bulkTagAssets,
+  bulkTagUntagAssets,
+  bulkUntagAssets,
   getBaseUrl,
   getDownloadInfo,
   updateAsset,
@@ -27,6 +30,72 @@ import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
+
+export const tagAssets = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
+  const assetCount = await bulkTagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    toastManager.primary($t('tagged_assets', { values: { count: assetCount } }));
+  }
+
+  return assetIds;
+};
+
+export const untagAssets = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
+  const assetCount = await bulkUntagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    toastManager.primary($t('removed_tagged_assets', { values: { count: assetCount } }));
+  }
+
+  return assetIds;
+};
+
+export const tagUntagAssets = async ({
+  assetIds,
+  tagIdsToAdd,
+  tagIdsToRemove,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIdsToAdd: string[];
+  tagIdsToRemove: string[];
+  showNotification?: boolean;
+}) => {
+  const { addedCount, removedCount } = await bulkTagUntagAssets({
+    tagBulkAddRemoveAssetsDto: { tagIdsToAdd, tagIdsToRemove, assetIds },
+  });
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    if (addedCount) {
+      toastManager.primary($t('tagged_assets', { values: { count: addedCount } }));
+    }
+    if (removedCount) {
+      toastManager.primary($t('removed_tagged_assets', { values: { count: removedCount } }));
+    }
+  }
+
+  return assetIds;
+};
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
   const archiveSize = authManager.authenticated ? authManager.preferences.download.archiveSize : undefined;

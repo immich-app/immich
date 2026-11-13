@@ -215,6 +215,21 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     deleteTag: ({ params }) => (data.deleteTag(params.id) ? { status: 204 } : notFound),
     bulkTagAssets: ({ body }) => ({ json: { count: data.tagAssets(body.assetIds, body.tagIds) } }),
+    queryTagsForAssets: ({ body }) => ({
+      json: data.tagList().flatMap((tag) => {
+        const assetIds = body.assetIds.filter((id) => data.getAsset(id)?.tags?.some(({ id }) => id === tag.id));
+        return assetIds.length > 0 ? { tagId: tag.id, assetIds } : [];
+      }),
+    }),
+    bulkTagUntagAssets: ({ body }) => ({
+      json: {
+        addedCount: data.tagAssets(body.assetIds, body.tagIdsToAdd),
+        removedCount: body.tagIdsToRemove.reduce(
+          (count, id) => count + data.untagAssets(id, body.assetIds).filter(({ success }) => success).length,
+          0,
+        ),
+      },
+    }),
     untagAssets: ({ params, body }) => ({ json: data.untagAssets(params.id, body.ids) }),
     getSearchSuggestions: ({ params }) => ({ json: data.searchSuggestions(params) as string[] }),
 
