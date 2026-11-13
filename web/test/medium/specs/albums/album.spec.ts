@@ -82,7 +82,7 @@ test('removes a user from an album', async ({ page, data, api, app }) => {
 
   await app.album.userRoleSelect('role_viewer').click();
   await app.album.removeUserOption.click();
-  await app.dialogButton('remove_user').click();
+  await app.album.removeUserConfirmButton.click();
 
   await expect.poll(() => api.removeUserFromAlbum.calls.length).toBe(1);
   expect(api.removeUserFromAlbum).toHaveBeenCalledWith({ params: { id: album.id, userId: viewer.id } });

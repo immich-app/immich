@@ -1,7 +1,7 @@
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import { Passkey } from 'src/database.js';
 import { isoDatetimeToDate } from 'src/validation.js';
+import { createZodDto } from 'src/zod.js';
 
 const PasskeyRegistrationOptionsSchema = z
   .looseRecord(z.string(), z.any())

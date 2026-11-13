@@ -14,7 +14,9 @@ export const load = (async ({ params, url }) => {
     redirect(307, Route.sharedLinks());
   }
 
-  await queryClient.query(getSharedLinkQuery(params.id)).catch(() => redirect(307, Route.sharedLinks()));
+  await queryClient
+    .query({ ...getSharedLinkQuery(params.id), staleTime: 0 })
+    .catch(() => redirect(307, Route.sharedLinks()));
 
   const $t = await getFormatter();
 

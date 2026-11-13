@@ -6,6 +6,8 @@ import {
   AssetOrder,
   AssetTypeEnum,
   AssetVisibility,
+  MaintenanceAction,
+  PartnerDirection,
   QueueCommand,
   ReactionLevel,
   ReactionType,
@@ -16,20 +18,31 @@ import {
   type AlbumResponseDto,
   type ApiKeyResponseDto,
   type AssetBulkUpdateDto,
+  type AssetEditActionItemResponseDto,
+  type AssetEditsCreateDto,
   type AssetFaceResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
+  type AssetStatsResponseDto,
+  type AuthStatusResponseDto,
+  type ClusterGroupRequestResponseDto,
   type CreateAlbumDto,
   type DownloadInfoDto,
   type DuplicateResolveDto,
   type DuplicateResponseDto,
   type ExifResponseDto,
+  type IntegrityReport,
+  type IntegrityReportResponseDto,
   type LibraryResponseDto,
+  type LoginResponseDto,
+  type MaintenanceStatusResponseDto,
   type MapMarkerResponseDto,
   type MemoryResponseDto,
   type MemoryUpdateDto,
   type MetadataSearchDto,
+  type PartnerResponseDto,
   type PasskeyResponseDto,
+  type PersonCreateDto,
   type PersonResponseDto,
   type PersonUpdateDto,
   type PlacesResponseDto,
@@ -57,6 +70,8 @@ import {
   type UserAdminResponseDto,
   type UserAdminUpdateDto,
   type UserPreferencesResponseDto,
+  type UserPreferencesUpdateDto,
+  type UserResponseDto,
   type WorkflowCreateDto,
   type WorkflowResponseDto,
   type WorkflowStepDto,
@@ -117,6 +132,9 @@ const suggestionFields: Record<SearchSuggestionType, keyof ExifResponseDto> = {
 };
 
 const exploreRecentsLimit = 12;
+const integrityReportPageSize = 50;
+
+type IntegrityReportItem = IntegrityReportResponseDto['items'][number];
 
 export class MockData {
   readonly user = factory.user({ id: adminUserId });
@@ -133,9 +151,12 @@ export class MockData {
   readonly queues = payload.queues();
   readonly notifications = payload.notifications();
   readonly backups = payload.backups();
+  isOnboarded = true;
 
   private preferences = factory.preferences();
+  private authStatus = factory.authStatus();
   private integrityReport = payload.integrityReport();
+  private maintenanceStatus: MaintenanceStatusResponseDto = { action: MaintenanceAction.Start, active: true };
   private readonly users = new Map<string, UserAdminResponseDto>([[this.user.id, this.user]]);
   private readonly assets = new Map<string, AssetResponseDto>();
   private readonly albums = new Map<string, AlbumResponseDto>();
@@ -145,6 +166,7 @@ export class MockData {
   private readonly places: PlacesResponseDto[] = [];
   private readonly stacks = new Map<string, StackResponseDto>();
   private readonly ocr = new Map<string, AssetOcrResponseDto[]>();
+  private readonly assetEdits = new Map<string, AssetEditActionItemResponseDto[]>();
   private readonly brokenAssetIds = new Set<string>();
   private readonly sharedLinks = new Map<string, SharedLinkResponseDto>();
   private readonly tags = new Map<string, TagResponseDto>();
@@ -157,6 +179,12 @@ export class MockData {
   private readonly passkeys = new Map<string, PasskeyResponseDto>();
   private readonly pluginMethods = new Map<string, PluginMethodResponseDto>();
   private readonly queueStates = new Map<QueueName, QueueResponseDto>();
+  private readonly clusterGroupRequests = new Map<string, ClusterGroupRequestResponseDto>();
+  private readonly integrityReportItems = new Map<string, IntegrityReportItem>();
+  private readonly partners: Record<PartnerDirection, Map<string, PartnerResponseDto>> = {
+    [PartnerDirection.SharedBy]: new Map(),
+    [PartnerDirection.SharedWith]: new Map(),
+  };
 
   getPreferences() {
     return this.preferences;
@@ -170,9 +198,88 @@ export class MockData {
     this.integrityReport = { ...this.integrityReport, ...report };
   }
 
+  addIntegrityReportItems(items: MaybeArray<IntegrityReportItem>) {
+    for (const item of toList(items)) {
+      this.integrityReportItems.set(item.id, item);
+    }
+    return this;
+  }
+
+  integrityReportPage({ $type, cursor }: { $type: IntegrityReport; cursor?: string }): IntegrityReportResponseDto {
+    const items = [...this.integrityReportItems.values()].filter((item) => item.type === $type);
+    const start = cursor ? items.findIndex((item) => item.id === cursor) : 0;
+    const page = items.slice(start, start + integrityReportPageSize);
+    return { items: page, nextCursor: items[start + integrityReportPageSize]?.id };
+  }
+
+  deleteIntegrityReportItem(id: string) {
+    return this.integrityReportItems.delete(id);
+  }
+
+  getMaintenanceStatus() {
+    return this.maintenanceStatus;
+  }
+
+  setMaintenanceStatus(status: MaintenanceStatusResponseDto) {
+    this.maintenanceStatus = status;
+    return this;
+  }
+
+  deleteBackups(filenames: string[]) {
+    this.backups.backups = this.backups.backups.filter(({ filename }) => !filenames.includes(filename));
+  }
+
   setPreferences(preferences: UserPreferencesResponseDto) {
     this.preferences = preferences;
     return this;
+  }
+
+  updatePreferences({ avatar: _, ...dto }: UserPreferencesUpdateDto) {
+    const sections: Record<string, object> = { ...this.preferences };
+    for (const [key, value] of Object.entries(dto)) {
+      sections[key] = { ...sections[key], ...value };
+    }
+    this.preferences = sections as UserPreferencesResponseDto;
+    return this.preferences;
+  }
+
+  getAuthStatus() {
+    return this.authStatus;
+  }
+
+  setAuthStatus(status: Partial<AuthStatusResponseDto>) {
+    this.authStatus = { ...this.authStatus, ...status };
+    return this;
+  }
+
+  loginResponse(): LoginResponseDto {
+    const { id: userId, email: userEmail, name, profileImagePath, isAdmin, shouldChangePassword } = this.user;
+    return {
+      accessToken: 'access-token',
+      userId,
+      userEmail,
+      name,
+      profileImagePath,
+      isAdmin,
+      shouldChangePassword,
+      isOnboarded: this.isOnboarded,
+    };
+  }
+
+  signUpAdmin(dto: { email: string; name: string }) {
+    Object.assign(this.user, { email: dto.email, name: dto.name, isAdmin: true });
+    this.serverConfig.isInitialized = true;
+    return this.user;
+  }
+
+  changePassword() {
+    this.user.shouldChangePassword = false;
+    return this.user;
+  }
+
+  setOAuthId(oauthId: string) {
+    this.user.oauthId = oauthId;
+    return this.user;
   }
 
   getAsset(id: string) {
@@ -217,6 +324,18 @@ export class MockData {
         (withHidden || !person.isHidden) &&
         (person.name.toLowerCase().startsWith(query) || person.name.toLowerCase().includes(` ${query}`)),
     );
+  }
+
+  createPerson(dto: PersonCreateDto) {
+    const person = factory.person({
+      name: dto.name ?? '',
+      birthDate: dto.birthDate ?? null,
+      color: dto.color ?? undefined,
+      isFavorite: dto.isFavorite ?? false,
+      isHidden: dto.isHidden ?? false,
+    });
+    this.addPeople(person);
+    return person;
   }
 
   updatePerson(id: string, dto: PersonUpdateDto) {
@@ -376,6 +495,17 @@ export class MockData {
     return [...this.users.values()].filter((user) => withDeleted || !user.deletedAt);
   }
 
+  searchUsers(): UserResponseDto[] {
+    return this.userList().map(({ id, name, email, avatarColor, profileImagePath, profileChangedAt }) => ({
+      id,
+      name,
+      email,
+      avatarColor,
+      profileImagePath,
+      profileChangedAt,
+    }));
+  }
+
   createUser(dto: UserAdminCreateDto) {
     const user = factory.user({
       email: dto.email,
@@ -389,11 +519,92 @@ export class MockData {
     return user;
   }
 
-  addUsers(users: MaybeArray<UserAdminResponseDto>) {
-    for (const user of toList(users)) {
+  addUsers(users: MaybeArray<Partial<UserAdminResponseDto>>) {
+    for (const overrides of toList(users)) {
+      const user = factory.user({ isAdmin: false, storageLabel: null, ...overrides });
       this.users.set(user.id, user);
     }
     return this;
+  }
+
+  addPartners(direction: PartnerDirection, partners: MaybeArray<PartnerResponseDto>) {
+    for (const partner of toList(partners)) {
+      this.partners[direction].set(partner.id, partner);
+    }
+    return this;
+  }
+
+  partnerList(direction: PartnerDirection) {
+    return [...this.partners[direction].values()];
+  }
+
+  createPartner(sharedWithId: string) {
+    const user = this.users.get(sharedWithId);
+    if (!user) {
+      return;
+    }
+    const partner = factory.partner(user);
+    this.partners[PartnerDirection.SharedBy].set(partner.id, partner);
+    return partner;
+  }
+
+  removePartner(id: string) {
+    return this.partners[PartnerDirection.SharedBy].delete(id);
+  }
+
+  updatePartner(id: string, inTimeline: boolean) {
+    const partner = this.partners[PartnerDirection.SharedWith].get(id);
+    if (!partner) {
+      return;
+    }
+    const updated = { ...partner, inTimeline };
+    this.partners[PartnerDirection.SharedWith].set(id, updated);
+    return updated;
+  }
+
+  addClusterGroupRequests(requests: MaybeArray<ClusterGroupRequestResponseDto>) {
+    for (const request of toList(requests)) {
+      this.clusterGroupRequests.set(request.id, request);
+    }
+    return this;
+  }
+
+  clusterGroupRequestList(filter: { clusterGroupId?: string; userId?: string }) {
+    return [...this.clusterGroupRequests.values()].filter(
+      (request) =>
+        (filter.clusterGroupId === undefined || request.clusterGroupId === filter.clusterGroupId) &&
+        (filter.userId === undefined || request.userId === filter.userId),
+    );
+  }
+
+  createClusterGroupRequest(clusterGroupId: string, userId: string) {
+    const request = factory.clusterGroupRequest({ clusterGroupId, userId });
+    this.clusterGroupRequests.set(request.id, request);
+    return request;
+  }
+
+  acceptClusterGroupRequest(id: string) {
+    const request = this.clusterGroupRequests.get(id);
+    const user = request && this.users.get(request.userId);
+    if (!request || !user) {
+      return false;
+    }
+    user.clusterGroupId = request.clusterGroupId;
+    this.clusterGroupRequests.delete(id);
+    return true;
+  }
+
+  deleteClusterGroupRequest(id: string) {
+    return this.clusterGroupRequests.delete(id);
+  }
+
+  leaveClusterGroup(userId: string) {
+    const user = this.users.get(userId);
+    if (!user) {
+      return false;
+    }
+    user.clusterGroupId = crypto.randomUUID();
+    return true;
   }
 
   updateUser(id: string, dto: UserAdminUpdateDto) {
@@ -1002,6 +1213,12 @@ export class MockData {
     };
   }
 
+  assetStatistics(filter: Pick<TimelineFilter, 'isFavorite' | 'isTrashed' | 'visibility'> = {}): AssetStatsResponseDto {
+    const assets = this.timelineAssets(filter);
+    const count = (type: AssetTypeEnum) => assets.filter((asset) => asset.type === type).length;
+    return { images: count(AssetTypeEnum.Image), videos: count(AssetTypeEnum.Video), total: assets.length };
+  }
+
   updateAssets({ ids, ...dto }: AssetBulkUpdateDto) {
     for (const id of ids) {
       this.updateAsset(id, dto);
@@ -1013,6 +1230,11 @@ export class MockData {
     const asset = this.assets.get(id);
     if (!asset) {
       return;
+    }
+
+    if (dto.livePhotoVideoId !== undefined) {
+      this.setMotionVisibility(asset.livePhotoVideoId, AssetVisibility.Timeline);
+      this.setMotionVisibility(dto.livePhotoVideoId, AssetVisibility.Hidden);
     }
 
     const visibility = dto.visibility ?? asset.visibility;
@@ -1037,6 +1259,33 @@ export class MockData {
     return updated;
   }
 
+  getAssetEdits(assetId: string) {
+    return { assetId, edits: this.assetEdits.get(assetId) ?? [] };
+  }
+
+  editAsset(assetId: string, { edits }: AssetEditsCreateDto) {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return;
+    }
+    this.assetEdits.set(
+      assetId,
+      edits.map((edit) => factory.assetEdit(edit)),
+    );
+    this.assets.set(assetId, { ...asset, isEdited: true });
+    return this.getAssetEdits(assetId);
+  }
+
+  removeAssetEdits(assetId: string) {
+    const asset = this.assets.get(assetId);
+    if (!asset) {
+      return false;
+    }
+    this.assetEdits.delete(assetId);
+    this.assets.set(assetId, { ...asset, isEdited: false });
+    return true;
+  }
+
   deleteAssets(ids: string[], force = false) {
     for (const id of ids) {
       const asset = this.assets.get(id);
@@ -1052,6 +1301,20 @@ export class MockData {
     return this;
   }
 
+  emptyTrash() {
+    const ids = this.trashedAssetIds();
+    this.deleteAssets(ids, true);
+    return ids.length;
+  }
+
+  restoreTrash() {
+    return this.restoreAssets(this.trashedAssetIds());
+  }
+
+  private trashedAssetIds() {
+    return [...this.assets.values()].filter((asset) => asset.isTrashed).map(({ id }) => id);
+  }
+
   restoreAssets(ids: string[]) {
     let count = 0;
     for (const id of ids) {
@@ -1063,6 +1326,13 @@ export class MockData {
       count++;
     }
     return count;
+  }
+
+  private setMotionVisibility(motionId: string | null | undefined, visibility: AssetVisibility) {
+    const motion = motionId ? this.assets.get(motionId) : undefined;
+    if (motion) {
+      this.assets.set(motion.id, { ...motion, visibility });
+    }
   }
 
   memoryList({ id, page = 1, size = 250 }: MemoryFilter = {}) {

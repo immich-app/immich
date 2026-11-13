@@ -17,6 +17,25 @@ describe(getWorkflowDefaultConfig.name, () => {
       ).toEqual({ test: true });
     });
 
+    it('should default properties after a property with a default value', () => {
+      expect(
+        getWorkflowDefaultConfig({
+          type: 'object',
+          properties: {
+            first: {
+              type: 'string',
+              default: 'value',
+            },
+            second: {
+              type: 'string',
+              array: true,
+            },
+          },
+          required: ['first', 'second'],
+        }),
+      ).toEqual({ first: 'value', second: [] });
+    });
+
     it('should default to an empty array', () => {
       expect(
         getWorkflowDefaultConfig({

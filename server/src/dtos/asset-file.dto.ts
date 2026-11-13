@@ -1,9 +1,9 @@
 import { Selectable } from 'kysely';
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import { AssetFileTypeSchema } from 'src/enum.js';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
 import { isoDatetimeToDate, stringToBool } from 'src/validation.js';
+import { createZodDto } from 'src/zod.js';
 
 const AssetFileSearchSchema = z
   .object({

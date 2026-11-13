@@ -1,5 +1,5 @@
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
+import { createZodDto } from 'src/zod.js';
 
 export enum AssetEditAction {
   Crop = 'crop',
@@ -75,7 +75,7 @@ function getExpectedKeysByActionMessage(): string {
 }
 
 function isParametersValidForAction(edit: z.infer<typeof AssetEditActionItemSchema>): boolean {
-  return actionParameterMap[edit.action].safeParse(edit.parameters).success;
+  return actionParameterMap[edit.action].validate(edit.parameters);
 }
 
 const AssetEditActionItemSchema = z

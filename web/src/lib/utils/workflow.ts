@@ -58,7 +58,7 @@ export const getWorkflowDefaultConfig = (schema: JSONSchemaProperty) => {
     // default values
     if (property.default) {
       config[key] = property.default;
-      break;
+      continue;
     }
 
     if (!requiredProperties.includes(key)) {

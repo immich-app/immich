@@ -17,9 +17,9 @@ config_roots = [
 
 [tools]
 node = "26.13.0"
-pnpm = "12.16.1"
+pnpm = "12.18.0"
 terragrunt = "1.2.1"
-opentofu = "1.13.2"
+opentofu = "1.13.9"
 "npm:@openapitools/openapi-generator-cli" = "2.42.0"
 "npm:oazapfts" = "7.5.0"
 "github:extism/cli" = "1.6.3"

@@ -588,7 +588,7 @@ export type UserAdminResponseDto = {
     id: string;
     /** Is admin user */
     isAdmin: boolean;
-    license: (UserLicense) | null;
+    license: UserLicense | null;
     /** User name */
     name: string;
     /** OAuth ID */
@@ -610,7 +610,7 @@ export type UserAdminResponseDto = {
     updatedAt: string;
 };
 export type UserAdminCreateDto = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User email */
     email: string;
     /** Grant admin privileges */
@@ -635,7 +635,7 @@ export type UserAdminDeleteDto = {
     force?: boolean;
 };
 export type UserAdminUpdateDto = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User email */
     email?: string;
     /** Grant admin privileges */
@@ -1355,7 +1355,7 @@ export type AssetResponseDto = {
     people?: PersonResponseDto[];
     /** Is resized */
     resized?: boolean;
-    stack?: (AssetStackResponseDto) | null;
+    stack?: AssetStackResponseDto | null;
     tags?: TagResponseDto[];
     /** Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting. */
     thumbhash: string | null;
@@ -1745,7 +1745,7 @@ export type AssetFaceResponseDto = {
     imageHeight: number;
     /** Image width in pixels */
     imageWidth: number;
-    person: (PersonResponseDto) | null;
+    person: PersonResponseDto | null;
     sourceType?: SourceType;
 };
 export type AssetFaceCreateDto = {
@@ -3277,7 +3277,7 @@ export type TrashResponseDto = {
     count: number;
 };
 export type UserUpdateMeDto = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User email */
     email?: string;
     /** User name */
@@ -3410,7 +3410,7 @@ export type ReleaseEventV1 = {
     releaseVersion: ServerVersionResponseDto;
     serverVersion: ServerVersionResponseDto;
     /** Release type */
-    "type": ReleaseType;
+    "type": ReleaseType | null;
 };
 export type SyncAckV1 = {};
 export type SyncAlbumDeleteV1 = {
@@ -3738,7 +3738,7 @@ export type SyncAssetV2 = {
     width: number | null;
 };
 export type SyncAuthUserV1 = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User deleted at */
     deletedAt: string | null;
     /** User email */
@@ -3765,7 +3765,7 @@ export type SyncAuthUserV1 = {
     storageLabel: string | null;
 };
 export type SyncAuthUserV2 = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User deleted at */
     deletedAt: string | null;
     /** User email */
@@ -3938,7 +3938,7 @@ export type SyncUserMetadataV1 = {
     };
 };
 export type SyncUserV1 = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User deleted at */
     deletedAt: string | null;
     /** User email */

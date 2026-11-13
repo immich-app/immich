@@ -1,8 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ClsService } from 'nestjs-cls';
-import { ZodSerializationException, ZodValidationException } from 'nestjs-zod';
-import { ZodError } from 'zod';
 import { ImmichHeader } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { isHttpException, onRouteError } from 'src/utils/logger.js';
@@ -44,17 +42,6 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
       const response = error.getResponse();
       const body: Record<string, unknown> =
         typeof response === 'string' ? { message: response } : { ...(response as object) };
-
-      // handle both request and response validation errors
-      if (error instanceof ZodValidationException || error instanceof ZodSerializationException) {
-        const zodError = error.getZodError();
-        if (zodError instanceof ZodError && zodError.issues.length > 0) {
-          return {
-            status,
-            body: { message: 'Validation failed', errors: zodError.issues },
-          };
-        }
-      }
 
       // remove fields injected by NestJS that duplicate the HTTP response line
       delete body['error'];

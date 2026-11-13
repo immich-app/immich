@@ -176,7 +176,7 @@ export class TagRepository {
     await this.db.deleteFrom('tag_asset').where('tagId', '=', tagId).where('assetId', 'in', assetIds).execute();
   }
 
-  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagIds: DummyValue.UUID }]] })
+  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagId: DummyValue.UUID }]] })
   @Chunked()
   upsertAssetIds(items: Insertable<TagAssetTable>[]) {
     if (items.length === 0) {

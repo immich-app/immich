@@ -9,7 +9,9 @@
 </p>
 
 <p align="center">
-<img src="../design/immich-logo-stacked-light.svg" width="300" title="Inicia la sessió amb un URL personalitzat">
+  <a href="#">
+    <img src="../design/immich-logo-stacked-light.svg" width="300" alt="Immich Logo">
+  </a>
 </p>
 <h3 align="center">Solució de gestió de fotos i vídeos autoallotjada i d’alt rendiment </h3>
 <br/>

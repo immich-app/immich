@@ -30,7 +30,7 @@
 
   let {
     timelineManager,
-    // eslint-disable-next-line no-useless-assignment
+
     invisible = $bindable(false),
     removeAction,
     withStacked = false,

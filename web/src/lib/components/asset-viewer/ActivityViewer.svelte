@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { shortcut } from '#lib/actions/shortcut.ts';
   import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -10,12 +9,11 @@
   import { getAssetMediaUrl } from '#lib/utils.ts';
   import { isTenMinutesApart } from '#lib/utils/timesince.ts';
   import { AssetTypeEnum, ReactionType, type ActivityResponseDto, type AlbumUserResponseDto } from '@immich/sdk';
-  import { ContextMenuButton, Icon, IconButton, LoadingSpinner, Textarea } from '@immich/ui';
+  import { ContextMenuButton, Icon, IconButton, LoadingSpinner, Textarea, shortcut } from '@immich/ui';
   import { mdiClose, mdiSend, mdiThumbUp, mdiTrashCanOutline } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
-  import { fromAction } from 'svelte/attachments';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -235,10 +233,10 @@
             rows={1}
             grow
             placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
-            {@attach fromAction(shortcut, () => ({
+            {@attach shortcut({
               shortcut: { key: 'Enter' },
               onShortcut: () => handleSendComment(),
-            }))}
+            })}
             class="{disabled
               ? 'cursor-not-allowed'
               : ''} max-h-56 w-full resize-none items-center overflow-y-auto bg-gray-200 pe-2 leading-4 ring-0! outline-none dark:bg-gray-200"
