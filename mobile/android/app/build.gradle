@@ -37,7 +37,7 @@ android {
   }
 
   defaultConfig {
-    applicationId "app.alextran.immich"
+    applicationId "app.alextran.immich.local"
     minSdk = 26
     targetSdk = flutter.targetSdkVersion
     versionCode flutter.versionCode
