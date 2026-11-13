@@ -23,6 +23,7 @@ import {
   QueueName,
 } from 'src/enum.js';
 import type { VectorExtension } from 'src/types.js';
+import { applyCspHashes } from 'src/utils/helmet.js';
 
 export interface EnvData {
   host?: string;
@@ -149,21 +150,6 @@ const TELEMETRY_TYPES = new Set(Object.values(ImmichTelemetry));
 const asSet = <T>(value: string | undefined, defaults: T[]) => {
   const values = (value || '').replaceAll(/\s/g, '').split(',').filter(Boolean);
   return new Set(values.length === 0 ? defaults : (values as T[]));
-};
-
-type CspOptions = Exclude<NonNullable<HelmetOptions['contentSecurityPolicy']>, boolean>;
-type CspDirectives = NonNullable<CspOptions['directives']>;
-
-export const applyCspHashes = (directives: CspDirectives, manifest: Record<string, string[]>): CspDirectives => {
-  const merged = { ...directives };
-  for (const [directive, hashes] of Object.entries(manifest)) {
-    const sources = merged[directive];
-    if (Array.isArray(sources) && !sources.includes(`'unsafe-inline'`)) {
-      merged[directive] = [...sources, ...hashes];
-    }
-  }
-
-  return merged;
 };
 
 const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined, webRoot: string) => {

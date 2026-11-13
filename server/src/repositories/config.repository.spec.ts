@@ -1,5 +1,6 @@
 import { ImmichTelemetry } from 'src/enum.js';
-import { ConfigRepository, applyCspHashes, clearEnvCache } from 'src/repositories/config.repository.js';
+import { ConfigRepository, clearEnvCache } from 'src/repositories/config.repository.js';
+import { applyCspHashes } from 'src/utils/helmet.js';
 
 const getEnv = () => {
   clearEnvCache();

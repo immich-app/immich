@@ -1,12 +1,15 @@
 import type { MockData } from '#test/common/data.ts';
 import { Dispatcher, type Response } from '#test/common/dispatcher.ts';
 import { emptyMapStyle } from '#test/common/helpers.ts';
+import { getHelmetHeaders } from '#test/medium/mocks/helmet.ts';
 import type { BrowserContext, Request, Route, WebSocketRoute } from '@playwright/test';
 
 const apiPattern = /^https?:\/\/[^/]+\/api\//;
 const socketPattern = /\/api\/socket\.io\//;
 const customCssPattern = /^https?:\/\/[^/]+\/custom\.css$/;
 const mapStylePattern = /^https:\/\/tiles\.immich\.cloud\//;
+const pagePattern = /^https?:\/\/[^/]+\/(?!api\/|_app\/)/;
+const workerPattern = /^https?:\/\/[^/]+\/_app\/immutable\/workers\//;
 
 const sockets = new WeakMap<BrowserContext, WebSocketRoute>();
 const socketMockedContexts = new WeakSet<BrowserContext>();
@@ -64,8 +67,15 @@ export class MockNetwork extends Dispatcher {
     super(data);
   }
 
-  async setup() {
+  async setup(baseURL?: string) {
     await mockWebSocket(this.context);
+    if (baseURL && !process.env.PLAYWRIGHT_DEV_SERVER) {
+      const { origin } = new URL(baseURL);
+      await this.route(pagePattern, (route, request) =>
+        request.resourceType() === 'document' ? this.withHelmet(route, request, origin) : route.fallback(),
+      );
+      await this.route(workerPattern, (route, request) => this.withHelmet(route, request, origin));
+    }
     await this.route(customCssPattern, (route) => route.fulfill({ body: '', contentType: 'text/css' }));
     await this.route(mapStylePattern, (route) => route.fulfill({ json: emptyMapStyle }));
     await this.route(apiPattern, (route, request) => this.handle(route, request));
@@ -95,6 +105,20 @@ export class MockNetwork extends Dispatcher {
   private async route(pattern: RegExp, handler: (route: Route, request: Request) => Promise<void>) {
     await this.context.route(pattern, handler);
     this.disposers.push(() => this.context.unroute(pattern));
+  }
+
+  private async withHelmet(route: Route, request: Request, origin: string) {
+    if (new URL(request.url()).origin !== origin) {
+      await route.fallback();
+      return;
+    }
+
+    try {
+      const response = await route.fetch();
+      await route.fulfill({ response, headers: { ...response.headers(), ...getHelmetHeaders() } });
+    } catch {
+      return;
+    }
   }
 
   private async handle(route: Route, request: Request) {
