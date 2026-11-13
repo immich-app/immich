@@ -1,4 +1,4 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { SignJWT } from 'jose';
 import { MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
@@ -151,6 +151,12 @@ describe(MaintenanceWorkerService.name, () => {
           cookie: 'immich_maintenance_token=invalid-jwt',
         }),
       ).rejects.toThrowError(new UnauthorizedException('Invalid JWT Token'));
+    });
+
+    it('should block a cross-origin request', async () => {
+      await expect(
+        sut.authenticate({ cookie: 'immich_maintenance_token=jwt', 'sec-fetch-site': 'same-site' }, 'POST'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 

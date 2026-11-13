@@ -116,7 +116,7 @@ export class AuthGuard implements CanActivate {
     request.user = await this.authService.authenticate({
       headers: request.headers,
       queryParams: request.query as Record<string, string>,
-      metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },
+      metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path, method: request.method },
     });
 
     return true;
