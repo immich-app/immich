@@ -1,10 +1,11 @@
 <script lang="ts">
+  import { withTitleSuffix } from '#lib/branding.ts';
   import { t } from 'svelte-i18n';
   import { page } from '$app/state';
 </script>
 
 <svelte:head>
-  <title>{$t('error')} - Immich</title>
+  <title>{withTitleSuffix($t('error'))}</title>
 </svelte:head>
 
 <section class="flex h-dvh w-dvw flex-col place-content-center place-items-center px-4">

@@ -37,12 +37,13 @@ android {
   }
 
   defaultConfig {
-    applicationId "app.alextran.immich"
+    applicationId "app.alextran.immich.jbfotos"
     minSdk = 26
     targetSdk = flutter.targetSdkVersion
     versionCode flutter.versionCode
     versionName flutter.versionName
-    resValue "string", "app_name", "Immich"
+    // resValue "string", "app_name", "Immich"
+    resValue "string", "app_name", "JB Fotos"
     buildConfigField "boolean", "PASSKEYS", "true"
   }
 

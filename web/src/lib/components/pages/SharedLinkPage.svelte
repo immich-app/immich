@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { withTitleSuffix } from '#lib/branding.ts';
   import AlbumViewer from '#lib/components/album-page/AlbumViewer.svelte';
   import IndividualSharedViewer from '#lib/components/share-page/IndividualSharedViewer.svelte';
   import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
@@ -43,7 +44,7 @@
       sharedLink = await sharedLinkLogin({ key, slug, sharedLinkLoginDto: { password } });
       setSharedLink(sharedLink);
       passwordRequired = false;
-      title = (sharedLink.album ? sharedLink.album.albumName : $t('public_share')) + ' - Immich';
+      title = withTitleSuffix(sharedLink.album ? sharedLink.album.albumName : $t('public_share'));
       await tick();
       await navigate(
         { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetViewerManager.gridScrollTarget },
