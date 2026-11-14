@@ -170,3 +170,18 @@
     {/if}
   </div>
 {/if}
+
+<style>
+  .bg-subtle {
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+  }
+
+  html.dark .bg-subtle {
+    background: rgba(15, 15, 17, 0.55) !important;
+  }
+
+  html.light .bg-subtle {
+    background: rgba(245, 245, 247, 0.6) !important;
+  }
+</style>
