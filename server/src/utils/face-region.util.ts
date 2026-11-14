@@ -23,6 +23,45 @@ export const isOrientationSidewards = (orientation: ExifOrientation | number): b
   ].includes(orientation);
 };
 
+const clampUnit = (value: number) => Math.max(0, Math.min(1, value));
+
+const roundTo = (value: number, digits: number) => Number(value.toFixed(digits));
+
+const toStoredOrientation = (x: number, y: number, orientation?: ExifOrientation | number): [number, number] => {
+  switch (orientation) {
+    case ExifOrientation.MirrorHorizontal: {
+      return [1 - x, y];
+    }
+    case ExifOrientation.Rotate180: {
+      return [1 - x, 1 - y];
+    }
+    case ExifOrientation.MirrorVertical: {
+      return [x, 1 - y];
+    }
+    case ExifOrientation.MirrorHorizontalRotate270CW: {
+      return [y, x];
+    }
+    case ExifOrientation.Rotate90CW: {
+      return [y, 1 - x];
+    }
+    case ExifOrientation.MirrorHorizontalRotate90CW: {
+      return [1 - y, 1 - x];
+    }
+    case ExifOrientation.Rotate270CW: {
+      return [1 - y, x];
+    }
+    default: {
+      return [x, y];
+    }
+  }
+};
+
+const toCenterAndSize = (a: number, b: number) => {
+  const start = roundTo(Math.min(a, b), 5);
+  const end = roundTo(Math.max(a, b), 5);
+  return { center: roundTo((start + end) / 2, 6), size: roundTo(end - start, 5) };
+};
+
 export const toMwgRegionInfo = (
   faces: FaceBoundingBoxInput[],
   orientation?: ExifOrientation | number,
@@ -32,80 +71,39 @@ export const toMwgRegionInfo = (
     return null;
   }
 
-  const baseWidth = dimensions?.width || faces[0].imageWidth;
-  const baseHeight = dimensions?.height || faces[0].imageHeight;
+  const isSidewards = orientation !== undefined && isOrientationSidewards(orientation);
+  const displayWidth = faces[0].imageWidth;
+  const displayHeight = faces[0].imageHeight;
+  const fallbackDimensions = isSidewards
+    ? { width: displayHeight, height: displayWidth }
+    : { width: displayWidth, height: displayHeight };
+  const { width: appliedW, height: appliedH } =
+    dimensions?.width && dimensions.height ? dimensions : fallbackDimensions;
 
-  if (!baseWidth || !baseHeight) {
+  if (!appliedW || !appliedH || !displayWidth || !displayHeight) {
     return null;
   }
 
-  const isSidewards = Boolean(orientation && isOrientationSidewards(orientation));
-
-  const appliedW = isSidewards ? baseHeight : baseWidth;
-  const appliedH = isSidewards ? baseWidth : baseHeight;
-
   const regionList: RegionItem[] = faces.map((face) => {
-    const faceW = face.imageWidth || baseWidth;
-    const faceH = face.imageHeight || baseHeight;
+    const faceW = face.imageWidth || displayWidth;
+    const faceH = face.imageHeight || displayHeight;
 
-    const x1 = face.boundingBoxX1;
-    const y1 = face.boundingBoxY1;
-    const x2 = face.boundingBoxX2;
-    const y2 = face.boundingBoxY2;
+    const left = clampUnit(Math.min(face.boundingBoxX1, face.boundingBoxX2) / faceW);
+    const right = clampUnit(Math.max(face.boundingBoxX1, face.boundingBoxX2) / faceW);
+    const top = clampUnit(Math.min(face.boundingBoxY1, face.boundingBoxY2) / faceH);
+    const bottom = clampUnit(Math.max(face.boundingBoxY1, face.boundingBoxY2) / faceH);
 
-    let cx = (x1 + x2) / 2 / faceW;
-    let cy = (y1 + y2) / 2 / faceH;
-    let w = Math.abs(x2 - x1) / faceW;
-    let h = Math.abs(y2 - y1) / faceH;
-
-    if (orientation !== undefined && orientation !== ExifOrientation.Horizontal) {
-      switch (orientation) {
-        case ExifOrientation.MirrorHorizontal: {
-          cx = 1 - cx;
-          break;
-        }
-        case ExifOrientation.Rotate180: {
-          [cx, cy] = [1 - cx, 1 - cy];
-          break;
-        }
-        case ExifOrientation.MirrorVertical: {
-          cy = 1 - cy;
-          break;
-        }
-        case ExifOrientation.MirrorHorizontalRotate270CW: {
-          [cx, cy] = [cy, cx];
-          break;
-        }
-        case ExifOrientation.Rotate90CW: {
-          [cx, cy] = [cy, 1 - cx];
-          break;
-        }
-        case ExifOrientation.MirrorHorizontalRotate90CW: {
-          [cx, cy] = [1 - cy, 1 - cx];
-          break;
-        }
-        case ExifOrientation.Rotate270CW: {
-          [cx, cy] = [1 - cy, cx];
-          break;
-        }
-      }
-
-      if (isSidewards) {
-        [w, h] = [h, w];
-      }
-    }
-
-    cx = Math.max(0, Math.min(1, Number(cx.toFixed(5))));
-    cy = Math.max(0, Math.min(1, Number(cy.toFixed(5))));
-    w = Math.max(0, Math.min(1, Number(w.toFixed(5))));
-    h = Math.max(0, Math.min(1, Number(h.toFixed(5))));
+    const [ax, ay] = toStoredOrientation(left, top, orientation);
+    const [bx, by] = toStoredOrientation(right, bottom, orientation);
+    const horizontal = toCenterAndSize(ax, bx);
+    const vertical = toCenterAndSize(ay, by);
 
     return {
       Area: {
-        X: cx,
-        Y: cy,
-        W: w,
-        H: h,
+        X: horizontal.center,
+        Y: vertical.center,
+        W: horizontal.size,
+        H: vertical.size,
         Unit: 'normalized',
       },
       Type: 'Face',

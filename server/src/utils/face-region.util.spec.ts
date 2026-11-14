@@ -162,9 +162,40 @@ describe('face-region.util', () => {
       imageHeight: 800,
     };
     const regionInfo = toMwgRegionInfo([faceOutOfBounds]);
-    expect(regionInfo?.RegionList[0].Area.X).toBeLessThanOrEqual(1);
-    expect(regionInfo?.RegionList[0].Area.X).toBeGreaterThanOrEqual(0);
-    expect(regionInfo?.RegionList[0].Area.W).toBeLessThanOrEqual(1);
+    expect(regionInfo?.RegionList[0].Area).toEqual({ X: 0.5, Y: 0.5, W: 1, H: 1, Unit: 'normalized' });
+  });
+
+  it.each([
+    ExifOrientation.Horizontal,
+    ExifOrientation.MirrorHorizontal,
+    ExifOrientation.Rotate180,
+    ExifOrientation.MirrorVertical,
+    ExifOrientation.MirrorHorizontalRotate270CW,
+    ExifOrientation.Rotate90CW,
+    ExifOrientation.MirrorHorizontalRotate90CW,
+    ExifOrientation.Rotate270CW,
+  ])('should keep partially out of bounds regions inside the image for orientation %s', (orientation) => {
+    const faceOutOfBounds: FaceBoundingBoxInput = {
+      name: 'OOB',
+      boundingBoxX1: 600,
+      boundingBoxY1: -100,
+      boundingBoxX2: 1200,
+      boundingBoxY2: 300,
+      imageWidth: 1000,
+      imageHeight: 800,
+    };
+    const area = toMwgRegionInfo([faceOutOfBounds], orientation)!.RegionList[0].Area;
+    const [X, Y, W, H] = [area.X, area.Y, area.W, area.H].map(Number);
+    expect(X - W / 2).toBeGreaterThanOrEqual(0);
+    expect(X + W / 2).toBeLessThanOrEqual(1);
+    expect(Y - H / 2).toBeGreaterThanOrEqual(0);
+    expect(Y + H / 2).toBeLessThanOrEqual(1);
+  });
+
+  it('should use original image dimensions as-is for sidewards orientations', () => {
+    const regionInfo = toMwgRegionInfo([baseFace], ExifOrientation.Rotate90CW, { width: 4000, height: 3200 });
+    expect(regionInfo?.AppliedToDimensions).toEqual({ W: 4000, H: 3200, Unit: 'pixel' });
+    expect(regionInfo?.RegionList[0].Area).toEqual({ X: 0.375, Y: 0.8, W: 0.25, H: 0.2, Unit: 'normalized' });
   });
 
   it('should generate valid ExifTool command line arguments', () => {
