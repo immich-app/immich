@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/config/timeline_config.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
@@ -61,8 +62,8 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
       multiSelectProvider.select((multiselect) => multiselect.selectedAssets.contains(asset)),
     );
 
-    final bool storageIndicator =
-        ref.watch(appConfigProvider.select((s) => s.timeline.storageIndicator)) && widget.showStorageIndicator;
+    final timelineConfig = ref.watch(appConfigProvider.select((s) => s.timeline));
+    final bool storageIndicator = timelineConfig.storageIndicator && widget.showStorageIndicator;
 
     if (!isCurrentAsset) {
       _hideIndicators = false;
@@ -149,8 +150,8 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          _AssetTypeIcons(asset: asset),
-                          if (widget.showStackIndicator) _StackIndicator(asset: asset),
+                          _AssetTypeIcons(asset: asset, config: timelineConfig),
+                          if (widget.showStackIndicator && timelineConfig.stackIndicator) _StackIndicator(asset: asset),
                         ],
                       ),
                     ),
@@ -184,7 +185,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     },
                   ),
 
-                if (asset != null && asset.isFavorite)
+                if (asset != null && asset.isFavorite && timelineConfig.favoriteIndicator)
                   AnimatedOpacity(
                     duration: Durations.short4,
                     opacity: _hideIndicators ? 0.0 : 1.0,
@@ -294,8 +295,9 @@ class _TileOverlayIcon extends StatelessWidget {
 
 class _AssetTypeIcons extends StatelessWidget {
   final BaseAsset asset;
+  final TimelineConfig config;
 
-  const _AssetTypeIcons({required this.asset});
+  const _AssetTypeIcons({required this.asset, required this.config});
 
   @override
   Widget build(BuildContext context) {
@@ -305,16 +307,16 @@ class _AssetTypeIcons extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        if (asset.isVideo)
+        if (asset.isVideo && config.videoIndicator)
           Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset.duration)),
-        if (isLivePhoto)
+        if (isLivePhoto && config.livePhotoIndicator)
           const Padding(
             padding: EdgeInsets.only(right: 10.0, top: 6.0),
             child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
           ),
-        if (asset.isAnimatedImage)
+        if (asset.isAnimatedImage && config.animatedImageIndicator)
           const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.gif_rounded)),
-        if (asset.isRaw)
+        if (asset.isRaw && config.rawIndicator)
           const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.raw_on_rounded)),
       ],
     );

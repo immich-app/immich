@@ -48,6 +48,12 @@ enum SettingsKey<T> {
   timelineTilesPerRow<int>(),
   timelineGroupAssetsBy<GroupAssetsBy>(codec: EnumCodec(GroupAssetsBy.values)),
   timelineStorageIndicator<bool>(),
+  timelineVideoIndicator<bool>(),
+  timelineLivePhotoIndicator<bool>(),
+  timelineAnimatedImageIndicator<bool>(),
+  timelineRawIndicator<bool>(),
+  timelineStackIndicator<bool>(),
+  timelineFavoriteIndicator<bool>(),
   timelineSmoothScrubbing<bool>(),
 
   // Log
