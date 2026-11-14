@@ -32,7 +32,7 @@ import type { JobOf } from 'src/types.js';
 import { getAssetFiles } from 'src/utils/asset.util.js';
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
 import { mergeTimeZone } from 'src/utils/date.js';
-import { toMwgExifToolArgs, toMwgRegionInfo } from 'src/utils/face-region.util.js';
+import { clearMwgRegionsExifToolArgs, toMwgExifToolArgs, toMwgRegionInfo } from 'src/utils/face-region.util.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, isFaceExportEnabled, isFaceImportEnabled } from 'src/utils/misc.js';
 import { upsertTags } from 'src/utils/tag.js';
@@ -524,7 +524,9 @@ export class MetadataService extends BaseService {
 
     if (isFaceExportEnabled(metadata)) {
       const faces = await this.personRepository.getFacesForSidecar(id);
-      if (faces.length > 0) {
+      if (faces.length === 0 && sidecarFile) {
+        writeArgs = clearMwgRegionsExifToolArgs();
+      } else if (faces.length > 0) {
         const orientation = asset.exifInfo.orientation ? Number(asset.exifInfo.orientation) : undefined;
         const dimensions =
           asset.exifInfo.exifImageWidth && asset.exifInfo.exifImageHeight

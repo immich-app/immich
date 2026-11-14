@@ -2313,6 +2313,31 @@ describe(MetadataService.name, () => {
       ]);
     });
 
+    it('should clear face regions from an existing sidecar when no named faces remain', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false, export: true } } });
+      const asset = AssetFactory.from().file({ type: AssetFileType.Sidecar }).exif().build();
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+      mocks.person.getFacesForSidecar.mockResolvedValue([]);
+
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Success);
+      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {}, [
+        '-overwrite_original',
+        '-RegionInfo=',
+      ]);
+    });
+
+    it('should not create a sidecar when face export finds no named faces', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false, export: true } } });
+      const asset = AssetFactory.from().exif().build();
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+      mocks.person.getFacesForSidecar.mockResolvedValue([]);
+
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
+    });
+
     it('should skip face regions when metadata.faces.export is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false, export: false } } });
       const asset = AssetFactory.from()

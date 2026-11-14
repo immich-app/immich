@@ -121,10 +121,11 @@ export const toMwgRegionInfo = (
   };
 };
 
+export const clearMwgRegionsExifToolArgs = (): string[] => ['-overwrite_original', '-RegionInfo='];
+
 export const toMwgExifToolArgs = (regionInfo: RegionInfo): string[] => {
   const args = [
-    '-overwrite_original',
-    '-RegionInfo=',
+    ...clearMwgRegionsExifToolArgs(),
     `-RegionAppliedToDimensionsW=${regionInfo.AppliedToDimensions.W}`,
     `-RegionAppliedToDimensionsH=${regionInfo.AppliedToDimensions.H}`,
     `-RegionAppliedToDimensionsUnit=${regionInfo.AppliedToDimensions.Unit || 'pixel'}`,
