@@ -27,7 +27,7 @@ describe(SyncEntityType.PartnerV1, () => {
     const { partner } = await ctx.newPartner({ sharedById: user2.id, sharedWithId: user1.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(response).toEqual([
+    ctx.assertSyncResponse(response, [
       {
         ack: expect.any(String),
         data: {
@@ -37,7 +37,6 @@ describe(SyncEntityType.PartnerV1, () => {
         },
         type: 'PartnerV1',
       },
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -54,7 +53,7 @@ describe(SyncEntityType.PartnerV1, () => {
     await partnerRepo.remove(partner);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(response).toEqual([
+    ctx.assertSyncResponse(response, [
       {
         ack: expect.any(String),
         data: {
@@ -63,7 +62,6 @@ describe(SyncEntityType.PartnerV1, () => {
         },
         type: 'PartnerDeleteV1',
       },
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -78,7 +76,7 @@ describe(SyncEntityType.PartnerV1, () => {
     const { partner: partner2 } = await ctx.newPartner({ sharedById: user1.id, sharedWithId: user2.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(response).toEqual([
+    ctx.assertSyncResponse(response, [
       {
         ack: expect.any(String),
         data: {
@@ -97,7 +95,6 @@ describe(SyncEntityType.PartnerV1, () => {
         },
         type: 'PartnerV1',
       },
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -113,7 +110,7 @@ describe(SyncEntityType.PartnerV1, () => {
     const { partner } = await ctx.newPartner({ sharedById: user2.id, sharedWithId: user1.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(response).toEqual([
+    ctx.assertSyncResponse(response, [
       {
         ack: expect.any(String),
         data: {
@@ -123,7 +120,6 @@ describe(SyncEntityType.PartnerV1, () => {
         },
         type: 'PartnerV1',
       },
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -134,7 +130,7 @@ describe(SyncEntityType.PartnerV1, () => {
     );
 
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(newResponse).toEqual([
+    ctx.assertSyncResponse(newResponse, [
       {
         ack: expect.any(String),
         data: {
@@ -144,7 +140,6 @@ describe(SyncEntityType.PartnerV1, () => {
         },
         type: 'PartnerV1',
       },
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);

@@ -8,8 +8,8 @@
     AlbumGroupBy,
     AlbumSortBy,
     AlbumViewMode,
-    locale,
     SortOrder,
+    locale,
     type AlbumViewSettings,
   } from '#lib/stores/preferences.store.ts';
   import {
@@ -42,7 +42,7 @@
     userSettings,
     allowEdit = false,
     showOwner = false,
-    // eslint-disable-next-line no-useless-assignment
+
     albumGroupIds = $bindable([]),
     empty,
   }: Props = $props();

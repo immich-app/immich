@@ -38,6 +38,7 @@ export default typescriptEslint.config([
       'unicorn/name-replacements': 'off',
       'unicorn/no-unreadable-for-of-expression': 'off',
       'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/prefer-smaller-scope': 'off',
       'unicorn/no-process-exit': 'off',
       'unicorn/import-style': 'off',
       'unicorn/consistent-class-member-order': 'off',

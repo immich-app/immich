@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { beforeNavigate, goto } from '$app/navigation';
   import WorkflowAddStepModal from '#lib/modals/WorkflowAddStepModal.svelte';
   import WorkflowEditStepModal from '#lib/modals/WorkflowEditStepModal.svelte';
   import WorkflowTriggerPicker from '#lib/modals/WorkflowTriggerPicker.svelte';
@@ -28,10 +27,10 @@
     Icon,
     IconButton,
     Input,
-    modalManager,
     Switch,
     Textarea,
     VStack,
+    modalManager,
   } from '@immich/ui';
   import {
     mdiArrowLeft,
@@ -46,6 +45,7 @@
   import { cloneDeep, isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
+  import { beforeNavigate, goto } from '$app/navigation';
   import type { PageProps } from './$types';
   import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
   import WorkflowStepCard from './WorkflowStepCard.svelte';

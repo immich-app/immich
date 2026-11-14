@@ -167,6 +167,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _handleCasting();
   }
 
+  void _onClosed() {
+    final asset = ref.read(timelineServiceProvider).getAssetSafe(_pageController.page?.round() ?? _currentPage);
+    if (asset != null) {
+      EventStream.shared.emit(ViewerClosedEvent(asset));
+    }
+  }
+
   Future<void> _onAssetChanged(int index) async {
     _currentPage = index;
 
@@ -308,16 +315,19 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
               onNotification: _onScrollEnd,
               child: PhotoViewGestureDetectorScope(
                 axis: Axis.horizontal,
-                child: PageView.builder(
-                  controller: _pageController,
-                  physics: isZoomed
-                      ? const NeverScrollableScrollPhysics()
-                      : CurrentPlatform.isIOS
-                      ? const FastScrollPhysics()
-                      : const FastClampingScrollPhysics(),
-                  itemCount: _totalAssets,
-                  itemBuilder: (context, index) =>
-                      AssetPage(index: index, heroOffset: _heroOffset, onTapNavigate: _onTapNavigate),
+                child: PopScope(
+                  onPopInvokedWithResult: (didPop, _) => didPop ? _onClosed() : null,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    physics: isZoomed
+                        ? const NeverScrollableScrollPhysics()
+                        : CurrentPlatform.isIOS
+                        ? const FastScrollPhysics()
+                        : const FastClampingScrollPhysics(),
+                    itemCount: _totalAssets,
+                    itemBuilder: (context, index) =>
+                        AssetPage(index: index, heroOffset: _heroOffset, onTapNavigate: _onTapNavigate),
+                  ),
                 ),
               ),
             ),

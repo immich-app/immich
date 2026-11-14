@@ -42,8 +42,8 @@
   class:w-[min(100vw,16rem)]={sidebarStore.isOpen}
   data-testid="sidebar-parent"
   inert={isHidden}
-  use:clickOutside={{ onOutclick: closeSidebar, onEscape: isExpanded ? closeSidebar : undefined }}
-  use:focusTrap={{ active: isExpanded }}
+  {@attach clickOutside({ onOutclick: closeSidebar, onEscape: isExpanded ? closeSidebar : undefined })}
+  {@attach focusTrap({ active: isExpanded })}
 >
   <div class="flex h-max min-h-full flex-col gap-1 pe-6">
     {@render children?.()}

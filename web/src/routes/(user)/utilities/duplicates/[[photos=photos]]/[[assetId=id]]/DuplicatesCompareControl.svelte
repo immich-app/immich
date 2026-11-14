@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { shortcuts } from '#lib/actions/shortcut.ts';
-  import DuplicateAsset from './DuplicateAsset.svelte';
   import Portal from '#lib/elements/Portal.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -13,11 +11,12 @@
   } from '#lib/utils/duplicate-utils.ts';
   import { navigate } from '#lib/utils/navigation.ts';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { Button, Icon } from '@immich/ui';
+  import { Button, Icon, shortcuts } from '@immich/ui';
   import { mdiCheck, mdiChevronDown, mdiChevronUp, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
+  import DuplicateAsset from './DuplicateAsset.svelte';
 
   interface Props {
     assets: AssetResponseDto[];
@@ -106,8 +105,8 @@
   });
 </script>
 
-<svelte:document
-  use:shortcuts={[
+<svelte:window
+  {@attach shortcuts([
     { shortcut: { key: 'a' }, onShortcut: onSelectAll },
     {
       shortcut: { key: 's' },
@@ -116,7 +115,7 @@
     { shortcut: { key: 'd' }, onShortcut: onSelectNone },
     { shortcut: { key: 'c', shift: true }, onShortcut: handleResolve },
     { shortcut: { key: 's', shift: true }, onShortcut: handleStack },
-  ]}
+  ])}
 />
 
 <div class="px-0.2 mx-auto mb-4 max-w-5xl rounded-3xl border border-gray-300 py-6 dark:border-2 dark:border-gray-700">

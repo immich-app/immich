@@ -130,16 +130,8 @@ export const getWorkflowShowSchemaAction = (
 const handleDeleteWorkflow = async (workflow: WorkflowResponseDto) => {
   const $t = await getFormatter();
 
-  const confirmed = await modalManager.showDialog({
-    prompt: $t('workflow_delete_prompt'),
-    confirmColor: 'danger',
-  });
-
-  if (!confirmed) {
-    return;
-  }
-
   await executeMutation(deleteWorkflowMutation, [{ id: workflow.id }], {
+    confirm: { prompt: $t('workflow_delete_prompt'), confirmColor: 'danger' },
     onSuccess: () => {
       if (page.params.workflowId === workflow.id) {
         void goto(Route.workflows());

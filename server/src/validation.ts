@@ -1,9 +1,9 @@
 import { FileValidator, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
 import validator from 'validator';
 import z from 'zod';
+import { createZodDto } from 'src/zod.js';
 
 export type IsIPRangeOptions = { requireCIDR?: boolean };
 
@@ -248,3 +248,6 @@ export const hexColor = z
 export const sanitizeFilename = z.string().transform((val) => sanitize(val));
 
 export const uniqueIds = z.array(z.uuid()).refine((ids) => ids.length === new Set(ids).size, 'Items must be unique');
+
+export const queryParamArray = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (typeof value === 'string' ? value.split(',') : value), z.array(schema));

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { ImmichBackupsPage, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import HideBackupsReminder from '#lib/components/backups/HideBackupsReminder.svelte';
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
   import { Route } from '#lib/route.ts';
+  import { ImmichBackupsPage, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import type { ComponentProps } from 'svelte';
+  import { goto } from '$app/navigation';
   import type { PageData } from './$types';
 
   type Props = {

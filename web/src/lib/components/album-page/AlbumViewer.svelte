@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { shortcut } from '#lib/actions/shortcut.ts';
   import AlbumMap from '#lib/components/album-page/AlbumMap.svelte';
-  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
-  import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
   import { handleDownloadAlbum } from '#lib/services/album.service.ts';
   import { getGlobalActions } from '#lib/services/app.service.ts';
   import { dragAndDropFilesStore } from '#lib/stores/drag-and-drop-files.store.ts';
@@ -16,14 +17,12 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { fileUploadHandler, openFileUploadDialog } from '#lib/utils/file-uploader.ts';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
-  import { ActionButton, IconButton, Logo } from '@immich/ui';
+  import { ActionButton, IconButton, Logo, shortcut } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import ThemeButton from '../shared-components/ThemeButton.svelte';
   import AlbumSummary from './AlbumSummary.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
-  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 
   const query = createPreloadedQuery(getPublicConfigQuery);
   const publicConfig = $derived(query.data);
@@ -66,14 +65,14 @@
 </script>
 
 <svelte:document
-  use:shortcut={{
+  {@attach shortcut({
     shortcut: { key: 'Escape' },
     onShortcut: () => {
       if (!assetViewerManager.isViewing && assetMultiSelectManager.selectionActive) {
         assetMultiSelectManager.clear();
       }
     },
-  }}
+  })}
 />
 
 <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">

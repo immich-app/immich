@@ -2,10 +2,10 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  type Generated,
   Table,
   Timestamp,
   Unique,
+  type Generated,
 } from '@immich/sql-tools';
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';
 import { IntegrityReport } from 'src/enum.js';

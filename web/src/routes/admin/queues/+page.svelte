@@ -1,14 +1,12 @@
 <script lang="ts">
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
-  import OnEvents from '#lib/components/OnEvents.svelte';
-  import JobsPanel from './QueuePanel.svelte';
-  import { queueManager } from '#lib/managers/queue-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getQueuesQuery } from '#lib/queries/queue.query.ts';
   import { getQueuesActions } from '#lib/services/queue.service.ts';
-  import { type QueueResponseDto } from '@immich/sdk';
   import { CommandPaletteDefaultProvider, Container, type ActionItem } from '@immich/ui';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import JobsPanel from './QueuePanel.svelte';
 
   type Props = {
     data: PageData;
@@ -16,31 +14,17 @@
 
   const { data }: Props = $props();
 
-  onMount(() => queueManager.listen());
+  const query = createPreloadedQuery(getQueuesQuery);
+  const queues = $derived(query.data);
 
-  let queues = $derived<QueueResponseDto[]>(queueManager.queues);
-
-  const { ResumePaused, CreateJob, ManageConcurrency } = $derived(getQueuesActions($t, queueManager.queues));
+  const { ResumePaused, CreateJob, ManageConcurrency } = $derived(getQueuesActions($t, queues));
   const commands: ActionItem[] = $derived([CreateJob, ManageConcurrency]);
-
-  const onQueueUpdate = (update: QueueResponseDto) => {
-    queues = queues.map((queue) => {
-      if (queue.name === update.name) {
-        return update;
-      }
-      return queue;
-    });
-  };
 </script>
 
 <CommandPaletteDefaultProvider name={$t('admin.queues')} actions={commands} />
 
-<OnEvents {onQueueUpdate} />
-
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[ResumePaused, CreateJob, ManageConcurrency]}>
   <Container size="medium" center>
-    {#if queues}
-      <JobsPanel {queues} />
-    {/if}
+    <JobsPanel {queues} />
   </Container>
 </AdminPageLayout>

@@ -1,5 +1,5 @@
 [tasks.install]
-run = "pnpm install --filter github --frozen-lockfile"
+run = "pnpm install --filter immich-github --frozen-lockfile"
 
 [tasks.format]
 env._.path = "./node_modules/.bin"

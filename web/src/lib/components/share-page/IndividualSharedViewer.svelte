@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import RemoveFromSharedLink from '#lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
-  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import { AssetAction } from '#lib/constants.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -20,6 +19,7 @@
   import { IconButton, Logo, toastManager } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/GalleryViewer.svelte';
 

@@ -9,7 +9,9 @@
 </p>
 
 <p align="center">
-<img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
+  <a href="#">
+    <img src="../design/immich-logo-stacked-light.svg" width="300" alt="Immich Logo">
+  </a>
 </p>
 <h3 align="center">Högpresterande self-hostad lösning för hantering av foton och videor</h3>
 <br/>

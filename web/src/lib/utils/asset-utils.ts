@@ -15,7 +15,6 @@ import {
   AssetVisibility,
   getBaseUrl,
   getDownloadInfo,
-  untagAssets,
   updateAsset,
   updateAssets,
   type AssetResponseDto,
@@ -28,27 +27,6 @@ import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
-
-export const removeTag = async ({
-  assetIds,
-  tagIds,
-  showNotification = true,
-}: {
-  assetIds: string[];
-  tagIds: string[];
-  showNotification?: boolean;
-}) => {
-  for (const tagId of tagIds) {
-    await untagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
-  }
-
-  if (showNotification) {
-    const $t = await getFormatter();
-    toastManager.primary($t('removed_tagged_assets', { values: { count: assetIds.length } }));
-  }
-
-  return assetIds;
-};
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
   const archiveSize = authManager.authenticated ? authManager.preferences.download.archiveSize : undefined;
@@ -215,7 +193,6 @@ async function addSupportedMimeTypes(): Promise<void> {
   heicImg.src =
     'data:image/heic;base64,AAAAGGZ0eXBoZWljAAAAAG1pZjFoZWljAAABrW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAHBpY3QAAAAAAAAAAAAAAAAAAAAADnBpdG0AAAAAAAIAAAAQaWRhdAAAAAAAAQABAAAAOGlsb2MBAAAAREAAAgABAAAAAAAAAc0AAQAAAAAAAAAsAAIAAQAAAAAAAAABAAAAAAAAAAgAAAA4aWluZgAAAAAAAgAAABVpbmZlAgAAAQABAABodmMxAAAAABVpbmZlAgAAAAACAABncmlkAAAAANhpcHJwAAAAtmlwY28AAAB2aHZjQwEDcAAAAAAAAAAAAB7wAPz9+PgAAA8DIAABABhAAQwB//8DcAAAAwCQAAADAAADAB66AkAhAAEAKkIBAQNwAAADAJAAAAMAAAMAHqAggQWW6q6a5uBAQMCAAAADAIAAAAMAhCIAAQAGRAHBc8GJAAAAFGlzcGUAAAAAAAAAAQAAAAEAAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAaaXBtYQAAAAAAAAACAAECgQMAAgIChAAAABppcmVmAAAAAAAAAA5kaW1nAAIAAQABAAAANG1kYXQAAAAoKAGvCchMZYA50NoPIfzz81Qfsm577GJt3lf8kLAr+NbNIoeRR7JeYA=='; // Small valid HEIC/HEIF image
 }
-// eslint-disable-next-line unicorn/no-top-level-side-effects
 void addSupportedMimeTypes();
 
 /** Returns true if the asset is an image supported by web browsers, false otherwise */

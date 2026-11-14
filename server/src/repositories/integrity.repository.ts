@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { type Insertable, type Kysely, sql } from 'kysely';
+import { sql, type Insertable, type Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetFileType, IntegrityReport } from 'src/enum.js';
@@ -222,7 +222,7 @@ export class IntegrityRepository {
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.STRING], stream: true })
+  @GenerateSql({ params: ['assetId', IntegrityReport.MissingFile], stream: true })
   streamIntegrityReportsByProperty(property?: 'assetId' | 'fileAssetId', filterType?: IntegrityReport) {
     return this.db
       .selectFrom('integrity_report')

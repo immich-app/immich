@@ -1,10 +1,12 @@
 [tools]
 java = "21.0.2"
+ruby = "3.4.12"
 # RUSTUP_TOOLCHAIN makes rustup ignore the targets in rust-toolchain.toml, so the cross targets are listed here too.
-rust = { version = "1.98.0", targets = "aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios" }
+rust = { version = "1.99.1", targets = "aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios" }
+"conda:nasm" = "2.16.03" # assembles rav1d's x86 kernels
 
 [tools."aqua:flutter/flutter"]
-version = "3.47.2"
+version = "3.47.9"
 postinstall = "bash {{config_root}}/ios/scripts/xcode_flutter_patch.sh"
 
 [tools."github:CQLabs/homebrew-dcm"]

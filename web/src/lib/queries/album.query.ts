@@ -4,11 +4,11 @@ import { asMutation, queryClient } from '#lib/queries/client.ts';
 import { Route } from '#lib/route.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import {
+  AlbumUserRole,
+  BulkIdErrorReason,
   addAssetsToAlbum,
   addAssetsToAlbums,
   addUsersToAlbum,
-  AlbumUserRole,
-  BulkIdErrorReason,
   createAlbum,
   deleteAlbum,
   getAlbumInfo,
@@ -95,7 +95,7 @@ export const getAlbumMapMarkersQuery = (id: string) =>
 export const invalidateAlbums = () => queryClient.invalidateQueries({ queryKey: albumsQueryKey });
 
 export const invalidateAlbum = (id: string) =>
-  queryClient.invalidateQueries({ queryKey: getAlbumInfoQuery(id).queryKey, exact: true });
+  queryClient.invalidateQueries({ queryKey: getAlbumInfoQuery(id).queryKey });
 
 const onAlbumChange = async (album: AlbumResponseDto) => {
   queryClient.setQueryData(getAlbumInfoQuery(album.id).queryKey, album);
@@ -123,7 +123,10 @@ export const deleteAlbumMutation = (meta?: MutationMeta) =>
   asMutation(deleteAlbum, {
     onSuccess: (_, [{ id }]) => {
       queryClient.removeQueries({ queryKey: ['album', id] });
-      return invalidateAlbums();
+      return Promise.all([
+        invalidateAlbums(),
+        queryClient.invalidateQueries({ queryKey: ['shared-links'], exact: true }),
+      ]);
     },
     meta: meta ?? { error: { toast: 'errors.unable_to_delete_album' } },
   });

@@ -623,10 +623,12 @@ export class AuthService extends BaseService {
 
     if (
       oauth.storageLabelClaim !== defaults.oauth.storageLabelClaim &&
-      profile.immich_storage_label &&
+      profile.immich_storage_label !== undefined &&
       profile.immich_storage_label !== user.storageLabel
     ) {
-      const duplicate = await this.userRepository.getByStorageLabel(profile.immich_storage_label);
+      const duplicate = profile.immich_storage_label
+        ? await this.userRepository.getByStorageLabel(profile.immich_storage_label)
+        : undefined;
 
       if (duplicate && duplicate.id !== user.id) {
         this.logger.warn(`Unable to sync OAuth storage label for user ${user.id}: label already in use`);
@@ -635,9 +637,7 @@ export class AuthService extends BaseService {
       }
     }
 
-    if (profile.immich_quota_bytes === undefined && user.quotaSizeInBytes !== profile.defaults.immich_quota_bytes) {
-      updates.quotaSizeInBytes = profile.defaults.immich_quota_bytes;
-    } else if (profile.immich_quota_bytes !== undefined && profile.immich_quota_bytes !== user.quotaSizeInBytes) {
+    if (profile.immich_quota_bytes !== undefined && profile.immich_quota_bytes !== user.quotaSizeInBytes) {
       updates.quotaSizeInBytes = profile.immich_quota_bytes;
     }
 

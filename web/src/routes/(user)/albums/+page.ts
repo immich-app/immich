@@ -6,7 +6,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-  await queryClient.query(getAllAlbumsQuery());
+  await queryClient.query({ ...getAllAlbumsQuery(), staleTime: 0 });
   const $t = await getFormatter();
 
   return {

@@ -6,6 +6,7 @@ export const getFacesQuery = (assetId: string) =>
   queryOptions({
     queryKey: ['faces', assetId],
     queryFn: ({ signal }) => getFaces({ id: assetId }, { signal }),
+    staleTime: 0,
   });
 
 export const createFaceMutation = () =>

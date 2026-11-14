@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -142,6 +144,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBindingObserver {
   late final ScrollController _scrollController;
+  final _segmentedListKey = GlobalKey();
   StreamSubscription? _eventSubscription;
 
   int? _restoreAssetIndex;
@@ -195,6 +198,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         _scrollToTop();
       case final ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
+      case ViewerClosedEvent(:final asset):
+        final routeData = context.findAncestorWidgetOfExactType<RouteDataScope>()?.routeData;
+        final index = ref.read(timelineServiceProvider).getIndex(asset.heroTag);
+        if (routeData != null && routeData.router.root.topRoute == routeData && index != null) {
+          _scrollToAssetIfOffScreen(index);
+        }
       case TimelineReloadEvent():
         setState(() {});
       default:
@@ -209,13 +218,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
     final asyncSegments = ref.read(timelineSegmentProvider);
     asyncSegments.whenData((segments) {
-      final targetSegment = segments.lastWhereOrNull((segment) => segment.firstAssetIndex <= _restoreAssetIndex!);
-      if (targetSegment != null) {
-        final assetIndexInSegment = _restoreAssetIndex! - targetSegment.firstAssetIndex;
-        final newColumnCount = ref.read(timelineArgsProvider).columnCount;
-        final rowIndexInSegment = (assetIndexInSegment / newColumnCount).floor();
-        final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
-        final targetOffset = targetSegment.indexToLayoutOffset(targetRowIndex);
+      final targetOffset = _getAssetRowPosition(segments, _restoreAssetIndex!)?.top;
+      if (targetOffset != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             _scrollController.jumpTo(targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent));
@@ -224,6 +228,50 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
       }
     });
     _restoreAssetIndex = null;
+  }
+
+  ({double top, double bottom})? _getAssetRowPosition(List<Segment> segments, int assetIndex) {
+    final targetSegment = segments.firstWhereOrNull(
+      (segment) => assetIndex < segment.firstAssetIndex + segment.bucket.assetCount,
+    );
+    if (targetSegment == null) {
+      return null;
+    }
+
+    final assetIndexInSegment = assetIndex - targetSegment.firstAssetIndex;
+    final columnCount = ref.read(timelineArgsProvider).columnCount;
+    final rowIndexInSegment = (assetIndexInSegment / columnCount).floor();
+    final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
+    return (
+      top: targetSegment.indexToLayoutOffset(targetRowIndex),
+      bottom: targetSegment.indexToLayoutOffset(targetRowIndex + 1) - targetSegment.spacing,
+    );
+  }
+
+  void _scrollToAssetIfOffScreen(int index) {
+    final row = _getAssetRowPosition(ref.read(timelineSegmentProvider).valueOrNull ?? const [], index);
+    if (row == null) {
+      return;
+    }
+
+    final list = _segmentedListKey.currentContext?.findRenderObject() as RenderSliver?;
+    if (list == null) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    final topInset = math.max(list.constraints.overlap, context.padding.top);
+    final bottomInset = context.padding.bottom;
+    final top = list.constraints.precedingScrollExtent + row.top;
+    final visibleTop = position.pixels + topInset;
+    final bottom = list.constraints.precedingScrollExtent + row.bottom;
+    final visibleBottom = position.pixels + position.viewportDimension - bottomInset;
+    if (top >= visibleTop && bottom <= visibleBottom) {
+      return;
+    }
+
+    final target = top < visibleTop ? top - topInset : bottom - position.viewportDimension + bottomInset;
+    _scrollController.jumpTo(target.clamp(0.0, position.maxScrollExtent));
   }
 
   void _onMultiSelectionToggled(_, bool isEnabled) {
@@ -388,6 +436,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                             widget.appBar!,
                           if (widget.topSliverWidget != null) widget.topSliverWidget!,
                           SliverSegmentedList(
+                            key: _segmentedListKey,
                             segments: segments,
                             delegate: SliverChildBuilderDelegate(
                               (ctx, index) {
