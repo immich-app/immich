@@ -1701,4 +1701,71 @@ describe(PersonService.name, () => {
       expect(mapFaces(getForAssetFace(AssetFaceFactory.create())).person).toBeNull();
     });
   });
+
+  describe('face sidecar export triggers', () => {
+    it('should queue sidecar writes when renaming a person with face export enabled', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id, name: 'Alice' });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false, export: true } } });
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      mocks.person.update.mockResolvedValue(person);
+      mocks.person.getAssetIdsByPersonGroupIds.mockResolvedValue(['asset-1', 'asset-2']);
+
+      await sut.update(auth, person.personGroupId, { name: 'Alice' });
+
+      expect(mocks.person.getAssetIdsByPersonGroupIds).toHaveBeenCalledWith([person.personGroupId]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SidecarWrite, data: { id: 'asset-1' } },
+        { name: JobName.SidecarWrite, data: { id: 'asset-2' } },
+      ]);
+    });
+
+    it('should queue sidecar write when reassigning a face by id with face export enabled', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id, faceAssetId: 'face-1' });
+      const face = AssetFaceFactory.from({ assetId: 'asset-1' }).person(person).build();
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false, export: true } } });
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
+      mocks.person.getByGroupId.mockResolvedValue(person);
+
+      await sut.reassignFacesById(auth, person.personGroupId, { id: face.id });
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
+    });
+
+    it('should queue sidecar write when deleting a face with face export enabled', async () => {
+      const auth = AuthFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false, export: true } } });
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set(['face-1']));
+      mocks.person.getAssetIdsByFaceIds.mockResolvedValue(['asset-1']);
+
+      await sut.deleteFace(auth, 'face-1', { force: false });
+
+      expect(mocks.person.getAssetIdsByFaceIds).toHaveBeenCalledWith(['face-1']);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
+    });
+
+    it('should queue sidecar writes when deleting people with face export enabled', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id });
+      const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
+
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false, export: true } } });
+      mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
+      mocks.person.getAssetIdsByPersonGroupIds.mockResolvedValue(['asset-1']);
+      mocks.person.delete.mockResolvedValue([person]);
+
+      await sut.deleteAll(auth, { ids: [person.personGroupId] });
+
+      expect(mocks.person.getAssetIdsByPersonGroupIds).toHaveBeenCalledWith([person.personGroupId]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
+    });
+  });
 });
