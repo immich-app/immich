@@ -84,6 +84,7 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
 <div
+  id="asset-viewer-navbar"
   class="relative isolate flex h-16 place-items-center justify-between px-3 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)] transition-transform duration-200"
 >
   <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-24 bg-black/40 mask-smoothstep-to-bottom"></div>
@@ -176,3 +177,11 @@
     {/if}
   </div>
 </div>
+
+<style>
+  #asset-viewer-navbar > div:first-of-type {
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+  }
+</style>
