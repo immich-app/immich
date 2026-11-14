@@ -35,6 +35,7 @@
 
 {#if $isUploading}
   <div
+    id="upload-panel"
     in:fade={{ duration: 250 }}
     out:fade={{ duration: 250 }}
     onoutroend={() => {
@@ -172,16 +173,16 @@
 {/if}
 
 <style>
-  .bg-subtle {
+  #upload-panel > div.bg-subtle {
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
   }
 
-  html.dark .bg-subtle {
+  html.dark #upload-panel > div.bg-subtle {
     background: rgba(15, 15, 17, 0.55) !important;
   }
 
-  html.light .bg-subtle {
+  html.light #upload-panel > div.bg-subtle {
     background: rgba(245, 245, 247, 0.6) !important;
   }
 </style>
