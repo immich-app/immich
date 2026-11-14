@@ -603,6 +603,7 @@
   "asset_description_updated": "Asset description has been updated",
   "asset_hashing": "Hashing…",
   "asset_list_group_by_sub_title": "Group by",
+  "asset_list_indicators_sub_title": "Indicators",
   "asset_list_layout_settings_group_by": "Group assets by",
   "asset_list_layout_settings_group_by_month_day": "Month + day",
   "asset_list_layout_sub_title": "Layout",
