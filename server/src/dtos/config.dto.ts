@@ -284,7 +284,9 @@ const AdminConfigSchemaWithVisibility = z
       .meta({ id: 'AdminConfigReverseGeocodingDto' }),
     metadata: z
       .object({
-        faces: z.object({ import: configBool.describe('Import') }).meta({ id: 'AdminConfigFacesDto' }),
+        faces: z
+          .object({ import: configBool.describe('Import'), export: configBool.default(false).describe('Export') })
+          .meta({ id: 'AdminConfigFacesDto' }),
       })
       .meta({ id: 'AdminConfigMetadataDto' }),
     oauth: z
@@ -697,6 +699,7 @@ export const defaults = Object.freeze<SystemConfig>({
   metadata: {
     faces: {
       import: false,
+      export: false,
     },
   },
   oauth: {

@@ -53,7 +53,13 @@ import { getDimensions, getMyPartnerIds } from 'src/utils/asset.util.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { isHttpException } from 'src/utils/logger.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { batched, findOrFail, hasSomeDefined, isFacialRecognitionEnabled } from 'src/utils/misc.js';
+import {
+  batched,
+  findOrFail,
+  hasSomeDefined,
+  isFaceExportEnabled,
+  isFacialRecognitionEnabled,
+} from 'src/utils/misc.js';
 import { Point, transformPoints } from 'src/utils/transform.js';
 
 const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${personGroupId}`;
@@ -99,6 +105,7 @@ export class PersonService extends BaseService {
 
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto = new Map<string, PersonId>();
+    const assetIds: string[] = [];
     for (const data of dto.data) {
       const faces = await this.personRepository.getFacesByIds(
         [{ personGroupId: data.personId, assetId: data.assetId }],
@@ -120,6 +127,7 @@ export class PersonService extends BaseService {
         }
 
         await this.personRepository.reassignFace(face.id, person.personGroupId);
+        assetIds.push(data.assetId);
       }
 
       result.push(mapPerson(person));
@@ -127,6 +135,7 @@ export class PersonService extends BaseService {
     if (changeFeaturePhoto.size > 0) {
       await this.createNewFeaturePhoto(changeFeaturePhoto.values().toArray());
     }
+    await this.queueSidecarWriteForAssets(assetIds);
     return result;
   }
 
@@ -147,6 +156,7 @@ export class PersonService extends BaseService {
     if (face.person && face.person.faceAssetId === face.id) {
       await this.createNewFeaturePhoto([face.person]);
     }
+    await this.queueSidecarWriteForAssets([face.assetId]);
 
     return mapPerson(await this.findOrFail(auth, personGroupId));
   }
@@ -289,6 +299,10 @@ export class PersonService extends BaseService {
       });
     }
 
+    if (name !== undefined || isHidden !== undefined) {
+      await this.queueSidecarWriteForPeople([personGroupId]);
+    }
+
     return mapPerson(person);
   }
 
@@ -326,8 +340,11 @@ export class PersonService extends BaseService {
       permission: Permission.PersonDelete,
       ids: ids.map((id) => ({ personGroupId: id, ownerId })),
     });
+    const { metadata } = await this.getConfig({ withCache: true });
+    const assetIds = isFaceExportEnabled(metadata) ? await this.personRepository.getAssetIdsByPersonGroupIds(ids) : [];
     await this.removeAllPersonGroups(ids, ownerId);
     await this.personRepository.deleteEmptyGroups();
+    await this.queueSidecarWriteForAssets(assetIds);
   }
 
   @Chunked()
@@ -648,6 +665,9 @@ export class PersonService extends BaseService {
 
         this.logger.debug(`Assigning face ${id} to person group ${personGroupId}`);
         await this.personRepository.reassignFaces({ faceIds: [id], newPersonGroupId: personGroupId });
+        if (person?.name && !person.isHidden) {
+          await this.queueSidecarWriteForFaces([id]);
+        }
       }
 
       return JobStatus.Success;
@@ -758,6 +778,9 @@ export class PersonService extends BaseService {
     }
 
     await this.personRepository.deleteEmptyGroups();
+    if (targetId) {
+      await this.queueSidecarWriteForPeople([targetId]);
+    }
 
     return results.values().toArray();
   }
@@ -840,12 +863,62 @@ export class PersonService extends BaseService {
     if (!person.faceAssetId) {
       await this.createNewFeaturePhoto([person]);
     }
+    await this.queueSidecarWriteForAssets([dto.assetId]);
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FaceDelete, ids: [id] });
+    const { metadata } = await this.getConfig({ withCache: true });
+    const assetIds = isFaceExportEnabled(metadata) ? await this.personRepository.getAssetIdsByFaceIds([id]) : [];
 
-    return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
+    await (dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id));
+    await this.queueSidecarWriteForAssets(assetIds);
+  }
+
+  private async queueSidecarWriteForAssets(assetIds: string[]) {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    const { metadata } = await this.getConfig({ withCache: true });
+    if (!isFaceExportEnabled(metadata)) {
+      return;
+    }
+
+    const uniqueIds = [...new Set(assetIds)];
+    await this.jobRepository.queueAll(uniqueIds.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+  }
+
+  private async queueSidecarWriteForPeople(personGroupIds: string[]) {
+    if (personGroupIds.length === 0) {
+      return;
+    }
+
+    const { metadata } = await this.getConfig({ withCache: true });
+    if (!isFaceExportEnabled(metadata)) {
+      return;
+    }
+
+    const assetIds = await this.personRepository.getAssetIdsByPersonGroupIds(personGroupIds);
+    if (assetIds.length > 0) {
+      await this.jobRepository.queueAll(assetIds.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+    }
+  }
+
+  private async queueSidecarWriteForFaces(faceIds: string[]) {
+    if (faceIds.length === 0) {
+      return;
+    }
+
+    const { metadata } = await this.getConfig({ withCache: true });
+    if (!isFaceExportEnabled(metadata)) {
+      return;
+    }
+
+    const assetIds = await this.personRepository.getAssetIdsByFaceIds(faceIds);
+    if (assetIds.length > 0) {
+      await this.jobRepository.queueAll(assetIds.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+    }
   }
 
   async getUsersForPeople(auth: AuthDto, dto: PersonUsersSearchDto): Promise<PersonUsersResponseDto> {

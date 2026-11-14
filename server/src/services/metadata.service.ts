@@ -21,6 +21,7 @@ import {
   JobStatus,
   QueueName,
   SourceType,
+  SystemMetadataKey,
 } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository.js';
@@ -28,12 +29,13 @@ import { ImmichTags } from 'src/repositories/metadata.repository.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { JobOf } from 'src/types.js';
+import type { DeepPartial, JobOf, SystemFlags } from 'src/types.js';
 import { getAssetFiles } from 'src/utils/asset.util.js';
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
 import { mergeTimeZone } from 'src/utils/date.js';
+import { clearMwgRegionsExifToolArgs, toMwgExifToolArgs, toMwgRegionInfo } from 'src/utils/face-region.util.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { batched, isFaceImportEnabled } from 'src/utils/misc.js';
+import { batched, isFaceExportEnabled, isFaceImportEnabled } from 'src/utils/misc.js';
 import { upsertTags } from 'src/utils/tag.js';
 import { Tasks } from 'src/utils/tasks.js';
 
@@ -148,13 +150,43 @@ export class MetadataService extends BaseService {
   }
 
   @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Microservices] })
-  onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
+  async onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
     this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
+    if (isFaceExportEnabled(newConfig.metadata)) {
+      await this.ensureFaceSidecarBackfill();
+    }
   }
 
   @OnEvent({ name: 'ConfigUpdate', workers: [ImmichWorker.Microservices], server: true })
-  onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'ConfigUpdate'>) {
     this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
+    if (!isFaceExportEnabled(oldConfig.metadata) && isFaceExportEnabled(newConfig.metadata)) {
+      await this.queueFaceSidecarBackfill();
+    }
+  }
+
+  private async ensureFaceSidecarBackfill() {
+    const flags = (await this.systemMetadataRepository.get(SystemMetadataKey.SystemFlags)) ?? {};
+    if (flags.faceSidecarExportBackfilled) {
+      return;
+    }
+
+    await this.queueFaceSidecarBackfill(flags);
+  }
+
+  private async queueFaceSidecarBackfill(existingFlags?: DeepPartial<SystemFlags>) {
+    const assetIds = await this.personRepository.getAssetIdsWithNamedFaces();
+    if (assetIds.length > 0) {
+      await this.jobRepository.queueAll(assetIds.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+    }
+
+    const flags = existingFlags ?? (await this.systemMetadataRepository.get(SystemMetadataKey.SystemFlags)) ?? {};
+    if (!flags.faceSidecarExportBackfilled) {
+      await this.systemMetadataRepository.set(SystemMetadataKey.SystemFlags, {
+        ...flags,
+        faceSidecarExportBackfilled: true,
+      });
+    }
   }
 
   private async init() {
@@ -398,7 +430,11 @@ export class MetadataService extends BaseService {
       tasks.push(() => this.applyMotionPhotos(asset, exifTags, dates, stats));
     }
 
-    if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
+    if (
+      isFaceImportEnabled(metadata) &&
+      !(data.source === 'sidecar-write' && isFaceExportEnabled(metadata)) &&
+      this.hasTaggedFaces(exifTags)
+    ) {
       tasks.push(() => this.applyTaggedFaces(asset, exifTags));
     }
 
@@ -423,6 +459,16 @@ export class MetadataService extends BaseService {
       await this.jobRepository.queueAll(
         assets.map((asset) => ({ name: JobName.SidecarCheck, data: { id: asset.id } })),
       );
+    }
+
+    if (force) {
+      const { metadata } = await this.getConfig({ withCache: true });
+      if (isFaceExportEnabled(metadata)) {
+        const assetIds = await this.personRepository.getAssetIdsWithNamedFaces();
+        if (assetIds.length > 0) {
+          await this.jobRepository.queueAll(assetIds.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+        }
+      }
     }
 
     return JobStatus.Success;
@@ -518,11 +564,45 @@ export class MetadataService extends BaseService {
       isUndefined,
     );
 
-    if (Object.keys(exif).length === 0) {
+    const { metadata } = await this.getConfig({ withCache: true });
+    let writeArgs: string[] | undefined;
+
+    if (isFaceExportEnabled(metadata)) {
+      const faces = await this.personRepository.getFacesForSidecar(id);
+      if (faces.length === 0 && sidecarFile) {
+        writeArgs = clearMwgRegionsExifToolArgs();
+      } else if (faces.length > 0) {
+        const orientation = asset.exifInfo.orientation ? Number(asset.exifInfo.orientation) : undefined;
+        const dimensions =
+          asset.exifInfo.exifImageWidth && asset.exifInfo.exifImageHeight
+            ? { width: asset.exifInfo.exifImageWidth, height: asset.exifInfo.exifImageHeight }
+            : undefined;
+
+        const regionInfo = toMwgRegionInfo(
+          faces.map((f) => ({
+            ...f,
+            name: f.name || '',
+          })),
+          orientation,
+          dimensions,
+        );
+
+        if (regionInfo) {
+          writeArgs = toMwgExifToolArgs(regionInfo);
+        }
+      }
+    }
+
+    if (Object.keys(exif).length === 0 && (!writeArgs || writeArgs.length === 0)) {
       return JobStatus.Skipped;
     }
 
-    await this.metadataRepository.writeTags(sidecarPath, exif);
+    const written = writeArgs
+      ? await this.metadataRepository.writeTags(sidecarPath, exif, writeArgs)
+      : await this.metadataRepository.writeTags(sidecarPath, exif);
+    if (!written) {
+      return JobStatus.Failed;
+    }
 
     if (asset.files.length === 0) {
       await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: sidecarPath });
@@ -914,7 +994,7 @@ export class MetadataService extends BaseService {
       id: string;
       ownerId: string;
       clusterGroupId: string;
-      faces: { id: string; sourceType: SourceType }[];
+      faces: { id: string; sourceType: SourceType; personGroupId?: string | null }[];
       originalPath: string;
     },
     tags: ImmichTags,
@@ -941,7 +1021,15 @@ export class MetadataService extends BaseService {
       }
 
       const loweredName = region.Name.toLowerCase();
-      const personGroupId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
+      const existingPersonGroupId = existingNameMap.get(loweredName);
+      if (
+        existingPersonGroupId &&
+        asset.faces.some((face) => face.sourceType !== SourceType.Exif && face.personGroupId === existingPersonGroupId)
+      ) {
+        continue;
+      }
+
+      const personGroupId = existingPersonGroupId || this.cryptoRepository.randomUUID();
 
       const X = Number(region.Area.X);
       const Y = Number(region.Area.Y);
