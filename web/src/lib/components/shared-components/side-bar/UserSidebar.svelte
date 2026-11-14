@@ -121,3 +121,18 @@
 
   <BottomInfo />
 </Sidebar>
+
+<style>
+  #sidebar {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  html.dark #sidebar {
+    background: rgba(15, 15, 17, 0.55) !important;
+  }
+
+  html.light #sidebar {
+    background: rgba(245, 245, 247, 0.6) !important;
+  }
+</style>
