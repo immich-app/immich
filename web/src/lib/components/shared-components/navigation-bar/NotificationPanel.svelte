@@ -111,3 +111,18 @@
     {/if}
   </Stack>
 </div>
+
+<style>
+  #notification-panel {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  html.dark #notification-panel {
+    background: rgba(15, 15, 17, 0.55) !important;
+  }
+
+  html.light #notification-panel {
+    background: rgba(245, 245, 247, 0.6) !important;
+  }
+</style>
