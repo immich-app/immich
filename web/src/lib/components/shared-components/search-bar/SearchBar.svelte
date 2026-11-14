@@ -218,3 +218,18 @@
     </div>
   </form>
 </div>
+
+<style>
+  #main-search-bar {
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+  }
+
+  html.dark #main-search-bar {
+    background: rgba(15, 15, 17, 0.55) !important;
+  }
+
+  html.light #main-search-bar {
+    background: rgba(245, 245, 247, 0.6) !important;
+  }
+</style>
