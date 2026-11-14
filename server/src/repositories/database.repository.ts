@@ -314,7 +314,7 @@ export class DatabaseRepository {
         .int()
         .min(1)
         .max(2 ** 16)
-        .safeParse(dimSize).success
+        .validate(dimSize)
     ) {
       this.logger.warn(`Could not retrieve dimension size of column '${column}' in table '${table}', assuming 512`);
       return 512;
@@ -328,7 +328,7 @@ export class DatabaseRepository {
         .int()
         .min(1)
         .max(2 ** 16)
-        .safeParse(dimSize).success
+        .validate(dimSize)
     ) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }

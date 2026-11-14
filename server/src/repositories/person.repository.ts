@@ -797,7 +797,7 @@ export class PersonRepository {
     });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, 2] })
+  @GenerateSql({ params: [[{ clusterGroupId: DummyValue.UUID }]] })
   async createGroups(personGroups: Insertable<PersonGroupTable>[]) {
     if (personGroups.length === 0) {
       return [];

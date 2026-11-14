@@ -107,6 +107,40 @@ describe('toOpenApiComponents', () => {
       ExtraDto: { properties: { id: { type: 'string' } }, required: ['id'], type: 'object' },
     });
   });
+
+  it('describes a nullable reference on the property itself', () => {
+    const Kind = z.enum(['major', 'minor']).meta({ id: 'Kind' });
+    class NullableReferenceDto extends createZodDto(z.object({ kind: Kind.describe('Release kind').nullable() })) {}
+    expect(toOpenApiComponents([NullableReferenceDto]).NullableReferenceDto).toEqual({
+      properties: {
+        kind: { description: 'Release kind', anyOf: [{ $ref: '#/components/schemas/Kind' }, { type: 'null' }] },
+      },
+      required: ['kind'],
+      type: 'object',
+    });
+  });
+
+  it('describes a nullable property on the property itself', () => {
+    class NullableDescribedDto extends createZodDto(z.object({ id: z.uuid().describe('Owner ID').nullable() })) {}
+    expect(toOpenApiComponents([NullableDescribedDto]).NullableDescribedDto).toMatchObject({
+      properties: { id: { description: 'Owner ID', format: 'uuid', type: ['string', 'null'] } },
+    });
+    expect(toOpenApiComponents([NullableDescribedDto]).NullableDescribedDto).not.toHaveProperty('properties.id.anyOf');
+  });
+
+  it.each([
+    { name: 'enum', value: z.enum(['major', 'minor']), expected: { enum: ['major', 'minor'], type: 'string' } },
+    {
+      name: 'object',
+      value: z.object({ name: z.string() }),
+      expected: { properties: { name: { type: 'string' } }, required: ['name'], type: 'object' },
+    },
+  ])('keeps a nullable $name as a union with null', ({ value, expected }) => {
+    class NullableDto extends createZodDto(z.object({ value: value.nullable() })) {}
+    expect(toOpenApiComponents([NullableDto]).NullableDto).toMatchObject({
+      properties: { value: { anyOf: [expected, { type: 'null' }] } },
+    });
+  });
 });
 
 type RouteArguments = Record<string, { index: number; schema?: unknown }>;

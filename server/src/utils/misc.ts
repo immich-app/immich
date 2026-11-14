@@ -203,30 +203,23 @@ const isSchema = (schema: string | ReferenceObject | SchemaObject): schema is Sc
   return !(typeof schema === 'string' || '$ref' in schema);
 };
 
+const getNumberSchemas = (schema: string | ReferenceObject | SchemaObject): SchemaObject[] => {
+  if (!isSchema(schema)) {
+    return [];
+  }
+
+  if (schema.type === 'array' && schema.items) {
+    return getNumberSchemas(schema.items);
+  }
+
+  if (schema.anyOf) {
+    return schema.anyOf.flatMap((branch) => getNumberSchemas(branch));
+  }
+
+  return [schema.type].flat().includes('number') ? [schema] : [];
+};
+
 const patchOpenAPI = (document: OpenAPIObject) => {
-  const removeOpenApi30IncompatibleKeys = (target: unknown) => {
-    if (!target || typeof target !== 'object') {
-      return;
-    }
-
-    if (Array.isArray(target)) {
-      for (const item of target) {
-        removeOpenApi30IncompatibleKeys(item);
-      }
-      return;
-    }
-
-    const object = target as Record<string, unknown>;
-    delete object.propertyNames;
-    delete object.contentEncoding;
-
-    for (const value of Object.values(object)) {
-      removeOpenApi30IncompatibleKeys(value);
-    }
-  };
-
-  // Allowed in OpenAPI v3.1 (JSON Schema 2020-12), but not in OpenAPI v3.0 (current spec).
-  removeOpenApi30IncompatibleKeys(document);
   patchOpenApiParameters(document);
 
   if (document.components?.schemas) {
@@ -255,30 +248,18 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
       schema.properties = sortKeys(schema.properties);
 
-      for (const [key, initialValue] of Object.entries(schema.properties)) {
-        if (typeof initialValue === 'string' || !isSchema(initialValue)) {
-          continue;
-        }
+      for (const [key, property] of Object.entries(schema.properties)) {
+        for (const value of getNumberSchemas(property)) {
+          if (value.format === 'float') {
+            errors.push(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+          }
 
-        // check array types
-        let value: SchemaObject | ReferenceObject = initialValue;
-        if (value.type === 'array' && value.items) {
-          value = value.items;
-        }
-
-        if (!(isSchema(value) && value.type === 'number')) {
-          continue;
-        }
-
-        if (value.format === 'float') {
-          errors.push(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
-        }
-
-        // verify it was meant to be a number (and not an integer)
-        if (!value.format) {
-          errors.push(
-            `${schemaName}.${key} is a number (not an integer) and requires a format (e.g .meta({ format: 'double' })). `,
-          );
+          // verify it was meant to be a number (and not an integer)
+          if (!value.format) {
+            errors.push(
+              `${schemaName}.${key} is a number (not an integer) and requires a format (e.g .meta({ format: 'double' })). `,
+            );
+          }
         }
       }
       if (errors.length > 0) {
@@ -337,6 +318,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     .setTitle('Immich')
     .setDescription('Immich API')
     .setVersion(serverVersion.toString())
+    .setOpenAPIVersion('3.1.0')
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',

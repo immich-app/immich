@@ -22,3 +22,6 @@ targets:
          enabled: true
          options: *drift_options
          generate_for: *drift_generate_for
+       freezed:
+         options:
+           make_collections_unmodifiable: false

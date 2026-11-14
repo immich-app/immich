@@ -33,8 +33,42 @@ export const createHandlers = (data: MockData): Handlers => {
     getMyPreferences: () => ({ json: data.getPreferences() }),
     updateMyPreferences: ({ body }) => ({ json: data.updatePreferences(body) }),
     getAuthStatus: () => ({ json: data.getAuthStatus() }),
+    login: () => ({ status: 201, json: data.loginResponse() }),
+    logout: () => ({ json: { successful: true, redirectUri: '/auth/login' } }),
+    signUpAdmin: ({ body }) => ({ status: 201, json: data.signUpAdmin(body) }),
+    changePassword: () => ({ json: data.changePassword() }),
+    setupPinCode: () => {
+      data.setAuthStatus({ pinCode: true });
+      return { status: 204 };
+    },
+    changePinCode: () => ({ status: 204 }),
+    resetPinCode: () => {
+      data.setAuthStatus({ pinCode: false, isElevated: false });
+      return { status: 204 };
+    },
+    unlockAuthSession: () => {
+      data.setAuthStatus({ isElevated: true });
+      return { status: 204 };
+    },
+    lockAuthSession: () => {
+      data.setAuthStatus({ isElevated: false });
+      return { status: 204 };
+    },
+    finishOAuth: () => ({ status: 201, json: data.loginResponse() }),
+    linkOAuthAccount: () => ({ json: data.setOAuthId('oauth-user') }),
+    unlinkOAuthAccount: () => ({ json: data.setOAuthId('') }),
+    unlinkAllOAuthAccountsAdmin: () => ({ status: 204 }),
     searchUsers: () => ({ json: data.searchUsers() }),
     getPartners: ({ params }) => ({ json: data.partnerList(params.direction) }),
+    createPartner: ({ body }) => {
+      const partner = data.createPartner(body.sharedWithId);
+      return partner ? { status: 201, json: partner } : notFound;
+    },
+    removePartner: ({ params }) => (data.removePartner(params.id) ? { status: 204 } : notFound),
+    updatePartner: ({ params, body }) => {
+      const partner = data.updatePartner(params.id, body.inTimeline);
+      return partner ? { json: partner } : notFound;
+    },
     getNotifications: () => ({ json: data.notifications }),
     createProfileImage: () => ({
       status: 201,
@@ -88,8 +122,18 @@ export const createHandlers = (data: MockData): Handlers => {
     getUserPreferencesAdmin: () => ({ json: factory.preferences() }),
     getServerVersion: () => ({ json: data.serverVersion }),
     listDatabaseBackups: () => ({ json: data.backups }),
+    deleteDatabaseBackup: ({ body }) => {
+      data.deleteBackups(body.backups);
+      return { status: 200 };
+    },
+    startDatabaseRestoreFlow: () => ({ status: 201 }),
+    setMaintenanceMode: () => ({ status: 201 }),
+    maintenanceLogin: ({ body }) => ({ status: 201, json: { username: body.token ? data.user.name : '' } }),
+    getMaintenanceStatus: () => ({ json: data.getMaintenanceStatus() }),
     getQueuesLegacy: () => ({ json: data.queues }),
     getIntegrityReportSummary: () => ({ json: data.getIntegrityReport() }),
+    getIntegrityReport: ({ params }) => ({ json: data.integrityReportPage(params) }),
+    deleteIntegrityReport: ({ params }) => (data.deleteIntegrityReportItem(params.id) ? { status: 200 } : notFound),
     createJob: () => ({ status: 201 }),
     getQueues: () => ({ json: data.queueList() }),
     getQueue: ({ params }) => {
@@ -134,6 +178,8 @@ export const createHandlers = (data: MockData): Handlers => {
       return { status: 204 };
     },
     restoreAssets: ({ body }) => ({ json: { count: data.restoreAssets(body.ids) } }),
+    emptyTrash: () => ({ json: { count: data.emptyTrash() } }),
+    restoreTrash: () => ({ json: { count: data.restoreTrash() } }),
     getAssetOcr: ({ params }) => ({ json: data.getOcr(params.id) }),
     runAssetJobs: () => ({ status: 204 }),
     getAssetEdits: ({ params }) => (data.getAsset(params.id) ? { json: data.getAssetEdits(params.id) } : notFound),
@@ -182,6 +228,17 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     getPersonStatistics: ({ params }) => ({ json: data.personStatistics(params.id) }),
     getClusterGroupUsers: ({ params }) => ({ json: data.clusterGroupUsers(params.id) }),
+    getClusterGroupRequests: () => ({ json: data.clusterGroupRequestList({ userId: data.user.id }) }),
+    getClusterGroupRequestsForGroup: ({ params }) => ({
+      json: data.clusterGroupRequestList({ clusterGroupId: params.id }),
+    }),
+    createClusterGroupRequest: ({ params, body }) => ({
+      json: data.createClusterGroupRequest(params.id, body.userId),
+    }),
+    acceptClusterGroupRequest: ({ params }) => (data.acceptClusterGroupRequest(params.id) ? { status: 204 } : notFound),
+    deleteClusterGroupRequest: ({ params }) => (data.deleteClusterGroupRequest(params.id) ? { status: 204 } : notFound),
+    leaveClusterGroup: () => (data.leaveClusterGroup(data.user.id) ? { status: 204 } : notFound),
+    clusterGroupRegeneratePeople: () => ({ status: 204 }),
     updatePerson: ({ params, body }) => {
       const person = data.updatePerson(params.id, body);
       return person ? { json: person } : notFound;

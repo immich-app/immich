@@ -43,9 +43,19 @@ jobs:
           filters: |
             server:
               - 'server/**'
-              - 'openapi/**'
               - 'web/**'
               - 'i18n/**'
+              - 'packages/sdk/**'
+              - 'packages/plugin-sdk/**'
+              - 'packages/plugin-core/**'
+              - 'packages/cli/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.pnpmfile.cjs'
+              - 'mise.toml'
+              - 'mise.lock'
+              - '.mise/**'
             machine-learning:
               - 'machine-learning/**'
           force-filters: |

@@ -177,6 +177,15 @@ export const createApp = (page: Page, data: MockData) => {
         await accountButton.click();
         await button('edit_avatar').click();
       },
+      signOut: async () => {
+        await accountButton.click();
+        await link('sign_out').click();
+      },
+    },
+
+    login: {
+      oauthButton: button(data.publicConfig.oauth.buttonText),
+      passkeyButton: button('login_with_passkey'),
     },
 
     userPicker: {
