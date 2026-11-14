@@ -17,6 +17,38 @@ enum AssetState { local, remote, merged }
 // keep in sync with PlatformAssetPlaybackStyle
 enum AssetPlaybackStyle { unknown, image, video, imageAnimated, livePhoto, videoLooping }
 
+const _rawExtensions = {
+  '.3fr',
+  '.ari',
+  '.arw',
+  '.cap',
+  '.cin',
+  '.cr2',
+  '.cr3',
+  '.crw',
+  '.dcr',
+  '.dng',
+  '.erf',
+  '.fff',
+  '.iiq',
+  '.k25',
+  '.kdc',
+  '.mrw',
+  '.nef',
+  '.nrw',
+  '.orf',
+  '.ori',
+  '.pef',
+  '.raf',
+  '.raw',
+  '.rw2',
+  '.rwl',
+  '.sr2',
+  '.srf',
+  '.srw',
+  '.x3f',
+};
+
 sealed class BaseAsset {
   final String name;
   final String? checksum;
@@ -47,6 +79,11 @@ sealed class BaseAsset {
 
   bool get isMotionPhoto => playbackStyle == AssetPlaybackStyle.livePhoto;
   bool get isAnimatedImage => playbackStyle == AssetPlaybackStyle.imageAnimated;
+
+  bool get isRaw {
+    final extensionStart = name.lastIndexOf('.');
+    return isImage && extensionStart != -1 && _rawExtensions.contains(name.substring(extensionStart).toLowerCase());
+  }
 
   Duration get duration {
     final durationMs = this.durationMs;
