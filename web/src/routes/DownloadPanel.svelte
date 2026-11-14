@@ -20,6 +20,7 @@
 
 {#if downloadManager.isDownloading}
   <div
+    id="download-panel"
     transition:fly={{ x: -100, duration: 350 }}
     class="fixed inset-s-2 bottom-10 z-60 max-h-67.5 w-89 rounded-2xl border bg-subtle p-4 shadow-lg dark:border-white/10"
   >
@@ -54,3 +55,18 @@
     </div>
   </div>
 {/if}
+
+<style>
+  #download-panel {
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+  }
+
+  html.dark #download-panel {
+    background: rgba(15, 15, 17, 0.55) !important;
+  }
+
+  html.light #download-panel {
+    background: rgba(245, 245, 247, 0.6) !important;
+  }
+</style>
