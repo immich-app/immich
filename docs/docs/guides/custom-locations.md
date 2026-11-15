@@ -11,6 +11,7 @@ It is important to remember to update the backup settings after following the gu
 :::
 
 Edit the `docker-compose.yml` file to add new mount points to the `immich-server` container. These right side of the path is where the mount attaches inside of the container, so don't change those.
+Note that you don't have to define all of these: UPLOAD_LOCATION will be the base folder that files are stored in by default, with the other paths acting as overrides.
 
 ```diff title="docker-compose.yml"
 services:
