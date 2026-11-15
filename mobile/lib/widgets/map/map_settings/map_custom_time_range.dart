@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/time_range.model.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/utils/option.dart';
 
@@ -19,7 +20,7 @@ class MapTimeRange extends StatelessWidget {
           title: Text(context.t.date_after),
           subtitle: Text(
             timeRange.from != null
-                ? DateFormat.yMMMd(context.locale.toLanguageTag()).add_jm().format(timeRange.from!)
+                ? DateFormat.yMMMd(resolvedDateTimeLocale()).add_jm().format(timeRange.from!)
                 : context.t.not_set,
           ),
           trailing: timeRange.from != null
@@ -45,7 +46,7 @@ class MapTimeRange extends StatelessWidget {
           title: Text(context.t.date_before),
           subtitle: Text(
             timeRange.to != null
-                ? DateFormat.yMMMd(context.locale.toLanguageTag()).add_jm().format(timeRange.to!)
+                ? DateFormat.yMMMd(resolvedDateTimeLocale()).add_jm().format(timeRange.to!)
                 : context.t.not_set,
           ),
           trailing: timeRange.to != null

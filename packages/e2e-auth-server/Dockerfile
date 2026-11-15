@@ -1,7 +1,12 @@
-FROM node:24.21.0-trixie-slim@sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe
-WORKDIR /usr/src/app
+FROM ghcr.io/immich-app/base-server-dev:202611031105@sha256:a1569fa3e5de340495658c3683574a15c1cc675db4bee635dd83f66e0ec7212b
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+  CI=1 \
+  COREPACK_HOME=/tmp
 
-RUN corepack enable
+RUN npm install --global corepack@latest && \
+  corepack enable pnpm
+
+WORKDIR /usr/src/app
 
 COPY package* pnpm* .pnpmfile.cjs ./
 COPY ./packages/e2e-auth-server/package.json ./packages/e2e-auth-server/

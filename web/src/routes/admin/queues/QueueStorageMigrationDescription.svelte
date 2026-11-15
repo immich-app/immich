@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { OpenQueryParam } from '$lib/constants';
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { Route } from '$lib/route';
+  import { OpenQueryParam } from '#lib/constants.ts';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import { Route } from '#lib/route.ts';
   import { t } from 'svelte-i18n';
 </script>
 

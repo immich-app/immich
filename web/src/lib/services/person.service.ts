@@ -1,6 +1,12 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import PersonEditAccessModal from '#lib/modals/PersonEditAccessModal.svelte';
+import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import {
-  getPerson,
   PersonUpdateStrategy,
+  getPerson,
   updatePerson,
   type AssetResponseDto,
   type PersonResponseDto,
@@ -17,18 +23,13 @@ import {
   mdiPencilOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import PersonEditAccessModal from '$lib/modals/PersonEditAccessModal.svelte';
-import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto) => {
   const Edit: ActionItem = {
     title: $t('edit_person'),
     icon: mdiPencilOutline,
     onAction: () => modalManager.show(PersonEditModal, { person }),
+    shortcuts: { key: 'e' },
   };
 
   const Favorite: ActionItem = {
@@ -36,6 +37,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     icon: mdiHeartOutline,
     $if: () => !person.isFavorite,
     onAction: () => handleFavoritePerson(person),
+    shortcuts: { key: 'f' },
   };
 
   const Unfavorite: ActionItem = {
@@ -43,6 +45,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     icon: mdiHeartMinusOutline,
     $if: () => !!person.isFavorite,
     onAction: () => handleUnfavoritePerson(person),
+    shortcuts: { key: 'f' },
   };
 
   const HidePerson: ActionItem = {
@@ -50,6 +53,7 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     icon: mdiEyeOffOutline,
     $if: () => !person.isHidden,
     onAction: () => handleHidePerson(person),
+    shortcuts: { key: 'h' },
   };
 
   const ShowPerson: ActionItem = {
@@ -57,10 +61,11 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     icon: mdiEyeOutline,
     $if: () => !!person.isHidden,
     onAction: () => handleShowPerson(person),
+    shortcuts: { key: 'h' },
   };
 
   const Access: ActionItem = {
-    title: 'Manage access',
+    title: $t('manage_person_access'),
     icon: mdiAccountMultipleOutline,
     onAction: () => modalManager.show(PersonEditAccessModal, { person }),
   };

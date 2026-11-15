@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { page } from '$app/state';
   import { t } from 'svelte-i18n';
+  import { page } from '$app/state';
 </script>
 
 <svelte:head>

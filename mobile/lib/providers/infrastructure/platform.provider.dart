@@ -6,6 +6,7 @@ import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/platform/local_image_api.g.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/network_api.g.dart';
+import 'package:immich_mobile/platform/passkey_api.g.dart';
 import 'package:immich_mobile/platform/permission_api.g.dart';
 import 'package:immich_mobile/platform/remote_image_api.g.dart';
 
@@ -20,6 +21,8 @@ final nativeSyncApiProvider = Provider<NativeSyncApi>((_) => NativeSyncApi());
 final permissionApiProvider = Provider<PermissionApi>((_) => PermissionApi());
 
 final connectivityApiProvider = Provider<ConnectivityApi>((_) => ConnectivityApi());
+
+final passkeyHostApiProvider = Provider<PasskeyHostApi>((_) => PasskeyHostApi());
 
 final localImageApi = LocalImageApi();
 

@@ -11,8 +11,6 @@ export const playwriteBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? `http://${pla
 export const playwriteSlowMo = Number.parseInt(process.env.PLAYWRIGHT_SLOW_MO ?? '0');
 export const playwrightDisableWebserver = process.env.PLAYWRIGHT_DISABLE_WEBSERVER;
 
-process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
-
 const config: PlaywrightTestConfig = {
   testDir: './src/specs/server',
   testMatch: /.*\.e2e-spec\.ts/,
@@ -37,13 +35,6 @@ const config: PlaywrightTestConfig = {
       use: { ...devices['Desktop Chrome'] },
       testDir: './src/specs/web',
       workers: 1,
-    },
-    {
-      name: 'ui',
-      use: { ...devices['Desktop Chrome'] },
-      testDir: './src/ui/specs',
-      fullyParallel: true,
-      workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
     },
     {
       name: 'maintenance',

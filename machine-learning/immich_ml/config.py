@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     ann_fp16_turbo: bool = False
     ann_tuning_level: int = 2
     rknn: bool = True
-    rknn_threads: int = 1
+    rknn_threads: int | None = None
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize = MaxBatchSize()
     model_organization: ModelOrganization = ModelOrganization.APP

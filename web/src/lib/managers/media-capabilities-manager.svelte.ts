@@ -89,5 +89,4 @@ class MediaCapabilitiesManager {
 }
 
 export const mediaCapabilitiesManager = new MediaCapabilitiesManager();
-// eslint-disable-next-line unicorn/no-top-level-side-effects
 mediaCapabilitiesManager.init();

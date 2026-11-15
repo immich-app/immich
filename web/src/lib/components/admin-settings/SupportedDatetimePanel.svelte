@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import type { SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
   import { Card, CardBody, CardHeader, Heading, Text } from '@immich/ui';
   import { DateTime } from 'luxon';

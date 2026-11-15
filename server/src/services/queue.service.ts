@@ -1,6 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type { ArgOf } from 'src/repositories/event.repository.js';
-import type { ConcurrentQueueName, JobItem } from 'src/types.js';
 import { OnEvent } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
@@ -28,7 +26,9 @@ import {
   QueueCommand,
   QueueName,
 } from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
+import type { ConcurrentQueueName, JobItem } from 'src/types.js';
 import { handlePromiseError } from 'src/utils/misc.js';
 
 const asNightlyTasksCron = (config: SystemConfig) => {
@@ -185,7 +185,7 @@ export class QueueService extends BaseService {
       this.jobRepository.getJobCounts(name),
       this.jobRepository.isPaused(name),
     ]);
-    return { name, isPaused, statistics };
+    return { name, isPaused, statistics: { ...statistics, paused: 0 } };
   }
 
   private async start(name: QueueName, { force }: QueueCommandDto): Promise<void> {
@@ -275,6 +275,7 @@ export class QueueService extends BaseService {
         { name: JobName.PersonCleanup },
         { name: JobName.MemoryCleanup },
         { name: JobName.SessionCleanup },
+        { name: JobName.AuthChallengeCleanup },
         { name: JobName.HlsSessionCleanup },
         { name: JobName.AuditTableCleanup },
       );

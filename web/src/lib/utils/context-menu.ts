@@ -1,6 +1,6 @@
 export type Align = 'middle' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
-export type ContextMenuPosition = { x: number; y: number };
+type ContextMenuPosition = { x: number; y: number };
 
 export const getContextMenuPositionFromEvent = (
   event: MouseEvent | KeyboardEvent,

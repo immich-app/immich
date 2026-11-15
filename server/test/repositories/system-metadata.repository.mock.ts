@@ -1,6 +1,6 @@
 import { Mocked, vitest } from 'vitest';
-import type { RepositoryInterface } from 'src/types.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import type { RepositoryInterface } from 'src/types.js';
 import { clearConfigCache } from 'src/utils/config.js';
 
 export const newSystemMetadataRepositoryMock = (): Mocked<RepositoryInterface<SystemMetadataRepository>> => {

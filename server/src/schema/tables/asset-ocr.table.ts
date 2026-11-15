@@ -2,11 +2,11 @@ import {
   AfterDeleteTrigger,
   Column,
   ForeignKeyColumn,
-  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
+  type Generated,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { asset_ocr_delete_audit } from 'src/schema/functions.js';

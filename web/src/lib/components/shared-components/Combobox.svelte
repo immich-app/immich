@@ -20,10 +20,8 @@
 </script>
 
 <script lang="ts">
-  import { focusOutside } from '$lib/actions/focus-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { generateId } from '$lib/utils/generate-id';
-  import { Icon, IconButton, Label } from '@immich/ui';
+  import { focusOutside } from '#lib/actions/focus-outside.ts';
+  import { Icon, IconButton, Label, shortcuts } from '@immich/ui';
   import { mdiChevronDown, mdiClose, mdiMagnify } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -37,13 +35,9 @@
     options?: ComboBoxOption[];
     selectedOption?: ComboBoxOption | undefined;
     placeholder?: string;
-    /**
-     * whether creating new items is allowed.
-     */
+    /** whether creating new items is allowed. */
     allowCreate?: boolean;
-    /**
-     * select first matching option on enter key.
-     */
+    /** select first matching option on enter key. */
     defaultFirstOption?: boolean;
     onSelect?: (option: ComboBoxOption | undefined) => void;
     forceFocus?: boolean;
@@ -62,17 +56,9 @@
     forceFocus = false,
   }: Props = $props();
 
-  /**
-   * Unique identifier for the combobox.
-   */
-  let id: string = generateId();
-  /**
-   * Indicates whether or not the dropdown autocomplete list should be visible.
-   */
+  /** Indicates whether or not the dropdown autocomplete list should be visible. */
   let isOpen = $state(false);
-  /**
-   * Keeps track of whether the combobox is actively being used.
-   */
+  /** Keeps track of whether the combobox is actively being used. */
   let isActive = $state(false);
   let searchQuery = $derived(selectedOption?.label || '');
   let selectedIndex: number | undefined = $state();
@@ -80,15 +66,12 @@
   let input = $state<HTMLInputElement>();
   let bounds: DOMRect | undefined = $state();
 
+  const id = $props.id();
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
-  /**
-   * Buffer distance between the dropdown and top/bottom of the viewport.
-   */
+  /** Buffer distance between the dropdown and top/bottom of the viewport. */
   const dropdownOffset = 15;
-  /**
-   * Minimum space required for the dropdown to be displayed at the bottom of the input.
-   */
+  /** Minimum space required for the dropdown to be displayed at the bottom of the input. */
   const bottomBreakpoint = 225;
   const observer = new IntersectionObserver(
     (entries) => {
@@ -273,8 +256,8 @@
 {/if}
 <div
   class="relative w-full text-base text-gray-700 dark:text-gray-300"
-  use:focusOutside={{ onFocusOut: deactivate }}
-  use:shortcuts={[
+  {@attach focusOutside({ onFocusOut: deactivate })}
+  {@attach shortcuts([
     {
       shortcut: { key: 'Escape' },
       onShortcut: (event) => {
@@ -282,7 +265,7 @@
         closeDropdown();
       },
     },
-  ]}
+  ])}
 >
   <div>
     {#if isActive}
@@ -313,8 +296,8 @@
       role="combobox"
       type="text"
       value={searchQuery}
-      use:forceFocusInput
-      use:shortcuts={[
+      {@attach forceFocusInput}
+      {@attach shortcuts([
         {
           shortcut: { key: 'ArrowUp' },
           onShortcut: () => {
@@ -355,7 +338,7 @@
             closeDropdown();
           },
         },
-      ]}
+      ])}
     />
 
     <div
@@ -409,7 +392,7 @@
           {allowCreate ? searchQuery : $t('no_results')}
         </li>
       {/if}
-      {#each filteredOptions as option, index (option.id || option.label)}
+      {#each filteredOptions as option, index (option.id ?? `${option.value}:${option.label}`)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           aria-selected={index === selectedIndex}

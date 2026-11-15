@@ -88,7 +88,7 @@ class UploadRepository {
       } on RequestAbortedException {
         rethrow;
       } on ClientException catch (error) {
-        logger.warning("Upload $logContext failed before a response, resending once: $error");
+        logger.warning("Upload $logContext failed before a response, resending once", error);
         response = await client.send(buildRequest());
       }
 
@@ -124,8 +124,8 @@ class UploadRepository {
       logger.warning("Upload $logContext was cancelled");
       return UploadResult.cancelled();
     } catch (error, stackTrace) {
-      logger.warning("Error uploading $logContext: $error: $stackTrace");
-      return UploadResult.error(errorMessage: error.toString());
+      logger.warning("Error uploading $logContext", error, stackTrace);
+      return UploadResult(isSuccess: false, isCancelled: false, errorMessage: error.toString(), error: error);
     }
   }
 }
@@ -166,6 +166,7 @@ class UploadResult {
   final String? remoteAssetId;
   final String? errorMessage;
   final int? statusCode;
+  final Object? error;
 
   const UploadResult({
     required this.isSuccess,
@@ -173,6 +174,7 @@ class UploadResult {
     this.remoteAssetId,
     this.errorMessage,
     this.statusCode,
+    this.error,
   });
 
   factory UploadResult.success({required String remoteAssetId}) {

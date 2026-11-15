@@ -1,15 +1,15 @@
-import { getAssetDuplicates } from '@immich/sdk';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
+import { queryClient } from '#lib/queries/client.ts';
+import { getAssetDuplicatesQuery } from '#lib/queries/duplicate.query.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-  const duplicates = await getAssetDuplicates();
+  await queryClient.query({ ...getAssetDuplicatesQuery(), staleTime: 0 });
   const $t = await getFormatter();
 
   return {
-    duplicates,
     meta: {
       title: $t('duplicates'),
     },

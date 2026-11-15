@@ -218,9 +218,9 @@ export const sha1 = (filepath: string) => {
 };
 
 /**
- * Batches items and calls onBatch to process them
- * when the batch size is reached or the debounce time has passed.
- */
+Batches items and calls onBatch to process them
+when the batch size is reached or the debounce time has passed.
+*/
 export class Batcher<T = unknown> {
   private items: T[] = [];
   private readonly batchSize: number;

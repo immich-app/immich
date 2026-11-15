@@ -11,7 +11,7 @@
 </script>
 
 <script lang="ts" generics="T">
-  import { clickOutside } from '$lib/actions/click-outside';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
   import { Button, Icon, Text } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
   import { isEqual } from 'lodash-es';
@@ -94,7 +94,7 @@
   };
 </script>
 
-<div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }} class="relative">
+<div {@attach clickOutside({ onOutclick: handleClickOutside, onEscape: handleClickOutside })} class="relative">
   <!-- BUTTON TITLE -->
   <Button onclick={() => (showMenu = true)} fullWidth {title} variant="ghost" color="secondary" size="small">
     {#if renderedSelectedOption?.icon}
@@ -112,8 +112,8 @@
       )}"
     >
       {#each options as option (option)}
-        {@const renderedOption = renderOption(option)}
-        {@const buttonStyle = renderedOption.disabled ? '' : 'transition-all hover:bg-gray-300 dark:hover:bg-gray-800'}
+        {const renderedOption = renderOption(option)}
+        {const buttonStyle = renderedOption.disabled ? '' : 'transition-all hover:bg-gray-300 dark:hover:bg-gray-800'}
         <button
           type="button"
           class="grid grid-cols-[36px_1fr] place-items-center p-2 disabled:opacity-40 {buttonStyle}"

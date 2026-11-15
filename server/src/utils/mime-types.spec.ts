@@ -20,7 +20,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/gif', extension: '.gif' },
     { mimetype: 'image/heic', extension: '.heic' },
     { mimetype: 'image/heif', extension: '.heif' },
-    { mimetype: 'image/hif', extension: '.hif' },
+    { mimetype: 'image/heif', extension: '.hif' },
     { mimetype: 'image/iiq', extension: '.iiq' },
     { mimetype: 'image/jp2', extension: '.jp2' },
     { mimetype: 'image/jpeg', extension: '.jfif' },

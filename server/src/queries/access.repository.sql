@@ -125,29 +125,53 @@ where
   and "asset"."id" in ($2)
 
 -- AccessRepository.asset.checkSharedLinkAccess
+with
+  "target" as (
+    select
+      array[$1]::uuid[] as "ids"
+  ),
+  "link" as (
+    select
+      "shared_link"."id",
+      "shared_link"."albumId"
+    from
+      "shared_link"
+    where
+      "shared_link"."id" = $2
+  )
 select
-  "asset"."id" as "assetId",
-  "asset"."livePhotoVideoId" as "assetLivePhotoVideoId",
-  "albumAssets"."id" as "albumAssetId",
-  "albumAssets"."livePhotoVideoId" as "albumAssetLivePhotoVideoId"
+  "asset"."id",
+  "asset"."livePhotoVideoId"
 from
-  "shared_link"
-  left join "album" on "album"."id" = "shared_link"."albumId"
-  and "album"."deletedAt" is null
-  left join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
-  left join "asset" on "asset"."id" = "shared_link_asset"."assetId"
-  and "asset"."deletedAt" is null
-  left join "album_asset" on "album_asset"."albumId" = "album"."id"
-  left join "asset" as "albumAssets" on "albumAssets"."id" = "album_asset"."assetId"
-  and "albumAssets"."deletedAt" is null
+  "asset"
+  cross join "target"
+  inner join lateral (
+    select
+      1 as "match"
+    from
+      "link"
+      inner join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "link"."id"
+    where
+      "shared_link_asset"."assetId" = "asset"."id"
+    union all
+    select
+      1 as "match"
+    from
+      "link"
+      inner join "album" on "album"."id" = "link"."albumId"
+      and "album"."deletedAt" is null
+      inner join "album_asset" on "album_asset"."albumId" = "album"."id"
+    where
+      "album_asset"."assetId" = "asset"."id"
+    limit
+      $3
+  ) as "membership" on true
 where
-  "shared_link"."id" = $1
-  and array[
-    "asset"."id",
-    "asset"."livePhotoVideoId",
-    "albumAssets"."id",
-    "albumAssets"."livePhotoVideoId"
-  ] && array[$2]::uuid[]
+  "asset"."deletedAt" is null
+  and (
+    "asset"."id" = any ("target"."ids")
+    or "asset"."livePhotoVideoId" = any ("target"."ids")
+  )
 
 -- AccessRepository.assetFile.checkOwnerAccess
 select
@@ -295,6 +319,15 @@ from
 where
   "partner"."sharedById" in ($1)
   and "partner"."sharedWithId" = $2
+
+-- AccessRepository.passkey.checkOwnerAccess
+select
+  "passkey"."id"
+from
+  "passkey"
+where
+  "passkey"."id" in ($1)
+  and "passkey"."userId" = $2
 
 -- AccessRepository.session.checkOwnerAccess
 select

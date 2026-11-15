@@ -26,12 +26,12 @@ export type AuthenticatedOptions = AuthorizedRoute | PublicRoute;
 type ReflectorTarget = Parameters<Reflector['get']>[1];
 
 /** Resolves the `@Authenticated()` options of a route handler, with the defaults applied. */
-export const getAuthenticatedOptions = (reflector: Reflector, target: ReflectorTarget) => {
-  const options = reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, [target]);
+export const getAuthenticatedOptions = (reflector: Reflector, targets: ReflectorTarget[]) => {
+  const options = reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
   return options && { sharedLink: false, admin: false, public: false, setup: false, ...options };
 };
 
-export const Authenticated = (options: AuthenticatedOptions = {}): MethodDecorator => {
+export const Authenticated = (options: AuthenticatedOptions = {}): ReturnType<typeof applyDecorators> => {
   const decorators: MethodDecorator[] = [SetMetadata(MetadataKey.AuthRoute, options)];
 
   if (!options.public) {
@@ -97,7 +97,7 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const options = getAuthenticatedOptions(this.reflector, context.getHandler());
+    const options = getAuthenticatedOptions(this.reflector, [context.getHandler(), context.getClass()]);
     if (!options) {
       throw new Error(`Route ${context.getHandler().name} does not declare @Authenticated()`);
     }

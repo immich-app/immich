@@ -91,7 +91,7 @@ describe('/admin/database-backups', () => {
 
   // => action: restore database flow
 
-  describe.sequential('POST /start-restore', () => {
+  describe('POST /start-restore', { concurrent: false }, () => {
     afterAll(async () => {
       await request(app).post('/admin/maintenance').set('cookie', cookie!).send({ action: 'end' });
       await utils.poll(
@@ -104,14 +104,14 @@ describe('/admin/database-backups', () => {
       });
     });
 
-    it.sequential('should not work when the server is configured', async () => {
+    it('should not work when the server is configured', { concurrent: false }, async () => {
       const { status, body } = await request(app).post('/admin/database-backups/start-restore').send();
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Admin setup is not available'));
     });
 
-    it.sequential('should enter maintenance mode in "database restore mode"', async () => {
+    it('should enter maintenance mode in "database restore mode"', { concurrent: false }, async () => {
       await utils.resetDatabase(); // reset database before running this test
 
       const { status, headers } = await request(app).post('/admin/database-backups/start-restore').send();
@@ -145,7 +145,7 @@ describe('/admin/database-backups', () => {
 
   // => action: restore database
 
-  describe.sequential('POST /backups/restore', () => {
+  describe('POST /backups/restore', { concurrent: false }, () => {
     beforeAll(async () => {
       await utils.disconnectDatabase();
     });
@@ -154,7 +154,7 @@ describe('/admin/database-backups', () => {
       await utils.connectDatabase();
     });
 
-    it.sequential('should restore a backup', { timeout: 60_000 }, async () => {
+    it('should restore a backup', { timeout: 60_000, concurrent: false }, async () => {
       let filename = await utils.createBackup(admin.accessToken);
 
       // work-around until test is running on released version
@@ -212,7 +212,7 @@ describe('/admin/database-backups', () => {
         .toBeFalsy();
     });
 
-    it.sequential('fail to restore a corrupted backup', { timeout: 60_000 }, async () => {
+    it('fail to restore a corrupted backup', { timeout: 60_000, concurrent: false }, async () => {
       await utils.prepareTestBackup('corrupted');
 
       const { status, headers } = await request(app)
@@ -283,7 +283,7 @@ describe('/admin/database-backups', () => {
       );
     });
 
-    it.sequential('rollback to restore point if backup is missing admin', { timeout: 60_000 }, async () => {
+    it('rollback to restore point if backup is missing admin', { timeout: 60_000, concurrent: false }, async () => {
       await utils.prepareTestBackup('empty');
 
       const { status, headers } = await request(app)

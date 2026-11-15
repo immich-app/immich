@@ -39,6 +39,21 @@
   --breakpoint-sidebar: 850px;
 }
 
+/* cubic-bezier(1/3, 0, 2/3, 1), sampled every 1/6 */
+:root {
+  --mask-smoothstep:
+    black 0%, rgb(0 0 0 / 0.926) 17%, rgb(0 0 0 / 0.741) 33%, rgb(0 0 0 / 0.5) 50%, rgb(0 0 0 / 0.259) 67%,
+    rgb(0 0 0 / 0.074) 83%, transparent 100%;
+}
+
+@utility mask-smoothstep-to-bottom {
+  mask-image: linear-gradient(to bottom, var(--mask-smoothstep));
+}
+
+@utility mask-smoothstep-to-top {
+  mask-image: linear-gradient(to top, var(--mask-smoothstep));
+}
+
 @utility immich-form-input {
   @apply bg-gray-100 ring-1 ring-gray-200 transition outline-none focus-within:ring-primary focus-within:ring-1 disabled:cursor-not-allowed dark:bg-gray-800 dark:ring-neutral-900 dark:focus-within:ring-primary flex w-full items-center rounded-lg disabled:bg-gray-300 disabled:text-dark dark:disabled:bg-gray-900 dark:disabled:text-gray-200 flex-1 py-2.5 text-base px-4;
 }
@@ -93,7 +108,7 @@
 @layer utilities {
   @font-face {
     font-family: 'GoogleSans';
-    src: url('$lib/assets/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
+    src: url('./lib/assets/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
     font-weight: 410 900;
     font-style: normal;
     ascent-override: 106.25%;
@@ -102,7 +117,7 @@
 
   @font-face {
     font-family: 'GoogleSansCode';
-    src: url('$lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf') format('truetype-variations');
+    src: url('./lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf') format('truetype-variations');
     font-weight: 1 900;
     font-style: monospace;
   }

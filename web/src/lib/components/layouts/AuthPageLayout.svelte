@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { Card, CardBody, CardHeader, Heading, immichLogo, Logo, VStack } from '@immich/ui';
+  import { Card, CardBody, CardHeader, Heading, Logo, VStack, immichLogo } from '@immich/ui';
   import type { Snippet } from 'svelte';
+
   interface Props {
     title?: string;
     children?: Snippet;

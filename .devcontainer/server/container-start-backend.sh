@@ -7,6 +7,7 @@ log "Preparing Immich Nest API Server"
 log ""
 export CI=1
 run_cmd pnpm --filter immich install
+SHARP_FORCE_GLOBAL_LIBVIPS=true run_cmd pnpm --config.verify-deps-before-run=false --dir "${IMMICH_WORKSPACE}/server/node_modules/sharp" run build
 
 log "Starting Nest API Server"
 log ""

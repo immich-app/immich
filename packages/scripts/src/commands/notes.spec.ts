@@ -2,6 +2,7 @@ import type { Public } from 'src/types.js';
 import { beforeEach, describe, expect, it, type Mocked, vi } from 'vitest';
 import {
   type Contributor,
+  type FileSystem,
   type GitClient,
   type GitHubClient,
   NotesService,
@@ -37,6 +38,7 @@ const changelog = (...lines: string[]) =>
 const body = (notes: string) => notes.slice(notes.indexOf("## What's Changed"));
 
 describe(NotesService.name, () => {
+  let fs: Mocked<Public<FileSystem>>;
   let git: Mocked<Public<GitClient>>;
   let github: Mocked<Public<GitHubClient>>;
   let sut: NotesService;
@@ -88,12 +90,16 @@ describe(NotesService.name, () => {
     github.getFirstTimers.mockResolvedValue(firstTimers);
   };
 
-  const run = () => sut.handleNotes({ tag: 'v3.3.0', previous: 'v3.2.4' });
+  const run = async () => {
+    await sut.handleNotes({ tag: 'v3.3.0', previous: 'v3.2.4' });
+    return fs.writeFileSync.mock.lastCall?.[1] as string;
+  };
 
   beforeEach(() => {
+    fs = { writeFileSync: vi.fn() };
     git = { log: vi.fn() };
     github = { getPullRequests: vi.fn(), getFirstTimers: vi.fn() };
-    sut = new NotesService(git, github);
+    sut = new NotesService(fs, git, github);
   });
 
   it('should compare the previous tag with the new tag', async () => {
@@ -102,6 +108,18 @@ describe(NotesService.name, () => {
     await run();
 
     expect(git.log).toHaveBeenCalledWith('v3.2.4', 'v3.3.0');
+  });
+
+  it('should write the notes to misc/release/notes.md', async () => {
+    setup([{ number: 1 }]);
+
+    await run();
+
+    expect(fs.writeFileSync).toHaveBeenCalledOnce();
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      expect.stringMatching(/\/misc\/release\/notes\.md$/),
+      expect.any(String),
+    );
   });
 
   it('should start with the template and end with the full changelog', async () => {

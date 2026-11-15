@@ -22,6 +22,7 @@ class LineAutoClosingStream extends Writable {
   private count: number;
   lines: string[] = [];
 
+  // eslint-disable-next-line unicorn/no-unnecessary-parameters
   constructor({ after }: { after: number }) {
     super({ highWaterMark: 1 });
     this.count = after;

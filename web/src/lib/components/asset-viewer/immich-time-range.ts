@@ -4,7 +4,7 @@ import MediaTimeRange from 'media-chrome/media-time-range';
 const COMMIT_DELAY_MS = 750;
 
 /** Custom MediaTimeRange that only seeks after pointer release to avoid hammering the server.
- * Keyboard input uses timed debouncing instead since there's no release event. */
+Keyboard input uses timed debouncing instead since there's no release event. */
 class ImmichTimeRange extends MediaTimeRange {
   private seeking = false;
   private pending: number | undefined;

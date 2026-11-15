@@ -1,4 +1,4 @@
-import { cancelImageUrl } from '$lib/utils/sw-messaging';
+import { cancelImageUrl } from '#lib/utils/sw-messaging.ts';
 
 export function loadImage(src: string, onLoad: () => void, onError: () => void, onStart?: () => void) {
   let destroyed = false;

@@ -79,6 +79,7 @@ class _MemoryListPageState extends ConsumerState<MemoryListPage> {
                           child: MemoryTitle(
                             memory: memories[index],
                             style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 15),
+                            preferDate: true,
                           ),
                         ),
                         if (memories[index].isSaved)

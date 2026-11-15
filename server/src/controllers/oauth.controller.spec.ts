@@ -30,6 +30,32 @@ describe(OAuthController.name, () => {
       );
       expect(service.authorize).not.toHaveBeenCalled();
     });
+
+    it('should set the state and code verifier cookies when the server generates them', async () => {
+      service.authorize.mockResolvedValue({ url: 'http://idp/auth', state: 'server-state', codeVerifier: 'verifier' });
+
+      const { status, headers } = await request(ctx.getHttpServer())
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'http://immich/auth/login' });
+
+      expect(status).toBe(201);
+      const cookies = (headers['set-cookie'] as unknown as string[]) ?? [];
+      expect(cookies).toEqual([
+        expect.stringContaining('immich_oauth_state=server-state'),
+        expect.stringContaining('immich_oauth_code_verifier=verifier'),
+      ]);
+    });
+
+    it('should not set cookies for client supplied state and code challenge', async () => {
+      service.authorize.mockResolvedValue({ url: 'http://idp/auth', state: 'client-state', codeVerifier: null });
+
+      const { status, headers } = await request(ctx.getHttpServer())
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'http://immich/auth/login', state: 'client-state', codeChallenge: 'challenge' });
+
+      expect(status).toBe(201);
+      expect(headers['set-cookie']).toBeUndefined();
+    });
   });
 
   describe('POST /oauth/callback', () => {

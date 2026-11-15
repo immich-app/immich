@@ -1,24 +1,9 @@
-<script module lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getAlbumInfo, getTagById } from '@immich/sdk';
-
-  // eslint-disable-next-line svelte/prefer-svelte-reactivity
-  const albumNameCache = new Map<string, Promise<string>>();
-  const getAlbumName = (id: string): Promise<string> => {
-    let albumName = albumNameCache.get(id);
-    if (!albumName) {
-      albumName = getAlbumInfo({ ...authManager.params, id })
-        .then((album) => album.albumName)
-        .catch(() => id);
-      albumNameCache.set(id, albumName);
-    }
-    return albumName;
-  };
-</script>
-
 <script lang="ts">
-  import { pluginManager } from '$lib/managers/plugin-manager.svelte';
-  import type { JSONSchemaProperty } from '$lib/types';
+  import { pluginManager } from '#lib/managers/plugin-manager.svelte.ts';
+  import { getAlbumQuery } from '#lib/queries/album.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getTagByIdQuery } from '#lib/queries/tag.query.ts';
+  import type { JSONSchemaProperty } from '#lib/types.ts';
   import { type WorkflowStepDto } from '@immich/sdk';
   import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
   import {
@@ -47,11 +32,17 @@
 
   let { step, index, onEdit, onDelete, onInsertBefore, onDragOver, onDrop, onDragEnd, onDragStart }: Props = $props();
 
+  const getAlbumName = (id: string): Promise<string> =>
+    queryClient
+      .query(getAlbumQuery(id))
+      .then((album) => album.albumName)
+      .catch(() => id);
+
   const method = $derived(pluginManager.getMethod(step.method));
   const isFilter = $derived(method?.uiHints?.includes('Filter') ?? false);
   const schema = $derived(method?.schema as JSONSchemaProperty | undefined);
   const configEntries = $derived(
-    Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
+    Object.entries(step.config ?? {}).filter(([, value]) => ![null, undefined, ''].includes(value)),
   );
   const isGhost = $derived(step.id === 'ghost');
 
@@ -60,6 +51,7 @@
   let dragImage = $state<Element>();
   let isDropTarget = $state(false);
 
+  // eslint-disable-next-line unicorn/no-unnecessary-parameters
   const truncate = (input: string, max = 24) => (input.length > max ? input.slice(0, max - 1) + '…' : input);
 
   const formatConfigValue = (value: unknown): string => {
@@ -241,7 +233,7 @@
                 {/each}
               {:else if getUiHint(key) === 'TagId'}
                 {#each toIds(value) as tagId (tagId)}
-                  {#await getTagById({ id: tagId })}
+                  {#await queryClient.query(getTagByIdQuery(tagId))}
                     {@render badge($t('tag'), '…')}
                   {:then tag}
                     {@render badge($t('tag'), `"${truncate(tag.name)}"`)}

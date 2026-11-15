@@ -1,53 +1,27 @@
 <script lang="ts">
-  import { handleError } from '$lib/utils/handle-error';
-  import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
-  import { Button, modalManager, Text, toastManager } from '@immich/ui';
+  import DeviceCard from '#lib/components/user-settings-page/DeviceCard.svelte';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { deleteAllSessionsMutation, deleteSessionMutation, getSessionsQuery } from '#lib/queries/session.query.ts';
+  import { type SessionResponseDto } from '@immich/sdk';
+  import { Button, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import DeviceCard from '$lib/components/user-settings-page/DeviceCard.svelte';
 
-  interface Props {
-    devices: SessionResponseDto[];
-  }
-
-  let { devices = $bindable() }: Props = $props();
-
-  const refresh = () => getSessions().then((_devices) => (devices = _devices));
+  const query = createPreloadedQuery(getSessionsQuery);
+  const devices = $derived(query.data);
 
   let currentSession = $derived(devices.find((device) => device.current));
   let otherSessions = $derived(devices.filter((device) => !device.current));
 
-  const handleDelete = async (device: SessionResponseDto) => {
-    const isConfirmed = await modalManager.showDialog({ prompt: $t('logout_this_device_confirmation') });
-    if (!isConfirmed) {
-      return;
-    }
+  const handleDelete = (device: SessionResponseDto) =>
+    executeMutation(deleteSessionMutation, [{ id: device.id }], {
+      confirm: { prompt: $t('logout_this_device_confirmation') },
+    });
 
-    try {
-      await deleteSession({ id: device.id });
-      toastManager.primary($t('logged_out_device'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_log_out_device'));
-    } finally {
-      await refresh();
-    }
-  };
-
-  const handleDeleteAll = async () => {
-    const isConfirmed = await modalManager.showDialog({ prompt: $t('logout_all_device_confirmation') });
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await deleteAllSessions();
-      toastManager.primary($t('logged_out_all_devices'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_log_out_all_devices'));
-    } finally {
-      await refresh();
-    }
-  };
+  const handleDeleteAll = () =>
+    executeMutation(deleteAllSessionsMutation, undefined, {
+      confirm: { prompt: $t('logout_all_device_confirmation') },
+    });
 </script>
 
 <section class="my-4">

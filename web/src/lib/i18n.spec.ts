@@ -1,12 +1,12 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { getClosestAvailableLocale, langs } from '$lib/utils/i18n';
+import { getClosestAvailableLocale, langs } from '#lib/utils/i18n.ts';
 
 describe('i18n', () => {
   describe('loaders', () => {
-    const languageFiles = readdirSync('../i18n').sort();
-    for (const filename of languageFiles) {
+    const languageFiles = import.meta.glob<{ default: unknown }>('#i18n/*.json');
+    for (const [path, load] of Object.entries(languageFiles).sort(([a], [b]) => a.localeCompare(b))) {
+      const filename = path.split('/').pop()!;
       test(`${filename} should have a loader`, async () => {
-        if (!filename.endsWith('.json') || filename === 'package.json') {
+        if (filename === 'package.json') {
           return;
         }
 
@@ -17,11 +17,9 @@ describe('i18n', () => {
           return;
         }
 
-        // verify it loads the right file
         const module: { default?: unknown } = await item.loader();
-        const translations = JSON.stringify(module.default, null, 2).trim();
-        const content = readFileSync(`../i18n/${filename}`).toString().trim();
-        expect(translations === content, `${item.name} did not load ${filename}`).toEqual(true);
+        const { default: content } = await load();
+        expect(module.default, `${item.name} did not load ${filename}`).toEqual(content);
       });
     }
   });

@@ -1,5 +1,5 @@
-import type { LoadImageFunction } from '$lib/actions/image-loader.svelte';
-import { cancelImageUrl } from '$lib/utils/sw-messaging';
+import type { LoadImageFunction } from '#lib/actions/image-loader.svelte.ts';
+import { cancelImageUrl } from '#lib/utils/sw-messaging.ts';
 
 export type ImageQuality = 'thumbnail' | 'preview' | 'original';
 

@@ -6,6 +6,7 @@ export const triggerMap: Record<WorkflowTrigger, WorkflowType[]> = {
   [WorkflowTrigger.AssetCreate]: [WorkflowType.AssetV1],
   // [WorkflowTrigger.PersonRecognized]: [WorkflowType.AssetPersonV1],
   [WorkflowTrigger.AssetMetadataExtraction]: [WorkflowType.AssetV1],
+  [WorkflowTrigger.AssetOcrExtraction]: [WorkflowType.AssetV1],
   [WorkflowTrigger.AssetTagged]: [WorkflowType.AssetV1],
 };
 
@@ -68,4 +69,16 @@ export const parseMethodString = (method: string) => {
   const version = matches.groups?.version;
   const methodName = matches.groups?.method;
   return { pluginName, version, methodName };
+};
+
+export const isAllowedHost = (hostname: string, allowedHosts: string[]) => {
+  const target = hostname.toLowerCase();
+  return allowedHosts.some((pattern) => {
+    const source = pattern
+      .toLowerCase()
+      .split('*')
+      .map((part) => part.replaceAll(/[$()+.?[\\\]^{|}]/g, String.raw`\$&`))
+      .join('.*');
+    return new RegExp(`^${source}$`).test(target);
+  });
 };

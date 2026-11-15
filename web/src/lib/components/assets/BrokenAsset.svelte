@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cleanClass } from '$lib';
+  import { cleanClass } from '#lib';
   import { Icon } from '@immich/ui';
   import { mdiImageBrokenVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -16,7 +16,7 @@
 </script>
 
 <div
-  data-broken-asset
+  data-testid="broken-asset"
   class={cleanClass(
     '@container flex flex-col overflow-hidden max-h-full max-w-full justify-center items-center bg-gray-100/40 dark:bg-gray-700/40 dark:text-gray-100 p-4',
     className,

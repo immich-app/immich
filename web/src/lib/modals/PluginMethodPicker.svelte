@@ -1,6 +1,9 @@
 <script lang="ts">
-  import { searchPluginMethods, WorkflowTrigger, type PluginMethodResponseDto } from '@immich/sdk';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchPluginMethodsQuery } from '#lib/queries/plugin.query.ts';
+  import { WorkflowTrigger, type PluginMethodResponseDto } from '@immich/sdk';
   import { Badge, BasicModal, ListButton, LoadingSpinner, Stack, Text } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -10,16 +13,17 @@
   };
 
   const { trigger, selectedKey, onClose }: Props = $props();
+
+  const query = createQuery(
+    () => searchPluginMethodsQuery({ trigger }),
+    () => queryClient,
+  );
 </script>
 
 <BasicModal title={$t('add_step')} onClose={() => onClose()} size="medium">
-  {#await searchPluginMethods({ trigger })}
-    <div class="flex w-full place-content-center place-items-center">
-      <LoadingSpinner />
-    </div>
-  {:then methods}
+  {#if query.data}
     <Stack>
-      {#each methods as method (method.key)}
+      {#each query.data as method (method.key)}
         <ListButton selected={method.key === selectedKey} onclick={() => onClose(method)}>
           <div class="grow text-start">
             <Text fontWeight="medium" class="flex items-center gap-1"
@@ -37,5 +41,9 @@
         </ListButton>
       {/each}
     </Stack>
-  {/await}
+  {:else}
+    <div class="flex w-full place-content-center place-items-center">
+      <LoadingSpinner />
+    </div>
+  {/if}
 </BasicModal>
