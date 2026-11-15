@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/platform/network_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:logging/logging.dart';
@@ -88,6 +89,10 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         confirm: context.t.confirm,
       );
       await networkApi.selectCertificate(styling);
+      // Rebuild the client: the transport depends on whether a certificate is
+      // installed (Cronet cannot present one), and init() keys off that state.
+      // Without this the old client stays in place until the app restarts.
+      await NetworkRepository.init();
       setState(() => isCertExist = true);
       showMessage(StaticTranslations.instance.client_cert_import_success_msg);
     } catch (e) {
@@ -102,6 +107,9 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
   Future<void> removeCert() async {
     try {
       await networkApi.removeCertificate();
+      // Same reason as importCert: switching back to Cronet has to happen now,
+      // not on the next app start.
+      await NetworkRepository.init();
       setState(() => isCertExist = false);
       showMessage(StaticTranslations.instance.client_cert_remove_msg);
     } catch (e) {

@@ -60,7 +60,7 @@ class BackupOptionsPage extends ConsumerWidget {
           unawaited(
             backgroundSync.syncRemote().then((success) {
               if (success) {
-                return backupNotifier.startForegroundBackup(currentUser.id);
+                return backupNotifier.startForegroundBackup(currentUser.id, restart: true);
               } else {
                 Logger('BackupOptionsPage').warning('Background sync failed, not starting backup');
               }

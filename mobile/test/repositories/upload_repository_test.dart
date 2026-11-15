@@ -142,4 +142,56 @@ void main() {
     expect(records.map((r) => r.message), everyElement(isNot(contains('203.0.113.9'))));
     expect(result.error, error);
   });
+
+  group('_extractErrorMessage', () {
+    // The streaming path has to report the same text as the Dart path: callers
+    // match on the message, and "Quota has been exceeded!" stops the whole batch.
+    test('uses the server message when the body carries one', () {
+      expect(
+        UploadRepository.extractErrorMessage(statusCode: 400, body: '{"message":"Quota has been exceeded!"}'),
+        'Quota has been exceeded!',
+      );
+    });
+
+    test('falls back to the error field', () {
+      expect(
+        UploadRepository.extractErrorMessage(statusCode: 400, body: '{"error":"Something went wrong"}'),
+        'Something went wrong',
+      );
+    });
+
+    test('names the size limit on 413 instead of echoing the body', () {
+      expect(
+        UploadRepository.extractErrorMessage(statusCode: 413, body: '<html>too large</html>'),
+        'Error(413) File is too large to upload',
+      );
+    });
+
+    test('returns the raw body when it is not json', () {
+      expect(
+        UploadRepository.extractErrorMessage(statusCode: 500, body: 'Internal Server Error'),
+        'Internal Server Error',
+      );
+    });
+
+    test('describes the status when the body is empty', () {
+      expect(UploadRepository.extractErrorMessage(statusCode: 502, body: ''), 'Upload failed with status 502');
+    });
+  });
+
+  group('_mimeTypeForFile', () {
+    test('maps the video types the backup sends', () {
+      expect(UploadRepository.mimeTypeForFile('clip.mp4'), 'video/mp4');
+      expect(UploadRepository.mimeTypeForFile('clip.MOV'), 'video/quicktime');
+    });
+
+    test('maps the image types the backup sends', () {
+      expect(UploadRepository.mimeTypeForFile('photo.jpg'), 'image/jpeg');
+      expect(UploadRepository.mimeTypeForFile('photo.HEIC'), 'image/heic');
+    });
+
+    test('falls back to a generic type for anything unknown', () {
+      expect(UploadRepository.mimeTypeForFile('archive.zip'), 'application/octet-stream');
+    });
+  });
 }

@@ -100,6 +100,71 @@ class NetworkApiImpl: NetworkApi {
       URLSessionManager.shared.recreateSession()
     }
   }
+
+  func clearCookies() throws {
+    URLSessionManager.clearCookies()
+  }
+
+    /// Headers the native client would attach to [url]: the user-configured headers
+    /// plus the session cookies for that host.
+    ///
+    /// Only used by the Android Cronet path, which cannot read the native client's
+    /// configuration the way OkHttp interceptors can. Implemented on iOS so the
+    /// Pigeon protocol is satisfied.
+  func requestAuthHeaders(url: String) throws -> [String: String] {
+    var headers = UserDefaults.group.dictionary(forKey: HEADERS_KEY) as? [String: String] ?? [:]
+    headers["User-Agent"] = headers["User-Agent"] ?? URLSessionManager.userAgent
+
+    guard let requestUrl = URL(string: url), let host = requestUrl.host else {
+      return headers
+    }
+
+    let cookies = URLSessionManager.cookieStorage.cookies(for: requestUrl) ?? []
+    let sessionCookies = cookies.filter { AuthCookie.names.contains($0.name) }
+    if !sessionCookies.isEmpty {
+      headers["Cookie"] = sessionCookies.map { "\($0.name)=\($0.value)" }.joined(separator: "; ")
+    }
+    return headers
+  }
+
+  func getCronetUserAgent() throws -> String {
+    URLSessionManager.userAgent
+  }
+
+  /// Cronet stores its cache on disk; iOS has no Cronet engine, so this is only
+  /// here to satisfy the protocol.
+  func getCronetStoragePath() throws -> String {
+    FileManager.default.temporaryDirectory.appendingPathComponent("cronet").path
+  }
+
+  func uploadFileStreaming(
+    url: String,
+    filePath: String,
+    fileName: String,
+    fileFieldName: String,
+    mimeType: String?,
+    fields: [String: String],
+    progressKey: String,
+    completion: @escaping (Result<StreamingUploadResult, any Error>) -> Void
+  ) {
+      // iOS uses URLSession, which streams by itself, so the Dart client is the
+      // supported path and this entry point is never taken.
+    completion(
+      .success(
+        StreamingUploadResult(
+          isSuccess: false,
+          statusCode: 0,
+          body: nil,
+          errorMessage: "Streaming upload is only implemented on Android",
+          bytesSent: 0
+        )
+      )
+    )
+  }
+
+  func cancelStreamingUpload(progressKey: String) throws {
+    // No-op: see uploadFileStreaming.
+  }
 }
 
 private class CertImporter: NSObject, UIDocumentPickerDelegate {

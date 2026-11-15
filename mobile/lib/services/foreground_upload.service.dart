@@ -34,7 +34,12 @@ class UploadCallbacks {
   final void Function(String id, String errorMessage)? onError;
   final void Function(String id, double progress)? onICloudProgress;
 
-  const UploadCallbacks({this.onProgress, this.onSuccess, this.onError, this.onICloudProgress});
+  /// Invoked when an upload was aborted before completing. Distinct from
+  /// [onError]: the asset was still not backed up, so callers gating retries on
+  /// the failure count must count it.
+  final void Function(String id)? onCancelled;
+
+  const UploadCallbacks({this.onProgress, this.onSuccess, this.onError, this.onICloudProgress, this.onCancelled});
 }
 
 final foregroundUploadServiceProvider = Provider((ref) {
@@ -91,6 +96,9 @@ class ForegroundUploadService {
   }) async {
     final candidates = await _backupRepository.getCandidates(userId);
     if (candidates.isEmpty) {
+      // Log it: returning silently made an empty run indistinguishable from a
+      // fully successful one.
+      _logger.info('No backup candidates for $userId');
       return;
     }
 
@@ -352,6 +360,15 @@ class ForegroundUploadService {
           logContext: 'livePhotoVideo[${asset.localId}]',
         );
 
+        if (livePhotoResult.isCancelled) {
+          // The pair uploads together; a cancelled video means the whole asset
+          // was cancelled, so the still image would become an orphan. Returning
+          // suffices -- setting shouldAbortUpload would abort unrelated runs
+          // sharing this service instance.
+          callbacks.onCancelled?.call(asset.localId!);
+          return;
+        }
+
         if (livePhotoResult.isSuccess && livePhotoResult.remoteAssetId != null) {
           livePhotoVideoId = livePhotoResult.remoteAssetId;
         }
@@ -393,6 +410,7 @@ class ForegroundUploadService {
         await _handleUploadSuccess(asset, result.remoteAssetId!, callbacks);
       } else if (result.isCancelled) {
         shouldAbortUpload = true;
+        callbacks.onCancelled?.call(asset.localId!);
       } else if (result.errorMessage != null) {
         _logger.severe(
           () =>

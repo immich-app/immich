@@ -100,7 +100,14 @@ class _BackupPageState extends ConsumerState<BackupPage> {
         Logger("BackupPage").warning("Remote sync did not complete successfully, skipping backup");
         return;
       }
-      await backupNotifier.startForegroundBackup(currentUser.id);
+      try {
+        await backupNotifier.startForegroundBackup(currentUser.id, restart: true);
+      } catch (error, stackTrace) {
+        // startForegroundBackup rethrows so joiners share the failure; the page
+        // has already surfaced it through backupProvider.error, so log and stop
+        // rather than letting an unhandled async error escape the button tap.
+        Logger("BackupPage").warning("Foreground backup failed", error, stackTrace);
+      }
     }
 
     return Scaffold(

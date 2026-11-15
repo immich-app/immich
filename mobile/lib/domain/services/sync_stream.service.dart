@@ -56,8 +56,14 @@ class SyncStreamService {
 
   bool get isCancelled => _cancellation?.isCompleted ?? false;
 
-  Future<bool> sync() async {
+  Future<bool> sync({Future<void>? abortSignal}) async {
     _logger.info("Remote sync request for user");
+    // Both signals must be honoured: a caller-supplied deadline and this
+    // isolate's cancellation token. Using `abortSignal ?? _cancellation` silently
+    // disabled the latter.
+    final cancellation = _cancellation;
+    final signals = <Future<void>>[?abortSignal, ?cancellation?.future];
+    final signal = signals.isEmpty ? null : (signals.length == 1 ? signals.single : Future.any(signals));
     final serverVersion = await _api.serverInfoApi.getServerVersion();
     if (serverVersion == null) {
       _logger.severe("Cannot perform sync: unable to determine server version");
@@ -82,15 +88,11 @@ class SyncStreamService {
       _handleEvents,
       serverVersion: serverSemVer,
       onReset: () => shouldReset = true,
-      abortSignal: _cancellation?.future,
+      abortSignal: signal,
     );
     if (shouldReset) {
       _logger.info("Resetting sync state as requested by server");
-      await _syncApiRepository.streamChanges(
-        _handleEvents,
-        serverVersion: serverSemVer,
-        abortSignal: _cancellation?.future,
-      );
+      await _syncApiRepository.streamChanges(_handleEvents, serverVersion: serverSemVer, abortSignal: signal);
     }
 
     previousLength = migrations.length;
@@ -99,6 +101,14 @@ class SyncStreamService {
     if (migrations.length != previousLength) {
       _logger.info("Updated pre-sync migration status: $migrations");
       await Store.put(StoreKey.syncMigrationStatus, jsonEncode(migrations));
+    }
+
+    // streamChanges returns normally when the abort signal fires, so without this
+    // an aborted sync would report success and the caller would upload against a
+    // half-applied remote state.
+    if (isCancelled) {
+      _logger.warning("Remote sync aborted");
+      return false;
     }
 
     return true;

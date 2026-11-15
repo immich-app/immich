@@ -11,6 +11,11 @@ const int kSyncEventBatchSize = 5000;
 // Hash batch limits
 final int kBatchHashFileLimit = Platform.isIOS ? 32 : 512;
 
+// Uploads larger than this are sent through the native streaming uploader.
+// package:cronet_http materialises the whole request body in memory before
+// handing it to Cronet, so large videos would otherwise exhaust the heap.
+const int kStreamingUploadThreshold = 16 * 1024 * 1024;
+
 // Secure storage keys
 const String kSecuredPinCode = "secured_pin_code";
 

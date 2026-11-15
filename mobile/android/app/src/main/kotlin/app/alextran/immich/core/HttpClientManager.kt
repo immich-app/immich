@@ -312,6 +312,11 @@ object HttpClientManager {
     }
   }
 
+  fun getUserAgent(): String = USER_AGENT
+
+  fun getApiCronetStoragePath(): String =
+    File(File(appContext.cacheDir, "cronet-api"), "default").apply { mkdirs() }.absolutePath
+
   fun buildCronetEngine(): CronetEngine {
     return CronetEngine.Builder(appContext)
       .enableHttp2(true)

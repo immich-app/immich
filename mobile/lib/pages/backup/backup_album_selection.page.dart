@@ -129,7 +129,7 @@ class _BackupAlbumSelectionPageState extends ConsumerState<BackupAlbumSelectionP
               unawaited(
                 backgroundSync.syncRemote().then((success) {
                   if (success) {
-                    return backupNotifier.startForegroundBackup(user.id);
+                    return backupNotifier.startForegroundBackup(user.id, restart: true);
                   } else {
                     Logger('BackupAlbumSelectionPage').warning('Background sync failed, not starting backup');
                   }
