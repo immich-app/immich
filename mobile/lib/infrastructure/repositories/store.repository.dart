@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
@@ -70,6 +72,8 @@ class StoreRepository extends DatabaseAccessor<Drift> with $StoreRepositoryMixin
             const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
             const (UserDto) =>
               entity.stringValue == null ? null : await AuthUserRepository(_db).get(entity.stringValue!),
+            const (Set<String>) =>
+              entity.stringValue == null ? null : Set<String>.from(jsonDecode(entity.stringValue!)),
             _ => null,
           }
           as T?;
@@ -81,6 +85,7 @@ class StoreRepository extends DatabaseAccessor<Drift> with $StoreRepositoryMixin
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
       const (UserDto) => (null, (await AuthUserRepository(_db).upsert(value as UserDto)).id),
+      const (Set<String>) => (null, jsonEncode((value as Set<String>).toList())),
       _ => throw UnsupportedError("Unsupported primitive type: ${key.type} for key: ${key.name}"),
     };
     return StoreEntityCompanion(id: Value(key.id), intValue: Value(intValue), stringValue: Value(strValue));

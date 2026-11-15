@@ -20,6 +20,7 @@ enum StoreKey<T> {
   readonlyModeEnabled<bool>._(138),
 
   syncMigrationStatus<String>._(1013),
+  supportedFileExtensions<Set<String>>._(1014),
 
   // Legacy keys that have been migrated to the new metadata store
   legacyBackupRequireCharging<bool>._(7),

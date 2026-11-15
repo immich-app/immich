@@ -1,6 +1,11 @@
+import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 
 import '../repository_context.dart';
@@ -8,6 +13,11 @@ import '../repository_context.dart';
 void main() {
   late MediumRepositoryContext ctx;
   late BackupRepository sut;
+
+  setUpAll(() async {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    await StoreService.init(storeRepository: StoreRepository(MediumRepositoryContext().db), listenUpdates: false);
+  });
 
   setUp(() {
     ctx = MediumRepositoryContext();
@@ -239,6 +249,43 @@ void main() {
       final result = await sut.getCandidates(userId);
       expect(result.length, 1);
       expect(result.first.id, asset.id);
+    });
+
+    test('marks an asset only when the saved server list does not accept its upload extension', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+
+      expect(await sut.markIfUnsupported(asset.id, '.djvu'), isFalse);
+
+      await Store.put(StoreKey.supportedFileExtensions, {'.jpg', '.mp4'});
+      addTearDown(() => Store.delete(StoreKey.supportedFileExtensions));
+
+      expect(await sut.markIfUnsupported(asset.id, '.JPG'), isFalse);
+      expect(await sut.getCandidates(userId), hasLength(1));
+
+      expect(await sut.markIfUnsupported(asset.id, ''), isTrue);
+      expect(await sut.markIfUnsupported(asset.id, '.mpv'), isTrue);
+      expect(await sut.getCandidates(userId), isEmpty);
+    });
+
+    test('leaves marked assets out until the marks are cleared, unless they are on the server', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final photo = await ctx.newLocalAsset();
+      final scan = await ctx.newLocalAsset(unsupported: true);
+      final remote = await ctx.newRemoteAsset(ownerId: userId);
+      final uploaded = await ctx.newLocalAsset(checksum: remote.checksum, unsupported: true);
+      for (final asset in [photo, scan, uploaded]) {
+        await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+      }
+
+      expect(await sut.getAllCounts(userId), (total: 2, remainder: 1, processing: 0));
+      expect((await sut.getCandidates(userId)).map((asset) => asset.id), [photo.id]);
+
+      await sut.clearUnsupported();
+
+      expect(await sut.getAllCounts(userId), (total: 3, remainder: 2, processing: 0));
+      expect((await sut.getCandidates(userId)).map((asset) => asset.id), unorderedEquals([photo.id, scan.id]));
     });
   });
 }

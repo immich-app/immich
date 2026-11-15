@@ -6,6 +6,8 @@ import 'package:immich_mobile/data/db/main/table/local/album_asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.drift.dart';
 
 @DriftAccessor()
@@ -34,6 +36,8 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
   /// - remainder: number of those assets that do not yet exist on the server for [userId]
   ///              (includes processing)
   /// - processing: number of those assets that are still preparing/have a null checksum
+  ///
+  /// Unsupported assets that are not on the server are left out.
   Future<({int total, int remainder, int processing})> getAllCounts(String userId) async {
     const sql = '''
         SELECT
@@ -50,6 +54,7 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
             WHERE laa.asset_id = lae.id
                 AND la.backup_selection = ?2
         )
+        AND (lae.unsupported = 0 OR rae.id IS NOT NULL)
         AND NOT EXISTS (
             SELECT 1
             FROM local_album_asset_entity laa
@@ -104,6 +109,7 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
             ) &
             lae.id.isNotInQuery(_getExcludedSubquery()),
       )
+      ..where((lae) => lae.unsupported.equals(false))
       ..orderBy([(localAsset) => OrderingTerm.desc(localAsset.createdAt)]);
 
     if (onlyHashed) {
@@ -111,5 +117,23 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
     }
 
     return query.map((localAsset) => localAsset.toDto()).get();
+  }
+
+  Future<bool> markIfUnsupported(String assetId, String extension) async {
+    final supported = Store.tryGet(StoreKey.supportedFileExtensions);
+    if (supported == null || supported.contains(extension.toLowerCase())) {
+      return false;
+    }
+
+    await _db.managers.localAssetEntity
+        .filter((e) => e.id.equals(assetId))
+        .update((o) => o(unsupported: const Value(true)));
+    return true;
+  }
+
+  Future<void> clearUnsupported() {
+    return _db.managers.localAssetEntity
+        .filter((e) => e.unsupported.equals(true))
+        .update((o) => o(unsupported: const Value(false)));
   }
 }
