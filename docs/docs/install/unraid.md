@@ -2,7 +2,7 @@
 sidebar_position: 70
 ---
 
-# Unraid [ Community ]
+# Unraid [Community]
 
 :::note
 This is a community contribution and not officially supported by the Immich team, but included here for convenience.
