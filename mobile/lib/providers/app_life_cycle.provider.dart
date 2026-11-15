@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -221,6 +222,10 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
       _ref.read(backupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
+
+      if (_ref.read(appConfigProvider).backup.backgroundSync) {
+        unawaited(_ref.read(backgroundWorkerFgServiceProvider).runNow());
+      }
 
       _ref.read(websocketProvider.notifier).disconnect();
     }

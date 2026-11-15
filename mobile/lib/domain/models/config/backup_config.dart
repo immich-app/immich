@@ -12,5 +12,6 @@ abstract class BackupConfig with _$BackupConfig {
     @Default(false) bool requireCharging,
     @Default(30) int triggerDelay,
     @Default(false) bool syncAlbums,
+    @Default(false) bool backgroundSync,
   }) = _BackupConfig;
 }

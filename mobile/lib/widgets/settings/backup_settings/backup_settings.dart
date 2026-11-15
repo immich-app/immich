@@ -31,11 +31,36 @@ class BackupSettings extends StatelessWidget {
           SettingGroupTitle(title: context.t.background_options, icon: Icons.charging_station_rounded),
           const _BackupOnlyWhenChargingButton(),
           const _BackupDelaySlider(),
+          const _BackgroundSyncSwitch(),
         ],
         const Divider(),
         SettingGroupTitle(title: context.t.backup_albums_sync, icon: Icons.sync),
         const _AlbumSyncActionButton(),
       ],
+    );
+  }
+}
+
+class _BackgroundSyncSwitch extends ConsumerWidget {
+  const _BackgroundSyncSwitch();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final service = ref.watch(backgroundWorkerFgServiceProvider);
+    return _BackupSwitchTile(
+      metadataKey: SettingsKey.backgroundSync,
+      selector: (c) => c.backup.backgroundSync,
+      title: context.t.background_sync,
+      subtitle: context.t.background_sync_description,
+      onChanged: (value) async {
+        if (value) {
+          await service.configure();
+          await service.enable();
+          await service.runNow();
+        } else {
+          await service.disable();
+        }
+      },
     );
   }
 }

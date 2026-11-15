@@ -45,6 +45,10 @@ void main() {
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await SettingsRepository.ensureInitialized(db);
     await SettingsRepository.instance.write(SettingsKey.backupEnabled, true);
+    // The background worker refuses to run unless the switch is on, so every
+    // existing case below needs it enabled. The dedicated group at the bottom
+    // turns it off to cover the skip path.
+    await SettingsRepository.instance.write(SettingsKey.backgroundSync, true);
   });
 
   tearDownAll(() async {
@@ -131,6 +135,32 @@ void main() {
 
       remoteSync.complete(true);
       await upload;
+    });
+  });
+
+  group('background sync switch', () {
+    tearDown(() async {
+      await SettingsRepository.instance.write(SettingsKey.backgroundSync, true);
+    });
+
+    test('skips the whole run when the switch is off', () async {
+      await SettingsRepository.instance.write(SettingsKey.backgroundSync, false);
+
+      await sut.onIosUpload(true, 20);
+
+      verifyNever(() => mockRemoteSyncService.sync());
+      verifyNever(() => mockBackgroundUploadService.uploadBackupCandidates(any()));
+      verifyNever(() => mockBackgroundUploadService.resume());
+    });
+
+    test('runs when the switch is on', () async {
+      await SettingsRepository.instance.write(SettingsKey.backgroundSync, true);
+      when(() => mockRemoteSyncService.sync()).thenAnswer((_) async => true);
+
+      await sut.onIosUpload(true, 20);
+
+      verify(() => mockRemoteSyncService.sync()).called(1);
+      verify(() => mockBackgroundUploadService.uploadBackupCandidates(UserStub.admin.id)).called(1);
     });
   });
 }

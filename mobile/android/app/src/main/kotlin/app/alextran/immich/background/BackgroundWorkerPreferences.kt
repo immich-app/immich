@@ -12,11 +12,16 @@ class BackgroundWorkerPreferences(private val ctx: Context) {
     private const val SHARED_PREF_LOCK_KEY = "BackgroundWorker::isLocked"
     private const val SHARED_PREF_NOTIF_TITLE_KEY = "BackgroundWorker::notificationTitle"
     private const val SHARED_PREF_NOTIF_MSG_KEY = "BackgroundWorker::notificationMessage"
+    private const val SHARED_PREF_SYNC_ENABLED_KEY = "BackgroundWorker::syncEnabled"
 
     private const val DEFAULT_MIN_DELAY_SECONDS = 30L
     private const val DEFAULT_REQUIRE_CHARGING = false
     private const val DEFAULT_NOTIF_TITLE = "Uploading media"
     private const val DEFAULT_NOTIF_MSG = "Checking for new assets…"
+      // Matches the app-side default: background sync is opt-in on this fork.
+      // Written on every launch, so this only covers the window before the first
+      // frame.
+    private const val DEFAULT_SYNC_ENABLED = false
   }
 
   private val sp: SharedPreferences by lazy {
@@ -64,6 +69,20 @@ class BackgroundWorkerPreferences(private val ctx: Context) {
 
   fun isLocked(): Boolean {
     return sp.getBoolean(SHARED_PREF_LOCK_KEY, true)
+  }
+
+    /// Whether background sync and upload is switched on in the app's settings.
+    ///
+    /// Kept natively so every enqueue path can honour it, including the ones that
+    /// run before Dart is up.
+  fun setSyncEnabled(enabled: Boolean) {
+    sp.edit {
+      putBoolean(SHARED_PREF_SYNC_ENABLED_KEY, enabled)
+    }
+  }
+
+  fun isSyncEnabled(): Boolean {
+    return sp.getBoolean(SHARED_PREF_SYNC_ENABLED_KEY, DEFAULT_SYNC_ENABLED)
   }
 }
 
