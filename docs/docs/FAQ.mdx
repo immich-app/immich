@@ -249,7 +249,7 @@ We haven't implemented an official mechanism for creating albums from external l
 
 ### What happens to duplicates in external libraries?
 
-Duplicate checking only exists for upload libraries, using the file hash. Furthermore, duplicate checking is not global, but _per library_. Therefore, a situation where the same file appears twice in the timeline is possible, especially for external libraries.
+Duplicate checking is _per library_, using the file hash. Within an external library, duplicate files are still imported, so the same file can appear twice in the timeline. Mobile backup skips files that already exist in any of your libraries.
 
 ### Why are my edits to files not being saved in read-only external libraries?
 

@@ -30,7 +30,7 @@ You can select which albums on your mobile device to back up to the server. You 
 
 ### Deduplication
 
-When you first select albums for backup, Immich calculates a checksum for each file's content. This checksum identifies assets already on the server—whether uploaded via CLI, web interface, or another device. Files matching existing assets are skipped, preventing duplicate uploads and saving bandwidth.
+When you first select albums for backup, Immich calculates a checksum for each file's content. This checksum identifies assets already on the server—whether uploaded via CLI, web interface, another device, or imported from an external library. Files matching existing assets are skipped, preventing duplicate uploads and saving bandwidth.
 
 ### Networking requirements
 
