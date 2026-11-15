@@ -10,6 +10,8 @@
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { languageManager } from '#lib/managers/language-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
   import { getAlbumAssetActions } from '#lib/services/album.service.ts';
   import { getGlobalActions } from '#lib/services/app.service.ts';
   import { getAssetActions } from '#lib/services/asset.service.ts';
@@ -29,6 +31,9 @@
   import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiDotsVertical, mdiVideoOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+
+  const query = createPreloadedQuery(getPublicConfigQuery);
+  const publicConfig = $derived(query.data);
 
   interface Props {
     asset: AssetResponseDto;
@@ -163,7 +168,7 @@
           <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
         {/if}
 
-        <ActionMenuItem action={PlayOriginalVideo} />
+        <ActionMenuItem action={PlayOriginalVideo} disabled={publicConfig.ffmpeg.realtime.enabled} />
 
         {#if isOwner}
           <hr />
