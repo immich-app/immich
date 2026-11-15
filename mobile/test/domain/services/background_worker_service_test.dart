@@ -80,7 +80,7 @@ void main() {
     albumSteps = 0;
     when(
       () => mockSyncLinkedAlbumService.syncLinkedAlbums(any(), cancellation: any(named: 'cancellation')),
-    ).thenAnswer((_) async => albumSteps++);
+    ).thenAnswer((_) async => albumSteps += 1);
 
     sut = BackgroundWorkerBgService(
       dataController: MockDataController(),
@@ -133,10 +133,10 @@ void main() {
       expect(albumSteps, 1);
     });
 
-    test('adds the uploads to their albums every 50 uploads', () {
+    test('adds the uploads to their albums every 10 uploads', () {
       fakeAsync((async) {
         stubUploads((callbacks) async {
-          for (var i = 0; i < 50; i++) {
+          for (var i = 0; i < 10; i++) {
             callbacks.onSuccess?.call('local-$i', 'remote-$i');
           }
           await Future<void>.delayed(const Duration(minutes: 5));
@@ -155,7 +155,7 @@ void main() {
         when(
           () => mockSyncLinkedAlbumService.syncLinkedAlbums(any(), cancellation: any(named: 'cancellation')),
         ).thenAnswer((_) {
-          albumSteps++;
+          albumSteps += 1;
           return albumStep.future;
         });
         stubUploads((callbacks) async {

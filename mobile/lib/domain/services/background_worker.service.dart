@@ -309,13 +309,14 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         _cancellationToken,
         callbacks: UploadCallbacks(
           onSuccess: (_, _) {
-            unlinked++;
-            if (unlinked >= 50 && albumSync == null) {
+            unlinked += 1;
+            // Sync albums without blocking uploads, skip if one is already running
+            if (unlinked >= 10 && albumSync == null) {
               unlinked = 0;
               albumSync = _syncLinkedAlbums(currentUser.id).whenComplete(() => albumSync = null);
             }
           },
-          onError: (_, _) => failed++,
+          onError: (_, _) => failed += 1,
         ),
         useSequentialUpload: true,
       );
