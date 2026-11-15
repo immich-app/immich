@@ -3,8 +3,9 @@ import { Insertable } from 'kysely';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { isAbsolute, parse } from 'node:path';
+import { chunk } from 'lodash-es';
 import picomatch from 'picomatch';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
+import { JOBS_LIBRARY_PAGINATION_SIZE, LIBRARY_FILE_HASH_CONCURRENCY } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import {
@@ -33,6 +34,7 @@ import { AssetSyncResult } from 'src/repositories/library.repository.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { JobOf } from 'src/types.js';
+import { isAssetLibraryChecksumConstraint } from 'src/utils/database.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, createLibraryMatcher, findOrFail, handlePromiseError } from 'src/utils/misc.js';
 
@@ -266,18 +268,26 @@ export class LibraryService extends BaseService {
     }
 
     const assetImports: Insertable<AssetTable>[] = [];
-    await Promise.all(
-      job.paths.map(async (path) => {
-        try {
-          const asset = await this.processEntity(path, library.ownerId, job.libraryId);
-          assetImports.push(asset);
-        } catch (error) {
-          this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`);
-        }
-      }),
-    );
+    for (const paths of chunk(job.paths, LIBRARY_FILE_HASH_CONCURRENCY)) {
+      await Promise.all(
+        paths.map(async (path) => {
+          try {
+            const asset = await this.processEntity(path, library.ownerId, job.libraryId);
+            assetImports.push(asset);
+          } catch (error) {
+            this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`);
+          }
+        }),
+      );
+    }
 
-    const assetIds = await this.assetRepository.createAll(assetImports);
+    const created = await this.assetRepository.createAllSkipLibraryChecksumConflicts(assetImports);
+    const createdPaths = new Set(created.map(({ originalPath }) => originalPath));
+    const duplicateContentImports = assetImports
+      .filter(({ originalPath }) => !createdPaths.has(originalPath))
+      .map((asset) => ({ ...asset, ...this.getPathChecksum(asset.originalPath) }));
+    const duplicateContentIds = await this.assetRepository.createAll(duplicateContentImports);
+    const assetIds = [...created.map(({ id }) => id), ...duplicateContentIds];
 
     const progressMessage =
       job.progressCounter && job.totalAssets
@@ -404,15 +414,38 @@ export class LibraryService extends BaseService {
     return JobStatus.Success;
   }
 
+  private getPathChecksum(originalPath: string) {
+    return {
+      checksum: this.cryptoRepository.hashSha1(`path:${originalPath}`),
+      checksumAlgorithm: ChecksumAlgorithm.sha1Path,
+    };
+  }
+
+  private async refreshChecksums(assets: { id: string; originalPath: string }[]) {
+    for (const { id, originalPath } of assets) {
+      try {
+        const checksum = await this.cryptoRepository.hashFile(originalPath);
+        await this.assetRepository.updateAll([id], { checksum, checksumAlgorithm: ChecksumAlgorithm.sha1File });
+      } catch (error) {
+        if (isAssetLibraryChecksumConstraint(error)) {
+          await this.assetRepository.updateAll([id], this.getPathChecksum(originalPath));
+        } else {
+          this.logger.error(`Error updating checksum of ${originalPath}: ${error}`);
+        }
+      }
+    }
+  }
+
   private async processEntity(filePath: string, ownerId: string, libraryId: string) {
     const assetPath = path.normalize(filePath);
     const stat = await this.storageRepository.stat(assetPath);
+    const checksum = await this.cryptoRepository.hashFile(assetPath);
 
     return {
       ownerId,
       libraryId,
-      checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
-      checksumAlgorithm: ChecksumAlgorithm.sha1Path,
+      checksum,
+      checksumAlgorithm: ChecksumAlgorithm.sha1File,
       originalPath: assetPath,
 
       fileCreatedAt: stat.mtime,
@@ -489,7 +522,7 @@ export class LibraryService extends BaseService {
     const trashedAssetIdsToOffline: string[] = [];
     const assetIdsToOnline: string[] = [];
     const trashedAssetIdsToOnline: string[] = [];
-    const assetIdsToUpdate: string[] = [];
+    const assetsToUpdate: { id: string; originalPath: string }[] = [];
 
     this.logger.debug(`Checking batch of ${assets.length} existing asset(s) in library ${job.libraryId}`);
 
@@ -514,7 +547,7 @@ export class LibraryService extends BaseService {
           break;
         }
         case AssetSyncResult.UPDATE: {
-          assetIdsToUpdate.push(asset.id);
+          assetsToUpdate.push(asset);
           break;
         }
         case AssetSyncResult.CHECK_OFFLINE: {
@@ -553,8 +586,9 @@ export class LibraryService extends BaseService {
       promises.push(this.assetRepository.updateAll(trashedAssetIdsToOnline, { isOffline: false }));
     }
 
+    const assetIdsToUpdate = assetsToUpdate.map(({ id }) => id);
     if (assetIdsToUpdate.length > 0) {
-      promises.push(this.queuePostSyncJobs(assetIdsToUpdate));
+      promises.push(this.refreshChecksums(assetsToUpdate).then(() => this.queuePostSyncJobs(assetIdsToUpdate)));
     }
 
     await Promise.all(promises);

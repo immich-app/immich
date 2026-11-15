@@ -52,9 +52,9 @@ export enum AssetType {
 export const AssetTypeSchema = z.enum(AssetType).describe('Asset type').meta({ id: 'AssetTypeEnum' });
 
 export enum ChecksumAlgorithm {
-  /** sha1 checksum of the whole file contents */
+  /** sha1 checksum of the whole file contents also for external libraries */
   sha1File = 'sha1',
-  /** sha1 checksum of "path:" plus the file path, currently used in external libraries, deprecated */
+  /** sha1 checksum of "path:" plus the file path, fallback for duplicate files in external libraries, deprecated */
   sha1Path = 'sha1-path',
 }
 

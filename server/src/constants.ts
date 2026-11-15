@@ -26,6 +26,7 @@ export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
+export const LIBRARY_FILE_HASH_CONCURRENCY = 8;
 
 export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   cube: 'cube',

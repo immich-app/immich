@@ -456,6 +456,19 @@ export class AssetRepository {
     return ids.map(({ id }) => id);
   }
 
+  @ChunkedArray({ chunkSize: 4000 })
+  async createAllSkipLibraryChecksumConflicts(assets: Insertable<AssetTable>[]) {
+    if (assets.length === 0) {
+      return [];
+    }
+    return this.db
+      .insertInto('asset')
+      .values(assets)
+      .onConflict((oc) => oc.columns(['ownerId', 'libraryId', 'checksum']).where('libraryId', 'is not', null).doNothing())
+      .returning(['id', 'originalPath'])
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, { year: 2000, day: 1, month: 1 }] })
   getByDayOfYear(ownerIds: string[], { year, day, month }: YearMonthDay) {
     return this.db

@@ -102,10 +102,14 @@ export const removeUndefinedKeys = <T extends object>(update: T, template: unkno
 };
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
+export const ASSET_LIBRARY_CHECKSUM_CONSTRAINT = 'asset_ownerId_libraryId_checksum_idx';
 export const VIDEO_STREAM_SESSION_PK_CONSTRAINT = 'video_stream_session_pkey';
 
 export const isAssetChecksumConstraint = (error: unknown) =>
   (error as PostgresError)?.constraint_name === ASSET_CHECKSUM_CONSTRAINT;
+
+export const isAssetLibraryChecksumConstraint = (error: unknown) =>
+  (error as PostgresError)?.constraint_name === ASSET_LIBRARY_CHECKSUM_CONSTRAINT;
 
 export const isVideoStreamSessionPkConstraint = (error: unknown) =>
   (error as PostgresError)?.constraint_name === VIDEO_STREAM_SESSION_PK_CONSTRAINT;

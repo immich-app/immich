@@ -4,7 +4,7 @@ import { vitest } from 'vitest';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { mapLibrary } from 'src/dtos/library.dto.js';
-import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
+import { AssetType, ChecksumAlgorithm, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
 import { LibraryService } from 'src/services/library.service.js';
 import type { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
@@ -537,6 +537,10 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset.id], {
+        checksum: `${asset.originalPath} (file-hashed)`,
+        checksumAlgorithm: ChecksumAlgorithm.sha1File,
+      });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.SidecarCheck,
@@ -545,6 +549,32 @@ describe(LibraryService.name, () => {
             source: 'upload',
           },
         },
+      ]);
+    });
+
+    it('should fall back to a path checksum when a changed asset now duplicates another asset in the library', async () => {
+      const asset = AssetFactory.create({ libraryId: 'library-id', isExternal: true });
+      const mockAssetJob: ILibraryBulkIdsJob = {
+        assetIds: [asset.id],
+        libraryId: newUuid(),
+        importPaths: ['/'],
+        exclusionPatterns: [],
+        totalAssets: 1,
+        progressCounter: 0,
+      };
+
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([asset]);
+      mocks.storage.stat.mockResolvedValue({ mtime: new Date(asset.fileModifiedAt.getDate() + 1) } as Stats);
+      mocks.asset.updateAll.mockRejectedValueOnce({ constraint_name: 'asset_ownerId_libraryId_checksum_idx' });
+
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.updateAll).toHaveBeenLastCalledWith([asset.id], {
+        checksum: Buffer.from(`path:${asset.originalPath} (hashed)`),
+        checksumAlgorithm: ChecksumAlgorithm.sha1Path,
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SidecarCheck, data: { id: asset.id, source: 'upload' } },
       ]);
     });
   });
@@ -567,21 +597,27 @@ describe(LibraryService.name, () => {
         paths: ['/data/user1/photo.jpg'],
       };
 
-      mocks.asset.createAll.mockResolvedValue([asset.id]);
+      mocks.asset.createAllSkipLibraryChecksumConflicts.mockResolvedValue([
+        { id: asset.id, originalPath: '/data/user1/photo.jpg' },
+      ]);
+      mocks.asset.createAll.mockResolvedValue([]);
       mocks.library.get.mockResolvedValue(library);
 
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.asset.createAll).toHaveBeenCalledWith([
+      expect(mocks.asset.createAllSkipLibraryChecksumConflicts).toHaveBeenCalledWith([
         expect.objectContaining({
           ownerId: library.ownerId,
           libraryId: library.id,
+          checksum: '/data/user1/photo.jpg (file-hashed)',
+          checksumAlgorithm: ChecksumAlgorithm.sha1File,
           originalPath: '/data/user1/photo.jpg',
           type: AssetType.Image,
           originalFileName: 'photo.jpg',
           isExternal: true,
         }),
       ]);
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([]);
 
       expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', {
         asset: { id: asset.id, ownerId: library.ownerId },
@@ -611,6 +647,57 @@ describe(LibraryService.name, () => {
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Failed);
 
       expect(mocks.asset.createAll.mock.calls).toEqual([]);
+    });
+
+    it('should import an asset whose content already exists in the library with a path checksum', async () => {
+      const library = factory.library();
+      const original = AssetFactory.create();
+      const copy = AssetFactory.create();
+
+      const mockLibraryJob: ILibraryFileJob = {
+        libraryId: library.id,
+        paths: ['/data/user1/photo.jpg', '/data/user1/copy/photo.jpg'],
+      };
+
+      mocks.asset.createAllSkipLibraryChecksumConflicts.mockResolvedValue([
+        { id: original.id, originalPath: '/data/user1/photo.jpg' },
+      ]);
+      mocks.asset.createAll.mockResolvedValue([copy.id]);
+      mocks.library.get.mockResolvedValue(library);
+
+      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([
+        expect.objectContaining({
+          originalPath: '/data/user1/copy/photo.jpg',
+          checksum: Buffer.from('path:/data/user1/copy/photo.jpg (hashed)'),
+          checksumAlgorithm: ChecksumAlgorithm.sha1Path,
+        }),
+      ]);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', {
+        asset: { id: original.id, ownerId: library.ownerId },
+      });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', {
+        asset: { id: copy.id, ownerId: library.ownerId },
+      });
+    });
+
+    it('should skip a file that cannot be hashed', async () => {
+      const library = factory.library();
+
+      const mockLibraryJob: ILibraryFileJob = {
+        libraryId: library.id,
+        paths: ['/data/user1/photo.jpg'],
+      };
+
+      mocks.crypto.hashFile.mockRejectedValue(new Error('EACCES'));
+      mocks.asset.createAllSkipLibraryChecksumConflicts.mockResolvedValue([]);
+      mocks.asset.createAll.mockResolvedValue([]);
+      mocks.library.get.mockResolvedValue(library);
+
+      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.createAllSkipLibraryChecksumConflicts).toHaveBeenCalledWith([]);
     });
   });
 
