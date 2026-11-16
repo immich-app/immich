@@ -743,7 +743,7 @@ export const defaults = Object.freeze<SystemConfig>({
   image: {
     thumbnail: {
       format: ImageFormat.Webp,
-      size: 250,
+      size: 360,
       quality: 80,
       progressive: false,
       effort: ImageEffort.Medium,

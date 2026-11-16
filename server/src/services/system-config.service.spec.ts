@@ -199,7 +199,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   image: {
     thumbnail: {
-      size: 250,
+      size: 360,
       format: ImageFormat.Webp,
       quality: 80,
       progressive: false,
