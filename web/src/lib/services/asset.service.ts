@@ -9,6 +9,7 @@ import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
+import { runAssetJobsMutation } from '#lib/queries/asset.query.ts';
 import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { Route } from '#lib/route.ts';
@@ -23,7 +24,6 @@ import {
   AssetTypeEnum,
   AssetVisibility,
   getAssetInfo,
-  runAssetJobs,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
@@ -640,10 +640,7 @@ const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
 const handleRunAssetJob = async (dto: AssetJobsDto) => {
   const $t = await getFormatter();
 
-  try {
-    await runAssetJobs({ assetJobsDto: dto });
-    toastManager.primary(getAssetJobMessage($t, dto.name));
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_submit_job'));
-  }
+  await executeMutation(runAssetJobsMutation, [{ assetJobsDto: dto }], {
+    onSuccess: () => toastManager.primary(getAssetJobMessage($t, dto.name)),
+  });
 };
