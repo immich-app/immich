@@ -3,7 +3,8 @@
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { queryClient } from '#lib/queries/client.ts';
   import { getPartnersQuery } from '#lib/queries/partner.query.ts';
-  import { PartnerDirection, searchUsers, type UserResponseDto } from '@immich/sdk';
+  import { searchUsersQuery } from '#lib/queries/user.query.ts';
+  import { PartnerDirection, type UserResponseDto } from '@immich/sdk';
   import { Button, ListButton, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -18,7 +19,7 @@
 
   const loadUsers = async () => {
     const [users, partners] = await Promise.all([
-      searchUsers(),
+      queryClient.query(searchUsersQuery()),
       queryClient.query({ ...getPartnersQuery(PartnerDirection.SharedBy), staleTime: 0 }),
     ]);
     const excludedIds = new Set([authManager.user.id, ...partners.map(({ id }) => id)]);

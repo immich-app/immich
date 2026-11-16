@@ -1,6 +1,6 @@
 import type { MockData } from '#test/common/data.ts';
 import { factory } from '#test/common/factories.ts';
-import { fromBase64, minimalMp4, placeholderImage } from '#test/common/helpers.ts';
+import { fromBase64, minimalMp4, opaquePng, placeholderImage } from '#test/common/helpers.ts';
 import type { Handlers } from '#test/common/types.ts';
 import { AssetUploadAction, WorkflowTrigger, WorkflowType } from '@immich/sdk';
 
@@ -96,14 +96,12 @@ export const createHandlers = (data: MockData): Handlers => {
       data.user.profileImagePath = '';
       return { status: 204 };
     },
-    createProfileImage: () => ({
-      status: 201,
-      json: {
-        userId: data.user.id,
-        profileImagePath: '/profile/image.png',
-        profileChangedAt: new Date().toISOString(),
-      },
-    }),
+    createProfileImage: () => {
+      Object.assign(data.user, { profileImagePath: '/profile/image.png', profileChangedAt: new Date().toISOString() });
+      const { id: userId, profileImagePath, profileChangedAt } = data.user;
+      return { status: 201, json: { userId, profileImagePath, profileChangedAt } };
+    },
+    getProfileImage: () => ({ body: opaquePng, contentType: 'image/png' }),
     searchUsersAdmin: ({ params = {} }) => ({ json: data.userList(params) }),
     createUserAdmin: ({ body }) => ({ status: 201, json: data.createUser(body) }),
     updateUserAdmin: ({ params, body }) => {
