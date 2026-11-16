@@ -1688,6 +1688,31 @@ describe(MediaService.name, () => {
       });
     });
 
+    it('should apply rotate/mirror edits to the face crop and ignore the editor crop', async () => {
+      const person = PersonFactory.create();
+
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.editedThumbnailMiddle);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 400, height: 500 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        { data, info },
+        expect.objectContaining({
+          edits: [
+            { action: 'crop', parameters: expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }) },
+            { action: 'rotate', parameters: { angle: 90 } },
+          ],
+        }),
+        expect.any(String),
+      );
+    });
+
     it('should use preview path if video', async () => {
       const person = PersonFactory.create();
 

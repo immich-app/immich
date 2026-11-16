@@ -406,7 +406,12 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const { x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    const { x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath, edits } = data;
+    // The stored face bounding box is in the original (pre-edit) image space, so the face is cropped
+    // from the un-edited source. Any rotate/mirror the user applied in the editor is then re-applied to
+    // the crop so the thumbnail matches the orientation shown for the asset. The editor crop is excluded
+    // because it only reframes the whole photo, not the face region.
+    const orientationEdits = edits.filter((edit) => edit.action !== AssetEditAction.Crop);
     let inputImage: string | Buffer;
     if (data.type === AssetType.Video) {
       if (!previewPath) {
@@ -449,6 +454,7 @@ export class MediaService extends BaseService {
             { x1, y1, x2, y2 },
           ),
         },
+        ...orientationEdits,
       ],
       decodingTier: THUMBNAIL_DECODING_TIER,
     };
