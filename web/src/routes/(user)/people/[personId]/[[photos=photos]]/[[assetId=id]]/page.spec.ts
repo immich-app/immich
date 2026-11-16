@@ -112,6 +112,9 @@ test('favorites the person', async ({ data, router, render, settle, api, app }) 
 
   expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: person.id }, body: { isFavorite: true } });
   await expect.element(app.toast('added_to_favorites')).toBeVisible();
+  await app.person.menuButton.click();
+  await expect.element(app.person.menuItem('unfavorite')).toBeVisible();
+  await userEvent.keyboard('{Escape}');
 });
 
 test('unfavorites the person', async ({ data, router, render, settle, api, app }) => {
@@ -138,6 +141,28 @@ test('shows an error when favoriting fails', async ({ data, router, render, sett
   expect(logger.error).toHaveBeenCalledWith(/handleError/);
   await expect.element(app.toast('Server error\n(Immich Server Error)')).toBeVisible();
   await expect.element(app.toast('added_to_favorites')).not.toBeInTheDocument();
+});
+
+test('shows a readable error when favoriting fails without a server message', async ({
+  data,
+  router,
+  render,
+  settle,
+  api,
+  app,
+  logger,
+}) => {
+  const person = factory.person({ name: 'Alice' });
+  api.on({ updatePerson: () => ({ status: 500, body: '' }) });
+  await showPerson({ data, router, render, settle }, person);
+
+  await app.person.menuButton.click();
+  await app.person.menuItem('to_favorite').click();
+  await settle();
+
+  expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: person.id }, body: { isFavorite: true } });
+  expect(logger.error).toHaveBeenCalledWith(/handleError/);
+  await expect.element(app.toast('errors.unable_to_change_favorite')).toBeVisible();
 });
 
 test('merges a selected person into this person', async ({ data, router, render, settle, api, app }) => {
@@ -239,6 +264,7 @@ test('reassigns selected assets to an existing person', async ({ data, router, r
     body: { data: [{ assetId: asset.id, personId: person.id }] },
   });
   expect(api.createPerson).not.toHaveBeenCalled();
+  expect(api.getPersonStatistics.calls).toHaveLength(2);
 });
 
 test('grants a cluster group user access', async ({ data, router, render, settle, api, app }) => {

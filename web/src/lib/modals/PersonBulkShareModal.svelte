@@ -3,10 +3,15 @@
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import PeopleSelectionModal from '#lib/modals/PeopleSelectionModal.svelte';
-  import { handleBulkUpsert } from '#lib/services/person-user.service.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import {
+    getAllPeopleQuery,
+    removeUsersFromPeopleMutation,
+    upsertPeopleUsersMutation,
+  } from '#lib/queries/person.query.ts';
   import { getPeopleThumbnailUrl } from '#lib/utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import { getAllPeople, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { PeopleUsersUpsertType, PersonUserRole, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import {
     ActionButton,
     Field,
@@ -16,9 +21,10 @@
     Switch,
     Text,
     modalManager,
+    toastManager,
     type ActionItem,
   } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiPencilOutline } from '@mdi/js';
+  import { mdiAccountMultipleOutline, mdiCheck, mdiPencilOutline } from '@mdi/js';
   import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -56,22 +62,22 @@
       return people.filter(({ sharedWith }) => sharedWith.some(({ id }) => id === sharedWithId));
     }
 
-    const sharedPeople: PersonResponseDto[] = [];
+    return loadPages({ sharedById: authManager.user.id, sharedWithId });
+  };
+
+  const loadPages = async (filter: { sharedById?: string; sharedWithId?: string }) => {
+    const pages: PersonResponseDto[] = [];
 
     for (let page = 1, hasNextPage = true; hasNextPage; page++) {
-      const result = await getAllPeople({
-        sharedById: authManager.user.id,
-        sharedWithId,
-        withHidden: true,
-        page,
-        size: 1000,
+      const result = await queryClient.query({
+        ...getAllPeopleQuery({ ...filter, withHidden: true, page, size: 1000 }),
+        staleTime: 0,
       });
-
-      sharedPeople.push(...result.people);
+      pages.push(...result.people);
       hasNextPage = result.hasNextPage ?? false;
     }
 
-    return sharedPeople;
+    return pages;
   };
 
   const loadShares = async (sharedWithId: string) => {
@@ -103,15 +109,7 @@
       return people;
     }
 
-    const allPeople: PersonResponseDto[] = [];
-
-    for (let page = 1, hasNextPage = true; hasNextPage; page++) {
-      const result = await getAllPeople({ withHidden: true, page, size: 1000 });
-      allPeople.push(...result.people);
-      hasNextPage = result.hasNextPage ?? false;
-    }
-
-    return allPeople;
+    return loadPages({});
   };
 
   const handleEditPeople = async () => {
@@ -155,14 +153,28 @@
   };
 
   const onSubmit = async () => {
-    const success = await handleBulkUpsert({
-      sharedWithIds: [selectedUserId],
-      everyone: shareEveryone,
-      personIds: [...added.keys()],
-      removedIds: [...removed],
-    });
+    const sharedWithIds = [selectedUserId];
+    let failed = false;
+    const onError = () => (failed = true);
 
-    if (success) {
+    const sharedPeople = shareEveryone
+      ? { type: PeopleUsersUpsertType.Everyone }
+      : added.size > 0
+        ? { personIds: [...added.keys()] }
+        : undefined;
+
+    if (sharedPeople) {
+      const peopleUsersUpsertDto = { ...sharedPeople, sharedWithIds, role: PersonUserRole.Admin };
+      await executeMutation(upsertPeopleUsersMutation, [{ peopleUsersUpsertDto }], { onError });
+    }
+
+    if (!shareEveryone && !failed && removed.size > 0) {
+      const personUsersDeleteDto = [...removed].map((personId) => ({ personId, sharedWithId: selectedUserId }));
+      await executeMutation(removeUsersFromPeopleMutation, [{ personUsersDeleteDto }], { onError });
+    }
+
+    if (!failed) {
+      toastManager.primary({ icon: mdiCheck, title: $t('saved') });
       onClose(true);
     }
   };
