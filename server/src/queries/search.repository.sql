@@ -397,6 +397,40 @@ from
 order by
   "asset_exif"."city"
 
+-- SearchRepository.searchFaceMatch
+begin
+set
+  local vchordrq.probes = 1
+with
+  "match" as (
+    select
+      "person"."personGroupId",
+      face_search.embedding <=> $1 as "distance"
+    from
+      "face_search"
+      inner join "asset_face" on "asset_face"."id" = "face_search"."faceId"
+      inner join "person" on "person"."personGroupId" = "asset_face"."personGroupId"
+      and "person"."ownerId" = $2
+    where
+      "asset_face"."ownerId" = $3
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."assetDeletedAt" is null
+      and "asset_face"."isVisible" = $4
+      and "asset_face"."assetVisibility" in ($5, $6)
+      and "person"."isHidden" = $7
+    order by
+      "distance"
+    limit
+      $8
+  )
+select
+  *
+from
+  "match"
+where
+  "distance" <= $9
+commit
+
 -- SearchRepository.getStates
 select distinct
   on ("state") "state"

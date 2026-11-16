@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import { isUndefined, omitBy } from 'lodash-es';
 import { Chunked, OnJob } from 'src/decorators.js';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
+import { FaceRecognitionResponseDto, FaceRecognitionResultDto, mapFaceRecognition } from 'src/dtos/face.dto.js';
 import {
   AssetFaceCreateDto,
   AssetFaceDeleteDto,
@@ -60,6 +61,39 @@ const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${person
 
 @Injectable()
 export class PersonService extends BaseService {
+  async recognizeFaces(auth: AuthDto, file: Express.Multer.File): Promise<FaceRecognitionResponseDto> {
+    const { machineLearning } = await this.getConfig({ withCache: true });
+    if (!isFacialRecognitionEnabled(machineLearning)) {
+      throw new BadRequestException('Facial recognition is not enabled');
+    }
+
+    const detected = await this.machineLearningRepository
+      .detectFaces(file.buffer, machineLearning.facialRecognition)
+      .catch(() => {
+        throw new ServiceUnavailableException('Facial recognition is unavailable');
+      });
+    const faces: FaceRecognitionResultDto[] = [];
+    for (const face of detected.faces) {
+      const match = await this.searchRepository.searchFaceMatch({
+        userId: auth.user.id,
+        embedding: face.embedding,
+        maxDistance: machineLearning.facialRecognition.maxDistance,
+      });
+
+      if (!match) {
+        faces.push(mapFaceRecognition(face, null, null));
+        continue;
+      }
+
+      const id = { ownerId: auth.user.id, personGroupId: match.personGroupId };
+      await this.requirePersonAccess({ auth, permission: Permission.PersonRead, ids: [id] });
+      const person = await this.personRepository.getByGroupId(id);
+      faces.push(mapFaceRecognition(face, person ? mapPerson(person) : null, match.distance));
+    }
+
+    return { imageWidth: detected.imageWidth, imageHeight: detected.imageHeight, faces };
+  }
+
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const { withHidden = false, closestAssetId, closestPersonId, page, size, ...filters } = dto;
     const pagination = {

@@ -1764,6 +1764,35 @@ export type AssetFaceCreateDto = {
     /** Face bounding box Y coordinate */
     y: number;
 };
+export type FaceRecognitionDto = {
+    /** JPEG, PNG or WebP image, up to 20 MiB */
+    file: Blob;
+};
+export type FaceRecognitionResultDto = {
+    /** Face coordinates in the decoded image */
+    boundingBox: {
+        x1: number;
+        x2: number;
+        y1: number;
+        y2: number;
+    };
+    /** Cosine distance to the matching face; lower is more similar */
+    distance: number | null;
+    /** Whether a sufficiently similar face belongs to an existing person */
+    matched: boolean;
+    /** Matching person, or null when no match was found */
+    person: PersonResponseDto | null;
+    /** Face detection score, not identity confidence */
+    score: number;
+};
+export type FaceRecognitionResponseDto = {
+    /** One result per detected face, or an empty array if none were detected */
+    faces: FaceRecognitionResultDto[];
+    /** Height of the decoded image */
+    imageHeight: number;
+    /** Width of the decoded image */
+    imageWidth: number;
+};
 export type AssetFaceDeleteDto = {
     /** Force delete even if person has other faces */
     force: boolean;
@@ -5596,6 +5625,21 @@ export function createFace({ assetFaceCreateDto }: {
         ...opts,
         method: "POST",
         body: assetFaceCreateDto
+    })));
+}
+/**
+ * Recognize faces in an image
+ */
+export function recognizeFaces({ faceRecognitionDto }: {
+    faceRecognitionDto: FaceRecognitionDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: FaceRecognitionResponseDto;
+    }>("/faces/recognize", oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: faceRecognitionDto
     })));
 }
 /**

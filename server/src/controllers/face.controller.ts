@@ -1,7 +1,25 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  FileTypeValidator,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseFilePipe,
+  Post,
+  Put,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { memoryStorage } from 'multer';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { FaceRecognitionDto, FaceRecognitionResponseDto } from 'src/dtos/face.dto.js';
 import {
   AssetFaceCreateDto,
   AssetFaceDeleteDto,
@@ -12,12 +30,38 @@ import {
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
 import { PersonService } from 'src/services/person.service.js';
+import { HumanReadableSize } from 'src/utils/bytes.js';
 import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Faces)
 @Controller('faces')
 export class FaceController {
   constructor(private service: PersonService) {}
+
+  @Post('recognize')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated({ permission: Permission.PersonRead })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: FaceRecognitionDto })
+  @Endpoint({
+    summary: 'Recognize faces in an image',
+    description:
+      "Match faces against existing, non-hidden people using only the authenticated user's timeline and archived photos. The image is processed without being saved. Uses the configured facial recognition model and distance threshold.",
+    history: new HistoryBuilder().added('v3.4.0').alpha('v3.4.0'),
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 20 * HumanReadableSize.MiB, files: 1, fields: 0 },
+    }),
+  )
+  recognizeFaces(
+    @Auth() auth: AuthDto,
+    @UploadedFile(new ParseFilePipe({ validators: [new FileTypeValidator({ fileType: /^image\/(jpeg|png|webp)$/ })] }))
+    file: Express.Multer.File,
+  ): Promise<FaceRecognitionResponseDto> {
+    return this.service.recognizeFaces(auth, file);
+  }
 
   @Post()
   @Authenticated({ permission: Permission.FaceCreate })
