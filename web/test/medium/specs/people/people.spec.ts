@@ -15,7 +15,7 @@ test('searching shows only the matching people', async ({ page, data, api, app }
   expect(api.getAllPeople).toHaveBeenCalledWith({ params: { withHidden: true, name: 'ali' } });
 });
 
-test.fail('refreshes a face once its thumbnail is ready', async ({ page, data, api, app }) => {
+test('refreshes a face once its thumbnail is ready', async ({ page, data, api, app }) => {
   data.addPeople(factory.person({ name: 'Alice' }));
   await page.goto(Route.people());
   await expect(app.people.thumbnail('Alice')).toHaveAttribute('src', /updatedAt=2025-01-01/);
