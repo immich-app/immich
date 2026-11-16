@@ -3,8 +3,10 @@ import type { QueueSnapshot } from '#lib/types.ts';
 import {
   QueueCommand,
   QueueName,
+  createJob,
   emptyQueue,
   getQueues,
+  getQueuesLegacy,
   runQueueCommandLegacy,
   updateQueue,
   type QueueResponseDto,
@@ -44,6 +46,13 @@ export const getQueueSnapshotsQuery = () =>
     gcTime: Infinity,
   });
 
+export const getQueuesLegacyQuery = () =>
+  queryOptions({
+    queryKey: ['queues-legacy'],
+    queryFn: ({ signal }) => getQueuesLegacy({ signal }),
+    refetchInterval: 2000,
+  });
+
 export const getQueueQuery = (name: QueueName) =>
   queryOptions({
     ...getQueuesQuery(),
@@ -73,4 +82,9 @@ export const scanAllLibrariesMutation = () =>
       success: { toast: { color: 'info', description: 'admin.refreshing_all_libraries' } },
       error: { toast: 'errors.unable_to_scan_libraries' },
     },
+  });
+
+export const createJobMutation = (meta?: MutationMeta) =>
+  asMutation(createJob, {
+    meta: meta ?? { success: { toast: 'admin.job_created' }, error: { toast: 'errors.unable_to_submit_job' } },
   });

@@ -98,7 +98,7 @@ export const queryClient = createQueryClient();
 
 export const asMutation = <TArgs extends unknown[], TData, TError = DefaultError, TOnMutateResult = unknown>(
   fn: (...args: TArgs) => Promise<TData>,
-  options?: Omit<CreateMutationOptions<TData, TError, TArgs, TOnMutateResult>, 'mutationFn' | 'mutationKey'>,
+  options?: Omit<CreateMutationOptions<TData, TError, TArgs, TOnMutateResult>, 'mutationFn'>,
 ) => mutationOptions({ ...options, mutationFn: (args: TArgs) => fn(...args) });
 
 const getPreloadedData = <TQueryFnData>(queryKey: QueryKey) => {

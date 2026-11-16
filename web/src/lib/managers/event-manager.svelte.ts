@@ -6,8 +6,6 @@ import type {
   AlbumUserRole,
   ApiKeyResponseDto,
   AssetResponseDto,
-  IntegrityReport,
-  JobCreateDto,
   LoginResponseDto,
   PasskeyResponseDto,
   PersonResponseDto,
@@ -57,8 +55,6 @@ export type Events = {
   PersonThumbnailReady: [{ id: string }];
   PersonAssetDelete: [{ id: string; assetId: string }];
 
-  BackupDeleteStatus: [{ filename: string; isDeleting: boolean }];
-  BackupDeleted: [{ filename: string }];
   BackupUpload: [{ progress: number; isComplete: boolean }];
 
   StackCreate: [StackResponseDto];
@@ -75,11 +71,6 @@ export type Events = {
   SessionDelete: [];
 
   SystemConfigUpdate: [AdminConfigDto];
-
-  IntegrityReportDeleteStatus: [{ type?: IntegrityReport; id?: string; isDeleting: boolean }];
-  IntegrityReportDeleted: [{ type?: IntegrityReport; id?: string }];
-
-  JobCreate: [{ dto: JobCreateDto }];
 
   ReleaseEvent: [ReleaseEventV1];
 

@@ -1,11 +1,11 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { queryClient } from '#lib/queries/client.ts';
+import { getMaintenanceStatusQuery } from '#lib/queries/maintenance.query.ts';
 import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
 import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
 import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
 import { Route } from '#lib/route.ts';
-import { maintenanceStore } from '#lib/stores/maintenance.store.ts';
 import { createEventEmitter } from '#lib/utils/eventemitter.ts';
 import {
   MaintenanceAction,
@@ -83,7 +83,7 @@ websocket
   })
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
   .on('MaintenanceStatusV1', (status) => {
-    maintenanceStore.status.set(status);
+    queryClient.setQueryData(getMaintenanceStatusQuery().queryKey, status);
 
     if (status.action === MaintenanceAction.End) {
       websocketStore.serverRestarting.set({
