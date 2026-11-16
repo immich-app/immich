@@ -12,6 +12,7 @@ import {
   AudioCodec,
   Colorspace,
   ExifOrientation,
+  ImageEffort,
   ImageFormat,
   JobName,
   JobStatus,
@@ -452,6 +453,7 @@ describe(MediaService.name, () => {
           size: 1440,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -466,6 +468,7 @@ describe(MediaService.name, () => {
           size: 250,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 4,
@@ -750,6 +753,7 @@ describe(MediaService.name, () => {
           size: 1440,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -764,6 +768,7 @@ describe(MediaService.name, () => {
           size: 250,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 4,
@@ -800,6 +805,7 @@ describe(MediaService.name, () => {
           size: 1440,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -814,6 +820,7 @@ describe(MediaService.name, () => {
           size: 250,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 4,
@@ -836,6 +843,7 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: true,
+          effort: ImageEffort.Medium,
         }),
         expect.stringContaining('preview.jpeg'),
       );
@@ -844,6 +852,7 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           format: ImageFormat.Webp,
           progressive: false,
+          effort: ImageEffort.Medium,
         }),
         expect.stringContaining('thumbnail.webp'),
       );
@@ -875,6 +884,7 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: false,
+          effort: ImageEffort.Medium,
         }),
         expect.stringContaining('preview.jpeg'),
       );
@@ -883,6 +893,7 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: true,
+          effort: ImageEffort.Medium,
         }),
         expect.stringContaining('thumbnail.jpeg'),
       );
@@ -1125,6 +1136,7 @@ describe(MediaService.name, () => {
           size: 1440,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -1161,6 +1173,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -1175,6 +1188,7 @@ describe(MediaService.name, () => {
           size: 1440,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -1209,6 +1223,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -1222,6 +1237,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           size: 1440,
           processInvalidImages: false,
           edits: [],
@@ -1261,6 +1277,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -1326,6 +1343,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -1369,6 +1387,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Webp,
           quality: 90,
           progressive: false,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           edits: [],
           decodingTier: 0,
@@ -1400,6 +1419,7 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: true,
+          effort: ImageEffort.Medium,
         }),
         expect.stringContaining('fullsize.jpeg'),
       );
@@ -1664,6 +1684,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           edits: [
             {
               action: 'crop',
@@ -1718,6 +1739,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           edits: [
             {
               action: 'crop',
@@ -1767,6 +1789,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           edits: [
             {
               action: 'crop',
@@ -1812,6 +1835,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           edits: [
             {
               action: 'crop',
@@ -1857,6 +1881,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           edits: [
             {
               action: 'crop',
@@ -1902,6 +1927,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           edits: [
             {
               action: 'crop',
@@ -1952,6 +1978,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
+          effort: ImageEffort.Medium,
           edits: [
             {
               action: 'crop',

@@ -348,6 +348,7 @@ export class MediaService extends BaseService {
         format: fullsizeFormat,
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
+        effort: image.fullsize.effort,
         decodingTier: 0,
       } as const;
       promises.push(this.mediaRepository.generateThumbnail(decoded, fullsizeOptions, fullsizeFile.path));
@@ -436,6 +437,7 @@ export class MediaService extends BaseService {
       format: ImageFormat.Jpeg,
       quality: image.thumbnail.quality,
       progressive: false,
+      effort: image.thumbnail.effort,
       processInvalidImages: false,
       size: FACE_THUMBNAIL_SIZE,
       edits: [

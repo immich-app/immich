@@ -19298,6 +19298,9 @@
       },
       "AdminConfigGeneratedFullsizeImageDto": {
         "properties": {
+          "effort": {
+            "$ref": "#/components/schemas/ImageEffort"
+          },
           "enabled": {
             "description": "Enabled",
             "type": "boolean"
@@ -19317,6 +19320,7 @@
           }
         },
         "required": [
+          "effort",
           "enabled",
           "format",
           "quality"
@@ -19325,6 +19329,9 @@
       },
       "AdminConfigGeneratedImageDto": {
         "properties": {
+          "effort": {
+            "$ref": "#/components/schemas/ImageEffort"
+          },
           "format": {
             "$ref": "#/components/schemas/ImageFormat"
           },
@@ -19346,6 +19353,7 @@
           }
         },
         "required": [
+          "effort",
           "format",
           "quality",
           "size"
@@ -23200,6 +23208,16 @@
           }
         },
         "type": "object"
+      },
+      "ImageEffort": {
+        "description": "Image effort",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "max"
+        ],
+        "type": "string"
       },
       "ImageFormat": {
         "description": "Image format",

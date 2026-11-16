@@ -115,6 +115,7 @@ export type AdminConfigFFmpegDto = {
     twoPass: boolean;
 };
 export type AdminConfigGeneratedFullsizeImageDto = {
+    effort: ImageEffort;
     /** Enabled */
     enabled: boolean;
     format: ImageFormat;
@@ -124,6 +125,7 @@ export type AdminConfigGeneratedFullsizeImageDto = {
     quality: number;
 };
 export type AdminConfigGeneratedImageDto = {
+    effort: ImageEffort;
     format: ImageFormat;
     /** Progressive */
     progressive?: boolean;
@@ -8221,6 +8223,12 @@ export enum TranscodePolicy {
 export enum Colorspace {
     Srgb = "srgb",
     P3 = "p3"
+}
+export enum ImageEffort {
+    Low = "low",
+    Medium = "medium",
+    High = "high",
+    Max = "max"
 }
 export enum ImageFormat {
     Jpeg = "jpeg",

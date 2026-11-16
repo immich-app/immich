@@ -32,6 +32,7 @@ export const generateProfileImage = async (
       format: image.thumbnail.format,
       quality: image.thumbnail.quality,
       progressive: image.thumbnail.progressive,
+      effort: image.thumbnail.effort,
       size: image.thumbnail.size,
       processInvalidImages: false,
       decodingTier: THUMBNAIL_DECODING_TIER,
