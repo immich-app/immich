@@ -21,6 +21,7 @@ import {
   ExifOrientation,
   H264Profile,
   HevcProfile,
+  ImageEffort,
   ImageFormat,
   IntegrityReport,
   JobName,
@@ -48,6 +49,7 @@ export type ImageOptions = {
   format: ImageFormat;
   quality: number;
   progressive?: boolean;
+  effort: ImageEffort;
   decodingTier: 0 | 1 | 2 | 3 | 4;
 };
 

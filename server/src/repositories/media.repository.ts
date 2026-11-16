@@ -21,6 +21,8 @@ import {
   DvSignalCompatibility,
   H264Profile,
   HevcProfile,
+  ImageEffort,
+  ImageFormat,
   LogLevel,
   RawExtractedFormat,
 } from 'src/enum.js';
@@ -47,6 +49,21 @@ const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   );
 
 const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
+
+const IMAGE_EFFORT: Partial<Record<ImageFormat, Record<ImageEffort, number>>> = {
+  [ImageFormat.Jxl]: {
+    [ImageEffort.Low]: 3,
+    [ImageEffort.Medium]: 5,
+    [ImageEffort.High]: 7,
+    [ImageEffort.Max]: 9,
+  },
+  [ImageFormat.Webp]: {
+    [ImageEffort.Low]: 2,
+    [ImageEffort.Medium]: 4,
+    [ImageEffort.High]: 5,
+    [ImageEffort.Max]: 6,
+  },
+};
 
 type ProgressEvent = {
   frames: number;
@@ -186,6 +203,7 @@ export class MediaRepository {
         // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
         chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
         progressive: options.progressive,
+        effort: IMAGE_EFFORT[options.format]?.[options.effort],
         decodingTier: options.decodingTier,
       })
       .toFile(output);

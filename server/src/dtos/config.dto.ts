@@ -11,6 +11,8 @@ import {
   ConfigVisibility,
   HlsVideoResolution,
   HlsVideoResolutionSchema,
+  ImageEffort,
+  ImageEffortSchema,
   ImageFormat,
   ImageFormatSchema,
   LogLevel,
@@ -98,6 +100,7 @@ const AdminConfigGeneratedImageSchema = z
     quality: z.int().min(1).max(100).describe('Quality'),
     size: z.int().min(1).describe('Size').meta({ visibility: User }),
     progressive: configBool.default(false).optional().describe('Progressive'),
+    effort: ImageEffortSchema,
   })
   .meta({ id: 'AdminConfigGeneratedImageDto' });
 
@@ -378,6 +381,7 @@ const AdminConfigSchemaWithVisibility = z
             format: ImageFormatSchema,
             quality: z.int().min(1).max(100).describe('Quality'),
             progressive: configBool.default(false).optional().describe('Progressive'),
+            effort: ImageEffortSchema,
           })
           .meta({ id: 'AdminConfigGeneratedFullsizeImageDto' }),
         colorspace: ColorspaceSchema,
@@ -742,12 +746,14 @@ export const defaults = Object.freeze<SystemConfig>({
       size: 250,
       quality: 80,
       progressive: false,
+      effort: ImageEffort.Medium,
     },
     preview: {
       format: ImageFormat.Jpeg,
       size: 1440,
       quality: 80,
       progressive: false,
+      effort: ImageEffort.Medium,
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
@@ -756,6 +762,7 @@ export const defaults = Object.freeze<SystemConfig>({
       format: ImageFormat.Jpeg,
       quality: 80,
       progressive: false,
+      effort: ImageEffort.Medium,
     },
   },
   newVersionCheck: {
