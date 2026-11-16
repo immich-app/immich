@@ -61,7 +61,15 @@ cuda-libs = [
 [project.optional-dependencies]
 cpu = ["onnxruntime>=1.23.2,<2"]
 cuda = [
-  "onnxruntime-gpu>=1.27.1,<1.28", # TODO: last ORT release supporting CUDA 12.2, also need to handle CUDA 13
+  "onnxruntime-gpu>=1.27.1,<1.28 ; platform_machine != 'aarch64'",
+  "onnxruntime-gpu>=1.32.0,<1.33 ; platform_machine == 'aarch64'",
+  "nvidia-cuda-runtime==13.0.96 ; platform_machine == 'aarch64'",
+  "nvidia-cuda-nvrtc==13.0.88 ; platform_machine == 'aarch64'",
+  "nvidia-cublas==13.1.0.3 ; platform_machine == 'aarch64'",
+  "nvidia-cufft==12.0.0.61 ; platform_machine == 'aarch64'",
+  "nvidia-curand==10.4.0.35 ; platform_machine == 'aarch64'",
+  "nvidia-nvjitlink==13.0.88 ; platform_machine == 'aarch64'",
+  "nvidia-cudnn-cu13==9.13.0.50 ; platform_machine == 'aarch64'",
   "onnxruntime-ep-nv-tensorrt-rtx-cu12>=0.4.0,<0.5 ; platform_machine == 'x86_64'",
 ]
 openvino = ["onnxruntime-openvino>=1.24.1,<2"]
@@ -75,7 +83,7 @@ override-dependencies = ["opencv-python ; sys_platform == 'never'"] # only insta
 
 [tool.uv.sources]
 immich-model = { git = "https://github.com/immich-app/ml-models.git", rev = "f5d9c851010c47324f8fa4cae8a3fd8d0340b90e" }
-onnxruntime-gpu = { index = "onnxruntime-cuda-12" }
+onnxruntime-gpu = { index = "onnxruntime-cuda-12", marker = "platform_machine != 'aarch64'" }
 openvino = { index = "openvino-nightly" }
 
 [[tool.uv.index]]
