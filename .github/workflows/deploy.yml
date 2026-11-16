@@ -1,0 +1,176 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - releases/dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+
+jobs:
+  filter:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.changes.outputs.server }}
+      ml: ${{ steps.changes.outputs.ml }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Paths Filter
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            server:
+              - 'server/**'
+              - 'web/**'
+              - 'i18n/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.pnpmfile.cjs'
+              - '.github/workflows/deploy.yml'
+            ml:
+              - 'machine-learning/**'
+              - '.github/workflows/deploy.yml'
+
+  build-server:
+    name: Build & Push Server
+    needs: filter
+    if: needs.filter.outputs.server == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/immich-server
+          tags: |
+            type=raw,value=latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Server Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_ID=${{ github.run_id }}
+            BUILD_IMAGE=${{ env.REGISTRY }}/${{ github.repository_owner }}/immich-server
+            BUILD_SOURCE_REF=${{ github.ref_name }}
+            BUILD_SOURCE_COMMIT=${{ github.sha }}
+
+  deploy-server:
+    name: Deploy Server
+    needs: build-server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Deployment Webhook
+        env:
+          CONTAINER_NAME: immich_server
+        run: |
+          if [[ -z "$DEPLOY_WEBHOOK_URL" ]]; then
+            echo "::error::Required Actions secret DEPLOY_WEBHOOK_URL is not configured."
+            exit 1
+          fi
+          payload=$(jq -n \
+            --arg image "${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/immich-server" \
+            --arg tag "latest" \
+            '{image: $image, tag: $tag}')
+          curl --fail --show-error --silent \
+            --connect-timeout 10 --max-time 30 \
+            --request POST \
+            "${DEPLOY_WEBHOOK_URL%/}/${CONTAINER_NAME}" \
+            --header "Content-Type: application/json" \
+            --data "$payload"
+          echo "Deployment webhook triggered successfully."
+
+  build-ml:
+    name: Build & Push ML
+    needs: filter
+    if: needs.filter.outputs.ml == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/immich-machine-learning
+          tags: |
+            type=raw,value=latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push ML Image
+        uses: docker/build-push-action@v6
+        with:
+          context: machine-learning
+          file: machine-learning/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-ml:
+    name: Deploy ML
+    needs: build-ml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Deployment Webhook
+        env:
+          CONTAINER_NAME: immich_machine_learning
+        run: |
+          if [[ -z "$DEPLOY_WEBHOOK_URL" ]]; then
+            echo "::error::Required Actions secret DEPLOY_WEBHOOK_URL is not configured."
+            exit 1
+          fi
+          payload=$(jq -n \
+            --arg image "${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/immich-machine-learning" \
+            --arg tag "latest" \
+            '{image: $image, tag: $tag}')
+          curl --fail --show-error --silent \
+            --connect-timeout 10 --max-time 30 \
+            --request POST \
+            "${DEPLOY_WEBHOOK_URL%/}/${CONTAINER_NAME}" \
+            --header "Content-Type: application/json" \
+            --data "$payload"
+          echo "Deployment webhook triggered successfully."
