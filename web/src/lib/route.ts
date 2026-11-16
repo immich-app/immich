@@ -57,7 +57,7 @@ export const Route = {
   places: () => '/places',
 
   // folders
-  folders: (params?: { path?: string }) => '/folders' + asQueryString(params),
+  folders: (params?: { path?: string; previousRoute?: string }) => '/folders' + asQueryString(params),
 
   // libraries
   libraries: () => '/admin/library-management',

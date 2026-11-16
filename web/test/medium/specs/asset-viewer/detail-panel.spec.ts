@@ -204,4 +204,52 @@ test.describe('detail panel', () => {
     await expect(app.viewer.description).toBeVisible();
     await expect(app.viewer.description).toBeEnabled();
   });
+
+  test('folder link passes previousRoute and restores original asset viewer on back', async ({
+    page,
+    data,
+    app,
+    api,
+  }) => {
+    const asset = factory.asset({ originalPath: '/data/photos/trip/img.jpg' });
+    const album = factory.album();
+    data.addAssets(asset).addAlbums(album).addToAlbum(album.id, [asset]);
+
+    api.on({
+      getUniqueOriginalPaths: () => ({ json: ['/data/photos/trip', '/data/photos/trip/day1'] }),
+      getAssetsByOriginalPath: ({ params }) => ({
+        json: params?.path === '/data/photos/trip' ? [asset] : [],
+      }),
+    });
+
+    await page.goto(Route.viewAlbumAsset({ albumId: album.id, assetId: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.openDetailPanel();
+
+    await app.viewer.detailPanel.getByLabel('show_file_location').click();
+    const folderLink = app.viewer.detailPanel.getByTitle('go_to_folder');
+    await expect(folderLink).toBeVisible();
+
+    const href = await folderLink.getAttribute('href');
+    const targetUrl = new URL(href!, 'http://localhost');
+    expect(targetUrl.pathname).toBe('/folders');
+    expect(targetUrl.searchParams.get('path')).toBe('/data/photos/trip');
+    expect(targetUrl.searchParams.getAll('previousRoute')[0]).toBe(`/albums/${album.id}/photos/${asset.id}`);
+
+    await folderLink.click();
+    await expect(page).toHaveURL(/\/folders\?path=/);
+
+    await page.getByRole('button', { name: 'day1' }).click();
+    await expect(page).toHaveURL(/\/folders\?path=%2Fdata%2Fphotos%2Ftrip%2Fday1/);
+
+    const childUrl = new URL(page.url());
+    expect(childUrl.searchParams.getAll('previousRoute')[0]).toBe(`/albums/${album.id}/photos/${asset.id}`);
+
+    const backLink = page.getByRole('link', { name: 'back' });
+    await expect(backLink).toBeVisible();
+    await backLink.click();
+
+    await app.viewer.waitForAsset(asset);
+    expect(page.url()).toContain(`/albums/${album.id}/photos/${asset.id}`);
+  });
 });

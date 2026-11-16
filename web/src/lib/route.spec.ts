@@ -52,6 +52,32 @@ describe('Route', () => {
     });
   });
 
+  describe(Route.folders.name, () => {
+    it('links to the folders root', () => {
+      expect(Route.folders()).toBe('/folders');
+    });
+
+    it('should support query parameters', () => {
+      expect(Route.folders({ path: '/some/path', previousRoute: '/photos/123' })).toBe(
+        '/folders?path=%2Fsome%2Fpath&previousRoute=%2Fphotos%2F123',
+      );
+    });
+
+    it('should support previousRoute without path', () => {
+      expect(Route.folders({ previousRoute: '/photos/123' })).toBe('/folders?previousRoute=%2Fphotos%2F123');
+    });
+
+    it('should encode nested query parameters in previousRoute', () => {
+      expect(Route.folders({ path: '/some/path', previousRoute: '/albums/123/photos/456?view=grid&sort=desc' })).toBe(
+        '/folders?path=%2Fsome%2Fpath&previousRoute=%2Falbums%2F123%2Fphotos%2F456%3Fview%3Dgrid%26sort%3Ddesc',
+      );
+    });
+
+    it('should ignore empty parameters', () => {
+      expect(Route.folders({ path: '', previousRoute: undefined })).toBe('/folders');
+    });
+  });
+
   describe(Route.systemSettings.name, () => {
     it('links to the settings page', () => {
       expect(Route.systemSettings()).toBe('/admin/system-settings');

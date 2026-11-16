@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import { TreeNode } from '#lib/utils/tree-utils.ts';
   import { Breadcrumbs, ControlBar, ControlBarHeader, IconButton } from '@immich/ui';
-  import { mdiArrowUpLeft } from '@mdi/js';
+  import { mdiArrowLeft, mdiArrowRight, mdiArrowUpLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -9,9 +10,10 @@
     getLink: (path: string) => string;
     title: string;
     icon: string;
+    previousRoute?: string;
   };
 
-  const { node, getLink, title, icon }: Props = $props();
+  let { node, getLink, title, icon, previousRoute }: Props = $props();
 
   const items = $derived([
     { icon, title, href: getLink('') },
@@ -22,6 +24,16 @@
 
 <ControlBar>
   <ControlBarHeader class="flex-row gap-4">
+    {#if previousRoute}
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        icon={languageManager.rtl ? mdiArrowRight : mdiArrowLeft}
+        aria-label={$t('back')}
+        href={previousRoute}
+      />
+    {/if}
     <IconButton
       shape="round"
       color="secondary"

@@ -27,6 +27,7 @@
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import PersonSidePanel from '../faces-page/PersonSidePanel.svelte';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
@@ -94,7 +95,10 @@
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
     // Remove the last part of the path to get the parent path
-    return Route.folders({ path: getParentPath(asset.originalPath) });
+    return Route.folders({
+      path: getParentPath(asset.originalPath),
+      previousRoute: page.url.pathname + page.url.search,
+    });
   };
 
   onDestroy(() => {

@@ -16,6 +16,7 @@
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
   import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import { QueryParameter } from '#lib/constants.ts';
   import SkipLink from '#lib/elements/SkipLink.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import type { Viewport } from '#lib/managers/timeline-manager/types.ts';
@@ -30,6 +31,7 @@
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { afterNavigate, beforeNavigate, goto, refreshAll } from '$app/navigation';
+  import { page } from '$app/state';
   import type { PageData } from './$types';
 
   interface Props {
@@ -45,9 +47,28 @@
   let folderScrollContainer: HTMLElement | undefined = $state();
   let savedScrollTop = 0;
 
+  const previousRoute = $derived.by(() => {
+    if (!page.url.searchParams.has(QueryParameter.PREVIOUS_ROUTE)) {
+      return undefined;
+    }
+
+    try {
+      const resolved = Route.continue(page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE), '');
+      if (!(resolved instanceof URL)) {
+        return undefined;
+      }
+
+      const target = `${resolved.pathname}${resolved.search}`;
+      const current = `${page.url.pathname}${page.url.search}`;
+      return target === current || !target.trim() ? undefined : target;
+    } catch {
+      return undefined;
+    }
+  });
+
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
-  const getLinkForPath = (path: string) => Route.folders({ path });
+  const getLinkForPath = (path: string) => Route.folders({ path, previousRoute });
 
   beforeNavigate(({ to, shallow, type }) => {
     if (shallow && type === 'goto') return;
@@ -112,7 +133,13 @@
 
   <OnEvents onAssetsDelete={refreshAll} onAssetsArchive={triggerAssetUpdate} onAssetsUnarchive={triggerAssetUpdate} />
 
-  <TreeBreadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
+  <TreeBreadcrumbs
+    node={data.tree}
+    icon={mdiFolderHome}
+    title={$t('folders')}
+    getLink={getLinkForPath}
+    {previousRoute}
+  />
 
   <section class="mt-2 h-[calc(100%-(--spacing(25)))] immich-scrollbar overflow-auto" bind:this={folderScrollContainer}>
     <TreeItemThumbnails items={data.tree.children} icon={mdiFolder} onClick={handleNavigateToFolder} />
