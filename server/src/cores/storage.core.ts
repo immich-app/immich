@@ -1,4 +1,4 @@
-import { dirname, join, resolve } from 'node:path';
+import { dirname, extname, join, resolve } from 'node:path';
 import { StorageAsset } from 'src/database.js';
 import {
   AssetFileType,
@@ -117,8 +117,8 @@ export class StorageCore {
     return join(StorageCore.getMediaLocation(), folder);
   }
 
-  static getPersonThumbnailPath(person: PersonThumbnailPathEntity) {
-    return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.personGroupId}.jpeg`);
+  static getPersonThumbnailPath(person: PersonThumbnailPathEntity, format: ImageFormat) {
+    return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.personGroupId}.${format}`);
   }
 
   static getImagePath(asset: ThumbnailPathEntity, { fileType, format, isEdited }: ImagePathOptions) {
@@ -189,7 +189,7 @@ export class StorageCore {
           ownerId,
           pathType,
           oldPath: thumbnailPath,
-          newPath: StorageCore.getPersonThumbnailPath(person),
+          newPath: StorageCore.getPersonThumbnailPath(person, extname(thumbnailPath).slice(1) as ImageFormat),
         });
       }
     }
