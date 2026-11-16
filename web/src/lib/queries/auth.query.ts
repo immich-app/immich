@@ -25,10 +25,7 @@ export const changePasswordMutation = () =>
 
 export const lockAuthSessionMutation = () =>
   asMutation(lockAuthSession, {
-    onSuccess: () => {
-      updateAuthStatusCache({ isElevated: false });
-      eventManager.emit('SessionLocked');
-    },
+    onSuccess: () => eventManager.emit('SessionLocked'),
   });
 
 export const setupPinCodeMutation = () =>
@@ -44,7 +41,7 @@ export const changePinCodeMutation = () =>
 
 export const resetPinCodeMutation = () =>
   asMutation(resetPinCode, {
-    onSuccess: () => updateAuthStatusCache({ pinCode: false, isElevated: false }),
+    onSuccess: () => updateAuthStatusCache({ pinCode: false }),
     meta: { success: { toast: 'pin_code_reset_successfully' }, error: { toast: 'errors.failed_to_reset_pin_code' } },
   });
 
