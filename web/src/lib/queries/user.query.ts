@@ -18,7 +18,7 @@ import {
 } from '@immich/sdk';
 import { queryOptions, type MutationMeta } from '@tanstack/svelte-query';
 
-export const myUserQueryKey = ['users', 'me'];
+const myUserQueryKey = ['users', 'me'];
 
 export const getMyUserQuery = () =>
   queryOptions({
@@ -52,6 +52,7 @@ export const getUserQuery = (id: string) =>
   queryOptions({
     queryKey: ['users', id],
     queryFn: ({ signal }) => getUser({ id }, { signal }),
+    staleTime: 0,
   });
 
 export const updateMyUserMutation = () =>
@@ -78,10 +79,10 @@ export const deleteProfileImageMutation = () =>
     meta: { error: { toast: 'errors.unable_to_save_profile' } },
   });
 
-export const setUserLicenseMutation = () =>
+export const setUserLicenseMutation = (meta?: MutationMeta) =>
   asMutation(setUserLicense, {
     onSuccess: (license) => updateMyUserCache({ license }),
-    meta: { error: { toast: 'purchase_failed_activation' } },
+    meta: meta ?? { error: { toast: 'purchase_failed_activation' } },
   });
 
 export const deleteUserLicenseMutation = () =>

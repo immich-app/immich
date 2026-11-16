@@ -9,7 +9,7 @@ import type { PageLoad } from './$types';
 export const load = (async ({ url }) => {
   await authenticate(url);
 
-  const { isElevated, pinCode } = await queryClient.query({ ...getAuthStatusQuery(), staleTime: 0 });
+  const { isElevated, pinCode } = await queryClient.query(getAuthStatusQuery());
   if (!isElevated || !pinCode) {
     redirect(307, Route.pinPrompt({ continue: url.pathname + url.search }));
   }

@@ -17,7 +17,7 @@ export const load = (async ({ url }) => {
     }
 
     if (licenseKey && activationKey) {
-      const license = await activateProduct(licenseKey, activationKey);
+      const license = await activateProduct(licenseKey, activationKey, { meta: { error: { toast: false } } });
       isActivated = !!license?.activatedAt;
     }
   } catch (error) {

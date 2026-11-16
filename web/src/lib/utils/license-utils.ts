@@ -4,15 +4,21 @@ import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { setServerLicenseMutation } from '#lib/queries/server-license.query.ts';
 import { setUserLicenseMutation } from '#lib/queries/user.query.ts';
+import type { MutationMeta } from '@tanstack/svelte-query';
 import { PUBLIC_IMMICH_BUY_HOST, PUBLIC_IMMICH_PAY_HOST } from '$app/env/public';
 
-export const activateProduct = (licenseKey: string, activationKey: string, options?: { onSuccess?: () => void }) => {
+type ActivateProductOptions = { meta?: MutationMeta; onSuccess?: () => void };
+
+export const activateProduct = (
+  licenseKey: string,
+  activationKey: string,
+  { meta, onSuccess }: ActivateProductOptions = {},
+) => {
   const isServerActivation = authManager.user.isAdmin && licenseKey.includes('IMSV');
-  return executeMutation(
-    isServerActivation ? setServerLicenseMutation : setUserLicenseMutation,
-    [{ licenseKeyDto: { licenseKey, activationKey } }],
-    options,
-  );
+  const setLicenseMutation = isServerActivation ? setServerLicenseMutation : setUserLicenseMutation;
+  return executeMutation(() => setLicenseMutation(meta), [{ licenseKeyDto: { licenseKey, activationKey } }], {
+    onSuccess,
+  });
 };
 
 export const getActivationKey = async (licenseKey: string): Promise<string> => {

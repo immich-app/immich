@@ -3,7 +3,7 @@ import { queryClient } from '#lib/queries/client.ts';
 import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
-import { getMyPreferencesQuery, getMyUserQuery, myUserQueryKey } from '#lib/queries/user.query.ts';
+import { getMyPreferencesQuery, getMyUserQuery } from '#lib/queries/user.query.ts';
 import { Route } from '#lib/route.ts';
 import { isSharedLinkRoute } from '#lib/utils/navigation.ts';
 import { logout, type UserAdminResponseDto, type UserPreferencesResponseDto } from '@immich/sdk';
@@ -117,17 +117,12 @@ class AuthManager {
     }
 
     if (redirectUri.startsWith('/')) {
-      this.reset();
       eventManager.emit('AuthLogout');
 
       await goto(redirectUri);
     } else {
       location.assign(redirectUri);
     }
-  }
-
-  reset() {
-    queryClient.removeQueries({ queryKey: myUserQueryKey });
   }
 
   #hasAuthCookie() {

@@ -8,7 +8,7 @@ import type { PageLoad } from './$types';
 export const load = (async ({ url }) => {
   await authenticate(url);
 
-  await queryClient.query({ ...getAuthStatusQuery(), staleTime: 0 });
+  await queryClient.query(getAuthStatusQuery());
 
   const $t = await getFormatter();
 

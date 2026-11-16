@@ -1,7 +1,7 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
 import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
 import { deleteServerLicense, getServerLicense, isHttpError, setServerLicense } from '@immich/sdk';
-import { queryOptions } from '@tanstack/svelte-query';
+import { queryOptions, type MutationMeta } from '@tanstack/svelte-query';
 
 export const getServerLicenseQuery = () =>
   queryOptions({
@@ -15,13 +15,13 @@ export const getServerLicenseQuery = () =>
       }),
   });
 
-export const setServerLicenseMutation = () =>
+export const setServerLicenseMutation = (meta?: MutationMeta) =>
   asMutation(setServerLicense, {
     onSuccess: (license) => {
       queryClient.setQueryData(getServerLicenseQuery().queryKey, license);
       updateLicensedCache(true);
     },
-    meta: { error: { toast: 'purchase_failed_activation' } },
+    meta: meta ?? { error: { toast: 'purchase_failed_activation' } },
   });
 
 export const deleteServerLicenseMutation = () =>

@@ -5,7 +5,7 @@
   import { fade } from 'svelte/transition';
   import PinCodeChangeForm from './PinCodeChangeForm.svelte';
 
-  const query = createQuery(() => ({ ...getAuthStatusQuery(), staleTime: 0 }));
+  const query = createQuery(getAuthStatusQuery);
   const hasPinCode = $derived(query.data?.pinCode ?? false);
 </script>
 

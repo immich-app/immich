@@ -15,6 +15,7 @@ export const getAuthStatusQuery = () =>
   queryOptions({
     queryKey: ['auth', 'status'],
     queryFn: ({ signal }) => getAuthStatus({ signal }),
+    staleTime: 0,
   });
 
 export const changePasswordMutation = () =>

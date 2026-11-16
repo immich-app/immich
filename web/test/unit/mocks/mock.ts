@@ -1,5 +1,4 @@
 import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
-import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
 import { queryClient } from '#lib/queries/client.ts';
 import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
@@ -62,7 +61,6 @@ export class Mock {
       cleanup();
       toastManager.setOptions(noToasts);
       locale.set('default');
-      authManager.reset();
       assetViewerManager.closeActivityPanel();
       queryClient.clear();
       resetPage();
