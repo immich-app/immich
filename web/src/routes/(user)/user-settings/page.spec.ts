@@ -1,9 +1,11 @@
 import { OpenQueryParam, QueryParameter } from '#lib/constants.ts';
+import PeopleFilterModal from '#lib/modals/PeopleFilterModal.svelte';
 import { Route } from '#lib/route.ts';
 import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
 import { PartnerDirection } from '@immich/sdk';
-import { expect } from 'vitest';
+import { expect, vi } from 'vitest';
+import { render as renderModal } from 'vitest-browser-svelte';
 import { userEvent } from 'vitest/browser';
 import Page from './+page.svelte';
 import { load } from './+page.ts';
@@ -239,6 +241,42 @@ test('removes a partner', async ({ data, router, render, settle, api, app }) => 
   await expect.element(app.settings.partners.removeButton).not.toBeInTheDocument();
 });
 
+test('adds the remaining partners when one fails', async ({ data, router, render, settle, api, app, logger }) => {
+  const [alice, bob] = [factory.user({ name: 'Alice' }), factory.user({ name: 'Bob' })];
+  data.addUsers([alice, bob]);
+  api.on({
+    createPartner: ({ body }) =>
+      body.sharedWithId === alice.id
+        ? { status: 400, json: { message: 'Partner failed', statusCode: 400 } }
+        : { status: 201, json: data.createPartner(body.sharedWithId) },
+  });
+  await router.goto(Route.userSettings({ isOpen: OpenQueryParam.SHARING }));
+  await render(Page, load);
+  await app.settings.section('partners').click();
+
+  await app.settings.partners.addButton.click();
+  await app.userPicker.user('Alice').click();
+  await app.userPicker.user('Bob').click();
+  await app.userPicker.addButton.click();
+  await settle();
+
+  expect(api.createPartner).toHaveBeenCalledWith({ body: { sharedWithId: alice.id } });
+  expect(api.createPartner).toHaveBeenCalledWith({ body: { sharedWithId: bob.id } });
+  expect(logger.error).toHaveBeenCalledWith(/handleError/);
+  await expect.element(app.settings.partners.removeButton).toBeVisible();
+});
+
+test('shows a mutual partner as shared both ways', async ({ data, router, render, app }) => {
+  const partner = factory.partner({ name: 'Alice' });
+  data.addPartners(PartnerDirection.SharedBy, partner).addPartners(PartnerDirection.SharedWith, partner);
+  await router.goto(Route.userSettings({ isOpen: OpenQueryParam.SHARING }));
+  await render(Page, load);
+  await app.settings.section('partners').click();
+
+  await expect.element(app.settings.partners.removeButton).toBeVisible();
+  await expect.element(app.settings.partners.showInTimelineSwitch).toBeVisible();
+});
+
 test('shows a partner in the timeline', async ({ data, router, render, settle, api, app }) => {
   const partner = factory.partner({ name: 'Alice', inTimeline: false });
   data.addPartners(PartnerDirection.SharedWith, partner);
@@ -284,6 +322,39 @@ test('accepts a cluster group request', async ({ data, router, render, settle, a
 
   expect(api.acceptClusterGroupRequest).toHaveBeenCalledWith({ params: { id: request.id } });
   await expect.element(app.settings.clusterGroup.viewGroupButton).not.toBeInTheDocument();
+});
+
+test('offers the new cluster group users after accepting a request', async ({
+  data,
+  router,
+  render,
+  settle,
+  api,
+  app,
+}) => {
+  const groupId = crypto.randomUUID();
+  data.addUsers([
+    { name: 'Olga Old', clusterGroupId: data.user.clusterGroupId },
+    { name: 'Nina New', clusterGroupId: groupId },
+  ]);
+  const request = factory.clusterGroupRequest({ clusterGroupId: groupId, userId: data.user.id });
+  data.addClusterGroupRequests(request);
+  await router.goto(Route.userSettings({ isOpen: OpenQueryParam.SHARING }));
+  await render(Page, load);
+  await app.settings.section('people_cluster_group').click();
+  await expect.element(app.settings.clusterGroup.leaveButton).toBeVisible();
+
+  await app.settings.clusterGroup.viewGroupButton.click();
+  await app.dialogButton('accept').click();
+  await settle();
+  await renderModal(PeopleFilterModal, { filter: {}, onClose: vi.fn() });
+  await app.people.filterSharedByButton.click();
+
+  expect(api.acceptClusterGroupRequest).toHaveBeenCalledWith({ params: { id: request.id } });
+  await expect.element(app.userPicker.user('Nina New')).toBeVisible();
+  await expect.element(app.userPicker.user('Olga Old')).not.toBeInTheDocument();
+  await app.userPicker.user('Nina New').click();
+  await expect.element(app.people.filterSharedByButton).toHaveTextContent('Nina New');
 });
 
 test('declines a cluster group request', async ({ data, router, render, settle, api, app }) => {
@@ -336,6 +407,13 @@ test('leaves the cluster group', async ({ data, router, render, settle, api, app
 
   expect(api.leaveClusterGroup).toHaveBeenCalledWith({ params: { id: clusterGroupId } });
   await expect.element(app.settings.clusterGroup.leaveButton).not.toBeInTheDocument();
+
+  await app.settings.clusterGroup.facialRecognitionButton.click();
+  await app.confirmButton.click();
+  await settle();
+
+  expect(data.user.clusterGroupId).not.toBe(clusterGroupId);
+  expect(api.clusterGroupRegeneratePeople).toHaveBeenCalledWith({ params: { id: data.user.clusterGroupId } });
 });
 
 test('reruns facial recognition for the cluster group', async ({ data, router, render, settle, api, app }) => {

@@ -6,70 +6,89 @@
   import ClusterGroupUserSelectionModal from '#lib/modals/ClusterGroupUserSelectionModal.svelte';
   import ClusterGroupUsersModal from '#lib/modals/ClusterGroupUsersModal.svelte';
   import PartnerSelectionModal from '#lib/modals/PartnerSelectionModal.svelte';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import {
+    acceptClusterGroupRequestMutation,
+    clusterGroupRegeneratePeopleMutation,
+    createClusterGroupRequestMutation,
+    deleteClusterGroupRequestMutation,
+    getClusterGroupRequestsForGroupQuery,
+    getClusterGroupRequestsQuery,
+    getClusterGroupUsersQuery,
+    leaveClusterGroupMutation,
+  } from '#lib/queries/cluster-group.query.ts';
+  import {
+    createPartnerMutation,
+    getPartnersQuery,
+    removePartnerMutation,
+    updatePartnerMutation,
+  } from '#lib/queries/partner.query.ts';
   import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import {
     PartnerDirection,
-    acceptClusterGroupRequest,
-    clusterGroupRegeneratePeople,
-    createClusterGroupRequest,
-    createPartner,
-    deleteClusterGroupRequest,
-    getClusterGroupRequests,
-    getClusterGroupRequestsForGroup,
-    getClusterGroupUsers,
     getMyUser,
-    getPartners,
-    leaveClusterGroup,
-    removePartner,
     searchUsers,
-    updatePartner,
     type ClusterGroupRequestResponseDto,
     type PartnerResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
   import { ActionButton, Button, Card, CardBody, HStack, Icon, IconButton, Text, modalManager } from '@immich/ui';
   import { mdiCheck, mdiClose } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type PartnerSharing = {
-    user: UserResponseDto;
+    user: PartnerResponseDto;
     sharedByMe: boolean;
     sharedWithMe: boolean;
-    inTimeline: boolean;
   };
 
-  let clusterGroupId: string = $state('');
-  let users: UserResponseDto[] = $state([]);
-  let sentRequests: ClusterGroupRequestResponseDto[] = $state([]);
-  let receivedRequests: ClusterGroupRequestResponseDto[] = $state([]);
-  // a request is sent to someone outside of the group, so they come from elsewhere
   let candidates: Record<string, UserResponseDto> = $state({});
 
-  let partners: Array<PartnerSharing> = $state([]);
+  const queries = {
+    users: createQuery(
+      () => getClusterGroupUsersQuery(authManager.user.clusterGroupId),
+      () => queryClient,
+    ),
+    sentRequests: createQuery(
+      () => getClusterGroupRequestsForGroupQuery(authManager.user.clusterGroupId),
+      () => queryClient,
+    ),
+    receivedRequests: createQuery(getClusterGroupRequestsQuery, () => queryClient),
+    sharedBy: createQuery(
+      () => ({ ...getPartnersQuery(PartnerDirection.SharedBy), staleTime: 0 }),
+      () => queryClient,
+    ),
+    sharedWith: createQuery(
+      () => ({ ...getPartnersQuery(PartnerDirection.SharedWith), staleTime: 0 }),
+      () => queryClient,
+    ),
+  };
 
+  const users = $derived(queries.users.data ?? []);
+  const sentRequests = $derived(queries.sentRequests.data ?? []);
+  const receivedRequests = $derived(queries.receivedRequests.data ?? []);
   const canLeave = $derived(users.length > 1);
 
-  onMount(async () => {
-    await Promise.all([refresh(), refreshPartners()]);
+  const partners = $derived.by(() => {
+    const partners: Record<string, PartnerSharing> = {};
+    for (const user of queries.sharedBy.data ?? []) {
+      partners[user.id] = { user, sharedByMe: true, sharedWithMe: false };
+    }
+    for (const user of queries.sharedWith.data ?? []) {
+      partners[user.id] = { user, sharedByMe: Object.hasOwn(partners, user.id), sharedWithMe: true };
+    }
+    return Object.values(partners);
   });
 
-  const refresh = async () => {
+  onMount(() => refreshClusterGroup());
+
+  const refreshClusterGroup = async () => {
     try {
-      const { clusterGroupId: id } = await getMyUser();
-      clusterGroupId = id;
-
-      const [groupUsers, sent, received, allUsers] = await Promise.all([
-        getClusterGroupUsers({ id }),
-        getClusterGroupRequestsForGroup({ id }),
-        getClusterGroupRequests(),
-        searchUsers(),
-      ]);
-
-      users = groupUsers;
-      sentRequests = sent;
-      receivedRequests = received;
+      const [user, allUsers] = await Promise.all([getMyUser(), searchUsers()]);
+      authManager.setUser(user);
       candidates = Object.fromEntries(allUsers.map((user) => [user.id, user]));
     } catch (error) {
       handleError(error, $t('errors.unable_to_load_cluster_group'));
@@ -80,169 +99,60 @@
     const excludedUserIds = [...users.map(({ id }) => id), ...sentRequests.map(({ userId }) => userId)];
     const selected = await modalManager.show(ClusterGroupUserSelectionModal, { excludedUserIds });
 
-    if (!selected) {
-      return;
-    }
-
-    try {
-      for (const user of selected) {
-        await createClusterGroupRequest({ id: clusterGroupId, clusterGroupRequestCreateDto: { userId: user.id } });
-      }
-
-      await refresh();
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
+    for (const user of selected ?? []) {
+      await executeMutation(createClusterGroupRequestMutation, [
+        { id: authManager.user.clusterGroupId, clusterGroupRequestCreateDto: { userId: user.id } },
+      ]);
     }
   };
 
   const handleViewGroup = async (request: ClusterGroupRequestResponseDto) => {
     const result = await modalManager.show(ClusterGroupUsersModal, { clusterGroupId: request.clusterGroupId });
     if (result === 'accept') {
-      await handleAcceptRequest(request);
+      await executeMutation(acceptClusterGroupRequestMutation, [{ id: request.id }], {
+        onSuccess: () => void refreshClusterGroup(),
+      });
     } else if (result === 'decline') {
       await handleDeleteRequest(request);
     }
   };
 
-  const handleAcceptRequest = async (request: ClusterGroupRequestResponseDto) => {
-    try {
-      await acceptClusterGroupRequest({ id: request.id });
-      await refresh();
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-    }
-  };
+  const handleDeleteRequest = (request: ClusterGroupRequestResponseDto) =>
+    executeMutation(deleteClusterGroupRequestMutation, [{ id: request.id }]);
 
-  const handleDeleteRequest = async (request: ClusterGroupRequestResponseDto) => {
-    try {
-      await deleteClusterGroupRequest({ id: request.id });
-      await refresh();
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-    }
-  };
-
-  const handleLeave = async () => {
-    const isConfirmed = await modalManager.showDialog({
-      title: $t('leave_group'),
-      prompt: $t('leave_group_description'),
+  const handleLeave = () =>
+    executeMutation(leaveClusterGroupMutation, [{ id: authManager.user.clusterGroupId }], {
+      confirm: { title: $t('leave_group'), prompt: $t('leave_group_description') },
+      onSuccess: () => void refreshClusterGroup(),
     });
 
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await leaveClusterGroup({ id: clusterGroupId });
-      await refresh();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_leave_cluster_group'));
-    }
-  };
-
-  const refreshPartners = async () => {
-    partners = [];
-
-    const [sharedBy, sharedWith] = await Promise.all([
-      getPartners({ direction: PartnerDirection.SharedBy }),
-      getPartners({ direction: PartnerDirection.SharedWith }),
-    ]);
-
-    for (const candidate of sharedBy) {
-      partners = [
-        ...partners,
-        {
-          user: candidate,
-          sharedByMe: true,
-          sharedWithMe: false,
-          inTimeline: candidate.inTimeline ?? false,
-        },
-      ];
-    }
-
-    for (const candidate of sharedWith) {
-      const existIndex = partners.findIndex((p) => candidate.id === p.user.id);
-
-      if (existIndex === -1) {
-        partners = [
-          ...partners,
-          {
-            user: candidate,
-            sharedByMe: false,
-            sharedWithMe: true,
-            inTimeline: candidate.inTimeline ?? false,
-          },
-        ];
-      } else {
-        partners[existIndex].sharedWithMe = true;
-        partners[existIndex].inTimeline = candidate.inTimeline ?? false;
-      }
-    }
-  };
-
-  const handleRemovePartner = async (partner: PartnerResponseDto) => {
-    const isConfirmed = await modalManager.showDialog({
-      title: $t('stop_photo_sharing'),
-      prompt: $t('stop_photo_sharing_description', { values: { partner: partner.name } }),
+  const handleRemovePartner = (partner: PartnerResponseDto) =>
+    executeMutation(removePartnerMutation, [{ id: partner.id }], {
+      confirm: {
+        title: $t('stop_photo_sharing'),
+        prompt: $t('stop_photo_sharing_description', { values: { partner: partner.name } }),
+      },
     });
-
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await removePartner({ id: partner.id });
-      await refreshPartners();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_remove_partner'));
-    }
-  };
 
   const handleCreatePartners = async () => {
     const users = await modalManager.show(PartnerSelectionModal, {});
 
-    if (!users) {
-      return;
-    }
-
-    try {
-      for (const user of users) {
-        await createPartner({ partnerCreateDto: { sharedWithId: user.id } });
-      }
-
-      await refreshPartners();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_partners'));
+    for (const user of users ?? []) {
+      await executeMutation(createPartnerMutation, [{ partnerCreateDto: { sharedWithId: user.id } }]);
     }
   };
 
-  const handleShowOnTimelineChanged = async (partner: PartnerSharing, inTimeline: boolean) => {
-    try {
-      await updatePartner({ id: partner.user.id, partnerUpdateDto: { inTimeline } });
+  const handleShowOnTimelineChanged = (partner: PartnerSharing, inTimeline: boolean) =>
+    executeMutation(updatePartnerMutation, [{ id: partner.user.id, partnerUpdateDto: { inTimeline } }]);
 
-      partner.inTimeline = inTimeline;
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_timeline_display_status'));
-    }
-  };
-
-  const handleRerunFacialRecognition = async () => {
-    const confirmed = await modalManager.showDialog({
-      title: $t('cluster_group_facial_recognition'),
-      prompt: $t('cluster_group_facial_recognition_prompt'),
-      size: 'medium',
+  const handleRerunFacialRecognition = () =>
+    executeMutation(clusterGroupRegeneratePeopleMutation, [{ id: authManager.user.clusterGroupId }], {
+      confirm: {
+        title: $t('cluster_group_facial_recognition'),
+        prompt: $t('cluster_group_facial_recognition_prompt'),
+        size: 'medium',
+      },
     });
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      await clusterGroupRegeneratePeople({ id: clusterGroupId });
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-    }
-  };
 </script>
 
 <section class="my-4">
@@ -396,7 +306,7 @@
                 <SettingSwitch
                   title={$t('show_in_timeline')}
                   subtitle={$t('show_in_timeline_setting_description')}
-                  bind:checked={partner.inTimeline}
+                  checked={partner.user.inTimeline ?? false}
                   onToggle={(isChecked) => handleShowOnTimelineChanged(partner, isChecked)}
                 />
               {/if}
