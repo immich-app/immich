@@ -192,6 +192,7 @@
     const [, personToBeMergedInto] = result;
 
     if (personToBeMergedInto.name !== personName && person.id === personToBeMergedInto.id) {
+      person = (await handleUpdatePersonName({ id: person.id, name: personName }, { notify: true })) ?? person;
       await updateAssetCount();
       return { merged: true };
     }
