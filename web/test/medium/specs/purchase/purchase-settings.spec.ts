@@ -14,6 +14,7 @@ test('activates an individual product key', async ({ page, data, api, app }) => 
   await app.settings.purchase.activateButton.click();
 
   await expect(app.settings.purchase.title('purchase_individual_title')).toBeVisible();
+  await expect(app.settings.purchase.removeKeyButton).toBeVisible();
   expect(api.setUserLicense).toHaveBeenCalledWith({
     body: { licenseKey: individualKey, activationKey: 'activation-key' },
   });
@@ -28,6 +29,8 @@ test('activates a server product key as an admin', async ({ page, data, api, app
   await app.settings.purchase.activateButton.click();
 
   await expect(app.settings.purchase.title('purchase_server_title')).toBeVisible();
+  await expect(app.settings.purchase.removeKeyButton).toBeVisible();
+  await expect(app.settings.purchase.productKeyInput).toBeHidden();
   expect(api.setServerLicense).toHaveBeenCalledWith({
     body: { licenseKey: serverKey, activationKey: 'activation-key' },
   });
@@ -43,6 +46,7 @@ test('activates a server product key for a non-admin user', async ({ page, data,
   await app.settings.purchase.activateButton.click();
 
   await expect(app.settings.purchase.title('purchase_individual_title')).toBeVisible();
+  await expect(app.settings.purchase.removeKeyButton).toBeVisible();
   expect(api.setUserLicense).toHaveBeenCalledWith({ body: { licenseKey: serverKey, activationKey: 'activation-key' } });
   expect(api.setServerLicense).not.toHaveBeenCalled();
 });

@@ -1,4 +1,5 @@
 import { OpenQueryParam, QueryParameter } from '#lib/constants.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import PeopleFilterModal from '#lib/modals/PeopleFilterModal.svelte';
 import { Route } from '#lib/route.ts';
 import { factory } from '#test/unit/factories.ts';
@@ -453,6 +454,7 @@ test('saves the profile', async ({ router, render, settle, api, app }) => {
 
   expect(api.updateMyUser).toHaveBeenCalledWith({ body: { email: 'alice@immich.cloud', name: 'Alice' } });
   await expect.element(app.toast('saved_profile')).toBeVisible();
+  expect(authManager.user).toMatchObject({ name: 'Alice', email: 'alice@immich.cloud' });
 });
 
 test('keeps the edited profile when saving fails', async ({ data, router, render, settle, api, app, logger }) => {

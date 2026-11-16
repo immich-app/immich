@@ -15,6 +15,8 @@ test('sets an asset as the profile picture', async ({ page, data, api, app }) =>
 
   await expect(app.toast('profile_picture_set')).toBeVisible();
   await expect(app.dialog).toHaveCount(0);
+  await app.viewer.backButton.click();
+  await expect(app.navbar.avatarImage).toHaveAttribute('src', new RegExp(`/users/${data.user.id}/profile-image`));
   expect(api.createProfileImage).toHaveBeenCalledWith({
     body: expect.stringMatching(/filename="profile-picture\.png"\r\nContent-Type: image\/png/),
   });

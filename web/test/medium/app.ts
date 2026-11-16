@@ -78,6 +78,7 @@ export const createApp = (page: Page, data: MockData) => {
       purchase: {
         productKeyInput: page.getByPlaceholder(/^IMCL-/),
         activateButton: button('purchase_button_activate'),
+        removeKeyButton: button('purchase_button_remove_key'),
         title: (title: string) => page.getByText(title, { exact: true }),
       },
     },
@@ -196,6 +197,7 @@ export const createApp = (page: Page, data: MockData) => {
     navbar: {
       logoLink: link('Immich logo'),
       avatar: accountButton,
+      avatarImage: accountButton.getByRole('img'),
       editAvatarButton: button('edit_avatar'),
       openAvatarEditor: async () => {
         await accountButton.click();
