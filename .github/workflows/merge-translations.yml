@@ -46,7 +46,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          PR=$(gh pr list --repo $GITHUB_REPOSITORY --author weblate --json number,mergeable)
+          PR=$(gh pr list --repo $GITHUB_REPOSITORY --author app/hosted-weblate --json number,mergeable)
           echo "$PR"
 
           PR_NUMBER=$(echo "$PR" | jq '
