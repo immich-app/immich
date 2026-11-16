@@ -4,6 +4,7 @@ import {
   AudioCodec,
   CQMode,
   Colorspace,
+  ImageEffort,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -250,11 +251,11 @@ const adminConfig = (overrides: Partial<ResponseOf<'getAdminConfig'>> = {}): Res
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   image: {
-    thumbnail: { format: ImageFormat.Webp, size: 250, quality: 80, progressive: false },
-    preview: { format: ImageFormat.Jpeg, size: 1440, quality: 80, progressive: false },
+    thumbnail: { format: ImageFormat.Webp, size: 250, quality: 80, progressive: false, effort: ImageEffort.Medium },
+    preview: { format: ImageFormat.Jpeg, size: 1440, quality: 80, progressive: false, effort: ImageEffort.Medium },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
-    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80, progressive: false },
+    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80, progressive: false, effort: ImageEffort.Medium },
   },
   newVersionCheck: { enabled: true, channel: ReleaseChannel.Stable },
   nightlyTasks: {
