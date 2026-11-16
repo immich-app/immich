@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { sql, type Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { TransactionHandle, TransactionHandle, columns, db } from 'src/database.js';
+import { TransactionHandle, columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AlbumUserRole, MemoryType } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import type { SyncAck } from 'src/types.js';
 
 export type SyncBackfillOptions = {
-  trx: TransactionHandle;
   trx: TransactionHandle;
   nowId: string;
   afterUpdateId?: string;
@@ -17,14 +16,12 @@ export type SyncBackfillOptions = {
 
 const dummyBackfillOptions = {
   trx: DummyValue.TRANSACTION,
-  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   beforeUpdateId: DummyValue.UUID,
   afterUpdateId: DummyValue.UUID,
 };
 
 export type SyncCreatedAfterOptions = {
-  trx: TransactionHandle;
   trx: TransactionHandle;
   nowId: string;
   userId: string;
@@ -33,7 +30,6 @@ export type SyncCreatedAfterOptions = {
 
 const dummyCreateAfterOptions = {
   trx: DummyValue.TRANSACTION,
-  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   userId: DummyValue.UUID,
   afterCreateId: DummyValue.UUID,
@@ -41,14 +37,12 @@ const dummyCreateAfterOptions = {
 
 export type SyncQueryOptions = {
   trx: TransactionHandle;
-  trx: TransactionHandle;
   nowId: string;
   userId: string;
   ack?: SyncAck;
 };
 
 const dummyQueryOptions = {
-  trx: DummyValue.TRANSACTION,
   trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   userId: DummyValue.UUID,
