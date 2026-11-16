@@ -3055,7 +3055,7 @@ export type ServerVersionHistoryResponseDto = {
 };
 export type SessionCreateDto = {
     /** Device OS */
-    deviceOS?: string;
+    deviceOS?: string | null;
     /** Device type */
     deviceType?: string;
     /** Session duration in seconds */
