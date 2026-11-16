@@ -127,7 +127,7 @@ export const createApp = () => {
       },
       settings: {
         open: (title: string) => page.getByRole('button', { name: title, exact: false }).click(),
-        numberInput: page.getByRole('spinbutton'),
+        numberInput: page.getByRole('spinbutton', { name: 'admin.user_delete_delay_settings', exact: true }),
         unlinkAllOAuthAccountsButton: button('admin.unlink_all_oauth_accounts'),
       },
     },
