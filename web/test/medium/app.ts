@@ -27,7 +27,7 @@ export const createApp = (page: Page, data: MockData) => {
   return {
     dialog,
     dialogButton: (name: string) => dialog.getByRole('button', { name, exact: true }),
-    toast: (key: string) => page.getByText(key),
+    toast: (text: string | RegExp) => page.getByText(text),
     undoButton: page.getByRole('button', { name: 'undo', exact: true }),
 
     admin: {
@@ -74,6 +74,11 @@ export const createApp = (page: Page, data: MockData) => {
         if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
           await toggle.click();
         }
+      },
+      purchase: {
+        productKeyInput: page.getByPlaceholder(/^IMCL-/),
+        activateButton: button('purchase_button_activate'),
+        title: (title: string) => page.getByText(title, { exact: true }),
       },
     },
 
@@ -480,6 +485,7 @@ const createViewer = (page: Page) => {
 
     profilePicture: {
       saveButton: page.getByRole('dialog').getByRole('button', { name: 'save', exact: true }),
+      cancelButton: page.getByRole('dialog').getByRole('button', { name: 'cancel', exact: true }),
     },
 
     activity: {

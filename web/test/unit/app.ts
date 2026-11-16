@@ -39,6 +39,7 @@ export const createApp = () => {
         await button('edit_avatar').click();
       },
     },
+    avatarColor: (color: string) => dialog.getByTitle(color, { exact: true }),
     userPicker: {
       searchInput: dialog.getByPlaceholder('search', { exact: true }),
       user: (name: string) => dialog.getByText(name, { exact: true }),
@@ -151,7 +152,7 @@ export const createApp = () => {
       },
     },
     confirmButton: page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }),
-    toast: (text: string) => page.getByText(text, { exact: true }),
+    toast: (text: string | RegExp) => page.getByText(text, { exact: true }),
     dialogButton: (name: string) => page.getByRole('dialog').getByRole('button', { name, exact: true }),
     cancelButton: page.getByRole('dialog').getByRole('button', { name: 'cancel', exact: true }),
     duplicates: {
@@ -211,6 +212,16 @@ export const createApp = () => {
       logOutDeviceButton: button('log_out'),
       logOutAllDevicesButton: button('log_out_all_devices'),
       pinCodeTitle: (title: string) => main.getByText(title, { exact: true }),
+      input: (label: string) => main.getByLabelText(label, { exact: true }),
+      switch: (label: string) => main.getByRole('switch', { name: label, exact: true }),
+      numberInput: main.getByRole('spinbutton'),
+      saveButton: button('save'),
+      usageCell: (view: string, column: number) => tableRow(view).getByRole('cell').nth(column),
+      purchase: {
+        productKeyInput: main.getByPlaceholder(/^IMCL-/),
+        removeKeyButton: button('purchase_button_remove_key'),
+        removeButton: page.getByRole('dialog').getByRole('button', { name: 'remove', exact: true }),
+      },
       partners: {
         addButton: button('add_partner'),
         removeButton: button('stop_sharing_photos_with_user'),

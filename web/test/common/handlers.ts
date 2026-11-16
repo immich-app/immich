@@ -9,6 +9,10 @@ const passwordRequired = { status: 401, json: { message: 'Password required', st
 const invalidPassword = { status: 401, json: { message: 'Invalid password', statusCode: 401 } };
 const emptyZip = fromBase64('UEsFBgAAAAAAAAAAAAAAAAAAAAAAAA==');
 
+const calendarHeatmap = ({ params = {} }: { params?: { $from?: string; to?: string } }) => ({
+  json: { from: params.$from ?? '', to: params.to ?? '', series: [], totalCount: 0 },
+});
+
 export const createHandlers = (data: MockData): Handlers => {
   const media = (assetId: string) => {
     if (data.isBroken(assetId)) {
@@ -30,6 +34,24 @@ export const createHandlers = (data: MockData): Handlers => {
     getVersionHistory: () => ({ json: data.versionHistory }),
     getSupportedMediaTypes: () => ({ json: data.mediaTypes }),
     getMyUser: () => ({ json: data.user }),
+    updateMyUser: ({ body }) => ({ json: data.updateMyUser(body) }),
+    getServerLicense: () => {
+      const license = data.getServerLicense();
+      return license ? { json: license } : notFound;
+    },
+    setServerLicense: ({ body }) => ({ json: data.setServerLicense(body) }),
+    deleteServerLicense: () => {
+      data.deleteServerLicense();
+      return { status: 204 };
+    },
+    setUserLicense: ({ body }) => ({ json: data.setUserLicense(body) }),
+    deleteUserLicense: () => {
+      data.deleteUserLicense();
+      return { status: 204 };
+    },
+    getAssetStatistics: ({ params = {} }) => ({ json: data.assetStatistics(params) }),
+    getAlbumStatistics: () => ({ json: data.albumStatistics() }),
+    getMyCalendarHeatmap: calendarHeatmap,
     getMyPreferences: () => ({ json: data.getPreferences() }),
     updateMyPreferences: ({ body }) => ({ json: data.updatePreferences(body) }),
     getAuthStatus: () => ({ json: data.getAuthStatus() }),
@@ -70,6 +92,10 @@ export const createHandlers = (data: MockData): Handlers => {
       return partner ? { json: partner } : notFound;
     },
     getNotifications: () => ({ json: data.notifications }),
+    deleteProfileImage: () => {
+      data.user.profileImagePath = '';
+      return { status: 204 };
+    },
     createProfileImage: () => ({
       status: 201,
       json: {
@@ -116,9 +142,7 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     searchPasskeys: () => ({ json: data.passkeyList() }),
     deletePasskey: ({ params }) => (data.deletePasskey(params.id) ? { status: 204 } : notFound),
-    getUserCalendarHeatmapAdmin: ({ params }) => ({
-      json: { from: params.$from ?? '', to: params.to ?? '', series: [], totalCount: 0 },
-    }),
+    getUserCalendarHeatmapAdmin: calendarHeatmap,
     getUserPreferencesAdmin: () => ({ json: factory.preferences() }),
     getServerVersion: () => ({ json: data.serverVersion }),
     listDatabaseBackups: () => ({ json: data.backups }),
