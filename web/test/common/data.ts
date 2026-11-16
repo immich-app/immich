@@ -1,7 +1,7 @@
 import { adminUserId, factory, type TimelineConfig } from '#test/common/factories.ts';
 import { SeededRandom } from '#test/common/helpers.ts';
 import { payload } from '#test/common/payloads.ts';
-import type { ResponseOf } from '#test/common/types.ts';
+import type { Call, ResponseOf } from '#test/common/types.ts';
 import {
   AssetOrder,
   AssetTypeEnum,
@@ -78,6 +78,7 @@ import {
   type UserPreferencesUpdateDto,
   type UserResponseDto,
   type WorkflowCreateDto,
+  type WorkflowLogEntryDto,
   type WorkflowResponseDto,
   type WorkflowStepDto,
   type WorkflowUpdateDto,
@@ -165,6 +166,7 @@ export class MockData {
   readonly queues = payload.queues();
   readonly notifications = payload.notifications();
   readonly backups = payload.backups();
+  readonly storageTemplateOptions = payload.storageTemplateOptions();
   isOnboarded = true;
 
   private preferences = factory.preferences();
@@ -187,6 +189,7 @@ export class MockData {
   private readonly tags = new Map<string, TagResponseDto>();
   private readonly activities = new Map<string, ActivityResponseDto>();
   private readonly workflows = new Map<string, WorkflowResponseDto>();
+  private readonly workflowLogs = new Map<string, WorkflowLogEntryDto[]>();
   private readonly apiKeys = new Map<string, ApiKeyResponseDto>();
   private readonly libraries = new Map<string, LibraryResponseDto>();
   private readonly faces = new Map<string, AssetFaceResponseDto[]>();
@@ -200,6 +203,10 @@ export class MockData {
     [PartnerDirection.SharedBy]: new Map(),
     [PartnerDirection.SharedWith]: new Map(),
   };
+
+  previewStorageTemplate(template: string) {
+    return this.storageTemplateOptions.presets.find((preset) => preset.template === template)?.preview ?? template;
+  }
 
   getPreferences() {
     return this.preferences;
@@ -1075,6 +1082,19 @@ export class MockData {
 
   workflowList() {
     return [...this.workflows.values()];
+  }
+
+  addWorkflowLogs(workflowId: string, entries: MaybeArray<WorkflowLogEntryDto>) {
+    this.workflowLogs.set(workflowId, [...(this.workflowLogs.get(workflowId) ?? []), ...toList(entries)]);
+    return this;
+  }
+
+  workflowLogPage({ id, result, before, limit = 50 }: Call<'getWorkflowLogs'>['params']) {
+    return (this.workflowLogs.get(id) ?? [])
+      .filter((entry) => !result || entry.result === result)
+      .filter((entry) => !before || entry.at < before)
+      .toSorted((a, b) => b.at.localeCompare(a.at))
+      .slice(0, limit);
   }
 
   deleteWorkflow(id: string) {
