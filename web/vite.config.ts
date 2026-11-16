@@ -16,13 +16,14 @@ import { stripVTControlCharacters } from 'node:util';
 
 const buildDir = 'build';
 const inlineTags = ['script', 'style'];
-const shadowTemplatePackages = /\/node_modules\/(media-chrome|custom-media-element)\/dist\//;
+const shadowTemplatePackages = ['media-chrome', 'custom-media-element'];
+const shadowTemplateModulePattern = new RegExp(`/node_modules/(${shadowTemplatePackages.join('|')})/dist/`);
 const shadowTemplateModules = new Set<string>();
 const pinInputStyle = '';
 
-type ShadowTemplate = { getTemplateHTML: (attributes: Record<string, string>) => string };
+type ShadowTemplateElement = { getTemplateHTML: (attributes: Record<string, string>) => string };
 
-const hasShadowTemplate = (value: unknown): value is ShadowTemplate =>
+const isShadowTemplateElement = (value: unknown): value is ShadowTemplateElement =>
   typeof value === 'function' && 'getTemplateHTML' in value && typeof value.getTemplateHTML === 'function';
 
 const cspManifest = (): Plugin => ({
@@ -31,7 +32,7 @@ const cspManifest = (): Plugin => ({
   generateBundle(_, bundle) {
     for (const chunk of Object.values(bundle)) {
       for (const id of chunk.type === 'chunk' ? chunk.moduleIds : []) {
-        if (shadowTemplatePackages.test(id)) {
+        if (shadowTemplateModulePattern.test(id)) {
           shadowTemplateModules.add(id);
         }
       }
@@ -70,7 +71,7 @@ const cspManifest = (): Plugin => ({
 
       for (const id of shadowTemplateModules) {
         for (const value of Object.values(await import(pathToFileURL(id).href))) {
-          if (hasShadowTemplate(value)) {
+          if (isShadowTemplateElement(value)) {
             walk(parseFragment(value.getTemplateHTML({})));
           }
         }
