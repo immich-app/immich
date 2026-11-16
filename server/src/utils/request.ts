@@ -19,7 +19,7 @@ export const getUserAgentDetails = (headers: IncomingHttpHeaders) => {
 
   return {
     deviceType: userAgent.browser.name || userAgent.device.type || (headers['devicemodel'] as string) || '',
-    deviceOS: userAgent.os.name || (headers['devicetype'] as string) || '',
+    deviceOS: userAgent.os.name || (headers['devicetype'] as string) || null,
     appVersion,
   };
 };

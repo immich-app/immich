@@ -35,7 +35,7 @@ export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
   deviceType: string;
-  deviceOS: string;
+  deviceOS: string | null;
   appVersion: string | null;
 }
 
