@@ -104,13 +104,25 @@ jobs:
             --arg image "${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/immich-server" \
             --arg tag "latest" \
             '{image: $image, tag: $tag}')
-          curl --fail --show-error --silent \
-            --connect-timeout 10 --max-time 30 \
+          set +e
+          result=$(curl --fail --show-error --silent --output /dev/null \
+            --write-out '%{http_code} %{time_connect}' \
+            --connect-timeout 10 --max-time 15 \
             --request POST \
             "${DEPLOY_WEBHOOK_URL%/}/${CONTAINER_NAME}" \
             --header "Content-Type: application/json" \
-            --data "$payload"
-          echo "Deployment webhook triggered successfully."
+            --data "$payload")
+          rc=$?
+          set -e
+          connect_time=${result##* }
+          if [[ $rc -eq 0 ]]; then
+            echo "Deployment webhook triggered successfully."
+          elif [[ $rc -eq 28 && "$connect_time" != "0.000000" ]]; then
+            echo "Deployment webhook accepted; n8n is still processing (no wait)."
+          else
+            echo "::error::Deployment webhook request failed (curl exit $rc)."
+            exit 1
+          fi
 
   build-ml:
     name: Build & Push ML
@@ -167,10 +179,22 @@ jobs:
             --arg image "${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/immich-machine-learning" \
             --arg tag "latest" \
             '{image: $image, tag: $tag}')
-          curl --fail --show-error --silent \
-            --connect-timeout 10 --max-time 30 \
+          set +e
+          result=$(curl --fail --show-error --silent --output /dev/null \
+            --write-out '%{http_code} %{time_connect}' \
+            --connect-timeout 10 --max-time 15 \
             --request POST \
             "${DEPLOY_WEBHOOK_URL%/}/${CONTAINER_NAME}" \
             --header "Content-Type: application/json" \
-            --data "$payload"
-          echo "Deployment webhook triggered successfully."
+            --data "$payload")
+          rc=$?
+          set -e
+          connect_time=${result##* }
+          if [[ $rc -eq 0 ]]; then
+            echo "Deployment webhook triggered successfully."
+          elif [[ $rc -eq 28 && "$connect_time" != "0.000000" ]]; then
+            echo "Deployment webhook accepted; n8n is still processing (no wait)."
+          else
+            echo "::error::Deployment webhook request failed (curl exit $rc)."
+            exit 1
+          fi
