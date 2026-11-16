@@ -5,7 +5,7 @@ import { test } from '#test/unit/fixtures.ts';
 import type { Mock } from '#test/unit/mocks/mock.ts';
 import type { MockRouter } from '#test/unit/mocks/router.ts';
 import { PersonUserRole, type PersonResponseDto } from '@immich/sdk';
-import { expect } from 'vitest';
+import { expect, onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import Page from './+page.svelte';
 import { load } from './+page.ts';
@@ -112,9 +112,20 @@ test('favorites the person', async ({ data, router, render, settle, api, app }) 
 
   expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: person.id }, body: { isFavorite: true } });
   await expect.element(app.toast('added_to_favorites')).toBeVisible();
+});
+
+test('offers unfavorite after favoriting', async ({ data, router, render, settle, api, app }) => {
+  const person = factory.person({ name: 'Alice' });
+  await showPerson({ data, router, render, settle }, person);
   await app.person.menuButton.click();
+  await app.person.menuItem('to_favorite').click();
+  await settle();
+  expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: person.id }, body: { isFavorite: true } });
+  onTestFinished(() => userEvent.keyboard('{Escape}'));
+
+  await app.person.menuButton.click();
+
   await expect.element(app.person.menuItem('unfavorite')).toBeVisible();
-  await userEvent.keyboard('{Escape}');
 });
 
 test('unfavorites the person', async ({ data, router, render, settle, api, app }) => {
