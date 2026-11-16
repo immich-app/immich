@@ -1,4 +1,5 @@
 ARG DEVICE=cpu
+ARG TARGETARCH
 
 FROM python:3.13-slim-trixie@sha256:cf50a4f6ac4f026458b08d5222023d700ac806410dff5e9ca8728fa44f2b850f AS builder-cpu
 
@@ -95,9 +96,7 @@ RUN --mount=type=bind,source=scripts/install-intel-runtime.sh,target=/tmp/instal
     apt-get remove curl -yqq && \
     rm -rf /var/lib/apt/lists/*
 
-FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
-
-ENV MACHINE_LEARNING_MODEL_ARENA=false
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda-amd64
 
 RUN apt-get update && \
     # Pascal support was dropped in 9.11
@@ -108,6 +107,17 @@ RUN apt-get update && \
 COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.13 /usr/local/lib/python3.13
 COPY --from=builder-cuda /usr/local/lib/libpython3.13.so /usr/local/lib/libpython3.13.so
+
+FROM builder-cuda AS prod-cuda-arm64
+
+ENV NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    NVIDIA_REQUIRE_CUDA="cuda>=13.0" \
+    LD_LIBRARY_PATH=/opt/venv/lib/python3.13/site-packages/nvidia/cu13/lib:/opt/venv/lib/python3.13/site-packages/nvidia/cudnn/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+FROM prod-cuda-${TARGETARCH} AS prod-cuda
+
+ENV MACHINE_LEARNING_MODEL_ARENA=false
 
 FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS prod-rocm
 

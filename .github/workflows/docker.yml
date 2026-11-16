@@ -96,7 +96,7 @@ jobs:
           - image: immich-machine-learning
             device: cuda
             suffixes: '-cuda'
-            platforms: linux/amd64
+            platforms: linux/amd64,linux/arm64
           - image: immich-machine-learning
             device: openvino
             suffixes: '-openvino'

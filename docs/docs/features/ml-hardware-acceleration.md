@@ -42,9 +42,9 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 #### CUDA
 
-- The GPU must have compute capability 5.2 or greater.
+- On x86-64, the GPU must have compute capability 5.2 or greater and the installed driver must be >= 545 (CUDA 12.3).
+- On ARM64, the image uses CUDA 13 and requires an SBSA system, compute capability 7.5 or greater and an NVIDIA driver >= 580. NVIDIA GB10 has been tested; Jetson/L4T is not covered by this image.
 - The server must have the official NVIDIA driver installed.
-- The installed driver must be >= 545 (it must support CUDA 12.3).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
 #### ROCm
