@@ -1681,7 +1681,7 @@ describe(MediaService.name, () => {
         { data, info },
         {
           colorspace: Colorspace.P3,
-          format: ImageFormat.Jpeg,
+          format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
@@ -1707,6 +1707,65 @@ describe(MediaService.name, () => {
         personGroupId: person.personGroupId,
         thumbnailPath: expect.any(String),
       });
+    });
+
+    it('should replace a thumbnail in a different format', async () => {
+      const person = PersonFactory.create();
+
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue({
+        ...personThumbnailStub.newThumbnailMiddle,
+        thumbnailPath: '/data/thumbs/person.jpeg',
+      });
+      mocks.media.generateThumbnail.mockResolvedValue();
+      mocks.media.decodeImage.mockResolvedValue({
+        data: Buffer.from(''),
+        info: { width: 1000, height: 1000 } as OutputInfo,
+      });
+
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        ownerId: person.ownerId,
+        personGroupId: person.personGroupId,
+        thumbnailPath: expect.stringMatching(/\.webp$/),
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['/data/thumbs/person.jpeg'] },
+      });
+    });
+
+    it('should respect the thumbnail settings', async () => {
+      const person = PersonFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: {
+          thumbnail: { format: ImageFormat.Jxl, quality: 90, progressive: true, effort: ImageEffort.High },
+        },
+      });
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      mocks.media.decodeImage.mockResolvedValue({
+        data: Buffer.from(''),
+        info: { width: 1000, height: 1000 } as OutputInfo,
+      });
+
+      await expect(
+        sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          format: ImageFormat.Jxl,
+          quality: 90,
+          progressive: true,
+          effort: ImageEffort.High,
+        }),
+        expect.stringMatching(/\.jxl$/),
+      );
     });
 
     it('should use preview path if video', async () => {
@@ -1736,7 +1795,7 @@ describe(MediaService.name, () => {
         { data, info },
         {
           colorspace: Colorspace.P3,
-          format: ImageFormat.Jpeg,
+          format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
@@ -1786,7 +1845,7 @@ describe(MediaService.name, () => {
         { data, info },
         {
           colorspace: Colorspace.P3,
-          format: ImageFormat.Jpeg,
+          format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
@@ -1832,7 +1891,7 @@ describe(MediaService.name, () => {
         { data, info },
         {
           colorspace: Colorspace.P3,
-          format: ImageFormat.Jpeg,
+          format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
@@ -1878,7 +1937,7 @@ describe(MediaService.name, () => {
         { data, info },
         {
           colorspace: Colorspace.P3,
-          format: ImageFormat.Jpeg,
+          format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
@@ -1924,7 +1983,7 @@ describe(MediaService.name, () => {
         { data, info },
         {
           colorspace: Colorspace.P3,
-          format: ImageFormat.Jpeg,
+          format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
@@ -1975,7 +2034,7 @@ describe(MediaService.name, () => {
         { data, info },
         {
           colorspace: Colorspace.P3,
-          format: ImageFormat.Jpeg,
+          format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
