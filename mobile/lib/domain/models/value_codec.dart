@@ -133,6 +133,18 @@ final class ListCodec<T extends Object> extends ValueCodec<List<T>> {
   }
 }
 
+final class SetCodec<T extends Object> extends ValueCodec<Set<T>> {
+  final ListCodec<T> _listCodec;
+
+  const SetCodec(this._listCodec);
+
+  @override
+  String encode(Set<T> value) => _listCodec.encode(value.toList());
+
+  @override
+  Set<T> decode(String raw) => _listCodec.decode(raw).toSet();
+}
+
 final class PrimitiveCodec<T extends Object> extends ValueCodec<T> {
   final T Function(String) _parse;
 

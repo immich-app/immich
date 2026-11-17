@@ -96,4 +96,12 @@ void main() {
       });
     });
   });
+
+  group('SetCodec', () {
+    test('preserves a string set through encode then decode', () {
+      const codec = SetCodec(ListCodec(PrimitiveCodec.string));
+      const original = {'.jpg', '.mp4'};
+      expect(codec.decode(codec.encode(original)), original);
+    });
+  });
 }

@@ -2,10 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
@@ -21,7 +18,7 @@ void main() {
 
   setUpAll(() async {
     final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: StoreRepository(db));
+    await SettingsRepository.ensureInitialized(db);
   });
 
   setUp(() {
@@ -43,7 +40,7 @@ void main() {
       await sut.refreshSupportedFileExtensions();
       await sut.refreshSupportedFileExtensions();
 
-      expect(Store.tryGet(StoreKey.supportedFileExtensions), {'.jpg', '.mp4'});
+      expect(SettingsRepository.instance.appConfig.supportedFileExtensions, {'.jpg', '.mp4'});
       verify(() => mockBackupRepository.clearUnsupported()).called(1);
 
       when(
@@ -52,7 +49,7 @@ void main() {
 
       await sut.refreshSupportedFileExtensions();
 
-      expect(Store.tryGet(StoreKey.supportedFileExtensions), {'.jpg', '.djvu', '.mp4'});
+      expect(SettingsRepository.instance.appConfig.supportedFileExtensions, {'.jpg', '.djvu', '.mp4'});
       verify(() => mockBackupRepository.clearUnsupported()).called(1);
     });
   });

@@ -90,14 +90,6 @@ void main() {
       user = await sut.tryGet(StoreKey.currentUser);
       expect(user, _kTestUser);
     });
-
-    test('converts set of strings', () async {
-      Set<String>? extensions = await sut.tryGet(StoreKey.supportedFileExtensions);
-      expect(extensions, isNull);
-      await sut.upsert(StoreKey.supportedFileExtensions, {'.jpg', '.mp4'});
-      extensions = await sut.tryGet(StoreKey.supportedFileExtensions);
-      expect(extensions, {'.jpg', '.mp4'});
-    });
   });
 
   group('Store Repository Deletes:', () {

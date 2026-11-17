@@ -78,6 +78,9 @@ enum SettingsKey<T> {
   slideshowLook<SlideshowLook>(codec: EnumCodec(SlideshowLook.values)),
   slideshowDirection<SlideshowDirection>(codec: EnumCodec(SlideshowDirection.values)),
 
+  // Server
+  supportedFileExtensions<Set<String>?>(codec: SetCodec(ListCodec(PrimitiveCodec.string))),
+
   // Feature message
   featureMessageSeenRelease<SemVer>(codec: SemVerCodec());
 

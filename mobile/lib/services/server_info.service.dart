@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/models/server_info/server_features.model.dart';
@@ -78,8 +78,8 @@ class ServerInfoService {
       }
 
       final extensions = {...dto.image, ...dto.video};
-      if (!setEquals(extensions, Store.tryGet(StoreKey.supportedFileExtensions))) {
-        await Store.put(StoreKey.supportedFileExtensions, extensions);
+      if (!setEquals(extensions, SettingsRepository.instance.appConfig.supportedFileExtensions)) {
+        await SettingsRepository.instance.write(SettingsKey.supportedFileExtensions, extensions);
         await _backupRepository.clearUnsupported();
       }
     } catch (e) {

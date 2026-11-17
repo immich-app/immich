@@ -1,11 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 
 import '../repository_context.dart';
@@ -16,7 +14,7 @@ void main() {
 
   setUpAll(() async {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-    await StoreService.init(storeRepository: StoreRepository(MediumRepositoryContext().db), listenUpdates: false);
+    await SettingsRepository.ensureInitialized(MediumRepositoryContext().db);
   });
 
   setUp(() {
@@ -258,8 +256,8 @@ void main() {
 
       expect(await sut.markIfUnsupported(asset.id, '.djvu'), isFalse);
 
-      await Store.put(StoreKey.supportedFileExtensions, {'.jpg', '.mp4'});
-      addTearDown(() => Store.delete(StoreKey.supportedFileExtensions));
+      await SettingsRepository.instance.write(SettingsKey.supportedFileExtensions, {'.jpg', '.mp4'});
+      addTearDown(() => SettingsRepository.instance.clear([SettingsKey.supportedFileExtensions]));
 
       expect(await sut.markIfUnsupported(asset.id, '.JPG'), isFalse);
       expect(await sut.getCandidates(userId), hasLength(1));

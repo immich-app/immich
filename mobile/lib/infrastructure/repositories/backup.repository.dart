@@ -6,9 +6,8 @@ import 'package:immich_mobile/data/db/main/table/local/album_asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.drift.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 
 @DriftAccessor()
 class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMixin {
@@ -120,7 +119,7 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
   }
 
   Future<bool> markIfUnsupported(String assetId, String extension) async {
-    final supported = Store.tryGet(StoreKey.supportedFileExtensions);
+    final supported = SettingsRepository.instance.appConfig.supportedFileExtensions;
     if (supported == null || supported.contains(extension.toLowerCase())) {
       return false;
     }
