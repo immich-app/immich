@@ -85,6 +85,7 @@ export const timeToLoadTheMap: number = 100;
 export const timeBeforeShowLoadingSpinner: number = 100;
 
 export const timeDebounceOnSearch: number = 300;
+export const workflowLogsPageSize = 50;
 
 export const fallbackLocale = {
   code: 'en-US',

@@ -8,7 +8,7 @@ const visit = () => load({ url: new URL(Route.backups(), location.origin) } as n
 test('turns on the backups beta on first visit', async ({ api }) => {
   await visit();
 
-  expect(api.updateConfig).toHaveBeenCalledWith({
+  expect(api.updateAdminConfig).toHaveBeenCalledWith({
     body: expect.objectContaining({
       backup: { beta: true, database: { enabled: true, cronExpression: '0 02 * * *', keepLastAmount: 14 } },
     }),
@@ -20,15 +20,16 @@ test('leaves the config alone when the beta is already on', async ({ data, api }
 
   await visit();
 
-  expect(api.getConfig).toHaveBeenCalled();
-  expect(api.updateConfig).not.toHaveBeenCalled();
+  expect(api.getAdminConfig).toHaveBeenCalled();
+  expect(api.updateAdminConfig).not.toHaveBeenCalled();
 });
 
-test('still opens when the config cannot be loaded', async ({ api }) => {
-  api.on({ getConfig: () => ({ status: 500, json: { message: 'Server error', statusCode: 500 } }) });
+test('opens quietly when the beta cannot be turned on', async ({ api, logger }) => {
+  api.on({ updateAdminConfig: () => ({ status: 500, json: { message: 'Server error', statusCode: 500 } }) });
 
   const result = await visit();
 
   expect(result).toEqual({ meta: { title: 'admin.backups' } });
-  expect(api.updateConfig).not.toHaveBeenCalled();
+  expect(api.updateAdminConfig).toHaveBeenCalled();
+  expect(logger.error).not.toHaveBeenCalled();
 });
