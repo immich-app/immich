@@ -45,7 +45,7 @@ export interface Events {
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
   AssetEditReadyV2: (data: { asset: SyncAssetV2; edit: SyncAssetEditV1[] }) => void;
-  ResourceUpdateV1: (event: { paths: string[]; correlationId: string }) => void;
+  ResourceUpdateV1: (event: { paths: string[]; correlationId?: string }) => void;
 }
 
 const websocket: Socket<Events> = io({

@@ -3,7 +3,7 @@ import { queryClient } from '#lib/queries/client.ts';
 import type { QueryKey } from '@tanstack/svelte-query';
 import type { Socket } from 'socket.io-client';
 
-type ResourceUpdate = { paths: string[]; correlationId: string };
+type ResourceUpdate = { paths: string[]; correlationId?: string };
 
 class ResourceManager {
   #clientId = crypto.randomUUID().split('-', 1)[0];
@@ -21,7 +21,7 @@ class ResourceManager {
   }
 
   handleUpdate({ paths, correlationId }: ResourceUpdate) {
-    if (correlationId.startsWith(`${this.#clientId}.`)) {
+    if (correlationId?.startsWith(`${this.#clientId}.`)) {
       return;
     }
 

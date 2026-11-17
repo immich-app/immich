@@ -78,6 +78,15 @@ describe('resourceManager', () => {
       expect(isInvalidated(['albums'])).toBe(false);
     });
 
+    it('applies an update that has no correlation id', () => {
+      queryClient.setQueryData(['albums'], []);
+
+      resourceManager.handleUpdate({ paths: ['/albums'] });
+      vi.advanceTimersByTime(500);
+
+      expect(isInvalidated(['albums'])).toBe(true);
+    });
+
     it('sends a new correlation id with each request and keeps its headers', async () => {
       const first = await sendRequest();
       const second = await sendRequest();
