@@ -31,6 +31,12 @@ export const createApp = (page: Page, data: MockData) => {
             .filter({ hasText: `admin.maintenance_integrity_${report}` })
             .getByTestId('statistic-value'),
       },
+      integrityReport: {
+        downloadCsvButton: button('admin.download_csv'),
+        rowMenuButton: (path: string) =>
+          page.getByRole('row').filter({ hasText: path }).getByRole('button', { name: 'open', exact: true }),
+        downloadMenuItem: page.getByRole('menuitem', { name: 'download', exact: true }),
+      },
       users: {
         createUserButton: button('create_user'),
         restoreButton: button('restore'),

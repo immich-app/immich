@@ -52,6 +52,27 @@ export const createHandlers = (data: MockData): Handlers => {
     listDatabaseBackups: () => ({ json: data.backups }),
     getQueuesLegacy: () => ({ json: data.queues }),
     getIntegrityReportSummary: () => ({ json: data.getIntegrityReport() }),
+<<<<<<< HEAD
+=======
+    getIntegrityReport: ({ params }) => ({ json: data.integrityReportPage(params) }),
+    deleteIntegrityReport: ({ params }) => (data.deleteIntegrityReportItem(params.id) ? { status: 200 } : notFound),
+    getIntegrityReportFile: ({ params }) => {
+      const item = data.getIntegrityReportItem(params.id);
+      if (!item) {
+        return notFound;
+      }
+      return {
+        body: '',
+        contentType: 'application/octet-stream',
+        headers: { 'Content-Disposition': `attachment; filename="${item.path.split('/').at(-1)}"` },
+      };
+    },
+    getIntegrityReportCsv: ({ params }) => ({
+      body: 'id,type,path\n',
+      contentType: 'text/csv',
+      headers: { 'Content-Disposition': `attachment; filename="${params.$type}.csv"` },
+    }),
+>>>>>>> a2022cc (fix: integrity report downloads (#33239))
     createJob: () => ({ status: 201 }),
 
     getTimeBuckets: ({ params = {} }) => ({ json: data.timeBuckets(params) }),
