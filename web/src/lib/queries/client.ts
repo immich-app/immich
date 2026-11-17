@@ -7,6 +7,7 @@ import { modalManager, toastManager } from '@immich/ui';
 import {
   MutationCache,
   MutationObserver,
+  QueryCache,
   QueryClient,
   createQuery,
   hashKey,
@@ -27,6 +28,9 @@ type ToastMeta =
 
 declare module '@tanstack/svelte-query' {
   interface Register {
+    queryMeta: {
+      error?: { toast?: Translations };
+    };
     mutationMeta: {
       success?: { toast?: ToastMeta };
       error?: { toast?: Translations | false };
@@ -49,6 +53,16 @@ const createQueryClient = () => {
         staleTime: Infinity,
       },
     },
+    queryCache: new QueryCache({
+      onError: (error, { meta }) => {
+        const toast = meta?.error?.toast;
+        if (!toast) {
+          return;
+        }
+
+        void getFormatter().then(($t) => handleError(error, $t(toast)));
+      },
+    }),
     mutationCache: new MutationCache({
       onSuccess: async (_data, _variables, _onMutateResult, { meta }) => {
         const toast = meta?.success?.toast;

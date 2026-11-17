@@ -8,6 +8,7 @@ export const getDatabaseBackupsQuery = () =>
     queryFn: ({ signal }) => listDatabaseBackups({ signal }),
     select: ({ backups }) => backups,
     staleTime: 0,
+    meta: { error: { toast: 'errors.failed_to_load_database_backups' } },
   });
 
 const deleteDatabaseBackupMutationKey = ['database-backups', 'delete'];
