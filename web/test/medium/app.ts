@@ -30,6 +30,10 @@ export const createApp = (page: Page, data: MockData) => {
     toast: (key: string) => page.getByText(key),
     undoButton: page.getByRole('button', { name: 'undo', exact: true }),
 
+    maintenanceMode: {
+      title: page.getByRole('heading', { name: 'maintenance_title', exact: true }),
+      restoreTask: page.getByText('maintenance_task_restore', { exact: true }),
+    },
     admin: {
       maintenance: {
         checkAllButton: button('admin.maintenance_integrity_check_all'),

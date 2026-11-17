@@ -187,6 +187,7 @@ export const createApp = () => {
       restoreSelectedButton: button('restore'),
     },
     maintenanceMode: {
+      title: page.getByRole('heading', { name: 'maintenance_title', exact: true }),
       loggedInAs: page.getByText('maintenance_logged_in_as', { exact: true }),
       endButton: button('maintenance_end'),
       restoreFromBackupButton: button('maintenance_restore_from_backup'),

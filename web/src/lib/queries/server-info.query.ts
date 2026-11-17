@@ -1,4 +1,11 @@
-import { getAboutInfo, getServerConfig, getServerStatistics, getStorage, getVersionHistory } from '@immich/sdk';
+import {
+  getAboutInfo,
+  getServerConfig,
+  getServerStatistics,
+  getServerVersion,
+  getStorage,
+  getVersionHistory,
+} from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
 
 export const getAboutInfoQuery = () =>
@@ -30,4 +37,11 @@ export const getServerStatisticsQuery = () =>
   queryOptions({
     queryKey: ['server', 'statistics'],
     queryFn: ({ signal }) => getServerStatistics({ signal }),
+  });
+
+export const getServerVersionQuery = () =>
+  queryOptions({
+    queryKey: ['server', 'version'],
+    queryFn: ({ signal }) => getServerVersion({ signal }),
+    select: ({ major, minor, patch }) => `${major}.${minor}.${patch}`,
   });
