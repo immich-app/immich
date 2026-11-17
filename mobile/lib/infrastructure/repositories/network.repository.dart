@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:cronet_http/cronet_http.dart';
 import 'package:cupertino_http/cupertino_http.dart';
 import 'package:http/http.dart' as http;
+import 'package:immich_mobile/infrastructure/repositories/io_web_socket.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:ok_http/ok_http.dart';
 import 'package:web_socket/web_socket.dart';
@@ -77,15 +78,31 @@ class NetworkRepository {
     }
   }
 
-  // ignore: avoid-unused-parameters
-  static Future<WebSocket> createWebSocket(Uri uri, {Map<String, String>? headers, Iterable<String>? protocols}) {
+  static Future<WebSocket> createWebSocket(Uri uri, {Map<String, String>? headers, Iterable<String>? protocols}) async {
     if (Platform.isIOS) {
       final session = URLSession.fromRawPointer(_clientPointer!.cast());
       return CupertinoWebSocket.connectWithSession(session, uri, protocols: protocols);
-    } else {
+    }
+    if (_usingMtls) {
+      // A client certificate only exists on the native OkHttp client, and
+      // dart:io cannot present one.
       return OkHttpWebSocket.connectFromJniGlobalRef(_clientPointer!, uri, protocols: protocols);
     }
+    // Every transport except dart:io negotiates a classical key exchange here:
+    // Cronet exposes no WebSocket API, and OkHttp goes through the platform
+    // Conscrypt provider, which has no ML-KEM group. The socket would then
+    // silently drop below the post-quantum level of the REST traffic.
+    final authHeaders = await networkApi.requestAuthHeaders(_httpEquivalent(uri).toString());
+    return IoWebSocket.connect(uri, headers: {...authHeaders, ...?headers}, protocols: protocols);
   }
+
+  /// The native header/cookie lookup goes through OkHttp's `HttpUrl`, which
+  /// rejects the `ws`/`wss` schemes, so ask for the equivalent http(s) URL.
+  static Uri _httpEquivalent(Uri uri) => switch (uri.scheme) {
+    'wss' => uri.replace(scheme: 'https'),
+    'ws' => uri.replace(scheme: 'http'),
+    _ => uri,
+  };
 
   /// Clears the session cookies. The native jar is cleared directly; Cronet's own
   /// cookie store has no clear API, so the engine is replaced in place.
