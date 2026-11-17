@@ -46,3 +46,19 @@ test('locks the session and leaves the locked folder', async ({ data, router, re
   expect(api.lockAuthSession).toHaveBeenCalled();
   expect(router.url.pathname).toBe(Route.photos());
 });
+
+test('stays in the locked folder when locking fails', async ({ data, router, render, settle, api, app, logger }) => {
+  data.setAuthStatus({ pinCode: true, isElevated: true });
+  api.on({ lockAuthSession: () => ({ status: 500, json: { message: 'Server error', statusCode: 500 } }) });
+  await router.goto(Route.locked());
+  await render(Page, load);
+  await settle();
+
+  await app.auth.button('lock').click();
+  await settle();
+
+  expect(api.lockAuthSession).toHaveBeenCalled();
+  expect(logger.error).toHaveBeenCalledWith(/handleError/);
+  await expect.element(app.toast(/Server error/)).toBeVisible();
+  expect(router.url.pathname).toBe(Route.locked());
+});

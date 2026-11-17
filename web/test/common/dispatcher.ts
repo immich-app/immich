@@ -13,6 +13,7 @@ const readOperations = new Set<OperationId>([
   'checkBulkUpload',
   'previewStorageTemplate',
 ]);
+const activationPattern = /^\/api\/v1\/activate\/([^/]+)$/;
 
 export type Response = {
   status: number;
@@ -55,7 +56,7 @@ export class Dispatcher {
   private readonly handlers = new Map<string, Handler<OperationId>>();
   private readonly spies = new Map<string, OperationSpy<OperationId>>();
 
-  constructor(data: MockData) {
+  constructor(private readonly data: MockData) {
     this.on(createHandlers(data));
   }
 
@@ -104,6 +105,11 @@ export class Dispatcher {
   }
 
   async dispatch(method: string, url: URL, body: unknown): Promise<Response> {
+    const activation = url.pathname.match(activationPattern);
+    if (activation) {
+      return this.activate(decodeURIComponent(activation[1]));
+    }
+
     const match = matchOperation(method, url.pathname);
     if (!match) {
       this.unhandled.push(`${method} ${url.pathname}${url.search} (no matching OpenAPI operation)`);
@@ -141,5 +147,13 @@ export class Dispatcher {
       return { status: result.status ?? 200, json: result.json, headers: result.headers };
     }
     return { status: result?.status ?? 204, headers: result?.headers };
+  }
+
+  private activate(licenseKey: string): Response {
+    const activationKey = this.data.getActivationKey(licenseKey);
+    const headers = { 'Access-Control-Allow-Origin': '*' };
+    return activationKey
+      ? { status: 200, body: activationKey, contentType: 'text/plain', headers }
+      : { status: 404, headers };
   }
 }

@@ -115,6 +115,40 @@ test('user settings show api keys created elsewhere', async ({ page, data, api, 
   expect(api.getApiKeys.calls.length).toBeGreaterThan(requests);
 });
 
+test('user settings show devices logged in elsewhere', async ({ page, data, api, app }) => {
+  data.addSessions(factory.session({ current: true, deviceOS: 'Existing OS' }));
+  await page.goto(Route.userSettings());
+  await app.settings.openSection('authorized_devices');
+  await expect(page.getByText('Existing OS', { exact: false })).toBeVisible();
+
+  await app.navbar.logoLink.click();
+  await expect(page).toHaveURL(Route.photos());
+  data.addSessions(factory.session({ deviceOS: 'Added OS' }));
+  const requests = api.getSessions.calls.length;
+  await page.goBack();
+  await app.settings.openSection('authorized_devices');
+
+  await expect(page.getByText('Added OS', { exact: false })).toBeVisible();
+  expect(api.getSessions.calls.length).toBeGreaterThan(requests);
+});
+
+test('user settings show passkeys registered elsewhere', async ({ page, data, api, app }) => {
+  data.addPasskeys(factory.passkey({ name: 'Existing passkey' }));
+  await page.goto(Route.userSettings());
+  await app.settings.openSection('passkeys');
+  await expect(page.getByText('Existing passkey', { exact: true })).toBeVisible();
+
+  await app.navbar.logoLink.click();
+  await expect(page).toHaveURL(Route.photos());
+  data.addPasskeys(factory.passkey({ name: 'Added elsewhere' }));
+  const requests = api.searchPasskeys.calls.length;
+  await page.goBack();
+  await app.settings.openSection('passkeys');
+
+  await expect(page.getByText('Added elsewhere', { exact: true })).toBeVisible();
+  expect(api.searchPasskeys.calls.length).toBeGreaterThan(requests);
+});
+
 test('duplicates show duplicates detected in the meantime', async ({ page, data, api, app }) => {
   data.addDuplicates([factory.asset(), factory.asset()]);
   await page.goto(Route.duplicatesUtility());
