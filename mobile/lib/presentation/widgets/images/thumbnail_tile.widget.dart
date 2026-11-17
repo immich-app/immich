@@ -73,8 +73,8 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
 
     final selection = _selection.toward(isSelected);
     final indicators = _indicators.toward(!_hideIndicators);
-    final wasNeverSelected = selection == kAlwaysDismissedAnimation;
-    final selectionColor = wasNeverSelected
+    final hasSelection = selection != kAlwaysDismissedAnimation;
+    final selectionColor = !hasSelection
         ? Colors.transparent
         : widget.lockSelection
         ? context.colorScheme.surfaceContainerHighest
@@ -82,50 +82,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
         ? context.primaryColor.darken(amount: 0.4)
         : context.primaryColor.lighten(amount: 0.75);
 
-    final typeIcons = asset == null
-        ? const <Widget>[]
-        : [
-            if (asset.isVideo) _VideoIndicator(asset.duration),
-            if (asset.isMotionPhoto) const _TileOverlayIcon(Icons.motion_photos_on_rounded),
-            if (asset.isAnimatedImage) const _TileOverlayIcon(Icons.gif_rounded),
-            if (widget.showStackIndicator && asset is RemoteAsset && asset.stackId != null)
-              const _TileOverlayIcon(Icons.burst_mode_rounded),
-          ];
-    final overlays = asset == null
-        ? const <Widget>[]
-        : [
-            if (typeIcons.isNotEmpty)
-              Positioned(
-                top: 6,
-                right: 10,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  spacing: 6,
-                  children: typeIcons,
-                ),
-              ),
-            if (storageIndicator)
-              switch (asset.storage) {
-                AssetState.local => const Positioned(
-                  right: 10,
-                  bottom: 6,
-                  child: _TileOverlayIcon(Icons.cloud_off_outlined),
-                ),
-                AssetState.remote => const Positioned(
-                  right: 10,
-                  bottom: 6,
-                  child: _TileOverlayIcon(Icons.cloud_outlined),
-                ),
-                AssetState.merged => const Positioned(
-                  right: 10,
-                  bottom: 6,
-                  child: _TileOverlayIcon(Icons.cloud_done_outlined),
-                ),
-              },
-            if (asset.isFavorite)
-              const Positioned(left: 10, bottom: 6, child: _TileOverlayIcon(Icons.favorite_rounded)),
-          ];
+    final overlays = asset == null ? const <Widget>[] : _overlays(asset, storageIndicator);
 
     return Stack(
       children: [
@@ -179,7 +136,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
             ],
           ),
         ),
-        if (!wasNeverSelected)
+        if (hasSelection)
           AnimatedBuilder(
             animation: selection,
             builder: (context, child) => Padding(
@@ -193,6 +150,40 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
           ),
       ],
     );
+  }
+
+  List<Widget> _overlays(BaseAsset asset, bool storageIndicator) {
+    final typeIcons = [
+      if (asset.isVideo) _VideoIndicator(asset.duration),
+      if (asset.isMotionPhoto) const _TileOverlayIcon(Icons.motion_photos_on_rounded),
+      if (asset.isAnimatedImage) const _TileOverlayIcon(Icons.gif_rounded),
+      if (widget.showStackIndicator && asset is RemoteAsset && asset.stackId != null)
+        const _TileOverlayIcon(Icons.burst_mode_rounded),
+    ];
+    return [
+      if (typeIcons.isNotEmpty)
+        Positioned(
+          top: 6,
+          right: 10,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            spacing: 6,
+            children: typeIcons,
+          ),
+        ),
+      if (storageIndicator)
+        switch (asset.storage) {
+          AssetState.local => const Positioned(right: 10, bottom: 6, child: _TileOverlayIcon(Icons.cloud_off_outlined)),
+          AssetState.remote => const Positioned(right: 10, bottom: 6, child: _TileOverlayIcon(Icons.cloud_outlined)),
+          AssetState.merged => const Positioned(
+            right: 10,
+            bottom: 6,
+            child: _TileOverlayIcon(Icons.cloud_done_outlined),
+          ),
+        },
+      if (asset.isFavorite) const Positioned(left: 10, bottom: 6, child: _TileOverlayIcon(Icons.favorite_rounded)),
+    ];
   }
 }
 
@@ -306,23 +297,18 @@ class _RenderSelectionFrame extends RenderShiftedBox {
 
 class _SelectionIndicator extends StatelessWidget {
   final bool isLocked;
-  final Color? color;
+  final Color color;
 
-  const _SelectionIndicator({required this.isLocked, this.color});
+  const _SelectionIndicator({required this.isLocked, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    if (isLocked) {
-      return DecoratedBox(
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-        child: const Icon(Icons.check_circle_rounded, color: Colors.grey),
-      );
-    } else {
-      return DecoratedBox(
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-        child: Icon(Icons.check_circle_rounded, color: context.primaryColor),
-      );
-    }
+    return DecoratedBox(
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      child: isLocked
+          ? const Icon(Icons.check_circle_rounded, color: Colors.grey)
+          : Icon(Icons.check_circle_rounded, color: context.primaryColor),
+    );
   }
 }
 
