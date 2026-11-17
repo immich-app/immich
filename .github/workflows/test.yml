@@ -40,6 +40,8 @@ jobs:
               - 'web/**'
               - 'i18n/**'
               - 'packages/sdk/**'
+              - 'server/helmet.json'
+              - 'server/src/utils/helmet.ts'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
             server:
