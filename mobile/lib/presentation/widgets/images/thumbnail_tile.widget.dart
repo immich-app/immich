@@ -140,7 +140,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
           AnimatedBuilder(
             animation: selection,
             builder: (context, child) => Padding(
-              padding: EdgeInsets.all(isSelected ? selection.value * 3 : 3),
+              padding: isSelected ? EdgeInsets.all(selection.value * 3) : const EdgeInsets.all(3),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Opacity(opacity: isSelected ? 1 : selection.value, child: child),
