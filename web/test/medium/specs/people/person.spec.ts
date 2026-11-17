@@ -43,7 +43,7 @@ test('renaming to an accented existing name offers a merge', async ({ page, data
   expect(api.updatePerson).not.toHaveBeenCalled();
 });
 
-test('swapping the merge suggestion shows the swapped faces', async ({ page, data, api, app }) => {
+test('swapping the merge suggestion shows the swapped faces', async ({ page, data, app }) => {
   const alice = factory.person({ name: 'Alice' });
   const unnamed = factory.person({ name: 'Unknown' });
   data.addPeople([alice, unnamed]);
@@ -56,12 +56,25 @@ test('swapping the merge suggestion shows the swapped faces', async ({ page, dat
 
   await expect(app.person.dialogThumbnail('Alice')).toHaveAttribute('src', new RegExp(alice.id));
   await expect(app.person.dialogThumbnail('Unknown')).toHaveAttribute('src', new RegExp(unnamed.id));
-  await app.dialogButton('yes').click();
-  await expect.poll(() => api.mergePeople.calls.length).toBe(1);
-  expect(api.mergePeople).toHaveBeenCalledWith({ body: { ids: [unnamed.id, alice.id] } });
 });
 
-test.fail('swapping the merge suggestion keeps the new name', async ({ page, data, api, app }) => {
+test('merging into the suggestion opens it without renaming', async ({ page, data, api, app }) => {
+  const alice = factory.person({ name: 'Alice' });
+  const unnamed = factory.person({ name: 'Unknown' });
+  data.addPeople([alice, unnamed]);
+  await page.goto(Route.viewPerson(unnamed));
+  await app.person.editNameButton.click();
+  await app.person.nameInput.fill('Alice');
+  await app.person.doneButton.click();
+
+  await app.dialogButton('yes').click();
+
+  await expect(page).toHaveURL(new RegExp(`/people/${alice.id}`));
+  expect(api.mergePeople).toHaveBeenCalledWith({ body: { ids: [alice.id, unnamed.id] } });
+  expect(api.updatePerson).not.toHaveBeenCalled();
+});
+
+test('swapping the merge suggestion keeps the new name', async ({ page, data, api, app }) => {
   const alice = factory.person({ name: 'Alice' });
   const unnamed = factory.person({ name: 'Unknown' });
   data.addPeople([alice, unnamed]);
