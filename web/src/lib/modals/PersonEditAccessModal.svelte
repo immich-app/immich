@@ -3,17 +3,14 @@
   import OnEvents from '#lib/components/OnEvents.svelte';
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getClusterGroupUsersQuery } from '#lib/queries/cluster-group.query.ts';
   import { getPersonUserActions, getPersonUsersActions } from '#lib/services/person-user.service.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import {
-    SharingDirection,
-    getClusterGroupUsers,
-    getUsersForPeople,
-    type PersonResponseDto,
-    type UserResponseDto,
-  } from '@immich/sdk';
+  import { SharingDirection, getUsersForPeople, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { ActionButton, BasicModal, HStack, Text, type ActionItem } from '@immich/ui';
   import { mdiAccountMultipleOutline } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -26,7 +23,11 @@
 
   let sharedByMe = $state<UserResponseDto[]>([]);
   let sharedWithMe = $state<UserResponseDto[]>([]);
-  let clusterGroupUsers = $state<UserResponseDto[]>([]);
+  const clusterGroupUsersQuery = createQuery(
+    () => getClusterGroupUsersQuery(authManager.user.clusterGroupId),
+    () => queryClient,
+  );
+  const clusterGroupUsers = $derived(clusterGroupUsersQuery.data ?? []);
 
   const { AddUsers } = $derived(getPersonUsersActions($t, person, [...sharedByMe, ...sharedWithMe], clusterGroupUsers));
 
@@ -44,17 +45,7 @@
     }
   };
 
-  const loadClusterGroupUsers = async () => {
-    try {
-      clusterGroupUsers = await getClusterGroupUsers({ id: authManager.user.clusterGroupId });
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-    }
-  };
-
-  onMount(async () => {
-    await Promise.all([refreshPersonUsers(), loadClusterGroupUsers()]);
-  });
+  onMount(refreshPersonUsers);
 </script>
 
 {#snippet userCard(user: UserResponseDto, action: ActionItem, type: 'icon' | 'button')}

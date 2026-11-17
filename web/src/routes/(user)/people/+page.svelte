@@ -8,6 +8,7 @@
   import PeopleFilterModal from '#lib/modals/PeopleFilterModal.svelte';
   import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
   import { queryClient } from '#lib/queries/client.ts';
+  import { getClusterGroupUsersQuery } from '#lib/queries/cluster-group.query.ts';
   import { searchPersonQuery } from '#lib/queries/search.query.ts';
   import { Route } from '#lib/route.ts';
   import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
@@ -17,15 +18,10 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
-  import {
-    getAllPeople,
-    getClusterGroupUsers,
-    getPerson,
-    type PersonResponseDto,
-    type UserResponseDto,
-  } from '@immich/sdk';
+  import { getAllPeople, getPerson, type PersonResponseDto } from '@immich/sdk';
   import { ActionButton, Button, Icon, IconButton, modalManager, shortcut } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
@@ -50,16 +46,13 @@
   let editingPerson: PersonResponseDto | null = $state(null);
   let innerHeight = $state(0);
 
-  let clusterGroupUsers: UserResponseDto[] = $state([]);
-
-  onMount(async () => {
-    try {
-      const users = await getClusterGroupUsers({ id: authManager.user.clusterGroupId });
-      clusterGroupUsers = users.filter(({ id }) => id !== authManager.user.id);
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-    }
-  });
+  const clusterGroupUsersQuery = createQuery(
+    () => getClusterGroupUsersQuery(authManager.user.clusterGroupId),
+    () => queryClient,
+  );
+  const clusterGroupUsers = $derived(
+    (clusterGroupUsersQuery.data ?? []).filter(({ id }) => id !== authManager.user.id),
+  );
 
   onMount(() =>
     websocketEvents.on('on_person_thumbnail', (personId: string) => {
