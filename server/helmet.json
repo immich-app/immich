@@ -15,7 +15,7 @@
         "https://tiles.immich.cloud"
       ],
       "worker-src": ["'self'", "blob:"],
-      "frame-src": ["'none'"],
+      "frame-src": ["'self'"],
       "object-src": ["'none'"],
       "base-uri": ["'self'"],
       "upgrade-insecure-requests": null

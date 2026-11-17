@@ -4267,6 +4267,19 @@ export function getNotificationTemplateAdmin({ name, templateDto }: {
     })));
 }
 /**
+ * Preview email template
+ */
+export function previewNotificationTemplateAdmin({ name, templateDto }: {
+    name: EmailTemplate;
+    templateDto: TemplateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/notifications/templates/${encodeURIComponent(name)}/preview`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: templateDto
+    })));
+}
+/**
  * Send test email
  */
 export function sendTestEmailAdmin({ adminConfigSmtpDto }: {
@@ -8285,6 +8298,13 @@ export enum NotificationType {
     AlbumUpdate = "AlbumUpdate",
     ClusterGroupRequest = "ClusterGroupRequest",
     Custom = "Custom"
+}
+export enum EmailTemplate {
+    Test = "test",
+    Welcome = "welcome",
+    ResetPassword = "reset-password",
+    AlbumInvite = "album-invite",
+    AlbumUpdate = "album-update"
 }
 export enum UserStatus {
     Active = "active",

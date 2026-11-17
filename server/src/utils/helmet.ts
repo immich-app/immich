@@ -1,7 +1,15 @@
 import type { HelmetOptions } from 'helmet';
 
 type CspOptions = Exclude<NonNullable<HelmetOptions['contentSecurityPolicy']>, boolean>;
-type CspDirectives = NonNullable<CspOptions['directives']>;
+export type CspDirectives = NonNullable<CspOptions['directives']>;
+
+export const restrictiveCspDirectives: CspDirectives = {
+  'default-src': ["'none'"],
+  'base-uri': ["'none'"],
+  'form-action': ["'none'"],
+  'frame-ancestors': ["'none'"],
+  sandbox: [],
+};
 
 export const applyCspHashes = (directives: CspDirectives, manifest: Record<string, string[]>): CspDirectives => {
   const merged = { ...directives };

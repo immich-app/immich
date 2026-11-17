@@ -1242,6 +1242,7 @@
     },
     "/admin/notifications/templates/{name}": {
       "post": {
+        "deprecated": true,
         "description": "Retrieve a preview of the provided email template.",
         "operationId": "getNotificationTemplateAdmin",
         "parameters": [
@@ -1289,7 +1290,8 @@
         ],
         "summary": "Render email template",
         "tags": [
-          "Notifications (admin)"
+          "Notifications (admin)",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1304,10 +1306,81 @@
           {
             "state": "Stable",
             "version": "v2"
+          },
+          {
+            "replacementId": "previewNotificationTemplateAdmin",
+            "state": "Deprecated",
+            "version": "v4.0.0"
           }
         ],
         "x-immich-permission": "notification.create",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
+      }
+    },
+    "/admin/notifications/templates/{name}/preview": {
+      "post": {
+        "description": "Render the provided email template as an HTML document.",
+        "operationId": "previewNotificationTemplateAdmin",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/EmailTemplate"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Preview email template",
+        "tags": [
+          "Notifications (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "state": "Added",
+            "version": "v4.0.0"
+          },
+          {
+            "state": "Internal",
+            "version": "v4.0.0"
+          }
+        ],
+        "x-immich-permission": "notification.create",
+        "x-immich-state": "Internal"
       }
     },
     "/admin/notifications/test-email": {
@@ -22837,6 +22910,17 @@
           }
         },
         "type": "object"
+      },
+      "EmailTemplate": {
+        "description": "Email template name",
+        "enum": [
+          "test",
+          "welcome",
+          "reset-password",
+          "album-invite",
+          "album-update"
+        ],
+        "type": "string"
       },
       "EnumFilterAssetType": {
         "properties": {
