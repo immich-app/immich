@@ -56,11 +56,9 @@
 
   onMount(() =>
     websocketEvents.on('on_person_thumbnail', (personId: string) => {
-      for (const person of people) {
-        if (person.id === personId) {
-          person.updatedAt = new Date().toISOString();
-        }
-      }
+      people = people.map((person) =>
+        person.id === personId ? { ...person, updatedAt: new Date().toISOString() } : person,
+      );
     }),
   );
 
