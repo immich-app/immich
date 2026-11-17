@@ -262,6 +262,9 @@ export const createApp = () => {
         cancelRequestButton: main.getByRole('button', { name: 'cancel', exact: true }),
       },
     },
+    onboarding: {
+      doneButton: button('done'),
+    },
     person: {
       menuButton: button('open'),
       menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
