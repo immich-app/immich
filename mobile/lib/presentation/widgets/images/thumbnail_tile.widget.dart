@@ -42,9 +42,11 @@ class ThumbnailTile extends ConsumerStatefulWidget {
 }
 
 class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProviderStateMixin {
-  late final _selection = _Transition(this, Curves.decelerate);
-  late final _indicators = _Transition(this, Curves.linear);
+  late final _selection = _Transition(this, Curves.decelerate, _onTransitionEnd);
+  late final _indicators = _Transition(this, Curves.linear, _onTransitionEnd);
   bool _hideIndicators = false;
+
+  void _onTransitionEnd() => setState(() {});
 
   @override
   void dispose() {
@@ -121,7 +123,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
                   },
                 ),
               ),
-              if (overlays.isNotEmpty)
+              if (overlays.isNotEmpty && indicators != kAlwaysDismissedAnimation)
                 FadeTransition(
                   opacity: indicators,
                   child: Stack(children: overlays),
@@ -189,10 +191,11 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
 }
 
 class _Transition {
-  _Transition(this._vsync, this._curve);
+  _Transition(this._vsync, this._curve, this._onEnd);
 
   final TickerProvider _vsync;
   final Curve _curve;
+  final VoidCallback _onEnd;
   bool? _target;
   AnimationController? _controller;
 
@@ -201,9 +204,15 @@ class _Transition {
     _target = target;
     if (previous != null && previous != target) {
       final controller = _controller ??= AnimationController(vsync: _vsync, value: previous ? 1 : 0);
-      unawaited(controller.animateTo(target ? 1 : 0, duration: Durations.short4, curve: _curve));
+      unawaited(controller.animateTo(target ? 1 : 0, duration: Durations.short4, curve: _curve).then(_end));
     }
     return _controller ?? (target ? kAlwaysCompleteAnimation : kAlwaysDismissedAnimation);
+  }
+
+  void _end(void _) {
+    dispose();
+    _controller = null;
+    _onEnd();
   }
 
   void dispose() => _controller?.dispose();
