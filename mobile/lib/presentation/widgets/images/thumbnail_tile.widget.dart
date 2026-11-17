@@ -42,18 +42,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
 }
 
 class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProviderStateMixin {
-  late final _selection = _Transition(this, Curves.decelerate, _onTransitionEnd);
-  late final _indicators = _Transition(this, Curves.linear, _onTransitionEnd);
   bool _hideIndicators = false;
-
-  void _onTransitionEnd() => setState(() {});
-
-  @override
-  void dispose() {
-    _selection.dispose();
-    _indicators.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,78 +62,60 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
       _hideIndicators = false;
     }
 
-    final selection = _selection.toward(isSelected);
-    final indicators = _indicators.toward(!_hideIndicators);
-    final hasSelection = selection != kAlwaysDismissedAnimation;
-    final selectionColor = hasSelection ? _selectionColor : Colors.transparent;
-
     final overlays = asset == null ? const <Widget>[] : _overlays(asset, storageIndicator);
 
-    return Stack(
-      children: [
-        _SelectionFrame(
-          selection: selection,
-          color: selectionColor,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Hero(
-                  // This key resets the hero animation when the asset is changed in the asset viewer.
-                  // It doesn't seem like the best solution, and only works to reset the hero, not prime the hero of the new active asset for animation,
-                  // but other solutions have failed thus far.
-                  key: ValueKey(isCurrentAsset),
-                  tag: '${asset?.heroTag}_$heroIndex',
-                  child: Thumbnail.fromAsset(asset: asset, size: widget.size, remoteSize: widget.remoteSize),
-                  // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
-                  placeholderBuilder: (context, heroSize, child) {
-                    if (!_hideIndicators) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        setState(() => _hideIndicators = true);
-                      });
-                    }
-                    return const SizedBox();
-                  },
-                  flightShuttleBuilder: (context, animation, direction, from, to) {
-                    void animationStatusListener(AnimationStatus status) {
-                      if (!mounted) {
-                        return;
-                      }
-                      final heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
-                      if (_hideIndicators != heroInFlight) {
-                        setState(() => _hideIndicators = heroInFlight);
-                      }
-                      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-                        animation.removeStatusListener(animationStatusListener);
-                      }
-                    }
+    return _SelectionFrame(
+      vsync: this,
+      colors: isSelected
+          ? (background: _selectionColor, check: widget.lockSelection ? Colors.grey : context.primaryColor)
+          : null,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Hero(
+              // This key resets the hero animation when the asset is changed in the asset viewer.
+              // It doesn't seem like the best solution, and only works to reset the hero, not prime the hero of the new active asset for animation,
+              // but other solutions have failed thus far.
+              key: ValueKey(isCurrentAsset),
+              tag: '${asset?.heroTag}_$heroIndex',
+              child: Thumbnail.fromAsset(asset: asset, size: widget.size, remoteSize: widget.remoteSize),
+              // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
+              placeholderBuilder: (context, heroSize, child) {
+                if (!_hideIndicators) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    setState(() => _hideIndicators = true);
+                  });
+                }
+                return const SizedBox();
+              },
+              flightShuttleBuilder: (context, animation, direction, from, to) {
+                void animationStatusListener(AnimationStatus status) {
+                  if (!mounted) {
+                    return;
+                  }
+                  final heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
+                  if (_hideIndicators != heroInFlight) {
+                    setState(() => _hideIndicators = heroInFlight);
+                  }
+                  if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+                    animation.removeStatusListener(animationStatusListener);
+                  }
+                }
 
-                    animation.addStatusListener(animationStatusListener);
-                    return direction == HeroFlightDirection.push ? from.widget : to.widget;
-                  },
-                ),
-              ),
-              if (overlays.isNotEmpty && indicators != kAlwaysDismissedAnimation)
-                FadeTransition(
-                  opacity: indicators,
-                  child: Stack(children: overlays),
-                ),
-              if (uploadProgress != null) _UploadProgressOverlay(progress: uploadProgress),
-            ],
-          ),
-        ),
-        if (hasSelection)
-          AnimatedBuilder(
-            animation: selection,
-            builder: (context, child) => Padding(
-              padding: isSelected ? EdgeInsets.all(selection.value * 3) : const EdgeInsets.all(3),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Opacity(opacity: isSelected ? 1 : selection.value, child: child),
-              ),
+                animation.addStatusListener(animationStatusListener);
+                return direction == HeroFlightDirection.push ? from.widget : to.widget;
+              },
             ),
-            child: _SelectionIndicator(isLocked: widget.lockSelection, color: selectionColor),
           ),
-      ],
+          if (overlays.isNotEmpty)
+            _Fade(
+              vsync: this,
+              visible: !_hideIndicators,
+              child: Stack(children: overlays),
+            ),
+          if (uploadProgress != null) _UploadProgressOverlay(progress: uploadProgress),
+        ],
+      ),
     );
   }
 
@@ -190,86 +161,60 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
   }
 }
 
-class _Transition {
-  _Transition(this._vsync, this._curve, this._onEnd);
-
-  final TickerProvider _vsync;
-  final Curve _curve;
-  final VoidCallback _onEnd;
-  bool? _target;
-  AnimationController? _controller;
-
-  Animation<double> toward(bool target) {
-    final previous = _target;
-    _target = target;
-    if (previous != null && previous != target) {
-      final controller = _controller ??= AnimationController(vsync: _vsync, value: previous ? 1 : 0);
-      unawaited(controller.animateTo(target ? 1 : 0, duration: Durations.short4, curve: _curve).then(_end));
-    }
-    return _controller ?? (target ? kAlwaysCompleteAnimation : kAlwaysDismissedAnimation);
-  }
-
-  void _end(void _) {
-    dispose();
-    _controller = null;
-    _onEnd();
-  }
-
-  void dispose() => _controller?.dispose();
-}
+typedef _SelectionColors = ({Color background, Color check});
 
 class _SelectionFrame extends SingleChildRenderObjectWidget {
-  final Animation<double> selection;
-  final Color color;
+  final TickerProvider vsync;
+  final _SelectionColors? colors;
 
-  const _SelectionFrame({required this.selection, required this.color, required super.child});
+  const _SelectionFrame({required this.vsync, required this.colors, required super.child});
 
   @override
-  RenderObject createRenderObject(BuildContext context) => _RenderSelectionFrame(selection, color);
+  RenderObject createRenderObject(BuildContext context) => _RenderSelectionFrame(vsync, colors);
 
   @override
   void updateRenderObject(BuildContext context, _RenderSelectionFrame renderObject) {
-    renderObject
-      ..selection = selection
-      ..color = color;
+    renderObject.colors = colors;
   }
 }
 
 class _RenderSelectionFrame extends RenderShiftedBox {
-  Animation<double> _selection;
-  Color _color;
+  static const _checkIcon = Icons.check_circle_rounded;
+  static const _checkSize = 24.0;
 
-  _RenderSelectionFrame(this._selection, this._color) : super(null);
+  final TickerProvider _vsync;
+  bool _selected;
+  _SelectionColors? _colors;
+  AnimationController? _controller;
+  TextPainter? _check;
 
-  set selection(Animation<double> value) {
-    if (_selection == value) {
-      return;
-    }
-    if (attached) {
-      _selection.removeListener(markNeedsLayout);
-      value.addListener(markNeedsLayout);
-    }
-    _selection = value;
-    markNeedsLayout();
-  }
+  _RenderSelectionFrame(this._vsync, this._colors) : _selected = _colors != null, super(null);
 
-  set color(Color value) {
-    if (_color != value) {
-      _color = value;
+  double get _selection => _controller?.value ?? (_selected ? 1 : 0);
+
+  set colors(_SelectionColors? value) {
+    if (value != null && value != _colors) {
+      _colors = value;
+      _check?.dispose();
+      _check = null;
       markNeedsPaint();
     }
+
+    final selected = value != null;
+    if (selected == _selected) {
+      return;
+    }
+    _selected = selected;
+    final controller = _controller ??= AnimationController(vsync: _vsync, value: selected ? 0 : 1)
+      ..addListener(markNeedsLayout);
+    unawaited(controller.animateTo(selected ? 1 : 0, duration: Durations.short4, curve: Curves.decelerate));
   }
 
   @override
-  void attach(PipelineOwner owner) {
-    super.attach(owner);
-    _selection.addListener(markNeedsLayout);
-  }
-
-  @override
-  void detach() {
-    _selection.removeListener(markNeedsLayout);
-    super.detach();
+  void dispose() {
+    _controller?.dispose();
+    _check?.dispose();
+    super.dispose();
   }
 
   @override
@@ -278,7 +223,7 @@ class _RenderSelectionFrame extends RenderShiftedBox {
   @override
   void performLayout() {
     size = constraints.biggest;
-    final inset = 6 * _selection.value;
+    final inset = 6 * _selection;
     final child = this.child!;
     child.layout(BoxConstraints.tight(Size(size.width - 2 * inset, size.height - 2 * inset)));
     (child.parentData! as BoxParentData).offset = Offset(inset, inset);
@@ -286,13 +231,15 @@ class _RenderSelectionFrame extends RenderShiftedBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    final selection = _selection.value;
+    final selection = _selection;
     if (selection == 0) {
       layer = null;
       super.paint(context, offset);
       return;
     }
-    context.canvas.drawRect(offset & size, Paint()..color = _color);
+
+    final colors = _colors!;
+    context.canvas.drawRect(offset & size, Paint()..color = colors.background);
     final content = (Offset.zero & size).deflate(6 * selection);
     layer = context.pushClipRRect(
       needsCompositing,
@@ -302,23 +249,75 @@ class _RenderSelectionFrame extends RenderShiftedBox {
       super.paint,
       oldLayer: layer as ClipRRectLayer?,
     );
+    _paintCheck(context.canvas, offset, colors, selection);
+  }
+
+  void _paintCheck(Canvas canvas, Offset offset, _SelectionColors colors, double selection) {
+    final padding = _selected ? 3 * selection : 3.0;
+    final bounds = (offset + Offset(padding, padding)) & const Size.square(_checkSize);
+    if (!_selected) {
+      canvas.saveLayer(bounds, Paint()..color = Color.fromRGBO(0, 0, 0, selection));
+    }
+    canvas.drawCircle(bounds.center, _checkSize / 2, Paint()..color = colors.background);
+    final check = _check ??= TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(_checkIcon.codePoint),
+        style: TextStyle(
+          inherit: false,
+          color: colors.check,
+          fontSize: _checkSize,
+          fontFamily: _checkIcon.fontFamily,
+          package: _checkIcon.fontPackage,
+          height: 1,
+          leadingDistribution: TextLeadingDistribution.even,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    check.paint(canvas, bounds.center - check.size.center(Offset.zero));
+    if (!_selected) {
+      canvas.restore();
+    }
   }
 }
 
-class _SelectionIndicator extends StatelessWidget {
-  final bool isLocked;
-  final Color color;
+class _Fade extends SingleChildRenderObjectWidget {
+  final TickerProvider vsync;
+  final bool visible;
 
-  const _SelectionIndicator({required this.isLocked, required this.color});
+  const _Fade({required this.vsync, required this.visible, required super.child});
 
   @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      child: isLocked
-          ? const Icon(Icons.check_circle_rounded, color: Colors.grey)
-          : Icon(Icons.check_circle_rounded, color: context.primaryColor),
-    );
+  RenderObject createRenderObject(BuildContext context) => _RenderFade(vsync, visible);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderFade renderObject) {
+    renderObject.visible = visible;
+  }
+}
+
+class _RenderFade extends RenderAnimatedOpacity {
+  final TickerProvider _vsync;
+  bool _visible;
+  AnimationController? _controller;
+
+  _RenderFade(this._vsync, this._visible)
+    : super(opacity: _visible ? kAlwaysCompleteAnimation : kAlwaysDismissedAnimation);
+
+  set visible(bool value) {
+    if (value == _visible) {
+      return;
+    }
+    _visible = value;
+    final controller = _controller ??= AnimationController(vsync: _vsync, value: value ? 0 : 1);
+    opacity = controller;
+    unawaited(controller.animateTo(value ? 1 : 0, duration: Durations.short4));
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
 }
 
