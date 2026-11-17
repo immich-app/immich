@@ -1,11 +1,12 @@
 <script lang="ts">
   import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { getAllPeopleQuery, mergePeopleMutation } from '#lib/queries/person.query.ts';
   import { Route } from '#lib/route.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { getAllPeople, getPerson, mergePeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { Button, Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
   import { quintOut } from 'svelte/easing';
@@ -17,24 +18,29 @@
   interface Props {
     person: PersonResponseDto;
     onBack: () => void;
-    onMerge: (mergedPerson: PersonResponseDto) => void;
+    onMerge: () => void;
   }
 
   let { person = $bindable(), onBack, onMerge }: Props = $props();
 
-  let people: PersonResponseDto[] = $state([]);
+  let sortFaces = $state(false);
+  const query = createQuery(
+    () => ({
+      ...getAllPeopleQuery({ withHidden: false, closestPersonId: sortFaces ? person.id : undefined }),
+      staleTime: 0,
+    }),
+    () => queryClient,
+  );
+  const people = $derived(query.data?.people ?? []);
   let selectedPeople: PersonResponseDto[] = $state([]);
   let screenHeight: number = $state(0);
 
   let hasSelection = $derived(selectedPeople.length > 0);
   let peopleToNotShow = $derived([...selectedPeople, person]);
 
-  const handleSearch = async (sortFaces: boolean = false) => {
-    const data = await getAllPeople({ withHidden: false, closestPersonId: sortFaces ? person.id : undefined });
-    people = data.people;
+  const handleSearch = (sort: boolean) => {
+    sortFaces = sort;
   };
-
-  onMount(handleSearch);
 
   const handleSwapPeople = async () => {
     // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
@@ -60,22 +66,19 @@
     }
   };
 
-  const handleMerge = async () => {
-    const isConfirm = await modalManager.showDialog({ prompt: $t('merge_people_prompt') });
-    if (!isConfirm) {
-      return;
-    }
-
-    try {
-      let results = await mergePeople({ mergePersonDto: { ids: [person.id, ...selectedPeople.map(({ id }) => id)] } });
-      const mergedPerson = await getPerson({ id: person.id });
-      const count = results.filter(({ success }) => success).length;
-      toastManager.primary($t('merged_people_count', { values: { count } }));
-      onMerge(mergedPerson);
-    } catch (error) {
-      handleError(error, $t('cannot_merge_people'));
-    }
-  };
+  const handleMerge = () =>
+    executeMutation(
+      () => mergePeopleMutation({ error: { toast: 'cannot_merge_people' } }),
+      [{ mergePersonDto: { ids: [person.id, ...selectedPeople.map(({ id }) => id)] } }],
+      {
+        confirm: { prompt: $t('merge_people_prompt') },
+        onSuccess: (results) => {
+          const count = results.filter(({ success }) => success).length;
+          toastManager.primary($t('merged_people_count', { values: { count } }));
+          onMerge();
+        },
+      },
+    );
 </script>
 
 <svelte:window bind:innerHeight={screenHeight} />

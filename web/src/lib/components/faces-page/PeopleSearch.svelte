@@ -2,14 +2,16 @@
   import { initInput } from '#lib/actions/focus.ts';
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
   import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchPersonQuery, searchQueryKey } from '#lib/queries/search.query.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { searchNameLocal } from '#lib/utils/person.ts';
-  import { searchPerson, type PersonResponseDto } from '@immich/sdk';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { isCancelledError } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   let searchedPeople: PersonResponseDto[] = [];
   let searchWord: string;
-  let abortController: AbortController | null = null;
   let timeout: NodeJS.Timeout | null = null;
 
   const search = () => {
@@ -23,10 +25,7 @@
   };
 
   const cancelPreviousRequest = () => {
-    if (abortController) {
-      abortController.abort();
-      abortController = null;
-    }
+    void queryClient.cancelQueries({ queryKey: [...searchQueryKey, 'person'] });
     if (timeout) {
       clearTimeout(timeout);
       timeout = null;
@@ -80,18 +79,17 @@
       return;
     }
     cancelPreviousRequest();
-    abortController = new AbortController();
     timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
     try {
-      const data = await searchPerson({ name: searchName }, { signal: abortController?.signal });
-      searchedPeople = data;
+      searchedPeople = await queryClient.query(searchPersonQuery({ name: searchName }));
       searchWord = searchName;
     } catch (error) {
-      handleError(error, $t('errors.cant_search_people'));
+      if (!isCancelledError(error)) {
+        handleError(error, $t('errors.cant_search_people'));
+      }
     } finally {
       clearTimeout(timeout);
       timeout = null;
-      abortController = null;
       showLoadingSpinner = false;
       search();
     }

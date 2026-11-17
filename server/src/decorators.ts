@@ -1,11 +1,13 @@
 import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
-import { SetMetadata, applyDecorators } from '@nestjs/common';
+import { CallHandler, ExecutionContext, SetMetadata, UseInterceptors, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
+import { contentSecurityPolicy } from 'helmet';
 import { chunk, flatten } from 'lodash-es';
 import type { TransactionHandle } from 'src/database.js';
 import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
 import { EmitEvent } from 'src/repositories/event.repository.js';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
+import { restrictiveCspDirectives, type CspDirectives } from 'src/utils/helmet.js';
 
 const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
   Column({ ...options, type: 'uuid', nullable: false, default: () => `${immich_uuid_v7.name}()` });
@@ -160,6 +162,25 @@ export type JobConfig = {
 export const OnJob = (config: JobConfig) => SetMetadata(MetadataKey.JobConfig, config);
 
 type EndpointOptions = ApiOperationOptions & { history?: HistoryBuilder };
+export const ContentSecurityPolicy = (directives: CspDirectives = {}) => {
+  const middleware = contentSecurityPolicy({
+    useDefaults: false,
+    directives: { ...restrictiveCspDirectives, ...directives },
+  });
+
+  return UseInterceptors({
+    intercept: (context: ExecutionContext, next: CallHandler) => {
+      const http = context.switchToHttp();
+      middleware(http.getRequest(), http.getResponse(), (error?: unknown) => {
+        if (error) {
+          throw error;
+        }
+      });
+      return next.handle();
+    },
+  });
+};
+
 export const Endpoint = ({ history, ...options }: EndpointOptions) => {
   const decorators: MethodDecorator[] = [];
   const extensions = history?.getExtensions() ?? {};

@@ -2,27 +2,26 @@
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import { ToggleVisibility } from '#lib/constants.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { getAllPeoplePagesQuery, updatePeopleMutation } from '#lib/queries/person.query.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { getPeopleThumbnailUrl } from '#lib/utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import { getAllPeople, updatePeople, type PersonResponseDto } from '@immich/sdk';
+  import { type BulkIdResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { Button, IconButton, toastManager } from '@immich/ui';
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
+  import { createInfiniteQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { SvelteMap } from 'svelte/reactivity';
   import { goto } from '$app/navigation';
   import PeopleInfiniteScroll from '../PeopleInfiniteScroll.svelte';
-  import type { PageData } from './$types';
 
-  interface Props {
-    data: PageData;
-  }
-
-  const { data }: Props = $props();
-
-  let people = $derived(data.people.people);
-  const totalPeopleCount = $derived(data.people.total);
-  let nextPage = $state(data.people.hasNextPage ? 2 : null);
+  const query = createInfiniteQuery(
+    () => getAllPeoplePagesQuery({ withHidden: true }),
+    () => queryClient,
+  );
+  const people = $derived(query.data?.pages.flatMap((page) => page.people) ?? []);
+  const totalPeopleCount = $derived(query.data?.pages[0].total ?? 0);
   let toggleVisibility = $state(ToggleVisibility.SHOW_ALL);
   let showLoadingSpinner = $state(false);
   const overrides = new SvelteMap<string, boolean>();
@@ -53,34 +52,36 @@
   };
 
   const handleSaveVisibility = async () => {
-    showLoadingSpinner = true;
-    const changed = Array.from(overrides, ([id, isHidden]) => ({ id, isHidden }));
-
-    try {
-      if (changed.length > 0) {
-        const results = await updatePeople({ peopleUpdateDto: { people: changed } });
-        const successCount = results.filter(({ success }) => success).length;
-        const failCount = results.length - successCount;
-        if (failCount > 0) {
-          toastManager.warning($t('errors.unable_to_change_visibility', { values: { count: failCount } }));
-        }
-        toastManager.primary($t('visibility_changed', { values: { count: successCount } }));
-      }
-
-      for (const person of people) {
-        const isHidden = overrides.get(person.id);
-        if (isHidden !== undefined) {
-          person.isHidden = isHidden;
-        }
-      }
-      overrides.clear();
-
+    const changes = Array.from(overrides, ([id, isHidden]) => ({ id, isHidden }));
+    if (changes.length === 0) {
       await goto('/people');
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_visibility', { values: { count: changed.length } }));
-    } finally {
-      showLoadingSpinner = false;
+      return;
     }
+
+    showLoadingSpinner = true;
+    await executeMutation(
+      () => updatePeopleMutation({ error: { toast: false } }),
+      [{ peopleUpdateDto: { people: changes } }],
+      {
+        onSuccess: (results) => {
+          showVisibilityToasts(results);
+          overrides.clear();
+          void goto('/people');
+        },
+        onError: (error) =>
+          handleError(error, $t('errors.unable_to_change_visibility', { values: { count: changes.length } })),
+      },
+    );
+    showLoadingSpinner = false;
+  };
+
+  const showVisibilityToasts = (results: BulkIdResponseDto[]) => {
+    const successCount = results.filter(({ success }) => success).length;
+    const failCount = results.length - successCount;
+    if (failCount > 0) {
+      toastManager.warning($t('errors.unable_to_change_visibility', { values: { count: failCount } }));
+    }
+    toastManager.primary($t('visibility_changed', { values: { count: successCount } }));
   };
 
   const setHiddenOverride = (person: PersonResponseDto, isHidden: boolean) => {
@@ -89,19 +90,6 @@
       return;
     }
     overrides.set(person.id, isHidden);
-  };
-
-  const loadNextPage = async () => {
-    if (!nextPage) {
-      return;
-    }
-    try {
-      const { people: newPeople, hasNextPage } = await getAllPeople({ withHidden: true, page: nextPage });
-      people = people.concat(newPeople);
-      nextPage = hasNextPage ? nextPage + 1 : null;
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_load_people'));
-    }
   };
 
   let toggleButtonOptions: Record<ToggleVisibility, { icon: string; label: string }> = $derived({
@@ -146,7 +134,7 @@
   {/snippet}
 
   <div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8">
-    <PeopleInfiniteScroll {people} hasNextPage={nextPage !== null} {loadNextPage}>
+    <PeopleInfiniteScroll {people} hasNextPage={query.hasNextPage} loadNextPage={() => query.fetchNextPage()}>
       {#snippet children({ person })}
         {const hidden = $derived(overrides.get(person.id) ?? person.isHidden)}
         <button

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { updateMyUser } from '@immich/sdk';
-  import { Button, Field, Input, toastManager } from '@immich/ui';
+  import { updateMyUserMutation } from '#lib/queries/user.query.ts';
+  import { Button, Field, Input } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { createBubbler, preventDefault } from 'svelte/legacy';
@@ -11,23 +11,12 @@
   let editedUser = $state(cloneDeep(authManager.user));
   const bubble = createBubbler();
 
-  const handleSaveProfile = async () => {
-    try {
-      const data = await updateMyUser({
-        userUpdateMeDto: {
-          email: editedUser.email,
-          name: editedUser.name,
-        },
-      });
+  const updateMyUser = createMutation(updateMyUserMutation);
 
-      Object.assign(editedUser, data);
-      authManager.setUser(data);
-
-      toastManager.primary($t('saved_profile'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_profile'));
-    }
-  };
+  const handleSaveProfile = () =>
+    updateMyUser.mutate([{ userUpdateMeDto: { email: editedUser.email, name: editedUser.name } }], {
+      onSuccess: (user) => Object.assign(editedUser, user),
+    });
 </script>
 
 <section class="my-4">

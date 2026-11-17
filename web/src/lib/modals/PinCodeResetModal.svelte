@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { resetPinCodeMutation } from '#lib/queries/auth.query.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
-  import { handleResetPinCode } from '#lib/services/user.service.ts';
   import { BasicModal, Field, FormModal, HelperText, PasswordInput, Stack, type ModalSize } from '@immich/ui';
   import { mdiLockReset } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -17,12 +17,8 @@
 
   let password = $state('');
 
-  const onSubmit = async () => {
-    const success = await handleResetPinCode({ password });
-    if (success) {
-      onClose();
-    }
-  };
+  const onSubmit = () =>
+    executeMutation(resetPinCodeMutation, [{ pinCodeResetDto: { password } }], { onSuccess: () => onClose() });
 
   const common = $derived({ title: $t('reset'), size: 'small' as ModalSize, icon: mdiLockReset, onClose });
 </script>

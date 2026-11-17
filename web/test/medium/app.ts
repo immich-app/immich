@@ -27,9 +27,13 @@ export const createApp = (page: Page, data: MockData) => {
   return {
     dialog,
     dialogButton: (name: string) => dialog.getByRole('button', { name, exact: true }),
-    toast: (key: string) => page.getByText(key),
+    toast: (text: string | RegExp) => page.getByText(text),
     undoButton: page.getByRole('button', { name: 'undo', exact: true }),
 
+    maintenanceMode: {
+      title: page.getByRole('heading', { name: 'maintenance_title', exact: true }),
+      restoreTask: page.getByText('maintenance_task_restore', { exact: true }),
+    },
     admin: {
       maintenance: {
         checkAllButton: button('admin.maintenance_integrity_check_all'),
@@ -38,6 +42,12 @@ export const createApp = (page: Page, data: MockData) => {
             .getByTestId('statistic-card')
             .filter({ hasText: `admin.maintenance_integrity_${report}` })
             .getByTestId('statistic-value'),
+      },
+      integrityReport: {
+        downloadCsvButton: button('admin.download_csv'),
+        rowMenuButton: (path: string) =>
+          page.getByRole('row').filter({ hasText: path }).getByRole('button', { name: 'open', exact: true }),
+        downloadMenuItem: page.getByRole('menuitem', { name: 'download', exact: true }),
       },
       users: {
         createUserButton: button('create_user'),
@@ -62,12 +72,29 @@ export const createApp = (page: Page, data: MockData) => {
       createAlbumButton: button('create_album'),
     },
 
+    workflows: {
+      openLogs: async () => {
+        await button('open').first().click();
+        await page.getByRole('menuitem', { name: 'check_logs', exact: true }).click();
+      },
+      logs: {
+        run: (date: string) => dialog.getByRole('cell', { name: date, exact: true }),
+        loadingRow: dialog.getByText('...', { exact: true }),
+      },
+    },
+
     settings: {
       openSection: async (title: string) => {
         const toggle = page.getByRole('button', { name: new RegExp(`^${title}`) });
         if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
           await toggle.click();
         }
+      },
+      purchase: {
+        productKeyInput: page.getByPlaceholder(/^IMCL-/),
+        activateButton: button('purchase_button_activate'),
+        removeKeyButton: button('purchase_button_remove_key'),
+        title: (title: string) => page.getByText(title, { exact: true }),
       },
     },
 
@@ -110,6 +137,19 @@ export const createApp = (page: Page, data: MockData) => {
       nameInput: page.getByPlaceholder('name_or_nickname'),
       doneButton: page.getByRole('button', { name: 'done', exact: true }),
       mergeDialog: (name: string) => page.getByRole('dialog').getByText(`merge_people - ${name}`, { exact: true }),
+      menuButton: button('open'),
+      menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
+      asset: (asset: Asset) => page.locator(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`),
+      thumbnail: (name: string) => page.getByRole('img', { name, exact: true }),
+      dialogThumbnail: (name: string) => dialog.getByRole('img', { name, exact: true }),
+      face: (name: string) => page.getByRole('button').filter({ has: page.getByText(name, { exact: true }) }),
+      swapMergeDirectionButton: button('swap_merge_direction'),
+      backButton: page.getByTestId('control-bar').getByLabel('Close'),
+    },
+
+    people: {
+      searchInput: page.getByPlaceholder('search_people'),
+      thumbnail: (name: string) => page.getByRole('main').getByRole('img', { name, exact: true }),
     },
 
     memory: {
@@ -172,6 +212,7 @@ export const createApp = (page: Page, data: MockData) => {
     navbar: {
       logoLink: link('Immich logo'),
       avatar: accountButton,
+      avatarImage: accountButton.getByRole('img'),
       editAvatarButton: button('edit_avatar'),
       openAvatarEditor: async () => {
         await accountButton.click();
@@ -417,6 +458,12 @@ const createViewer = (page: Page) => {
     editPeopleHeading: page.getByText('edit_faces', { exact: true }),
     editPeopleBackButton: page.getByLabel('back', { exact: true }),
     deleteFaceButton: page.getByLabel('delete_face', { exact: true }),
+    selectNewFaceButton: page.getByLabel('select_new_face', { exact: true }),
+    createNewPersonButton: page.getByLabel('create_new_person', { exact: true }),
+    searchExistingPersonButton: page.getByLabel('search_for_existing_person', { exact: true }),
+    facePickerSearch: page.getByPlaceholder('name_or_nickname'),
+    facePickerPerson: (name: string) => page.getByRole('button').filter({ has: page.getByText(name, { exact: true }) }),
+    editFacesDoneButton: page.getByRole('button', { name: 'done', exact: true }),
     tag: (value: string) => page.getByTestId('detail-panel-tags').getByRole('link', { name: value, exact: true }),
     addTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'add_tag', exact: true }),
     removeTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'remove_tag', exact: true }),
@@ -455,6 +502,7 @@ const createViewer = (page: Page) => {
 
     profilePicture: {
       saveButton: page.getByRole('dialog').getByRole('button', { name: 'save', exact: true }),
+      cancelButton: page.getByRole('dialog').getByRole('button', { name: 'cancel', exact: true }),
     },
 
     activity: {
@@ -474,6 +522,8 @@ const createViewer = (page: Page) => {
     setStackPrimary: () => moreMenuItem('set_stack_primary_asset'),
     removeFromStack: () => moreMenuItem('viewer_remove_from_stack'),
     restore: () => moreMenuItem('restore'),
+    setFeaturedPhoto: () => moreMenuItem('set_as_featured_photo'),
+    personThumbnail: (name: string) => detailPanel.getByRole('img', { name, exact: true }),
     setProfilePicture: () => moreMenuItem('set_as_profile_picture'),
     runJob: (name: string) => moreMenuItem(name),
 

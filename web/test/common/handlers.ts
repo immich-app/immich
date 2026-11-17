@@ -1,6 +1,6 @@
 import type { MockData } from '#test/common/data.ts';
 import { factory } from '#test/common/factories.ts';
-import { fromBase64, minimalMp4, placeholderImage } from '#test/common/helpers.ts';
+import { fromBase64, minimalMp4, opaquePng, placeholderImage } from '#test/common/helpers.ts';
 import type { Handlers } from '#test/common/types.ts';
 import { AssetUploadAction, WorkflowTrigger, WorkflowType } from '@immich/sdk';
 
@@ -8,6 +8,10 @@ const notFound = { status: 404, json: { message: 'Not found', statusCode: 404 } 
 const passwordRequired = { status: 401, json: { message: 'Password required', statusCode: 401 } };
 const invalidPassword = { status: 401, json: { message: 'Invalid password', statusCode: 401 } };
 const emptyZip = fromBase64('UEsFBgAAAAAAAAAAAAAAAAAAAAAAAA==');
+
+const calendarHeatmap = ({ params = {} }: { params?: { $from?: string; to?: string } }) => ({
+  json: { from: params.$from ?? '', to: params.to ?? '', series: [], totalCount: 0 },
+});
 
 export const createHandlers = (data: MockData): Handlers => {
   const media = (assetId: string) => {
@@ -24,12 +28,33 @@ export const createHandlers = (data: MockData): Handlers => {
     getAdminConfig: () => ({ json: data.adminConfig }),
     getAdminConfigDefaults: () => ({ json: data.adminConfig }),
     updateAdminConfig: ({ body }) => ({ json: data.updateAdminConfig(body) }),
+    getAdminStorageTemplateOptions: () => ({ json: data.storageTemplateOptions }),
+    previewStorageTemplate: ({ body }) => ({ json: { preview: data.previewStorageTemplate(body.template) } }),
+    sendTestEmailAdmin: () => ({ json: { messageId: 'test-message-id' } }),
     getServerFeatures: () => ({ json: data.serverFeatures }),
     getAboutInfo: () => ({ json: data.aboutInfo }),
     getStorage: () => ({ json: data.storage }),
     getVersionHistory: () => ({ json: data.versionHistory }),
     getSupportedMediaTypes: () => ({ json: data.mediaTypes }),
     getMyUser: () => ({ json: data.user }),
+    updateMyUser: ({ body }) => ({ json: data.updateMyUser(body) }),
+    getServerLicense: () => {
+      const license = data.getServerLicense();
+      return license ? { json: license } : notFound;
+    },
+    setServerLicense: ({ body }) => ({ json: data.setServerLicense(body) }),
+    deleteServerLicense: () => {
+      data.deleteServerLicense();
+      return { status: 204 };
+    },
+    setUserLicense: ({ body }) => ({ json: data.setUserLicense(body) }),
+    deleteUserLicense: () => {
+      data.deleteUserLicense();
+      return { status: 204 };
+    },
+    getAssetStatistics: ({ params = {} }) => ({ json: data.assetStatistics(params) }),
+    getAlbumStatistics: () => ({ json: data.albumStatistics() }),
+    getMyCalendarHeatmap: calendarHeatmap,
     getMyPreferences: () => ({ json: data.getPreferences() }),
     updateMyPreferences: ({ body }) => ({ json: data.updatePreferences(body) }),
     getAuthStatus: () => ({ json: data.getAuthStatus() }),
@@ -70,14 +95,21 @@ export const createHandlers = (data: MockData): Handlers => {
       return partner ? { json: partner } : notFound;
     },
     getNotifications: () => ({ json: data.notifications }),
-    createProfileImage: () => ({
-      status: 201,
-      json: {
-        userId: data.user.id,
-        profileImagePath: '/profile/image.png',
-        profileChangedAt: new Date().toISOString(),
-      },
-    }),
+    setUserOnboarding: ({ body }) => ({ json: body }),
+    updateAdminOnboarding: () => {
+      data.isOnboarded = true;
+      return { status: 204 };
+    },
+    deleteProfileImage: () => {
+      data.user.profileImagePath = '';
+      return { status: 204 };
+    },
+    createProfileImage: () => {
+      Object.assign(data.user, { profileImagePath: '/profile/image.png', profileChangedAt: new Date().toISOString() });
+      const { id: userId, profileImagePath, profileChangedAt } = data.user;
+      return { status: 201, json: { userId, profileImagePath, profileChangedAt } };
+    },
+    getProfileImage: () => ({ body: opaquePng, contentType: 'image/png' }),
     searchUsersAdmin: ({ params = {} }) => ({ json: data.userList(params) }),
     createUserAdmin: ({ body }) => ({ status: 201, json: data.createUser(body) }),
     updateUserAdmin: ({ params, body }) => {
@@ -116,9 +148,7 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     searchPasskeys: () => ({ json: data.passkeyList() }),
     deletePasskey: ({ params }) => (data.deletePasskey(params.id) ? { status: 204 } : notFound),
-    getUserCalendarHeatmapAdmin: ({ params }) => ({
-      json: { from: params.$from ?? '', to: params.to ?? '', series: [], totalCount: 0 },
-    }),
+    getUserCalendarHeatmapAdmin: calendarHeatmap,
     getUserPreferencesAdmin: () => ({ json: factory.preferences() }),
     getServerVersion: () => ({ json: data.serverVersion }),
     listDatabaseBackups: () => ({ json: data.backups }),
@@ -130,10 +160,27 @@ export const createHandlers = (data: MockData): Handlers => {
     setMaintenanceMode: () => ({ status: 201 }),
     maintenanceLogin: ({ body }) => ({ status: 201, json: { username: body.token ? data.user.name : '' } }),
     getMaintenanceStatus: () => ({ json: data.getMaintenanceStatus() }),
+    detectPriorInstall: () => ({ json: { storage: [] } }),
     getQueuesLegacy: () => ({ json: data.queues }),
     getIntegrityReportSummary: () => ({ json: data.getIntegrityReport() }),
     getIntegrityReport: ({ params }) => ({ json: data.integrityReportPage(params) }),
     deleteIntegrityReport: ({ params }) => (data.deleteIntegrityReportItem(params.id) ? { status: 200 } : notFound),
+    getIntegrityReportFile: ({ params }) => {
+      const item = data.getIntegrityReportItem(params.id);
+      if (!item) {
+        return notFound;
+      }
+      return {
+        body: '',
+        contentType: 'application/octet-stream',
+        headers: { 'Content-Disposition': `attachment; filename="${item.path.split('/').at(-1)}"` },
+      };
+    },
+    getIntegrityReportCsv: ({ params }) => ({
+      body: 'id,type,path\n',
+      contentType: 'text/csv',
+      headers: { 'Content-Disposition': `attachment; filename="${params.$type}.csv"` },
+    }),
     createJob: () => ({ status: 201 }),
     getQueues: () => ({ json: data.queueList() }),
     getQueue: ({ params }) => {
@@ -245,8 +292,26 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     getFaces: ({ params }) => ({ json: data.getFaces(params.id) }),
     deleteFace: ({ params }) => (data.deleteFace(params.id) ? { status: 204 } : notFound),
+    reassignFacesById: ({ params, body }) => {
+      const person = data.reassignFace(body.id, params.id);
+      return person ? { json: person } : notFound;
+    },
     createFace: () => ({ status: 201 }),
     getAllPeople: ({ params = {} }) => ({ json: data.peoplePage(params) }),
+    mergePeople: ({ body }) => ({ json: data.mergePeople(body.ids) }),
+    reassignFaces: ({ params }) => {
+      const people = data.reassignFaces(params.id);
+      return people ? { json: people } : notFound;
+    },
+    getUsersForPeople: ({ params = {} }) => ({ json: data.personUserList(params) }),
+    upsertPeopleUsers: ({ body }) => {
+      data.upsertPersonUsers(body);
+      return { status: 204 };
+    },
+    removeUsersFromPeople: ({ body }) => {
+      data.removePersonUsers(body);
+      return { status: 204 };
+    },
     getPersonThumbnail: ({ params }) => ({
       body: placeholderImage(undefined, params.id),
       contentType: 'image/svg+xml',
@@ -343,6 +408,7 @@ export const createHandlers = (data: MockData): Handlers => {
     }),
 
     searchWorkflows: () => ({ json: data.workflowList() }),
+    getWorkflowLogs: ({ params }) => ({ json: data.workflowLogPage(params) }),
     deleteWorkflow: ({ params }) => (data.deleteWorkflow(params.id) ? { status: 204 } : notFound),
     getWorkflowTriggers: () => ({
       json: Object.values(WorkflowTrigger).map((trigger) => ({ trigger, types: [WorkflowType.AssetV1] })),

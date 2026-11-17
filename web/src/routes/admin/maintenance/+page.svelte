@@ -1,24 +1,19 @@
 <script lang="ts">
-  import OnEvents from '#lib/components/OnEvents.svelte';
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
   import MaintenanceBackupsList from '#lib/components/maintenance/MaintenanceBackupsList.svelte';
   import ServerStatisticsCard from '#lib/components/server-statistics/ServerStatisticsCard.svelte';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import { createPreloadedQuery, executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { getIntegrityReportSummaryQuery } from '#lib/queries/integrity-admin.query.ts';
+  import { createJobMutation, getQueuesLegacyQuery } from '#lib/queries/queue.query.ts';
+  import { getServerVersionQuery } from '#lib/queries/server-info.query.ts';
   import { Route } from '#lib/route.ts';
-  import { handleCreateJob } from '#lib/services/job.service.ts';
   import { getMaintenanceAdminActions } from '#lib/services/maintenance.service.ts';
-  import {
-    IntegrityReport,
-    ManualJobName,
-    getIntegrityReportSummary,
-    getQueuesLegacy,
-    type IntegrityReportSummaryResponseDto,
-    type JobCreateDto,
-    type QueuesResponseLegacyDto,
-  } from '@immich/sdk';
+  import { IntegrityReport, ManualJobName } from '@immich/sdk';
   import { Button, Container, HStack, Text } from '@immich/ui';
   import { mdiRefresh } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
+  import { untrack } from 'svelte';
   import { t, type Translations } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
@@ -30,7 +25,9 @@
   const { data }: Props = $props();
   const { StartMaintenance } = $derived(getMaintenanceAdminActions($t));
 
-  let integrityReport: IntegrityReportSummaryResponseDto = $state(data.integrityReport);
+  const integrityReport = createPreloadedQuery(getIntegrityReportSummaryQuery);
+  const expectedVersion = createPreloadedQuery(getServerVersionQuery);
+  const queues = createQuery(getQueuesLegacyQuery);
 
   const reportTypes: IntegrityReport[] = [
     IntegrityReport.UntrackedFile,
@@ -50,7 +47,6 @@
     [IntegrityReport.ChecksumMismatch]: ManualJobName.IntegrityChecksumMismatchRefresh,
   };
 
-  let jobs: QueuesResponseLegacyDto | undefined = $state();
   const activeJobs = new SvelteSet<ManualJobName>();
 
   const getReportTypeTranslation = (report: IntegrityReport): Translations => {
@@ -81,33 +77,24 @@
     }
   };
 
-  const updateReports = async () => {
-    jobs = await getQueuesLegacy();
-    if (jobs.integrityCheck.queueStatus.isActive) {
-      activeJobs.add(ManualJobName.IntegrityUntrackedFilesRefresh);
-    } else if (activeJobs.size > 0) {
-      activeJobs.clear();
-      integrityReport = await getIntegrityReportSummary();
-    }
-  };
-
-  onMount(() => {
-    const interval = setInterval(() => void updateReports(), 2000);
-
-    return () => clearInterval(interval);
-  });
-
-  const onJobCreate = ({ dto }: { dto: JobCreateDto }) => {
-    if (!((Object.values(jobNames).includes(dto.name) || Object.values(refreshJobNames).includes(dto.name)) && jobs)) {
+  $effect(() => {
+    if (!queues.dataUpdatedAt) {
       return;
     }
 
-    activeJobs.add(dto.name);
-    jobs.integrityCheck.queueStatus.isActive = true;
-  };
-</script>
+    untrack(() => {
+      if (queues.data?.integrityCheck.queueStatus.isActive) {
+        activeJobs.add(ManualJobName.IntegrityUntrackedFilesRefresh);
+      } else if (activeJobs.size > 0) {
+        activeJobs.clear();
+        void queryClient.invalidateQueries({ queryKey: getIntegrityReportSummaryQuery().queryKey });
+      }
+    });
+  });
 
-<OnEvents {onJobCreate} />
+  const handleCreateJob = (name: ManualJobName) =>
+    executeMutation(createJobMutation, [{ jobCreateDto: { name } }], { onSuccess: () => activeJobs.add(name) });
+</script>
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[StartMaintenance]}>
   <Container size="large" center class="my-4 flex flex-col gap-6">
@@ -119,7 +106,7 @@
           variant="ghost"
           onclick={() => {
             for (const name of Object.values(jobNames)) {
-              void handleCreateJob({ name });
+              void handleCreateJob(name);
             }
           }}
           class="mt-1 self-end"
@@ -130,7 +117,7 @@
           variant="ghost"
           onclick={() => {
             for (const name of Object.values(refreshJobNames)) {
-              void handleCreateJob({ name });
+              void handleCreateJob(name);
             }
           }}
           class="mt-1 self-end"
@@ -143,25 +130,19 @@
           <ServerStatisticsCard
             title={$t(getReportTypeTranslation(reportType))}
             tooltip={$t(getReportTypeDescriptionKey(reportType))}
-            value={integrityReport[reportType]}
+            value={integrityReport.data[reportType]}
           >
             {#snippet footer()}
               <HStack gap={1} class="justify-between">
                 <HStack gap={0}>
                   <Button
-                    onclick={() =>
-                      handleCreateJob({
-                        name: jobNames[reportType],
-                      })}
+                    onclick={() => handleCreateJob(jobNames[reportType])}
                     size="tiny"
                     variant="ghost"
                     disabled={activeJobs.has(jobNames[reportType])}>{$t('admin.maintenance_integrity_check')}</Button
                   >
                   <Button
-                    onclick={() =>
-                      handleCreateJob({
-                        name: refreshJobNames[reportType],
-                      })}
+                    onclick={() => handleCreateJob(refreshJobNames[reportType])}
                     size="tiny"
                     variant="ghost"
                     disabled={activeJobs.has(refreshJobNames[reportType])}>{$t('refresh')}</Button
@@ -184,7 +165,7 @@
         icon={mdiRefresh}
         key="backups"
       >
-        <MaintenanceBackupsList backups={data.backups} expectedVersion={data.expectedVersion} />
+        <MaintenanceBackupsList expectedVersion={expectedVersion.data} />
       </SettingAccordion>
     </section>
   </Container>

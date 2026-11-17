@@ -1,6 +1,7 @@
 import { Route } from '#lib/route.ts';
 import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
+import { PartnerDirection } from '@immich/sdk';
 
 test('album list shows albums added elsewhere', async ({ page, data, api, app }) => {
   data.addAlbums(factory.album({ albumName: 'Holiday' }));
@@ -46,6 +47,21 @@ test('sharing shows albums shared elsewhere', async ({ page, data, api, app }) =
 
   await expect(page.getByText('Shared elsewhere', { exact: true }).first()).toBeVisible();
   expect(api.getAllAlbums.calls.length).toBeGreaterThan(requests);
+});
+
+test('sharing shows partners added elsewhere', async ({ page, data, api, app }) => {
+  data.addPartners(PartnerDirection.SharedWith, factory.partner({ name: 'Partner before' }));
+  await page.goto(Route.sharing());
+  await expect(page.getByText('Partner before', { exact: true })).toBeVisible();
+
+  await app.navbar.logoLink.click();
+  await expect(page).toHaveURL(Route.photos());
+  data.addPartners(PartnerDirection.SharedWith, factory.partner({ name: 'Partner elsewhere' }));
+  const requests = api.getPartners.calls.length;
+  await page.goBack();
+
+  await expect(page.getByText('Partner elsewhere', { exact: true })).toBeVisible();
+  expect(api.getPartners.calls.length).toBeGreaterThan(requests);
 });
 
 test('shared links show links created elsewhere', async ({ page, data, api, app }) => {
@@ -97,6 +113,40 @@ test('user settings show api keys created elsewhere', async ({ page, data, api, 
 
   await expect(page.getByText('Added elsewhere', { exact: true })).toBeVisible();
   expect(api.getApiKeys.calls.length).toBeGreaterThan(requests);
+});
+
+test('user settings show devices logged in elsewhere', async ({ page, data, api, app }) => {
+  data.addSessions(factory.session({ current: true, deviceOS: 'Existing OS' }));
+  await page.goto(Route.userSettings());
+  await app.settings.openSection('authorized_devices');
+  await expect(page.getByText('Existing OS', { exact: false })).toBeVisible();
+
+  await app.navbar.logoLink.click();
+  await expect(page).toHaveURL(Route.photos());
+  data.addSessions(factory.session({ deviceOS: 'Added OS' }));
+  const requests = api.getSessions.calls.length;
+  await page.goBack();
+  await app.settings.openSection('authorized_devices');
+
+  await expect(page.getByText('Added OS', { exact: false })).toBeVisible();
+  expect(api.getSessions.calls.length).toBeGreaterThan(requests);
+});
+
+test('user settings show passkeys registered elsewhere', async ({ page, data, api, app }) => {
+  data.addPasskeys(factory.passkey({ name: 'Existing passkey' }));
+  await page.goto(Route.userSettings());
+  await app.settings.openSection('passkeys');
+  await expect(page.getByText('Existing passkey', { exact: true })).toBeVisible();
+
+  await app.navbar.logoLink.click();
+  await expect(page).toHaveURL(Route.photos());
+  data.addPasskeys(factory.passkey({ name: 'Added elsewhere' }));
+  const requests = api.searchPasskeys.calls.length;
+  await page.goBack();
+  await app.settings.openSection('passkeys');
+
+  await expect(page.getByText('Added elsewhere', { exact: true })).toBeVisible();
+  expect(api.searchPasskeys.calls.length).toBeGreaterThan(requests);
 });
 
 test('duplicates show duplicates detected in the meantime', async ({ page, data, api, app }) => {

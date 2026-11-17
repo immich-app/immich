@@ -1,5 +1,4 @@
 import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
-import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
 import { queryClient } from '#lib/queries/client.ts';
 import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
@@ -15,12 +14,14 @@ import { MockFetch } from '#test/unit/mocks/api.ts';
 import { resetPage, setPage } from '#test/unit/mocks/app-state.svelte.ts';
 import { MockConsole } from '#test/unit/mocks/logger.ts';
 import { MockRouter } from '#test/unit/mocks/router.ts';
-import { setTranslations } from '@immich/ui';
+import { setTranslations, toastManager } from '@immich/ui';
 import { isRedirect } from '@sveltejs/kit';
 import { tick, type Component } from 'svelte';
 import { cleanup, render } from 'vitest-browser-svelte';
 
 type Params = Record<string, string>;
+
+const noToasts = { items: [] };
 export type PageComponent = Component<{ data: never; params: never }>;
 export type PageLoad<TData> = (event: never) => Promise<TData | void>;
 
@@ -58,8 +59,8 @@ export class Mock {
         await settleExpectations(this.api, this.logger);
       }
       cleanup();
+      toastManager.setOptions(noToasts);
       locale.set('default');
-      authManager.reset();
       assetViewerManager.closeActivityPanel();
       queryClient.clear();
       resetPage();

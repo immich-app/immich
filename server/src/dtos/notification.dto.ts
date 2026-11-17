@@ -1,5 +1,6 @@
 import z from 'zod';
 import { NotificationLevel, NotificationLevelSchema, NotificationType, NotificationTypeSchema } from 'src/enum.js';
+import { EmailTemplate } from 'src/repositories/email.repository.js';
 import { isoDatetimeToDate, stringToBool } from 'src/validation.js';
 import { createZodDto } from 'src/zod.js';
 
@@ -21,6 +22,12 @@ const TemplateSchema = z
     template: z.string().describe('Template name'),
   })
   .meta({ id: 'TemplateDto' });
+
+const EmailTemplateParamSchema = z
+  .object({
+    name: z.enum(EmailTemplate).describe('Email template name').meta({ id: 'EmailTemplate' }),
+  })
+  .meta({ id: 'EmailTemplateParamDto' });
 
 const NotificationSchema = z
   .object({
@@ -78,6 +85,7 @@ const NotificationDeleteAllSchema = z
 export class TestEmailResponseDto extends createZodDto(TestEmailResponseSchema) {}
 export class TemplateResponseDto extends createZodDto(TemplateResponseSchema) {}
 export class TemplateDto extends createZodDto(TemplateSchema) {}
+export class EmailTemplateParamDto extends createZodDto(EmailTemplateParamSchema) {}
 export class NotificationDto extends createZodDto(NotificationSchema) {}
 export class NotificationSearchDto extends createZodDto(NotificationSearchSchema) {}
 export class NotificationCreateDto extends createZodDto(NotificationCreateSchema) {}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
-  import { getClusterGroupUsers, type UserResponseDto } from '@immich/sdk';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getClusterGroupUsersQuery } from '#lib/queries/cluster-group.query.ts';
   import { Button, HStack, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -10,21 +11,15 @@
   };
 
   let { clusterGroupId, onClose }: Props = $props();
-
-  let users: UserResponseDto[] = $state([]);
-
-  const loadUsers = async () => {
-    users = await getClusterGroupUsers({ id: clusterGroupId });
-  };
 </script>
 
 <Modal title={$t('people_cluster_group')} {onClose} size="small">
   <ModalBody>
-    {#await loadUsers()}
+    {#await queryClient.query(getClusterGroupUsersQuery(clusterGroupId))}
       <div class="flex w-full place-content-center place-items-center">
         <LoadingSpinner />
       </div>
-    {:then _}
+    {:then users}
       <Text size="small" color="muted">{$t('cluster_group_invite_description')}</Text>
 
       <div class="mt-4">

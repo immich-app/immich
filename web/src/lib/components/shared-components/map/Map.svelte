@@ -12,11 +12,12 @@
   import OnEvents from '#lib/components/OnEvents.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import MapSettingsModal from '#lib/modals/MapSettingsModal.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
   import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+  import { getMapMarkersQuery, mapMarkersQueryKey } from '#lib/queries/map.query.ts';
   import { mapSettings } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl, handlePromiseError } from '#lib/utils.ts';
-  import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
+  import type { MapMarkerResponseDto } from '@immich/sdk';
   import { Alert, Container, Icon, Text, Theme, modalManager, themeManager } from '@immich/ui';
   import { mdiCog, mdiImageMultiple, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -112,7 +113,6 @@
 
   let map: Map | undefined = $state();
   let marker: Marker | null = null;
-  let abortController: AbortController;
 
   const mapTheme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.Light);
   const styleUrl = $derived(mapTheme === Theme.Dark ? publicConfig.map.darkStyle : publicConfig.map.lightStyle);
@@ -232,26 +232,20 @@
   }
 
   async function loadMapMarkers() {
-    if (abortController) {
-      abortController.abort();
-    }
-    abortController = new AbortController();
+    await queryClient.cancelQueries({ queryKey: mapMarkersQueryKey });
 
     const { includeArchived, onlyFavorites, withPartners, withSharedAlbums } = $mapSettings;
     const { fileCreatedAfter, fileCreatedBefore } = getFileCreatedDates();
 
-    return await getMapMarkers(
-      {
+    return queryClient.query(
+      getMapMarkersQuery({
         isArchived: includeArchived || undefined,
         isFavorite: onlyFavorites || undefined,
         fileCreatedAfter,
         fileCreatedBefore,
         withPartners: withPartners || undefined,
         withSharedAlbums: withSharedAlbums || undefined,
-      },
-      {
-        signal: abortController.signal,
-      },
+      }),
     );
   }
 
@@ -299,7 +293,7 @@
   });
 
   onDestroy(() => {
-    abortController?.abort();
+    void queryClient.cancelQueries({ queryKey: mapMarkersQueryKey });
   });
 
   $effect(() => {

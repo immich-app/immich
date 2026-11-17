@@ -1,12 +1,13 @@
 <script lang="ts">
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getAllPeopleQuery } from '#lib/queries/person.query.ts';
   import { getPeopleThumbnailUrl } from '#lib/utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
-  import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
+  import { type PersonResponseDto } from '@immich/sdk';
   import { Button, HStack, LoadingSpinner, Modal, ModalBody, ModalFooter } from '@immich/ui';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -17,8 +18,11 @@
 
   let { multiple = false, excludedIds = [], onClose }: Props = $props();
 
-  let people: PersonResponseDto[] = $state([]);
-  let loading = $state(true);
+  const query = createQuery(
+    () => ({ ...getAllPeopleQuery({ withHidden: false }), staleTime: 0 }),
+    () => queryClient,
+  );
+  const people = $derived(query.data?.people ?? []);
   let searchName = $state('');
   let selectedPeople: PersonResponseDto[] = $state([]);
 
@@ -29,17 +33,6 @@
         (person) => !searchName || normalizeSearchString(person.name).includes(normalizeSearchString(searchName)),
       ),
   );
-
-  onMount(async () => {
-    try {
-      loading = true;
-      const result = await getAllPeople({ withHidden: false });
-      people = result.people;
-      loading = false;
-    } catch (error) {
-      handleError(error, $t('get_people_error'));
-    }
-  });
 
   const togglePerson = (person: PersonResponseDto) => {
     if (multiple) {
@@ -65,7 +58,7 @@
       <SearchBar bind:name={searchName} placeholder={$t('search_people')} showLoadingSpinner={false} />
 
       <div class="max-h-96 immich-scrollbar overflow-y-auto">
-        {#if loading}
+        {#if query.isPending}
           <div class="flex justify-center p-8">
             <LoadingSpinner />
           </div>

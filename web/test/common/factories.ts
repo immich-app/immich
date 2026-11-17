@@ -12,6 +12,7 @@ import {
   SharedLinkType,
   UserAvatarColor,
   UserStatus,
+  WorkflowResult,
   WorkflowTrigger,
   WorkflowType,
   type ActivityResponseDto,
@@ -41,6 +42,7 @@ import {
   type UserLicense,
   type UserPreferencesResponseDto,
   type UserResponseDto,
+  type WorkflowLogEntryDto,
   type WorkflowResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
@@ -274,6 +276,9 @@ const person = (overrides: Partial<PersonResponseDto> = {}): PersonResponseDto =
   };
 };
 
+const personAsset = (person: PersonResponseDto, overrides: Partial<AssetResponseDto> = {}) =>
+  asset({ people: [person], ...overrides });
+
 const ocr = (overrides: Partial<AssetOcrResponseDto> & Pick<AssetOcrResponseDto, 'assetId'>): AssetOcrResponseDto => ({
   id: crypto.randomUUID(),
   text: 'Sample text',
@@ -371,6 +376,13 @@ const workflow = (overrides: Partial<WorkflowResponseDto> = {}): WorkflowRespons
     ...overrides,
   };
 };
+
+const workflowLog = (overrides: Partial<WorkflowLogEntryDto> = {}): WorkflowLogEntryDto => ({
+  id: crypto.randomUUID(),
+  at: new Date().toISOString(),
+  result: WorkflowResult.Completed,
+  ...overrides,
+});
 
 const pluginMethod = (overrides: Partial<PluginMethodResponseDto> = {}): PluginMethodResponseDto => {
   const key = overrides.key ?? `plugin#method-${pluginMethodIndex++}`;
@@ -692,11 +704,13 @@ export const factory = {
   albumUsers,
   memory,
   person,
+  personAsset,
   stack,
   ocr,
   tag,
   sharedLink,
   workflow,
+  workflowLog,
   face,
   library,
   apiKey,
