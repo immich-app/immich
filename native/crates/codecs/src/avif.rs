@@ -125,13 +125,14 @@ impl Avif {
         // A colr box overrides the color description in the AV1 data (MIAF 7.3.6.4).
         let (pri, trc, mtrx, full_range) = match container.nclx_colour_information_ptr() {
             Some(nclx) => {
-                // mp4parse 0.17 keeps these fields private and only hands out this pointer.
-                const _: () = assert!(size_of::<mp4parse::NclxColourInformation>() == 4);
-                // SAFETY: the pointer points into `container`, which outlives this read, at
-                // mp4parse's repr(C) NclxColourInformation: primaries, transfer, matrix and the
-                // full range flag, a byte each.
-                let [pri, trc, mtrx, full_range] = unsafe { nclx.ok()?.cast::<[u8; 4]>().read() };
-                (pri, trc, mtrx, full_range != 0)
+                // SAFETY: the pointer points into `container`, which outlives this borrow.
+                let nclx = unsafe { &*nclx.ok()? };
+                (
+                    nclx.colour_primaries,
+                    nclx.transfer_characteristics,
+                    nclx.matrix_coefficients,
+                    nclx.full_range_flag,
+                )
             }
             // rav1d's enums count by these codes, but fold SMPTE 170M primaries, xvYCC and BT.1361
             // into BT.470BG, sRGB and BT.709.
