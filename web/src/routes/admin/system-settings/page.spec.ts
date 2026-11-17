@@ -66,3 +66,38 @@ describe('authentication settings', () => {
     expect(api.unlinkAllOAuthAccountsAdmin).toHaveBeenCalled();
   });
 });
+
+describe('storage template settings', () => {
+  test('shows the previews rendered by the server', async ({ data, router, render, api, app }) => {
+    data.adminConfig.storageTemplate.enabled = true;
+    data.adminConfig.storageTemplate.template = '{{y}}/{{filename}}';
+    api.on({
+      getAdminStorageTemplateOptions: () => ({
+        json: {
+          yearOptions: ['y'],
+          monthOptions: ['MM'],
+          weekOptions: ['W'],
+          dayOptions: ['dd'],
+          hourOptions: ['HH'],
+          minuteOptions: ['mm'],
+          secondOptions: ['ss'],
+          presets: [{ template: '{{y}}/{{filename}}', preview: '2022/IMAGE_56437' }],
+        },
+      }),
+      previewStorageTemplate: ({ body }) => ({ json: { preview: `preview of ${body.template}` } }),
+    });
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+    await app.admin.settings.open('admin.storage_template_settings');
+
+    await expect.element(page.getByRole('option', { name: '2022/IMAGE_56437' })).toBeInTheDocument();
+    await expect.element(page.getByRole('combobox', { name: 'preset' })).toHaveValue('{{y}}/{{filename}}');
+    await expect.element(page.getByText(/preview of \{\{y\}\}\/\{\{filename\}\}\.jpg$/)).toBeVisible();
+
+    await page.getByRole('textbox', { name: 'template' }).fill('{{y}}/{{MM}}');
+
+    await expect.element(page.getByText(/preview of \{\{y\}\}\/\{\{MM\}\}\.jpg$/)).toBeVisible();
+    expect(api.previewStorageTemplate).toHaveBeenCalledWith({ body: { template: '{{y}}/{{MM}}' } });
+    await expect.element(page.getByRole('combobox', { name: 'preset' })).not.toHaveValue('{{y}}/{{filename}}');
+  });
+});
