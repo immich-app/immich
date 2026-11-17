@@ -1,6 +1,7 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
 import type { QueueSnapshot } from '#lib/types.ts';
 import {
+  ManualJobName,
   QueueCommand,
   QueueName,
   createJob,
@@ -11,7 +12,7 @@ import {
   updateQueue,
   type QueueResponseDto,
 } from '@immich/sdk';
-import { mutationOptions, queryOptions, type MutationMeta } from '@tanstack/svelte-query';
+import { mutationOptions, queryOptions, type MutationFilters, type MutationMeta } from '@tanstack/svelte-query';
 
 export const queuesQueryKey = ['queues'];
 const queueSnapshotsQueryKey = ['queue-snapshots'];
@@ -84,7 +85,18 @@ export const scanAllLibrariesMutation = () =>
     },
   });
 
+const createJobMutationKey = ['jobs', 'create'];
+
+export const isCreatingJob = (name: ManualJobName): MutationFilters => ({
+  mutationKey: createJobMutationKey,
+  predicate: ({ state }) => {
+    const [{ jobCreateDto }] = state.variables as Parameters<typeof createJob>;
+    return jobCreateDto.name === name;
+  },
+});
+
 export const createJobMutation = (meta?: MutationMeta) =>
   asMutation(createJob, {
+    mutationKey: createJobMutationKey,
     meta: meta ?? { success: { toast: 'admin.job_created' }, error: { toast: 'errors.unable_to_submit_job' } },
   });

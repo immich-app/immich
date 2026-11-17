@@ -7,7 +7,7 @@ import {
   getIntegrityReportSummary,
   type IntegrityReportResponseDto,
 } from '@immich/sdk';
-import { infiniteQueryOptions, queryOptions, type InfiniteData } from '@tanstack/svelte-query';
+import { infiniteQueryOptions, queryOptions, type InfiniteData, type MutationFilters } from '@tanstack/svelte-query';
 
 const integrityReportsQueryKey = ['integrity-reports'];
 
@@ -37,8 +37,19 @@ export const getIntegrityReportQuery = (type: IntegrityReport) =>
 export const clearIntegrityReport = (type: IntegrityReport) =>
   queryClient.setQueryData(getIntegrityReportQuery(type).queryKey, { pages: [{ items: [] }], pageParams: [undefined] });
 
+const deleteIntegrityReportMutationKey = [...integrityReportsQueryKey, 'delete'];
+
+export const isDeletingIntegrityReport = (id: string): MutationFilters => ({
+  mutationKey: deleteIntegrityReportMutationKey,
+  predicate: ({ state }) => {
+    const [{ id: deletingId }] = state.variables as Parameters<typeof deleteIntegrityReport>;
+    return deletingId === id;
+  },
+});
+
 export const deleteIntegrityReportMutation = () =>
   asMutation(deleteIntegrityReport, {
+    mutationKey: deleteIntegrityReportMutationKey,
     onSuccess: (_, [{ id }]) =>
       queryClient.setQueriesData<InfiniteData<IntegrityReportResponseDto>>(
         { queryKey: integrityReportsQueryKey },
