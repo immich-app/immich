@@ -16,7 +16,8 @@
   let productKey = $state('');
   let isLoading = $state(false);
 
-  const activate = async () => {
+  const activate = async (event: Event) => {
+    event.preventDefault();
     try {
       productKey = productKey.trim();
       isLoading = true;

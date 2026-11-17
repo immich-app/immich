@@ -62,3 +62,37 @@ test('stays in the locked folder when locking fails', async ({ data, router, ren
   await expect.element(app.toast(/Server error/)).toBeVisible();
   expect(router.url.pathname).toBe(Route.locked());
 });
+
+test('prompts for the PIN code when reopening after locking', async ({ data, router, render, settle, api, app }) => {
+  data.setAuthStatus({ pinCode: true, isElevated: true });
+  await router.goto(Route.locked());
+  await render(Page, load);
+  await settle();
+
+  await app.auth.button('lock').click();
+  await settle();
+  expect(api.lockAuthSession).toHaveBeenCalled();
+
+  await expect(runLoad(Route.locked())).resolves.toEqual({ redirect: Route.pinPrompt({ continue: Route.locked() }) });
+});
+
+test('opens the locked folder after locking and unlocking again', async ({
+  data,
+  router,
+  render,
+  settle,
+  api,
+  app,
+}) => {
+  data.setAuthStatus({ pinCode: true, isElevated: true });
+  await router.goto(Route.locked());
+  await render(Page, load);
+  await settle();
+  await app.auth.button('lock').click();
+  await settle();
+  expect(api.lockAuthSession).toHaveBeenCalled();
+
+  data.setAuthStatus({ isElevated: true });
+
+  await expect(runLoad(Route.locked())).resolves.toMatchObject({ meta: { title: 'locked_folder' } });
+});
