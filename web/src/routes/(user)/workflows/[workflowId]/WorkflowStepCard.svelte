@@ -241,6 +241,10 @@
                     {@render badge($t('tag'), `"${truncate(tagId)}"`)}
                   {/await}
                 {/each}
+              {:else if getUiHint(key) === 'TagValue'}
+                {#each toIds(value) as tagValue (tagValue)}
+                  {@render badge($t('tag_name'), `"${truncate(tagValue)}"`)}
+                {/each}
               {:else}
                 {@render badge(key, formatConfigValue(value))}
               {/if}
