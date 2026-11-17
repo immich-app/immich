@@ -5,6 +5,7 @@ import {
   getServerStatistics,
   getServerVersion,
   getStorage,
+  getSupportedMediaTypes,
   getVersionHistory,
 } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
@@ -53,4 +54,10 @@ export const getServerFeaturesQuery = () =>
     queryKey: ['server', 'features'],
     queryFn: ({ signal }) => getServerFeatures({ signal }),
     staleTime: 0,
+  });
+
+export const getSupportedMediaTypesQuery = () =>
+  queryOptions({
+    queryKey: ['server', 'media-types'],
+    queryFn: ({ signal }) => getSupportedMediaTypes({ signal }),
   });
