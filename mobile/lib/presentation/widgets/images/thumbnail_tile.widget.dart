@@ -106,15 +106,23 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
                 ),
               ),
             if (storageIndicator)
-              Positioned(
-                right: 10,
-                bottom: 6,
-                child: _TileOverlayIcon(switch (asset.storage) {
-                  AssetState.local => Icons.cloud_off_outlined,
-                  AssetState.remote => Icons.cloud_outlined,
-                  AssetState.merged => Icons.cloud_done_outlined,
-                }),
-              ),
+              switch (asset.storage) {
+                AssetState.local => const Positioned(
+                  right: 10,
+                  bottom: 6,
+                  child: _TileOverlayIcon(Icons.cloud_off_outlined),
+                ),
+                AssetState.remote => const Positioned(
+                  right: 10,
+                  bottom: 6,
+                  child: _TileOverlayIcon(Icons.cloud_outlined),
+                ),
+                AssetState.merged => const Positioned(
+                  right: 10,
+                  bottom: 6,
+                  child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                ),
+              },
             if (asset.isFavorite)
               const Positioned(left: 10, bottom: 6, child: _TileOverlayIcon(Icons.favorite_rounded)),
           ];
