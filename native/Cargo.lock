@@ -409,9 +409,9 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "moxcms"
-version = "0.9.1"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "396077b717181ce3f9a6b66739b269b82d756be5ec0f76be0bc40a7c51775830"
+checksum = "561875e11b3d8618524f974f85e4bbd05a64a112b8f7541ffcc236b5166c0564"
 dependencies = [
  "num-traits",
  "pxfm",
