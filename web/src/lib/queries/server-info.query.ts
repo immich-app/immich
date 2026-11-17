@@ -1,6 +1,7 @@
 import {
   getAboutInfo,
   getServerConfig,
+  getServerFeatures,
   getServerStatistics,
   getServerVersion,
   getStorage,
@@ -45,4 +46,11 @@ export const getServerVersionQuery = () =>
     queryKey: ['server', 'version'],
     queryFn: ({ signal }) => getServerVersion({ signal }),
     select: ({ major, minor, patch }) => `${major}.${minor}.${patch}`,
+  });
+
+export const getServerFeaturesQuery = () =>
+  queryOptions({
+    queryKey: ['server', 'features'],
+    queryFn: ({ signal }) => getServerFeatures({ signal }),
+    staleTime: 0,
   });
