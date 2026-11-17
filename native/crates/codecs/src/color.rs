@@ -66,8 +66,7 @@ pub(crate) fn profile_to_srgb(
         _ => Layout::Rgba,
     };
     let options = TransformOptions {
-        // Profiles that tone-map HDR, like those jxl-rs makes, may only have a perceptual table.
-        rendering_intent: RenderingIntent::Perceptual,
+        rendering_intent: RenderingIntent::RelativeColorimetric,
         // The fixed-point path loses precision with the narrower samples it reads.
         prefer_fixed_point: false,
         barycentric_weight_scale: BarycentricWeightScale::High,
