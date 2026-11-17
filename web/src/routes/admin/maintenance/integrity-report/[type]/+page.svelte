@@ -7,6 +7,7 @@
   import { getIntegrityReportActions } from '#lib/services/integrity.service.ts';
   import { Button, Table, TableBody, TableHeader, TableHeading } from '@immich/ui';
   import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -22,12 +23,18 @@
   let expectingUpdate = false;
 
   $effect(() => {
-    if (queues.data?.integrityCheck.queueStatus.isActive) {
-      expectingUpdate = true;
-    } else if (expectingUpdate) {
-      expectingUpdate = false;
-      void report.refetch();
+    if (!queues.dataUpdatedAt) {
+      return;
     }
+
+    untrack(() => {
+      if (queues.data?.integrityCheck.queueStatus.isActive) {
+        expectingUpdate = true;
+      } else if (expectingUpdate) {
+        expectingUpdate = false;
+        void report.refetch();
+      }
+    });
   });
 
   const { Download, Delete } = $derived(getIntegrityReportActions($t, data.type));
