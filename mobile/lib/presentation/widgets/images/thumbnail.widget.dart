@@ -55,7 +55,7 @@ class Thumbnail extends StatefulWidget {
 
 class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMixin {
   ui.Image? _providerImage;
-  bool _fadeIn = false;
+  bool _doFadeIn = false;
 
   ImageStream? _imageStream;
   ImageStreamListener? _imageStreamListener;
@@ -87,7 +87,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
         }
         setState(() {
           _providerImage = imageInfo.image;
-          _fadeIn = false;
+          _doFadeIn = false;
         });
       },
       onError: (exception, stackTrace) {
@@ -118,11 +118,11 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
           return;
         }
 
-        final fadeIn = !(synchronousCall && _providerImage == null) && _isVisible();
+        final doFadeIn = !(synchronousCall && _providerImage == null) && _isVisible();
         setState(() {
           _providerImage?.dispose();
           _providerImage = imageInfo.image;
-          _fadeIn = fadeIn;
+          _doFadeIn = doFadeIn;
         });
       },
       onError: (exception, stackTrace) {
@@ -201,7 +201,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
     return _ThumbnailLeaf(
       vsync: this,
       image: _providerImage,
-      fadeIn: _fadeIn,
+      doFadeIn: _doFadeIn,
       fit: widget.fit,
       placeholderGradient: gradient,
     );
@@ -218,14 +218,14 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 class _ThumbnailLeaf extends LeafRenderObjectWidget {
   final TickerProvider vsync;
   final ui.Image? image;
-  final bool fadeIn;
+  final bool doFadeIn;
   final BoxFit fit;
   final Gradient placeholderGradient;
 
   const _ThumbnailLeaf({
     required this.vsync,
     required this.image,
-    required this.fadeIn,
+    required this.doFadeIn,
     required this.fit,
     required this.placeholderGradient,
   });
@@ -238,7 +238,7 @@ class _ThumbnailLeaf extends LeafRenderObjectWidget {
   @override
   void updateRenderObject(BuildContext context, _ThumbnailRenderBox renderObject) {
     renderObject
-      ..show(image, fadeIn: fadeIn)
+      ..show(image, doFadeIn: doFadeIn)
       ..fit = fit
       ..placeholderGradient = placeholderGradient;
   }
@@ -267,7 +267,7 @@ class _ThumbnailRenderBox extends RenderBox {
     return fade == null ? 1 : Curves.easeOut.transform(fade.value);
   }
 
-  void show(ui.Image? image, {required bool fadeIn}) {
+  void show(ui.Image? image, {required bool doFadeIn}) {
     final shown = _image;
     if (image == null ? shown == null : shown != null && image.isCloneOf(shown)) {
       return;
@@ -276,7 +276,7 @@ class _ThumbnailRenderBox extends RenderBox {
     _previousImage?.dispose();
     _previousImage = null;
     _image = image?.clone();
-    if (fadeIn) {
+    if (doFadeIn) {
       _previousImage = shown;
       final fade = _fade ??= AnimationController(vsync: _vsync, duration: const Duration(milliseconds: 100))
         ..addListener(markNeedsPaint)
