@@ -1,24 +1,13 @@
 <script lang="ts">
-  import OnEvents from '#lib/components/OnEvents.svelte';
   import PinCodeCreateForm from '#lib/components/user-settings-page/PinCodeCreateForm.svelte';
-  import { getAuthStatus } from '@immich/sdk';
-  import { onMount } from 'svelte';
+  import { getAuthStatusQuery } from '#lib/queries/auth.query.ts';
+  import { createQuery } from '@tanstack/svelte-query';
   import { fade } from 'svelte/transition';
   import PinCodeChangeForm from './PinCodeChangeForm.svelte';
 
-  let hasPinCode = $state(false);
-
-  onMount(async () => {
-    const { pinCode } = await getAuthStatus();
-    hasPinCode = pinCode;
-  });
-
-  const onUserPinCodeReset = () => {
-    hasPinCode = false;
-  };
+  const query = createQuery(getAuthStatusQuery);
+  const hasPinCode = $derived(query.data?.pinCode ?? false);
 </script>
-
-<OnEvents {onUserPinCodeReset} />
 
 <section class="my-4 sm:ms-8">
   {#if hasPinCode}
@@ -27,7 +16,7 @@
     </div>
   {:else}
     <div in:fade={{ duration: 200 }}>
-      <PinCodeCreateForm onCreated={() => (hasPinCode = true)} />
+      <PinCodeCreateForm />
     </div>
   {/if}
 </section>

@@ -63,8 +63,6 @@ export type Events = {
   /** Contains the new stack. If any assets are removed, AssetUpdate events are emitted for each. */
   StackUpdate: [StackResponseDto];
 
-  UserPinCodeReset: [];
-
   UserAdminDeleted: [{ id: string }];
 
   SessionLocked: [];

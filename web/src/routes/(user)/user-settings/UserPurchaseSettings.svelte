@@ -3,105 +3,43 @@
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import { dateFormats } from '#lib/constants.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { queryClient } from '#lib/queries/client.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
+  import { deleteServerLicenseMutation, getServerLicenseQuery } from '#lib/queries/server-license.query.ts';
+  import { deleteUserLicenseMutation } from '#lib/queries/user.query.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
   import { setSupportBadgeVisibility } from '#lib/utils/purchase-utils.ts';
-  import {
-    deleteUserLicense as deleteIndividualProductKey,
-    deleteServerLicense as deleteServerProductKey,
-    getMyUser,
-    getServerLicense,
-    isHttpError,
-    type LicenseResponseDto,
-  } from '@immich/sdk';
-  import { Button, Icon, modalManager } from '@immich/ui';
+  import { Button, Icon } from '@immich/ui';
   import { mdiKey } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  let isServerProduct = $state(false);
-  let serverPurchaseInfo: LicenseResponseDto | null = $state(null);
+  const aboutQuery = createQuery(getAboutInfoQuery);
+  const isServerProduct = $derived(aboutQuery.data?.licensed ?? false);
+  const serverLicenseQuery = createQuery(() => ({
+    ...getServerLicenseQuery(),
+    enabled: authManager.isPurchased && isServerProduct && authManager.user.isAdmin,
+  }));
+  const serverPurchaseInfo = $derived(serverLicenseQuery.data);
 
-  const checkPurchaseInfo = async () => {
-    const serverInfo = await queryClient.query(getAboutInfoQuery());
-    isServerProduct = serverInfo.licensed;
-
-    const response = await getMyUser();
-    if (response.license) {
-      authManager.setUser(response);
-    }
-
-    if (isServerProduct && authManager.user.isAdmin) {
-      serverPurchaseInfo = await getServerPurchaseInfo();
-    }
-  };
-
-  const getServerPurchaseInfo = async () => {
-    try {
-      return await getServerLicense();
-    } catch (error) {
-      if (isHttpError(error) && error.status === 404) {
-        return null;
-      }
-      throw error;
-    }
-  };
-
-  onMount(async () => {
-    if (!authManager.isPurchased) {
-      return;
-    }
-
-    await checkPurchaseInfo();
-  });
-
-  const removeIndividualProductKey = async () => {
-    try {
-      const isConfirmed = await modalManager.showDialog({
+  const removeIndividualProductKey = () =>
+    executeMutation(deleteUserLicenseMutation, [], {
+      confirm: {
         title: $t('purchase_remove_product_key'),
         prompt: $t('purchase_remove_product_key_prompt'),
         confirmText: $t('remove'),
-      });
+      },
+    });
 
-      if (!isConfirmed) {
-        return;
-      }
-
-      await deleteIndividualProductKey();
-      authManager.isPurchased = false;
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_remove_product_key'));
-    }
-  };
-
-  const removeServerProductKey = async () => {
-    try {
-      const isConfirmed = await modalManager.showDialog({
+  const removeServerProductKey = () =>
+    executeMutation(deleteServerLicenseMutation, [], {
+      confirm: {
         title: $t('purchase_remove_server_product_key'),
         prompt: $t('purchase_remove_server_product_key_prompt'),
         confirmText: $t('remove'),
-      });
-
-      if (!isConfirmed) {
-        return;
-      }
-
-      await deleteServerProductKey();
-      // contains license status
-      await queryClient.invalidateQueries({ queryKey: getAboutInfoQuery().queryKey });
-      authManager.isPurchased = false;
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_remove_product_key'));
-    }
-  };
-
-  const onProductActivated = async () => {
-    authManager.isPurchased = true;
-    await checkPurchaseInfo();
-  };
+      },
+    });
 </script>
 
 <section class="my-4">
@@ -112,7 +50,7 @@
         <SettingSwitch
           title={$t('show_supporter_badge')}
           subtitle={$t('show_supporter_badge_description')}
-          bind:checked={authManager.preferences.purchase.showSupportBadge}
+          checked={authManager.preferences.purchase.showSupportBadge}
           onToggle={setSupportBadgeVisibility}
         />
       </div>
@@ -179,7 +117,7 @@
         </div>
       {/if}
     {:else}
-      <PurchaseContent onActivate={onProductActivated} showTitle={false} />
+      <PurchaseContent showTitle={false} />
     {/if}
   </div>
 </section>

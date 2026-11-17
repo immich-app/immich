@@ -1,6 +1,8 @@
 <script lang="ts">
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
   import PinCodeCreateForm from '#lib/components/user-settings-page/PinCodeCreateForm.svelte';
+  import { getAuthStatusQuery } from '#lib/queries/auth.query.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { Route } from '#lib/route.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { unlockAuthSession } from '@immich/sdk';
@@ -19,7 +21,8 @@
 
   let isVerified = $state(false);
   let isBadPinCode = $state(false);
-  let hasPinCode = $derived(data.hasPinCode);
+  const query = createPreloadedQuery(getAuthStatusQuery);
+  const hasPinCode = $derived(query.data.pinCode);
   let pinCode = $state('');
 
   const handleUnlockSession = async (code: string) => {
@@ -62,7 +65,7 @@
         <p class="mb-4 text-center text-sm" style="text-wrap: pretty;">
           {$t('new_pin_code_subtitle')}
         </p>
-        <PinCodeCreateForm showLabel={false} onCreated={() => (hasPinCode = true)} />
+        <PinCodeCreateForm showLabel={false} />
       {/if}
 
       <div class={hasPinCode ? '' : 'flex w-full items-start'}>

@@ -12,6 +12,7 @@ export const getAboutInfoQuery = () =>
   queryOptions({
     queryKey: ['server', 'about'],
     queryFn: ({ signal }) => getAboutInfo({ signal }),
+    gcTime: Infinity,
   });
 
 export const getVersionHistoryQuery = () =>

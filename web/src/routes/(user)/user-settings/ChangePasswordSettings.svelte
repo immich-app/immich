@@ -1,22 +1,26 @@
 <script lang="ts">
-  import { handleChangePassword } from '#lib/services/user.service.ts';
+  import { changePasswordMutation } from '#lib/queries/auth.query.ts';
   import { Button, Field, PasswordInput, Switch } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+
+  const changePassword = createMutation(changePasswordMutation);
 
   let password = $state('');
   let newPassword = $state('');
   let confirmPassword = $state('');
   let invalidateSessions = $state(false);
 
-  const onsubmit = async (event: Event) => {
+  const onsubmit = (event: Event) => {
     event.preventDefault();
-    const success = await handleChangePassword({ password, newPassword, invalidateSessions });
-    if (success) {
-      password = '';
-      newPassword = '';
-      confirmPassword = '';
-    }
+    changePassword.mutate([{ changePasswordDto: { password, newPassword, invalidateSessions } }], {
+      onSuccess: () => {
+        password = '';
+        newPassword = '';
+        confirmPassword = '';
+      },
+    });
   };
 </script>
 
