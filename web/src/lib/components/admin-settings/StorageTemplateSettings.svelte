@@ -15,11 +15,12 @@
     updateAdminConfigMutation,
   } from '#lib/queries/config-admin.query.ts';
   import { Route } from '#lib/route.ts';
+  import type { AdminConfigStorageTemplateDto } from '@immich/sdk';
   import { Code, Heading, IconButton, Link, Text, modalManager } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
   import { cloneDeep, debounce } from 'lodash-es';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade, slide } from 'svelte/transition';
 
@@ -68,18 +69,18 @@
     configToEdit.storageTemplate.template = event.currentTarget.value;
   };
 
-  let selectedOption = $state(
-    // initially load the selection state from saved config
-    (() => {
-      if (!configToEdit.storageTemplate.enabled) {
-        return StorageTemplateOption.None;
-      }
+  const getStorageTemplateOption = ({ enabled, template }: AdminConfigStorageTemplateDto) => {
+    if (!enabled) {
+      return StorageTemplateOption.None;
+    }
 
-      return configToEdit.storageTemplate.template === DATE_TEMPLATE
-        ? StorageTemplateOption.Date
-        : StorageTemplateOption.Custom;
-    })(),
-  );
+    return template === DATE_TEMPLATE ? StorageTemplateOption.Date : StorageTemplateOption.Custom;
+  };
+
+  let selectedOption = $derived.by(() => {
+    const { storageTemplate } = configToEdit;
+    return untrack(() => getStorageTemplateOption(storageTemplate));
+  });
 
   const handleOptionSelection = (option: StorageTemplateOption) => {
     if (selectedOption === StorageTemplateOption.Custom) {

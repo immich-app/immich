@@ -131,10 +131,13 @@ export const createApp = () => {
         numberInput: page.getByRole('spinbutton', { name: 'admin.user_delete_delay_settings', exact: true }),
         unlinkAllOAuthAccountsButton: button('admin.unlink_all_oauth_accounts'),
         saveButton: button('save'),
+        resetButton: button('reset'),
+        resetToDefaultButton: button('reset_to_default'),
         text: (text: string) => page.getByText(text, { exact: true }),
         storageTemplate: {
           option: (label: string) => page.getByRole('radio', { name: new RegExp(`^${label}`) }),
           presetSelect: page.getByRole('combobox', { name: 'preset', exact: true }),
+          templateInput: page.getByRole('textbox', { name: 'template', exact: true }),
         },
         notifications: {
           secureSwitch: page.getByRole('switch', { name: 'admin.notification_email_secure', exact: true }),
