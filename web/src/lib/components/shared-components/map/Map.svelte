@@ -14,7 +14,8 @@
   import MapSettingsModal from '#lib/modals/MapSettingsModal.svelte';
   import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
   import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
-  import { getMapMarkersQuery, mapMarkersQueryKey } from '#lib/queries/map.query.ts';
+  import { getMapMarkersQuery } from '#lib/queries/map.query.ts';
+  import { QueryKeys } from '#lib/queries/query-keys.ts';
   import { mapSettings } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl, handlePromiseError } from '#lib/utils.ts';
   import type { MapMarkerResponseDto } from '@immich/sdk';
@@ -232,7 +233,7 @@
   }
 
   async function loadMapMarkers() {
-    await queryClient.cancelQueries({ queryKey: mapMarkersQueryKey });
+    await queryClient.cancelQueries({ queryKey: QueryKeys.mapMarkers() });
 
     const { includeArchived, onlyFavorites, withPartners, withSharedAlbums } = $mapSettings;
     const { fileCreatedAfter, fileCreatedBefore } = getFileCreatedDates();
@@ -293,7 +294,7 @@
   });
 
   onDestroy(() => {
-    void queryClient.cancelQueries({ queryKey: mapMarkersQueryKey });
+    void queryClient.cancelQueries({ queryKey: QueryKeys.mapMarkers() });
   });
 
   $effect(() => {

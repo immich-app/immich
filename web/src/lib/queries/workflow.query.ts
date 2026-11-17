@@ -1,5 +1,6 @@
 import { workflowLogsPageSize } from '#lib/constants.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   createWorkflow,
   deleteWorkflow,
@@ -23,7 +24,7 @@ const findOrFail = (workflows: WorkflowResponseDto[], id: string) => {
 
 export const searchWorkflowsQuery = () =>
   queryOptions({
-    queryKey: ['workflows'],
+    queryKey: QueryKeys.workflows(),
     queryFn: ({ signal }) => searchWorkflows({}, { signal }),
   });
 
@@ -35,20 +36,20 @@ export const getWorkflowQuery = (id: string) =>
 
 export const getWorkflowForShareQuery = (id: string) =>
   queryOptions({
-    queryKey: ['workflows', id, 'share'],
+    queryKey: QueryKeys.workflowShare({ id }),
     queryFn: ({ signal }) => getWorkflowForShare({ id }, { signal }),
     staleTime: 0,
   });
 
 export const getWorkflowTriggersQuery = () =>
   queryOptions({
-    queryKey: ['workflows', 'triggers'],
+    queryKey: QueryKeys.workflowTriggers(),
     queryFn: ({ signal }) => getWorkflowTriggers({ signal }),
   });
 
 export const getWorkflowLogsQuery = (id: string, result?: WorkflowResult) =>
   infiniteQueryOptions({
-    queryKey: ['workflows', id, 'logs', { result }],
+    queryKey: QueryKeys.workflowLogs({ id, result }),
     queryFn: ({ pageParam: before, signal }) =>
       getWorkflowLogs({ id, result, before, limit: workflowLogsPageSize }, { signal }),
     initialPageParam: undefined as string | undefined,
@@ -82,7 +83,7 @@ export const deleteWorkflowMutation = () =>
       queryClient.setQueryData(searchWorkflowsQuery().queryKey, (workflows) =>
         workflows?.filter((workflow) => workflow.id !== id),
       );
-      queryClient.removeQueries({ queryKey: getWorkflowForShareQuery(id).queryKey });
+      queryClient.removeQueries({ queryKey: QueryKeys.workflowShare({ id }) });
     },
     meta: { success: { toast: 'workflow_deleted' }, error: { toast: 'errors.unable_to_delete_workflow' } },
   });

@@ -1,16 +1,17 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { createApiKey, deleteApiKey, getApiKeys, rotateApiKey, updateApiKey } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
 
 export const getApiKeysQuery = () =>
   queryOptions({
-    queryKey: ['api-keys'],
+    queryKey: QueryKeys.apiKeys(),
     queryFn: ({ signal }) => getApiKeys({ signal }),
   });
 
 export const createApiKeyMutation = () =>
   asMutation(createApiKey, {
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getApiKeysQuery().queryKey }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.apiKeys() }),
     meta: { error: { toast: 'errors.unable_to_create_api_key' } },
   });
 

@@ -3,7 +3,8 @@
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
   import SearchBar from '#lib/elements/SearchBar.svelte';
   import { queryClient } from '#lib/queries/client.ts';
-  import { searchPersonQuery, searchQueryKey } from '#lib/queries/search.query.ts';
+  import { QueryKeys } from '#lib/queries/query-keys.ts';
+  import { searchPersonQuery } from '#lib/queries/search.query.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { searchNameLocal } from '#lib/utils/person.ts';
   import { type PersonResponseDto } from '@immich/sdk';
@@ -25,7 +26,7 @@
   };
 
   const cancelPreviousRequest = () => {
-    void queryClient.cancelQueries({ queryKey: [...searchQueryKey, 'person'] });
+    void queryClient.cancelQueries({ queryKey: QueryKeys.searchPerson() });
     if (timeout) {
       clearTimeout(timeout);
       timeout = null;

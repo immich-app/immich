@@ -1,10 +1,11 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { deleteDatabaseBackup, listDatabaseBackups, startDatabaseRestoreFlow } from '@immich/sdk';
 import { queryOptions, type MutationFilters } from '@tanstack/svelte-query';
 
 export const getDatabaseBackupsQuery = () =>
   queryOptions({
-    queryKey: ['database-backups'],
+    queryKey: QueryKeys.databaseBackups(),
     queryFn: ({ signal }) => listDatabaseBackups({ signal }),
     select: ({ backups }) => backups,
     staleTime: 0,

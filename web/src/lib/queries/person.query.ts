@@ -1,5 +1,6 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   createPerson,
   getAllPeople,
@@ -20,19 +21,17 @@ import { infiniteQueryOptions, queryOptions, type InfiniteData, type MutationMet
 type GetAllPeopleParams = Parameters<typeof getAllPeople>[0];
 type GetUsersForPeopleParams = Parameters<typeof getUsersForPeople>[0];
 
-const peopleQueryKey = ['people'];
-
-const invalidatePeople = () => queryClient.invalidateQueries({ queryKey: peopleQueryKey });
+const invalidatePeople = () => queryClient.invalidateQueries({ queryKey: QueryKeys.people() });
 
 export const getAllPeopleQuery = (params: GetAllPeopleParams) =>
   queryOptions({
-    queryKey: [...peopleQueryKey, 'list', params],
+    queryKey: QueryKeys.people(params),
     queryFn: ({ signal }) => getAllPeople(params, { signal }),
   });
 
 export const getAllPeoplePagesQuery = (params: GetAllPeopleParams) =>
   infiniteQueryOptions({
-    queryKey: [...peopleQueryKey, 'pages', params],
+    queryKey: QueryKeys.peoplePages(params),
     queryFn: ({ pageParam, signal }) => getAllPeople({ ...params, page: pageParam }, { signal }),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: ({ hasNextPage }, pages) => (hasNextPage ? pages.length + 1 : undefined),
@@ -49,19 +48,19 @@ export const fetchFirstPeoplePage = (params: GetAllPeopleParams) => {
 
 export const getPersonQuery = (id: string) =>
   queryOptions({
-    queryKey: [...peopleQueryKey, 'person', id],
+    queryKey: QueryKeys.person({ id }),
     queryFn: ({ signal }) => getPerson({ id }, { signal }),
   });
 
 export const getPersonStatisticsQuery = (id: string) =>
   queryOptions({
-    queryKey: [...getPersonQuery(id).queryKey, 'statistics'],
+    queryKey: QueryKeys.personStatistics({ id }),
     queryFn: ({ signal }) => getPersonStatistics({ id }, { signal }),
   });
 
 export const getUsersForPeopleQuery = (params: GetUsersForPeopleParams) =>
   queryOptions({
-    queryKey: [...peopleQueryKey, 'users', params],
+    queryKey: QueryKeys.peopleUsers(params),
     queryFn: ({ signal }) => getUsersForPeople(params, { signal }),
     staleTime: 0,
   });
@@ -74,11 +73,11 @@ export const updateCachedPerson = (id: string, update: (person: PersonResponseDt
 
   queryClient.setQueryData(getPersonQuery(id).queryKey, (person) => person && update(person));
   queryClient.setQueriesData<PeopleResponseDto>(
-    { queryKey: [...peopleQueryKey, 'list'] },
+    { queryKey: QueryKeys.people({}), predicate: ({ queryKey }) => queryKey.length === 2 },
     (data) => data && updatePage(data),
   );
   queryClient.setQueriesData<InfiniteData<PeopleResponseDto>>(
-    { queryKey: [...peopleQueryKey, 'pages'] },
+    { queryKey: QueryKeys.peoplePages({}) },
     (data) => data && { ...data, pages: data.pages.map((page) => updatePage(page)) },
   );
 };
@@ -97,7 +96,7 @@ export const updatePersonMutation = (meta?: MutationMeta) =>
 
 export const updatePeopleMutation = (meta?: MutationMeta) =>
   asMutation(updatePeople, {
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: peopleQueryKey, refetchType: 'none' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.people(), refetchType: 'none' }),
     meta,
   });
 
@@ -105,7 +104,7 @@ export const mergePeopleMutation = (meta?: MutationMeta) =>
   asMutation(mergePeople, {
     onSuccess: (_, [{ mergePersonDto }]) => {
       for (const id of mergePersonDto.ids.slice(1)) {
-        queryClient.removeQueries({ queryKey: getPersonQuery(id).queryKey });
+        queryClient.removeQueries({ queryKey: QueryKeys.person({ id }) });
       }
       return invalidatePeople();
     },

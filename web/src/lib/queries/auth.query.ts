@@ -1,5 +1,6 @@
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   changePassword,
   changePinCode,
@@ -13,7 +14,7 @@ import { queryOptions } from '@tanstack/svelte-query';
 
 export const getAuthStatusQuery = () =>
   queryOptions({
-    queryKey: ['auth', 'status'],
+    queryKey: QueryKeys.authStatus(),
     queryFn: ({ signal }) => getAuthStatus({ signal }),
     staleTime: 0,
   });

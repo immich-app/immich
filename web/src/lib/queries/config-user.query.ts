@@ -1,3 +1,4 @@
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { getUserConfig, type UserConfigDto } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
 import { cloneDeep } from 'lodash-es';
@@ -21,7 +22,7 @@ const withEffectiveFlags = (dto: UserConfigDto) => {
 
 export const getUserConfigQuery = () =>
   queryOptions({
-    queryKey: ['config', 'user'],
+    queryKey: QueryKeys.userConfig(),
     queryFn: ({ signal }) => getUserConfig({ signal }),
     gcTime: Infinity,
     select: withEffectiveFlags,
