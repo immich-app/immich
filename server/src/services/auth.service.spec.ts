@@ -551,6 +551,79 @@ describe(AuthService.name, () => {
       });
     });
 
+    describe('cross-origin requests', () => {
+      const cookie = 'immich_access_token=auth_token';
+      const metadata = { adminRoute: false, sharedLinkRoute: false, uri: 'test' };
+
+      beforeEach(() => {
+        const session = SessionFactory.create();
+        mocks.session.getByToken.mockResolvedValue({
+          id: session.id,
+          updatedAt: session.updatedAt,
+          user: UserFactory.create(),
+          pinExpiresAt: null,
+          appVersion: null,
+        });
+      });
+
+      it.each([
+        { name: 'a same-site request', headers: { cookie, 'sec-fetch-site': 'same-site' }, method: 'POST' },
+        { name: 'a cross-site request', headers: { cookie, 'sec-fetch-site': 'cross-site' }, method: 'DELETE' },
+        {
+          name: 'a mismatched origin without fetch metadata',
+          headers: { cookie, origin: 'https://blog.immich.cloud', host: 'immich.cloud' },
+          method: 'POST',
+        },
+        {
+          name: 'another port on the same host',
+          headers: { cookie, origin: 'https://immich.cloud:8080', host: 'immich.cloud:2283' },
+          method: 'POST',
+        },
+        { name: 'an opaque origin', headers: { cookie, origin: 'null', host: 'immich.cloud' }, method: 'POST' },
+        {
+          name: 'a request without a known method',
+          headers: { cookie, 'sec-fetch-site': 'same-site' },
+          method: undefined,
+        },
+        {
+          name: 'a websocket handshake from another origin',
+          headers: { cookie, upgrade: 'websocket', origin: 'https://blog.immich.cloud', host: 'immich.cloud' },
+          method: 'GET',
+        },
+      ])('should block $name', async ({ headers, method }) => {
+        await expect(
+          sut.authenticate({ headers, queryParams: {}, metadata: { ...metadata, method } }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        expect(mocks.session.getByToken).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        { name: 'a same-origin request', headers: { cookie, 'sec-fetch-site': 'same-origin' }, method: 'POST' },
+        { name: 'a user-initiated request', headers: { cookie, 'sec-fetch-site': 'none' }, method: 'POST' },
+        { name: 'a cross-site navigation', headers: { cookie, 'sec-fetch-site': 'cross-site' }, method: 'GET' },
+        {
+          name: 'a matching origin without fetch metadata',
+          headers: { cookie, origin: 'https://immich.cloud', host: 'immich.cloud' },
+          method: 'POST',
+        },
+        { name: 'a request without browser headers', headers: { cookie }, method: 'POST' },
+        {
+          name: 'a cross-site request that does not use the cookie',
+          headers: { cookie, authorization: 'Bearer auth_token', 'sec-fetch-site': 'cross-site' },
+          method: 'POST',
+        },
+        {
+          name: 'a websocket handshake from the same origin',
+          headers: { cookie, upgrade: 'websocket', origin: 'https://immich.cloud', host: 'immich.cloud' },
+          method: 'GET',
+        },
+      ])('should allow $name', async ({ headers, method }) => {
+        await expect(
+          sut.authenticate({ headers, queryParams: {}, metadata: { ...metadata, method } }),
+        ).resolves.toBeDefined();
+      });
+    });
+
     it('should throw if admin route and not an admin', async () => {
       const session = SessionFactory.create();
       const sessionWithToken = {

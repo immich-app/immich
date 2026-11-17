@@ -28,7 +28,7 @@ import { OAuthConfig, OAuthRawProfile } from 'src/repositories/oauth.repository.
 import { BaseService } from 'src/services/base.service.js';
 import { isGranted } from 'src/utils/access.js';
 import { generateProfileImage } from 'src/utils/profile-image.js';
-import { getUserAgentDetails } from 'src/utils/request.js';
+import { getUserAgentDetails, isCrossOriginRequest } from 'src/utils/request.js';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -52,6 +52,7 @@ export type ValidateRequest = {
     /** `false` explicitly means no permission is required, which otherwise defaults to `all` */
     permission?: Permission | false;
     uri: string;
+    method?: string;
   };
 };
 
@@ -213,8 +214,8 @@ export class AuthService extends BaseService {
   }
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
-    const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, uri } = metadata;
+    const { adminRoute, sharedLinkRoute, uri, method } = metadata;
+    const authDto = await this.validate({ headers, queryParams, method });
     const requestedPermission = metadata.permission ?? Permission.All;
 
     if (!authDto.user.isAdmin && adminRoute) {
@@ -238,14 +239,18 @@ export class AuthService extends BaseService {
     return authDto;
   }
 
-  private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {
+  private async validate({
+    headers,
+    queryParams,
+    method,
+  }: Omit<ValidateRequest, 'metadata'> & { method?: string }): Promise<AuthDto> {
     const shareKey = (headers[ImmichHeader.SharedLinkKey] || queryParams[ImmichQuery.SharedLinkKey]) as string;
     const shareSlug = (headers[ImmichHeader.SharedLinkSlug] || queryParams[ImmichQuery.SharedLinkSlug]) as string;
-    const session = (headers[ImmichHeader.UserToken] ||
+    const explicitSession = (headers[ImmichHeader.UserToken] ||
       headers[ImmichHeader.SessionToken] ||
       queryParams[ImmichQuery.SessionKey] ||
-      this.getBearerToken(headers) ||
-      this.getCookieToken(headers)) as string;
+      this.getBearerToken(headers)) as string;
+    const session = explicitSession || this.getCookieToken(headers);
     const apiKey = (headers[ImmichHeader.ApiKey] || queryParams[ImmichQuery.ApiKey]) as string;
 
     if (shareKey) {
@@ -257,6 +262,13 @@ export class AuthService extends BaseService {
     }
 
     if (session) {
+      if (!explicitSession && isCrossOriginRequest(headers, method)) {
+        this.logger.warn(
+          `Blocked cross-origin request: origin=${headers.origin}, host=${headers.host}, sec-fetch-site=${headers['sec-fetch-site']}`,
+        );
+        throw new ForbiddenException('Cross-origin request blocked');
+      }
+
       return this.validateSession(session, headers);
     }
 
