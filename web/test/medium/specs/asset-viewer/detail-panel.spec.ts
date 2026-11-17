@@ -175,6 +175,119 @@ test.describe('detail panel', () => {
     expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { rating: 5 } });
   });
 
+  test('rates an asset and navigates before debounce expires', async ({ page, data, api, app }) => {
+    data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+    const [first, second] = [
+      factory.asset({ fileCreatedAt: '2024-06-02T12:00:00.000Z', exifInfo: { rating: null } }),
+      factory.asset({ fileCreatedAt: '2024-06-01T12:00:00.000Z', exifInfo: { rating: null } }),
+    ];
+    data.addAssets([first, second]);
+    await page.goto(Route.viewAsset({ id: first.id }));
+    await app.viewer.waitForAsset(first);
+    await app.viewer.openDetailPanel();
+
+    await app.viewer.ratingStar(4).click();
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(second);
+
+    expect(api.updateAsset.calls).toHaveLength(1);
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: first.id }, body: { rating: 4 } });
+    expect(api.updateAsset).not.toHaveBeenCalledWith({ params: { id: second.id }, body: { rating: 4 } });
+
+    await page.waitForTimeout(400);
+    expect(api.updateAsset.calls).toHaveLength(1);
+  });
+
+  test('resets rating selection when navigating to an unrated asset', async ({ page, data, api, app }) => {
+    data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+    const [first, second] = [
+      factory.asset({ fileCreatedAt: '2024-06-02T12:00:00.000Z', exifInfo: { rating: null } }),
+      factory.asset({ fileCreatedAt: '2024-06-01T12:00:00.000Z', exifInfo: { rating: null } }),
+    ];
+    data.addAssets([first, second]);
+    await page.goto(Route.viewAsset({ id: first.id }));
+    await app.viewer.waitForAsset(first);
+    await app.viewer.openDetailPanel();
+
+    await app.viewer.ratingStar(5).click();
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('5');
+
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(second);
+
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveCount(0);
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: first.id }, body: { rating: 5 } });
+  });
+
+  test('allows rating the same star value on the next asset', async ({ page, data, api, app }) => {
+    data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+    const [first, second] = [
+      factory.asset({ fileCreatedAt: '2024-06-02T12:00:00.000Z', exifInfo: { rating: null } }),
+      factory.asset({ fileCreatedAt: '2024-06-01T12:00:00.000Z', exifInfo: { rating: null } }),
+    ];
+    data.addAssets([first, second]);
+    await page.goto(Route.viewAsset({ id: first.id }));
+    await app.viewer.waitForAsset(first);
+    await app.viewer.openDetailPanel();
+
+    await app.viewer.ratingStar(4).click();
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(second);
+
+    await app.viewer.ratingStar(4).click();
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('4');
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: first.id }, body: { rating: 4 } });
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: second.id }, body: { rating: 4 } });
+  });
+
+  test('does not save pending rating when detail panel closes before debounce expires', async ({
+    page,
+    data,
+    api,
+    app,
+  }) => {
+    data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+    const asset = factory.asset({ exifInfo: { rating: null } });
+    data.addAssets(asset);
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.openDetailPanel();
+
+    await app.viewer.ratingStar(4).click();
+    await page.keyboard.press('i');
+
+    await page.waitForTimeout(400);
+    expect(api.updateAsset).not.toHaveBeenCalled();
+  });
+
+  test('keyboard rating propagates state updates and supports clearing', async ({ page, data, api, app }) => {
+    data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+    const [first, second] = [
+      factory.asset({ fileCreatedAt: '2024-06-02T12:00:00.000Z', exifInfo: { rating: null } }),
+      factory.asset({ fileCreatedAt: '2024-06-01T12:00:00.000Z', exifInfo: { rating: null } }),
+    ];
+    data.addAssets([first, second]);
+    await page.goto(Route.viewAsset({ id: first.id }));
+    await app.viewer.waitForAsset(first);
+    await app.viewer.openDetailPanel();
+
+    await page.keyboard.press('3');
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('3');
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: first.id }, body: { rating: 3 } });
+
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(second);
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveCount(0);
+
+    await app.viewer.previousButton.click();
+    await app.viewer.waitForAsset(first);
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('3');
+
+    await page.keyboard.press('0');
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveCount(0);
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: first.id }, body: { rating: null } });
+  });
+
   test('camera follows the asset when moving to the next one', async ({ page, data, app }) => {
     const [canon, nikon] = [
       factory.asset({ fileCreatedAt: '2024-06-02T12:00:00.000Z', exifInfo: { make: 'Canon', model: 'EOS R5' } }),

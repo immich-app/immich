@@ -15,10 +15,13 @@
 
   const { count = 5, rating, readOnly = false, onRating }: Props = $props();
 
-  let ratingSelection = $derived(rating);
+  let ratingSelection = $state<Rating>(rating);
   let hoverRating: Rating = $state(null);
   let focusRating: Rating = $state(null);
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  $effect(() => {
+    ratingSelection = rating;
+  });
 
   const id = $props.id();
 
@@ -27,7 +30,7 @@
       return;
     }
 
-    if (newRating === rating) {
+    if (newRating === rating && newRating === ratingSelection) {
       return;
     }
 
@@ -45,13 +48,6 @@
   const reset = () => {
     setHoverRating(null);
     focusRating = null;
-  };
-
-  const handleSelectDebounced = (value: Rating) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      handleSelect(value);
-    }, 300);
   };
 </script>
 
@@ -94,7 +90,7 @@
         onfocus={() => {
           focusRating = value as Rating;
         }}
-        onchange={() => handleSelectDebounced(value as Rating)}
+        onchange={() => handleSelect(value as Rating)}
         class="sr-only"
       />
     {/each}
