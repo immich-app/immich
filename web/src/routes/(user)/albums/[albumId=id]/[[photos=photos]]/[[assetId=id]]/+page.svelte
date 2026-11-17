@@ -238,7 +238,7 @@
         timelineAlbumId: albumId,
       };
     }
-    return { albumId, order: album.order };
+    return { albumId, order: album.order, withStacked: true };
   });
 
   const isOwned = $derived(isAlbumOwner(album));
