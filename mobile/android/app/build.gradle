@@ -89,7 +89,15 @@ dependencies {
   implementation libs.okhttp
   implementation libs.cronet.embedded
   implementation libs.media3.datasource.okhttp
-  implementation libs.media3.datasource.cronet
+  // media3-datasource-cronet 会通过传递依赖拉进 play-services-cronet
+  // （见它的 pom：com.google.android.gms:play-services-cronet）。那个 AAR 提供
+  // GooglePlayServicesCronetProvider，会被 CronetEngine.Builder 优先选中，
+  // 版本由 Play 商店推送、不受本包控制，也就无法保证有 X25519MLKEM768。
+  // 我们已经在上面直接依赖 cronet.embedded，这里把它排除掉，
+  // 让 provider 选择只剩 App-Packaged-Cronet-Provider。
+  implementation(libs.media3.datasource.cronet) {
+    exclude group: 'com.google.android.gms', module: 'play-services-cronet'
+  }
   implementation libs.kotlinx.coroutines.android
   implementation libs.work.runtime.ktx
   implementation libs.concurrent.futures
