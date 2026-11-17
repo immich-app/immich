@@ -74,13 +74,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
     final selection = _selection.toward(isSelected);
     final indicators = _indicators.toward(!_hideIndicators);
     final hasSelection = selection != kAlwaysDismissedAnimation;
-    final selectionColor = !hasSelection
-        ? Colors.transparent
-        : widget.lockSelection
-        ? context.colorScheme.surfaceContainerHighest
-        : context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.4)
-        : context.primaryColor.lighten(amount: 0.75);
+    final selectionColor = hasSelection ? _selectionColor : Colors.transparent;
 
     final overlays = asset == null ? const <Widget>[] : _overlays(asset, storageIndicator);
 
@@ -150,6 +144,13 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> with TickerProvid
           ),
       ],
     );
+  }
+
+  Color get _selectionColor {
+    if (widget.lockSelection) {
+      return context.colorScheme.surfaceContainerHighest;
+    }
+    return context.isDarkTheme ? context.primaryColor.darken(amount: 0.4) : context.primaryColor.lighten(amount: 0.75);
   }
 
   List<Widget> _overlays(BaseAsset asset, bool storageIndicator) {
