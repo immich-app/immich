@@ -4,6 +4,7 @@ import { ContentSecurityPolicy, Endpoint, HistoryBuilder } from 'src/decorators.
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
 import {
+  EmailTemplateParamDto,
   NotificationCreateDto,
   NotificationDto,
   TemplateDto,
@@ -81,7 +82,7 @@ export class NotificationAdminController {
   })
   async previewNotificationTemplateAdmin(
     @Auth() auth: AuthDto,
-    @Param('name') name: EmailTemplate,
+    @Param() { name }: EmailTemplateParamDto,
     @Body() dto: TemplateDto,
   ): Promise<string> {
     const { html } = await this.service.getTemplate(name, dto.template);

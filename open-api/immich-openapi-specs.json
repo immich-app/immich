@@ -1327,7 +1327,7 @@
             "name": "name",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/EmailTemplate"
             }
           }
         ],
@@ -22902,6 +22902,17 @@
           }
         },
         "type": "object"
+      },
+      "EmailTemplate": {
+        "description": "Email template name",
+        "enum": [
+          "test",
+          "welcome",
+          "reset-password",
+          "album-invite",
+          "album-update"
+        ],
+        "type": "string"
       },
       "EnumFilterAssetType": {
         "properties": {

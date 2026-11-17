@@ -94,5 +94,14 @@ describe(NotificationAdminController.name, () => {
       expect(text).toBe('<p>preview</p>');
       expect(service.getTemplate).toHaveBeenCalledWith('welcome', '<b>{username}</b>');
     });
+
+    it('should reject an unknown template name', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post(`/admin/notifications/templates/unknown/preview`)
+        .send({ template: '' });
+
+      expect(status).toBe(400);
+      expect(service.getTemplate).not.toHaveBeenCalled();
+    });
   });
 });
