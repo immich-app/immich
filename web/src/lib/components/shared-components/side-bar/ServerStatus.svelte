@@ -1,22 +1,25 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { releaseManager } from '$lib/managers/release-manager.svelte';
-  import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
-  import { getAboutInfoQuery, getVersionHistoryQuery } from '$lib/queries/server.query';
-  import { websocketStore } from '$lib/stores/websocket';
-  import { semverToName } from '$lib/utils';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { releaseManager } from '#lib/managers/release-manager.svelte.ts';
+  import ServerAboutModal from '#lib/modals/ServerAboutModal.svelte';
+  import { getAboutInfoQuery, getVersionHistoryQuery } from '#lib/queries/server-info.query.ts';
+  import { websocketStore } from '#lib/stores/websocket.ts';
+  import { semverToName } from '#lib/utils.ts';
   import { type ReleaseEventV1 } from '@immich/sdk';
-  import { Icon, modalManager, Text } from '@immich/ui';
-  import { createQuery } from '@tanstack/svelte-query';
+  import { Icon, Text, modalManager } from '@immich/ui';
   import { mdiAlert, mdiNewBox } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   const { serverVersion, connected } = websocketStore;
 
-  const aboutQuery = createQuery(getAboutInfoQuery);
-  const info = $derived(aboutQuery.data);
-  const historyQuery = createQuery(getVersionHistoryQuery);
-  const versions = $derived(historyQuery.data ?? []);
+  const queries = {
+    about: createQuery(getAboutInfoQuery),
+    history: createQuery(getVersionHistoryQuery),
+  };
+
+  const info = $derived(queries.about.data);
+  const versions = $derived(queries.history.data ?? []);
   let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
   let version = $derived($serverVersion ? semverToName($serverVersion) : null);
 

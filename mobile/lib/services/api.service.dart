@@ -40,6 +40,8 @@ class ApiService {
   late MemoriesApi memoriesApi;
   late SessionsApi sessionsApi;
   late TagsApi tagsApi;
+  late PasskeysApi passkeysApi;
+  late ConfigPublicApi configPublicApi;
 
   ApiService() {
     // The below line ensures that the api clients are initialized when the service is instantiated
@@ -77,6 +79,8 @@ class ApiService {
     memoriesApi = MemoriesApi(_apiClient);
     sessionsApi = SessionsApi(_apiClient);
     tagsApi = TagsApi(_apiClient);
+    passkeysApi = PasskeysApi(_apiClient);
+    configPublicApi = ConfigPublicApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {
@@ -115,9 +119,11 @@ class ApiService {
   Future<bool> _isEndpointAvailable(String serverUrl) async {
     final endpoint = serverUrl.endsWith('/api') ? serverUrl : '$serverUrl/api';
 
+    // Probe with a throwaway client so the shared client keeps pointing at the active endpoint
+    final probeClient = ApiClient(basePath: endpoint)..client = NetworkRepository.client;
+
     try {
-      setEndpoint(endpoint);
-      await serverInfoApi.pingServer().timeout(const Duration(seconds: 5));
+      await ServerApi(probeClient).pingServer().timeout(const Duration(seconds: 5));
     } on TimeoutException catch (_) {
       return false;
     } on SocketException catch (_) {

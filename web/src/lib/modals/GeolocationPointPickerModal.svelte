@@ -1,16 +1,18 @@
 <script lang="ts">
-  import { isDefined } from '$lib';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { listNavigation } from '$lib/actions/list-navigation';
-  import CoordinatesInput from '$lib/components/shared-components/CoordinatesInput.svelte';
-  import type Map from '$lib/components/shared-components/map/Map.svelte';
-  import { timeDebounceOnSearch, timeToLoadTheMap } from '$lib/constants';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { geolocationManager } from '$lib/managers/geolocation.manager.svelte';
-  import type { LatLng } from '$lib/types';
-  import { delay } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
+  import { isDefined } from '#lib';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import { listNavigation } from '#lib/actions/list-navigation.ts';
+  import CoordinatesInput from '#lib/components/shared-components/CoordinatesInput.svelte';
+  import type Map from '#lib/components/shared-components/map/Map.svelte';
+  import { timeDebounceOnSearch, timeToLoadTheMap } from '#lib/constants.ts';
+  import SearchBar from '#lib/elements/SearchBar.svelte';
+  import { geolocationManager } from '#lib/managers/geolocation.manager.svelte.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchPlacesQuery } from '#lib/queries/search.query.ts';
+  import type { LatLng } from '#lib/types.ts';
+  import { delay } from '#lib/utils/asset-utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import { ConfirmModal, LoadingSpinner } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -103,7 +105,8 @@
         }
       }
 
-      searchPlaces({ name: searchWord })
+      queryClient
+        .query(searchPlacesQuery({ name: searchWord }))
         .then((searchResult) => {
           // skip result when a newer search is happening
           if (latestSearchTimeout !== searchTimeout) {
@@ -148,9 +151,9 @@
 >
   {#snippet prompt()}
     <div class="flex size-full flex-col gap-2">
-      <div class="relative z-1 w-64 sm:w-96" use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}>
+      <div class="relative z-1 w-64 sm:w-96" {@attach clickOutside({ onOutclick: () => (hideSuggestion = true) })}>
         {#if suggestionContainer}
-          <div use:listNavigation={suggestionContainer}>
+          <div {@attach listNavigation(suggestionContainer)}>
             <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
               <SearchBar
                 placeholder={$t('search_places')}
@@ -187,7 +190,7 @@
 
       <span>{$t('pick_a_location')}</span>
       <div class="z-0 h-125 min-h-75 w-full">
-        {#await import('$lib/components/shared-components/map/Map.svelte')}
+        {#await import('#lib/components/shared-components/map/Map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
             <div class="flex size-full items-center justify-center">

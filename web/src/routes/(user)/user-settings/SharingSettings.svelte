@@ -1,14 +1,15 @@
 <script lang="ts">
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import ClusterGroupUserSelectionModal from '$lib/modals/ClusterGroupUserSelectionModal.svelte';
-  import ClusterGroupUsersModal from '$lib/modals/ClusterGroupUsersModal.svelte';
-  import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
-  import { getPeopleUserActions } from '$lib/services/person-user.service';
-  import { handleError } from '$lib/utils/handle-error';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import ClusterGroupUserSelectionModal from '#lib/modals/ClusterGroupUserSelectionModal.svelte';
+  import ClusterGroupUsersModal from '#lib/modals/ClusterGroupUsersModal.svelte';
+  import PartnerSelectionModal from '#lib/modals/PartnerSelectionModal.svelte';
+  import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import {
+    PartnerDirection,
     acceptClusterGroupRequest,
     clusterGroupRegeneratePeople,
     createClusterGroupRequest,
@@ -20,7 +21,6 @@
     getMyUser,
     getPartners,
     leaveClusterGroup,
-    PartnerDirection,
     removePartner,
     searchUsers,
     updatePartner,
@@ -28,7 +28,7 @@
     type PartnerResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, Button, Card, CardBody, HStack, Icon, IconButton, modalManager, Text } from '@immich/ui';
+  import { ActionButton, Button, Card, CardBody, HStack, Icon, IconButton, Text, modalManager } from '@immich/ui';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -251,10 +251,12 @@
       <Card class="mt-4">
         <CardBody>
           {#each users as user, index (user.id)}
-            {@const { ManageAccess } = getPeopleUserActions($t, [
-              user,
-              ...users.filter(({ id }) => id !== authManager.user.id && id !== user.id),
-            ])}
+            {const { ManageAccess } = $derived(
+              getPeopleUserActions($t, [
+                user,
+                ...users.filter(({ id }) => id !== authManager.user.id && id !== user.id),
+              ]),
+            )}
             <div class="flex items-center justify-between gap-4" class:mt-4={index > 0}>
               <div class="flex items-center gap-4">
                 <UserAvatar {user} size="md" />
@@ -300,7 +302,7 @@
             {/each}
 
             {#each sentRequests as request, index (request.id)}
-              {@const user = candidates[request.userId]}
+              {const user = $derived(candidates[request.userId])}
               <div
                 class="flex items-center justify-between gap-4"
                 class:mt-4={index > 0 || receivedRequests.length > 0}

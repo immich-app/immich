@@ -17,7 +17,11 @@ final memoryLaneProvider = FutureProvider.autoDispose<List<Memory>>((ref) {
   final timer = Timer(nextMidnight.difference(now) + const Duration(seconds: 5), ref.invalidateSelf);
   ref.onDispose(timer.cancel);
 
-  final service = MemoryService(ref.watch(driftProvider).memoryRepository);
+  final repository = ref.watch(driftProvider).memoryRepository;
+  final subscription = repository.watchChanges().listen((_) => ref.invalidateSelf());
+  ref.onDispose(subscription.cancel);
+
+  final service = MemoryService(repository);
   return service.getMemoryLane(userId);
 });
 

@@ -1,6 +1,6 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { toISOYearMonthUTC } from '#lib/utils/timeline-util.ts';
 import { getTimeBucket } from '@immich/sdk';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { toISOYearMonthUTC } from '$lib/utils/timeline-util';
 import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineMonth } from '../timeline-month.svelte';
 import type { TimelineManagerOptions } from '../types';

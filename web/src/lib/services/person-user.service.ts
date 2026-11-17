@@ -1,3 +1,9 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import AddUsersModal from '#lib/modals/AddUsersModal.svelte';
+import PersonBulkShareModal from '#lib/modals/PersonBulkShareModal.svelte';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import {
   PeopleUsersUpsertType,
   PersonUserRole,
@@ -9,12 +15,6 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiAccountMultipleOutline, mdiCheck, mdiClose, mdiPlus, mdiShareOutline } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import AddUsersModal from '$lib/modals/AddUsersModal.svelte';
-import PersonBulkShareModal from '$lib/modals/PersonBulkShareModal.svelte';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getPeopleUserActions = ($t: MessageFormatter, users: UserResponseDto[], people?: PersonResponseDto[]) => {
   const ManageAccess: ActionItem = {

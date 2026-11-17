@@ -1,15 +1,15 @@
+import { queryClient } from '#lib/queries/client.ts';
+import { getServerStatisticsQuery } from '#lib/queries/server-info.query.ts';
+import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { noop } from 'lodash-es';
-import { queryClient } from '$lib/queries/client';
-import { getServerStatisticsQuery } from '$lib/queries/server.query';
-import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
-  void queryClient.query(getServerStatisticsQuery()).catch(noop);
-  await queryClient.query(searchUsersAdminQuery());
+  void queryClient.query({ ...getServerStatisticsQuery(), staleTime: 0 }).catch(noop);
+  await queryClient.query({ ...searchUsersAdminQuery(), staleTime: 0 });
   const $t = await getFormatter();
 
   return {

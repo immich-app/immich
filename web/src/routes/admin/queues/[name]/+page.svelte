@@ -1,9 +1,9 @@
 <script lang="ts">
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import QueueGraph from './QueueGraph.svelte';
-  import { queueManager } from '$lib/managers/queue-manager.svelte';
-  import { Route } from '$lib/route';
-  import { asQueueItem, getQueueActions } from '$lib/services/queue.service';
+  import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getQueueQuery, getQueuesQuery } from '#lib/queries/queue.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { asQueueItem, getQueueActions } from '#lib/services/queue.service.ts';
   import {
     Badge,
     Card,
@@ -17,9 +17,9 @@
     Text,
   } from '@immich/ui';
   import { mdiClockTimeTwoOutline } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import QueueGraph from './QueueGraph.svelte';
 
   type Props = {
     data: PageData;
@@ -27,12 +27,15 @@
 
   const { data }: Props = $props();
 
-  const queue = $derived(queueManager.queues.find((q) => q.name === data.queue.name) ?? data.queue);
+  const queries = {
+    queues: createPreloadedQuery(getQueuesQuery),
+    queue: createPreloadedQuery(() => getQueueQuery(data.name)),
+  };
+
+  const queue = $derived(queries.queue.data);
 
   const { Pause, Resume, Empty, RemoveFailedJobs } = $derived(getQueueActions($t, queue));
   const item = $derived(asQueueItem($t, queue));
-
-  onMount(() => queueManager.listen());
 </script>
 
 <AdminPageLayout
@@ -53,7 +56,7 @@
 
       <div class="mb-4 flex gap-1">
         <Badge>{$t('active_count', { values: { count: queue.statistics.active } })}</Badge>
-        <Badge>{$t('waiting_count', { values: { count: queue.statistics.waiting + queue.statistics.paused } })}</Badge>
+        <Badge>{$t('waiting_count', { values: { count: queue.statistics.waiting } })}</Badge>
         {#if queue.statistics.failed > 0}
           <Badge color="danger">{$t('failed_count', { values: { count: queue.statistics.failed } })}</Badge>
         {/if}

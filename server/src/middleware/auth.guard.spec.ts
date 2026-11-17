@@ -16,9 +16,15 @@ class TestController {
   undecoratedRoute() {}
 }
 
-const contextFor = (handler: () => void) =>
+@Authenticated({ admin: true })
+class AdminTestController {
+  route() {}
+}
+
+const contextFor = (handler: () => void, controller: object = TestController) =>
   ({
     getHandler: () => handler,
+    getClass: () => controller,
     switchToHttp: () => ({ getRequest: () => ({ headers: {}, query: {}, path: '/' }) }),
   }) as unknown as ExecutionContext;
 
@@ -77,6 +83,20 @@ describe(AuthGuard.name, () => {
       );
 
       expect(authenticate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('class-level @Authenticated()', () => {
+    it('should apply the controller options to its undecorated routes', async () => {
+      const authenticate = vitest.spyOn(authService, 'authenticate').mockResolvedValue({} as never);
+
+      await expect(sut.canActivate(contextFor(AdminTestController.prototype.route, AdminTestController))).resolves.toBe(
+        true,
+      );
+
+      expect(authenticate).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ adminRoute: true }) }),
+      );
     });
   });
 });

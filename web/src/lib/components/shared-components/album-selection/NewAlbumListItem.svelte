@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
+  import { SCROLL_PROPERTIES } from '#lib/components/shared-components/album-selection/album-selection-utils.ts';
   import { Icon } from '@immich/ui';
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { Action } from 'svelte/action';
+  import type { Attachment } from 'svelte/attachments';
 
   interface Props {
     searchQuery?: string;
@@ -13,19 +13,17 @@
 
   let { searchQuery = '', selected = false, onNewAlbum }: Props = $props();
 
-  const scrollIntoViewIfSelected: Action = (node) => {
-    $effect(() => {
-      if (selected) {
-        node.scrollIntoView(SCROLL_PROPERTIES);
-      }
-    });
+  const scrollIntoViewIfSelected: Attachment = (node) => {
+    if (selected) {
+      node.scrollIntoView(SCROLL_PROPERTIES);
+    }
   };
 </script>
 
 <button
   type="button"
   onclick={() => onNewAlbum(searchQuery)}
-  use:scrollIntoViewIfSelected
+  {@attach scrollIntoViewIfSelected}
   class="flex w-full items-center gap-4 rounded-xl px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
   class:bg-gray-200={selected}
   class:dark:bg-gray-700={selected}

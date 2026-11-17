@@ -23,7 +23,6 @@ class MockRemoteAlbumService extends Mock implements RemoteAlbumService {}
 
 class MockMemoryService extends Mock implements MemoryService {}
 
-
 class MockPlatformDeepLink extends Mock implements PlatformDeepLink {}
 
 class MockWidgetRef extends Mock implements WidgetRef {}
@@ -88,6 +87,8 @@ void main() {
   late List<TimelineService> createdTimelineServices;
   late DeepLinkService sut;
 
+  setUpAll(() => registerFallbackValue(TimelineOrigin.main));
+
   setUp(() {
     timelineFactory = MockTimelineFactory();
     assetService = MockAssetService();
@@ -96,12 +97,12 @@ void main() {
     ref = MockWidgetRef();
     createdTimelineServices = [];
 
-    when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).thenAnswer((invocation) {
+    when(() => timelineFactory.fromAssets(any(), any())).thenAnswer((invocation) {
       final assets = List<BaseAsset>.from(invocation.positionalArguments[0] as List<BaseAsset>);
       final timelineService = TimelineService((
         assetSource: (index, count) async => assets.skip(index).take(count).toList(),
         bucketSource: () => Stream.value([Bucket(assetCount: assets.length)]),
-        origin: TimelineOrigin.deepLink,
+        origin: invocation.positionalArguments[1] as TimelineOrigin,
       ));
       createdTimelineServices.add(timelineService);
       return timelineService;
@@ -178,5 +179,26 @@ void main() {
     expect((route!.args! as MemoryRouteArgs).memories, [_memory]);
     verifyNever(() => memoryService.getMemoryLane(any()));
     verify(() => memoryService.get(_memoryId)).called(1);
+  });
+
+  test('locked photo link opens nothing', () async {
+    when(
+      () => assetService.getRemoteAsset(_assetId),
+    ).thenAnswer((_) async => _asset.copyWith(visibility: AssetVisibility.locked));
+
+    final route = await sut.handleMyImmichApp(link('/photos/$_assetId'), ref);
+
+    expect(route, isNull);
+  });
+
+  test('trashed photo link opens the viewer on a trash timeline', () async {
+    when(
+      () => assetService.getRemoteAsset(_assetId),
+    ).thenAnswer((_) async => _asset.copyWith(deletedAt: DateTime(2026, 6, 13)));
+
+    final route = await sut.handleMyImmichApp(link('/photos/$_assetId'), ref);
+
+    expect(route, isA<AssetViewerRoute>());
+    expect((route!.args! as AssetViewerRouteArgs).timelineService.origin, TimelineOrigin.trash);
   });
 }

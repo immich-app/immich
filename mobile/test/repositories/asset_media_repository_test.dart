@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -52,6 +53,7 @@ void main() {
   late Drift db;
   late StoreService store;
   late Directory tempRoot;
+  late _MockPersistentStorage persistentStorage;
   late _MockStorageRepository storage;
   late _TestAssetMediaRepository repository;
   late List<String> taskDirs;
@@ -65,7 +67,7 @@ void main() {
     await Store.put(StoreKey.serverEndpoint, 'https://example.com/api');
     // the downloader keeps the storage it gets on its first call. the default one spawns an isolate
     // that needs the real path_provider plugin, so a stub answers init and the resume data cleanup
-    final persistentStorage = _MockPersistentStorage();
+    persistentStorage = _MockPersistentStorage();
     when(persistentStorage.initialize).thenAnswer((_) async {});
     when(() => persistentStorage.removeResumeData(any())).thenAnswer((_) async {});
     when(() => persistentStorage.removePausedTask(any())).thenAnswer((_) async {});
@@ -258,5 +260,41 @@ void main() {
 
     expect(result.count, 2);
     expect(result.names, ['IMG-preview.jpg', 'IMG-preview (1).jpg']);
+  });
+
+  test('removes the share downloads and records a killed app left behind', () async {
+    final shareRecord = TaskRecord(
+      DownloadTask(
+        taskId: 'share-original-remote-1-1',
+        url: 'https://example.com',
+        filename: 'IMG.jpg',
+        directory: 'share-original-remote-1-1',
+        baseDirectory: BaseDirectory.temporary,
+        group: kShareDownloadGroup,
+      ),
+      TaskStatus.complete,
+      1,
+      0,
+    );
+    final livePhotoRecord = TaskRecord(
+      DownloadTask(taskId: 'remote-2', url: 'https://example.com', filename: 'IMG.mov', group: kDownloadGroupLivePhoto),
+      TaskStatus.complete,
+      1,
+      0,
+    );
+    final records = {shareRecord.taskId: shareRecord, livePhotoRecord.taskId: livePhotoRecord};
+    when(persistentStorage.retrieveAllTaskRecords).thenAnswer((_) async => records.values.toList());
+    when(persistentStorage.retrieveAllPausedTasks).thenAnswer((_) async => []);
+    when(() => persistentStorage.removeTaskRecord(any())).thenAnswer((invocation) async {
+      records.remove(invocation.positionalArguments.single);
+    });
+    final shareFile = File(await shareRecord.task.filePath())..createSync(recursive: true);
+    final livePhotoFile = File(await livePhotoRecord.task.filePath())..createSync(recursive: true);
+
+    await AssetMediaRepository(_MockNativeSyncApi(), storage).cleanupStaleShareFiles();
+
+    expect(shareFile.parent.existsSync(), isFalse);
+    expect(livePhotoFile.existsSync(), isTrue);
+    expect(records.values, [livePhotoRecord]);
   });
 }

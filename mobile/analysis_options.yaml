@@ -127,6 +127,12 @@ dart_code_metrics:
             severity: perf
           - name: tr
             description: 'Use context.t.<key> or StaticTranslations.instance.<key> instead of tr().'
+          - type: Locale
+            entries:
+              - name: toLanguageTag
+                description: 'Pass resolvedDateTimeLocale() to DateFormat, not the raw locale. DateFormat throws for locales intl has no date data for (e.g. mi).'
+                exclude-paths:
+                  - 'lib/main.dart'
           - type: String
             entries:
               - name: tr

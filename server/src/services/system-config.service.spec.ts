@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import type { DeepPartial } from 'src/types.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import {
   AudioCodec,
   CQMode,
   Colorspace,
   HlsVideoResolution,
+  ImageEffort,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -18,6 +18,7 @@ import {
   VideoContainer,
 } from 'src/enum.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
+import type { DeepPartial } from 'src/types.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
@@ -47,6 +48,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Editor]: { concurrency: 2 },
   },
   backup: {
+    beta: false,
     database: {
       enabled: true,
       cronExpression: '0 02 * * *',
@@ -177,6 +179,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
     storageQuotaClaim: 'immich_quota',
     roleClaim: 'immich_role',
   },
+  passkey: {
+    enabled: true,
+    domain: null,
+    additionalDomains: [],
+  },
   passwordLogin: {
     enabled: true,
   },
@@ -196,14 +203,16 @@ const updatedConfig = Object.freeze<SystemConfig>({
       format: ImageFormat.Webp,
       quality: 80,
       progressive: false,
+      effort: ImageEffort.Medium,
     },
     preview: {
       size: 1440,
       format: ImageFormat.Jpeg,
       quality: 80,
       progressive: false,
+      effort: ImageEffort.Medium,
     },
-    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80, progressive: false },
+    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80, progressive: false, effort: ImageEffort.Medium },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
   },
@@ -415,14 +424,14 @@ describe(SystemConfigService.name, () => {
       },
     ];
 
-    for (const { should, externalDomain, result } of externalDomainTests) {
+    for (const { should, externalDomain, result = 'https://demo.immich.app' } of externalDomainTests) {
       it(`should normalize an external domain ${should}`, async () => {
         mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
         const partialConfig = { server: { externalDomain } };
         mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
         const config = await sut.getAdminConfig();
-        expect(config.server.externalDomain).toEqual(result ?? 'https://demo.immich.app');
+        expect(config.server.externalDomain).toEqual(result);
       });
     }
 

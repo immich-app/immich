@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { orderBy } from 'lodash-es';
 import { Socket } from 'socket.io';
-import type { JobItem, JobSource, UploadFile } from 'src/types.js';
 import { Asset } from 'src/database.js';
 import { EventConfig } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
@@ -10,6 +9,7 @@ import { SystemConfig } from 'src/dtos/config.dto.js';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import type { JobItem, JobSource, UploadFile } from 'src/types.js';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
 
@@ -53,6 +53,7 @@ type EventMap = {
   AssetTrash: [{ assetId: string; userId: string }];
   AssetDelete: [{ assetId: string; userId: string }];
   AssetMetadataExtracted: [{ assetId: string; userId: string; source?: JobSource }];
+  AssetOcrExtracted: [{ assetId: string; userId: string }];
 
   // asset bulk events
   AssetTrashAll: [{ assetIds: string[]; userId: string }];
@@ -69,6 +70,10 @@ type EventMap = {
   JobSuccess: [JobSuccessEvent];
   /** job finishes with error */
   JobError: [JobErrorEvent];
+
+  LibraryCreate: [];
+  LibraryUpdate: [];
+  LibraryDelete: [];
 
   // queue events
   QueueStart: [QueueStartEvent];

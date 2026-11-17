@@ -1,4 +1,3 @@
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import { Place } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
@@ -13,6 +12,7 @@ import {
   SearchOrderFieldSchema,
 } from 'src/enum.js';
 import { isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation.js';
+import { createZodDto } from 'src/zod.js';
 
 const ADDED_V3_2 = new HistoryBuilder().added('v3.2.0').getExtensions();
 
@@ -323,9 +323,9 @@ export const isFullyAlbumConfined = (filter: SearchFilter): boolean =>
   isAlbumConfined(filter) || (!!filter.or?.length && filter.or.every((branch) => isAlbumConfined(branch)));
 
 /**
- * The structured shape and the deprecated flat search fields are mutually exclusive
- * TODO(v4): remove together with the deprecated flat fields.
- */
+The structured shape and the deprecated flat search fields are mutually exclusive
+TODO(v4): remove together with the deprecated flat fields.
+*/
 const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) => {
   const deprecatedFields = Object.keys(schema.shape).filter(
     (field) => (schema.shape[field] as z.ZodType).meta()?.deprecated,

@@ -267,6 +267,10 @@ object HttpClientManager {
     }
   }
 
+  fun clearCookies() {
+    cookieJar.clear()
+  }
+
   fun loadCookieHeader(url: String): String? {
     val httpUrl = url.toHttpUrlOrNull() ?: return null
     return cookieJar.loadForRequest(httpUrl).takeIf { it.isNotEmpty() }
@@ -375,6 +379,15 @@ object HttpClientManager {
       .connectionPool(connectionPool)
       .dispatcher(Dispatcher().apply { maxRequestsPerHost = MAX_REQUESTS_PER_HOST })
       .cache(Cache(cacheDir.apply { mkdirs() }, CACHE_SIZE_BYTES))
+      // Don't cache failures or redirects, allowing future requests to hit the actual resource if available
+      .addNetworkInterceptor {
+        val response = it.proceed(it.request())
+        if (response.isRedirect || response.code >= 400) {
+          response.newBuilder().header("Cache-Control", "no-store").build()
+        } else {
+          response
+        }
+      }
       .sslSocketFactory(sslContext.socketFactory, trustManager)
       .build()
   }
@@ -468,6 +481,12 @@ object HttpClientManager {
         persist()
       }
       return store.filter { it.matches(url) }
+    }
+
+    @Synchronized
+    fun clear() {
+      store.clear()
+      persist()
     }
 
     private fun syncAuthCookies(): Boolean {

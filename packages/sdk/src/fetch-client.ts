@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.3.0-rc.0
+ * 3.4.0-rc.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -63,6 +63,8 @@ export type AdminConfigDatabaseBackupDto = {
     keepLastAmount: number;
 };
 export type AdminConfigBackupsDto = {
+    /** Whether the backups feature is enabled */
+    beta?: boolean;
     database: AdminConfigDatabaseBackupDto;
 };
 export type AdminConfigFFmpegRealtimeDto = {
@@ -113,6 +115,7 @@ export type AdminConfigFFmpegDto = {
     twoPass: boolean;
 };
 export type AdminConfigGeneratedFullsizeImageDto = {
+    effort: ImageEffort;
     /** Enabled */
     enabled: boolean;
     format: ImageFormat;
@@ -122,6 +125,7 @@ export type AdminConfigGeneratedFullsizeImageDto = {
     quality: number;
 };
 export type AdminConfigGeneratedImageDto = {
+    effort: ImageEffort;
     format: ImageFormat;
     /** Progressive */
     progressive?: boolean;
@@ -357,6 +361,14 @@ export type AdminConfigOAuthDto = {
     timeout: number;
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
 };
+export type AdminConfigPasskeyDto = {
+    /** Additional domains */
+    additionalDomains: string[];
+    /** Passkey domain */
+    domain: string | null;
+    /** Enabled */
+    enabled: boolean;
+};
 export type AdminConfigPasswordLoginDto = {
     /** Enabled */
     enabled: boolean;
@@ -421,6 +433,7 @@ export type AdminConfigDto = {
     nightlyTasks: AdminConfigNightlyTasksDto;
     notifications: AdminConfigNotificationsDto;
     oauth: AdminConfigOAuthDto;
+    passkey: AdminConfigPasskeyDto;
     passwordLogin: AdminConfigPasswordLoginDto;
     reverseGeocoding: AdminConfigReverseGeocodingDto;
     server: AdminConfigServerDto;
@@ -469,6 +482,10 @@ export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
     /** Restore backup filename */
     restoreBackupFilename?: string;
+    /** Rollback repository ID */
+    rollbackRepositoryId?: string;
+    /** Rollback snapshot ID */
+    rollbackSnapshotId?: string;
 };
 export type MaintenanceDetectInstallStorageFolderDto = {
     /** Number of files in the folder */
@@ -494,6 +511,8 @@ export type MaintenanceStatusResponseDto = {
     action: MaintenanceAction;
     active: boolean;
     error?: string;
+    /** FUTO Backups job ID */
+    futoBackupsJobId?: string;
     progress?: number;
     task?: string;
 };
@@ -567,7 +586,7 @@ export type UserAdminResponseDto = {
     id: string;
     /** Is admin user */
     isAdmin: boolean;
-    license: (UserLicense) | null;
+    license: UserLicense | null;
     /** User name */
     name: string;
     /** OAuth ID */
@@ -589,7 +608,7 @@ export type UserAdminResponseDto = {
     updatedAt: string;
 };
 export type UserAdminCreateDto = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User email */
     email: string;
     /** Grant admin privileges */
@@ -614,7 +633,7 @@ export type UserAdminDeleteDto = {
     force?: boolean;
 };
 export type UserAdminUpdateDto = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User email */
     email?: string;
     /** Grant admin privileges */
@@ -1334,7 +1353,7 @@ export type AssetResponseDto = {
     people?: PersonResponseDto[];
     /** Is resized */
     resized?: boolean;
-    stack?: (AssetStackResponseDto) | null;
+    stack?: AssetStackResponseDto | null;
     tags?: TagResponseDto[];
     /** Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting. */
     thumbhash: string | null;
@@ -1607,10 +1626,16 @@ export type UserConfigNotificationsDto = {
     smtp: UserConfigSmtpDto;
 };
 export type UserConfigOAuthDto = {
+    /** Account management URL */
+    accountManagementUrl?: string;
     /** Auto launch */
     autoLaunch: boolean;
     /** Button text */
     buttonText: string;
+    /** Enabled */
+    enabled: boolean;
+};
+export type UserConfigPasskeyDto = {
     /** Enabled */
     enabled: boolean;
 };
@@ -1647,6 +1672,7 @@ export type UserConfigDto = {
     map: UserConfigMapDto;
     notifications: UserConfigNotificationsDto;
     oauth: UserConfigOAuthDto;
+    passkey: UserConfigPasskeyDto;
     passwordLogin: UserConfigPasswordLoginDto;
     reverseGeocoding: UserConfigReverseGeocodingDto;
     server: UserConfigServerDto;
@@ -1717,7 +1743,7 @@ export type AssetFaceResponseDto = {
     imageHeight: number;
     /** Image width in pixels */
     imageWidth: number;
-    person: (PersonResponseDto) | null;
+    person: PersonResponseDto | null;
     sourceType?: SourceType;
 };
 export type AssetFaceCreateDto = {
@@ -1997,6 +2023,47 @@ export type PartnerUpdateDto = {
     /** Show partner assets in timeline */
     inTimeline: boolean;
 };
+export type PasskeyResponseDto = {
+    /** Creation date */
+    createdAt: string;
+    /** Passkey ID */
+    id: string;
+    /** Passkey name */
+    name: string | null;
+    /** Last update date */
+    updatedAt: string;
+    /** Last used date */
+    usedAt: string | null;
+};
+export type PasskeyAuthenticationFinishDto = {
+    /** Response returned by @simplewebauthn/browser's `startAuthentication()` */
+    response: {
+        /** Credential ID */
+        id: string;
+        response: {
+            /** User handle */
+            userHandle?: string;
+            [key: string]: any;
+        };
+        [key: string]: any;
+    };
+};
+export type PasskeyAuthenticationOptionsDto = {
+    [key: string]: any;
+};
+export type PasskeyRegistrationFinishDto = {
+    /** Passkey name */
+    name?: string;
+    /** Response returned by @simplewebauthn/browser's `startAuthentication()` */
+    response: any;
+};
+export type PasskeyRegistrationOptionsDto = {
+    [key: string]: any;
+};
+export type PasskeyUpdateDto = {
+    /** Passkey name */
+    name: string | null;
+};
 export type PeopleDeleteDto = {
     /** IDs to process */
     ids: string[];
@@ -2198,6 +2265,10 @@ export type PublicConfigOAuthDto = {
     /** Enabled */
     enabled: boolean;
 };
+export type PublicConfigPasskeyDto = {
+    /** Enabled */
+    enabled: boolean;
+};
 export type PublicConfigPasswordLoginDto = {
     /** Enabled */
     enabled: boolean;
@@ -2210,6 +2281,7 @@ export type PublicConfigDto = {
     ffmpeg: PublicConfigFFmpegDto;
     map: PublicConfigMapDto;
     oauth: PublicConfigOAuthDto;
+    passkey: PublicConfigPasskeyDto;
     passwordLogin: PublicConfigPasswordLoginDto;
     server: PublicConfigServerDto;
 };
@@ -2823,6 +2895,8 @@ export type ServerConfigDto = {
     userDeleteDelay: number;
 };
 export type ServerFeaturesDto = {
+    /** Whether the backups feature is enabled */
+    backups: boolean;
     /** Whether config file is available */
     configFile: boolean;
     /** Whether duplicate detection is enabled */
@@ -3201,13 +3275,11 @@ export type TrashResponseDto = {
     count: number;
 };
 export type UserUpdateMeDto = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User email */
     email?: string;
     /** User name */
     name?: string;
-    /** User password (deprecated, use change password endpoint) */
-    password?: string;
 };
 export type OnboardingResponseDto = {
     /** Is user onboarded */
@@ -3336,7 +3408,7 @@ export type ReleaseEventV1 = {
     releaseVersion: ServerVersionResponseDto;
     serverVersion: ServerVersionResponseDto;
     /** Release type */
-    "type": ReleaseType;
+    "type": ReleaseType | null;
 };
 export type SyncAckV1 = {};
 export type SyncAlbumDeleteV1 = {
@@ -3664,7 +3736,7 @@ export type SyncAssetV2 = {
     width: number | null;
 };
 export type SyncAuthUserV1 = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User deleted at */
     deletedAt: string | null;
     /** User email */
@@ -3691,7 +3763,7 @@ export type SyncAuthUserV1 = {
     storageLabel: string | null;
 };
 export type SyncAuthUserV2 = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User deleted at */
     deletedAt: string | null;
     /** User email */
@@ -3864,7 +3936,7 @@ export type SyncUserMetadataV1 = {
     };
 };
 export type SyncUserV1 = {
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User deleted at */
     deletedAt: string | null;
     /** User email */
@@ -6127,6 +6199,115 @@ export function updatePartner({ id, partnerUpdateDto }: {
     })));
 }
 /**
+ * Search passkeys
+ */
+export function searchPasskeys({ id }: {
+    id?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyResponseDto[];
+    }>(`/passkeys${QS.query(QS.explode({
+        id
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Finish passkey authentication
+ */
+export function finishAuthentication({ passkeyAuthenticationFinishDto }: {
+    passkeyAuthenticationFinishDto: PasskeyAuthenticationFinishDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: LoginResponseDto;
+    }>("/passkeys/authentication/finish", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: passkeyAuthenticationFinishDto
+    })));
+}
+/**
+ * Start passkey authentication
+ */
+export function startAuthentication(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyAuthenticationOptionsDto;
+    }>("/passkeys/authentication/start", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Finish passkey registration
+ */
+export function finishRegistration({ passkeyRegistrationFinishDto }: {
+    passkeyRegistrationFinishDto: PasskeyRegistrationFinishDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PasskeyResponseDto;
+    }>("/passkeys/registration/finish", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: passkeyRegistrationFinishDto
+    })));
+}
+/**
+ * Start passkey registration
+ */
+export function startRegistration(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyRegistrationOptionsDto;
+    }>("/passkeys/registration/start", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Delete a passkey
+ */
+export function deletePasskey({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/passkeys/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve a passkey
+ */
+export function getPasskey({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyResponseDto;
+    }>(`/passkeys/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a passkey
+ */
+export function updatePasskey({ id, passkeyUpdateDto }: {
+    id: string;
+    passkeyUpdateDto: PasskeyUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PasskeyResponseDto;
+    }>(`/passkeys/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PATCH",
+        body: passkeyUpdateDto
+    })));
+}
+/**
  * Delete people
  */
 export function deletePeople({ peopleDeleteDto }: {
@@ -8043,8 +8224,15 @@ export enum Colorspace {
     Srgb = "srgb",
     P3 = "p3"
 }
+export enum ImageEffort {
+    Low = "low",
+    Medium = "medium",
+    High = "high",
+    Max = "max"
+}
 export enum ImageFormat {
     Jpeg = "jpeg",
+    Jxl = "jxl",
     Webp = "webp"
 }
 export enum LogLevel {
@@ -8072,7 +8260,8 @@ export enum MaintenanceAction {
     Start = "start",
     End = "end",
     SelectDatabaseRestore = "select_database_restore",
-    RestoreDatabase = "restore_database"
+    RestoreDatabase = "restore_database",
+    Rollback = "rollback"
 }
 export enum StorageFolder {
     EncodedVideo = "encoded-video",
@@ -8181,6 +8370,7 @@ export enum Permission {
     BackupDelete = "backup.delete",
     ClusterGroupRead = "clusterGroup.read",
     ClusterGroupLeave = "clusterGroup.leave",
+    ClusterGroupAdmin = "clusterGroup.admin",
     ClusterGroupRequestCreate = "clusterGroupRequest.create",
     ClusterGroupRequestRead = "clusterGroupRequest.read",
     ClusterGroupRequestDelete = "clusterGroupRequest.delete",
@@ -8221,6 +8411,9 @@ export enum Permission {
     PartnerRead = "partner.read",
     PartnerUpdate = "partner.update",
     PartnerDelete = "partner.delete",
+    PasskeyRead = "passkey.read",
+    PasskeyUpdate = "passkey.update",
+    PasskeyDelete = "passkey.delete",
     PersonCreate = "person.create",
     PersonRead = "person.read",
     PersonUpdate = "person.update",
@@ -8429,6 +8622,7 @@ export enum WorkflowType {
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
     AssetMetadataExtraction = "AssetMetadataExtraction",
+    AssetOcrExtraction = "AssetOcrExtraction",
     AssetTagged = "AssetTagged"
 }
 export enum QueueJobStatus {
@@ -8436,8 +8630,7 @@ export enum QueueJobStatus {
     Failed = "failed",
     Completed = "completed",
     Delayed = "delayed",
-    Waiting = "waiting",
-    Paused = "paused"
+    Waiting = "waiting"
 }
 export enum JobName {
     AssetDelete = "AssetDelete",
@@ -8456,6 +8649,7 @@ export enum JobName {
     AssetGenerateThumbnailsQueueAll = "AssetGenerateThumbnailsQueueAll",
     AssetGenerateThumbnails = "AssetGenerateThumbnails",
     AuditTableCleanup = "AuditTableCleanup",
+    AuthChallengeCleanup = "AuthChallengeCleanup",
     DatabaseBackup = "DatabaseBackup",
     FacialRecognitionQueueAll = "FacialRecognitionQueueAll",
     FacialRecognition = "FacialRecognition",
@@ -8650,7 +8844,8 @@ export enum ReleaseType {
     Prerelease = "prerelease"
 }
 export enum ServerFeatureLevel {
-    FeatureLevel = 1
+    FeatureLevel = 1,
+    Passkeys = 2
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

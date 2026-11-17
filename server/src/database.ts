@@ -1,5 +1,4 @@
-import { Selectable, ShallowDehydrateObject } from 'kysely';
-import type { UserMetadataItem } from 'src/types.js';
+import { ControlledTransaction, Kysely, Selectable, ShallowDehydrateObject } from 'kysely';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
 import { PersonUserRole } from 'src/dtos/person.dto.js';
 import {
@@ -15,10 +14,32 @@ import {
   UserAvatarColor,
   UserStatus,
 } from 'src/enum.js';
+import { DB } from 'src/schema/index.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { PluginTable } from 'src/schema/tables/plugin.table.js';
+import type { UserMetadataItem } from 'src/types.js';
+
+export class TransactionHandle {
+  constructor(private trx: ControlledTransaction<DB>) {}
+
+  commit() {
+    return this.trx.commit().execute();
+  }
+
+  rollback() {
+    return this.trx.rollback().execute();
+  }
+
+  unwrap(): Kysely<DB> {
+    return this.trx;
+  }
+
+  [Symbol.asyncDispose]() {
+    return this.trx.isCommitted || this.trx.isRolledBack ? Promise.resolve() : this.rollback();
+  }
+}
 
 export type AuthUser = {
   id: string;
@@ -80,6 +101,17 @@ export type ApiKey = {
   createdAt: Date;
   updatedAt: Date;
   permissions: Permission[];
+};
+
+export type Passkey = {
+  id: string;
+  name: string | null;
+  userId: string;
+  credentialId: string;
+  transports: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  usedAt: Date | null;
 };
 
 export type Tag = {
@@ -277,6 +309,9 @@ export type AssetFace = {
   updatedAt: Date;
   updateId: string;
   isVisible: boolean;
+  ownerId: string;
+  assetVisibility: AssetVisibility;
+  assetDeletedAt: Date | null;
 };
 
 export type Plugin = Selectable<PluginTable>;
@@ -406,6 +441,7 @@ export const columns = {
   ],
   tag: ['tag.id', 'tag.value', 'tag.createdAt', 'tag.updatedAt', 'tag.color', 'tag.parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
+  passkey: ['id', 'name', 'userId', 'credentialId', 'transports', 'createdAt', 'updatedAt', 'usedAt'],
   notification: ['id', 'createdAt', 'level', 'type', 'title', 'description', 'data', 'readAt'],
   pluginMethod: [
     'plugin_method.name',

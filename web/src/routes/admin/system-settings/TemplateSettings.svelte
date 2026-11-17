@@ -1,16 +1,16 @@
 <script lang="ts">
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SettingTextarea from './SettingTextarea.svelte';
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getConfigQuery } from '$lib/queries/system-config.query';
-  import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { type AdminConfigDto, type AdminConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import EmailTemplatePreviewModal from '#lib/modals/EmailTemplatePreviewModal.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { getNotificationTemplateAdmin, type AdminConfigDto, type AdminConfigTemplateEmailsDto } from '@immich/sdk';
   import { Button, Icon, LoadingSpinner, modalManager } from '@immich/ui';
   import { mdiEyeOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import SettingTextarea from './SettingTextarea.svelte';
 
   interface Props {
     config: AdminConfigDto;
@@ -18,7 +18,7 @@
 
   let { config = $bindable() }: Props = $props();
 
-  const query = createPreloadedQuery(getConfigQuery);
+  const query = createPreloadedQuery(getAdminConfigQuery);
 
   let loadingPreview = $state(false);
 

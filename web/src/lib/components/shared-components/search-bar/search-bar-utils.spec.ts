@@ -1,4 +1,4 @@
-import { isPopoverContent } from '$lib/components/shared-components/search-bar/search-bar-utils';
+import { isPopoverContent } from '#lib/components/shared-components/search-bar/search-bar-utils.ts';
 
 describe('isPopoverContent', () => {
   const focusOutEventTo = (relatedTarget: EventTarget | null) => new FocusEvent('focusout', { relatedTarget });

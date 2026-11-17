@@ -1,3 +1,13 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import PasswordResetSuccessModal from '#lib/modals/PasswordResetSuccessModal.svelte';
+import UserDeleteConfirmModal from '#lib/modals/UserDeleteConfirmModal.svelte';
+import UserRestoreConfirmModal from '#lib/modals/UserRestoreConfirmModal.svelte';
+import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { updateUserAdminMutation } from '#lib/queries/user-admin.query.ts';
+import { Route } from '#lib/route.ts';
+import type { HeaderButtonActionItem } from '#lib/types.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { UserStatus, type UserAdminResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import {
@@ -12,16 +22,6 @@ import {
 import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
-import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
-import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
-import { executeMutation } from '$lib/queries/client';
-import { updateUserAdminMutation } from '$lib/queries/user-admin.query';
-import { Route } from '$lib/route';
-import type { HeaderButtonActionItem } from '$lib/types';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getUserAdminsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
@@ -58,8 +58,10 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
     shortcutOptions: { ignoreInputFields: true },
   };
 
-  const getDeleteDate = (deletedAt: string): Date =>
-    DateTime.fromISO(deletedAt).plus({ days: serverConfigManager.value.userDeleteDelay }).toJSDate();
+  const getDeleteDate = (deletedAt: string): Date => {
+    const userConfig = readPreloadedQuery(getUserConfigQuery());
+    return DateTime.fromISO(deletedAt).plus({ days: userConfig.user.deleteDelay }).toJSDate();
+  };
 
   const Restore: HeaderButtonActionItem = {
     icon: mdiDeleteRestore,
@@ -96,7 +98,9 @@ const generatePassword = (length: number = 16) => {
   const characterSet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-{}+!#$%/()=?';
 
   for (let i = 0; i < length; i++) {
-    let randomNumber = crypto.getRandomValues(new Uint32Array(1))[0];
+    const buffer = new Uint32Array(1);
+    crypto.getRandomValues(buffer);
+    let randomNumber = buffer[0];
     randomNumber /= 2 ** 32;
     randomNumber = Math.floor(randomNumber * characterSet.length);
 
@@ -108,27 +112,20 @@ const generatePassword = (length: number = 16) => {
 
 const handleResetPasswordUserAdmin = async (user: UserAdminResponseDto) => {
   const $t = await getFormatter();
-  const prompt = $t('admin.confirm_user_password_reset', { values: { user: user.name } });
-  const success = await modalManager.showDialog({ prompt });
-  if (!success) {
-    return;
-  }
-
   const password = generatePassword();
   await executeMutation(
     updateUserAdminMutation,
     [{ id: user.id, userAdminUpdateDto: { password, shouldChangePassword: true } }],
-    { onSuccess: () => void modalManager.show(PasswordResetSuccessModal, { newPassword: password }) },
+    {
+      confirm: { prompt: $t('admin.confirm_user_password_reset', { values: { user: user.name } }) },
+      onSuccess: () => void modalManager.show(PasswordResetSuccessModal, { newPassword: password }),
+    },
   );
 };
 
 const handleResetPinCodeUserAdmin = async (user: UserAdminResponseDto) => {
   const $t = await getFormatter();
-  const prompt = $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } });
-  const success = await modalManager.showDialog({ prompt });
-  if (!success) {
-    return;
-  }
-
-  await executeMutation(updateUserAdminMutation, [{ id: user.id, userAdminUpdateDto: { pinCode: null } }]);
+  await executeMutation(updateUserAdminMutation, [{ id: user.id, userAdminUpdateDto: { pinCode: null } }], {
+    confirm: { prompt: $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } }) },
+  });
 };

@@ -1,25 +1,25 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import AdminCard from '$lib/components/AdminCard.svelte';
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import DeviceCard from '$lib/components/user-settings-page/DeviceCard.svelte';
-  import FeatureSetting from './FeatureSetting.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
+  import AdminCard from '#lib/components/AdminCard.svelte';
+  import CalendarHeatmap from '#lib/components/CalendarHeatmap.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
+  import ServerStatisticsCard from '#lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import DeviceCard from '#lib/components/user-settings-page/DeviceCard.svelte';
+  import Skeleton from '#lib/elements/Skeleton.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
   import {
     getUserAdminQuery,
     getUserCalendarHeatmapAdminQuery,
     getUserPreferencesAdminQuery,
     getUserSessionsAdminQuery,
     getUserStatisticsAdminQuery,
-  } from '$lib/queries/user-admin.query';
-  import { Route } from '$lib/route';
-  import { getUserAdminActions } from '$lib/services/user-admin.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { createDateFormatter, findLocale } from '$lib/utils';
-  import { getBytesWithUnit } from '$lib/utils/byte-units';
+  } from '#lib/queries/user-admin.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getUserAdminActions } from '#lib/services/user-admin.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { createDateFormatter, findLocale } from '#lib/utils.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import {
     Alert,
     Badge,
@@ -27,13 +27,13 @@
     Code,
     CommandPaletteDefaultProvider,
     Container,
-    getByteUnitString,
     Heading,
     Icon,
     MenuItemType,
     Meter,
     Stack,
     Text,
+    getByteUnitString,
   } from '@immich/ui';
   import {
     mdiAccountOutline,
@@ -49,9 +49,9 @@
   } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
   import type { LayoutProps } from './$types';
-  import Skeleton from '$lib/elements/Skeleton.svelte';
-  import CalendarHeatmap from '$lib/components/CalendarHeatmap.svelte';
+  import FeatureSetting from './FeatureSetting.svelte';
 
   const { children, params }: LayoutProps = $props();
 

@@ -2,11 +2,11 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  type Generated,
   Index,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   Table,
+  type Generated,
   type Timestamp,
 } from '@immich/sql-tools';
 import type { VideoSegmentCodec } from 'src/enum.js';

@@ -645,6 +645,25 @@ void main() {
       });
     });
 
+    group('viewInTimeline button', () {
+      test('should show when owner and opened from a deep link', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.viewer,
+          timelineOrigin: TimelineOrigin.deepLink,
+        );
+
+        expect(ActionButtonType.viewInTimeline.shouldShow(context), isTrue);
+      });
+    });
+
     group('setAlbumCover button', () {
       test('should show when owner, not locked, has album, and selectedCount is 1', () {
         final album = createRemoteAlbum();

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import SearchButton from './SearchButton.svelte';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import SearchButton from './SearchButton.svelte';
 
   let filters = $derived(searchManager.filter.display);
 </script>

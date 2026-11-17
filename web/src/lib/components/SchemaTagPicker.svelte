@@ -1,16 +1,14 @@
 <script lang="ts">
-  import Combobox from '$lib/components/shared-components/Combobox.svelte';
-  import TagPill from '$lib/components/shared-components/TagPill.svelte';
-  import { getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { onMount } from 'svelte';
+  import Combobox from '#lib/components/shared-components/Combobox.svelte';
+  import TagPill from '#lib/components/shared-components/TagPill.svelte';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getAllTagsQuery } from '#lib/queries/tag.query.ts';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   let { tagIds = $bindable([]) }: { tagIds: string[] } = $props();
-  let tags: TagResponseDto[] = $state([]);
-
-  onMount(async () => {
-    tags = await getAllTags();
-  });
+  const query = createQuery(getAllTagsQuery, () => queryClient);
+  const tags = $derived(query.data ?? []);
 </script>
 
 <Combobox

@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import 'zod/compile';
 import { configureExpress, configureTelemetry } from 'src/app.common.js';
 import { ApiModule } from 'src/app.module.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
@@ -13,6 +14,10 @@ async function bootstrap() {
 
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, {
     bufferLogs: true,
+    // default module id algorithm can cause
+    // the ApiModule to be instatiated more than
+    // once when injected into OrchestrationApiModule
+    moduleIdGeneratorAlgorithm: 'deep-hash',
     routeConflictPolicy: { duplicate: 'error' },
     routeResolutionStrategy: 'specificity',
   });

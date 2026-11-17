@@ -1,4 +1,4 @@
-import type { LatLng } from '$lib/types';
+import type { LatLng } from '#lib/types.ts';
 
 class GeolocationManager {
   #lastPoint = $state<LatLng>();

@@ -1,8 +1,9 @@
-import { getQueue, getQueueJobs, QueueJobStatus } from '@immich/sdk';
+import { queryClient } from '#lib/queries/client.ts';
+import { getQueueQuery } from '#lib/queries/queue.query.ts';
+import { Route, fromQueueSlug } from '#lib/route.ts';
+import { authenticate } from '#lib/utils/auth.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { redirect } from '@sveltejs/kit';
-import { fromQueueSlug, Route } from '$lib/route';
-import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
@@ -13,15 +14,11 @@ export const load = (async ({ params, url }) => {
     redirect(307, Route.queues());
   }
 
-  const [queue, failedJobs] = await Promise.all([
-    getQueue({ name }),
-    getQueueJobs({ name, status: [QueueJobStatus.Failed, QueueJobStatus.Paused] }),
-  ]);
+  await queryClient.query(getQueueQuery(name)).catch(() => redirect(307, Route.queues()));
   const $t = await getFormatter();
 
   return {
-    queue,
-    failedJobs,
+    name,
     meta: {
       title: $t('admin.queue_details'),
     },

@@ -1,5 +1,5 @@
 import { on } from 'svelte/events';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 const isSupported = browser && 'wakeLock' in navigator;
 

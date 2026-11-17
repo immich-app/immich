@@ -1,10 +1,18 @@
 # Link against minSdk (mobile/android/app/build.gradle) instead of the API 35 that native_toolchain_rust picks.
+# rav1d's assembly reaches the tables the library exports PC-relative, which ELF needs -Bsymbolic for.
 [target.aarch64-linux-android]
-rustflags = ["-C", "link-arg=--target=aarch64-linux-android26"]
+rustflags = ["-C", "link-arg=--target=aarch64-linux-android26", "-C", "link-arg=-Wl,-Bsymbolic"]
 
 # Neon on 32 bit arm is the NDK's default for C, the rust target leaves it off.
 [target.armv7-linux-androideabi]
 rustflags = ["-C", "link-arg=--target=armv7a-linux-androideabi26", "-C", "target-feature=+neon"]
 
 [target.x86_64-linux-android]
-rustflags = ["-C", "link-arg=--target=x86_64-linux-android26"]
+rustflags = ["-C", "link-arg=--target=x86_64-linux-android26", "-C", "link-arg=-Wl,-Bsymbolic"]
+
+# -Bsymbolic as for Android.
+[target.aarch64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-Wl,-Bsymbolic"]
+
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-Wl,-Bsymbolic"]

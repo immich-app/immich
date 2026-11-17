@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { focusTrap } from '$lib/actions/focus-trap';
+  import { focusTrap } from '#lib/actions/focus-trap.ts';
 
   interface Props {
     show: boolean;
@@ -12,7 +12,7 @@
 <button type="button" onclick={() => (show = true)}>Open</button>
 
 {#if show}
-  <div use:focusTrap={{ active }}>
+  <div {@attach focusTrap({ active })}>
     <div>
       <span>text</span>
       <button data-testid="one" type="button" onclick={() => (show = false)}>Close</button>

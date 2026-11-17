@@ -1,10 +1,11 @@
 <script lang="ts">
-  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { getAssetActions } from '$lib/services/asset.service';
-  import { removeTag } from '$lib/utils/asset-utils';
+  import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { untagAssetsMutation } from '#lib/queries/tag.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetActions } from '#lib/services/asset.service.ts';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Badge, Link, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -18,12 +19,10 @@
 
   let tags = $derived(asset.tags || []);
 
-  const handleRemove = async (tagId: string) => {
-    const ids = await removeTag({ tagIds: [tagId], assetIds: [asset.id], showNotification: false });
-    if (ids) {
-      asset = await getAssetInfo({ id: asset.id });
-    }
-  };
+  const handleRemove = (tagId: string) =>
+    executeMutation(untagAssetsMutation, [{ id: tagId, bulkIdsDto: { ids: [asset.id] } }], {
+      onSuccess: () => void getAssetInfo({ id: asset.id }).then((updated) => (asset = updated)),
+    });
 
   const onAssetsTag = async (ids: string[]) => {
     if (ids.includes(asset.id)) {

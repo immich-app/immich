@@ -25,9 +25,7 @@ const canMatch = <T>(condition: EnumCondition<T>, value: T): boolean => {
   );
 };
 
-/**
- * The conditions that decide which `field` values the filter can return. A top-level condition decides alone, otherwise each branch itself.
- */
+/** The conditions that decide which `field` values the filter can return. A top-level condition decides alone, otherwise each branch itself. */
 const decidingConditions = <F extends EnumField>(filter: SearchFilter, field: F) => {
   if (filter[field] !== undefined) {
     return [filter[field]];
@@ -39,9 +37,9 @@ const decidingConditions = <F extends EnumField>(filter: SearchFilter, field: F)
 };
 
 /**
- * Keeps locked assets out of search results unless the session is elevated: a filter that asks for
- * them is rejected with 401, and any other filter gets `visibility != locked` ANDed in.
- */
+Keeps locked assets out of search results unless the session is elevated: a filter that asks for
+them is rejected with 401, and any other filter gets `visibility != locked` ANDed in.
+*/
 export const applyLockedVisibilityPolicy = (auth: AuthDto, filter: SearchFilter): SearchFilter => {
   if (auth.session?.hasElevatedPermission) {
     return filter;

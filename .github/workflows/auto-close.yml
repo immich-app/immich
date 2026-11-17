@@ -26,10 +26,17 @@ jobs:
         env:
           BODY: ${{ github.event.pull_request.body }}
         run: |
+          BODY=$(printf '%s\n' "$BODY" | tr -d '\r' | perl -0pe 's/<!--.*?-->//gs')
+          section() { printf '%s\n' "$BODY" | awk -v h="$1" 'index($0, h) == 1 { f = 1; next } /^## / { f = 0 } f'; }
+
           OK=true
           while IFS= read -r header; do
             printf '%s\n' "$BODY" | grep -qF "$header" || OK=false
-          done < <(sed '/<!--/,/-->/d' .github/pull_request_template.md | grep "^## ")
+          done < <(perl -0pe 's/<!--.*?-->//gs' .github/pull_request_template.md | grep "^## ")
+
+          section "## Checklist" | grep -qE '^\s*- \[[xX]\]' || OK=false
+          [[ "$(section "## Please describe to which degree" | tr -d '[:space:]')" =~ ^(\.\.\.)?$ ]] && OK=false
+
           echo "uses_template=$OK" | tee --append "$GITHUB_OUTPUT"
 
   close_template:
@@ -51,7 +58,7 @@ jobs:
         run: |
           gh api graphql \
             -f prId="$NODE_ID" \
-            -f body="This PR has been automatically closed as the description doesn't follow [our template](https://github.com/immich-app/immich/blob/main/.github/pull_request_template.md). After you edit it to match the template, the PR will automatically be reopened." \
+            -f body="This PR has been automatically closed as the description doesn't follow [our template](https://github.com/immich-app/immich/blob/main/.github/pull_request_template.md). Please make sure every section is present and filled in. After you edit it to match the template, the PR will automatically be reopened." \
             -f query='
               mutation CommentAndClosePR($prId: ID!, $body: String!) {
                 addComment(input: {

@@ -55,16 +55,19 @@ The default configuration looks like this:
     "colorspace": "p3",
     "extractEmbedded": false,
     "fullsize": {
+      "effort": "medium",
       "enabled": false,
       "format": "jpeg",
       "quality": 80
     },
     "preview": {
+      "effort": "medium",
       "format": "jpeg",
       "quality": 80,
       "size": 1440
     },
     "thumbnail": {
+      "effort": "medium",
       "format": "webp",
       "quality": 80,
       "size": 250
@@ -208,6 +211,11 @@ The default configuration looks like this:
     "storageQuotaClaim": "immich_quota",
     "timeout": 30000,
     "tokenEndpointAuthMethod": "client_secret_post"
+  },
+  "passkey": {
+    "enabled": true,
+    "domain": null,
+    "additionalDomains": []
   },
   "passwordLogin": {
     "enabled": true

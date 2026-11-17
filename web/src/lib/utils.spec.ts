@@ -1,169 +1,73 @@
+import en from '#i18n/en.json';
+import { getAssetUrl, memoryLaneTitle, semverToName } from '#lib/utils.ts';
+import { validThumbhash } from '#test/common/factories.ts';
+import { factory } from '#test/unit/factories.ts';
 import { AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
 import { addMessages, init } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import en from '$i18n/en.json';
-import { getAssetUrl, memoryLaneTitle, semverToName } from '$lib/utils';
-import { assetFactory } from '@test-data/factories/asset-factory';
-import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
 describe('utils', () => {
   describe(getAssetUrl.name, () => {
-    it('should return thumbnail URL for static images', () => {
-      const asset = assetFactory.build({
-        originalPath: 'image.jpg',
-        originalMimeType: 'image/jpeg',
-        type: AssetTypeEnum.Image,
-      });
+    const image = { originalPath: 'image.jpg', originalMimeType: 'image/jpeg', type: AssetTypeEnum.Image };
+    const gif = { originalPath: 'image.gif', originalMimeType: 'image/gif', type: AssetTypeEnum.Image };
+    const animatedGif = { ...gif, duration: 2000 };
+    const animatedWebp = {
+      originalPath: 'image.webp',
+      originalMimeType: 'image/webp',
+      type: AssetTypeEnum.Image,
+      duration: 2000,
+    };
+    const video = { originalPath: 'video.mp4', originalMimeType: 'video/mp4', type: AssetTypeEnum.Video };
+    const preview = (id: string) => `/api/assets/${id}/thumbnail?size=preview&c=${validThumbhash}&edited=true`;
+    const original = (id: string) => `/api/assets/${id}/original?c=${validThumbhash}&edited=true`;
 
-      const url = getAssetUrl({ asset });
+    it.each([
+      { name: 'a static image', overrides: image, expected: preview },
+      { name: 'a static gif', overrides: gif, expected: preview },
+      { name: 'a static webp', overrides: { ...animatedWebp, duration: undefined }, expected: preview },
+      { name: 'an animated gif', overrides: animatedGif, expected: original },
+      { name: 'an animated webp', overrides: animatedWebp, expected: original },
+      { name: 'a video', overrides: video, expected: preview },
+    ])('serves the preview or the original for $name', ({ overrides, expected }) => {
+      const asset = factory.asset(overrides);
 
-      // Should return a thumbnail URL (contains /thumbnail)
-      expect(url).toContain('/thumbnail');
-      expect(url).toContain(asset.id);
+      expect(getAssetUrl({ asset })).toBe(expected(asset.id));
     });
 
-    it('should return thumbnail URL for static gifs', () => {
-      const asset = assetFactory.build({
-        originalPath: 'image.gif',
-        originalMimeType: 'image/gif',
-        type: AssetTypeEnum.Image,
-      });
+    it('serves the original for a video when forced', () => {
+      const asset = factory.asset(video);
 
-      const url = getAssetUrl({ asset });
-
-      expect(url).toContain('/thumbnail');
-      expect(url).toContain(asset.id);
+      expect(getAssetUrl({ asset, forceOriginal: true })).toBe(original(asset.id));
     });
 
-    it('should return thumbnail URL for static webp images', () => {
-      const asset = assetFactory.build({
-        originalPath: 'image.webp',
-        originalMimeType: 'image/webp',
-        type: AssetTypeEnum.Image,
-      });
+    it.each([
+      { name: 'a static image with download and metadata allowed', overrides: gif, link: {}, expected: preview },
+      {
+        name: 'an animated gif with download and metadata allowed',
+        overrides: animatedGif,
+        link: {},
+        expected: original,
+      },
+      {
+        name: 'an animated gif when download is not allowed',
+        overrides: animatedGif,
+        link: { allowDownload: false },
+        expected: preview,
+      },
+      {
+        name: 'an animated gif when metadata is hidden',
+        overrides: animatedGif,
+        link: { showMetadata: false },
+        expected: preview,
+      },
+    ])('on a shared link serves the preview or the original for $name', ({ overrides, link, expected }) => {
+      const asset = factory.asset(overrides);
+      const sharedLink = factory.sharedLink({ ...link, assets: [asset] });
 
-      const url = getAssetUrl({ asset });
-
-      expect(url).toContain('/thumbnail');
-      expect(url).toContain(asset.id);
-    });
-
-    it('should return original URL for animated gifs', () => {
-      const asset = assetFactory.build({
-        originalPath: 'image.gif',
-        originalMimeType: 'image/gif',
-        type: AssetTypeEnum.Image,
-        duration: 2000,
-      });
-
-      const url = getAssetUrl({ asset });
-
-      // Should return original URL (contains /original)
-      expect(url).toContain('/original');
-      expect(url).toContain(asset.id);
-    });
-
-    it('should return original URL for animated webp images', () => {
-      const asset = assetFactory.build({
-        originalPath: 'image.webp',
-        originalMimeType: 'image/webp',
-        type: AssetTypeEnum.Image,
-        duration: 2000,
-      });
-
-      const url = getAssetUrl({ asset });
-
-      expect(url).toContain('/original');
-      expect(url).toContain(asset.id);
-    });
-
-    it('should return original URL for video assets with forceOriginal', () => {
-      const asset = assetFactory.build({
-        originalPath: 'video.mp4',
-        originalMimeType: 'video/mp4',
-        type: AssetTypeEnum.Video,
-      });
-
-      const url = getAssetUrl({ asset, forceOriginal: true });
-
-      expect(url).toContain('/original');
-      expect(url).toContain(asset.id);
-    });
-
-    it('should return thumbnail URL for video assets without forceOriginal', () => {
-      const asset = assetFactory.build({
-        originalPath: 'video.mp4',
-        originalMimeType: 'video/mp4',
-        type: AssetTypeEnum.Video,
-      });
-
-      const url = getAssetUrl({ asset });
-
-      expect(url).toContain('/thumbnail');
-      expect(url).toContain(asset.id);
-    });
-
-    it('should return thumbnail URL for static images in shared link even with download and showMetadata permissions', () => {
-      const asset = assetFactory.build({
-        originalPath: 'image.gif',
-        originalMimeType: 'image/gif',
-        type: AssetTypeEnum.Image,
-      });
-      const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
-
-      const url = getAssetUrl({ asset, sharedLink });
-
-      expect(url).toContain('/thumbnail');
-      expect(url).toContain(asset.id);
-    });
-
-    it('should return original URL for animated images in shared link with download and showMetadata permissions', () => {
-      const asset = assetFactory.build({
-        originalPath: 'image.gif',
-        originalMimeType: 'image/gif',
-        type: AssetTypeEnum.Image,
-        duration: 2000,
-      });
-      const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
-
-      const url = getAssetUrl({ asset, sharedLink });
-
-      expect(url).toContain('/original');
-      expect(url).toContain(asset.id);
-    });
-
-    it('should return thumbnail URL (not original) for animated images when shared link download permission is false', () => {
-      const asset = assetFactory.build({
-        originalPath: 'image.gif',
-        originalMimeType: 'image/gif',
-        type: AssetTypeEnum.Image,
-        duration: 2000,
-      });
-      const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
-
-      const url = getAssetUrl({ asset, sharedLink });
-
-      expect(url).toContain('/thumbnail');
-      expect(url).not.toContain('/original');
-      expect(url).toContain(asset.id);
-    });
-
-    it('should return thumbnail URL (not original) for animated images when shared link showMetadata permission is false', () => {
-      const asset = assetFactory.build({
-        originalPath: 'image.gif',
-        originalMimeType: 'image/gif',
-        type: AssetTypeEnum.Image,
-        duration: 2000,
-      });
-      const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
-
-      const url = getAssetUrl({ asset, sharedLink });
-
-      expect(url).toContain('/thumbnail');
-      expect(url).not.toContain('/original');
-      expect(url).toContain(asset.id);
+      expect(getAssetUrl({ asset, sharedLink })).toBe(expected(asset.id));
     });
   });
+
   describe('semverToName', () => {
     it('should not append release candidate tag if prelease is not set', () => {
       expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: null, featureLevel: 1 })).toEqual('v3.0.0');

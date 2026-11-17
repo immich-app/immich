@@ -1,7 +1,7 @@
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import { UserResponseSchema } from 'src/dtos/user.dto.js';
 import { PartnerDirectionSchema } from 'src/enum.js';
+import { createZodDto } from 'src/zod.js';
 
 const PartnerCreateSchema = z
   .object({

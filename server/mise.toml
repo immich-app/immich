@@ -40,7 +40,7 @@ run = "node ./dist/bin/sync-open-api.js"
 
 [tasks.migrations]
 env._.path = "./node_modules/.bin"
-run = "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations"
+run = "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} --ignore-prefix futo_backups_ migrations"
 description = "Run database migration commands (create, generate, run, sync-order, verify-order, ...)"
 
 [tasks."schema-drop"]

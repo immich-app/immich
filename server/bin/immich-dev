@@ -7,4 +7,6 @@ fi
 
 cd /usr/src/app || exit
 pnpm --filter @immich/plugin-sdk build
+pnpm --filter immich install
+SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false --dir server/node_modules/sharp run build
 pnpm --filter immich exec nest start --debug "0.0.0.0:9230" --watch -- "$@"

@@ -14,10 +14,10 @@ enum DatabaseSslMode {
 const DatabaseSslModeSchema = z.enum(DatabaseSslMode).describe('Database SSL mode').meta({ id: 'DatabaseSslMode' });
 const absolutePath = z.string().regex(/^\//, 'Must be an absolute path').optional();
 /**
- * Treat certain strings as booleans and coerce them to boolean
- * Ideal for environment variables that are strings but should be treated as booleans
- * @docs https://zod.dev/api?id=stringbool
- */
+Treat certain strings as booleans and coerce them to boolean
+Ideal for environment variables that are strings but should be treated as booleans
+@docs https://zod.dev/api?id=stringbool
+*/
 const stringBool = z.stringbool();
 
 const trustedProxiesSchema = z

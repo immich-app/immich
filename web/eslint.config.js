@@ -49,11 +49,11 @@ export default defineConfig(
     languageOptions: {
       parser,
       parserOptions: {
-        project: ['./tsconfig.json'],
+        project: ['./tsconfig.json', './test/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    // ignores: ['**/service-worker/**'],
+    ignores: ['**/service-worker/**'],
   },
   {
     ignores: [
@@ -74,6 +74,8 @@ export default defineConfig(
       'tailwind.config.js',
       'coverage',
       'vite.config.ts',
+      'playwright.config.ts',
+      '**/service-worker/**',
     ],
   },
   typescriptEslint.configs.recommended,
@@ -96,7 +98,7 @@ export default defineConfig(
       parserOptions: {
         extraFileExtensions: ['.svelte'],
         tsconfigRootDir: import.meta.dirname,
-        project: ['./tsconfig.json'],
+        project: ['./tsconfig.json', './test/tsconfig.json'],
       },
     },
 
@@ -136,6 +138,7 @@ export default defineConfig(
       'unicorn/prefer-uint8array-base64': 'off',
       'unicorn/max-nested-calls': 'off',
       'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/prefer-smaller-scope': 'off',
       'unicorn/no-unreadable-object-destructuring': 'off',
       // not yet compatible with all our supported browsers
       'unicorn/prefer-promise-with-resolvers': 'off',
@@ -164,6 +167,7 @@ export default defineConfig(
       '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
       'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
+      'svelte/no-at-const-tags': 'error',
       'svelte/no-navigation-without-resolve': 'off',
       'unicorn/prefer-early-return': 'off',
       'unicorn/prefer-ternary': 'off',
@@ -195,6 +199,39 @@ export default defineConfig(
       parserOptions: {
         parser: typescriptEslint.parser,
       },
+    },
+  },
+  {
+    files: ['test/**/*.ts', 'src/**/*.spec.ts'],
+    rules: {
+      'no-empty-pattern': 'off',
+      'unicorn/no-document-cookie': 'off',
+      'compat/compat': 'off',
+      'tscompat/tscompat': 'off',
+    },
+  },
+  {
+    files: ['test/medium/matchers.ts'],
+    rules: {
+      '@typescript-eslint/no-namespace': 'off',
+    },
+  },
+  {
+    files: ['test/medium/specs/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@playwright/test',
+              importNames: ['test', 'expect'],
+              message:
+                "Import test and expect from '#test/medium/fixtures.ts' so the api fixture and matchers are available.",
+            },
+          ],
+        },
+      ],
     },
   },
   eslintPluginPrettierRecommended,

@@ -1,5 +1,5 @@
-import { Column, Img, Link, Row, Text } from 'react-email';
 import * as React from 'react';
+import { Column, Img, Link, Row, Text } from 'react-email';
 
 export const ImmichFooter = () => (
   <>

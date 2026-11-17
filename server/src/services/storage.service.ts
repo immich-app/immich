@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
-import type { JobOf, SystemFlags } from 'src/types.js';
 import { ErrorMessages } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
@@ -14,7 +13,9 @@ import {
   SystemMetadataKey,
 } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
+import type { JobOf, SystemFlags } from 'src/types.js';
 import { ImmichStartupError } from 'src/utils/misc.js';
+import { detectMediaLocation } from 'src/utils/storage.js';
 
 const docsMessage = `Please see https://docs.immich.app/administration/system-integrity#folder-checks for more information.`;
 
@@ -22,25 +23,7 @@ const docsMessage = `Please see https://docs.immich.app/administration/system-in
 export class StorageService extends BaseService {
   private detectMediaLocation(): string {
     const envData = this.configRepository.getEnv();
-    if (envData.storage.mediaLocation) {
-      return envData.storage.mediaLocation;
-    }
-
-    const targets: string[] = [];
-    const candidates = ['/data', '/usr/src/app/upload'];
-
-    for (const candidate of candidates) {
-      const isExists = this.storageRepository.existsSync(candidate);
-      if (isExists) {
-        targets.push(candidate);
-      }
-    }
-
-    if (targets.length === 1) {
-      return targets[0];
-    }
-
-    return '/usr/src/app/upload';
+    return detectMediaLocation(envData.storage.mediaLocation, (path) => this.storageRepository.existsSync(path));
   }
 
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.StorageService })

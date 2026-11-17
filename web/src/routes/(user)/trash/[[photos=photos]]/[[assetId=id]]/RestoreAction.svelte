@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import type { OnRestore } from '$lib/utils/actions';
-  import { handleError } from '$lib/utils/handle-error';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import type { OnRestore } from '#lib/utils/actions.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { restoreAssets } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
   import { mdiHistory } from '@mdi/js';

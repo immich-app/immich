@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { getSearchDatePreset, SearchDatePreset } from './search-bar-utils';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import { DatePicker, Text } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
   import SearchButton from './SearchButton.svelte';
+  import { SearchDatePreset, getSearchDatePreset } from './search-bar-utils';
 
   let filters = $derived(searchManager.filter.date);
   let invalid = $derived(filters.takenAfter && filters.takenBefore && filters.takenAfter > filters.takenBefore);

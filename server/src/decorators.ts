@@ -2,6 +2,7 @@ import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
 import { chunk, flatten } from 'lodash-es';
+import type { TransactionHandle } from 'src/database.js';
 import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
 import { EmitEvent } from 'src/repositories/event.repository.js';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
@@ -31,11 +32,11 @@ export const UpdatedAtTrigger = (name: string) =>
 export const DATABASE_PARAMETER_CHUNK_SIZE = 65_500;
 
 /**
- * Chunks an array or set into smaller collections of the same type and specified size.
- *
- * @param collection The collection to chunk.
- * @param size The size of each chunk.
- */
+Chunks an array or set into smaller collections of the same type and specified size.
+
+@param collection The collection to chunk.
+@param size The size of each chunk.
+*/
 function chunks<T>(collection: Array<T>, size: number): Array<Array<T>>;
 function chunks<T>(collection: Set<T>, size: number): Array<Set<T>>;
 function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>> | Array<Set<T>> {
@@ -59,12 +60,12 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
 }
 
 /**
- * Wraps a method that takes a collection of parameters and sequentially calls it with chunks of the collection,
- * to overcome the maximum number of parameters allowed by the database driver.
- *
- * @param options.paramIndex The index of the function parameter to chunk. Defaults to 0.
- * @param options.flatten Whether to flatten the results. Defaults to false.
- */
+Wraps a method that takes a collection of parameters and sequentially calls it with chunks of the collection,
+to overcome the maximum number of parameters allowed by the database driver.
+
+@param options.paramIndex The index of the function parameter to chunk. Defaults to 0.
+@param options.flatten Whether to flatten the results. Defaults to false.
+*/
 export function Chunked(
   options: { paramIndex?: number; chunkSize?: number; mergeFn?: (results: any) => any } = {},
 ): MethodDecorator {
@@ -124,6 +125,7 @@ export const DummyValue = {
   TIME_BUCKET: '2024-01-01T00:00:00.000Z',
   BOOLEAN: true,
   VECTOR: JSON.stringify(Array.from({ length: 512 }, () => 0)),
+  TRANSACTION: {} as Pick<TransactionHandle, 'unwrap'>,
 };
 
 export const GENERATE_SQL_KEY = 'generate-sql-key';

@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, type Generated, Table, Timestamp } from '@immich/sql-tools';
+import { Column, CreateDateColumn, Table, Timestamp, type Generated } from '@immich/sql-tools';
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators.js';
 
 @Table('partner_audit')

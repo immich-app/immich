@@ -100,7 +100,7 @@
     "image_preview_quality_description": "Vorschauqualität von 1-100. Ein höherer Wert ist besser, erzeugt dadurch aber grössere Dateien und kann die Reaktionsfähigkeit der App beeinträchtigen. Ein niedriger Wert kann dafür aber die Qualität des maschinellen Lernens beeinträchtigen.",
     "image_preview_title": "Vorschaueinstellungen",
     "image_progressive": "Fortlaufend",
-    "image_progressive_description": "JPEG-Bilder schrittweise kodieren, um ein stufenweises Laden zu ermöglichen. Dies hat keine Auswirkungen auf WebP-Bilder.",
+    "image_progressive_description": "JPEG-Bilder schrittweise kodieren, um ein stufenweises Laden zu ermöglichen. Dies hat keine Auswirkungen auf andere Dateiformate.",
     "image_quality": "Qualität",
     "image_resolution": "Uflösig",
     "image_resolution_description": "Höhere Auflösungen können mehr Details erhalten, benötigen aber mehr Zeit für die Kodierung, haben grössere Dateigrössen und können die Reaktionsfähigkeit der App beeinträchtigen.",
@@ -248,7 +248,8 @@
     "map_settings_description": "Karten- und GPS-Einstellungen verwalten",
     "map_style_description": "URL zu einem style.json Karten-Theme",
     "memory_cleanup_job": "Erinnerungen aufräumen",
-    "memory_generate_job": "Erinnerungen Generierung"
+    "memory_generate_job": "Erinnerungen Generierung",
+    "metadata_extraction_job": "Metadaten extrahieren"
   },
   "video_quality": "Videoqualität",
   "videos": "Videos",

@@ -1,5 +1,5 @@
 import { Selectable } from 'kysely';
-import { SourceType } from 'src/enum.js';
+import { AssetVisibility, SourceType } from 'src/enum.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { build } from 'test/factories/builder.factory.js';
 import { PersonFactory } from 'test/factories/person.factory.js';
@@ -31,6 +31,9 @@ export class AssetFaceFactory {
       sourceType: SourceType.MachineLearning,
       updatedAt: newDate(),
       updateId: newUuidV7(),
+      ownerId: newUuid(),
+      assetVisibility: AssetVisibility.Timeline,
+      assetDeletedAt: null,
       ...dto,
     });
   }

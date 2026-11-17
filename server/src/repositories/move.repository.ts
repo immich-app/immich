@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { type Insertable, type Kysely, type Updateable, sql } from 'kysely';
+import { sql, type Insertable, type Kysely, type Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetPathType, type PathType } from 'src/enum.js';

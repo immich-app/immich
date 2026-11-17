@@ -79,8 +79,7 @@ abstract class ImageRequest {
     return (codec, descriptor);
   }
 
-  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length, {ui.Size? decodeSize}) async {
-    final result = await _codecFromEncodedPlatformImage(address, length, decodeSize: decodeSize);
+  Future<ui.FrameInfo?> _firstFrame((ui.Codec, ui.ImageDescriptor)? result) async {
     if (result == null) {
       return null;
     }
@@ -116,7 +115,12 @@ abstract class ImageRequest {
     return ((width * scale).ceil(), (height * scale).ceil());
   }
 
-  Future<ui.FrameInfo?> _fromDecodedPlatformImage(int address, int width, int height, int rowBytes) async {
+  Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromDecodedPlatformImage(
+    int address,
+    int width,
+    int height,
+    int rowBytes,
+  ) async {
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
       malloc.free(pointer);
@@ -152,14 +156,6 @@ abstract class ImageRequest {
       return null;
     }
 
-    final frame = await codec.getNextFrame();
-    descriptor.dispose();
-    codec.dispose();
-    if (_isCancelled) {
-      frame.image.dispose();
-      return null;
-    }
-
-    return frame;
+    return (codec, descriptor);
   }
 }

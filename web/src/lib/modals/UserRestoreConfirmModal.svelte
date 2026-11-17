@@ -1,7 +1,7 @@
 <script lang="ts">
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { executeMutation } from '$lib/queries/client';
-  import { restoreUserAdminMutation } from '$lib/queries/user-admin.query';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { restoreUserAdminMutation } from '#lib/queries/user-admin.query.ts';
   import { type UserAdminResponseDto } from '@immich/sdk';
   import { ConfirmModal } from '@immich/ui';
   import { mdiDeleteRestore } from '@mdi/js';

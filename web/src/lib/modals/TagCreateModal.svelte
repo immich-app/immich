@@ -1,9 +1,10 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import { handleCreateTag } from '$lib/services/tag.service';
-  import type { TreeNode } from '$lib/utils/tree-utils';
-  import { FormModal, Text } from '@immich/ui';
+  import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { upsertTagsMutation } from '#lib/queries/tag.query.ts';
+  import type { TreeNode } from '#lib/utils/tree-utils.ts';
+  import { FormModal, Text, toastManager } from '@immich/ui';
   import { mdiTag } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -18,10 +19,12 @@
   let tagName = $state('');
 
   const onSubmit = async () => {
-    const success = await handleCreateTag(tagValue + tagName);
-    if (success) {
-      onClose();
-    }
+    await executeMutation(upsertTagsMutation, [{ tagUpsertDto: { tags: [tagValue + tagName] } }], {
+      onSuccess: ([tag]) => {
+        toastManager.primary($t('tag_created', { values: { tag: tag.value } }));
+        onClose();
+      },
+    });
   };
 </script>
 
