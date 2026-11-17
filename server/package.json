@@ -95,7 +95,7 @@
     "multer": "^2.0.2",
     "nest-commander": "^3.16.0",
     "nestjs-cls": "^7.0.0",
-    "nestjs-kysely": "3.1.5",
+    "nestjs-kysely": "4.0.0",
     "nestjs-otel": "^8.0.0",
     "nodemailer": "^10.0.0",
     "openid-client": "^6.3.3",

@@ -170,8 +170,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -722,8 +720,8 @@ importers:
         specifier: ^7.0.0
         version: 7.0.2(@nestjs/common@12.3.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       nestjs-kysely:
-        specifier: 3.1.5
-        version: 3.1.5(@nestjs/common@12.3.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.3)(kysely@0.29.8)(reflect-metadata@0.2.2)
+        specifier: 4.0.0
+        version: 4.0.0(@nestjs/common@12.3.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.3)(kysely@0.29.8)
       nestjs-otel:
         specifier: ^8.0.0
         version: 8.1.1(@nestjs/common@12.3.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.3)(rxjs@7.8.2)
@@ -10195,6 +10193,14 @@ packages:
       '@nestjs/core': ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0 || ^12.0.0
       kysely: 0.x
       reflect-metadata: ^0.1.13 || ^0.2.2
+
+  nestjs-kysely@4.0.0:
+    resolution: {integrity: sha512-EYvYOD7N8ri2+mgAVpRnMAAx8rA9tBosQgblQkWLDKhELjln5vx3/J5ofAFOW8EBZveaysWb3IWsMgiebJ89jg==}
+    engines: {node: '>=24'}
+    peerDependencies:
+      '@nestjs/common': ^11.0.0 || ^12.0.0
+      '@nestjs/core': ^11.0.0 || ^12.0.0
+      kysely: '>=0.28 <1'
 
   nestjs-otel@8.1.1:
     resolution: {integrity: sha512-7JJuMCJcamiNC0xgDh745PZt8LQDaF6WmK+FaTEu74G1BM9Sbo4rTw4CHVKkHbxKynIUqzeaYN5m+rRdGsoRSg==}
@@ -21658,18 +21664,19 @@ snapshots:
   exiftool-vendored.exe@13.60.0:
     optional: true
 
-  exiftool-vendored.pl@13.60.0: {}
+  exiftool-vendored.pl@13.60.0:
+    optional: true
 
   exiftool-vendored@39.1.0:
     dependencies:
       '@photostructure/tz-lookup': 11.7.0
       '@types/luxon': 3.7.6
       batch-cluster: 19.5.0
-      exiftool-vendored.pl: 13.60.0
       he: 2.0.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.60.0
+      exiftool-vendored.pl: 13.60.0
 
   expand-template@2.0.3: {}
 
@@ -24318,6 +24325,13 @@ snapshots:
       '@nestjs/core': 12.3.3(@nestjs/common@12.3.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@12.3.3)(@nestjs/websockets@12.3.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       kysely: 0.29.8
       reflect-metadata: 0.2.2
+      tslib: 2.9.1
+
+  nestjs-kysely@4.0.0(@nestjs/common@12.3.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.3)(kysely@0.29.8):
+    dependencies:
+      '@nestjs/common': 12.3.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
+      '@nestjs/core': 12.3.3(@nestjs/common@12.3.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@12.3.3)(@nestjs/websockets@12.3.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      kysely: 0.29.8
       tslib: 2.9.1
 
   nestjs-otel@8.1.1(@nestjs/common@12.3.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.3.3)(rxjs@7.8.2):
