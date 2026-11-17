@@ -3,8 +3,10 @@ import { asMutation, queryClient } from '#lib/queries/client.ts';
 import {
   createSharedLink,
   getAllSharedLinks,
+  getMySharedLink,
   removeSharedLink,
   removeSharedLinkAssets,
+  sharedLinkLogin,
   updateSharedLink,
   type SharedLinkResponseDto,
 } from '@immich/sdk';
@@ -29,6 +31,13 @@ export const getSharedLinkQuery = (id: string) =>
   queryOptions({
     ...getAllSharedLinksQuery(),
     select: (sharedLinks) => findOrFail(sharedLinks, id),
+  });
+
+export const getMySharedLinkQuery = (params: Parameters<typeof getMySharedLink>[0]) =>
+  queryOptions({
+    queryKey: ['shared-links', 'me', params],
+    queryFn: ({ signal }) => getMySharedLink(params, { signal }),
+    staleTime: 0,
   });
 
 const onAlbumSharingChange = async (albumId?: string | null) => {
@@ -74,3 +83,6 @@ export const removeSharedLinkAssetsMutation = () =>
     onSuccess: () => queryClient.invalidateQueries({ queryKey: getAllSharedLinksQuery().queryKey, exact: true }),
     meta: { error: { toast: 'errors.unable_to_remove_assets_from_shared_link' } },
   });
+
+export const sharedLinkLoginMutation = () =>
+  asMutation(sharedLinkLogin, { meta: { error: { toast: 'errors.unable_to_get_shared_link' } } });
