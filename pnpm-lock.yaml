@@ -320,7 +320,7 @@ importers:
         version: 79.0.0(@typescript/typescript6@6.0.2)(eslint@10.14.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
       exiftool-vendored:
         specifier: ^39.0.0
-        version: 39.1.0
+        version: 39.2.0
       globals:
         specifier: ^17.0.0
         version: 17.14.0
@@ -663,7 +663,7 @@ importers:
         version: 4.4.0
       exiftool-vendored:
         specifier: ^39.0.0
-        version: 39.1.0
+        version: 39.2.0
       express:
         specifier: ^5.1.0
         version: 5.3.0(supports-color@8.1.1)
@@ -4406,8 +4406,8 @@ packages:
     peerDependencies:
       '@photo-sphere-viewer/core': 5.15.1
 
-  '@photostructure/tz-lookup@11.7.0':
-    resolution: {integrity: sha512-QbKHXvleluMIlAHf2JiQTJNU5rLQBeQhLobyRqgXZ6NNGKqNikaRkjYviJ4nMU7Y75QE7bBYM8xjiFGjAukyhw==}
+  '@photostructure/tz-lookup@11.8.0':
+    resolution: {integrity: sha512-RvTkAjjWAfgvoaHVXugwi9XOw4rwyrL8wuqox4PwRLW9FZwpmPhNUY31MgY7k5avK6sbD9S7i1/rUtM4A310/g==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -6382,8 +6382,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  batch-cluster@19.5.0:
-    resolution: {integrity: sha512-iI7wS1ljoQGV2+y9LUx8VBFsfMX9VLT/aeN4P07NZYWcD3dC6SZMMJLJlmoibJ4zsnpLODXVCfndTJJNTes5PA==}
+  batch-cluster@19.6.0:
+    resolution: {integrity: sha512-tibOaQDbkVOLYXDTfEodesAdalJfeE84+R79RcjMm0YcP+NWIKolfIOO6xvu65CVtQWnl3BOGuUDT1HVynExVQ==}
     engines: {node: '>=22'}
 
   batch@0.6.1:
@@ -8076,17 +8076,17 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
-  exiftool-vendored.exe@13.60.0:
-    resolution: {integrity: sha512-DcpybFsR7Dp3FMrPDaq3iy+dcFrPTYENJeazy19TQoefpp4MQml5YXMAx2TpYRFuYoFLcXi9dupyufdrj6sS+A==}
+  exiftool-vendored.exe@13.61.0:
+    resolution: {integrity: sha512-tCXAO3OUmzzwKTQdhppXlz5beDgGEYwWirb9HdHYOqeVh+fsto4jtb6ULqz9uvNZBYBYVXU7ZtXB0FMeBre9Tg==}
     os: [win32]
 
-  exiftool-vendored.pl@13.60.0:
-    resolution: {integrity: sha512-RPXLoynEgak2D9zclE4oCpXII4S3EZlHXJIFHvjktByDgM7+ievXBfqtEWw6dK0xbk/L+cLVTWKoUBhOH+P/1A==}
+  exiftool-vendored.pl@13.61.0:
+    resolution: {integrity: sha512-ALoCpPRfuG3UOuaddPjHh7zA56D/SYVb/F090rhW9awwYpErPtv1uLmeLJivbtdmOzGr5cRtf8bpqhgXMBb4EQ==}
     os: ['!win32']
     hasBin: true
 
-  exiftool-vendored@39.1.0:
-    resolution: {integrity: sha512-qjIZI+W/77TMtL/nCp4WGR2UZKd5R/Pl1nNbRCGf6qxRcWICwWTDYVEpxW/hbTjI2FRPB/FRF8E4XxHaoC1SsQ==}
+  exiftool-vendored@39.2.0:
+    resolution: {integrity: sha512-Ynix+E+n/KePpRc0DJOC4WAFmUieaQvn7zPGFGDHMixsjgkOwRQYAdANr4dR4YdaHJ/l8AaAWlPLijn9gVsQzA==}
     engines: {node: '>=22'}
 
   expand-template@2.0.3:
@@ -8620,11 +8620,6 @@ packages:
 
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
-    hasBin: true
-
-  he@2.0.0:
-    resolution: {integrity: sha512-0jE+JPv08nhXWmI1dULybzqNt34RbkH6Ul6V4cmDONpjYx1SfyObKF38FJLaJ1K7WWD93LWL9lewzk4E1Ria4A==}
-    engines: {node: '>=22'}
     hasBin: true
 
   helmet@8.3.0:
@@ -17781,7 +17776,7 @@ snapshots:
       '@photo-sphere-viewer/core': 5.15.1
       three: 0.185.1
 
-  '@photostructure/tz-lookup@11.7.0': {}
+  '@photostructure/tz-lookup@11.8.0': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -19708,7 +19703,7 @@ snapshots:
 
   baseline-browser-mapping@2.11.33: {}
 
-  batch-cluster@19.5.0: {}
+  batch-cluster@19.6.0: {}
 
   batch@0.6.1: {}
 
@@ -21666,21 +21661,21 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
-  exiftool-vendored.exe@13.60.0:
+  exiftool-vendored.exe@13.61.0:
     optional: true
 
-  exiftool-vendored.pl@13.60.0: {}
+  exiftool-vendored.pl@13.61.0: {}
 
-  exiftool-vendored@39.1.0:
+  exiftool-vendored@39.2.0:
     dependencies:
-      '@photostructure/tz-lookup': 11.7.0
+      '@photostructure/tz-lookup': 11.8.0
       '@types/luxon': 3.7.6
-      batch-cluster: 19.5.0
-      exiftool-vendored.pl: 13.60.0
-      he: 2.0.0
+      batch-cluster: 19.6.0
+      exiftool-vendored.pl: 13.61.0
+      he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
-      exiftool-vendored.exe: 13.60.0
+      exiftool-vendored.exe: 13.61.0
 
   expand-template@2.0.3: {}
 
@@ -22420,8 +22415,6 @@ snapshots:
       space-separated-tokens: 2.0.2
 
   he@1.2.0: {}
-
-  he@2.0.0: {}
 
   helmet@8.3.0: {}
 
