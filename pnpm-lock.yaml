@@ -176,6 +176,7 @@ overrides:
   canvas: 3.2.3
   sharp: ^0.35.3
   tsc-alias: 1.9.10
+  svelte-eslint-parser: 1.9.0
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
@@ -1204,8 +1205,8 @@ importers:
         specifier: ^4.7.5
         version: 4.7.8(@typescript/typescript6@6.0.2)(picomatch@4.0.7)(svelte@5.57.3(@typescript-eslint/types@8.72.2))
       svelte-eslint-parser:
-        specifier: ^1.8.1
-        version: 1.10.1(svelte@5.57.3(@typescript-eslint/types@8.72.2))
+        specifier: 1.9.0
+        version: 1.9.0(svelte@5.57.3(@typescript-eslint/types@8.72.2))
       tailwindcss:
         specifier: ^4.2.4
         version: 4.3.5
@@ -10845,7 +10846,7 @@ packages:
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     peerDependencies:
       prettier-plugin-svelte: ^4.0.0
-      svelte-eslint-parser: '*'
+      svelte-eslint-parser: 1.9.0
     peerDependenciesMeta:
       prettier-plugin-svelte:
         optional: true
@@ -11855,8 +11856,8 @@ packages:
     peerDependencies:
       svelte: '>=5.0.0'
 
-  svelte-eslint-parser@1.10.1:
-    resolution: {integrity: sha512-owYBhrNRp/m+hDaQCH0S683kc0TMFy2bB+qvsMQQZRsjSFD9xp/3FYgI8FZoOKA3xk62gwkUj1HpVek0p6WgNw==}
+  svelte-eslint-parser@1.9.0:
+    resolution: {integrity: sha512-aKdKQAZP7MobfVcQNyy5Yk0QjlC9m5T1lTS0qA7+0EIsFzFX3WgbGHfb8267QK+4hI8Az9+2f+hk5sp39op8sg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0, pnpm: 10.34.6}
     peerDependencies:
       svelte: ^3.37.0 || ^4.0.0 || ^5.0.0
@@ -21017,7 +21018,7 @@ snapshots:
       postcss-load-config: 3.1.4(postcss@8.5.32)
       postcss-safe-parser: 7.0.1(postcss@8.5.32)
       semver: 7.8.6
-      svelte-eslint-parser: 1.10.1(svelte@5.57.3(@typescript-eslint/types@8.72.2))
+      svelte-eslint-parser: 1.9.0(svelte@5.57.3(@typescript-eslint/types@8.72.2))
     optionalDependencies:
       svelte: 5.57.3(@typescript-eslint/types@8.72.2)
     transitivePeerDependencies:
@@ -26102,7 +26103,7 @@ snapshots:
     dependencies:
       svelte: 5.57.3(@typescript-eslint/types@8.72.2)
 
-  svelte-eslint-parser@1.10.1(svelte@5.57.3(@typescript-eslint/types@8.72.2)):
+  svelte-eslint-parser@1.9.0(svelte@5.57.3(@typescript-eslint/types@8.72.2)):
     dependencies:
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
