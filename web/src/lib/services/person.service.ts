@@ -1,18 +1,9 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import PersonEditAccessModal from '#lib/modals/PersonEditAccessModal.svelte';
 import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
-import { handleError } from '#lib/utils/handle-error.ts';
-import { getFormatter } from '#lib/utils/i18n.ts';
-import {
-  PersonUpdateStrategy,
-  getPerson,
-  updatePerson,
-  type AssetResponseDto,
-  type PersonResponseDto,
-  type PersonUpdateDto,
-} from '@immich/sdk';
-import { modalManager, toastManager, type ActionItem } from '@immich/ui';
+import { executeMutation } from '#lib/queries/client.ts';
+import { updatePersonMutation } from '#lib/queries/person.query.ts';
+import { type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+import { modalManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountMultipleOutline,
   mdiEyeOffOutline,
@@ -24,7 +15,11 @@ import {
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
-export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto) => {
+export const getPersonActions = (
+  $t: MessageFormatter,
+  person: PersonResponseDto,
+  { onHide }: { onHide?: () => void } = {},
+) => {
   const Edit: ActionItem = {
     title: $t('edit_person'),
     icon: mdiPencilOutline,
@@ -36,7 +31,15 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     title: $t('to_favorite'),
     icon: mdiHeartOutline,
     $if: () => !person.isFavorite,
-    onAction: () => handleFavoritePerson(person),
+    onAction: () =>
+      executeMutation(
+        () =>
+          updatePersonMutation({
+            success: { toast: 'added_to_favorites' },
+            error: { toast: 'errors.unable_to_change_favorite' },
+          }),
+        [{ id: person.id, personUpdateDto: { isFavorite: true } }],
+      ),
     shortcuts: { key: 'f' },
   };
 
@@ -44,7 +47,15 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     title: $t('unfavorite'),
     icon: mdiHeartMinusOutline,
     $if: () => !!person.isFavorite,
-    onAction: () => handleUnfavoritePerson(person),
+    onAction: () =>
+      executeMutation(
+        () =>
+          updatePersonMutation({
+            success: { toast: 'removed_from_favorites' },
+            error: { toast: 'errors.unable_to_change_favorite' },
+          }),
+        [{ id: person.id, personUpdateDto: { isFavorite: false } }],
+      ),
     shortcuts: { key: 'f' },
   };
 
@@ -52,7 +63,16 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     title: $t('hide_person'),
     icon: mdiEyeOffOutline,
     $if: () => !person.isHidden,
-    onAction: () => handleHidePerson(person),
+    onAction: () =>
+      executeMutation(
+        () =>
+          updatePersonMutation({
+            success: { toast: 'changed_visibility_successfully' },
+            error: { toast: 'errors.unable_to_hide_person' },
+          }),
+        [{ id: person.id, personUpdateDto: { isHidden: true } }],
+        { onSuccess: onHide },
+      ),
     shortcuts: { key: 'h' },
   };
 
@@ -60,7 +80,11 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     title: $t('unhide_person'),
     icon: mdiEyeOutline,
     $if: () => !!person.isHidden,
-    onAction: () => handleShowPerson(person),
+    onAction: () =>
+      executeMutation(
+        () => updatePersonMutation({ success: { toast: 'changed_visibility_successfully' } }),
+        [{ id: person.id, personUpdateDto: { isHidden: false } }],
+      ),
     shortcuts: { key: 'h' },
   };
 
@@ -77,99 +101,16 @@ export const getPersonAssetActions = ($t: MessageFormatter, person: PersonRespon
   const SetFeaturedPhoto: ActionItem = {
     title: $t('set_as_featured_photo'),
     icon: mdiFaceManProfile,
-    onAction: () => handleSetFeaturedPhoto(person, asset.id),
+    onAction: () =>
+      executeMutation(
+        () =>
+          updatePersonMutation({
+            success: { toast: 'feature_photo_updated' },
+            error: { toast: 'errors.unable_to_set_feature_photo' },
+          }),
+        [{ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } }],
+      ),
   };
 
   return { SetFeaturedPhoto };
-};
-
-const handleFavoritePerson = async (person: { id: string }) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updatePerson({ id: person.id, personUpdateDto: { isFavorite: true } });
-    eventManager.emit('PersonUpdate', response);
-    toastManager.primary($t('added_to_favorites'));
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: false } }));
-  }
-};
-
-const handleUnfavoritePerson = async (person: { id: string }) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updatePerson({ id: person.id, personUpdateDto: { isFavorite: false } });
-    eventManager.emit('PersonUpdate', response);
-    toastManager.primary($t('removed_from_favorites'));
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: false } }));
-  }
-};
-
-const handleHidePerson = async (person: { id: string }) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updatePerson({ id: person.id, personUpdateDto: { isHidden: true } });
-    toastManager.primary($t('changed_visibility_successfully'));
-    eventManager.emit('PersonUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_hide_person'));
-  }
-};
-
-export const handleUpdatePerson = async ({ id, ...personUpdateDto }: { id: string } & PersonUpdateDto) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updatePerson({ id, personUpdateDto });
-    const isOtherUser = !!personUpdateDto.userId && personUpdateDto.userId !== authManager.user.id;
-    eventManager.emit('PersonUpdate', isOtherUser ? await getPerson({ id }) : response);
-    return response;
-  } catch (error) {
-    handleError(error, $t('errors.something_went_wrong'));
-  }
-};
-
-const handleShowPerson = async (person: { id: string }) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updatePerson({ id: person.id, personUpdateDto: { isHidden: false } });
-    toastManager.primary($t('changed_visibility_successfully'));
-    eventManager.emit('PersonUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.something_went_wrong'));
-  }
-};
-
-export const withUpdateStrategy = (dto: PersonUpdateDto): PersonUpdateDto =>
-  authManager.preferences.people?.updateStrategy === PersonUpdateStrategy.Self
-    ? { ...dto, userId: authManager.user.id }
-    : dto;
-
-export const handleUpdatePersonName = async (
-  { id, name }: { id: string; name: string },
-  options?: { notify: boolean },
-) => {
-  const response = await handleUpdatePerson({ id, ...withUpdateStrategy({ name }) });
-  if (response && options?.notify) {
-    const $t = await getFormatter();
-    toastManager.primary($t('change_name_successfully'));
-  }
-
-  return response;
-};
-
-const handleSetFeaturedPhoto = async (person: PersonResponseDto, featureFaceAssetId: string) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId } });
-    toastManager.primary($t('feature_photo_updated'));
-    eventManager.emit('PersonUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_set_feature_photo'));
-  }
 };

@@ -63,6 +63,23 @@ test('renaming a person to a new name saves it', async ({ data, router, render, 
   await expect.element(app.people.mergeDialog('Alice')).not.toBeInTheDocument();
 });
 
+test('hiding a person removes the card', async ({ data, router, render, settle, api, app }) => {
+  const alice = factory.person({ name: 'Alice' });
+  const bob = factory.person({ name: 'Bob' });
+  data.addPeople([alice, bob]);
+  await router.goto(Route.people());
+  await render(Page, load);
+  await settle();
+
+  await app.people.cardMenuButton(1).click();
+  await app.people.menuItem('hide_person').click();
+  await settle();
+
+  expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: bob.id }, body: { isHidden: true } });
+  await expect.element(app.people.nameInput(1)).not.toBeInTheDocument();
+  await expect.element(app.people.nameInput(0)).toBeVisible();
+});
+
 test('filters to favorite people', async ({ router, render, settle, app }) => {
   await router.goto(Route.people());
   await render(Page, load);

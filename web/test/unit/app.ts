@@ -285,6 +285,8 @@ export const createApp = () => {
     people: {
       filterSharedByButton: page.getByRole('button', { name: /^shared_by/ }),
       nameInput: (index: number) => main.getByPlaceholder('add_a_name').nth(index),
+      cardMenuButton: (index: number) => button('show_person_options').nth(index),
+      menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
       mergeDialog: (name: string) => page.getByRole('dialog').getByText(`merge_people - ${name}`, { exact: true }),
       declineMergeButton: page.getByRole('dialog').getByRole('button', { name: 'no', exact: true }),
       filtersButton: button('filters'),

@@ -1,27 +1,26 @@
 <script lang="ts">
   import { scrollMemory } from '#lib/actions/scroll-memory.svelte.ts';
-  import OnEvents from '#lib/components/OnEvents.svelte';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import { QueryParameter, SessionStorageKey } from '#lib/constants.ts';
   import SearchBar from '#lib/elements/SearchBar.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import PeopleFilterModal from '#lib/modals/PeopleFilterModal.svelte';
   import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
-  import { queryClient } from '#lib/queries/client.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
   import { getClusterGroupUsersQuery } from '#lib/queries/cluster-group.query.ts';
+  import { getAllPeoplePagesQuery, updateCachedPerson, updatePersonMutation } from '#lib/queries/person.query.ts';
   import { searchPersonQuery } from '#lib/queries/search.query.ts';
   import { Route } from '#lib/route.ts';
   import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
-  import { handleUpdatePersonName } from '#lib/services/person.service.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { websocketEvents } from '#lib/stores/websocket.ts';
-  import { handlePromiseError } from '#lib/utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
+  import { withUpdateStrategy } from '#lib/utils/person.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
-  import { getAllPeople, getPerson, type PersonResponseDto } from '@immich/sdk';
+  import { type PersonResponseDto } from '@immich/sdk';
   import { ActionButton, Button, Icon, IconButton, modalManager, shortcut } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline, mdiTune } from '@mdi/js';
-  import { createQuery } from '@tanstack/svelte-query';
+  import { createInfiniteQuery, createQuery, type MutationMeta } from '@tanstack/svelte-query';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
@@ -36,10 +35,15 @@
 
   let { data }: Props = $props();
 
+  const query = createInfiniteQuery(
+    () => getAllPeoplePagesQuery({ withHidden: true, ...data.filter }),
+    () => queryClient,
+  );
+  const people = $derived(query.data?.pages.flatMap((page) => page.people) ?? []);
+  const firstPage = $derived(query.data?.pages[0]);
+
   let searchName = $state('');
   let newName = $state('');
-  let currentPage = $state(1);
-  let nextPage = $state(data.people.hasNextPage ? 2 : null);
   let personMerge1 = $state<PersonResponseDto>();
   let personMerge2 = $state<PersonResponseDto>();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
@@ -55,63 +59,18 @@
   );
 
   onMount(() =>
-    websocketEvents.on('on_person_thumbnail', (personId: string) => {
-      people = people.map((person) =>
-        person.id === personId ? { ...person, updatedAt: new Date().toISOString() } : person,
-      );
-    }),
+    websocketEvents.on('on_person_thumbnail', (personId: string) =>
+      updateCachedPerson(personId, (person) => ({ ...person, updatedAt: new Date().toISOString() })),
+    ),
   );
 
-  const loadInitialScroll = () =>
-    new Promise<void>((resolve) => {
-      // Load up to previously loaded page when returning.
-      let newNextPage = sessionStorage.getItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
-      if (newNextPage && nextPage) {
-        let startingPage = nextPage,
-          pagesToLoad = Number.parseInt(newNextPage) - nextPage;
+  const loadInitialScroll = async () => {
+    const savedPageCount = Number(sessionStorage.getItem(SessionStorageKey.INFINITE_SCROLL_PAGE));
+    sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
 
-        if (pagesToLoad) {
-          handlePromiseError(
-            Promise.all(
-              Array.from({ length: pagesToLoad }, (_, i) => {
-                return getAllPeople({ withHidden: true, page: startingPage + i, ...data.filter });
-              }),
-            ).then((pages) => {
-              for (const page of pages) {
-                people = people.concat(page.people);
-              }
-              currentPage = startingPage + pagesToLoad - 1;
-              nextPage = pages.at(-1)?.hasNextPage ? startingPage + pagesToLoad : null;
-              resolve(); // wait until extra pages are loaded
-            }),
-          );
-        } else {
-          resolve();
-        }
-        sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
-      } else {
-        resolve();
-      }
-    });
-
-  const loadNextPage = async () => {
-    if (!nextPage) {
-      return;
-    }
-
-    try {
-      const { people: newPeople, hasNextPage } = await getAllPeople({
-        withHidden: true,
-        page: nextPage,
-        ...data.filter,
-      });
-      people = people.concat(newPeople);
-      if (nextPage !== null) {
-        currentPage = nextPage;
-      }
-      nextPage = hasNextPage ? nextPage + 1 : null;
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_load_people'));
+    let { data, hasNextPage } = query;
+    while (hasNextPage && (data?.pages.length ?? 0) < savedPageCount) {
+      ({ data, hasNextPage } = await query.fetchNextPage());
     }
   };
 
@@ -144,21 +103,9 @@
       return;
     }
 
-    const [personToMerge, personToBeMergedInto] = response;
-
-    const mergedPerson = await getPerson({ id: personToBeMergedInto.id });
-
-    people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
-    people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedInto.id ? mergedPerson : person));
-
+    const [, personToBeMergedInto] = response;
     if (personToBeMergedInto.name !== newName && editingPerson.id === personToBeMergedInto.id) {
-      /*
-       *
-       * If the user merges one of the suggested people into the person he's editing, it's merging the suggested person AND renames
-       * the person he's editing
-       *
-       */
-      await handleUpdatePersonName({ id: personToBeMergedInto.id, name: newName }, { notify: true });
+      await updateName(personToBeMergedInto.id, newName, { success: { toast: 'change_name_successfully' } });
     }
   };
 
@@ -189,16 +136,15 @@
     }
 
     await goto(url, { reset: false });
-    currentPage = 1;
-    nextPage = data.people.hasNextPage ? 2 : null;
   };
 
-  let people = $derived(data.people.people);
-  const { ManageAccess } = $derived(getPeopleUserActions($t, clusterGroupUsers, nextPage ? undefined : people));
+  const { ManageAccess } = $derived(
+    getPeopleUserActions($t, clusterGroupUsers, query.hasNextPage ? undefined : people),
+  );
 
   // hidden people are only shown when explicitly filtering for them
   let visiblePeople = $derived(data.filter.isHidden ? people : people.filter((people) => !people.isHidden));
-  let countVisiblePeople = $derived(data.people.total - (data.filter.isHidden ? 0 : data.people.hidden));
+  let countVisiblePeople = $derived((firstPage?.total ?? 0) - (data.filter.isHidden ? 0 : (firstPage?.hidden ?? 0)));
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
     editingPerson = person;
@@ -244,8 +190,8 @@
     }
   };
 
-  const updateName = async (id: string, name: string) => {
-    await handleUpdatePersonName({ id, name });
+  const updateName = async (id: string, name: string, meta?: MutationMeta) => {
+    await executeMutation(() => updatePersonMutation(meta), [{ id, personUpdateDto: withUpdateStrategy({ name }) }]);
     newName = '';
   };
 
@@ -256,20 +202,9 @@
       (person) => normalizeSearchString(person.name) === normalizedName && person.id !== personId && person.name,
     );
   };
-
-  const onPersonUpdate = (response: PersonResponseDto) => {
-    people = people.map((person: PersonResponseDto) => {
-      if (person.id === response.id) {
-        return response;
-      }
-      return person;
-    });
-  };
 </script>
 
 <svelte:window bind:innerHeight />
-
-<OnEvents {onPersonUpdate} />
 
 <UserPageLayout
   title={$t('people')}
@@ -277,9 +212,7 @@
   {@attach scrollMemory({
     routeStartsWith: Route.people(),
     beforeSave: () => {
-      if (currentPage) {
-        sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());
-      }
+      sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, String(query.data?.pages.length ?? 1));
     },
     beforeClear: () => {
       sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
@@ -321,7 +254,11 @@
   {/snippet}
 
   {#if countVisiblePeople > 0}
-    <PeopleInfiniteScroll people={visiblePeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
+    <PeopleInfiniteScroll
+      people={visiblePeople}
+      hasNextPage={query.hasNextPage && !searchName}
+      loadNextPage={() => query.fetchNextPage()}
+    >
       {#snippet children({ person })}
         <div
           class="rounded-xl border-2 border-transparent p-2 transition-all hover:border-immich-primary/50 hover:bg-gray-200 hover:shadow-sm hover:dark:border-immich-dark-primary/25 dark:hover:bg-immich-dark-primary/20"

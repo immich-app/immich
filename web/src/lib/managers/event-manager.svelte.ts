@@ -8,7 +8,6 @@ import type {
   AssetResponseDto,
   LoginResponseDto,
   PasskeyResponseDto,
-  PersonResponseDto,
   ReleaseEventV1,
   StackResponseDto,
   UserAdminResponseDto,
@@ -49,9 +48,6 @@ export type Events = {
   AlbumUserUpdate: [{ albumId: string; userId: string; role: AlbumUserRole }];
   AlbumUserDelete: [{ albumId: string; userId: string }];
 
-  PersonUpdate: [PersonResponseDto];
-  PersonShare: [{ personId: string }];
-  PersonUserDelete: [{ personId: string; userId: string }];
   PersonThumbnailReady: [{ id: string }];
   PersonAssetDelete: [{ id: string; assetId: string }];
 

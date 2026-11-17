@@ -19,6 +19,7 @@
   import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
   import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { getPersonQuery } from '#lib/queries/person.query.ts';
   import { getTagByIdQuery } from '#lib/queries/tag.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
@@ -30,7 +31,6 @@
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import {
     AssetVisibility,
-    getPerson,
     searchAssets,
     searchSmart,
     type AlbumResponseDto,
@@ -201,7 +201,7 @@
   async function getPersonName(personIds: string[]) {
     const personNames = await Promise.all(
       personIds.map(async (personId) => {
-        const person = await getPerson({ id: personId });
+        const person = await queryClient.query(getPersonQuery(personId));
 
         if (person.name === '') {
           return $t('no_name');
