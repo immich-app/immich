@@ -261,8 +261,26 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     getFaces: ({ params }) => ({ json: data.getFaces(params.id) }),
     deleteFace: ({ params }) => (data.deleteFace(params.id) ? { status: 204 } : notFound),
+    reassignFacesById: ({ params, body }) => {
+      const person = data.reassignFace(body.id, params.id);
+      return person ? { json: person } : notFound;
+    },
     createFace: () => ({ status: 201 }),
     getAllPeople: ({ params = {} }) => ({ json: data.peoplePage(params) }),
+    mergePeople: ({ body }) => ({ json: data.mergePeople(body.ids) }),
+    reassignFaces: ({ params }) => {
+      const people = data.reassignFaces(params.id);
+      return people ? { json: people } : notFound;
+    },
+    getUsersForPeople: ({ params = {} }) => ({ json: data.personUserList(params) }),
+    upsertPeopleUsers: ({ body }) => {
+      data.upsertPersonUsers(body);
+      return { status: 204 };
+    },
+    removeUsersFromPeople: ({ body }) => {
+      data.removePersonUsers(body);
+      return { status: 204 };
+    },
     getPersonThumbnail: ({ params }) => ({
       body: placeholderImage(undefined, params.id),
       contentType: 'image/svg+xml',

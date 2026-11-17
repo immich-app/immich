@@ -116,6 +116,19 @@ export const createApp = (page: Page, data: MockData) => {
       nameInput: page.getByPlaceholder('name_or_nickname'),
       doneButton: page.getByRole('button', { name: 'done', exact: true }),
       mergeDialog: (name: string) => page.getByRole('dialog').getByText(`merge_people - ${name}`, { exact: true }),
+      menuButton: button('open'),
+      menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
+      asset: (asset: Asset) => page.locator(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`),
+      thumbnail: (name: string) => page.getByRole('img', { name, exact: true }),
+      dialogThumbnail: (name: string) => dialog.getByRole('img', { name, exact: true }),
+      face: (name: string) => page.getByRole('button').filter({ has: page.getByText(name, { exact: true }) }),
+      swapMergeDirectionButton: button('swap_merge_direction'),
+      backButton: page.getByTestId('control-bar').getByLabel('Close'),
+    },
+
+    people: {
+      searchInput: page.getByPlaceholder('search_people'),
+      thumbnail: (name: string) => page.getByRole('main').getByRole('img', { name, exact: true }),
     },
 
     memory: {
@@ -423,6 +436,12 @@ const createViewer = (page: Page) => {
     editPeopleHeading: page.getByText('edit_faces', { exact: true }),
     editPeopleBackButton: page.getByLabel('back', { exact: true }),
     deleteFaceButton: page.getByLabel('delete_face', { exact: true }),
+    selectNewFaceButton: page.getByLabel('select_new_face', { exact: true }),
+    createNewPersonButton: page.getByLabel('create_new_person', { exact: true }),
+    searchExistingPersonButton: page.getByLabel('search_for_existing_person', { exact: true }),
+    facePickerSearch: page.getByPlaceholder('name_or_nickname'),
+    facePickerPerson: (name: string) => page.getByRole('button').filter({ has: page.getByText(name, { exact: true }) }),
+    editFacesDoneButton: page.getByRole('button', { name: 'done', exact: true }),
     tag: (value: string) => page.getByTestId('detail-panel-tags').getByRole('link', { name: value, exact: true }),
     addTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'add_tag', exact: true }),
     removeTagButton: page.getByTestId('detail-panel-tags').getByRole('button', { name: 'remove_tag', exact: true }),
@@ -480,6 +499,8 @@ const createViewer = (page: Page) => {
     setStackPrimary: () => moreMenuItem('set_stack_primary_asset'),
     removeFromStack: () => moreMenuItem('viewer_remove_from_stack'),
     restore: () => moreMenuItem('restore'),
+    setFeaturedPhoto: () => moreMenuItem('set_as_featured_photo'),
+    personThumbnail: (name: string) => detailPanel.getByRole('img', { name, exact: true }),
     setProfilePicture: () => moreMenuItem('set_as_profile_picture'),
     runJob: (name: string) => moreMenuItem(name),
 

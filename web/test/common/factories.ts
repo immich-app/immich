@@ -274,6 +274,9 @@ const person = (overrides: Partial<PersonResponseDto> = {}): PersonResponseDto =
   };
 };
 
+const personAsset = (person: PersonResponseDto, overrides: Partial<AssetResponseDto> = {}) =>
+  asset({ people: [person], ...overrides });
+
 const ocr = (overrides: Partial<AssetOcrResponseDto> & Pick<AssetOcrResponseDto, 'assetId'>): AssetOcrResponseDto => ({
   id: crypto.randomUUID(),
   text: 'Sample text',
@@ -692,6 +695,7 @@ export const factory = {
   albumUsers,
   memory,
   person,
+  personAsset,
   stack,
   ocr,
   tag,
