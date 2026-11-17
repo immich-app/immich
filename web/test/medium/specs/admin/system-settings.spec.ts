@@ -24,4 +24,35 @@ test.describe('system settings', () => {
       body: 'template=',
     });
   });
+
+  test('previews the storage template', async ({ page, data, api }) => {
+    data.adminConfig.storageTemplate.enabled = true;
+    data.adminConfig.storageTemplate.template = '{{y}}/{{filename}}';
+    api.on({
+      getAdminStorageTemplateOptions: () => ({
+        json: {
+          yearOptions: ['y'],
+          monthOptions: ['MM'],
+          weekOptions: ['W'],
+          dayOptions: ['dd'],
+          hourOptions: ['HH'],
+          minuteOptions: ['mm'],
+          secondOptions: ['ss'],
+          presets: [{ template: '{{y}}/{{filename}}', preview: '2022/IMAGE_56437' }],
+        },
+      }),
+      previewStorageTemplate: ({ body }) => ({ json: { preview: `preview of ${body.template}` } }),
+    });
+    await page.goto(Route.systemSettings());
+
+    await page.getByRole('button', { name: 'admin.storage_template_settings' }).click();
+
+    await expect(page.getByRole('option', { name: '2022/IMAGE_56437' })).toBeAttached();
+    await expect(page.getByText('preview of {{y}}/{{filename}}.jpg')).toBeVisible();
+
+    await page.getByRole('textbox', { name: 'template' }).fill('{{y}}/{{MM}}');
+
+    await expect(page.getByText('preview of {{y}}/{{MM}}.jpg')).toBeVisible();
+    expect(api.previewStorageTemplate).toHaveBeenCalledWith({ body: { template: '{{y}}/{{MM}}' } });
+  });
 });
