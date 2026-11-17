@@ -1,3 +1,5 @@
+import { queryClient } from '#lib/queries/client.ts';
+import { getPersonQuery } from '#lib/queries/person.query.ts';
 import { Route } from '#lib/route.ts';
 import type { MockData } from '#test/common/data.ts';
 import { factory } from '#test/unit/factories.ts';
@@ -333,4 +335,21 @@ test('shares the person back with the user who shared it', async ({ data, router
   expect(api.removeUsersFromPeople).not.toHaveBeenCalled();
   await expect.element(app.person.access.removeButton).toBeVisible();
   await app.person.access.closeButton.click();
+});
+
+test('keeps a typed name when renamed elsewhere', async ({ data, router, render, settle, api, app }) => {
+  const person = factory.person({ name: 'Ariel' });
+  await showPerson({ data, router, render, settle }, person);
+  app.person.openNameEditor();
+  await app.person.nameInput.fill('Ariel typed');
+  await settle();
+
+  data.updatePerson(person.id, { name: 'Ariel remote' });
+  await queryClient.invalidateQueries({ queryKey: getPersonQuery(person.id).queryKey });
+  await settle();
+
+  await expect.element(app.person.nameInput).toHaveValue('Ariel typed');
+  await userEvent.keyboard('{Enter}');
+  await settle();
+  expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: person.id }, body: { name: 'Ariel typed' } });
 });

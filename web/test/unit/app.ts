@@ -155,6 +155,7 @@ export const createApp = () => {
       deleteMenuItem: page.getByRole('menuitem', { name: 'delete_album', exact: true }),
       leaveMenuItem: page.getByRole('menuitem', { name: 'leave_album', exact: true }),
       descriptionInput: page.getByTestId('autogrow-textarea'),
+      titleInput: page.getByTitle('edit_title', { exact: true }),
       commentsButton: button('activity'),
       likeButton: page.getByRole('button', { name: 'like', exact: true, pressed: false }),
       likedButton: page.getByRole('button', { name: 'like', exact: true, pressed: true }),
@@ -267,6 +268,8 @@ export const createApp = () => {
     },
     person: {
       menuButton: button('open'),
+      openNameEditor: () => (page.getByTitle('edit_name', { exact: true }).element() as HTMLElement).click(),
+      nameInput: page.getByPlaceholder('name_or_nickname', { exact: true }),
       menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
       altNames: (names: string) => main.getByText(`also_known_as ${names}`, { exact: true }),
       birthDateSegments: dialog.getByRole('spinbutton'),

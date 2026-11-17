@@ -14,6 +14,7 @@
   import { getPeopleUserActions } from '#lib/services/person-user.service.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { websocketEvents } from '#lib/stores/websocket.ts';
+  import { Draft } from '#lib/utils/draft.svelte.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { withUpdateStrategy } from '#lib/utils/person.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
@@ -43,11 +44,11 @@
   const firstPage = $derived(query.data?.pages[0]);
 
   let searchName = $state('');
-  let newName = $state('');
   let personMerge1 = $state<PersonResponseDto>();
   let personMerge2 = $state<PersonResponseDto>();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
   let editingPerson: PersonResponseDto | null = $state(null);
+  const newName = new Draft(() => people.find(({ id }) => id === editingPerson?.id)?.name ?? '');
   let innerHeight = $state(0);
 
   const clusterGroupUsersQuery = createQuery(
@@ -99,13 +100,13 @@
     });
 
     if (!response) {
-      await updateName(personMerge1.id, newName);
+      await updateName(personMerge1.id, newName.value);
       return;
     }
 
     const [, personToBeMergedInto] = response;
-    if (personToBeMergedInto.name !== newName && editingPerson.id === personToBeMergedInto.id) {
-      await updateName(personToBeMergedInto.id, newName, { success: { toast: 'change_name_successfully' } });
+    if (personToBeMergedInto.name !== newName.value && editingPerson.id === personToBeMergedInto.id) {
+      await updateName(personToBeMergedInto.id, newName.value, { success: { toast: 'change_name_successfully' } });
     }
   };
 
@@ -148,7 +149,7 @@
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
     editingPerson = person;
-    newName = person.name;
+    newName.reset();
   };
 
   const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
@@ -186,13 +187,14 @@
 
   const onNameChangeInputUpdate = (event: Event) => {
     if (event.target) {
-      newName = (event.target as HTMLInputElement).value;
+      newName.value = (event.target as HTMLInputElement).value;
     }
   };
 
   const updateName = async (id: string, name: string, meta?: MutationMeta) => {
-    await executeMutation(() => updatePersonMutation(meta), [{ id, personUpdateDto: withUpdateStrategy({ name }) }]);
-    newName = '';
+    await executeMutation(() => updatePersonMutation(meta), [{ id, personUpdateDto: withUpdateStrategy({ name }) }], {
+      onSuccess: () => newName.reset(),
+    });
   };
 
   const findPeopleWithSimilarName = async (name: string, personId: string) => {
@@ -268,11 +270,11 @@
           <input
             type="text"
             class="mt-2 w-full rounded-2xl border-gray-100 bg-white py-2 text-center text-sm text-primary placeholder-gray-400 dark:border-gray-900 dark:bg-immich-dark-gray"
-            value={person.name}
+            value={person.id === editingPerson?.id ? newName.value : person.name}
             placeholder={$t('add_a_name')}
             {@attach shortcut({ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() })}
             onfocusin={() => onNameChangeInputFocus(person)}
-            onfocusout={() => onNameChangeSubmit(newName, person)}
+            onfocusout={() => onNameChangeSubmit(newName.value, person)}
             oninput={(event) => onNameChangeInputUpdate(event)}
           />
         </div>
