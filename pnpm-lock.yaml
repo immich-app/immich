@@ -170,8 +170,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -1071,8 +1069,8 @@ importers:
         specifier: ^3.5.0
         version: 3.7.0
       tailwind-variants:
-        specifier: ^3.2.2
-        version: 3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.4)
+        specifier: ^4.0.0
+        version: 4.0.1
       thumbhash:
         specifier: ^0.1.1
         version: 0.1.1
@@ -16435,7 +16433,7 @@ snapshots:
       svelte: 5.57.3(@typescript-eslint/types@8.72.1)
       svelte-highlight: 7.11.0
       tailwind-merge: 3.7.0
-      tailwind-variants: 3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.4)
+      tailwind-variants: 3.3.1(tailwind-merge@3.7.0)
       tailwindcss: 4.3.4
 
   '@immich/ui@0.92.0(@sveltejs/kit@3.1.1(@opentelemetry/api@1.10.0)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.102.0)(terser@5.49.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(zod@4.4.3)':
@@ -21658,18 +21656,19 @@ snapshots:
   exiftool-vendored.exe@13.60.0:
     optional: true
 
-  exiftool-vendored.pl@13.60.0: {}
+  exiftool-vendored.pl@13.60.0:
+    optional: true
 
   exiftool-vendored@39.1.0:
     dependencies:
       '@photostructure/tz-lookup': 11.7.0
       '@types/luxon': 3.7.6
       batch-cluster: 19.5.0
-      exiftool-vendored.pl: 13.60.0
       he: 2.0.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.60.0
+      exiftool-vendored.pl: 13.60.0
 
   expand-template@2.0.3: {}
 
@@ -26947,10 +26946,11 @@ snapshots:
 
   tailwind-merge@3.7.0: {}
 
-  tailwind-variants@3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.4):
+  tailwind-variants@3.3.1(tailwind-merge@3.7.0):
+    dependencies:
+      tailwindcss: 4.3.4
     optionalDependencies:
       tailwind-merge: 3.7.0
-      tailwindcss: 4.3.4
 
   tailwind-variants@4.0.1:
     dependencies:
