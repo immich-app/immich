@@ -9,11 +9,9 @@ export type IsIPRangeOptions = { requireCIDR?: boolean };
 
 function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
   const { requireCIDR = true } = options ?? {};
-  // eslint-disable-next-line import-x/no-named-as-default-member
   if (validator.isIPRange(value)) {
     return true;
   }
-  // eslint-disable-next-line import-x/no-named-as-default-member
   return !requireCIDR && validator.isIP(value);
 }
 
