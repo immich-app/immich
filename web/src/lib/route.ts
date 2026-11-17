@@ -152,10 +152,6 @@ export const Route = {
   queues: () => '/admin/queues',
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,
 
-  // integrity checks
-  integrityReportFile: (reportId: string) => `${getBaseUrl()}/admin/integrity/report/${reportId}/file`,
-  integrityReportCsv: (reportType: IntegrityReport) => `${getBaseUrl()}/admin/integrity/report/${reportType}/csv`,
-
   // continue helper for ensuring same-origin URLs
   continue: (url: string | null, fallback: string): string | URL => {
     const resolved = new URL(url ?? fallback, document.baseURI);
@@ -170,4 +166,10 @@ export const Route = {
 
 export const ExternalRoute = {
   docs: () => 'https://docs.immich.app/overview/quick-start',
+};
+
+export const ApiRoute = {
+  // integrity checks
+  integrityReportFile: (reportId: string) => `${getBaseUrl()}/admin/integrity/report/${reportId}/file`,
+  integrityReportCsv: (reportType: IntegrityReport) => `${getBaseUrl()}/admin/integrity/report/${reportType}/csv`,
 };

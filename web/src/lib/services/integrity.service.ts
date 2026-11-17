@@ -1,18 +1,17 @@
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
-import { Route } from '#lib/route.ts';
+import { ApiRoute } from '#lib/route.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { IntegrityReport, ManualJobName, createJob, deleteIntegrityReport } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { goto } from '$app/navigation';
 
 export const getIntegrityReportActions = ($t: MessageFormatter, reportType: IntegrityReport) => {
   const Download: ActionItem = {
     title: $t('admin.download_csv'),
     icon: mdiDownload,
-    onAction: () => goto(Route.integrityReportCsv(reportType)),
+    onAction: () => location.assign(ApiRoute.integrityReportCsv(reportType)),
   };
 
   const Delete: ActionItem = {
@@ -29,7 +28,7 @@ export const getIntegrityReportItemActions = ($t: MessageFormatter, reportId: st
   const Download: ActionItem = {
     title: $t('download'),
     icon: mdiDownload,
-    onAction: () => goto(Route.integrityReportFile(reportId)),
+    onAction: () => location.assign(ApiRoute.integrityReportFile(reportId)),
     $if: () => reportType === IntegrityReport.UntrackedFile || reportType === IntegrityReport.ChecksumMismatch,
   };
 
