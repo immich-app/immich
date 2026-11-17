@@ -72,6 +72,17 @@ export const createApp = (page: Page, data: MockData) => {
       createAlbumButton: button('create_album'),
     },
 
+    workflows: {
+      openLogs: async () => {
+        await button('open').first().click();
+        await page.getByRole('menuitem', { name: 'check_logs', exact: true }).click();
+      },
+      logs: {
+        run: (date: string) => dialog.getByRole('cell', { name: date, exact: true }),
+        loadingRow: dialog.getByText('...', { exact: true }),
+      },
+    },
+
     settings: {
       openSection: async (title: string) => {
         const toggle = page.getByRole('button', { name: new RegExp(`^${title}`) });

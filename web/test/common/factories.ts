@@ -12,6 +12,7 @@ import {
   SharedLinkType,
   UserAvatarColor,
   UserStatus,
+  WorkflowResult,
   WorkflowTrigger,
   WorkflowType,
   type ActivityResponseDto,
@@ -41,6 +42,7 @@ import {
   type UserLicense,
   type UserPreferencesResponseDto,
   type UserResponseDto,
+  type WorkflowLogEntryDto,
   type WorkflowResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
@@ -375,6 +377,13 @@ const workflow = (overrides: Partial<WorkflowResponseDto> = {}): WorkflowRespons
   };
 };
 
+const workflowLog = (overrides: Partial<WorkflowLogEntryDto> = {}): WorkflowLogEntryDto => ({
+  id: crypto.randomUUID(),
+  at: new Date().toISOString(),
+  result: WorkflowResult.Completed,
+  ...overrides,
+});
+
 const pluginMethod = (overrides: Partial<PluginMethodResponseDto> = {}): PluginMethodResponseDto => {
   const key = overrides.key ?? `plugin#method-${pluginMethodIndex++}`;
   return {
@@ -701,6 +710,7 @@ export const factory = {
   tag,
   sharedLink,
   workflow,
+  workflowLog,
   face,
   library,
   apiKey,

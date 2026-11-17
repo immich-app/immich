@@ -130,6 +130,17 @@ export const createApp = () => {
         open: (title: string) => page.getByRole('button', { name: title, exact: false }).click(),
         numberInput: page.getByRole('spinbutton', { name: 'admin.user_delete_delay_settings', exact: true }),
         unlinkAllOAuthAccountsButton: button('admin.unlink_all_oauth_accounts'),
+        saveButton: button('save'),
+        text: (text: string) => page.getByText(text, { exact: true }),
+        storageTemplate: {
+          option: (label: string) => page.getByRole('radio', { name: new RegExp(`^${label}`) }),
+          presetSelect: page.getByRole('combobox', { name: 'preset', exact: true }),
+        },
+        notifications: {
+          secureSwitch: page.getByRole('switch', { name: 'admin.notification_email_secure', exact: true }),
+          sendTestEmailButton: button('admin.notification_email_sent_test_email_button'),
+          testEmailButton: button('admin.notification_email_test_email'),
+        },
       },
     },
     albums: {
@@ -178,6 +189,16 @@ export const createApp = () => {
         deleteButton: page.getByRole('dialog').getByRole('button', { name: 'delete', exact: true }),
       },
     },
+    workflowLogs: {
+      result: (label: string) => dialog.getByRole('cell').getByText(label, { exact: true }),
+      loadingRow: dialog.getByText('...', { exact: true }),
+      filter: async (label: string) => {
+        await dialog.getByRole('button', { name: 'filter' }).click();
+        await page.getByRole('option', { name: label, exact: true }).click();
+      },
+      enableButton: button('workflow_logging_enable'),
+      disableButton: button('workflow_logging_disable'),
+    },
     workflows: {
       menuButton: (index: number) => page.getByRole('button', { name: 'open', exact: true }).nth(index),
       deleteMenuItem: page.getByRole('menuitem', { name: 'delete', exact: true }),
@@ -192,6 +213,8 @@ export const createApp = () => {
       loggedInAs: page.getByText('maintenance_logged_in_as', { exact: true }),
       endButton: button('maintenance_end'),
       restoreFromBackupButton: button('maintenance_restore_from_backup'),
+      databaseBackupButton: button('maintenance_restore_source_database_backup'),
+      nextButton: button('next'),
     },
     auth: {
       input: (label: string) => page.getByLabelText(label, { exact: true }),
