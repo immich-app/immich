@@ -156,6 +156,47 @@ describe('storage template settings', () => {
   });
 });
 
+describe('storage template settings with a custom template', () => {
+  const customTemplate = { enabled: true, hashVerificationEnabled: true, template: '{{y}}/{{filename}}' };
+
+  test.beforeEach(async ({ data, router, render, api, app }) => {
+    const defaults = structuredClone(data.adminConfig);
+    api.on({ getAdminConfigDefaults: () => ({ json: defaults }) });
+    data.adminConfig.storageTemplate = structuredClone(customTemplate);
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+    await app.admin.settings.open('admin.storage_template_settings');
+    await expect
+      .element(app.admin.settings.storageTemplate.option('admin.storage_template_option_custom'))
+      .toBeChecked();
+  });
+
+  test('selects no template after a reset to default', async ({ settle, api, app }) => {
+    await app.admin.settings.resetToDefaultButton.click();
+
+    await expect.element(app.admin.settings.storageTemplate.option('admin.storage_template_option_none')).toBeChecked();
+
+    await app.admin.settings.saveButton.click();
+    await settle();
+
+    expect(api.updateAdminConfig).toHaveBeenCalledWith({
+      body: expect.objectContaining({ storageTemplate: expect.objectContaining({ enabled: false }) }),
+    });
+    await expect.element(app.admin.settings.storageTemplate.option('admin.storage_template_option_none')).toBeChecked();
+  });
+
+  test('selects the saved custom template after a reset', async ({ app }) => {
+    await app.admin.settings.storageTemplate.option('YYYY/MM/DD').click();
+
+    await app.admin.settings.resetButton.click();
+
+    await expect
+      .element(app.admin.settings.storageTemplate.option('admin.storage_template_option_custom'))
+      .toBeChecked();
+    await expect.element(app.admin.settings.storageTemplate.templateInput).toHaveValue('{{y}}/{{filename}}');
+  });
+});
+
 describe('storage template settings from a config file', () => {
   test('cannot be changed', async ({ data, router, render, app }) => {
     data.serverFeatures.configFile = true;
