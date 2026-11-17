@@ -1,7 +1,6 @@
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { BaseEventManager } from '#lib/utils/base-event-manager.svelte.ts';
 import type {
-  AdminConfigDto,
   AlbumResponseDto,
   AlbumUserRole,
   ApiKeyResponseDto,
@@ -63,8 +62,6 @@ export type Events = {
 
   SessionLocked: [];
   SessionDelete: [];
-
-  SystemConfigUpdate: [AdminConfigDto];
 
   ReleaseEvent: [ReleaseEventV1];
 

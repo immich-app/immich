@@ -1,4 +1,4 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
 import { queryClient } from '#lib/queries/client.ts';
 import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
@@ -59,8 +59,8 @@ export const updateAdminConfigMutation = () =>
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: getUserConfigQuery().queryKey }),
         queryClient.invalidateQueries({ queryKey: getPublicConfigQuery().queryKey }),
+        featureFlagsManager.init(),
       ]);
-      eventManager.emit('SystemConfigUpdate', config);
     },
     meta: { success: { toast: 'settings_saved' }, error: { toast: 'errors.unable_to_save_settings' } },
   });
