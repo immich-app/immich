@@ -4,8 +4,10 @@ import { downloadManager } from '#lib/managers/download-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { getDownloadInfoMutation } from '#lib/queries/download.query.ts';
 import { locale } from '#lib/stores/preferences.store.ts';
-import { downloadUrlPost, withError } from '#lib/utils.ts';
+import { downloadUrlPost } from '#lib/utils.ts';
 import { getByteUnitString } from '#lib/utils/byte-units.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { navigate } from '#lib/utils/navigation.ts';
@@ -14,11 +16,11 @@ import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetVisibility,
   getBaseUrl,
-  getDownloadInfo,
   updateAsset,
   updateAssets,
   type AssetResponseDto,
   type DownloadInfoDto,
+  type DownloadResponseDto,
   type ExifResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
@@ -30,18 +32,14 @@ import { handleError } from './handle-error';
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
   const archiveSize = authManager.authenticated ? authManager.preferences.download.archiveSize : undefined;
-  const dto = { ...options, archiveSize };
-  const [error, downloadInfo] = await withError(() => getDownloadInfo({ ...authManager.params, downloadInfoDto: dto }));
-  if (error) {
-    const $t = get(t);
-    handleError(error, $t('errors.unable_to_download_files'));
-    return;
-  }
+  await executeMutation(
+    getDownloadInfoMutation,
+    [{ ...authManager.params, downloadInfoDto: { ...options, archiveSize } }],
+    { onSuccess: (downloadInfo) => void startArchiveDownloads(fileName, downloadInfo) },
+  );
+};
 
-  if (!downloadInfo) {
-    return;
-  }
-
+const startArchiveDownloads = async (fileName: string, downloadInfo: DownloadResponseDto) => {
   for (let index = 0; index < downloadInfo.archives.length; index++) {
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
