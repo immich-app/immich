@@ -7,6 +7,7 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_group_settings.dart';
+import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_indicator_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_layout_settings.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -15,19 +16,10 @@ class AssetListSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final storageIndicator = useValueNotifier(ref.watch(appConfigProvider.select((s) => s.timeline.storageIndicator)));
     final smoothScrubbing = useValueNotifier(ref.watch(appConfigProvider.select((s) => s.timeline.smoothScrubbing)));
 
     final assetListSetting = [
-      SettingsSwitchListTile(
-        valueNotifier: storageIndicator,
-        title: context.t.theme_setting_asset_list_storage_indicator_title,
-        onChanged: (value) {
-          unawaited(ref.read(settingsProvider).write(.timelineStorageIndicator, value));
-          ref.invalidate(appSettingsServiceProvider);
-          ref.invalidate(settingsProvider);
-        },
-      ),
+      const IndicatorSettings(),
       SettingsSwitchListTile(
         valueNotifier: smoothScrubbing,
         title: context.t.theme_setting_asset_list_smooth_scrubbing_title,

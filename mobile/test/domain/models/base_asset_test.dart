@@ -70,4 +70,22 @@ void main() {
       expect(local.id, isNot(a.id));
     });
   });
+
+  group('BaseAsset.isRaw', () {
+    test('detects camera raw extensions case-insensitively', () {
+      expect(RemoteAssetFactory.create(name: 'IMG_0001.CR3').isRaw, isTrue);
+      expect(RemoteAssetFactory.create(name: 'DSC_0001.nef').isRaw, isTrue);
+      expect(LocalAssetFactory.create(name: 'PXL_0001.dng').isRaw, isTrue);
+    });
+
+    test('ignores non-raw images', () {
+      expect(RemoteAssetFactory.create(name: 'IMG_0001.jpg').isRaw, isFalse);
+      expect(RemoteAssetFactory.create(name: 'artwork.psd').isRaw, isFalse);
+      expect(RemoteAssetFactory.create(name: 'cr2').isRaw, isFalse);
+    });
+
+    test('ignores videos with a raw-like extension', () {
+      expect(RemoteAssetFactory.create(name: 'clip.raw', type: .video).isRaw, isFalse);
+    });
+  });
 }
