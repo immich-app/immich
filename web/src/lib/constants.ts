@@ -85,6 +85,8 @@ export const timeToLoadTheMap: number = 100;
 export const timeBeforeShowLoadingSpinner: number = 100;
 
 export const timeDebounceOnSearch: number = 300;
+export const resourceUpdateBatchDelay = 500;
+export const correlationIdHeader = 'X-Correlation-ID';
 export const workflowLogsPageSize = 50;
 
 export const fallbackLocale = {

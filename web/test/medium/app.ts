@@ -90,6 +90,9 @@ export const createApp = (page: Page, data: MockData) => {
           await toggle.click();
         }
       },
+      apiKeys: {
+        name: (name: string) => page.getByRole('cell', { name, exact: true }),
+      },
       purchase: {
         productKeyInput: page.getByPlaceholder(/^IMCL-/),
         activateButton: button('purchase_button_activate'),
