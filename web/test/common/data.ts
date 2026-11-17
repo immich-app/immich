@@ -102,44 +102,6 @@ export class MockData {
     this.integrityReport = { ...this.integrityReport, ...report };
   }
 
-<<<<<<< HEAD
-=======
-  addIntegrityReportItems(items: MaybeArray<IntegrityReportItem>) {
-    for (const item of toList(items)) {
-      this.integrityReportItems.set(item.id, item);
-    }
-    return this;
-  }
-
-  integrityReportPage({ $type, cursor }: { $type: IntegrityReport; cursor?: string }): IntegrityReportResponseDto {
-    const items = [...this.integrityReportItems.values()].filter((item) => item.type === $type);
-    const start = cursor ? items.findIndex((item) => item.id === cursor) : 0;
-    const page = items.slice(start, start + integrityReportPageSize);
-    return { items: page, nextCursor: items[start + integrityReportPageSize]?.id };
-  }
-
-  getIntegrityReportItem(id: string) {
-    return this.integrityReportItems.get(id);
-  }
-
-  deleteIntegrityReportItem(id: string) {
-    return this.integrityReportItems.delete(id);
-  }
-
-  getMaintenanceStatus() {
-    return this.maintenanceStatus;
-  }
-
-  setMaintenanceStatus(status: MaintenanceStatusResponseDto) {
-    this.maintenanceStatus = status;
-    return this;
-  }
-
-  deleteBackups(filenames: string[]) {
-    this.backups.backups = this.backups.backups.filter(({ filename }) => !filenames.includes(filename));
-  }
-
->>>>>>> a2022cc (fix: integrity report downloads (#33239))
   setPreferences(preferences: UserPreferencesResponseDto) {
     this.preferences = preferences;
     return this;

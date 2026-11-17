@@ -150,10 +150,7 @@ export const toCall = (
   body: unknown,
 ): Record<string, unknown> => {
   const call: Record<string, unknown> = {};
-  const params: Record<string, unknown> = {};
-  for (const [name, value] of Object.entries(pathParams)) {
-    params[toSdkParameterName(name)] = value;
-  }
+  const params: Record<string, unknown> = { ...pathParams };
   for (const name of new Set(query.keys())) {
     params[toSdkParameterName(name)] = coerce(operation.queryParameters[name] ?? 'string', query.getAll(name));
   }
