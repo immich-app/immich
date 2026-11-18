@@ -26,7 +26,7 @@ export class TimelineService extends BaseService {
   }
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
-    const { userId, ...options } = dto;
+    const { userId, ownerIds, ...options } = dto;
     let userIds: string[] | undefined;
 
     if (userId) {
@@ -41,12 +41,16 @@ export class TimelineService extends BaseService {
       }
     }
 
-    return { ...options, userIds };
+    return { ...options, userIds: ownerIds ?? userIds };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
     if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
+    }
+
+    if (dto.ownerIds && !dto.albumId) {
+      throw new BadRequestException('ownerIds can only be used together with albumId');
     }
 
     if (dto.albumId) {

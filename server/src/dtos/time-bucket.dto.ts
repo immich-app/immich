@@ -1,13 +1,16 @@
 import z from 'zod';
 import { BBoxSchema } from 'src/dtos/bbox.dto.js';
 import { AssetOrderBySchema, AssetOrderSchema, AssetVisibilitySchema } from 'src/enum.js';
-import { stringToBool } from 'src/validation.js';
+import { queryParamArray, stringToBool } from 'src/validation.js';
 import { createZodDto } from 'src/zod.js';
 
 const TimeBucketQueryBaseSchema = z
   .object({
     userId: z.uuidv4().optional().describe('Filter assets by specific user ID'),
     albumId: z.uuidv4().optional().describe('Filter assets belonging to a specific album'),
+    ownerIds: queryParamArray(z.uuidv4())
+      .optional()
+      .describe('Filter assets of an album by the users who own them. Requires albumId.'),
     personId: z.uuidv4().optional().describe('Filter assets containing a specific person (face recognition)'),
     tagId: z.uuidv4().optional().describe('Filter assets with a specific tag'),
     isFavorite: stringToBool

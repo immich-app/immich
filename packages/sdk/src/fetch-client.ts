@@ -7745,7 +7745,7 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, ownerIds, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -7753,6 +7753,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
     key?: string;
     order?: AssetOrder;
     orderBy?: AssetOrderBy;
+    ownerIds?: string[];
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -7774,6 +7775,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
         key,
         order,
         orderBy,
+        ownerIds,
         personId,
         slug,
         tagId,
@@ -7790,7 +7792,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, ownerIds, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -7798,6 +7800,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
     key?: string;
     order?: AssetOrder;
     orderBy?: AssetOrderBy;
+    ownerIds?: string[];
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -7818,6 +7821,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
         key,
         order,
         orderBy,
+        ownerIds,
         personId,
         slug,
         tagId,

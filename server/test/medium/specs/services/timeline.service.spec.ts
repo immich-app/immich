@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetOrderBy, AssetVisibility, SharedLinkType } from 'src/enum.js';
+import { AlbumUserRole, AssetOrderBy, AssetVisibility, SharedLinkType } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -21,6 +21,33 @@ const setup = (db?: Kysely<DB>) => {
     real: [AssetRepository, AccessRepository, PartnerRepository],
     mock: [LoggingRepository],
   });
+};
+
+const newSharedAlbum = async (ctx: ReturnType<typeof setup>['ctx']) => {
+  const { user } = await ctx.newUser();
+  const { user: alice } = await ctx.newUser();
+  const { user: bob } = await ctx.newUser();
+  const { album } = await ctx.newAlbum({ ownerId: user.id });
+  for (const member of [alice, bob]) {
+    await ctx.newAlbumUser({ albumId: album.id, userId: member.id, role: AlbumUserRole.Editor });
+  }
+
+  const newAlbumAsset = async (ownerId: string, visibility = AssetVisibility.Timeline, inAlbum = true) => {
+    const { asset } = await ctx.newAsset({ ownerId, visibility, localDateTime: new Date('1970-02-12') });
+    await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+    if (inAlbum) {
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    }
+    return asset;
+  };
+
+  const ownAsset = await newAlbumAsset(user.id);
+  const aliceAsset = await newAlbumAsset(alice.id);
+  const aliceArchivedAsset = await newAlbumAsset(alice.id, AssetVisibility.Archive);
+  const bobAsset = await newAlbumAsset(bob.id);
+  await newAlbumAsset(alice.id, AssetVisibility.Timeline, false);
+
+  return { user, alice, bob, album, ownAsset, aliceAsset, aliceArchivedAsset, bobAsset };
 };
 
 beforeAll(async () => {
@@ -114,6 +141,64 @@ describe(TimelineService.name, () => {
       const response = sut.getTimeBuckets(auth, {});
       await expect(response).rejects.toBeInstanceOf(BadRequestException);
       await expect(response).rejects.toThrow('Not found or no timeline.read access');
+    });
+  });
+
+  describe('album owner filter', () => {
+    it('should only return album assets of the selected members', async () => {
+      const { sut, ctx } = setup();
+      const { user, alice, album, aliceAsset, aliceArchivedAsset } = await newSharedAlbum(ctx);
+
+      const rawResponse = await sut.getTimeBucket(factory.auth({ user }), {
+        timeBucket: '1970-02-01',
+        albumId: album.id,
+        ownerIds: [alice.id],
+      });
+
+      expect(JSON.parse(rawResponse).id.toSorted()).toEqual([aliceAsset.id, aliceArchivedAsset.id].toSorted());
+    });
+
+    it('should combine multiple selected members', async () => {
+      const { sut, ctx } = setup();
+      const { user, alice, bob, album, aliceAsset, aliceArchivedAsset, bobAsset } = await newSharedAlbum(ctx);
+
+      const rawResponse = await sut.getTimeBucket(factory.auth({ user }), {
+        timeBucket: '1970-02-01',
+        albumId: album.id,
+        ownerIds: [alice.id, bob.id],
+      });
+
+      expect(JSON.parse(rawResponse).id.toSorted()).toEqual(
+        [aliceAsset.id, aliceArchivedAsset.id, bobAsset.id].toSorted(),
+      );
+    });
+
+    it('should count only the album assets of the selected members', async () => {
+      const { sut, ctx } = setup();
+      const { user, alice, album } = await newSharedAlbum(ctx);
+
+      await expect(
+        sut.getTimeBuckets(factory.auth({ user }), { albumId: album.id, ownerIds: [alice.id] }),
+      ).resolves.toEqual([{ count: 2, timeBucket: '1970-02-01' }]);
+    });
+
+    it('should reject ownerIds without an album', async () => {
+      const { sut, ctx } = setup();
+      const { user, alice } = await newSharedAlbum(ctx);
+
+      await expect(sut.getTimeBuckets(factory.auth({ user }), { ownerIds: [alice.id] })).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should still require album access', async () => {
+      const { sut, ctx } = setup();
+      const { alice, album } = await newSharedAlbum(ctx);
+      const { user: stranger } = await ctx.newUser();
+
+      await expect(
+        sut.getTimeBuckets(factory.auth({ user: stranger }), { albumId: album.id, ownerIds: [alice.id] }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

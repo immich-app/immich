@@ -16820,6 +16820,20 @@
             }
           },
           {
+            "description": "Filter assets of an album by the users who own them. Requires albumId.",
+            "in": "query",
+            "name": "ownerIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
             "description": "Filter assets containing a specific person (face recognition)",
             "in": "query",
             "name": "personId",
@@ -17016,6 +17030,20 @@
             "required": false,
             "schema": {
               "$ref": "#/components/schemas/AssetOrderBy"
+            }
+          },
+          {
+            "description": "Filter assets of an album by the users who own them. Requires albumId.",
+            "in": "query",
+            "name": "ownerIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "type": "string"
+              },
+              "type": "array"
             }
           },
           {

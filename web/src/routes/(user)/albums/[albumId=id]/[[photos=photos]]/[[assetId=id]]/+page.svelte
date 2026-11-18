@@ -223,6 +223,27 @@
   const albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
   const albumUsers = $derived(showAlbumUsers && containsEditors ? album.albumUsers.map(({ user }) => user) : []);
+  const albumContributors = $derived(
+    album.albumUsers.filter(({ role }) => role !== AlbumUserRole.Viewer).map(({ user }) => user),
+  );
+
+  let ownerFilter = $state<{ albumId: string; userIds: string[] }>();
+  const ownerFilterUserIds = $derived(ownerFilter?.albumId === albumId ? ownerFilter.userIds : []);
+  const toggleOwnerFilter = (userId: string, { altKey }: MouseEvent) => {
+    let userIds: string[];
+    if (altKey) {
+      const everyoneElse = albumContributors.map(({ id }) => id).filter((id) => id !== userId);
+      const isEveryoneElseSelected =
+        ownerFilterUserIds.length === everyoneElse.length &&
+        everyoneElse.every((id) => ownerFilterUserIds.includes(id));
+      userIds = isEveryoneElseSelected ? [] : everyoneElse;
+    } else if (ownerFilterUserIds.includes(userId)) {
+      userIds = ownerFilterUserIds.filter((id) => id !== userId);
+    } else {
+      userIds = [...ownerFilterUserIds, userId];
+    }
+    ownerFilter = userIds.length > 0 ? { albumId, userIds } : undefined;
+  };
 
   $effect(() => {
     if (!album.isActivityEnabled && commentCount === 0) {
@@ -238,7 +259,11 @@
         timelineAlbumId: albumId,
       };
     }
-    return { albumId, order: album.order };
+    return {
+      albumId,
+      order: album.order,
+      ownerIds: ownerFilterUserIds.length > 0 ? ownerFilterUserIds : undefined,
+    };
   });
 
   const isOwned = $derived(isAlbumOwner(album));
@@ -325,15 +350,34 @@
               <!-- ALBUM SHARING -->
               {#if album.albumUsers.length > 1 || (album.hasSharedLink && isOwned)}
                 <div class="my-3 flex gap-x-1">
+                  <!-- owner & users with write access (collaborators) -->
+                  {#if albumContributors.length > 1}
+                    {#each albumContributors as user (user.id)}
+                      {const isFiltered = $derived(ownerFilterUserIds.includes(user.id))}
+                      <button
+                        type="button"
+                        class="rounded-full transition-opacity {isFiltered
+                          ? 'ring-2 ring-primary ring-offset-2 ring-offset-light dark:ring-offset-dark'
+                          : ''} {ownerFilterUserIds.length > 0 && !isFiltered ? 'opacity-40 hover:opacity-80' : ''}"
+                        aria-pressed={isFiltered}
+                        aria-label={user.name}
+                        onclick={(event) => toggleOwnerFilter(user.id, event)}
+                      >
+                        <UserAvatar {user} size="md" />
+                      </button>
+                    {/each}
+                  {/if}
+
                   <button
                     class="flex gap-x-1"
                     type="button"
                     onclick={(event) => Actions.Options.onAction({ event, action: Actions.Options })}
                   >
-                    <!-- owner & users with write access (collaborators) -->
-                    {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
-                      <UserAvatar {user} size="md" />
-                    {/each}
+                    {#if albumContributors.length <= 1}
+                      {#each albumContributors as user (user.id)}
+                        <UserAvatar {user} size="md" />
+                      {/each}
+                    {/if}
 
                     <!-- display ellipsis if there are readonly users too -->
                     {#if albumHasViewers}
