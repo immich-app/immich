@@ -6,13 +6,17 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/sliver_app_bar/item_count_text.widget.dart';
 import 'package:immich_mobile/presentation/widgets/sliver_app_bar/random_asset_background_image.widget.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/select_all_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class MesmerizingSliverAppBar extends ConsumerStatefulWidget {
-  const MesmerizingSliverAppBar({super.key, required this.title});
+  const MesmerizingSliverAppBar({super.key, required this.title, this.showSelectAll = false});
 
   final String title;
+
+  final bool showSelectAll;
+
   @override
   ConsumerState<MesmerizingSliverAppBar> createState() => _MesmerizingSliverAppBarState();
 }
@@ -41,6 +45,13 @@ class _MesmerizingSliverAppBarState extends ConsumerState<MesmerizingSliverAppBa
       child: AnimatedOpacity(duration: Durations.medium1, opacity: isMultiSelectEnabled ? 0 : 1, child: child),
     );
 
+    final iconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
+    final iconShadows = [
+      _scrollProgress < 0.95
+          ? Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
+          : const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
+    ];
+
     return SliverAppBar(
       expandedHeight: 300.0,
       floating: false,
@@ -51,18 +62,15 @@ class _MesmerizingSliverAppBarState extends ConsumerState<MesmerizingSliverAppBa
         IconButton(
           icon: Icon(
             Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
-            color: Color.lerp(Colors.white, context.primaryColor, _scrollProgress),
-            shadows: [
-              _scrollProgress < 0.95
-                  ? Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
-                  : const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
-            ],
+            color: iconColor,
+            shadows: iconShadows,
           ),
           onPressed: () {
             context.pop();
           },
         ),
       ),
+      actions: [if (widget.showSelectAll) SelectAllIconButton(iconColor: iconColor, iconShadows: iconShadows)],
       flexibleSpace: Builder(
         builder: (context) {
           final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();

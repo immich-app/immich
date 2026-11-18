@@ -1,7 +1,10 @@
 // ignore_for_file: use-ref-and-state-synchronously
 
+import 'dart:math' as math;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -74,6 +77,21 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
   void reset() {
     state = const MultiSelectState(selectedAssets: {}, lockedSelectionAssets: {}, forceEnable: false);
+  }
+
+  Future<void> selectAll() async {
+    final selectedAssets = state.selectedAssets.toSet();
+
+    for (int offset = 0; offset < _timelineService.totalAssets; offset += kTimelineAssetLoadBatchSize) {
+      final count = math.min(kTimelineAssetLoadBatchSize, _timelineService.totalAssets - offset);
+      if (count <= 0) {
+        break;
+      }
+
+      selectedAssets.addAll(await _timelineService.loadAssets(offset, count));
+    }
+
+    state = state.copyWith(selectedAssets: selectedAssets);
   }
 
   Future<void> toggleBucketSelection(int offset, int bucketCount) async {
