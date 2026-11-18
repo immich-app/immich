@@ -378,7 +378,7 @@ export class LibraryService extends BaseService {
     }
 
     await this.libraryRepository.softDelete(id);
-    this.resourceRepository.send({
+    this.resourceRepository.delete({
       userIds: await this.userRepository.getAdminIds(),
       paths: [Resource.library({ id })],
     });

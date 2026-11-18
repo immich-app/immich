@@ -14,7 +14,7 @@ import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { makeMockWatcher } from 'test/repositories/storage.repository.mock.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
 import { factory, newDate, newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, makeStream, newTestService } from 'test/utils.js';
 
 async function* mockWalk() {
   // eslint-disable-next-line unicorn/no-useless-promise-resolve-reject
@@ -638,7 +638,8 @@ describe(LibraryService.name, () => {
 
       await sut.delete(library.id);
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.library(library)] });
+      expectResourceDeletes(mocks, { userIds: adminIds, paths: [Resource.library(library)] });
+      expectResourceUpdates(mocks);
     });
 
     it('should allow an external library to be deleted', async () => {
