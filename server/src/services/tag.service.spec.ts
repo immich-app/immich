@@ -6,7 +6,7 @@ import { TagService } from 'src/services/tag.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
 
 describe(TagService.name, () => {
   let sut: TagService;
@@ -240,6 +240,7 @@ describe(TagService.name, () => {
       await expect(sut.remove(authStub.admin, 'tag-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.tag.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
+      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should remove a tag', async () => {
@@ -266,6 +267,7 @@ describe(TagService.name, () => {
       await sut.remove(auth, 'tag-1');
 
       expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.tags()] });
+      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.tag({ id: 'tag-1' })] });
     });
   });
 

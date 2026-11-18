@@ -405,15 +405,21 @@ export const getMocks = () => {
   return mocks;
 };
 
-export const expectResourceUpdates = (mocks: Pick<ServiceMocks, 'resource'>, ...updates: ResourceUpdate[]) => {
+const expectResourceCalls = (calls: [ResourceUpdate][], expected: ResourceUpdate[]) => {
   const normalize = ({ userIds, paths }: ResourceUpdate) => ({
     userIds: [...userIds].sort(),
     paths: [...new Set(paths.filter(Boolean))],
   });
-  const sent = mocks.resource.send.mock.calls.map(([update]) => normalize(update));
-  expect(sent).toHaveLength(updates.length);
-  expect(sent).toEqual(expect.arrayContaining(updates.map((update) => normalize(update))));
+  const actual = calls.map(([update]) => normalize(update));
+  expect(actual).toHaveLength(expected.length);
+  expect(actual).toEqual(expect.arrayContaining(expected.map((update) => normalize(update))));
 };
+
+export const expectResourceUpdates = (mocks: Pick<ServiceMocks, 'resource'>, ...updates: ResourceUpdate[]) =>
+  expectResourceCalls(mocks.resource.send.mock.calls, updates);
+
+export const expectResourceDeletes = (mocks: Pick<ServiceMocks, 'resource'>, ...deletes: ResourceUpdate[]) =>
+  expectResourceCalls(mocks.resource.delete.mock.calls, deletes);
 
 export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,

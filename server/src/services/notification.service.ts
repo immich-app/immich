@@ -52,6 +52,10 @@ export class NotificationService extends BaseService {
     await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NotificationDelete });
     await this.notificationRepository.deleteAll(dto.ids);
     this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.notifications()] });
+    this.resourceRepository.delete({
+      userIds: [auth.user.id],
+      paths: dto.ids.map((id) => Resource.notification({ id })),
+    });
   }
 
   async get(auth: AuthDto, id: string) {
@@ -75,7 +79,7 @@ export class NotificationService extends BaseService {
   async delete(auth: AuthDto, id: string) {
     await this.requireAccess({ auth, ids: [id], permission: Permission.NotificationDelete });
     await this.notificationRepository.delete(id);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.notification({ id })] });
+    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.notification({ id })] });
   }
 
   @OnJob({ name: JobName.NotificationsCleanup, queue: QueueName.BackgroundTask })

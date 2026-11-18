@@ -33,7 +33,7 @@ import {
   getForPartner,
 } from 'test/mappers.js';
 import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, makeStream, newTestService } from 'test/utils.js';
 
 const PERSON_READ_ROLES = [PersonUserRole.Read, PersonUserRole.Write, PersonUserRole.Admin];
 const PERSON_WRITE_ROLES = [PersonUserRole.Write, PersonUserRole.Admin];
@@ -643,6 +643,7 @@ describe(PersonService.name, () => {
 
       expect(mocks.person.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
+      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should tell the owner and the users it was shared with', async () => {
@@ -664,7 +665,11 @@ describe(PersonService.name, () => {
       });
       expectResourceUpdates(mocks, {
         userIds: [auth.user.id, sharee.id],
-        paths: [Resource.person({ id: personGroupId }), Resource.searchPerson()],
+        paths: [Resource.people(), Resource.searchPerson()],
+      });
+      expectResourceDeletes(mocks, {
+        userIds: [auth.user.id, sharee.id],
+        paths: [Resource.person({ id: personGroupId })],
       });
     });
   });
@@ -683,6 +688,7 @@ describe(PersonService.name, () => {
       await sut.deleteAll(auth, { ids });
 
       expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.people(), Resource.searchPerson()] });
+      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: ids.map((id) => Resource.person({ id })) });
     });
   });
 
@@ -693,6 +699,7 @@ describe(PersonService.name, () => {
       );
 
       expect(mocks.resource.send).not.toHaveBeenCalled();
+      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should not tell anyone when no person can be merged', async () => {
@@ -702,6 +709,7 @@ describe(PersonService.name, () => {
       await sut.mergePeople(AuthFactory.create(), { ids });
 
       expect(mocks.resource.send).not.toHaveBeenCalled();
+      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should tell every owner of the merged people', async () => {
@@ -726,6 +734,42 @@ describe(PersonService.name, () => {
         { userIds: [auth.user.id, other.id], paths: [Resource.people(), Resource.searchPerson()] },
         { userIds: [auth.user.id], paths: [Resource.faces()] },
       );
+      expectResourceDeletes(
+        mocks,
+        { userIds: [auth.user.id], paths: [Resource.person({ id: source.personGroupId })] },
+        { userIds: [other.id], paths: [Resource.person({ id: source.personGroupId })] },
+      );
+    });
+
+    it('should not tell an owner whose person was skipped', async () => {
+      const auth = AuthFactory.create();
+      const other = UserFactory.create();
+      const target = PersonFactory.create({ ownerId: auth.user.id });
+      const source = PersonFactory.create({ ownerId: auth.user.id });
+      const otherTarget = PersonFactory.create({
+        ownerId: other.id,
+        personGroupId: target.personGroupId,
+        name: 'Target',
+      });
+      const otherSource = PersonFactory.create({
+        ownerId: other.id,
+        personGroupId: source.personGroupId,
+        name: 'Source',
+      });
+      const ids = [target.personGroupId, source.personGroupId];
+      mocks.access.person.checkAccess.mockResolvedValue(
+        new Set(ids.map((personGroupId) => ({ personGroupId, ownerId: auth.user.id }))),
+      );
+      mocks.person.getForMergePerson.mockResolvedValue([target, source, otherTarget, otherSource]);
+      mocks.person.reassignFaces.mockResolvedValue(1);
+      mocks.person.delete.mockResolvedValue([source]);
+
+      await sut.mergePeople(auth, { ids });
+
+      expectResourceDeletes(mocks, {
+        userIds: [auth.user.id],
+        paths: [Resource.person({ id: source.personGroupId })],
+      });
     });
   });
 

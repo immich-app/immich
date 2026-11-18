@@ -11,7 +11,7 @@ import { notificationStub } from 'test/fixtures/notification.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { getForAlbum } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
 
 const configs = {
   smtpDisabled: Object.freeze<SystemConfig>({
@@ -86,6 +86,7 @@ describe(NotificationService.name, () => {
       await sut.deleteAll(auth, { ids });
 
       expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.notifications()] });
+      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: ids.map((id) => Resource.notification({ id })) });
     });
   });
 
@@ -111,7 +112,8 @@ describe(NotificationService.name, () => {
 
       await sut.delete(auth, id);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.notification({ id })] });
+      expectResourceUpdates(mocks);
+      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.notification({ id })] });
     });
   });
 

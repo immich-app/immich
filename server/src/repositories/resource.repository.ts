@@ -11,13 +11,21 @@ export class ResourceRepository {
     private websocketRepository: WebsocketRepository,
   ) {}
 
-  send({ userIds, paths }: ResourceUpdate) {
+  send(update: ResourceUpdate) {
+    this.emit('ResourceUpdateV1', update);
+  }
+
+  delete(update: ResourceUpdate) {
+    this.emit('ResourceDeleteV1', update);
+  }
+
+  private emit(event: 'ResourceUpdateV1' | 'ResourceDeleteV1', { userIds, paths }: ResourceUpdate) {
     const resourcePaths = [...new Set(paths.filter((path) => typeof path === 'string'))];
     if (userIds.length === 0 || resourcePaths.length === 0) {
       return;
     }
 
-    this.websocketRepository.clientSend('ResourceUpdateV1', [...new Set(userIds)], {
+    this.websocketRepository.clientSend(event, [...new Set(userIds)], {
       paths: resourcePaths,
       correlationId: this.cls.getId(),
     });

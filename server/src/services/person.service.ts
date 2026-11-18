@@ -322,10 +322,9 @@ export class PersonService extends BaseService {
 
     await this.removeAllPersonGroups(ids, ownerId);
     await this.personRepository.deleteEmptyGroups();
-    this.resourceRepository.send({
-      userIds: [ownerId, ...sharedWithIds],
-      paths: [ids.length === 1 ? Resource.person({ id: ids[0] }) : Resource.people(), Resource.searchPerson()],
-    });
+    const userIds = [ownerId, ...sharedWithIds];
+    this.resourceRepository.send({ userIds, paths: [Resource.people(), Resource.searchPerson()] });
+    this.resourceRepository.delete({ userIds, paths: ids.map((id) => Resource.person({ id })) });
   }
 
   private async updatePerson(auth: AuthDto, personGroupId: string, dto: PersonUpdateDto) {
@@ -774,7 +773,7 @@ export class PersonService extends BaseService {
     const targets = new Map(
       people.filter((person) => person.personGroupId === targetId).map((person) => [person.ownerId, person]),
     );
-    let hasChanges = false;
+    const merged: { ownerId: string; id: string }[] = [];
 
     if (targets.has(auth.user.id)) {
       results.set(targetId, { id: targetId, success: true });
@@ -801,7 +800,7 @@ export class PersonService extends BaseService {
               ownerId,
               await this.personRepository.updateGroupId({ ownerId, oldPersonGroupId: id, newPersonGroupId: targetId }),
             );
-            hasChanges = true;
+            merged.push({ ownerId, id });
             continue;
           }
 
@@ -819,7 +818,7 @@ export class PersonService extends BaseService {
 
           await this.personRepository.reassignFaces({ oldPersonGroupId: id, newPersonGroupId: targetId, ownerId });
           await this.removeAllPersonGroups([id], ownerId);
-          hasChanges = true;
+          merged.push({ ownerId, id });
           this.logger.log(`Merged ${source.name || id} into ${target.name || targetId}`);
 
           if (isAuthUser) {
@@ -836,9 +835,13 @@ export class PersonService extends BaseService {
 
     await this.personRepository.deleteEmptyGroups();
 
-    if (hasChanges) {
+    if (merged.length > 0) {
       this.resourceRepository.send({ userIds: [...ownerIds], paths: [Resource.people(), Resource.searchPerson()] });
       this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.faces()] });
+    }
+
+    for (const [ownerId, people] of Map.groupBy(merged, ({ ownerId }) => ownerId)) {
+      this.resourceRepository.delete({ userIds: [ownerId], paths: people.map(({ id }) => Resource.person({ id })) });
     }
 
     return results.values().toArray();

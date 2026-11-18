@@ -54,7 +54,7 @@ export class StackService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.StackDelete, ids: [id] });
     await this.stackRepository.delete(id);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.stack({ id })] });
+    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.stack({ id })] });
     await this.eventRepository.emit('StackDelete', { stackId: id, userId: auth.user.id });
   }
 
@@ -62,6 +62,7 @@ export class StackService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.StackDelete, ids: dto.ids });
     await this.stackRepository.deleteAll(dto.ids);
     this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.stacks()] });
+    this.resourceRepository.delete({ userIds: [auth.user.id], paths: dto.ids.map((id) => Resource.stack({ id })) });
     await this.eventRepository.emit('StackDeleteAll', { stackIds: dto.ids, userId: auth.user.id });
   }
 

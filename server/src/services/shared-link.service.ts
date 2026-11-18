@@ -152,7 +152,7 @@ export class SharedLinkService extends BaseService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
     await this.sharedLinkRepository.remove(sharedLink.id);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.sharedLink({ id })] });
+    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.sharedLink({ id })] });
     if (!sharedLink.albumId) {
       return;
     }

@@ -78,4 +78,41 @@ describe(ResourceRepository.name, () => {
       });
     });
   });
+
+  describe('delete', () => {
+    it('should send the deleted paths with the correlation id to each user room', () => {
+      const [user1, user2] = [newUuid(), newUuid()];
+
+      sut.delete({ userIds: [user1, user2], paths: ['/albums/album-1', '/albums/album-2'] });
+
+      expect(websocket.clientSend).toHaveBeenCalledTimes(1);
+      expect(websocket.clientSend).toHaveBeenCalledWith('ResourceDeleteV1', [user1, user2], {
+        paths: ['/albums/album-1', '/albums/album-2'],
+        correlationId: 'device-1.7',
+      });
+    });
+
+    it('should send nothing without users', () => {
+      sut.delete({ userIds: [], paths: ['/albums/album-1'] });
+
+      expect(websocket.clientSend).not.toHaveBeenCalled();
+    });
+
+    it('should send nothing when every path is skipped', () => {
+      sut.delete({ userIds: [newUuid()], paths: [false, undefined] });
+
+      expect(websocket.clientSend).not.toHaveBeenCalled();
+    });
+
+    it('should send each path and user once', () => {
+      const userId = newUuid();
+
+      sut.delete({ userIds: [userId, userId], paths: ['/tags/tag-1', false, '/tags/tag-1'] });
+
+      expect(websocket.clientSend).toHaveBeenCalledWith('ResourceDeleteV1', [userId], {
+        paths: ['/tags/tag-1'],
+        correlationId: 'device-1.7',
+      });
+    });
+  });
 });

@@ -11,7 +11,7 @@ import { DB } from 'src/schema/index.js';
 import { WorkflowService } from 'src/services/workflow.service.js';
 import { newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
-import { expectResourceUpdates, getKyselyDB } from 'test/utils.js';
+import { expectResourceDeletes, expectResourceUpdates, getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -151,7 +151,8 @@ describe(WorkflowService.name, () => {
 
       await sut.delete(factory.auth({ user }), workflow.id);
 
-      expectResourceUpdates(
+      expectResourceUpdates({ resource: ctx.getMock(ResourceRepository) });
+      expectResourceDeletes(
         { resource: ctx.getMock(ResourceRepository) },
         { userIds: [user.id], paths: [Resource.workflow(workflow)] },
       );
@@ -168,6 +169,7 @@ describe(WorkflowService.name, () => {
       await expect(sut.delete(factory.auth({ user: stranger }), workflow.id)).rejects.toThrow();
 
       expect(ctx.getMock(ResourceRepository).send).not.toHaveBeenCalled();
+      expect(ctx.getMock(ResourceRepository).delete).not.toHaveBeenCalled();
     });
   });
 

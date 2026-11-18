@@ -235,7 +235,7 @@ export class PasskeyService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.PasskeyDelete, ids: [id] });
     await this.passkeyRepository.delete(id);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.passkey({ id })] });
+    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.passkey({ id })] });
   }
 
   private requireSession(auth: AuthDto) {

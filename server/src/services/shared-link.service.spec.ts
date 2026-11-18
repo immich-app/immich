@@ -13,7 +13,7 @@ import { authStub } from 'test/fixtures/auth.stub.js';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
 import { getForSharedLink } from 'test/mappers.js';
 import { factory } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
@@ -339,6 +339,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, 'missing-id');
       expect(mocks.sharedLink.update).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
+      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should remove a key', async () => {
@@ -360,7 +361,8 @@ describe(SharedLinkService.name, () => {
 
       await sut.remove(auth, sharedLink.id);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.sharedLink(sharedLink)] });
+      expectResourceUpdates(mocks);
+      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.sharedLink(sharedLink)] });
     });
 
     it('should tell the link owner and the album users about a removed album link', async () => {
@@ -374,11 +376,11 @@ describe(SharedLinkService.name, () => {
 
       await sut.remove(AuthFactory.create(owner), sharedLink.id);
 
-      expectResourceUpdates(
-        mocks,
-        { userIds: [owner.id], paths: [Resource.sharedLink(sharedLink)] },
-        { userIds: [owner.id, editor.id], paths: [Resource.album(album), Resource.albumStatistics()] },
-      );
+      expectResourceUpdates(mocks, {
+        userIds: [owner.id, editor.id],
+        paths: [Resource.album(album), Resource.albumStatistics()],
+      });
+      expectResourceDeletes(mocks, { userIds: [owner.id], paths: [Resource.sharedLink(sharedLink)] });
     });
   });
 

@@ -210,7 +210,7 @@ export class MemoryService extends BaseService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.MemoryDelete, ids: [id] });
     await this.memoryRepository.delete(id);
-    this.sendMemoryChange(auth, id);
+    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.memory({ id })] });
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {

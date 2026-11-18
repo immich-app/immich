@@ -9,7 +9,7 @@ import { PasskeyFactory } from 'test/factories/passkey.factory.js';
 import { SessionFactory } from 'test/factories/session.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
 
 const loginDetails = {
   isSecure: true,
@@ -706,6 +706,7 @@ describe(PasskeyService.name, () => {
 
       expect(mocks.passkey.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
+      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should delete a passkey', async () => {
@@ -728,7 +729,8 @@ describe(PasskeyService.name, () => {
 
       await sut.delete(auth, passkey.id);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.passkey(passkey)] });
+      expectResourceUpdates(mocks);
+      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.passkey(passkey)] });
     });
   });
 });

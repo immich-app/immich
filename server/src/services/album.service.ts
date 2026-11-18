@@ -178,14 +178,18 @@ export class AlbumService extends BaseService {
     const album = await this.findOrFail(id, auth.user.id);
 
     await this.albumRepository.delete(id);
-    this.resourceRepository.send({
-      userIds: getUserIds(album),
-      paths: [Resource.album({ id }), Resource.albumStatistics()],
-    });
+    this.resourceRepository.send({ userIds: getUserIds(album), paths: [Resource.albumStatistics()] });
+    this.resourceRepository.delete({ userIds: getUserIds(album), paths: [Resource.album({ id })] });
     this.resourceRepository.send({
       userIds: album.sharedLinks.map(({ userId }) => userId),
       paths: [Resource.sharedLinks()],
     });
+    for (const [userId, sharedLinks] of Map.groupBy(album.sharedLinks, ({ userId }) => userId)) {
+      this.resourceRepository.delete({
+        userIds: [userId],
+        paths: sharedLinks.map((link) => Resource.sharedLink(link)),
+      });
+    }
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {

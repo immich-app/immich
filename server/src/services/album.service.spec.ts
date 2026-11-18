@@ -11,7 +11,7 @@ import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForAlbum } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
 
 describe(AlbumService.name, () => {
   let sut: AlbumService;
@@ -470,6 +470,7 @@ describe(AlbumService.name, () => {
 
       expect(mocks.album.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
+      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should not let a shared user delete the album', async () => {
@@ -507,8 +508,13 @@ describe(AlbumService.name, () => {
 
       expectResourceUpdates(
         mocks,
-        { userIds: [owner.id, editor.id], paths: [Resource.album(album), Resource.albumStatistics()] },
+        { userIds: [owner.id, editor.id], paths: [Resource.albumStatistics()] },
         { userIds: [editor.id], paths: [Resource.sharedLinks()] },
+      );
+      expectResourceDeletes(
+        mocks,
+        { userIds: [owner.id, editor.id], paths: [Resource.album(album)] },
+        { userIds: [editor.id], paths: [Resource.sharedLink(albumWithLink.sharedLinks[0])] },
       );
     });
   });

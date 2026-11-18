@@ -97,6 +97,7 @@ export class TagService extends BaseService {
     await this.tagRepository.delete(id);
     await this.syncAssetTags(assetIds);
     this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.tags()] });
+    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.tag({ id })] });
   }
 
   async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {

@@ -8,7 +8,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { MemoryFactory } from 'test/factories/memory.factory.js';
 import { getForMemory } from 'test/mappers.js';
 import { factory, newUuid, newUuids } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
 
 describe(MemoryService.name, () => {
   let sut: MemoryService;
@@ -204,6 +204,7 @@ describe(MemoryService.name, () => {
 
       expect(mocks.memory.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
+      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should tell the owner about the deleted memory', async () => {
@@ -214,7 +215,8 @@ describe(MemoryService.name, () => {
 
       await sut.remove(auth, memoryId);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.memory({ id: memoryId })] });
+      expectResourceUpdates(mocks);
+      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.memory({ id: memoryId })] });
     });
 
     it('should delete a memory', async () => {

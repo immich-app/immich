@@ -44,7 +44,7 @@ export class AssetFileService extends BaseService {
     }
 
     await this.assetFileRepository.delete(id);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.assetFile({ id })] });
+    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.assetFile({ id })] });
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [file.path] } });
   }
 }

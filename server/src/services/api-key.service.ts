@@ -76,7 +76,7 @@ export class ApiKeyService extends BaseService {
     }
 
     await this.apiKeyRepository.delete(auth.user.id, id);
-    this.sendApiKeyUpdate(auth, id);
+    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.apiKey({ id })] });
   }
 
   async getMine(auth: AuthDto): Promise<ApiKeyResponseDto> {
