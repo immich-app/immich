@@ -218,16 +218,28 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       final backupFuture = _handleBackup(remoteSync: Future.value(true));
       Timer? cancelTimer;
+      // 预算超时是我们自己喊停的，语义上和「用户手动停止 / 系统回收」不同：
+      // 前者说明还有活没干完，应让 WorkManager 重排；后者重排只会再被杀一次。
+      var timedOut = false;
       if (backupTimeout != null) {
         cancelTimer = Timer(backupTimeout, () {
           if (!_cancellationToken.isCompleted) {
+            timedOut = true;
             _logger.warning("$debugLabel timed out after ${backupTimeout.inMinutes}m, cancelling backup");
             _cancellationToken.complete();
           }
         });
       }
       try {
-        return await backupFuture;
+        final needsRetry = await backupFuture;
+        // 预算到点被我们喊停时，本轮几乎必然还有待传文件：
+        // 报 false 会让 Kotlin 侧 complete(Result.success())，即「干完了」，
+        // 下次要等周期任务或用户开 App 才继续，观感就是「传一会儿就停」。
+        if (timedOut) {
+          _logger.info("$debugLabel hit its budget, asking WorkManager to reschedule");
+          return true;
+        }
+        return needsRetry;
       } finally {
         cancelTimer?.cancel();
       }

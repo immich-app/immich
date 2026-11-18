@@ -144,7 +144,9 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    * This method acts as a bridge between the native Android background task system and Flutter.
    */
   override fun onInitialized() {
-    flutterApi?.onAndroidUpload(maxMinutesArg = 20) { handleHostResult(it) }
+    // 55 分钟：视频动辄数百 MB 到数 GB，20 分钟在真实带宽下传不完一轮，
+    // 而且每次重启都要重新扫描候选。Dart 侧会减 1 分钟留安全余量。
+    flutterApi?.onAndroidUpload(maxMinutesArg = 55) { handleHostResult(it) }
   }
 
   // TODO: Move this to a separate NotificationManager class

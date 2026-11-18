@@ -138,6 +138,62 @@ void main() {
     });
   });
 
+  group('onAndroidUpload budget', () {
+    // 这个组测 Android 分支（iOS 上 _handleBackup 直接走 URLSession 返回 false），
+    // 而 setUpAll 把默认平台设成了 iOS，必须在本组内覆盖回来。
+    setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
+    tearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.iOS);
+
+    // 预算到点是我们自己喊停的，不是用户手动停止。若报 false，Kotlin 侧会
+    // complete(Result.success())，即「干完了、别重排」，用户观感是「传一会儿
+    // 就停，得反复开 App 推它」。这条用例把这个语义钉住。
+    test('asks WorkManager to reschedule when it runs out of budget', () async {
+      when(() => mockRemoteSyncService.sync()).thenAnswer((_) async => true);
+      final uploadService = MockForegroundUploadService();
+      // 上传一直挂着，模拟还没传完就被预算掐断；预算到点时后台会 complete
+      // 传进来的取消 token，真实实现随即返回。
+      when(
+        () => uploadService.uploadCandidates(
+          any(),
+          any(),
+          callbacks: any(named: 'callbacks'),
+          useSequentialUpload: any(named: 'useSequentialUpload'),
+        ),
+      ).thenAnswer((invocation) {
+        final token = invocation.positionalArguments[1] as Completer<void>;
+        return token.future;
+      });
+
+      final mockLocalSyncService = MockLocalSyncService();
+      final mockHashService = MockHashService();
+      final mockUserService = MockUserService();
+      when(() => mockLocalSyncService.sync()).thenAnswer((_) async {});
+      when(() => mockHashService.hashAssets()).thenAnswer((_) async {});
+      when(() => mockUserService.tryGetMyUser()).thenReturn(UserStub.admin);
+      when(() => mockUserService.watchMyUser()).thenAnswer((_) => const Stream.empty());
+
+      sut = BackgroundWorkerBgService(
+        dataController: MockDataController(),
+        apiService: MockApiService(),
+        overrides: [
+          localSyncServiceProvider.overrideWithValue(mockLocalSyncService),
+          syncStreamServiceProvider.overrideWithValue(mockRemoteSyncService),
+          hashServiceProvider.overrideWithValue(mockHashService),
+          currentUserProvider.overrideWith((ref) => CurrentUserProvider(mockUserService)),
+          foregroundUploadServiceProvider.overrideWithValue(uploadService),
+          backgroundUploadServiceProvider.overrideWithValue(mockBackgroundUploadService),
+        ],
+      );
+
+      // maxMinutes=1 => 预算 0 秒，计时器立刻触发。
+      // 不能用 fakeAsync：收尾的 _cleanup 要等文件/数据库句柄关掉，
+      // fakeAsync 里没有事件循环，Future 永远完成不了。
+      final needsRetry = await sut.onAndroidUpload(1).timeout(const Duration(seconds: 20));
+
+      expect(needsRetry, isTrue, reason: '预算超时后必须要求重排');
+    });
+  });
+
   group('background sync switch', () {
     tearDown(() async {
       await SettingsRepository.instance.write(SettingsKey.backgroundSync, true);
