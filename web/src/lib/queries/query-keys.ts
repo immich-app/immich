@@ -103,6 +103,7 @@ export const QueryKeys = {
 
   // people
   people: (...params: [PeopleParams?]) => ['people', ...params],
+  peopleList: (params: PeopleParams) => [...QueryKeys.people(params), 'list'],
   peoplePages: (params: PeopleParams) => [...QueryKeys.people(params), 'pages'],
   peopleUsers: (params: Parameters<typeof getUsersForPeople>[0]) => [...QueryKeys.people(), 'users', params],
   person: ({ id }: IdParams) => [...QueryKeys.people(), id],

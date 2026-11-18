@@ -25,7 +25,7 @@ const invalidatePeople = () => queryClient.invalidateQueries({ queryKey: QueryKe
 
 export const getAllPeopleQuery = (params: GetAllPeopleParams) =>
   queryOptions({
-    queryKey: QueryKeys.people(params),
+    queryKey: QueryKeys.peopleList(params),
     queryFn: ({ signal }) => getAllPeople(params, { signal }),
   });
 
@@ -73,7 +73,7 @@ export const updateCachedPerson = (id: string, update: (person: PersonResponseDt
 
   queryClient.setQueryData(getPersonQuery(id).queryKey, (person) => person && update(person));
   queryClient.setQueriesData<PeopleResponseDto>(
-    { queryKey: QueryKeys.people({}), predicate: ({ queryKey }) => queryKey.length === 2 },
+    { queryKey: QueryKeys.peopleList({}) },
     (data) => data && updatePage(data),
   );
   queryClient.setQueriesData<InfiniteData<PeopleResponseDto>>(
