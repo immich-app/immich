@@ -2,6 +2,7 @@
   import { focusOutside } from '#lib/actions/focus-outside.ts';
   import { Icon, shortcuts } from '@immich/ui';
   import { mdiStar, mdiStarOutline } from '@mdi/js';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
   export type Rating = -1 | 1 | 2 | 3 | 4 | 5 | null;
@@ -15,14 +16,31 @@
 
   const { count = 5, rating, readOnly = false, onRating }: Props = $props();
 
-  let ratingSelection = $derived(rating);
+  let ratingSelection = $state<Rating>(rating);
   let hoverRating: Rating = $state(null);
   let focusRating: Rating = $state(null);
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let pendingDebouncedRating: { value: Rating; ratingCallback: Props['onRating'] } | undefined;
 
   const id = $props.id();
 
-  const handleSelect = (newRating: Rating) => {
+  $effect(() => {
+    ratingSelection = rating;
+    clearTimeout(timeoutId);
+    timeoutId = undefined;
+    pendingDebouncedRating = undefined;
+  });
+
+  onDestroy(() => {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+      if (pendingDebouncedRating) {
+        handleSelect(pendingDebouncedRating.value, pendingDebouncedRating.ratingCallback);
+      }
+    }
+  });
+
+  const handleSelect = (newRating: Rating, ratingCallback: Props['onRating'] = onRating) => {
     if (readOnly) {
       return;
     }
@@ -32,7 +50,7 @@
     }
 
     ratingSelection = newRating;
-    onRating(newRating);
+    ratingCallback(newRating);
   };
 
   const setHoverRating = (value: Rating) => {
@@ -48,9 +66,17 @@
   };
 
   const handleSelectDebounced = (value: Rating) => {
+    if (readOnly) {
+      return;
+    }
+
     clearTimeout(timeoutId);
+    ratingSelection = value;
+    const ratingCallback = onRating;
+    pendingDebouncedRating = { value, ratingCallback };
     timeoutId = setTimeout(() => {
-      handleSelect(value);
+      pendingDebouncedRating = undefined;
+      handleSelect(value, ratingCallback);
     }, 300);
   };
 </script>
