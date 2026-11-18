@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart' as m;
+import 'package:immich_mobile/domain/utils/pending_run.dart';
 import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
@@ -29,6 +30,8 @@ class BackgroundSyncManager {
 
   Cancelable<bool?>? _syncTask;
   bool _syncQueued = false;
+  final _pendingLocalSync = PendingRun<bool>(merge: (pending, requested) => pending || requested);
+  final _pendingHash = PendingRun<void>(merge: (_, _) {});
   Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _cloudIdSyncTask;
   Cancelable<void>? _deviceAlbumSyncTask;
@@ -60,6 +63,7 @@ class BackgroundSyncManager {
 
   Future<void> cancel() async {
     _syncQueued = false;
+    _clearPendingRuns();
     final tasks = _allTasks;
     _syncTask = null;
     _syncWebsocketTask = null;
@@ -72,6 +76,7 @@ class BackgroundSyncManager {
 
   Future<void> cancelResumeSyncs() async {
     _syncQueued = false;
+    _clearPendingRuns();
     final tasks = _resumeSyncTasks;
     _syncTask = null;
     _deviceAlbumSyncTask = null;
@@ -97,9 +102,17 @@ class BackgroundSyncManager {
     }
   }
 
+  void _clearPendingRuns() {
+    _pendingLocalSync.clear();
+    _pendingHash.clear();
+  }
+
   // No need to cancel the task, as it can also be run when the user logs out
-  Future<void> syncLocal({bool full = false}) {
+  Future<void> syncLocal({bool full = false, bool enqueue = false}) {
     if (_deviceAlbumSyncTask != null) {
+      if (enqueue) {
+        return _pendingLocalSync.request(full);
+      }
       return _deviceAlbumSyncTask!.future.catchError((_) {}, test: (error) => error is CanceledError);
     }
 
@@ -119,10 +132,14 @@ class BackgroundSyncManager {
 
     return task
         .whenComplete(() {
-          if (identical(_deviceAlbumSyncTask, task)) {
+          final isCurrent = identical(_deviceAlbumSyncTask, task);
+          if (isCurrent) {
             _deviceAlbumSyncTask = null;
           }
           onLocalSyncComplete?.call();
+          if (isCurrent) {
+            _pendingLocalSync.start((full) => syncLocal(full: full));
+          }
         })
         .catchError((error) {
           if (error is! CanceledError) {
@@ -131,8 +148,11 @@ class BackgroundSyncManager {
         });
   }
 
-  Future<void> hashAssets() {
+  Future<void> hashAssets({bool enqueue = false}) {
     if (_hashTask != null) {
+      if (enqueue) {
+        return _pendingHash.request(null);
+      }
       return _hashTask!.future.catchError((_) {}, test: (error) => error is CanceledError);
     }
 
@@ -148,6 +168,7 @@ class BackgroundSyncManager {
           onHashingComplete?.call();
           if (identical(_hashTask, task)) {
             _hashTask = null;
+            _pendingHash.start((_) => hashAssets());
           }
         })
         .catchError((error) {

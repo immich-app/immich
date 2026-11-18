@@ -21,6 +21,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/local_media_observer.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
@@ -196,6 +197,7 @@ class LoginForm extends HookConsumerWidget {
       final backgroundManager = ref.read(backgroundSyncProvider);
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
 
+      ref.read(localMediaObserverProvider).start();
       await backgroundManager.syncLocal(full: true);
       await backgroundManager.syncRemote();
       await viewIntentHandler.flushDeferredViewIntent();

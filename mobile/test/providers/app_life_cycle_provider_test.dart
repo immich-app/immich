@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/services/device_permission.service.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/domain/utils/local_media_observer.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
@@ -18,6 +19,7 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/local_media_observer.provider.dart';
 import 'package:immich_mobile/providers/permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -102,6 +104,7 @@ void main() {
   late MockBackgroundWorkerLockService lockService;
   late MockBackgroundWorkerFgService fgService;
   late MockBackgroundSyncManager backgroundSync;
+  late LocalMediaObserver mediaObserver;
   late ProviderContainer container;
   late TestWebsocketNotifier websocket;
   late AppLifeCycleNotifier lifeCycle;
@@ -131,6 +134,7 @@ void main() {
     lockService = MockBackgroundWorkerLockService();
     fgService = MockBackgroundWorkerFgService();
     backgroundSync = MockBackgroundSyncManager();
+    mediaObserver = LocalMediaObserver(changes: () => const Stream.empty(), onChange: (_) async {});
     serverVersionCount = 0;
     memoryLaneBuilds = 0;
 
@@ -157,6 +161,7 @@ void main() {
         backgroundWorkerLockServiceProvider.overrideWithValue(lockService),
         backgroundWorkerFgServiceProvider.overrideWithValue(fgService),
         backgroundSyncProvider.overrideWithValue(backgroundSync),
+        localMediaObserverProvider.overrideWithValue(mediaObserver),
         appConfigProvider.overrideWithValue(defaultConfig),
         notificationPermissionProvider.overrideWith((_) => TestNotificationPermissionNotifier()),
         galleryPermissionNotifier.overrideWith((_) => TestGalleryPermissionNotifier()),
@@ -257,6 +262,32 @@ void main() {
     await lifeCycle.handleAppResume();
 
     verify(() => backgroundSync.syncLocal(full: false)).called(1);
+  });
+
+  test('resume observes media changes until the app is paused', () async {
+    websocket.throwOnConnect = false;
+    serverVersion.complete();
+    lifeCycle.requestFullResume();
+    await lifeCycle.handleAppResume();
+
+    expect(mediaObserver.isObserving, isTrue);
+
+    await lifeCycle.handleAppPause();
+
+    expect(mediaObserver.isObserving, isFalse);
+  });
+
+  test('pause during the resume delay does not start observing media changes', () async {
+    websocket.throwOnConnect = false;
+    serverVersion.complete();
+    lifeCycle.requestFullResume();
+    final resume = lifeCycle.handleAppResume();
+    await websocket.connectCalled.future;
+
+    await lifeCycle.handleAppPause();
+    await resume;
+
+    expect(mediaObserver.isObserving, isFalse);
   });
 
   test('first resume runs when the splash requested a full resume', () async {

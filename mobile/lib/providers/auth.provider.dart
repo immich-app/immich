@@ -13,6 +13,7 @@ import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/local_media_observer.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
@@ -101,6 +102,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _secureStorageService.delete(kSecuredPinCode);
       await _widgetService.clearCredentials();
 
+      await _ref.read(localMediaObserverProvider).stop();
       await _authService.logout();
       await _ref.read(backgroundUploadServiceProvider).cancel();
       _ref.read(foregroundUploadServiceProvider).cancel();

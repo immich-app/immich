@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/local_media_observer.provider.dart';
 import 'package:immich_mobile/providers/permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -121,6 +122,10 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     final backgroundManager = _ref.read(backgroundSyncProvider);
 
+    if (_ref.read(authProvider).isAuthenticated && _shouldContinueOperation()) {
+      _ref.read(localMediaObserverProvider).start();
+    }
+
     // Drop any sync that froze mid-flight while the app was suspended so resume
     // starts fresh instead of awaiting the stale task (#28082). cancelResumeSyncs
     // clears the task refs synchronously, so the syncs below see a clean slate.
@@ -219,6 +224,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   }
 
   Future<void> _performPause() {
+    unawaited(_ref.read(localMediaObserverProvider).stop());
+
     if (_ref.read(authProvider).isAuthenticated) {
       _ref.read(backupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
 
