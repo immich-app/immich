@@ -119,6 +119,7 @@ class BackupRepository extends DatabaseAccessor<Drift> with $BackupRepositoryMix
   }
 
   Future<bool> markIfUnsupported(String assetId, String extension) async {
+    // TODO: Move to a base backup service once the upload services are refactored
     final supported = SettingsRepository.instance.appConfig.supportedFileExtensions;
     if (supported == null || supported.contains(extension.toLowerCase())) {
       return false;

@@ -98,10 +98,17 @@ void main() {
   });
 
   group('SetCodec', () {
-    test('preserves a string set through encode then decode', () {
-      const codec = SetCodec(ListCodec(PrimitiveCodec.string));
-      const original = {'.jpg', '.mp4'};
-      expect(codec.decode(codec.encode(original)), original);
+    test('stores the set as a JSON list of strings', () {
+      const codec = SetCodec(PrimitiveCodec.string);
+      expect(codec.encode({'.jpg', '.mp4'}), '[".jpg",".mp4"]');
+      expect(codec.decode('[".jpg",".mp4"]'), {'.jpg', '.mp4'});
+    });
+
+    test('returns an empty set when the payload is not a JSON list of strings', () {
+      const codec = SetCodec(PrimitiveCodec.string);
+      expect(codec.decode('not json'), isEmpty);
+      expect(codec.decode('{}'), isEmpty);
+      expect(codec.decode('[".jpg",1]'), isEmpty);
     });
   });
 }

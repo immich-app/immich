@@ -79,7 +79,7 @@ enum SettingsKey<T> {
   slideshowDirection<SlideshowDirection>(codec: EnumCodec(SlideshowDirection.values)),
 
   // Server
-  supportedFileExtensions<Set<String>?>(codec: SetCodec(ListCodec(PrimitiveCodec.string))),
+  supportedFileExtensions<Set<String>?>(codec: SetCodec(PrimitiveCodec.string)),
 
   // Feature message
   featureMessageSeenRelease<SemVer>(codec: SemVerCodec());
