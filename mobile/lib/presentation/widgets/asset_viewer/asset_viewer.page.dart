@@ -33,12 +33,7 @@ class AssetViewerPage extends StatelessWidget {
   final int? heroOffset;
   final RemoteAlbum? currentAlbum;
 
-  const AssetViewerPage({
-    super.key,
-    required this.timelineService,
-    this.heroOffset,
-    this.currentAlbum,
-  });
+  const AssetViewerPage({super.key, required this.timelineService, this.heroOffset, this.currentAlbum});
 
   @override
   Widget build(BuildContext context) {
@@ -171,11 +166,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetInit(Duration timeStamp) {
-    _preloader.preload(
-      _initialIndex,
-      context.sizeData,
-      thumbnailSize: ref.read(assetViewerProvider).thumbnailSize,
-    );
+    _preloader.preload(_initialIndex, context.sizeData, thumbnailSize: ref.read(assetViewerProvider).thumbnailSize);
     _handleCasting();
   }
 
