@@ -7,10 +7,15 @@ import picomatch from 'picomatch';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
+import { mapAsset } from 'src/dtos/asset-response.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   CreateLibraryDto,
+  LibraryFoldersDto,
+  LibraryFoldersResponseDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
+  MoveAssetsToLibraryDto,
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryImportPathResponseDto,
@@ -18,6 +23,7 @@ import {
   mapLibrary,
 } from 'src/dtos/library.dto.js';
 import {
+  AssetFileType,
   AssetStatus,
   AssetType,
   ChecksumAlgorithm,
@@ -26,15 +32,21 @@ import {
   ImmichWorker,
   JobName,
   JobStatus,
+  Permission,
   QueueName,
 } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { AssetSyncResult } from 'src/repositories/library.repository.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { JobOf } from 'src/types.js';
+import type { JobOf, StorageAsset } from 'src/types.js';
+import { getAssetFile } from 'src/utils/asset.util.js';
+import { getLivePhotoMotionFilename } from 'src/utils/file.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, createLibraryMatcher, findOrFail, handlePromiseError } from 'src/utils/misc.js';
+
+type AssetMoveFile = { source: string; target: string; temporary: string; checksum?: Buffer };
+type AssetMovePlan = { assetId: string; files: AssetMoveFile[]; sidecarPath?: string };
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -362,6 +374,289 @@ export class LibraryService extends BaseService {
     const library = await this.libraryRepository.update(id, dto);
     await this.eventRepository.emit('LibraryUpdate');
     return mapLibrary(library);
+  }
+
+  async getFolders(id: string, dto: LibraryFoldersDto): Promise<LibraryFoldersResponseDto> {
+    const library = await this.findOrFail(id);
+
+    if (!dto.path) {
+      return {
+        path: null,
+        parentPath: null,
+        folders: library.importPaths.map((importPath) => ({ name: importPath, path: importPath })),
+      };
+    }
+
+    const folder = this.resolveMoveFolder(library, dto.path);
+    const isImportPath = library.importPaths.some((importPath) => path.resolve(importPath) === folder);
+
+    let dirents;
+    try {
+      dirents = await this.storageRepository.readdirWithTypes(folder);
+    } catch (error: any) {
+      throw new BadRequestException(`Unable to read folder ${folder} (${error?.code ?? error})`);
+    }
+
+    const isExcluded = picomatch(library.exclusionPatterns, { nocase: true });
+    const folders = dirents
+      .filter((dirent) => dirent.isDirectory() && !dirent.name.startsWith('.'))
+      .map((dirent) => ({ name: dirent.name, path: path.join(folder, dirent.name) }))
+      .filter((entry) => !isExcluded(path.join(entry.path, 'file')))
+      .toSorted((a, b) => a.name.localeCompare(b.name));
+
+    return {
+      path: folder,
+      parentPath: isImportPath ? null : path.dirname(folder),
+      folders,
+    };
+  }
+
+  async moveAssets(auth: AuthDto, id: string, dto: MoveAssetsToLibraryDto): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds });
+
+    const library = await this.findOrFail(id);
+    const folder = this.resolveMoveFolder(library, dto.folder);
+
+    const assets = await this.assetRepository.getByIds(dto.assetIds);
+    if (assets.length !== new Set(dto.assetIds).size) {
+      throw new BadRequestException('Some assets were not found');
+    }
+
+    for (const asset of assets) {
+      const reason = this.getMoveAssetError(library, asset);
+      if (reason) {
+        throw new BadRequestException(`Asset ${asset.id} cannot be moved: ${reason}`);
+      }
+    }
+
+    await this.jobRepository.queueAll(
+      assets.map((asset) => ({
+        name: JobName.LibraryMoveAsset,
+        data: { id: asset.id, libraryId: library.id, folder },
+      })),
+    );
+  }
+
+  @OnJob({ name: JobName.LibraryMoveAsset, queue: QueueName.Library })
+  async handleMoveAsset({ id, libraryId, folder }: JobOf<JobName.LibraryMoveAsset>): Promise<JobStatus> {
+    const library = await this.libraryRepository.get(libraryId);
+    if (!library) {
+      this.logger.warn(`Unable to move asset ${id}: library ${libraryId} not found`);
+      return JobStatus.Failed;
+    }
+
+    return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
+      try {
+        const targetFolder = this.resolveMoveFolder(library, folder);
+        const plan = await this.planAssetMove(library, id, targetFolder);
+        await this.executeAssetMove(library.id, plan);
+        this.logger.log(`Moved asset ${id} into library ${library.id} at ${plan[0].files[0].target}`);
+        await this.notifyAssetMoved(id, library.ownerId);
+        return JobStatus.Success;
+      } catch (error: any) {
+        this.logger.error(`Unable to move asset ${id} into library ${library.id}: ${error?.message ?? error}`);
+        return JobStatus.Failed;
+      }
+    });
+  }
+
+  private async notifyAssetMoved(assetId: string, userId: string) {
+    try {
+      const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId], userId);
+      if (asset) {
+        this.websocketRepository.clientSend(
+          'on_asset_update',
+          userId,
+          mapAsset(asset, { auth: { user: { id: userId } } as AuthDto }),
+        );
+      }
+    } catch (error: any) {
+      this.logger.warn(`Unable to notify clients about moved asset ${assetId}: ${error?.message ?? error}`);
+    }
+  }
+
+  private resolveMoveFolder(library: { importPaths: string[]; exclusionPatterns: string[] }, folder: string) {
+    if (!isAbsolute(folder)) {
+      throw new BadRequestException('Destination folder must be an absolute path');
+    }
+
+    const resolved = path.resolve(folder);
+    const isInsideImportPath = library.importPaths
+      .map((importPath) => path.resolve(importPath))
+      .some((importPath) => resolved === importPath || resolved.startsWith(importPath + path.sep));
+
+    if (!isInsideImportPath) {
+      throw new BadRequestException('Destination folder is not inside any import path of this library');
+    }
+
+    if (StorageCore.isImmichPath(resolved)) {
+      throw new BadRequestException('Destination folder cannot be inside the Immich media folder');
+    }
+
+    const isExcluded = picomatch(library.exclusionPatterns, { nocase: true });
+    if (isExcluded(path.join(resolved, 'file'))) {
+      throw new BadRequestException('Destination folder matches an exclusion pattern of this library');
+    }
+
+    return resolved;
+  }
+
+  private getMoveAssetError(
+    library: { ownerId: string },
+    asset: { ownerId: string; isExternal: boolean; libraryId?: string | null; deletedAt?: Date | null },
+  ) {
+    if (asset.ownerId !== library.ownerId) {
+      return 'asset owner is not the library owner';
+    }
+    if (asset.isExternal || asset.libraryId) {
+      return 'asset already belongs to an external library';
+    }
+    if (asset.deletedAt) {
+      return 'asset is in the trash';
+    }
+  }
+
+  private async planAssetMove(library: { id: string; ownerId: string }, id: string, folder: string) {
+    const asset = await this.assetJobRepository.getForStorageTemplateJob(id);
+    if (!asset) {
+      throw new Error('asset not found, trashed or without metadata');
+    }
+
+    const reason = this.getMoveAssetError(library, asset);
+    if (reason) {
+      throw new Error(reason);
+    }
+
+    const assets: Array<{ asset: StorageAsset; filename: string }> = [
+      { asset, filename: path.basename(asset.originalFileName || asset.originalPath) },
+    ];
+
+    if (asset.livePhotoVideoId) {
+      const motion = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId, {
+        includeHidden: true,
+      });
+      if (!motion) {
+        throw new Error(`live photo video ${asset.livePhotoVideoId} not found`);
+      }
+      if (!motion.isExternal && !StorageCore.isAndroidMotionPath(motion.originalPath)) {
+        assets.push({ asset: motion, filename: getLivePhotoMotionFilename(assets[0].filename, motion.originalPath) });
+      }
+    }
+
+    const reserved = new Set<string>();
+    const plan: AssetMovePlan[] = [];
+
+    for (const { asset, filename } of assets) {
+      const duplicate = await this.assetRepository.getByChecksum({
+        ownerId: asset.ownerId,
+        libraryId: library.id,
+        checksum: asset.checksum,
+      });
+      if (duplicate) {
+        throw new Error(`the library already contains this file as asset ${duplicate.id}`);
+      }
+
+      const target = await this.getAvailablePath(folder, filename, reserved);
+      const files: AssetMoveFile[] = [
+        { source: asset.originalPath, target, temporary: this.getTemporaryPath(target), checksum: asset.checksum },
+      ];
+
+      const sidecarPath = getAssetFile(asset.files, AssetFileType.Sidecar, { isEdited: false })?.path;
+      if (sidecarPath) {
+        const sidecarTarget = `${target}.xmp`;
+        files.push({ source: sidecarPath, target: sidecarTarget, temporary: this.getTemporaryPath(sidecarTarget) });
+      }
+
+      plan.push({ assetId: asset.id, files, sidecarPath: sidecarPath ? `${target}.xmp` : undefined });
+    }
+
+    return plan;
+  }
+
+  private async executeAssetMove(libraryId: string, plan: AssetMovePlan[]) {
+    const files = plan.flatMap((item) => item.files);
+    this.storageRepository.mkdirSync(path.dirname(files[0].target));
+
+    try {
+      for (const file of files) {
+        await this.copyAndVerify(file);
+      }
+    } catch (error) {
+      await this.removeFiles(files.map((file) => file.temporary));
+      throw error;
+    }
+
+    const renamed: AssetMoveFile[] = [];
+    try {
+      await this.assetRepository.moveToLibrary(
+        libraryId,
+        plan.map(({ assetId, files, sidecarPath }) => ({ assetId, originalPath: files[0].target, sidecarPath })),
+        async () => {
+          for (const file of files) {
+            if (await this.storageRepository.checkFileExists(file.target)) {
+              throw new Error(`destination already exists: ${file.target}`);
+            }
+            await this.storageRepository.rename(file.temporary, file.target);
+            renamed.push(file);
+          }
+        },
+      );
+    } catch (error) {
+      for (const file of renamed) {
+        try {
+          await this.storageRepository.rename(file.target, file.temporary);
+        } catch (restoreError: any) {
+          this.logger.error(`Unable to roll back ${file.target}, remove it manually: ${restoreError?.message}`);
+        }
+      }
+      await this.removeFiles(files.map((file) => file.temporary));
+      throw error;
+    }
+
+    await this.removeFiles(files.map((file) => file.source));
+  }
+
+  private async copyAndVerify(file: AssetMoveFile) {
+    await this.storageRepository.copyFile(file.source, file.temporary);
+
+    const expected = file.checksum ?? (await this.cryptoRepository.hashFile(file.source));
+    const actual = await this.cryptoRepository.hashFile(file.temporary);
+    if (!actual.equals(expected)) {
+      throw new Error(`checksum mismatch after copying ${file.source}`);
+    }
+
+    const { atime, mtime } = await this.storageRepository.stat(file.source);
+    await this.storageRepository.utimes(file.temporary, atime, mtime);
+  }
+
+  private async removeFiles(paths: string[]) {
+    for (const filepath of paths) {
+      try {
+        await this.storageRepository.unlink(filepath);
+      } catch (error: any) {
+        this.logger.warn(`Unable to remove ${filepath}: ${error?.message ?? error}`);
+      }
+    }
+  }
+
+  private getTemporaryPath(target: string) {
+    return path.join(path.dirname(target), `.${path.basename(target)}.immich-move`);
+  }
+
+  private async getAvailablePath(folder: string, filename: string, reserved: Set<string>) {
+    const { name, ext } = path.parse(filename);
+    for (let index = 0; index < 10_000; index++) {
+      const candidate = path.join(folder, index === 0 ? filename : `${name}+${index}${ext}`);
+      const isTaken =
+        reserved.has(candidate) ||
+        (await this.storageRepository.checkFileExists(candidate)) ||
+        (await this.storageRepository.checkFileExists(`${candidate}.xmp`));
+      if (!isTaken) {
+        reserved.add(candidate);
+        return candidate;
+      }
+    }
+    throw new Error(`no available file name for ${filename} in ${folder}`);
   }
 
   async delete(id: string) {

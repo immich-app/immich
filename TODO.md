@@ -1,0 +1,3 @@
+- Identificar las imágenes que no están en /data/library
+- Búsqueda de imágenes que no están en bibliotecas externas
+- Importar imágenes desde Google Fotos

@@ -1,16 +1,20 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   CreateLibraryDto,
+  LibraryFoldersDto,
+  LibraryFoldersResponseDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
+  MoveAssetsToLibraryDto,
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
-import { Authenticated } from 'src/middleware/auth.guard.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
 import { LibraryService } from 'src/services/library.service.js';
 import { UUIDParamDto } from 'src/validation.js';
 
@@ -105,6 +109,38 @@ export class LibraryController {
   })
   getLibraryStatistics(@Param() { id }: UUIDParamDto): Promise<LibraryStatsResponseDto> {
     return this.service.getStatistics(id);
+  }
+
+  @Get(':id/folders')
+  @Authenticated({ permission: Permission.LibraryRead, admin: true })
+  @Endpoint({
+    summary: 'List library folders',
+    description:
+      'List the subfolders of a folder inside the library import paths, or the import paths themselves when no path is given.',
+    history: new HistoryBuilder().added('v3.4.0').alpha('v3.4.0'),
+  })
+  getLibraryFolders(
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: LibraryFoldersDto,
+  ): Promise<LibraryFoldersResponseDto> {
+    return this.service.getFolders(id, dto);
+  }
+
+  @Post(':id/assets')
+  @Authenticated({ permission: Permission.LibraryUpdate, admin: true })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Move assets into a library',
+    description:
+      'Queue internally stored assets to be moved into a folder of the external library. Each file is copied and verified before the database is updated, and the internal copy is only deleted afterwards.',
+    history: new HistoryBuilder().added('v3.4.0').alpha('v3.4.0'),
+  })
+  moveAssetsToLibrary(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: MoveAssetsToLibraryDto,
+  ): Promise<void> {
+    return this.service.moveAssets(auth, id, dto);
   }
 
   @Post(':id/scan')

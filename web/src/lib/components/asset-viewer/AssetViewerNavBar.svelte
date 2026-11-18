@@ -162,6 +162,7 @@
         {#if !asset.isTrashed && isOwner}
           <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
         {/if}
+        <ActionMenuItem action={Actions.MoveToExternalLibrary} />
 
         <ActionMenuItem action={PlayOriginalVideo} />
 

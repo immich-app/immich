@@ -83,6 +83,38 @@ const LibraryStatsResponseSchema = z
   })
   .meta({ id: 'LibraryStatsResponseDto' });
 
+const MoveAssetsToLibrarySchema = z
+  .object({
+    assetIds: z.array(z.uuidv4()).min(1).describe('IDs of the internally stored assets to move'),
+    folder: z.string().min(1).describe('Absolute destination folder inside one of the library import paths'),
+  })
+  .meta({ id: 'MoveAssetsToLibraryDto' });
+
+const LibraryFoldersSchema = z
+  .object({
+    path: z.string().min(1).optional().describe('Absolute folder path inside one of the library import paths'),
+  })
+  .meta({ id: 'LibraryFoldersDto' });
+
+const LibraryFolderSchema = z
+  .object({
+    name: z.string().describe('Folder name'),
+    path: z.string().describe('Absolute folder path'),
+  })
+  .meta({ id: 'LibraryFolderDto' });
+
+const LibraryFoldersResponseSchema = z
+  .object({
+    path: z.string().nullable().describe('Listed folder, null when listing the import paths'),
+    parentPath: z.string().nullable().describe('Parent folder, null when the parent is the import path list'),
+    folders: z.array(LibraryFolderSchema).describe('Subfolders sorted by name'),
+  })
+  .meta({ id: 'LibraryFoldersResponseDto' });
+
+export class MoveAssetsToLibraryDto extends createZodDto(MoveAssetsToLibrarySchema) {}
+export class LibraryFoldersDto extends createZodDto(LibraryFoldersSchema) {}
+export class LibraryFolderDto extends createZodDto(LibraryFolderSchema) {}
+export class LibraryFoldersResponseDto extends createZodDto(LibraryFoldersResponseSchema) {}
 export class CreateLibraryDto extends createZodDto(CreateLibrarySchema) {}
 export class UpdateLibraryDto extends createZodDto(UpdateLibrarySchema) {}
 export class ValidateLibraryDto extends createZodDto(ValidateLibrarySchema) {}

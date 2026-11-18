@@ -7706,6 +7706,135 @@
         "x-immich-state": "Stable"
       }
     },
+    "/libraries/{id}/assets": {
+      "post": {
+        "description": "Queue internally stored assets to be moved into a folder of the external library. Each file is copied and verified before the database is updated, and the internal copy is only deleted afterwards.",
+        "operationId": "moveAssetsToLibrary",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveAssetsToLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Move assets into a library",
+        "tags": [
+          "Libraries"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "state": "Added",
+            "version": "v3.4.0"
+          },
+          {
+            "state": "Alpha",
+            "version": "v3.4.0"
+          }
+        ],
+        "x-immich-permission": "library.update",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/libraries/{id}/folders": {
+      "get": {
+        "description": "List the subfolders of a folder inside the library import paths, or the import paths themselves when no path is given.",
+        "operationId": "getLibraryFolders",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Absolute folder path inside one of the library import paths",
+            "in": "query",
+            "name": "path",
+            "required": false,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryFoldersResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List library folders",
+        "tags": [
+          "Libraries"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "state": "Added",
+            "version": "v3.4.0"
+          },
+          {
+            "state": "Alpha",
+            "version": "v3.4.0"
+          }
+        ],
+        "x-immich-permission": "library.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/libraries/{id}/scan": {
       "post": {
         "description": "Queue a scan for the external library to find and import new assets.",
@@ -16592,6 +16721,15 @@
             }
           },
           {
+            "description": "Filter by external library status (true for assets stored in an external library, false for internally stored assets)",
+            "in": "query",
+            "name": "isExternal",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "description": "Filter by favorite status (true for favorites only, false for non-favorites only)",
             "in": "query",
             "name": "isFavorite",
@@ -16788,6 +16926,15 @@
             "schema": {
               "example": "11.075683,49.416711,11.117589,49.454875",
               "type": "string"
+            }
+          },
+          {
+            "description": "Filter by external library status (true for assets stored in an external library, false for internally stored assets)",
+            "in": "query",
+            "name": "isExternal",
+            "required": false,
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -23320,6 +23467,7 @@
           "LibraryDeleteCheck",
           "LibraryDelete",
           "LibraryRemoveAsset",
+          "LibraryMoveAsset",
           "LibraryScanAssetsQueueAll",
           "LibrarySyncAssets",
           "LibrarySyncFilesQueueAll",
@@ -23364,6 +23512,54 @@
           "IntegrityDeleteReports"
         ],
         "type": "string"
+      },
+      "LibraryFolderDto": {
+        "properties": {
+          "name": {
+            "description": "Folder name",
+            "type": "string"
+          },
+          "path": {
+            "description": "Absolute folder path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "path"
+        ],
+        "type": "object"
+      },
+      "LibraryFoldersResponseDto": {
+        "properties": {
+          "folders": {
+            "description": "Subfolders sorted by name",
+            "items": {
+              "$ref": "#/components/schemas/LibraryFolderDto"
+            },
+            "type": "array"
+          },
+          "parentPath": {
+            "description": "Parent folder, null when the parent is the import path list",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "path": {
+            "description": "Listed folder, null when listing the import paths",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "folders",
+          "parentPath",
+          "path"
+        ],
+        "type": "object"
       },
       "LibraryResponseDto": {
         "properties": {
@@ -25031,6 +25227,30 @@
         },
         "required": [
           "axis"
+        ],
+        "type": "object"
+      },
+      "MoveAssetsToLibraryDto": {
+        "properties": {
+          "assetIds": {
+            "description": "IDs of the internally stored assets to move",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "folder": {
+            "description": "Absolute destination folder inside one of the library import paths",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetIds",
+          "folder"
         ],
         "type": "object"
       },
@@ -33535,6 +33755,13 @@
             "description": "Array of asset IDs in the time bucket",
             "items": {
               "type": "string"
+            },
+            "type": "array"
+          },
+          "isExternal": {
+            "description": "Array indicating whether each asset is stored in an external library",
+            "items": {
+              "type": "boolean"
             },
             "type": "array"
           },

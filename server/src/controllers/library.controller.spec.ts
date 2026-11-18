@@ -169,6 +169,44 @@ describe(LibraryController.name, () => {
     });
   });
 
+  describe('POST /libraries/:id/assets', () => {
+    it('should require a valid uuid', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/libraries/invalid/assets')
+        .send({ assetIds: [factory.uuid()], folder: '/mnt/external/2024' });
+
+      expect(status).toBe(400);
+      expect(service.moveAssets).not.toHaveBeenCalled();
+    });
+
+    it('should require at least one asset', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post(`/libraries/${factory.uuid()}/assets`)
+        .send({ assetIds: [], folder: '/mnt/external/2024' });
+
+      expect(status).toBe(400);
+      expect(service.moveAssets).not.toHaveBeenCalled();
+    });
+
+    it('should require a folder', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post(`/libraries/${factory.uuid()}/assets`)
+        .send({ assetIds: [factory.uuid()] });
+
+      expect(status).toBe(400);
+      expect(service.moveAssets).not.toHaveBeenCalled();
+    });
+
+    it('should queue the move', async () => {
+      const id = factory.uuid();
+      const dto = { assetIds: [factory.uuid()], folder: '/mnt/external/2024' };
+      const { status } = await request(ctx.getHttpServer()).post(`/libraries/${id}/assets`).send(dto);
+
+      expect(status).toBe(204);
+      expect(service.moveAssets).toHaveBeenCalledWith(undefined, id, dto);
+    });
+  });
+
   describe('DELETE /libraries/:id', () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete('/libraries/invalid');

@@ -1202,6 +1202,7 @@ export class MockData {
       localOffsetHours: bucket.map(() => 0),
       isFavorite: bucket.map((asset) => asset.isFavorite),
       isTrashed: bucket.map((asset) => asset.isTrashed),
+      isExternal: bucket.map((asset) => !!asset.libraryId),
       isImage: bucket.map((asset) => asset.type === AssetTypeEnum.Image),
       duration: bucket.map((asset) => asset.duration),
       projectionType: bucket.map((asset) => asset.exifInfo?.projectionType ?? null),

@@ -5,6 +5,7 @@ import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import AssetAddToAlbumModal from '#lib/modals/AssetAddToAlbumModal.svelte';
+import AssetMoveToLibraryModal from '#lib/modals/AssetMoveToLibraryModal.svelte';
 import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
@@ -43,6 +44,7 @@ import {
   mdiDownload,
   mdiDownloadBox,
   mdiFaceRecognition,
+  mdiFolderMoveOutline,
   mdiHeadSyncOutline,
   mdiHeart,
   mdiHeartOutline,
@@ -158,10 +160,26 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     $if: () => ownedAssets.every((asset) => asset.isVideo),
   };
 
+  const MoveToExternalLibrary: ActionItem = {
+    title: $t('move_to_external_library'),
+    icon: mdiFolderMoveOutline,
+    $if: () =>
+      authManager.authenticated &&
+      authManager.user.isAdmin &&
+      assetMultiSelectManager.isAllUserOwned &&
+      !assetMultiSelectManager.isAllTrashed,
+    onAction: async () => {
+      if (await modalManager.show(AssetMoveToLibraryModal, { assetIds, ownerId: authManager.user.id })) {
+        assetMultiSelectManager.clear();
+      }
+    },
+  };
+
   return {
     AddToAlbum,
     Archive,
     CreateSharedLink,
+    MoveToExternalLibrary,
     RemoveFromAlbum,
     Tag,
     Unarchive,
@@ -391,8 +409,16 @@ export const getAssetActions = (
     $if: () => asset.type === AssetTypeEnum.Video,
   };
 
+  const MoveToExternalLibrary: ActionItem = {
+    title: $t('move_to_external_library'),
+    icon: mdiFolderMoveOutline,
+    $if: () => isOwner && !!authUser?.isAdmin && !asset.libraryId && !asset.isTrashed,
+    onAction: () => modalManager.show(AssetMoveToLibraryModal, { assetIds: [asset.id], ownerId: asset.ownerId }),
+  };
+
   return {
     Share,
+    MoveToExternalLibrary,
     Download,
     DownloadOriginal,
     SharedLinkDownload,

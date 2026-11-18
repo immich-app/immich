@@ -1863,6 +1863,26 @@ export type UpdateLibraryDto = {
     /** Library name */
     name?: string;
 };
+export type MoveAssetsToLibraryDto = {
+    /** IDs of the internally stored assets to move */
+    assetIds: string[];
+    /** Absolute destination folder inside one of the library import paths */
+    folder: string;
+};
+export type LibraryFolderDto = {
+    /** Folder name */
+    name: string;
+    /** Absolute folder path */
+    path: string;
+};
+export type LibraryFoldersResponseDto = {
+    /** Subfolders sorted by name */
+    folders: LibraryFolderDto[];
+    /** Parent folder, null when the parent is the import path list */
+    parentPath: string | null;
+    /** Listed folder, null when listing the import paths */
+    path: string | null;
+};
 export type LibraryStatsResponseDto = {
     /** Number of photos */
     photos: number;
@@ -3235,6 +3255,8 @@ export type TimeBucketAssetResponseDto = {
     fileCreatedAt: string[];
     /** Array of asset IDs in the time bucket */
     id: string[];
+    /** Array indicating whether each asset is stored in an external library */
+    isExternal?: boolean[];
     /** Array indicating whether each asset is favorited */
     isFavorite: boolean[];
     /** Array indicating whether each asset is an image (false for videos) */
@@ -5733,6 +5755,35 @@ export function updateLibrary({ id, updateLibraryDto }: {
     })));
 }
 /**
+ * Move assets into a library
+ */
+export function moveAssetsToLibrary({ id, moveAssetsToLibraryDto }: {
+    id: string;
+    moveAssetsToLibraryDto: MoveAssetsToLibraryDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/assets`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: moveAssetsToLibraryDto
+    })));
+}
+/**
+ * List library folders
+ */
+export function getLibraryFolders({ id, path }: {
+    id: string;
+    path?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LibraryFoldersResponseDto;
+    }>(`/libraries/${encodeURIComponent(id)}/folders${QS.query(QS.explode({
+        path
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Scan a library
  */
 export function scanLibrary({ id }: {
@@ -7672,9 +7723,10 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isExternal, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
+    isExternal?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -7696,6 +7748,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
     }>(`/timeline/bucket${QS.query(QS.explode({
         albumId,
         bbox,
+        isExternal,
         isFavorite,
         isTrashed,
         key,
@@ -7717,9 +7770,10 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isExternal, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
+    isExternal?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -7740,6 +7794,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
     }>(`/timeline/buckets${QS.query(QS.explode({
         albumId,
         bbox,
+        isExternal,
         isFavorite,
         isTrashed,
         key,
@@ -8650,6 +8705,7 @@ export enum JobName {
     LibraryDeleteCheck = "LibraryDeleteCheck",
     LibraryDelete = "LibraryDelete",
     LibraryRemoveAsset = "LibraryRemoveAsset",
+    LibraryMoveAsset = "LibraryMoveAsset",
     LibraryScanAssetsQueueAll = "LibraryScanAssetsQueueAll",
     LibrarySyncAssets = "LibrarySyncAssets",
     LibrarySyncFilesQueueAll = "LibrarySyncFilesQueueAll",

@@ -138,3 +138,11 @@ export const alwaysLoadOriginalVideo = persisted<boolean>('always-load-original-
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});
 
 export const hideBackupsReminder = persisted<boolean>('hide-backups-reminder', false, {});
+
+export enum LibraryStatusFilter {
+  All = 'all',
+  External = 'external',
+  Pending = 'pending',
+}
+
+export const libraryStatusFilter = persisted<LibraryStatusFilter>('library-status-filter', LibraryStatusFilter.All, {});

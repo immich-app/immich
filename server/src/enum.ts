@@ -915,6 +915,7 @@ export enum JobName {
   LibraryDeleteCheck = 'LibraryDeleteCheck',
   LibraryDelete = 'LibraryDelete',
   LibraryRemoveAsset = 'LibraryRemoveAsset',
+  LibraryMoveAsset = 'LibraryMoveAsset',
   LibrarySyncAssetsQueueAll = 'LibraryScanAssetsQueueAll',
   LibrarySyncAssets = 'LibrarySyncAssets',
   LibrarySyncFilesQueueAll = 'LibrarySyncFilesQueueAll',

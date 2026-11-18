@@ -80,6 +80,7 @@ interface LivePhotoSearchOptions {
 
 interface AssetBuilderOptions {
   isFavorite?: boolean;
+  isExternal?: boolean;
   isTrashed?: boolean;
   isDuplicate?: boolean;
   albumId?: string;
@@ -443,6 +444,34 @@ export class AssetRepository {
     });
   }
 
+  async moveToLibrary(
+    libraryId: string,
+    moves: Array<{ assetId: string; originalPath: string; sidecarPath?: string }>,
+    beforeCommit: () => Promise<void>,
+  ) {
+    await this.db.transaction().execute(async (tx) => {
+      for (const { assetId, originalPath, sidecarPath } of moves) {
+        await tx
+          .updateTable('asset')
+          .set({ originalPath, libraryId, isExternal: true })
+          .where('id', '=', asUuid(assetId))
+          .execute();
+
+        if (sidecarPath) {
+          await tx
+            .updateTable('asset_file')
+            .set({ path: sidecarPath })
+            .where('assetId', '=', asUuid(assetId))
+            .where('type', '=', AssetFileType.Sidecar)
+            .where('isEdited', '=', false)
+            .execute();
+        }
+      }
+
+      await beforeCommit();
+    });
+  }
+
   create(asset: Insertable<AssetTable>) {
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
@@ -795,6 +824,7 @@ export class AssetRepository {
             }),
           )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
+          .$if(options.isExternal !== undefined, (qb) => qb.where('asset.isExternal', '=', options.isExternal!))
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
@@ -827,6 +857,7 @@ export class AssetRepository {
             sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
+            'asset.isExternal',
             'asset.livePhotoVideoId',
             sql`extract(epoch from (asset."localDateTime" AT TIME ZONE 'UTC' - asset."fileCreatedAt" at time zone 'UTC'))::real / 3600`.as(
               'localOffsetHours',
@@ -892,6 +923,7 @@ export class AssetRepository {
             }),
           )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
+          .$if(options.isExternal !== undefined, (qb) => qb.where('asset.isExternal', '=', options.isExternal!))
           .$if(!!options.withStacked, (qb) =>
             qb
               .where((eb) =>
@@ -944,6 +976,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['isImage']), sql.lit('{}')).as('isImage'),
             // TODO: isTrashed is redundant as it will always be all true or false depending on the options
             eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),
+            eb.fn.coalesce(eb.fn('array_agg', ['isExternal']), sql.lit('{}')).as('isExternal'),
             eb.fn.coalesce(eb.fn('array_agg', ['livePhotoVideoId']), sql.lit('{}')).as('livePhotoVideoId'),
             eb.fn.coalesce(eb.fn('array_agg', ['fileCreatedAt']), sql.lit('{}')).as('fileCreatedAt'),
             eb.fn.coalesce(eb.fn('array_agg', ['localOffsetHours']), sql.lit('{}')).as('localOffsetHours'),

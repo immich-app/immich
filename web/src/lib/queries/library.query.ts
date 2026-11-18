@@ -3,7 +3,9 @@ import {
   createLibrary,
   deleteLibrary,
   getAllLibraries,
+  getLibraryFolders,
   getLibraryStatistics,
+  moveAssetsToLibrary,
   scanLibrary,
   updateLibrary,
   type LibraryResponseDto,
@@ -35,6 +37,19 @@ export const getLibraryStatisticsQuery = (id: string) =>
     queryKey: ['libraries', id, 'statistics'],
     queryFn: ({ signal }) => getLibraryStatistics({ id }, { signal }),
     refetchInterval: 30_000,
+  });
+
+export const getLibraryFoldersQuery = (id: string, path?: string) =>
+  queryOptions({
+    queryKey: ['libraries', id, 'folders', path ?? null],
+    queryFn: ({ signal }) => getLibraryFolders({ id, path }, { signal }),
+    retry: false,
+  });
+
+export const moveAssetsToLibraryMutation = () =>
+  asMutation(moveAssetsToLibrary, {
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: getAllLibrariesQuery().queryKey }),
+    meta: { error: { toast: 'errors.unable_to_move_assets_to_library' } },
   });
 
 export const createLibraryMutation = () =>

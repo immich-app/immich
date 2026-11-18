@@ -15,6 +15,8 @@
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
     mdiCheckCircle,
+    mdiCheckCircleOutline,
+    mdiClockOutline,
     mdiFileGifBox,
     mdiHeart,
     mdiMagnifyPlusOutline,
@@ -23,6 +25,7 @@
     mdiRotate360,
   } from '@mdi/js';
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './ImageThumbnail.svelte';
@@ -83,6 +86,13 @@
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
 
   let assetOwner = $derived(albumUsers?.find((user) => user.id === asset.ownerId) ?? null);
+  let showLibraryStatus = $derived(
+    !authManager.isSharedLink &&
+      authManager.authenticated &&
+      !assetOwner &&
+      !asset.isTrashed &&
+      asset.ownerId === authManager.user.id,
+  );
 
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
@@ -336,6 +346,23 @@
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
           <div class={['absolute inset-s-2 z-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon data-testid="archive-icon" icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+          </div>
+        {/if}
+
+        {#if showLibraryStatus}
+          <div
+            class={[
+              'absolute inset-e-1.5 bottom-1.5 z-2 rounded-full bg-black/30 p-0.5 transition-opacity',
+              mouseOver && onPreview ? 'opacity-0' : 'opacity-90',
+            ]}
+            title={asset.isExternal ? $t('in_external_library') : $t('pending_external_library')}
+          >
+            <Icon
+              data-testid={asset.isExternal ? 'external-library-icon' : 'pending-library-icon'}
+              icon={asset.isExternal ? mdiCheckCircleOutline : mdiClockOutline}
+              size="14"
+              class={asset.isExternal ? 'text-green-400' : 'text-amber-400'}
+            />
           </div>
         {/if}
 

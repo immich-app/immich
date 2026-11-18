@@ -16,6 +16,11 @@ const TimeBucketQueryBaseSchema = z
     isTrashed: stringToBool
       .optional()
       .describe('Filter by trash status (true for trashed assets only, false for non-trashed only)'),
+    isExternal: stringToBool
+      .optional()
+      .describe(
+        'Filter by external library status (true for assets stored in an external library, false for internally stored assets)',
+      ),
     withStacked: stringToBool
       .optional()
       .describe('Include stacked assets in the response. When true, only primary assets from stacks are returned.'),
@@ -86,6 +91,10 @@ const TimeBucketAssetResponseSchema = z
       .array(AssetVisibilitySchema)
       .describe('Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)'),
     isTrashed: z.array(z.boolean()).describe('Array indicating whether each asset is in the trash'),
+    isExternal: z
+      .array(z.boolean())
+      .optional()
+      .describe('Array indicating whether each asset is stored in an external library'),
     isImage: z.array(z.boolean()).describe('Array indicating whether each asset is an image (false for videos)'),
     thumbhash: z
       .array(z.string().nullable())

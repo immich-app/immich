@@ -192,6 +192,7 @@ export class TimelineMonth {
         isFavorite: bucketAssets.isFavorite[i],
         isImage: bucketAssets.isImage[i],
         isTrashed: bucketAssets.isTrashed[i],
+        isExternal: bucketAssets.isExternal?.[i] ?? false,
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime,

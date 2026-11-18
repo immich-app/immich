@@ -5,6 +5,7 @@
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import LibraryStatusFilterButtons from '#lib/components/timeline/LibraryStatusFilter.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
   import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -24,6 +25,7 @@
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { getStackBulkActions } from '#lib/services/stack.service.ts';
+  import { LibraryStatusFilter, libraryStatusFilter } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl, memoryLaneTitle } from '#lib/utils.ts';
   import { type OnLink, type OnUnlink } from '#lib/utils/actions.ts';
   import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
@@ -36,7 +38,14 @@
   import { t } from 'svelte-i18n';
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = { visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true };
+  const options = $derived({
+    visibility: AssetVisibility.Timeline,
+    withStacked: true,
+    withPartners: true,
+    ...($libraryStatusFilter !== LibraryStatusFilter.All && {
+      isExternal: $libraryStatusFilter === LibraryStatusFilter.External,
+    }),
+  });
 
   let selectedAssets = $derived(assetMultiSelectManager.assets);
   let isLinkActionAvailable = $derived.by(() => {
@@ -88,7 +97,10 @@
   memoryManager.setFilters({ $for: DateTime.now().toISODate() });
 </script>
 
-<UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>
+<UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} title={$t('photos')} scrollbar={false}>
+  {#snippet buttons()}
+    <LibraryStatusFilterButtons />
+  {/snippet}
   <Timeline
     enableRouting={true}
     bind:timelineManager
@@ -151,6 +163,7 @@
           onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
         />
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+        <ActionMenuItem action={Actions.MoveToExternalLibrary} />
         <hr />
         <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
         <ActionMenuItem action={Actions.RefreshMetadataJob} />

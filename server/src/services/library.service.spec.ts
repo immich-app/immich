@@ -1,12 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
-import { Stats } from 'node:fs';
+import { Dirent, Stats } from 'node:fs';
+import path from 'node:path';
 import { vitest } from 'vitest';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { mapLibrary } from 'src/dtos/library.dto.js';
-import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
+import { AssetFileType, AssetType, AssetVisibility, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
 import { LibraryService } from 'src/services/library.service.js';
-import type { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types.js';
+import type { ILibraryBulkIdsJob, ILibraryFileJob, StorageAsset } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
@@ -1195,6 +1196,348 @@ describe(LibraryService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } },
       ]);
+    });
+  });
+
+  describe('moving assets into a library', () => {
+    const importPath = path.resolve('/external/user1');
+    const folder = path.join(importPath, '2024');
+    const target = path.join(folder, 'photo.jpg');
+    const temporary = path.join(folder, '.photo.jpg.immich-move');
+    const checksum = Buffer.from('checksum');
+
+    type JobAsset = StorageAsset & { visibility: AssetVisibility };
+    const storageAsset = (overrides: Partial<JobAsset> = {}): JobAsset => ({
+      id: newUuid(),
+      ownerId: 'owner-id',
+      livePhotoVideoId: null,
+      type: AssetType.Image,
+      isExternal: false,
+      checksum,
+      timeZone: null,
+      fileCreatedAt: newDate(),
+      originalPath: '/data/library/owner-id/IMG_0001.jpg',
+      originalFileName: 'photo.jpg',
+      fileSizeInByte: 1000,
+      files: [],
+      make: null,
+      model: null,
+      lensModel: null,
+      visibility: AssetVisibility.Timeline,
+      ...overrides,
+    });
+
+    const setup = (asset: JobAsset) => {
+      const library = factory.library({ ownerId: asset.ownerId, importPaths: [importPath] });
+      mocks.library.get.mockResolvedValue(library);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValue(asset);
+      mocks.asset.getByChecksum.mockResolvedValue(void 0);
+      mocks.storage.checkFileExists.mockResolvedValue(false);
+      mocks.storage.copyFile.mockResolvedValue();
+      mocks.storage.stat.mockResolvedValue({ atime: newDate(), mtime: newDate() } as Stats);
+      mocks.storage.utimes.mockResolvedValue();
+      mocks.storage.rename.mockResolvedValue();
+      mocks.storage.unlink.mockResolvedValue();
+      mocks.crypto.hashFile.mockResolvedValue(checksum);
+      mocks.asset.moveToLibrary.mockImplementation((_libraryId, _moves, beforeCommit) => beforeCommit());
+      return library;
+    };
+
+    describe('getFolders', () => {
+      const dirent = (name: string, isDirectory: boolean) => ({ name, isDirectory: () => isDirectory }) as Dirent;
+
+      it('should list the import paths without a path', async () => {
+        const library = factory.library({ importPaths: [importPath] });
+        mocks.library.get.mockResolvedValue(library);
+
+        await expect(sut.getFolders(library.id, {})).resolves.toEqual({
+          path: null,
+          parentPath: null,
+          folders: [{ name: importPath, path: importPath }],
+        });
+      });
+
+      it('should list visible, non excluded subfolders sorted by name', async () => {
+        const library = factory.library({ importPaths: [importPath], exclusionPatterns: ['**/@eaDir/**'] });
+        mocks.library.get.mockResolvedValue(library);
+        mocks.storage.readdirWithTypes.mockResolvedValue([
+          dirent('2024', true),
+          dirent('.hidden', true),
+          dirent('@eaDir', true),
+          dirent('photo.jpg', false),
+          dirent('2023', true),
+        ]);
+
+        await expect(sut.getFolders(library.id, { path: importPath })).resolves.toEqual({
+          path: importPath,
+          parentPath: null,
+          folders: [
+            { name: '2023', path: path.join(importPath, '2023') },
+            { name: '2024', path: path.join(importPath, '2024') },
+          ],
+        });
+      });
+
+      it('should return the parent of a subfolder', async () => {
+        const library = factory.library({ importPaths: [importPath] });
+        mocks.library.get.mockResolvedValue(library);
+        mocks.storage.readdirWithTypes.mockResolvedValue([]);
+
+        await expect(sut.getFolders(library.id, { path: folder })).resolves.toMatchObject({
+          path: folder,
+          parentPath: importPath,
+        });
+      });
+
+      it('should reject a path outside the import paths', async () => {
+        const library = factory.library({ importPaths: [importPath] });
+        mocks.library.get.mockResolvedValue(library);
+
+        await expect(sut.getFolders(library.id, { path: path.join(importPath, '..', 'other') })).rejects.toBeInstanceOf(
+          BadRequestException,
+        );
+        expect(mocks.storage.readdirWithTypes).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('moveAssets', () => {
+      it('should queue a move job per asset', async () => {
+        const auth = factory.auth();
+        const library = factory.library({ ownerId: auth.user.id, importPaths: [importPath] });
+        const asset = { id: newUuid(), ownerId: auth.user.id, isExternal: false, libraryId: null, deletedAt: null };
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+        mocks.library.get.mockResolvedValue(library);
+        mocks.asset.getByIds.mockResolvedValue([asset] as any);
+
+        await sut.moveAssets(auth, library.id, { assetIds: [asset.id], folder });
+
+        expect(mocks.job.queueAll).toHaveBeenCalledWith([
+          { name: JobName.LibraryMoveAsset, data: { id: asset.id, libraryId: library.id, folder } },
+        ]);
+      });
+
+      it('should reject assets owned by another user', async () => {
+        const auth = factory.auth();
+        const library = factory.library({ ownerId: newUuid(), importPaths: [importPath] });
+        const asset = { id: newUuid(), ownerId: auth.user.id, isExternal: false, libraryId: null, deletedAt: null };
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+        mocks.library.get.mockResolvedValue(library);
+        mocks.asset.getByIds.mockResolvedValue([asset] as any);
+
+        await expect(sut.moveAssets(auth, library.id, { assetIds: [asset.id], folder })).rejects.toBeInstanceOf(
+          BadRequestException,
+        );
+        expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      });
+
+      it('should reject assets that are already external', async () => {
+        const auth = factory.auth();
+        const library = factory.library({ ownerId: auth.user.id, importPaths: [importPath] });
+        const asset = { id: newUuid(), ownerId: auth.user.id, isExternal: true, libraryId: newUuid(), deletedAt: null };
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+        mocks.library.get.mockResolvedValue(library);
+        mocks.asset.getByIds.mockResolvedValue([asset] as any);
+
+        await expect(sut.moveAssets(auth, library.id, { assetIds: [asset.id], folder })).rejects.toBeInstanceOf(
+          BadRequestException,
+        );
+      });
+
+      it('should reject a folder outside the import paths', async () => {
+        const auth = factory.auth();
+        const library = factory.library({ ownerId: auth.user.id, importPaths: [importPath] });
+        const assetId = newUuid();
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+        mocks.library.get.mockResolvedValue(library);
+
+        await expect(
+          sut.moveAssets(auth, library.id, { assetIds: [assetId], folder: `${importPath}-other` }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+      });
+
+      it('should reject a folder matching an exclusion pattern', async () => {
+        const auth = factory.auth();
+        const library = factory.library({
+          ownerId: auth.user.id,
+          importPaths: [importPath],
+          exclusionPatterns: ['**/@eaDir/**'],
+        });
+        const assetId = newUuid();
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+        mocks.library.get.mockResolvedValue(library);
+
+        await expect(
+          sut.moveAssets(auth, library.id, { assetIds: [assetId], folder: path.join(importPath, '@eaDir') }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+      });
+    });
+
+    describe('handleMoveAsset', () => {
+      it('should copy, verify, update the database and only then delete the source', async () => {
+        const asset = storageAsset();
+        const library = setup(asset);
+
+        await expect(sut.handleMoveAsset({ id: asset.id, libraryId: library.id, folder })).resolves.toBe(
+          JobStatus.Success,
+        );
+
+        expect(mocks.storage.copyFile).toHaveBeenCalledWith(asset.originalPath, temporary);
+        expect(mocks.crypto.hashFile).toHaveBeenCalledWith(temporary);
+        expect(mocks.asset.moveToLibrary).toHaveBeenCalledWith(
+          library.id,
+          [{ assetId: asset.id, originalPath: target, sidecarPath: undefined }],
+          expect.any(Function),
+        );
+        expect(mocks.storage.rename).toHaveBeenCalledWith(temporary, target);
+        expect(mocks.storage.unlink).toHaveBeenCalledWith(asset.originalPath);
+
+        const renameOrder = mocks.storage.rename.mock.invocationCallOrder[0];
+        const unlinkOrder = mocks.storage.unlink.mock.invocationCallOrder[0];
+        expect(renameOrder).toBeLessThan(unlinkOrder);
+      });
+
+      it('should notify the owner so the timeline shows the new location', async () => {
+        const asset = storageAsset();
+        const library = setup(asset);
+        const moved = AssetFactory.create({
+          id: asset.id,
+          ownerId: asset.ownerId,
+          libraryId: library.id,
+          isExternal: true,
+        });
+        mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([moved as any]);
+
+        await expect(sut.handleMoveAsset({ id: asset.id, libraryId: library.id, folder })).resolves.toBe(
+          JobStatus.Success,
+        );
+
+        expect(mocks.asset.getByIdsWithAllRelationsButStacks).toHaveBeenCalledWith([asset.id], library.ownerId);
+        expect(mocks.websocket.clientSend).toHaveBeenCalledWith(
+          'on_asset_update',
+          library.ownerId,
+          expect.objectContaining({ id: asset.id, libraryId: library.id }),
+        );
+      });
+
+      it('should not notify when the move fails', async () => {
+        const asset = storageAsset();
+        const library = setup(asset);
+        mocks.crypto.hashFile.mockResolvedValue(Buffer.from('corrupted'));
+
+        await expect(sut.handleMoveAsset({ id: asset.id, libraryId: library.id, folder })).resolves.toBe(
+          JobStatus.Failed,
+        );
+
+        expect(mocks.websocket.clientSend).not.toHaveBeenCalled();
+      });
+
+      it('should move the sidecar together with the original', async () => {
+        const sidecarPath = '/data/library/owner-id/IMG_0001.jpg.xmp';
+        const asset = storageAsset({
+          files: [{ id: newUuid(), type: AssetFileType.Sidecar, path: sidecarPath, isEdited: false }],
+        });
+        const library = setup(asset);
+
+        await expect(sut.handleMoveAsset({ id: asset.id, libraryId: library.id, folder })).resolves.toBe(
+          JobStatus.Success,
+        );
+
+        expect(mocks.asset.moveToLibrary).toHaveBeenCalledWith(
+          library.id,
+          [{ assetId: asset.id, originalPath: target, sidecarPath: `${target}.xmp` }],
+          expect.any(Function),
+        );
+        expect(mocks.storage.rename).toHaveBeenCalledWith(
+          path.join(folder, '.photo.jpg.xmp.immich-move'),
+          `${target}.xmp`,
+        );
+        expect(mocks.storage.unlink).toHaveBeenCalledWith(sidecarPath);
+      });
+
+      it('should pick a free file name when the destination exists', async () => {
+        const asset = storageAsset();
+        const library = setup(asset);
+        mocks.storage.checkFileExists.mockImplementation((filepath) => Promise.resolve(filepath === target));
+
+        await expect(sut.handleMoveAsset({ id: asset.id, libraryId: library.id, folder })).resolves.toBe(
+          JobStatus.Success,
+        );
+
+        expect(mocks.storage.rename).toHaveBeenCalledWith(
+          path.join(folder, '.photo+1.jpg.immich-move'),
+          path.join(folder, 'photo+1.jpg'),
+        );
+      });
+
+      it('should keep the source untouched when the copy does not match the checksum', async () => {
+        const asset = storageAsset();
+        const library = setup(asset);
+        mocks.crypto.hashFile.mockResolvedValue(Buffer.from('corrupted'));
+
+        await expect(sut.handleMoveAsset({ id: asset.id, libraryId: library.id, folder })).resolves.toBe(
+          JobStatus.Failed,
+        );
+
+        expect(mocks.asset.moveToLibrary).not.toHaveBeenCalled();
+        expect(mocks.storage.unlink).toHaveBeenCalledWith(temporary);
+        expect(mocks.storage.unlink).not.toHaveBeenCalledWith(asset.originalPath);
+      });
+
+      it('should roll back the renamed files when the database update fails', async () => {
+        const asset = storageAsset();
+        const library = setup(asset);
+        mocks.asset.moveToLibrary.mockImplementation(async (_libraryId, _moves, beforeCommit) => {
+          await beforeCommit();
+          throw new Error('commit failed');
+        });
+
+        await expect(sut.handleMoveAsset({ id: asset.id, libraryId: library.id, folder })).resolves.toBe(
+          JobStatus.Failed,
+        );
+
+        expect(mocks.storage.rename).toHaveBeenNthCalledWith(1, temporary, target);
+        expect(mocks.storage.rename).toHaveBeenNthCalledWith(2, target, temporary);
+        expect(mocks.storage.unlink).toHaveBeenCalledWith(temporary);
+        expect(mocks.storage.unlink).not.toHaveBeenCalledWith(asset.originalPath);
+      });
+
+      it('should not move an asset already present in the library', async () => {
+        const asset = storageAsset();
+        const library = setup(asset);
+        mocks.asset.getByChecksum.mockResolvedValue({ id: newUuid() } as any);
+
+        await expect(sut.handleMoveAsset({ id: asset.id, libraryId: library.id, folder })).resolves.toBe(
+          JobStatus.Failed,
+        );
+
+        expect(mocks.storage.copyFile).not.toHaveBeenCalled();
+        expect(mocks.storage.unlink).not.toHaveBeenCalled();
+      });
+
+      it('should move the live photo video in the same transaction', async () => {
+        const motion = storageAsset({
+          type: AssetType.Video,
+          originalPath: '/data/library/owner-id/IMG_0001.mov',
+          originalFileName: 'IMG_0001.mov',
+        });
+        const asset = storageAsset({ livePhotoVideoId: motion.id });
+        const library = setup(asset);
+        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(asset).mockResolvedValueOnce(motion);
+
+        await expect(sut.handleMoveAsset({ id: asset.id, libraryId: library.id, folder })).resolves.toBe(
+          JobStatus.Success,
+        );
+
+        expect(mocks.asset.moveToLibrary).toHaveBeenCalledWith(
+          library.id,
+          [
+            { assetId: asset.id, originalPath: target, sidecarPath: undefined },
+            { assetId: motion.id, originalPath: path.join(folder, 'photo.mov'), sidecarPath: undefined },
+          ],
+          expect.any(Function),
+        );
+        expect(mocks.storage.unlink).toHaveBeenCalledWith(motion.originalPath);
+      });
     });
   });
 

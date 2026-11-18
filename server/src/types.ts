@@ -236,6 +236,12 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
+export interface ILibraryMoveAssetJob {
+  id: string;
+  libraryId: string;
+  folder: string;
+}
+
 export interface ILibraryFileJob {
   libraryId: string;
   paths: string[];
@@ -422,6 +428,7 @@ export type JobItem =
   | { name: JobName.LibrarySyncAssetsQueueAll; data: IEntityJob }
   | { name: JobName.LibrarySyncAssets; data: ILibraryBulkIdsJob }
   | { name: JobName.LibraryRemoveAsset; data: ILibraryFileJob }
+  | { name: JobName.LibraryMoveAsset; data: ILibraryMoveAssetJob }
   | { name: JobName.LibraryDelete; data: IEntityJob }
   | { name: JobName.LibraryScanQueueAll; data?: IBaseJob }
   | { name: JobName.LibraryDeleteCheck; data: IBaseJob }
