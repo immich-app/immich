@@ -62,7 +62,7 @@
     "@opentelemetry/sdk-metrics": "^3.0.0",
     "@opentelemetry/sdk-node": "^0.301.0",
     "@opentelemetry/semantic-conventions": "^1.34.0",
-    "@simplewebauthn/server": "14.0.3",
+    "@simplewebauthn/server": "14.1.0",
     "@socket.io/redis-adapter": "^8.3.0",
     "aaguids": "^0.0.73",
     "archiver": "^8.0.0",

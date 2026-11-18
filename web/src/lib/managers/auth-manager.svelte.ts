@@ -3,26 +3,37 @@ import { queryClient } from '#lib/queries/client.ts';
 import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
+import { getMyPreferencesQuery, getMyUserQuery } from '#lib/queries/user.query.ts';
 import { Route } from '#lib/route.ts';
 import { isSharedLinkRoute } from '#lib/utils/navigation.ts';
-import {
-  getMyPreferences,
-  getMyUser,
-  logout,
-  type UserAdminResponseDto,
-  type UserPreferencesResponseDto,
-} from '@immich/sdk';
+import { logout, type UserAdminResponseDto, type UserPreferencesResponseDto } from '@immich/sdk';
+import { hashKey } from '@tanstack/svelte-query';
 import { browser } from '$app/env';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 
 class AuthManager {
-  isPurchased = $state(false);
   isSharedLink = $derived(isSharedLinkRoute(page.route?.id));
   params = $derived(this.isSharedLink ? { key: page.params.key, slug: page.params.slug } : {});
 
-  #user = $state<UserAdminResponseDto>();
-  #preferences = $state<UserPreferencesResponseDto>();
+  #cacheVersion = $state(0);
+  #trackedQueryHashes = new Set(
+    [getMyUserQuery(), getMyPreferencesQuery(), getAboutInfoQuery()].map(({ queryKey }) => hashKey(queryKey)),
+  );
+
+  get #user() {
+    void this.#cacheVersion;
+    return queryClient.getQueryData(getMyUserQuery().queryKey);
+  }
+
+  get #preferences() {
+    void this.#cacheVersion;
+    return queryClient.getQueryData(getMyPreferencesQuery().queryKey);
+  }
+
+  get isPurchased() {
+    return !!this.#user?.license?.activatedAt || !!queryClient.getQueryData(getAboutInfoQuery().queryKey)?.licensed;
+  }
 
   get authenticated() {
     return !!(this.#user && this.#preferences);
@@ -48,6 +59,12 @@ class AuthManager {
     eventManager.on({
       SessionDelete: () => goto(Route.logout()),
     });
+    queryClient.getQueryCache().subscribe((event) => {
+      const isDataChange = event.type === 'removed' || (event.type === 'updated' && event.action.type === 'success');
+      if (isDataChange && this.#trackedQueryHashes.has(event.query.queryHash)) {
+        this.#cacheVersion++;
+      }
+    });
   }
 
   async load() {
@@ -59,30 +76,18 @@ class AuthManager {
       return;
     }
 
-    return this.refresh();
-  }
-
-  async refresh() {
     try {
-      const [user, preferences] = await Promise.all([
-        getMyUser(),
-        getMyPreferences(),
+      const [user] = await Promise.all([
+        queryClient.query(getMyUserQuery()),
+        queryClient.query(getMyPreferencesQuery()),
         queryClient.query(getUserConfigQuery()),
       ]);
       if (user.isAdmin) {
         await queryClient.query(getAdminConfigQuery());
       }
-      this.#preferences = preferences;
-      this.#user = user;
 
-      if (user.license?.activatedAt) {
-        this.isPurchased = true;
-      } else {
-        // check server status
-        const serverInfo = await queryClient.query(getAboutInfoQuery()).catch(() => {});
-        if (serverInfo?.licensed) {
-          this.isPurchased = true;
-        }
+      if (!user.license?.activatedAt) {
+        await queryClient.query(getAboutInfoQuery()).catch(() => {});
       }
 
       eventManager.emit('AuthUserLoaded', user);
@@ -92,11 +97,11 @@ class AuthManager {
   }
 
   setUser(user: UserAdminResponseDto) {
-    this.#user = user;
+    queryClient.setQueryData(getMyUserQuery().queryKey, user);
   }
 
   setPreferences(preferences: UserPreferencesResponseDto) {
-    this.#preferences = preferences;
+    queryClient.setQueryData(getMyPreferencesQuery().queryKey, preferences);
   }
 
   async logout() {
@@ -112,20 +117,12 @@ class AuthManager {
     }
 
     if (redirectUri.startsWith('/')) {
-      this.isPurchased = false;
-
-      this.reset();
       eventManager.emit('AuthLogout');
 
       await goto(redirectUri);
     } else {
       location.assign(redirectUri);
     }
-  }
-
-  reset() {
-    this.#user = undefined;
-    this.#preferences = undefined;
   }
 
   #hasAuthCookie() {

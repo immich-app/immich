@@ -1,14 +1,17 @@
+import { workflowLogsPageSize } from '#lib/constants.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
 import {
   createWorkflow,
   deleteWorkflow,
   getWorkflowForShare,
+  getWorkflowLogs,
   getWorkflowTriggers,
   searchWorkflows,
   updateWorkflow,
   type WorkflowResponseDto,
+  type WorkflowResult,
 } from '@immich/sdk';
-import { queryOptions } from '@tanstack/svelte-query';
+import { infiniteQueryOptions, queryOptions } from '@tanstack/svelte-query';
 
 const findOrFail = (workflows: WorkflowResponseDto[], id: string) => {
   const workflow = workflows.find((workflow) => workflow.id === id);
@@ -41,6 +44,18 @@ export const getWorkflowTriggersQuery = () =>
   queryOptions({
     queryKey: ['workflows', 'triggers'],
     queryFn: ({ signal }) => getWorkflowTriggers({ signal }),
+  });
+
+export const getWorkflowLogsQuery = (id: string, result?: WorkflowResult) =>
+  infiniteQueryOptions({
+    queryKey: ['workflows', id, 'logs', { result }],
+    queryFn: ({ pageParam: before, signal }) =>
+      getWorkflowLogs({ id, result, before, limit: workflowLogsPageSize }, { signal }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (entries) => (entries.length < workflowLogsPageSize ? undefined : entries.at(-1)?.at),
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
   });
 
 export const createWorkflowMutation = () =>

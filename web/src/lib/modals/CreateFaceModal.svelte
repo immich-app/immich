@@ -2,9 +2,8 @@
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { executeMutation } from '#lib/queries/client.ts';
   import { createFaceMutation } from '#lib/queries/face.query.ts';
+  import { createPersonMutation } from '#lib/queries/person.query.ts';
   import { delay } from '#lib/utils/asset-utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { createPerson } from '@immich/sdk';
   import { Field, FormModal, Input, LoadingSpinner, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -34,16 +33,6 @@
 
     isSubmitting = true;
 
-    let personId: string;
-    try {
-      const person = await createPerson({ personCreateDto: { name } });
-      personId = person.id;
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-      isSubmitting = false;
-      return;
-    }
-
     const onSuccess = async () => {
       await delay(1500);
       await assetViewerManager.setAssetId(assetId);
@@ -51,9 +40,15 @@
       isSubmitting = false;
     };
 
-    const assetFaceCreateDto = { assetId, imageHeight, imageWidth, personId, x, y, width, height };
-    await executeMutation(createFaceMutation, [{ assetFaceCreateDto }], {
-      onSuccess: () => void onSuccess(),
+    const createFace = (personId: string) =>
+      executeMutation(
+        createFaceMutation,
+        [{ assetFaceCreateDto: { assetId, imageHeight, imageWidth, personId, x, y, width, height } }],
+        { onSuccess: () => void onSuccess(), onError: () => (isSubmitting = false) },
+      );
+
+    await executeMutation(createPersonMutation, [{ personCreateDto: { name } }], {
+      onSuccess: ({ id }) => void createFace(id),
       onError: () => (isSubmitting = false),
     });
   };

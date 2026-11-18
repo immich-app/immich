@@ -2,10 +2,12 @@ import { executeMutation, queryClient } from '#lib/queries/client.ts';
 import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
 import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { getDatabaseBackupsQuery } from '#lib/queries/database-backup.query.ts';
 import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
 import { deleteTagMutation } from '#lib/queries/tag.query.ts';
 import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
+import { toastManager } from '@immich/ui';
 import { QueryObserver, type QueryKey, type QueryObserverOptions } from '@tanstack/svelte-query';
 import { noop } from 'lodash-es';
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
@@ -50,6 +52,18 @@ describe('queryClient', () => {
     test('server config', async ({ data }) => {
       await expect(preloadThenIdle(getServerConfigQuery())).resolves.toEqual(data.serverConfig);
     });
+  });
+});
+
+describe('query errors', () => {
+  test('shows the meta toast when a query fails', async ({ api, logger }) => {
+    const danger = vi.spyOn(toastManager, 'danger');
+    api.on({ listDatabaseBackups: () => ({ status: 500 }) });
+
+    await expect(queryClient.fetchQuery(getDatabaseBackupsQuery())).rejects.toThrow();
+
+    await vi.waitFor(() => expect(danger).toHaveBeenCalledWith('errors.failed_to_load_database_backups'));
+    expect(logger.error).toHaveBeenCalledWith(/handleError/);
   });
 });
 

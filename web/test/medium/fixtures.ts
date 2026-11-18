@@ -52,7 +52,7 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     async ({ browser }, use, workerInfo) => {
       const context = await browser.newContext(toContextOptions(workerInfo.project.use));
       await context.addInitScript(() => {
-        if (location.protocol.startsWith('http')) {
+        if (location.protocol.startsWith('http') && origin !== 'null') {
           localStorage.setItem('lang', 'dev');
         }
       });

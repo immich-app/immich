@@ -2,45 +2,31 @@
   import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import MaintenanceBackupEntry from '#lib/components/maintenance/MaintenanceBackupEntry.svelte';
+  import { getDatabaseBackupsQuery } from '#lib/queries/database-backup.query.ts';
   import { getDatabaseBackupDateTime, handleUploadDatabaseBackup } from '#lib/services/database-backups.service.ts';
-  import { listDatabaseBackups, type DatabaseBackupDto } from '@immich/sdk';
+  import type { DatabaseBackupDto } from '@immich/sdk';
   import { Card, CardBody, HStack, Icon, ProgressBar, Stack, Text } from '@immich/ui';
   import { mdiCalendar, mdiTrayArrowUp } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { DateTime } from 'luxon';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    backups?: DatabaseBackupDto[];
     expectedVersion: string;
   };
 
-  let props: Props = $props();
+  const { expectedVersion }: Props = $props();
 
-  let backups = $state(props.backups ?? []);
-
-  async function reloadBackups() {
-    const result = await listDatabaseBackups();
-    backups = result.backups;
-  }
-
-  onMount(() => {
-    if (!props.backups) {
-      void reloadBackups();
-    }
-  });
+  const backupsQuery = createQuery(getDatabaseBackupsQuery);
+  const backups = $derived(backupsQuery.data ?? []);
 
   let uploadProgress = $state(-1);
-
-  function onBackupDeleted(event: { filename: string }) {
-    backups = backups.filter((backup) => backup.filename !== event.filename);
-  }
 
   function onBackupUpload(event: { progress: number; isComplete: boolean }) {
     uploadProgress = event.progress;
 
     if (event.isComplete) {
-      void reloadBackups();
+      void backupsQuery.refetch();
     }
   }
 
@@ -83,7 +69,7 @@
   });
 </script>
 
-<OnEvents {onBackupDeleted} {onBackupUpload} />
+<OnEvents {onBackupUpload} />
 
 <Stack gap={4} class="mt-4 text-left">
   <Card color="info">
@@ -126,7 +112,7 @@
         <MaintenanceBackupEntry
           filename={backup.filename}
           filesize={backup.filesize}
-          expectedVersion={props.expectedVersion}
+          {expectedVersion}
           timezone={backup.timezone}
         />
       {/each}

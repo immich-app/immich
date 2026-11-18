@@ -1,32 +1,20 @@
 <script lang="ts">
   import PinCodeResetModal from '#lib/modals/PinCodeResetModal.svelte';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { changePinCode } from '@immich/sdk';
-  import { Button, Field, Heading, PinInput, Text, modalManager, toastManager } from '@immich/ui';
+  import { changePinCodeMutation } from '#lib/queries/auth.query.ts';
+  import { Button, Field, Heading, PinInput, Text, modalManager } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   let currentPinCode = $state('');
   let newPinCode = $state('');
   let confirmPinCode = $state('');
-  let isLoading = $state(false);
   let canSubmit = $derived(currentPinCode.length === 6 && confirmPinCode.length === 6 && newPinCode === confirmPinCode);
 
-  const handleSubmit = async (event: Event) => {
-    event.preventDefault();
-    await handleChangePinCode();
-  };
+  const changePinCode = createMutation(changePinCodeMutation);
 
-  const handleChangePinCode = async () => {
-    isLoading = true;
-    try {
-      await changePinCode({ pinCodeChangeDto: { pinCode: currentPinCode, newPinCode } });
-      resetForm();
-      toastManager.primary($t('pin_code_changed_successfully'));
-    } catch (error) {
-      handleError(error, $t('unable_to_change_pin_code'));
-    } finally {
-      isLoading = false;
-    }
+  const handleSubmit = (event: Event) => {
+    event.preventDefault();
+    changePinCode.mutate([{ pinCodeChangeDto: { pinCode: currentPinCode, newPinCode } }], { onSuccess: resetForm });
   };
 
   const resetForm = () => {
@@ -57,7 +45,7 @@
     <Button shape="round" color="secondary" type="button" size="small" onclick={resetForm}>
       {$t('clear')}
     </Button>
-    <Button shape="round" type="submit" size="small" loading={isLoading} disabled={!canSubmit}>
+    <Button shape="round" type="submit" size="small" loading={changePinCode.isPending} disabled={!canSubmit}>
       {$t('save')}
     </Button>
   </div>

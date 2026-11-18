@@ -3,13 +3,13 @@
   import Portal from '#lib/elements/Portal.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import PurchaseModal from '#lib/modals/PurchaseModal.svelte';
+  import { updateMyPreferencesMutation } from '#lib/queries/user.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAccountAge } from '#lib/utils/auth.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
   import { getButtonVisibility } from '#lib/utils/purchase-utils.ts';
-  import { updateMyPreferences } from '@immich/sdk';
   import { Button, Icon, IconButton, Logo, SupporterBadge, modalManager } from '@immich/ui';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { SvelteDate } from 'svelte/reactivity';
   import { fade } from 'svelte/transition';
@@ -19,7 +19,10 @@
   let hoverMessage = $state(false);
   let hoverButton = $state(false);
 
-  let showBuyButton = $state(getButtonVisibility());
+  const showBuyButton = $derived(getButtonVisibility());
+  const updatePreferences = createMutation(() =>
+    updateMyPreferencesMutation({ error: { toast: 'errors.error_hiding_buy_button' } }),
+  );
 
   const openPurchaseModal = async () => {
     await modalManager.show(PurchaseModal);
@@ -31,7 +34,7 @@
     hoverButton = true;
   };
 
-  const hideButton = async (always: boolean) => {
+  const hideButton = (always: boolean) => {
     const hideBuyButtonUntil = new SvelteDate();
 
     if (always) {
@@ -40,22 +43,10 @@
       hideBuyButtonUntil.setDate(hideBuyButtonUntil.getDate() + 30);
     }
 
-    try {
-      const response = await updateMyPreferences({
-        userPreferencesUpdateDto: {
-          purchase: {
-            hideBuyButtonUntil: hideBuyButtonUntil.toISOString(),
-          },
-        },
-      });
-
-      authManager.setPreferences(response);
-
-      showBuyButton = getButtonVisibility();
-      showMessage = false;
-    } catch (error) {
-      handleError(error, $t('errors.error_hiding_buy_button'));
-    }
+    updatePreferences.mutate(
+      [{ userPreferencesUpdateDto: { purchase: { hideBuyButtonUntil: hideBuyButtonUntil.toISOString() } } }],
+      { onSuccess: () => (showMessage = false) },
+    );
   };
 
   $effect(() => {

@@ -44,7 +44,6 @@ import { createAffineMatrix } from 'src/utils/transform.js';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
-    // eslint-disable-next-line import-x/no-named-as-default-member
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
 
@@ -90,7 +89,7 @@ export class MediaRepository {
   }
 
   /**
-  
+
   @param input file path to the input image
   @returns ExtractResult if succeeded, or null if failed
   */
