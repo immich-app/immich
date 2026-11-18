@@ -6,6 +6,7 @@ import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
 import { TagService } from 'src/services/tag.service.js';
@@ -21,7 +22,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(TagService, {
     database: db || defaultDatabase,
     real: [AssetRepository, TagRepository, AccessRepository],
-    mock: [EventRepository, JobRepository, LoggingRepository],
+    mock: [ResourceRepository, EventRepository, JobRepository, LoggingRepository],
   });
 };
 
