@@ -61,14 +61,14 @@ export const bootstrapTelemetry = (port: number) => {
     throw new Error('OpenTelemetry SDK already started');
   }
 
-  const { telemetry } = new ConfigRepository().getEnv();
+  const { telemetry, host = '::' } = new ConfigRepository().getEnv();
 
   instance = new NodeSDK({
     resource: resourceFromAttributes({
       [ATTR_SERVICE_NAME]: `immich`,
       [ATTR_SERVICE_VERSION]: serverVersion.toString(),
     }),
-    metricReaders: [new PrometheusExporter({ port, host: '0.0.0.0' })],
+    metricReaders: [new PrometheusExporter({ port, host })],
     contextManager: new AsyncLocalStorageContextManager(),
     instrumentations: [
       new HttpInstrumentation({
