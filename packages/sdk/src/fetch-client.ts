@@ -2068,6 +2068,8 @@ export type PasskeyResponseDto = {
     usedAt: string | null;
 };
 export type PasskeyAuthenticationFinishDto = {
+    /** Code verifier (PKCE) */
+    codeVerifier?: string;
     /** Response returned by @simplewebauthn/browser's `startAuthentication()` */
     response: {
         /** Credential ID */
@@ -6302,11 +6304,15 @@ export function finishAuthentication({ passkeyAuthenticationFinishDto }: {
 /**
  * Start passkey authentication
  */
-export function startAuthentication(opts?: Oazapfts.RequestOpts) {
+export function startAuthentication({ codeChallenge }: {
+    codeChallenge?: string;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: PasskeyAuthenticationOptionsDto;
-    }>("/passkeys/authentication/start", {
+    }>(`/passkeys/authentication/start${QS.query(QS.explode({
+        codeChallenge
+    }))}`, {
         ...opts,
         method: "POST"
     }));

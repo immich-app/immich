@@ -16,7 +16,7 @@ import {
 } from '@simplewebauthn/browser';
 import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
 
-const isPasskeyCancelled = (error: unknown) => error instanceof Error && error.name === 'NotAllowedError';
+export const isPasskeyCancelled = (error: unknown) => error instanceof Error && error.name === 'NotAllowedError';
 
 const withPasskeyPrompt = async <T>(flow: () => Promise<T>) => {
   try {
@@ -49,7 +49,7 @@ export const loginWithPasskeyMutation = () =>
   mutationOptions({
     mutationFn: () =>
       withPasskeyPrompt(async () => {
-        const options = await startAuthentication();
+        const options = await startAuthentication({});
         const response = await startBrowserAuthentication({
           optionsJSON: options as PublicKeyCredentialRequestOptionsJSON,
         });

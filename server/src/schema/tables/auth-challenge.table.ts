@@ -24,6 +24,9 @@ export class AuthChallengeTable {
   @ForeignKeyColumn(() => UserTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE', nullable: true })
   userId!: string | null;
 
+  @Column({ nullable: true })
+  codeChallenge!: string | null;
+
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 

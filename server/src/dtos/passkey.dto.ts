@@ -20,6 +20,12 @@ const PasskeyRegistrationFinishSchema = z
   })
   .meta({ id: 'PasskeyRegistrationFinishDto' });
 
+const PasskeyAuthenticationStartSchema = z
+  .object({
+    codeChallenge: z.string().min(1).optional().describe('Code challenge (PKCE)'),
+  })
+  .meta({ id: 'PasskeyAuthenticationStartDto' });
+
 const PasskeyAuthenticationFinishSchema = z
   .object({
     response: z
@@ -28,6 +34,7 @@ const PasskeyAuthenticationFinishSchema = z
         response: z.looseObject({ userHandle: z.base64url().optional().describe('User handle') }),
       })
       .describe("Response returned by @simplewebauthn/browser's `startAuthentication()`"),
+    codeVerifier: z.string().min(1).optional().describe('Code verifier (PKCE)'),
   })
   .meta({ id: 'PasskeyAuthenticationFinishDto' });
 
@@ -56,6 +63,7 @@ const PasskeyResponseSchema = z
 export class PasskeyRegistrationOptionsDto extends createZodDto(PasskeyRegistrationOptionsSchema) {}
 export class PasskeyAuthenticationOptionsDto extends createZodDto(PasskeyAuthenticationOptionsSchema) {}
 export class PasskeyRegistrationFinishDto extends createZodDto(PasskeyRegistrationFinishSchema) {}
+export class PasskeyAuthenticationStartDto extends createZodDto(PasskeyAuthenticationStartSchema) {}
 export class PasskeyAuthenticationFinishDto extends createZodDto(PasskeyAuthenticationFinishSchema) {}
 export class PasskeySearchDto extends createZodDto(PasskeySearchSchema) {}
 export class PasskeyUpdateDto extends createZodDto(PasskeyUpdateSchema) {}
