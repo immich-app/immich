@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
@@ -25,6 +29,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   late final ScrollController _scrollController;
   late TimelineService _timelineService;
+  StreamSubscription<TimelineReloadEvent>? _reloadSubscription;
 
   /// Tracks the currently running assets loading operation to avoid concurrent loads.
   Future<void>? _loadTask;
@@ -57,6 +62,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _scrollController = ScrollController();
     _scrollController.addListener(_onScrollPositionChanged);
     _timelineService = ref.read(timelineServiceProvider);
+    _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>(_onTimelineReload);
     final initialIndex = ref.read(assetViewerProvider).currentIndex;
     _currentIndex = ValueNotifier(initialIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -69,6 +75,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   @override
   void dispose() {
+    unawaited(_reloadSubscription?.cancel());
     if (_scrollController.hasClients) {
       _scrollController.position.isScrollingNotifier.removeListener(_onScrollingChanged);
     }
@@ -76,6 +83,16 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _scrollController.dispose();
     _currentIndex.dispose();
     super.dispose();
+  }
+
+  /// The timeline changed underneath us (e.g. an asset was deleted or synced).
+  /// Rebuild so the item count and thumbnails reflect the reloaded timeline.
+  void _onTimelineReload(TimelineReloadEvent _) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+    unawaited(_ensureLoaded());
   }
 
   /// Ensures the assets around current index are loaded.
@@ -109,7 +126,9 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     final start = max(idx - bufferWindow ~/ 2, 0);
     final count = min(bufferWindow, total - start);
 
-    final loadAssetsTask = _timelineService.loadAssets(start, count);
+    // Ignore load errors (like TimelineService.getAssetAsync) so they don't surface as unhandled.
+    // Placeholders stay in place and the next index change retries the load.
+    final loadAssetsTask = _timelineService.loadAssets(start, count).catchError((_) => <BaseAsset>[]);
 
     // After loading the assets, follow up with further actions.
     // We only want to allow reentry to _ensureLoaded once all of those are completed,
@@ -243,7 +262,9 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
             height: _filmstripHeight,
             child: asset == null
                 ? const ColoredBox(color: Colors.black26)
-                : Thumbnail.fromAsset(asset: asset, fit: BoxFit.cover, size: Size(_itemExtent, _itemExtent)),
+                // Default decode size on purpose (same as the timeline grid): the viewer reuses the cached
+                // thumbnail as its placeholder, so a filmstrip-sized decode would show blocky while scrubbing.
+                : Thumbnail.fromAsset(asset: asset, fit: BoxFit.cover),
           ),
         ),
       ),
