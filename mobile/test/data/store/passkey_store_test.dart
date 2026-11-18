@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/passkey.dart';
@@ -18,12 +22,25 @@ class _MockPasskeyApiRepository extends Mock implements PasskeyApiRepository {}
 class _MockPasskeyHostApi extends Mock implements PasskeyHostApi {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late _MockPasskeyApiRepository api;
   late _MockPasskeyHostApi hostApi;
+  late Future<String> Function() page;
+  late List<String> opened;
 
   setUp(() {
     api = _MockPasskeyApiRepository();
     hostApi = _MockPasskeyHostApi();
+    opened = [];
+    when(() => api.origin).thenReturn('https://demo.immich.app');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('flutter_web_auth_2'),
+      (call) async {
+        opened.add((call.arguments as Map)['url']);
+        return page();
+      },
+    );
   });
 
   ProviderContainer createContainer({bool supportsPasskeys = true}) {
@@ -62,6 +79,14 @@ void main() {
       verifyNever(() => api.isEnabled());
     });
 
+    test('is false for a server without https, without asking the server', () async {
+      when(() => api.origin).thenReturn('http://192.168.1.2:2283');
+      when(() => hostApi.isSupported()).thenAnswer((_) async => true);
+
+      expect(await createContainer().read(Store.passkeys.enabled().future), isFalse);
+      verifyNever(() => api.isEnabled());
+    });
+
     test('is false when the passkey config request fails', () async {
       when(() => hostApi.isSupported()).thenAnswer((_) async => true);
       when(() => api.isEnabled()).thenThrow(ApiException(500, 'Internal Server Error'));
@@ -76,15 +101,16 @@ void main() {
       when(() => api.finishRegistration(any())).thenAnswer((_) async {});
     });
 
-    test('sends the server options to the platform and the credential back to the server', () async {
-      when(() => hostApi.register('{"challenge":"abc"}')).thenAnswer((_) async => '{"id":"credential"}');
+    test('opens the server options on the server page and sends the credential back to the server', () async {
+      page = () async => 'app.immich:///passkey-callback?credential=%7B%22id%22%3A%22credential%22%7D';
 
       expect(await createContainer().read(Store.passkeys).create(), isTrue);
+      expect(opened, ['https://demo.immich.app/auth/passkey#registration=%7B%22challenge%22%3A%22abc%22%7D']);
       expect(verify(() => api.finishRegistration(captureAny())).captured.single, {'id': 'credential'});
     });
 
     test('does not finish when the user cancels', () async {
-      when(() => hostApi.register(any())).thenAnswer((_) async => null);
+      page = () async => 'app.immich:///passkey-callback';
 
       expect(await createContainer().read(Store.passkeys).create(), isFalse);
       verifyNever(() => api.finishRegistration(any()));
@@ -103,22 +129,33 @@ void main() {
     );
 
     setUp(() {
-      when(() => api.startAuthentication()).thenAnswer((_) async => {'challenge': 'abc'});
-      when(() => api.finishAuthentication(any())).thenAnswer((_) async => login);
+      when(() => api.startAuthentication(any())).thenAnswer((_) async => {'challenge': 'abc'});
+      when(() => api.finishAuthentication(any(), any())).thenAnswer((_) async => login);
     });
 
-    test("returns the server's login for the credential", () async {
-      when(() => hostApi.authenticate('{"challenge":"abc"}')).thenAnswer((_) async => '{"id":"credential"}');
+    test("returns the server's login for the credential and the verifier of the code challenge", () async {
+      page = () async => 'app.immich:///passkey-callback?credential=%7B%22id%22%3A%22credential%22%7D';
 
       expect(await createContainer().read(Store.passkeys).login(), login);
-      expect(verify(() => api.finishAuthentication(captureAny())).captured.single, {'id': 'credential'});
+      expect(opened, ['https://demo.immich.app/auth/passkey#authentication=%7B%22challenge%22%3A%22abc%22%7D']);
+      final codeChallenge = verify(() => api.startAuthentication(captureAny())).captured.single;
+      final [credential, codeVerifier] = verify(() => api.finishAuthentication(captureAny(), captureAny())).captured;
+      expect(credential, {'id': 'credential'});
+      expect(codeChallenge, base64Url.encode(sha256.convert(utf8.encode(codeVerifier)).bytes).replaceAll('=', ''));
     });
 
-    test('does not finish when the user cancels', () async {
-      when(() => hostApi.authenticate(any())).thenAnswer((_) async => null);
+    test('does not finish when the user closes the browser', () async {
+      page = () => throw PlatformException(code: 'CANCELED');
 
       expect(await createContainer().read(Store.passkeys).login(), isNull);
-      verifyNever(() => api.finishAuthentication(any()));
+      verifyNever(() => api.finishAuthentication(any(), any()));
+    });
+
+    test('throws the error the page hands back', () async {
+      page = () async => 'app.immich:///passkey-callback?error=NotSupportedError';
+
+      await expectLater(createContainer().read(Store.passkeys).login(), throwsA(isA<Exception>()));
+      verifyNever(() => api.finishAuthentication(any(), any()));
     });
   });
 }

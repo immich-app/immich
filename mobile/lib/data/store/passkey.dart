@@ -1,5 +1,9 @@
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/passkey.dart';
 import 'package:immich_mobile/data/store/util/cache.dart';
@@ -10,6 +14,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:logging/logging.dart';
 
 final _log = Logger("PasskeyStore");
+final _random = Random.secure();
 
 /// Passkeys the current user can log in with
 ///
@@ -27,7 +32,9 @@ extension type const PasskeyStore._(Provider<PasskeyMutations> _provider) implem
 }
 
 final _enabledProvider = FutureProvider.autoDispose<bool>((ref) async {
-  if (!ref.watch(serverInfoProvider.select((state) => state.serverVersion.supportsPasskeys))) {
+  // browsers only offer passkeys to https pages
+  if (!ref.watch(serverInfoProvider.select((state) => state.serverVersion.supportsPasskeys)) ||
+      !ref.watch(passkeyApiRepositoryProvider).origin.startsWith('https:')) {
     return false;
   }
 
@@ -58,12 +65,12 @@ class PasskeyMutations extends StoreMutations {
 
     try {
       final options = await apiRepository.startRegistration();
-      final credential = await read(passkeyHostApiProvider).register(jsonEncode(options));
+      final credential = await _prompt(apiRepository.origin, 'registration', options);
       if (credential == null) {
         return false;
       }
 
-      await apiRepository.finishRegistration(jsonDecode(credential));
+      await apiRepository.finishRegistration(credential);
       invalidate(_allProvider);
       return true;
     } catch (error, stack) {
@@ -75,19 +82,46 @@ class PasskeyMutations extends StoreMutations {
   /// Log in with a passkey through the system's passkey prompt, returning null if the user cancels
   Future<LoginResponse?> login() async {
     final apiRepository = read(passkeyApiRepositoryProvider);
+    final codeVerifier = base64Url.encode(List.generate(42, (_) => _random.nextInt(256)));
+    final codeChallenge = base64Url.encode(sha256.convert(utf8.encode(codeVerifier)).bytes).replaceAll('=', '');
 
     try {
-      final options = await apiRepository.startAuthentication();
-      final credential = await read(passkeyHostApiProvider).authenticate(jsonEncode(options));
+      final options = await apiRepository.startAuthentication(codeChallenge);
+      final credential = await _prompt(apiRepository.origin, 'authentication', options);
       if (credential == null) {
         return null;
       }
 
-      return await apiRepository.finishAuthentication(jsonDecode(credential));
+      return await apiRepository.finishAuthentication(credential, codeVerifier);
     } catch (error, stack) {
       _log.severe("Failed to log in with a passkey", error, stack);
       rethrow;
     }
+  }
+
+  Future<Map<String, dynamic>?> _prompt(String origin, String ceremony, Map<String, Object?> options) async {
+    final String callback;
+    try {
+      callback = await FlutterWebAuth2.authenticate(
+        url: '$origin/auth/passkey#${Uri(queryParameters: {ceremony: jsonEncode(options)}).query}',
+        callbackUrlScheme: 'app.immich',
+        options: const FlutterWebAuth2Options(preferEphemeral: true),
+      );
+    } on PlatformException catch (error) {
+      if (error.code == 'CANCELED') {
+        return null;
+      }
+      rethrow;
+    }
+
+    final result = Uri.parse(callback).queryParameters;
+    final error = result['error'];
+    if (error != null) {
+      throw Exception(error);
+    }
+
+    final credential = result['credential'];
+    return credential == null ? null : jsonDecode(credential);
   }
 
   /// Rename the passkey [id], or clear its name with `null`

@@ -16,6 +16,19 @@ class PasskeyApiRepository extends ApiRepository {
 
   const PasskeyApiRepository(this._api, this._configApi);
 
+  String get origin => Uri.parse(_api.apiClient.basePath).origin;
+
+  // The server makes passkeys for the domain in the Origin header, like for its web client
+  PasskeysApi get _webApi {
+    final apiClient = _api.apiClient;
+    return PasskeysApi(
+      ApiClient(basePath: apiClient.basePath)
+        ..client = apiClient.client
+        ..defaultHeaderMap.addAll(apiClient.defaultHeaderMap)
+        ..addDefaultHeader('Origin', origin),
+    );
+  }
+
   /// Whether the server has passkey login turned on
   Future<bool> isEnabled() async {
     final config = await checkNull(_configApi.getPublicConfig());
@@ -23,20 +36,21 @@ class PasskeyApiRepository extends ApiRepository {
   }
 
   /// The WebAuthn options for creating a passkey for the current user
-  Future<Map<String, Object?>> startRegistration() => checkNull(_api.startRegistration());
+  Future<Map<String, Object?>> startRegistration() => checkNull(_webApi.startRegistration());
 
   /// Save the WebAuthn [credential] created from the [startRegistration] options as a passkey of the current user
   Future<void> finishRegistration(Map<String, dynamic> credential) async {
-    await _api.finishRegistration(PasskeyRegistrationFinishDto(response: credential));
+    await _webApi.finishRegistration(PasskeyRegistrationFinishDto(response: credential));
   }
 
   /// The WebAuthn options for logging in with a passkey
-  Future<Map<String, Object?>> startAuthentication() => checkNull(_api.startAuthentication());
+  Future<Map<String, Object?>> startAuthentication(String codeChallenge) =>
+      checkNull(_webApi.startAuthentication(codeChallenge: codeChallenge));
 
   /// Log in with the WebAuthn [credential] signed with the [startAuthentication] options
-  Future<LoginResponse> finishAuthentication(Map<String, dynamic> credential) async {
-    final dto = PasskeyAuthenticationFinishDto(response: credential);
-    return LoginResponse.fromDto(await checkNull(_api.finishAuthentication(dto)));
+  Future<LoginResponse> finishAuthentication(Map<String, dynamic> credential, String codeVerifier) async {
+    final dto = PasskeyAuthenticationFinishDto(response: credential, codeVerifier: Optional.present(codeVerifier));
+    return LoginResponse.fromDto(await checkNull(_webApi.finishAuthentication(dto)));
   }
 
   /// Every passkey of the current user
