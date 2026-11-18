@@ -67,6 +67,105 @@ describe('resourceManager', () => {
     });
   });
 
+  describe('handleDelete', () => {
+    it.each([
+      { name: 'equal path', queryKey: ['albums', '1'], removed: true, invalidated: false },
+      { name: 'descendant', queryKey: ['albums', '1', 'map-markers'], removed: true, invalidated: false },
+      { name: 'ancestor', queryKey: ['albums'], removed: false, invalidated: true },
+      { name: 'ancestor with params', queryKey: ['albums', { assetId: '2' }], removed: false, invalidated: true },
+      { name: 'sibling id', queryKey: ['albums', '2'], removed: false, invalidated: false },
+      { name: 'different root', queryKey: ['tags', '1'], removed: false, invalidated: false },
+    ])('$name: /albums/1 removes $queryKey is $removed', ({ queryKey, removed, invalidated }) => {
+      queryClient.setQueryData(queryKey, []);
+
+      resourceManager.handleDelete(fromElsewhere('/albums/1'));
+
+      expect(queryClient.getQueryData(queryKey) === undefined).toBe(removed);
+      expect(isInvalidated(queryKey)).toBe(invalidated);
+    });
+
+    it('drops pending updates at or below a deleted path', async () => {
+      const queryFn = vi.fn(() => Promise.resolve([]));
+      await queryClient.fetchQuery({ queryKey: ['albums'], queryFn });
+      const unsubscribe = new QueryObserver(queryClient, { queryKey: ['albums'], queryFn }).subscribe(noop);
+      queryClient.setQueryData(['tags'], []);
+      resourceManager.handleUpdate(fromElsewhere('/albums/1/assets', '/tags'));
+
+      resourceManager.handleDelete(fromElsewhere('/albums/1'));
+      await vi.advanceTimersByTimeAsync(500);
+
+      expect(queryFn).toHaveBeenCalledTimes(2);
+      expect(isInvalidated(['tags'])).toBe(true);
+      unsubscribe();
+    });
+
+    it('keeps the queries of a delete caused by this tab', async () => {
+      queryClient.setQueryData(['albums', '1'], []);
+      const onDelete = vi.fn();
+      const unsubscribe = resourceManager.onDelete('/albums/1', onDelete);
+      const headers = await sendRequest();
+
+      resourceManager.handleDelete({ paths: ['/albums/1'], correlationId: headers.get('X-Correlation-ID') ?? '' });
+
+      expect(queryClient.getQueryData(['albums', '1'])).toEqual([]);
+      expect(onDelete).not.toHaveBeenCalled();
+      unsubscribe();
+    });
+
+    it('does not refetch a removed query that is still observed', async () => {
+      const queryFn = vi.fn(() => Promise.resolve({ id: '1' }));
+      await queryClient.fetchQuery({ queryKey: ['albums', '1'], queryFn });
+      const observer = new QueryObserver(queryClient, { queryKey: ['albums', '1'], queryFn });
+      const unsubscribe = observer.subscribe(noop);
+
+      resourceManager.handleDelete(fromElsewhere('/albums/1'));
+      resourceManager.handleUpdate(fromElsewhere('/albums'));
+      await vi.advanceTimersByTimeAsync(500);
+
+      expect(queryFn).toHaveBeenCalledTimes(1);
+      expect(observer.getCurrentResult()).toMatchObject({ data: { id: '1' }, status: 'success' });
+      unsubscribe();
+    });
+  });
+
+  describe('onDelete', () => {
+    it('calls the listener before removing the queries', () => {
+      queryClient.setQueryData(['albums', '1'], []);
+      const onDelete = vi.fn(() => queryClient.getQueryData(['albums', '1']));
+      const unsubscribe = resourceManager.onDelete('/albums/1', onDelete);
+
+      resourceManager.handleDelete(fromElsewhere('/albums/1'));
+
+      expect(onDelete).toHaveReturnedWith([]);
+      unsubscribe();
+    });
+
+    it.each([
+      { name: 'equal path', path: '/albums/1', deleted: '/albums/1', called: true },
+      { name: 'ancestor deleted', path: '/albums/1/assets', deleted: '/albums/1', called: true },
+      { name: 'descendant deleted', path: '/albums', deleted: '/albums/1', called: false },
+      { name: 'sibling deleted', path: '/albums/1', deleted: '/albums/2', called: false },
+    ])('$name: $deleted calls listener of $path is $called', ({ path, deleted, called }) => {
+      const onDelete = vi.fn();
+      const unsubscribe = resourceManager.onDelete(path, onDelete);
+
+      resourceManager.handleDelete(fromElsewhere(deleted));
+
+      expect(onDelete).toHaveBeenCalledTimes(called ? 1 : 0);
+      unsubscribe();
+    });
+
+    it('does not call a listener after it unsubscribed', () => {
+      const onDelete = vi.fn();
+      const unsubscribe = resourceManager.onDelete('/albums/1', onDelete);
+      unsubscribe();
+
+      resourceManager.handleDelete(fromElsewhere('/albums/1'));
+
+      expect(onDelete).not.toHaveBeenCalled();
+    });
+  });
+
   describe('withCorrelationId', () => {
     it('ignores an update caused by a request of this tab', async () => {
       queryClient.setQueryData(['albums'], []);

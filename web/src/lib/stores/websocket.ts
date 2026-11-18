@@ -46,6 +46,7 @@ export interface Events {
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
   AssetEditReadyV2: (data: { asset: SyncAssetV2; edit: SyncAssetEditV1[] }) => void;
   ResourceUpdateV1: (event: { paths: string[]; correlationId?: string }) => void;
+  ResourceDeleteV1: (event: { paths: string[]; correlationId?: string }) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -75,6 +76,7 @@ websocket
     websocketStore.connected.set(false);
   })
   .on('ResourceUpdateV1', (event) => resourceManager.handleUpdate(event))
+  .on('ResourceDeleteV1', (event) => resourceManager.handleDelete(event))
   .on('on_server_version', (serverVersion) => {
     const previous = get(websocketStore.serverVersion);
     websocketStore.serverVersion.set(serverVersion);

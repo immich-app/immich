@@ -3,7 +3,8 @@ import { queryClient } from '#lib/queries/client.ts';
 import type { QueryKey } from '@tanstack/svelte-query';
 import type { Socket } from 'socket.io-client';
 
-type ResourceUpdate = { paths: string[]; correlationId?: string };
+type ResourceEvent = { paths: string[]; correlationId?: string };
+type DeleteListener = { path: string[]; onDelete: () => void };
 
 class ResourceManager {
   #clientId = crypto.randomUUID().split('-', 1)[0];
@@ -11,6 +12,7 @@ class ResourceManager {
   #pendingPaths = new Set<string>();
   #flushTimer?: ReturnType<typeof setTimeout>;
   #wasDisconnected = false;
+  #deleteListeners = new Set<DeleteListener>();
 
   withCorrelationId(impl: typeof fetch): typeof fetch {
     return (input, init) => {
@@ -20,8 +22,8 @@ class ResourceManager {
     };
   }
 
-  handleUpdate({ paths, correlationId }: ResourceUpdate) {
-    if (correlationId?.startsWith(`${this.#clientId}.`)) {
+  handleUpdate({ paths, correlationId }: ResourceEvent) {
+    if (this.#isFromThisTab(correlationId)) {
       return;
     }
 
@@ -36,6 +38,41 @@ class ResourceManager {
     this.#flushTimer = setTimeout(() => this.#flush(), resourceUpdateBatchDelay);
   }
 
+  handleDelete({ paths, correlationId }: ResourceEvent) {
+    if (this.#isFromThisTab(correlationId)) {
+      return;
+    }
+
+    const deletedPaths = paths.map((path) => toSegments(path));
+    const isDeleted = (path: string[]) => deletedPaths.some((deletedPath) => isAtOrBelow(path, deletedPath));
+
+    for (const path of this.#pendingPaths) {
+      if (isDeleted(toSegments(path))) {
+        this.#pendingPaths.delete(path);
+      }
+    }
+
+    for (const { path, onDelete } of this.#deleteListeners) {
+      if (isDeleted(path)) {
+        onDelete();
+      }
+    }
+
+    queryClient.removeQueries({ predicate: ({ queryKey }) => isDeleted(getResourcePath(queryKey)) });
+    void queryClient.invalidateQueries({
+      predicate: ({ queryKey }) => {
+        const resourcePath = getResourcePath(queryKey);
+        return deletedPaths.some((deletedPath) => isAtOrBelow(deletedPath, resourcePath));
+      },
+    });
+  }
+
+  onDelete(path: string, onDelete: () => void) {
+    const listener = { path: toSegments(path), onDelete };
+    this.#deleteListeners.add(listener);
+    return () => void this.#deleteListeners.delete(listener);
+  }
+
   handleConnect() {
     if (!this.#wasDisconnected) {
       return;
@@ -47,6 +84,10 @@ class ResourceManager {
 
   handleDisconnect(reason: Socket.DisconnectReason) {
     this.#wasDisconnected = reason !== 'io client disconnect';
+  }
+
+  #isFromThisTab(correlationId?: string) {
+    return correlationId?.startsWith(`${this.#clientId}.`) ?? false;
   }
 
   #flush() {
@@ -72,7 +113,16 @@ const getResourcePath = (queryKey: QueryKey) => {
   return queryKey.slice(0, end === -1 ? undefined : end) as string[];
 };
 
-const isSameBranch = (a: string[], b: string[]) => {
-  const length = Math.min(a.length, b.length);
-  return length > 0 && a.slice(0, length).every((segment, index) => segment === b[index]);
+const isAtOrBelow = (path: string[], ancestor: string[]) =>
+  ancestor.length > 0 && path.length >= ancestor.length && ancestor.every((segment, index) => segment === path[index]);
+
+const isSameBranch = (a: string[], b: string[]) => isAtOrBelow(a, b) || isAtOrBelow(b, a);
+
+export const onResourceDelete = (getPath: () => string | undefined, onDelete: () => void) => {
+  $effect(() => {
+    const path = getPath();
+    if (path) {
+      return resourceManager.onDelete(path, onDelete);
+    }
+  });
 };

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
   import WorkflowAddStepModal from '#lib/modals/WorkflowAddStepModal.svelte';
   import WorkflowEditStepModal from '#lib/modals/WorkflowEditStepModal.svelte';
   import WorkflowTriggerPicker from '#lib/modals/WorkflowTriggerPicker.svelte';
@@ -69,6 +70,13 @@
   let steps = $state(query.data.steps.map((step) => ({ ...step, id: generateId() })));
   const savedWorkflow = $derived(cloneDeep(workflow));
   let allowNavigation = $state(false);
+  onResourceDelete(
+    () => `/workflows/${workflow.id}`,
+    () => {
+      allowNavigation = true;
+      void goto(Route.workflows());
+    },
+  );
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
   let editMode = $state<EditMode>('visual');

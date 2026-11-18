@@ -73,6 +73,7 @@ export const createApp = (page: Page, data: MockData) => {
     },
 
     workflows: {
+      emptyPlaceholder: page.getByText('create_first_workflow', { exact: true }),
       openLogs: async () => {
         await button('open').first().click();
         await page.getByRole('menuitem', { name: 'check_logs', exact: true }).click();
@@ -109,6 +110,10 @@ export const createApp = (page: Page, data: MockData) => {
 
     tags: {
       child: (name: string) => page.getByRole('main').getByRole('button', { name, exact: true }),
+    },
+
+    workflow: {
+      nameInput: labelled('name'),
     },
 
     album: {
