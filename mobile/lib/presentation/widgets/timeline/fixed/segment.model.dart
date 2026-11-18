@@ -252,11 +252,10 @@ class _AssetTileWidget extends ConsumerWidget {
       }
 
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
-      AssetViewer.setAsset(ref, asset, thumbnailSize: remoteSize);
+      AssetViewer.setAsset(ref, asset, initialIndex: assetIndex, thumbnailSize: remoteSize);
       unawaited(
         ctx.pushRoute(
           AssetViewerRoute(
-            initialIndex: assetIndex,
             timelineService: ref.read(timelineServiceProvider),
             heroOffset: heroOffset,
             currentAlbum: ref.read(currentRemoteAlbumProvider),

@@ -10,8 +10,10 @@ import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_filmstrip.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
@@ -41,6 +43,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isInTrash = ref.watch(timelineServiceProvider).origin == TimelineOrigin.trash;
+    final filmstripEnabled = ref.watch(appConfigProvider.select((c) => c.viewer.filmstripEnabled));
 
     final originalTheme = context.themeData;
 
@@ -95,6 +98,7 @@ class ViewerBottomBar extends ConsumerWidget {
                         children: [
                           if (asset.isImage) OcrToggleButton(asset: asset),
                           if (asset.isVideo) VideoControls(videoPlayerName: asset.id),
+                          if (filmstripEnabled) const ViewerFilmstrip(),
                           if (!isReadonlyModeEnabled)
                             ImmichColorOverride(
                               color: Colors.white,

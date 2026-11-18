@@ -98,7 +98,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
 
     await _router.replaceAll([
       const TabShellRoute(),
-      AssetViewerRoute(key: UniqueKey(), initialIndex: 0, timelineService: timelineService),
+      AssetViewerRoute(key: UniqueKey(), timelineService: timelineService),
     ]);
   }
 }
