@@ -106,8 +106,6 @@ class TimelineService {
   int _totalAssets = 0;
   int get totalAssets => _totalAssets;
 
-  List<BaseAsset> get loadedAssets => _buffer;
-
   TimelineService(TimelineQuery query)
     : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, origin: query.origin);
 
@@ -231,6 +229,15 @@ class TimelineService {
   int? getIndex(String heroTag) {
     final index = _buffer.indexWhere((a) => a.heroTag == heroTag);
     return index >= 0 ? _bufferOffset + index : null;
+  }
+
+  Set<BaseAsset> refreshAssets(Set<BaseAsset> assets) {
+    final byId = {
+      for (final asset in assets) ?asset.remoteId: asset,
+      for (final asset in assets) ?asset.localId: asset,
+    };
+    final reloaded = {for (final asset in _buffer) ?(byId[asset.remoteId] ?? byId[asset.localId]): asset};
+    return {for (final asset in assets) reloaded[asset] ?? asset};
   }
 
   Future<void> dispose() async {

@@ -59,14 +59,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
       return;
     }
 
-    final byId = {
-      for (final asset in state.selectedAssets) ?asset.remoteId: asset,
-      for (final asset in state.selectedAssets) ?asset.localId: asset,
-    };
-    final reloaded = {
-      for (final asset in _timelineService.loadedAssets) ?(byId[asset.remoteId] ?? byId[asset.localId]): asset,
-    };
-    final selectedAssets = {for (final asset in state.selectedAssets) reloaded[asset] ?? asset};
+    final selectedAssets = _timelineService.refreshAssets(state.selectedAssets);
     if (const SetEquality<BaseAsset>().equals(selectedAssets, state.selectedAssets)) {
       return;
     }
