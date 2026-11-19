@@ -17,6 +17,7 @@
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
+  import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
   import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
@@ -61,6 +62,10 @@
   let playerInitialized = $state(false);
   let paused = $state(false);
   const current = $derived(memoryManager.current);
+  onResourceDelete(
+    () => current && `/memories/${current.memory.id}`,
+    () => void goto(memoryManager.memoriesHref, { replace: true, reset: false }),
+  );
   const currentAssetId = $derived(current?.asset.id);
   // where the asset sits in its memory, for the progress bar and counter
   const assetIndex = $derived(current ? current.memory.assets.findIndex(({ id }) => id === currentAssetId) : -1);

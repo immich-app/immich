@@ -13,7 +13,13 @@ import {
   updateQueue,
   type QueueResponseDto,
 } from '@immich/sdk';
-import { mutationOptions, queryOptions, type MutationFilters, type MutationMeta } from '@tanstack/svelte-query';
+import {
+  mutationOptions,
+  queryOptions,
+  skipToken,
+  type MutationFilters,
+  type MutationMeta,
+} from '@tanstack/svelte-query';
 
 const findOrFail = (queues: QueueResponseDto[], name: QueueName) => {
   const queue = queues.find((queue) => queue.name === name);
@@ -39,8 +45,8 @@ export const getQueuesQuery = () =>
 export const getQueueSnapshotsQuery = () =>
   queryOptions({
     queryKey: QueryKeys.queueSnapshots(),
-    queryFn: () => [] as QueueSnapshot[],
-    initialData: [],
+    queryFn: skipToken,
+    initialData: [] as QueueSnapshot[],
     staleTime: Infinity,
     gcTime: Infinity,
   });

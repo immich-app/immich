@@ -1,5 +1,6 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { resourceManager } from '#lib/managers/resource-manager.svelte.ts';
 import { queryClient } from '#lib/queries/client.ts';
 import { getMaintenanceStatusQuery } from '#lib/queries/maintenance.query.ts';
 import { QueryKeys } from '#lib/queries/query-keys.ts';
@@ -44,6 +45,7 @@ export interface Events {
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
   AssetEditReadyV2: (data: { asset: SyncAssetV2; edit: SyncAssetEditV1[] }) => void;
+  ResourceEventV1: (event: { changed: string[]; deleted: string[]; correlationId?: string }) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -64,10 +66,15 @@ export const websocketEvents = createEventEmitter(websocket);
 
 websocket
   .on('connect', () => {
+    resourceManager.handleConnect();
     eventManager.emit('WebsocketConnect');
     websocketStore.connected.set(true);
   })
-  .on('disconnect', () => websocketStore.connected.set(false))
+  .on('disconnect', (reason) => {
+    resourceManager.handleDisconnect(reason);
+    websocketStore.connected.set(false);
+  })
+  .on('ResourceEventV1', (event) => resourceManager.handleEvent(event))
   .on('on_server_version', (serverVersion) => {
     const previous = get(websocketStore.serverVersion);
     websocketStore.serverVersion.set(serverVersion);

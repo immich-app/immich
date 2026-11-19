@@ -202,6 +202,7 @@ const queries: Record<string, QueryFactory> = {
 };
 
 const clientOnlyQueries = new Set(['getQueueSnapshotsQuery']);
+const nonGetQueries = new Set(['getStorageTemplatePreviewQuery']);
 
 const queryModules = import.meta.glob<Record<string, unknown>>('./*.query.ts', { eager: true });
 
@@ -210,10 +211,10 @@ const getResourcePath = (queryKey: readonly unknown[]) => {
   return queryKey.slice(0, end === -1 ? undefined : end);
 };
 
-const getRequestedPath = async ({ queryKey, queryFn }: ReturnType<QueryFactory>) => {
-  const requests: string[] = [];
+const getRequest = async ({ queryKey, queryFn }: ReturnType<QueryFactory>) => {
+  const requests: Request[] = [];
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
-    requests.push(new Request(input, init).url);
+    requests.push(new Request(input, init));
     return Promise.resolve(Response.json({}));
   });
 
@@ -221,10 +222,12 @@ const getRequestedPath = async ({ queryKey, queryFn }: ReturnType<QueryFactory>)
   await run({ queryKey, signal: new AbortController().signal, pageParam: undefined, meta: undefined });
 
   expect(requests).toHaveLength(1);
-  return new URL(requests[0]).pathname
+  const [{ method, url }] = requests;
+  const path = new URL(url).pathname
     .split('/')
     .slice(2)
     .map((segment) => decodeURIComponent(segment));
+  return { method, path };
 };
 
 describe('query keys', () => {
@@ -244,9 +247,15 @@ describe('query keys', () => {
   it.each(Object.entries(queries))('%s starts with its request path', async (_, factory) => {
     const options = factory();
 
-    const requestedPath = await getRequestedPath(options);
+    const { path } = await getRequest(options);
 
-    expect(getResourcePath(options.queryKey)).toEqual(requestedPath);
+    expect(getResourcePath(options.queryKey)).toEqual(path);
+  });
+
+  it.each(Object.entries(queries))('%s reads with GET', async (name, factory) => {
+    const { method } = await getRequest(factory());
+
+    expect(method).toBe(nonGetQueries.has(name) ? 'POST' : 'GET');
   });
 
   it('covers every exported query factory', () => {

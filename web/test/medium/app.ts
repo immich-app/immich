@@ -73,6 +73,7 @@ export const createApp = (page: Page, data: MockData) => {
     },
 
     workflows: {
+      emptyPlaceholder: page.getByText('create_first_workflow', { exact: true }),
       openLogs: async () => {
         await button('open').first().click();
         await page.getByRole('menuitem', { name: 'check_logs', exact: true }).click();
@@ -90,6 +91,9 @@ export const createApp = (page: Page, data: MockData) => {
           await toggle.click();
         }
       },
+      apiKeys: {
+        name: (name: string) => page.getByRole('cell', { name, exact: true }),
+      },
       purchase: {
         productKeyInput: page.getByPlaceholder(/^IMCL-/),
         activateButton: button('purchase_button_activate'),
@@ -106,6 +110,10 @@ export const createApp = (page: Page, data: MockData) => {
 
     tags: {
       child: (name: string) => page.getByRole('main').getByRole('button', { name, exact: true }),
+    },
+
+    workflow: {
+      nameInput: labelled('name'),
     },
 
     album: {
