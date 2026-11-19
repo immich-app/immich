@@ -55,9 +55,11 @@ class LogRepository {
   Future<void> truncate({int limit = kLogTruncateLimit}) async {
     final totalCount = await _db.managers.logMessageEntity.count();
     if (totalCount > limit) {
-      final rowsToDelete = totalCount - limit;
-
-      await _db.managers.logMessageEntity.orderBy((o) => o.createdAt.asc()).limit(rowsToDelete).delete();
+      final newest = _db.selectOnly(_db.logMessageEntity)
+        ..addColumns([_db.logMessageEntity.id])
+        ..orderBy([OrderingTerm.desc(_db.logMessageEntity.createdAt)])
+        ..limit(limit);
+      await _db.logMessageEntity.deleteWhere((row) => row.id.isNotInQuery(newest));
     }
   }
 }
