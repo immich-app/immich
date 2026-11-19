@@ -113,6 +113,7 @@ type EventMap = {
   WebsocketConnect: [{ userId: string }];
 
   MaintenanceStatus: [MaintenanceStatusResponseDto];
+  MaintenanceWebsocketConnect: [{ clientId: string; isAuthenticated: boolean }];
 };
 
 export type AppRestartEvent = {

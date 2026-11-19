@@ -202,6 +202,12 @@ export class MaintenanceWorkerService {
     this.#status = status;
   }
 
+  @OnEvent({ name: 'MaintenanceWebsocketConnect', workers: [ImmichWorker.Maintenance] })
+  onWebsocketConnect({ clientId, isAuthenticated }: ArgOf<'MaintenanceWebsocketConnect'>) {
+    const status = isAuthenticated ? this.getStatus() : this.getPublicStatus();
+    this.maintenanceWebsocketRepository.clientSend('MaintenanceStatusV1', clientId, status);
+  }
+
   setStatus(status: MaintenanceStatusResponseDto): void {
     this.#status = status;
     this.maintenanceWebsocketRepository.serverSend('MaintenanceStatus', status);
