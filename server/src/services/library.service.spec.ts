@@ -1047,12 +1047,40 @@ describe(LibraryService.name, () => {
         });
       });
 
-      it('should handle a file change event', async () => {
+      it('should refresh an existing asset on a file change event', async () => {
+        const library = factory.library({ importPaths: ['/foo', '/bar'] });
+        const asset = AssetFactory.create();
+
+        mocks.library.get.mockResolvedValue(library);
+        mocks.library.getAll.mockResolvedValue([library]);
+        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(asset);
+        mocks.storage.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: 'change', value: '/foo/photo.jpg' }] }),
+        );
+
+        await sut.watchAll();
+
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.LibrarySyncAssets,
+          data: {
+            libraryId: library.id,
+            importPaths: library.importPaths,
+            exclusionPatterns: library.exclusionPatterns,
+            assetIds: [asset.id],
+            progressCounter: 1,
+            totalAssets: 1,
+          },
+        });
+        expect(mocks.asset.getByLibraryIdAndOriginalPath).toHaveBeenCalledWith(library.id, '/foo/photo.jpg');
+        expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.LibrarySyncFiles }));
+      });
+
+      it('should import a changed file that is not yet an asset', async () => {
         const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
         mocks.library.get.mockResolvedValue(library);
         mocks.library.getAll.mockResolvedValue([library]);
-        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(AssetFactory.create());
+        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(void 0);
         mocks.storage.watch.mockImplementation(
           makeMockWatcher({ items: [{ event: 'change', value: '/foo/photo.jpg' }] }),
         );

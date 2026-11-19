@@ -111,16 +111,44 @@ export class LibraryService extends BaseService {
     let _resolve: () => void;
     const ready$ = new Promise<void>((resolve) => (_resolve = resolve));
 
-    const handler = async (event: string, path: string) => {
-      if (matcher(path)) {
-        this.logger.debug(`File ${event} event received for ${path} in library ${library.id}`);
-        await this.jobRepository.queue({
-          name: JobName.LibrarySyncFiles,
-          data: { libraryId: library.id, paths: [path] },
-        });
-      } else {
-        this.logger.verbose(`Ignoring file ${event} event for ${path} in library ${library.id}`);
+    const queueImport = (path: string) =>
+      this.jobRepository.queue({
+        name: JobName.LibrarySyncFiles,
+        data: { libraryId: library.id, paths: [path] },
+      });
+
+    const queueSync = (assetId: string) =>
+      this.jobRepository.queue({
+        name: JobName.LibrarySyncAssets,
+        data: {
+          libraryId: library.id,
+          importPaths: library.importPaths,
+          exclusionPatterns: library.exclusionPatterns,
+          assetIds: [assetId],
+          progressCounter: 1,
+          totalAssets: 1,
+        },
+      });
+
+    const addHandler = async (path: string) => {
+      if (!matcher(path)) {
+        this.logger.verbose(`Ignoring file add event for ${path} in library ${library.id}`);
+        return;
       }
+
+      this.logger.debug(`File add event received for ${path} in library ${library.id}`);
+      await queueImport(path);
+    };
+
+    const changeHandler = async (path: string) => {
+      if (!matcher(path)) {
+        this.logger.verbose(`Ignoring file change event for ${path} in library ${library.id}`);
+        return;
+      }
+
+      this.logger.debug(`File change event received for ${path} in library ${library.id}`);
+      const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+      await (asset ? queueSync(asset.id) : queueImport(path));
     };
 
     const deletionHandler = async (path: string) => {
@@ -145,10 +173,10 @@ export class LibraryService extends BaseService {
       {
         onReady: () => _resolve(),
         onAdd: (path) => {
-          return handlePromiseError(handler('add', path), this.logger);
+          return handlePromiseError(addHandler(path), this.logger);
         },
         onChange: (path) => {
-          return handlePromiseError(handler('change', path), this.logger);
+          return handlePromiseError(changeHandler(path), this.logger);
         },
         onUnlink: (path) => {
           return handlePromiseError(deletionHandler(path), this.logger);
