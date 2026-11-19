@@ -2,20 +2,6 @@ import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { Session } from 'src/database.js';
 
-const SessionCreateSchema = z
-  .object({
-    duration: z.int().min(1).optional().describe('Session duration in seconds'),
-    deviceType: z.string().optional().describe('Device type'),
-    deviceOS: z.string().optional().describe('Device OS'),
-  })
-  .meta({ id: 'SessionCreateDto' });
-
-const SessionUpdateSchema = z
-  .object({
-    isPendingSyncReset: z.boolean().optional().describe('Reset pending sync state'),
-  })
-  .meta({ id: 'SessionUpdateDto' });
-
 const SessionResponseSchema = z
   .object({
     id: z.uuidv4().describe('Session ID'),
@@ -34,9 +20,18 @@ const SessionCreateResponseSchema = SessionResponseSchema.extend({
   token: z.string().describe('Session token'),
 }).meta({ id: 'SessionCreateResponseDto' });
 
-export class SessionCreateDto extends createZodDto(SessionCreateSchema) {}
-export class SessionUpdateDto extends createZodDto(SessionUpdateSchema) {}
+export class SessionCreateDto extends createZodDto({
+  duration: z.int().min(1).optional().describe('Session duration in seconds'),
+  deviceType: z.string().optional().describe('Device type'),
+  deviceOS: z.string().optional().describe('Device OS'),
+}) {}
+
+export class SessionUpdateDto extends createZodDto({
+  isPendingSyncReset: z.boolean().optional().describe('Reset pending sync state'),
+}) {}
+
 export class SessionResponseDto extends createZodDto(SessionResponseSchema) {}
+
 export class SessionCreateResponseDto extends createZodDto(SessionCreateResponseSchema) {}
 
 export const mapSession = (entity: Session, currentId?: string): SessionResponseDto => ({
