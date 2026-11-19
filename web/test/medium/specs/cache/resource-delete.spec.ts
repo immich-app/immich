@@ -9,9 +9,7 @@ test('album page goes to the album list when the album is deleted elsewhere', as
   await expect(app.album.selectPhotosButton).toBeVisible();
 
   data.deleteAlbum(album.id);
-  await expect(() =>
-    api.emit('ResourceEventV1', { changed: [], deleted: [`/albums/${album.id}`], correlationId: 'another-device.1' }),
-  ).toPass();
+  await api.emitResourceEvent({ deleted: [`/albums/${album.id}`] });
 
   await expect(app.albums.createAlbumButton).toBeVisible();
   expect(new URL(page.url()).pathname).toBe(Route.albums());
@@ -25,9 +23,7 @@ test('person page goes to the people list when the person is merged elsewhere', 
   await expect(app.person.editNameButton).toBeVisible();
 
   data.mergePeople([alice.id, bob.id]);
-  await expect(() =>
-    api.emit('ResourceEventV1', { changed: [], deleted: [`/people/${bob.id}`], correlationId: 'another-device.1' }),
-  ).toPass();
+  await api.emitResourceEvent({ deleted: [`/people/${bob.id}`] });
 
   await expect(app.people.thumbnail('Alice')).toBeVisible();
   expect(new URL(page.url()).pathname).toBe(Route.people());
@@ -46,13 +42,7 @@ test('workflow page goes to the workflow list when the workflow is deleted elsew
   await expect(app.workflow.nameInput).toBeVisible();
 
   data.deleteWorkflow(workflow.id);
-  await expect(() =>
-    api.emit('ResourceEventV1', {
-      changed: [],
-      deleted: [`/workflows/${workflow.id}`],
-      correlationId: 'another-device.1',
-    }),
-  ).toPass();
+  await api.emitResourceEvent({ deleted: [`/workflows/${workflow.id}`] });
 
   await expect(app.workflows.emptyPlaceholder).toBeVisible();
   expect(new URL(page.url()).pathname).toBe(Route.workflows());
