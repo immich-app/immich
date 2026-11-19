@@ -64,6 +64,19 @@ export class AlbumRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getUserIds(id: string) {
+    const albumUsers = await this.db
+      .selectFrom('album_user')
+      .innerJoin('album', 'album.id', 'album_user.albumId')
+      .select('album_user.userId')
+      .where('album_user.albumId', '=', id)
+      .where('album.deletedAt', 'is', null)
+      .execute();
+
+    return albumUsers.map(({ userId }) => userId);
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   getByAssetId(ownerId: string, assetId: string) {
     return this.db
