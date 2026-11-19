@@ -38,7 +38,6 @@ export const getWorkflowForShareQuery = (id: string) =>
   queryOptions({
     queryKey: QueryKeys.workflowShare({ id }),
     queryFn: ({ signal }) => getWorkflowForShare({ id }, { signal }),
-    staleTime: 0,
   });
 
 export const getWorkflowTriggersQuery = () =>

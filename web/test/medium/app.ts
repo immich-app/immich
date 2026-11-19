@@ -28,6 +28,7 @@ export const createApp = (page: Page, data: MockData) => {
     dialog,
     dialogButton: (name: string) => dialog.getByRole('button', { name, exact: true }),
     toast: (text: string | RegExp) => page.getByText(text),
+    text: (text: string | RegExp) => page.getByText(text, { exact: true }),
     undoButton: page.getByRole('button', { name: 'undo', exact: true }),
 
     maintenanceMode: {

@@ -20,7 +20,7 @@
   const loadUsers = async () => {
     const [users, partners] = await Promise.all([
       queryClient.query(searchUsersQuery()),
-      queryClient.query({ ...getPartnersQuery(PartnerDirection.SharedBy), staleTime: 0 }),
+      queryClient.query(getPartnersQuery(PartnerDirection.SharedBy)),
     ]);
     const excludedIds = new Set([authManager.user.id, ...partners.map(({ id }) => id)]);
     availableUsers = users.filter(({ id }) => !excludedIds.has(id));

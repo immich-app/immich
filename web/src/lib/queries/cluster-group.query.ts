@@ -16,21 +16,18 @@ export const getClusterGroupRequestsQuery = () =>
   queryOptions({
     queryKey: QueryKeys.clusterGroupRequests(),
     queryFn: ({ signal }) => getClusterGroupRequests({ signal }),
-    staleTime: 0,
   });
 
 export const getClusterGroupRequestsForGroupQuery = (id: string) =>
   queryOptions({
     queryKey: QueryKeys.clusterGroupRequestsForGroup({ id }),
     queryFn: ({ signal }) => getClusterGroupRequestsForGroup({ id }, { signal }),
-    staleTime: 0,
   });
 
 export const getClusterGroupUsersQuery = (id: string) =>
   queryOptions({
     queryKey: QueryKeys.clusterGroupUsers({ id }),
     queryFn: ({ signal }) => getClusterGroupUsers({ id }, { signal }),
-    staleTime: 0,
   });
 
 const invalidateClusterGroups = () => queryClient.invalidateQueries({ queryKey: QueryKeys.clusterGroups() });

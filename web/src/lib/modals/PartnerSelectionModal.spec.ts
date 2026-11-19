@@ -1,4 +1,5 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { resourceManager } from '#lib/managers/resource-manager.svelte.ts';
 import PartnerSelectionModal from '#lib/modals/PartnerSelectionModal.svelte';
 import { queryClient } from '#lib/queries/client.ts';
 import { getPartnersQuery } from '#lib/queries/partner.query.ts';
@@ -29,6 +30,10 @@ test('does not offer a user who became a partner elsewhere', async ({ data, app 
   authManager.setUser(data.user);
   await queryClient.query(getPartnersQuery(PartnerDirection.SharedBy));
   data.addPartners(PartnerDirection.SharedBy, factory.partner(carol));
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  resourceManager.handleEvent({ changed: ['/partners'], deleted: [], correlationId: 'another-device.1' });
+  vi.runOnlyPendingTimers();
+  vi.useRealTimers();
 
   await render(PartnerSelectionModal, { onClose: vi.fn() });
 
