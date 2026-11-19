@@ -20,7 +20,8 @@
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import type { Viewport } from '#lib/managers/timeline-manager/types.ts';
   import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
-  import { getAssetsByOriginalPathQuery, getFolderTreeQuery } from '#lib/queries/view.query.ts';
+  import { QueryKeys } from '#lib/queries/query-keys.ts';
+  import { getFolderTreeQuery } from '#lib/queries/view.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { isAssetViewerRoute } from '#lib/utils/navigation.ts';
@@ -74,7 +75,7 @@
   const triggerAssetUpdate = async () => {
     assetMultiSelectManager.clear();
     if (data.tree.path) {
-      await queryClient.invalidateQueries({ queryKey: getAssetsByOriginalPathQuery(data.tree.path).queryKey });
+      await queryClient.invalidateQueries({ queryKey: QueryKeys.folderAssets({ path: data.tree.path }) });
     }
     await refreshAll();
   };

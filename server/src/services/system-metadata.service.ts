@@ -6,6 +6,7 @@ import {
   VersionCheckStateResponseDto,
 } from 'src/dtos/system-metadata.dto.js';
 import { SystemMetadataKey } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
@@ -18,6 +19,10 @@ export class SystemMetadataService extends BaseService {
   async updateAdminOnboarding(dto: AdminOnboardingUpdateDto): Promise<void> {
     await this.systemMetadataRepository.set(SystemMetadataKey.AdminOnboarding, {
       isOnboarded: dto.isOnboarded,
+    });
+    this.resourceRepository.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.adminOnboarding()],
     });
   }
 

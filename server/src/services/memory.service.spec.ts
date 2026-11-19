@@ -1,12 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
 import { MemoryType } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { MemoryService } from 'src/services/memory.service.js';
 import { OnThisDayData } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
 import { MemoryFactory } from 'test/factories/memory.factory.js';
 import { getForMemory } from 'test/mappers.js';
 import { factory, newUuid, newUuids } from 'test/small.factory.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(MemoryService.name, () => {
   let sut: MemoryService;
@@ -151,6 +153,16 @@ describe(MemoryService.name, () => {
         }),
       ).resolves.toBeDefined();
     });
+
+    it('should tell the owner about the new memory', async () => {
+      const auth = AuthFactory.create();
+      const memory = MemoryFactory.create({ ownerId: auth.user.id });
+      mocks.memory.create.mockResolvedValue(getForMemory(memory));
+
+      await sut.create(auth, { type: MemoryType.OnThisDay, data: { year: 2020 }, memoryAt: memory.memoryAt });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.memories()] });
+    });
   });
 
   describe('update', () => {
@@ -160,6 +172,18 @@ describe(MemoryService.name, () => {
       );
 
       expect(mocks.memory.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell the owner about the changed memory', async () => {
+      const auth = AuthFactory.create();
+      const memory = MemoryFactory.create({ ownerId: auth.user.id });
+      mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
+      mocks.memory.update.mockResolvedValue(getForMemory(memory));
+
+      await sut.update(auth, memory.id, { isSaved: true });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.memory(memory)] });
     });
 
     it('should update a memory', async () => {
@@ -179,6 +203,17 @@ describe(MemoryService.name, () => {
       await expect(sut.remove(factory.auth(), newUuid())).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.memory.delete).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell the owner about the deleted memory', async () => {
+      const auth = AuthFactory.create();
+      const memoryId = newUuid();
+      mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memoryId]));
+      mocks.memory.delete.mockResolvedValue();
+
+      await sut.remove(auth, memoryId);
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.memory({ id: memoryId })] });
     });
 
     it('should delete a memory', async () => {
@@ -202,6 +237,7 @@ describe(MemoryService.name, () => {
       );
 
       expect(mocks.memory.addAssetIds).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should require asset access', async () => {
@@ -217,6 +253,7 @@ describe(MemoryService.name, () => {
       ]);
 
       expect(mocks.memory.addAssetIds).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should skip assets already in the memory', async () => {
@@ -232,6 +269,7 @@ describe(MemoryService.name, () => {
       ]);
 
       expect(mocks.memory.addAssetIds).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should add assets', async () => {
@@ -251,6 +289,21 @@ describe(MemoryService.name, () => {
 
       expect(mocks.memory.addAssetIds).toHaveBeenCalledWith(memory.id, [assetId]);
     });
+
+    it('should tell the owner about the added assets', async () => {
+      const auth = AuthFactory.create();
+      const memory = MemoryFactory.create({ ownerId: auth.user.id });
+      const asset = AssetFactory.create({ ownerId: auth.user.id });
+      mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.memory.update.mockResolvedValue(getForMemory(memory));
+      mocks.memory.getAssetIds.mockResolvedValue(new Set());
+      mocks.memory.addAssetIds.mockResolvedValue();
+
+      await sut.addAssets(auth, memory.id, { ids: [asset.id] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.memory(memory)] });
+    });
   });
 
   describe('removeAssets', () => {
@@ -260,6 +313,7 @@ describe(MemoryService.name, () => {
       );
 
       expect(mocks.memory.removeAssetIds).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should skip assets not in the memory', async () => {
@@ -271,6 +325,7 @@ describe(MemoryService.name, () => {
       ]);
 
       expect(mocks.memory.removeAssetIds).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should remove assets', async () => {
@@ -288,6 +343,21 @@ describe(MemoryService.name, () => {
       ]);
 
       expect(mocks.memory.removeAssetIds).toHaveBeenCalledWith(memory.id, [asset.id]);
+    });
+
+    it('should tell the owner about the removed assets', async () => {
+      const auth = AuthFactory.create();
+      const memory = MemoryFactory.create({ ownerId: auth.user.id });
+      const asset = AssetFactory.create({ ownerId: auth.user.id });
+      mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.memory.getAssetIds.mockResolvedValue(new Set([asset.id]));
+      mocks.memory.removeAssetIds.mockResolvedValue();
+      mocks.memory.update.mockResolvedValue(getForMemory(memory));
+
+      await sut.removeAssets(auth, memory.id, { ids: [asset.id] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.memory(memory)] });
     });
   });
 });

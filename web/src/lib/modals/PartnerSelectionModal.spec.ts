@@ -1,5 +1,7 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import PartnerSelectionModal from '#lib/modals/PartnerSelectionModal.svelte';
+import { queryClient } from '#lib/queries/client.ts';
+import { getPartnersQuery } from '#lib/queries/partner.query.ts';
 import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
 import { PartnerDirection } from '@immich/sdk';
@@ -19,4 +21,17 @@ test('offers only users who are not partners yet', async ({ data, app }) => {
 
   await expect.element(app.userPicker.user('Carol White')).not.toBeInTheDocument();
   expect(onClose).toHaveBeenCalledWith([expect.objectContaining({ id: bob.id, name: 'Bob Smith' })]);
+});
+
+test('does not offer a user who became a partner elsewhere', async ({ data, app }) => {
+  const [bob, carol] = [factory.user({ name: 'Bob Smith' }), factory.user({ name: 'Carol White' })];
+  data.addUsers([bob, carol]);
+  authManager.setUser(data.user);
+  await queryClient.query(getPartnersQuery(PartnerDirection.SharedBy));
+  data.addPartners(PartnerDirection.SharedBy, factory.partner(carol));
+
+  await render(PartnerSelectionModal, { onClose: vi.fn() });
+
+  await expect.element(app.userPicker.user('Bob Smith')).toBeVisible();
+  await expect.element(app.userPicker.user('Carol White')).not.toBeInTheDocument();
 });

@@ -3,6 +3,7 @@ import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto.js';
 import { Permission } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { findOrFail } from 'src/utils/misc.js';
 import { UUIDAssetIDParamDto } from 'src/validation.js';
@@ -22,6 +23,7 @@ export class StackService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds });
 
     const stack = await this.stackRepository.create({ ownerId: auth.user.id }, dto.assetIds);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.stacks()] });
 
     await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: auth.user.id });
 
@@ -42,6 +44,7 @@ export class StackService extends BaseService {
     }
 
     const updatedStack = await this.stackRepository.update(id, { id, primaryAssetId: dto.primaryAssetId });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.stack({ id })] });
 
     await this.eventRepository.emit('StackUpdate', { stackId: id, userId: auth.user.id });
 
@@ -51,12 +54,14 @@ export class StackService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.StackDelete, ids: [id] });
     await this.stackRepository.delete(id);
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.stack({ id })] });
     await this.eventRepository.emit('StackDelete', { stackId: id, userId: auth.user.id });
   }
 
   async deleteAll(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.StackDelete, ids: dto.ids });
     await this.stackRepository.deleteAll(dto.ids);
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: dto.ids.map((id) => Resource.stack({ id })) });
     await this.eventRepository.emit('StackDeleteAll', { stackIds: dto.ids, userId: auth.user.id });
   }
 
@@ -75,6 +80,7 @@ export class StackService extends BaseService {
     }
 
     await this.assetRepository.update({ id: assetId, stackId: null });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.stack({ id: stackId })] });
     await this.eventRepository.emit('StackUpdate', { stackId, userId: auth.user.id });
   }
 

@@ -1,10 +1,13 @@
 <script lang="ts">
+  import { OpenQueryParam } from '#lib/constants.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { linkOAuthAccountMutation, unlinkOAuthAccountMutation } from '#lib/queries/oauth.query.ts';
+  import { Route } from '#lib/route.ts';
   import { oauth } from '#lib/utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { Button, LoadingSpinner, toastManager } from '@immich/ui';
+  import { Button, LoadingSpinner } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -17,30 +20,14 @@
 
   onMount(async () => {
     if (oauth.isCallback(location)) {
-      try {
-        loading = true;
-        const response = await oauth.link(location);
-        authManager.setUser(response);
-        toastManager.primary($t('linked_oauth_account'));
-      } catch (error) {
-        handleError(error, $t('errors.unable_to_link_oauth_account'));
-      } finally {
-        await goto('?open=oauth');
-      }
+      await executeMutation(linkOAuthAccountMutation, [{ oAuthCallbackDto: { url: location.href } }]);
+      await goto(Route.userSettings({ isOpen: OpenQueryParam.OAUTH }));
     }
 
     loading = false;
   });
 
-  const handleUnlink = async () => {
-    try {
-      const response = await oauth.unlink();
-      authManager.setUser(response);
-      toastManager.primary($t('unlinked_oauth_account'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_unlink_account'));
-    }
-  };
+  const unlink = createMutation(unlinkOAuthAccountMutation);
 </script>
 
 <section class="my-4">
@@ -57,7 +44,7 @@
               >{$t('manage_oauth_account')}</Button
             >
           {/if}
-          <Button shape="round" size="small" onclick={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
+          <Button shape="round" size="small" onclick={() => unlink.mutate([])}>{$t('unlink_oauth')}</Button>
         {:else}
           <Button shape="round" size="small" onclick={() => oauth.authorize(location)}>{$t('link_to_oauth')}</Button>
         {/if}

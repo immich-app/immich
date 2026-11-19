@@ -34,4 +34,4 @@ documentation:
           - machine-learning/**
 
 changelog:translation:
-  - head-branch: ['^chore/translations$']
+  - head-branch: ['^weblate-immich-immich$']

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { isUndefined, omitBy } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
+import { ASSET_VISIBILITY_DEPENDENT_PATHS } from 'src/constants.js';
 import type { AssetFile } from 'src/database.js';
 import { OnJob } from 'src/decorators.js';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto.js';
@@ -37,6 +38,7 @@ import {
   Permission,
   QueueName,
 } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { JobItem, JobOf } from 'src/types.js';
 import { requireElevatedPermission } from 'src/utils/access.js';
@@ -116,6 +118,20 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
+    if (Object.values(dto).some((value) => value !== undefined)) {
+      const { isFavorite, visibility, livePhotoVideoId } = rest;
+      const changesVisibility = visibility !== undefined || livePhotoVideoId !== undefined;
+      this.resourceRepository.send({
+        userIds: [auth.user.id],
+        changed: [
+          Resource.asset({ id }),
+          (isFavorite !== undefined || changesVisibility) && Resource.assetStatistics(),
+          ...(changesVisibility ? ASSET_VISIBILITY_DEPENDENT_PATHS : []),
+          (isFavorite !== undefined || latitude !== undefined || longitude !== undefined) && Resource.mapMarkers(),
+        ],
+      });
+    }
+
     if (!wroteMetadata) {
       this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
     }
@@ -176,6 +192,18 @@ export class AssetService extends BaseService {
       await this.albumRepository.removeAssetsFromAll(ids);
     }
 
+    if (shouldWriteSidecar || Object.keys(assetDto).length > 0) {
+      this.resourceRepository.send({
+        userIds: [auth.user.id],
+        changed: [
+          Resource.assets(),
+          ...(visibility === undefined ? [] : ASSET_VISIBILITY_DEPENDENT_PATHS),
+          (isFavorite !== undefined || latitude !== undefined || longitude !== undefined) && Resource.mapMarkers(),
+          duplicateId !== undefined && Resource.duplicates(),
+        ],
+      });
+    }
+
     if (shouldWriteSidecar) {
       await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
     } else {
@@ -229,6 +257,17 @@ export class AssetService extends BaseService {
     if (sidecar) {
       await this.copySidecar({ sourceAsset, targetAsset });
     }
+
+    this.resourceRepository.send({
+      userIds: [auth.user.id],
+      changed: [
+        Resource.asset({ id: targetId }),
+        albums && Resource.albums(),
+        sharedLinks && Resource.sharedLinks(),
+        stack && !!sourceAsset.stackId && Resource.stacks(),
+        favorite && Resource.assetStatistics(),
+      ],
+    });
   }
 
   private async copyStack({
@@ -379,6 +418,10 @@ export class AssetService extends BaseService {
       deletedAt: new Date(),
       status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
     });
+    this.resourceRepository.send({
+      userIds: [auth.user.id],
+      changed: [Resource.assets(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
+    });
     await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
       assetIds: ids,
       userId: auth.user.id,
@@ -451,12 +494,14 @@ export class AssetService extends BaseService {
 
   async deleteMetadataByKey(auth: AuthDto, id: string, key: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
-    return this.assetRepository.deleteMetadataByKey(id, key);
+    await this.assetRepository.deleteMetadataByKey(id, key);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.asset({ id })] });
   }
 
   async deleteBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkDeleteDto) {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.items.map((item) => item.assetId) });
     await this.assetRepository.deleteBulkMetadata(dto.items);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.assets()] });
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
@@ -597,6 +642,7 @@ export class AssetService extends BaseService {
     }
 
     const newEdits = await this.assetEditRepository.replaceAll(id, edits);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.asset({ id })] });
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
 
     // Return the asset and its applied edits
@@ -615,6 +661,7 @@ export class AssetService extends BaseService {
     }
 
     await this.assetEditRepository.replaceAll(id, []);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.asset({ id })] });
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
   }
 }

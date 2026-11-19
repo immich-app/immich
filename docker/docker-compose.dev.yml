@@ -46,6 +46,7 @@ services:
     command:
       - |
         mise install
+        pnpm --filter immich --filter immich-web --filter @immich/sdk --filter @immich/plugin-sdk exec true
         touch /tmp/init-complete
         exec tail -f /dev/null
     volumes:

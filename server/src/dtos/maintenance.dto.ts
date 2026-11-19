@@ -1,6 +1,6 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { MaintenanceAction, MaintenanceActionSchema, StorageFolderSchema } from 'src/enum.js';
-import { createZodDto } from 'src/zod.js';
 
 const SetMaintenanceModeSchema = z
   .object({
@@ -15,29 +15,6 @@ const SetMaintenanceModeSchema = z
   )
   .meta({ id: 'SetMaintenanceModeDto' });
 
-const MaintenanceLoginSchema = z
-  .object({
-    token: z.string().optional().describe('Maintenance token'),
-  })
-  .meta({ id: 'MaintenanceLoginDto' });
-
-const MaintenanceAuthSchema = z
-  .object({
-    username: z.string().describe('Maintenance username'),
-  })
-  .meta({ id: 'MaintenanceAuthDto' });
-
-const MaintenanceStatusResponseSchema = z
-  .object({
-    active: z.boolean(),
-    action: MaintenanceActionSchema,
-    progress: z.int().optional(),
-    task: z.string().optional(),
-    error: z.string().optional(),
-    futoBackupsJobId: z.string().optional().describe('FUTO Backups job ID'),
-  })
-  .meta({ id: 'MaintenanceStatusResponseDto' });
-
 const MaintenanceDetectInstallStorageFolderSchema = z
   .object({
     folder: StorageFolderSchema,
@@ -47,14 +24,25 @@ const MaintenanceDetectInstallStorageFolderSchema = z
   })
   .meta({ id: 'MaintenanceDetectInstallStorageFolderDto' });
 
-const MaintenanceDetectInstallResponseSchema = z
-  .object({
-    storage: z.array(MaintenanceDetectInstallStorageFolderSchema),
-  })
-  .meta({ id: 'MaintenanceDetectInstallResponseDto' });
-
 export class SetMaintenanceModeDto extends createZodDto(SetMaintenanceModeSchema) {}
-export class MaintenanceLoginDto extends createZodDto(MaintenanceLoginSchema) {}
-export class MaintenanceAuthDto extends createZodDto(MaintenanceAuthSchema) {}
-export class MaintenanceStatusResponseDto extends createZodDto(MaintenanceStatusResponseSchema) {}
-export class MaintenanceDetectInstallResponseDto extends createZodDto(MaintenanceDetectInstallResponseSchema) {}
+
+export class MaintenanceLoginDto extends createZodDto({
+  token: z.string().optional().describe('Maintenance token'),
+}) {}
+
+export class MaintenanceAuthDto extends createZodDto({
+  username: z.string().describe('Maintenance username'),
+}) {}
+
+export class MaintenanceStatusResponseDto extends createZodDto({
+  active: z.boolean(),
+  action: MaintenanceActionSchema,
+  progress: z.int().optional(),
+  task: z.string().optional(),
+  error: z.string().optional(),
+  futoBackupsJobId: z.string().optional().describe('FUTO Backups job ID'),
+}) {}
+
+export class MaintenanceDetectInstallResponseDto extends createZodDto({
+  storage: z.array(MaintenanceDetectInstallStorageFolderSchema),
+}) {}

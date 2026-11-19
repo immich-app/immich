@@ -1,7 +1,7 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { AssetOrderSchema, PersonUpdateStrategySchema, UserAvatarColorSchema } from 'src/enum.js';
 import type { UserPreferences } from 'src/types.js';
-import { createZodDto } from 'src/zod.js';
 
 const AlbumsUpdateSchema = z
   .object({
@@ -107,24 +107,6 @@ const RecentlyAddedUpdateSchema = z
   .optional()
   .meta({ id: 'RecentlyAddedUpdate' });
 
-const UserPreferencesUpdateSchema = z
-  .object({
-    albums: AlbumsUpdateSchema,
-    avatar: AvatarUpdateSchema,
-    cast: CastUpdateSchema,
-    download: DownloadUpdateSchema,
-    emailNotifications: EmailNotificationsUpdateSchema,
-    folders: FoldersUpdateSchema,
-    memories: MemoriesUpdateSchema,
-    people: PeopleUpdateSchema,
-    purchase: PurchaseUpdateSchema,
-    ratings: RatingsUpdateSchema,
-    sharedLinks: SharedLinksUpdateSchema,
-    tags: TagsUpdateSchema,
-    recentlyAdded: RecentlyAddedUpdateSchema,
-  })
-  .meta({ id: 'UserPreferencesUpdateDto' });
-
 const AlbumsResponseSchema = z
   .object({
     defaultAssetOrder: AssetOrderSchema,
@@ -209,25 +191,36 @@ const RecentlyAddedResponseSchema = z
   })
   .meta({ id: 'RecentlyAddedResponse' });
 
-const UserPreferencesResponseSchema = z
-  .object({
-    albums: AlbumsResponseSchema,
-    folders: FoldersResponseSchema,
-    memories: MemoriesResponseSchema,
-    people: PeopleResponseSchema,
-    ratings: RatingsResponseSchema,
-    sharedLinks: SharedLinksResponseSchema,
-    tags: TagsResponseSchema,
-    emailNotifications: EmailNotificationsResponseSchema,
-    download: DownloadResponseSchema,
-    purchase: PurchaseResponseSchema,
-    cast: CastResponseSchema,
-    recentlyAdded: RecentlyAddedResponseSchema,
-  })
-  .meta({ id: 'UserPreferencesResponseDto' });
+export class UserPreferencesUpdateDto extends createZodDto({
+  albums: AlbumsUpdateSchema,
+  avatar: AvatarUpdateSchema,
+  cast: CastUpdateSchema,
+  download: DownloadUpdateSchema,
+  emailNotifications: EmailNotificationsUpdateSchema,
+  folders: FoldersUpdateSchema,
+  memories: MemoriesUpdateSchema,
+  people: PeopleUpdateSchema,
+  purchase: PurchaseUpdateSchema,
+  ratings: RatingsUpdateSchema,
+  sharedLinks: SharedLinksUpdateSchema,
+  tags: TagsUpdateSchema,
+  recentlyAdded: RecentlyAddedUpdateSchema,
+}) {}
 
-export class UserPreferencesUpdateDto extends createZodDto(UserPreferencesUpdateSchema) {}
-export class UserPreferencesResponseDto extends createZodDto(UserPreferencesResponseSchema) {}
+export class UserPreferencesResponseDto extends createZodDto({
+  albums: AlbumsResponseSchema,
+  folders: FoldersResponseSchema,
+  memories: MemoriesResponseSchema,
+  people: PeopleResponseSchema,
+  ratings: RatingsResponseSchema,
+  sharedLinks: SharedLinksResponseSchema,
+  tags: TagsResponseSchema,
+  emailNotifications: EmailNotificationsResponseSchema,
+  download: DownloadResponseSchema,
+  purchase: PurchaseResponseSchema,
+  cast: CastResponseSchema,
+  recentlyAdded: RecentlyAddedResponseSchema,
+}) {}
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {
   return preferences;

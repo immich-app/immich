@@ -1,6 +1,7 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UserAdmin } from 'src/database.js';
 import { CacheControl, JobName, UserMetadataKey } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { UserService } from 'src/services/user.service.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
@@ -8,7 +9,7 @@ import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
@@ -94,6 +95,41 @@ describe(UserService.name, () => {
     });
   });
 
+  describe('updateMe', () => {
+    it('should tell the user about the changed profile', async () => {
+      const user = UserFactory.create();
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.updateMe(AuthFactory.create(user), { name: 'New name' });
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser(), Resource.user(user)] });
+    });
+
+    it('should not change the email to one already in use', async () => {
+      const user = UserFactory.create();
+      mocks.user.getByEmail.mockResolvedValue(UserFactory.create());
+
+      await expect(sut.updateMe(AuthFactory.create(user), { email: 'taken@immich.cloud' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateMyPreferences', () => {
+    it('should tell the user about the changed preferences', async () => {
+      const user = UserFactory.create();
+      mocks.user.getMetadata.mockResolvedValue([]);
+      mocks.user.upsertMetadata.mockResolvedValue();
+
+      await sut.updateMyPreferences(AuthFactory.create(user), { memories: { enabled: false } });
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myPreferences()] });
+    });
+  });
+
   describe('createProfileImage', () => {
     it('should throw an error if the user does not exist', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
@@ -102,6 +138,7 @@ describe(UserService.name, () => {
       mocks.user.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
       await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(BadRequestException);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should throw an error if the user profile could not be updated with the new image', async () => {
@@ -111,6 +148,7 @@ describe(UserService.name, () => {
       mocks.user.update.mockRejectedValue(new InternalServerErrorException('mocked error'));
 
       await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(InternalServerErrorException);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException and clean up raw upload when thumbnail processing fails', async () => {
@@ -123,6 +161,7 @@ describe(UserService.name, () => {
       await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(BadRequestException);
 
       expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
       expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files: [file.path] } }]]);
     });
 
@@ -151,6 +190,17 @@ describe(UserService.name, () => {
       expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files: [file.path] } }]]);
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
+
+    it('should tell the user about the new profile image', async () => {
+      const user = UserFactory.create();
+      const file = { path: '/profile/path' } as Express.Multer.File;
+      mocks.user.get.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue({ ...user, profileImagePath: file.path });
+
+      await sut.createProfileImage(AuthFactory.create(user), file);
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser(), Resource.user(user)] });
+    });
   });
 
   describe('deleteProfileImage', () => {
@@ -159,6 +209,7 @@ describe(UserService.name, () => {
 
       await expect(sut.deleteProfileImage(authStub.admin)).rejects.toBeInstanceOf(BadRequestException);
 
+      expect(mocks.resource.send).not.toHaveBeenCalled();
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
@@ -172,6 +223,15 @@ describe(UserService.name, () => {
       await sut.deleteProfileImage(authStub.admin);
 
       expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files } }]]);
+    });
+
+    it('should tell the user about the removed profile image', async () => {
+      const user = UserFactory.create({ profileImagePath: '/path/to/profile.jpg' });
+      mocks.user.get.mockResolvedValue(user);
+
+      await sut.deleteProfileImage(AuthFactory.create(user));
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser(), Resource.user(user)] });
     });
   });
 
@@ -336,6 +396,19 @@ describe(UserService.name, () => {
       await expect(call).rejects.toThrowError('Invalid license key');
 
       expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell the user about the new license', async () => {
+      const user = UserFactory.create();
+      mocks.user.upsertMetadata.mockResolvedValue();
+
+      await sut.setLicense(AuthFactory.create(user), {
+        licenseKey: 'IMCL-license-key',
+        activationKey: 'activation-key',
+      });
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myLicense()] });
     });
   });
 
@@ -346,6 +419,37 @@ describe(UserService.name, () => {
       await sut.deleteLicense(authStub.admin);
 
       expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
+    });
+
+    it('should tell the user about the removed license', async () => {
+      const user = UserFactory.create();
+      mocks.user.deleteMetadata.mockResolvedValue();
+
+      await sut.deleteLicense(AuthFactory.create(user));
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myLicense()] });
+    });
+  });
+
+  describe('setOnboarding', () => {
+    it('should tell the user about the changed onboarding', async () => {
+      const user = UserFactory.create();
+      mocks.user.upsertMetadata.mockResolvedValue();
+
+      await sut.setOnboarding(AuthFactory.create(user), { isOnboarded: true });
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myOnboarding()] });
+    });
+  });
+
+  describe('deleteOnboarding', () => {
+    it('should tell the user about the reset onboarding', async () => {
+      const user = UserFactory.create();
+      mocks.user.deleteMetadata.mockResolvedValue();
+
+      await sut.deleteOnboarding(AuthFactory.create(user));
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myOnboarding()] });
     });
   });
 

@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { User, UserAdmin } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
@@ -6,7 +7,6 @@ import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSche
 import type { MaybeDehydrated, UserMetadataItem } from 'src/types.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 export const UserUpdateMeSchema = z
   .object({
@@ -61,14 +61,10 @@ export const mapUser = (entity: MaybeDehydrated<User | UserAdmin>): UserResponse
   };
 };
 
-const UserAdminSearchSchema = z
-  .object({
-    withDeleted: stringToBool.optional().describe('Include deleted users'),
-    id: z.uuidv4().optional().describe('User ID filter'),
-  })
-  .meta({ id: 'UserAdminSearchDto' });
-
-export class UserAdminSearchDto extends createZodDto(UserAdminSearchSchema) {}
+export class UserAdminSearchDto extends createZodDto({
+  withDeleted: stringToBool.optional().describe('Include deleted users'),
+  id: z.uuidv4().optional().describe('User ID filter'),
+}) {}
 
 export const UserAdminCreateSchema = z
   .object({
@@ -87,29 +83,21 @@ export const UserAdminCreateSchema = z
 
 export class UserAdminCreateDto extends createZodDto(UserAdminCreateSchema) {}
 
-const UserAdminUpdateSchema = z
-  .object({
-    email: toEmail.optional().describe('User email'),
-    password: z.string().optional().describe('User password'),
-    pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
-    name: z.string().optional().describe('User name'),
-    avatarColor: UserAvatarColorSchema.nullish(),
-    storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
-    shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
-    quotaSizeInBytes: z.int().min(0).nullish().describe('Storage quota in bytes'),
-    isAdmin: z.boolean().optional().describe('Grant admin privileges'),
-  })
-  .meta({ id: 'UserAdminUpdateDto' });
+export class UserAdminUpdateDto extends createZodDto({
+  email: toEmail.optional().describe('User email'),
+  password: z.string().optional().describe('User password'),
+  pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
+  name: z.string().optional().describe('User name'),
+  avatarColor: UserAvatarColorSchema.nullish(),
+  storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
+  shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
+  quotaSizeInBytes: z.int().min(0).nullish().describe('Storage quota in bytes'),
+  isAdmin: z.boolean().optional().describe('Grant admin privileges'),
+}) {}
 
-export class UserAdminUpdateDto extends createZodDto(UserAdminUpdateSchema) {}
-
-const UserAdminDeleteSchema = z
-  .object({
-    force: z.boolean().optional().describe('Force delete even if user has assets'),
-  })
-  .meta({ id: 'UserAdminDeleteDto' });
-
-export class UserAdminDeleteDto extends createZodDto(UserAdminDeleteSchema) {}
+export class UserAdminDeleteDto extends createZodDto({
+  force: z.boolean().optional().describe('Force delete even if user has assets'),
+}) {}
 
 const UserAdminResponseSchema = UserResponseSchema.extend({
   clusterGroupId: z

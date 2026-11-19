@@ -4,12 +4,12 @@ import { Reflector } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { ClsModule } from 'nestjs-cls';
-import { KyselyModule } from 'nestjs-kysely';
+import { KYSELY_MODULE_CONNECTION_TOKEN, KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { format } from 'sql-formatter';
-import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators.js';
+import { DummyValue, GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { repositories } from 'src/repositories/index.js';
@@ -99,6 +99,8 @@ class SqlGenerator {
     }).compile();
 
     this.app = await moduleFixture.createNestApplication().init();
+    const kysely = this.app.get(KYSELY_MODULE_CONNECTION_TOKEN());
+    DummyValue.TRANSACTION.unwrap = () => kysely;
   }
 
   async process(Repository: Repository) {

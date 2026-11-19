@@ -1,10 +1,11 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { deleteDuplicates, getAssetDuplicates, resolveDuplicates } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
 
 export const getAssetDuplicatesQuery = () =>
   queryOptions({
-    queryKey: ['duplicates'],
+    queryKey: QueryKeys.duplicates(),
     queryFn: ({ signal }) => getAssetDuplicates({ signal }),
   });
 

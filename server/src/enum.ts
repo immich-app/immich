@@ -615,6 +615,15 @@ export enum ImageFormat {
 
 export const ImageFormatSchema = z.enum(ImageFormat).describe('Image format').meta({ id: 'ImageFormat' });
 
+export enum ImageEffort {
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
+  Max = 'max',
+}
+
+export const ImageEffortSchema = z.enum(ImageEffort).describe('Image effort').meta({ id: 'ImageEffort' });
+
 export enum RawExtractedFormat {
   Jpeg = 'jpeg',
   Jxl = 'jxl',

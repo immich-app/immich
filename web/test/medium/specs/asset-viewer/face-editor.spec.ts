@@ -80,6 +80,7 @@ test.describe('face editor', () => {
     await app.viewer.faceEditor.newPersonNameInput.fill('Grace Hopper');
     await app.viewer.faceEditor.tagFaceButton.click();
 
+    await expect(app.viewer.faceEditor.person('Grace Hopper')).toBeVisible();
     await expect(app.viewer.faceEditor.canvas).toBeHidden();
     const created = data.getPeople().find(({ name }) => name === 'Grace Hopper');
     expect(api.createPerson).toHaveBeenCalledWith({ body: { name: 'Grace Hopper' } });

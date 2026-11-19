@@ -23,7 +23,7 @@ class PasskeyApiRepository extends ApiRepository {
   }
 
   /// The WebAuthn options for creating a passkey for the current user
-  Future<Map<String, Object>> startRegistration() => checkNull(_api.startRegistration());
+  Future<Map<String, Object?>> startRegistration() => checkNull(_api.startRegistration());
 
   /// Save the WebAuthn [credential] created from the [startRegistration] options as a passkey of the current user
   Future<void> finishRegistration(Map<String, dynamic> credential) async {
@@ -31,7 +31,7 @@ class PasskeyApiRepository extends ApiRepository {
   }
 
   /// The WebAuthn options for logging in with a passkey
-  Future<Map<String, Object>> startAuthentication() => checkNull(_api.startAuthentication());
+  Future<Map<String, Object?>> startAuthentication() => checkNull(_api.startAuthentication());
 
   /// Log in with the WebAuthn [credential] signed with the [startAuthentication] options
   Future<LoginResponse> finishAuthentication(Map<String, dynamic> credential) async {
