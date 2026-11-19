@@ -111,13 +111,30 @@ export class LibraryService extends BaseService {
     let _resolve: () => void;
     const ready$ = new Promise<void>((resolve) => (_resolve = resolve));
 
-    const handler = async (event: string, path: string) => {
+    const handler = async (event: 'add' | 'change', path: string) => {
       if (matcher(path)) {
         this.logger.debug(`File ${event} event received for ${path} in library ${library.id}`);
-        await this.jobRepository.queue({
-          name: JobName.LibrarySyncFiles,
-          data: { libraryId: library.id, paths: [path] },
-        });
+
+        const existingAsset =
+          event === 'change' ? await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path) : undefined;
+        if (existingAsset) {
+          await this.jobRepository.queue({
+            name: JobName.LibrarySyncAssets,
+            data: {
+              libraryId: library.id,
+              importPaths: library.importPaths,
+              exclusionPatterns: library.exclusionPatterns,
+              assetIds: [existingAsset.id],
+              progressCounter: 1,
+              totalAssets: 1,
+            },
+          });
+        } else {
+          await this.jobRepository.queue({
+            name: JobName.LibrarySyncFiles,
+            data: { libraryId: library.id, paths: [path] },
+          });
+        }
       } else {
         this.logger.verbose(`Ignoring file ${event} event for ${path} in library ${library.id}`);
       }
@@ -267,9 +284,10 @@ export class LibraryService extends BaseService {
       return JobStatus.Failed;
     }
 
+    const importablePaths = await this.assetRepository.filterNewExternalAssetPaths(library.id, job.paths);
     const assetImports: Insertable<AssetTable>[] = [];
     await Promise.all(
-      job.paths.map(async (path) => {
+      importablePaths.map(async (path) => {
         try {
           const asset = await this.processEntity(path, library.ownerId, job.libraryId);
           assetImports.push(asset);

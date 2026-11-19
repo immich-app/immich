@@ -570,6 +570,7 @@ describe(LibraryService.name, () => {
         paths: ['/data/user1/photo.jpg'],
       };
 
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
       mocks.asset.createAll.mockResolvedValue([asset.id]);
       mocks.library.get.mockResolvedValue(library);
 
@@ -614,6 +615,50 @@ describe(LibraryService.name, () => {
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Failed);
 
       expect(mocks.asset.createAll.mock.calls).toEqual([]);
+    });
+
+    it('should not import a path that is already an asset', async () => {
+      const library = factory.library();
+
+      const mockLibraryJob: ILibraryFileJob = {
+        libraryId: library.id,
+        paths: ['/data/user1/photo.jpg'],
+      };
+
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue([]);
+      mocks.asset.createAll.mockResolvedValue([]);
+      mocks.library.get.mockResolvedValue(library);
+
+      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.storage.stat).not.toHaveBeenCalled();
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([]);
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetCreate', expect.anything());
+    });
+
+    it('should only import the paths that are not already assets', async () => {
+      const library = factory.library();
+      const asset = AssetFactory.create();
+
+      const mockLibraryJob: ILibraryFileJob = {
+        libraryId: library.id,
+        paths: ['/data/user1/known.jpg', '/data/user1/new.jpg'],
+      };
+
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/new.jpg']);
+      mocks.asset.createAll.mockResolvedValue([asset.id]);
+      mocks.library.get.mockResolvedValue(library);
+
+      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.filterNewExternalAssetPaths).toHaveBeenCalledWith(library.id, [
+        '/data/user1/known.jpg',
+        '/data/user1/new.jpg',
+      ]);
+      expect(mocks.storage.stat).toHaveBeenCalledTimes(1);
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([
+        expect.objectContaining({ originalPath: '/data/user1/new.jpg' }),
+      ]);
     });
   });
 
@@ -1047,25 +1092,57 @@ describe(LibraryService.name, () => {
         });
       });
 
-      it('should handle a file change event', async () => {
+      it('should refresh an existing asset on a file change event', async () => {
         const library = factory.library({ importPaths: ['/foo', '/bar'] });
+        const asset = AssetFactory.create();
 
         mocks.library.get.mockResolvedValue(library);
         mocks.library.getAll.mockResolvedValue([library]);
-        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(AssetFactory.create());
+        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(asset);
         mocks.storage.watch.mockImplementation(
           makeMockWatcher({ items: [{ event: 'change', value: '/foo/photo.jpg' }] }),
         );
 
         await sut.watchAll();
 
-        expect(mocks.job.queue).toHaveBeenCalledWith({
-          name: JobName.LibrarySyncFiles,
-          data: {
-            libraryId: library.id,
-            paths: ['/foo/photo.jpg'],
-          },
-        });
+        await vitest.waitFor(() =>
+          expect(mocks.job.queue).toHaveBeenCalledWith({
+            name: JobName.LibrarySyncAssets,
+            data: {
+              libraryId: library.id,
+              importPaths: library.importPaths,
+              exclusionPatterns: library.exclusionPatterns,
+              assetIds: [asset.id],
+              progressCounter: 1,
+              totalAssets: 1,
+            },
+          }),
+        );
+        expect(mocks.asset.getByLibraryIdAndOriginalPath).toHaveBeenCalledWith(library.id, '/foo/photo.jpg');
+        expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.LibrarySyncFiles }));
+      });
+
+      it('should import a changed file that is not yet an asset', async () => {
+        const library = factory.library({ importPaths: ['/foo', '/bar'] });
+
+        mocks.library.get.mockResolvedValue(library);
+        mocks.library.getAll.mockResolvedValue([library]);
+        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(void 0);
+        mocks.storage.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: 'change', value: '/foo/photo.jpg' }] }),
+        );
+
+        await sut.watchAll();
+
+        await vitest.waitFor(() =>
+          expect(mocks.job.queue).toHaveBeenCalledWith({
+            name: JobName.LibrarySyncFiles,
+            data: {
+              libraryId: library.id,
+              paths: ['/foo/photo.jpg'],
+            },
+          }),
+        );
       });
 
       it('should handle a file unlink event', async () => {
