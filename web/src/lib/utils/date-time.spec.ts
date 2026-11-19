@@ -1,9 +1,9 @@
-import { locale } from '#lib/stores/preferences.store.ts';
+import { localeSetting } from '#lib/stores/preferences.store.ts';
 import { getAlbumDateRange, getShortDateRange } from './date-time';
 
 describe('getShortDateRange', () => {
   afterEach(() => {
-    locale.set('en');
+    localeSetting.set('en');
   });
 
   it('should correctly return long month if start and end date are within the same month', () => {
@@ -19,12 +19,12 @@ describe('getShortDateRange', () => {
   });
 
   it('should use the correct locale to return month range', () => {
-    locale.set('fr');
+    localeSetting.set('fr');
     expect(getShortDateRange('2022-01-01T00:00:00.000Z', '2022-02-01T00:00:00.000Z')).toEqual('janv.–févr. 2022');
   });
 
   it('should use the correct locale to return month-year range', () => {
-    locale.set('fr');
+    localeSetting.set('fr');
     expect(getShortDateRange('2021-12-01T00:00:00.000Z', '2022-01-01T00:00:00.000Z')).toEqual('déc. 2021 – janv. 2022');
   });
 });
@@ -39,8 +39,8 @@ describe('getAlbumDateRange', () => {
   });
 
   it('should use the proper locale', () => {
-    locale.set('fr');
+    localeSetting.set('fr');
     expect(getAlbumDateRange('2020-03-26T12:00:00Z', '2021-12-01T00:00:00Z')).toEqual('26 mars 2020 – 1 déc. 2021');
-    locale.set('en');
+    localeSetting.set('en');
   });
 });
