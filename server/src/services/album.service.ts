@@ -17,11 +17,14 @@ import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
 import { AlbumUserRole, Permission } from 'src/enum.js';
 import { AlbumAssetCount } from 'src/repositories/album.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { addAssets, removeAssets } from 'src/utils/asset.util.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { findOrFail } from 'src/utils/misc.js';
 import { getPreferences } from 'src/utils/preferences.js';
+
+const getUserIds = (album: { albumUsers: { user: { id: string } }[] }) => album.albumUsers.map(({ user }) => user.id);
 
 const mapAlbumMetadata = (metadata?: AlbumAssetCount) => ({
   startDate: asDateTimeString(metadata?.startDate ?? undefined),
@@ -130,6 +133,10 @@ export class AlbumService extends BaseService {
       [{ userId: auth.user.id, role: AlbumUserRole.Owner }, ...albumUsers],
       auth.user.id,
     );
+    this.resourceRepository.send({
+      userIds: [auth.user.id, ...albumUsers.map(({ userId }) => userId)],
+      changed: [Resource.albums()],
+    });
 
     for (const { userId } of albumUsers) {
       await this.eventRepository.emit('AlbumInvite', { id: album.id, userId, senderName: auth.user.name });
@@ -161,13 +168,27 @@ export class AlbumService extends BaseService {
       },
       auth.user.id,
     );
+    this.resourceRepository.send({ userIds: getUserIds(album), changed: [Resource.album({ id })] });
 
     return this.mapWithMetadata(updatedAlbum);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AlbumDelete, ids: [id] });
+    const album = await this.findOrFail(id, auth.user.id);
+
     await this.albumRepository.delete(id);
+    this.resourceRepository.send({
+      userIds: getUserIds(album),
+      changed: [Resource.albumStatistics()],
+      deleted: [Resource.album({ id })],
+    });
+    for (const [userId, sharedLinks] of Map.groupBy(album.sharedLinks, ({ userId }) => userId)) {
+      this.resourceRepository.send({
+        userIds: [userId],
+        deleted: sharedLinks.map((link) => Resource.sharedLink(link)),
+      });
+    }
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
@@ -192,7 +213,8 @@ export class AlbumService extends BaseService {
         auth.user.id,
       );
 
-      const userIds = album.albumUsers.map(({ user }) => user.id);
+      const userIds = getUserIds(album);
+      this.resourceRepository.send({ userIds, changed: [Resource.album({ id })] });
       const recipientIds = userIds.filter((userId) => userId !== auth.user.id);
       await this.eventRepository.emit('AlbumUpdate', { id, userIds, recipientIds });
     }
@@ -246,13 +268,14 @@ export class AlbumService extends BaseService {
         },
         auth.user.id,
       );
-      const userIds = album.albumUsers.map(({ user }) => user.id);
+      const userIds = getUserIds(album);
       const recipientIds = userIds.filter((userId) => userId !== auth.user.id);
       events.push({ id: albumId, userIds, recipientIds });
     }
 
     await this.albumRepository.addAssetIdsToAlbums(albumAssetValues);
     for (const event of events) {
+      this.resourceRepository.send({ userIds: event.userIds, changed: [Resource.album(event)] });
       await this.eventRepository.emit('AlbumUpdate', event);
     }
 
@@ -275,11 +298,9 @@ export class AlbumService extends BaseService {
         await this.albumRepository.updateThumbnails();
       }
 
-      await this.eventRepository.emit('AlbumUpdate', {
-        id,
-        userIds: album.albumUsers.map(({ user }) => user.id),
-        recipientIds: [],
-      });
+      const userIds = getUserIds(album);
+      this.resourceRepository.send({ userIds, changed: [Resource.album({ id })] });
+      await this.eventRepository.emit('AlbumUpdate', { id, userIds, recipientIds: [] });
     }
 
     return results;
@@ -289,6 +310,7 @@ export class AlbumService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
 
     const album = await this.findOrFail(id, auth.user.id);
+    const addedUserIds: string[] = [];
 
     for (const { userId, role } of albumUsers) {
       if (role === AlbumUserRole.Owner) {
@@ -307,7 +329,15 @@ export class AlbumService extends BaseService {
       }
 
       await this.albumUserRepository.create({ userId, albumId: id, role });
+      addedUserIds.push(userId);
       await this.eventRepository.emit('AlbumInvite', { id, userId, senderName: auth.user.name });
+    }
+
+    if (addedUserIds.length > 0) {
+      this.resourceRepository.send({
+        userIds: [...getUserIds(album), ...addedUserIds],
+        changed: [Resource.album({ id }), Resource.albumStatistics()],
+      });
     }
 
     return this.mapWithMetadata(await this.findOrFail(id, auth.user.id));
@@ -338,6 +368,10 @@ export class AlbumService extends BaseService {
     }
 
     await this.albumUserRepository.delete({ albumId: id, userId });
+    this.resourceRepository.send({
+      userIds: getUserIds(album),
+      changed: [Resource.album({ id }), Resource.albumStatistics()],
+    });
   }
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
@@ -351,6 +385,7 @@ export class AlbumService extends BaseService {
     }
 
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
+    this.resourceRepository.send({ userIds: getUserIds(album), changed: [Resource.album({ id })] });
   }
 
   private findOrFail(id: string, authUserId: string) {

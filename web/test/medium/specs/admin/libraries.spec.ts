@@ -3,6 +3,17 @@ import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
 
 test.describe('library administration', () => {
+  test('shows new libraries from another source', async ({ page, data, api, app }) => {
+    data.addLibraries(factory.library({ name: 'Existing library' }));
+    await page.goto(Route.libraries());
+    await expect(app.text('Existing library')).toBeVisible();
+
+    data.addLibraries(factory.library({ name: 'New library' }));
+    await api.emitResourceEvent({ changed: ['/libraries'] });
+
+    await expect(app.text('New library')).toBeVisible();
+  });
+
   test('deletes a library with assets', async ({ page, data, api, app }) => {
     const library = factory.library({ name: 'Photos', assetCount: 3 });
     data.addLibraries(library);

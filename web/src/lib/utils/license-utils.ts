@@ -1,26 +1,24 @@
 import type { ImmichProduct } from '#lib/constants.ts';
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-import { queryClient, readPreloadedQuery } from '#lib/queries/client.ts';
+import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
-import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
-import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
+import { setServerLicenseMutation } from '#lib/queries/server-license.query.ts';
+import { setUserLicenseMutation } from '#lib/queries/user.query.ts';
+import type { MutationMeta } from '@tanstack/svelte-query';
 import { PUBLIC_IMMICH_BUY_HOST, PUBLIC_IMMICH_PAY_HOST } from '$app/env/public';
 
-export const activateProduct = async (licenseKey: string, activationKey: string): Promise<LicenseResponseDto> => {
-  // TODO is this needed?
-  await authManager.load();
+type ActivateProductOptions = { meta?: MutationMeta; onSuccess?: () => void };
 
-  const isServerActivation = authManager.user.isAdmin && licenseKey.search('IMSV') !== -1;
-  const licenseKeyDto = { licenseKey, activationKey };
-  // Send server key to user activation if user is not admin
-  if (!isServerActivation) {
-    return setUserLicense({ licenseKeyDto });
-  }
-
-  const license = await setServerLicense({ licenseKeyDto });
-  // contains license status
-  await queryClient.invalidateQueries({ queryKey: getAboutInfoQuery().queryKey });
-  return license;
+export const activateProduct = (
+  licenseKey: string,
+  activationKey: string,
+  { meta, onSuccess }: ActivateProductOptions = {},
+) => {
+  const isServerActivation = authManager.user.isAdmin && licenseKey.includes('IMSV');
+  const setLicenseMutation = isServerActivation ? setServerLicenseMutation : setUserLicenseMutation;
+  return executeMutation(() => setLicenseMutation(meta), [{ licenseKeyDto: { licenseKey, activationKey } }], {
+    onSuccess,
+  });
 };
 
 export const getActivationKey = async (licenseKey: string): Promise<string> => {

@@ -1,8 +1,10 @@
 <script lang="ts">
   import { initInput } from '#lib/actions/focus.ts';
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchUsersQuery } from '#lib/queries/user.query.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
-  import { searchUsers, type UserResponseDto } from '@immich/sdk';
+  import type { UserResponseDto } from '@immich/sdk';
   import { FormModal, ListButton, LoadingSpinner, Stack, Text } from '@immich/ui';
   import { sortBy } from 'lodash-es';
   import { onMount } from 'svelte';
@@ -23,7 +25,7 @@
     excludedUserIds,
     emptyMessage = $t('album_share_no_users'),
     onAddUsers,
-    loadUsers = searchUsers,
+    loadUsers = () => queryClient.query(searchUsersQuery()),
     onClose,
   }: Props = $props();
 

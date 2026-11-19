@@ -17,7 +17,9 @@ import { EventRepository } from 'src/repositories/event.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LibraryRepository } from 'src/repositories/library.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
+import { UserRepository } from 'src/repositories/user.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryService } from 'src/services/library.service.js';
@@ -47,13 +49,21 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
   constructor(database: Kysely<DB>) {
     super(LibraryService, {
       database,
-      real: [AssetRepository, AssetJobRepository, CryptoRepository, LibraryRepository, StorageRepository],
+      real: [
+        AssetRepository,
+        AssetJobRepository,
+        CryptoRepository,
+        LibraryRepository,
+        StorageRepository,
+        UserRepository,
+      ],
       mock: [
         CronRepository,
         DatabaseRepository,
         EventRepository,
         JobRepository,
         LoggingRepository,
+        ResourceRepository,
         WebsocketRepository,
       ],
     });

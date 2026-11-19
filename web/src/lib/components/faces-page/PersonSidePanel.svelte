@@ -6,11 +6,11 @@
   import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import { executeMutation } from '#lib/queries/client.ts';
   import { deleteFaceMutation, getFacesQuery, reassignFacesByIdMutation } from '#lib/queries/face.query.ts';
+  import { createPersonMutation } from '#lib/queries/person.query.ts';
   import { getPeopleThumbnailUrl } from '#lib/utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
   import { zoomImageToBase64 } from '#lib/utils/people-utils.ts';
   import { getPersonNameWithHiddenValue } from '#lib/utils/person.ts';
-  import { AssetTypeEnum, createPerson, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, shortcut, toastManager } from '@immich/ui';
   import { mdiAccountOff, mdiArrowLeftThin, mdiArrowRightThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
@@ -84,31 +84,39 @@
 
     if (numberOfChanges > 0) {
       let failed = false;
-      try {
-        for (const personWithFace of peopleWithFaces) {
-          let personId = selectedPersonToReassign[personWithFace.id]?.id;
+      const onError = () => (failed = true);
+      for (const personWithFace of peopleWithFaces) {
+        let personId = selectedPersonToReassign[personWithFace.id]?.id;
 
-          if (!personId && Object.hasOwn(selectedPersonToCreate, personWithFace.id)) {
-            const data = await createPerson({ personCreateDto: {} });
-            peopleToCreate.push(data.id);
-            personId = data.id;
-          }
-
-          if (!personId) {
-            continue;
-          }
-
-          await executeMutation(reassignFacesByIdMutation, [{ id: personId, faceDto: { id: personWithFace.id } }], {
-            onError: () => (failed = true),
-          });
-
-          if (failed) {
-            break;
-          }
+        if (!personId && Object.hasOwn(selectedPersonToCreate, personWithFace.id)) {
+          await executeMutation(
+            () => createPersonMutation({ error: { toast: 'errors.cant_apply_changes' } }),
+            [{ personCreateDto: {} }],
+            {
+              onSuccess: ({ id }) => {
+                personId = id;
+                peopleToCreate.push(id);
+              },
+              onError,
+            },
+          );
         }
-      } catch (error) {
-        handleError(error, $t('errors.cant_apply_changes'));
-        failed = true;
+
+        if (failed) {
+          break;
+        }
+
+        if (!personId) {
+          continue;
+        }
+
+        await executeMutation(reassignFacesByIdMutation, [{ id: personId, faceDto: { id: personWithFace.id } }], {
+          onError,
+        });
+
+        if (failed) {
+          break;
+        }
       }
 
       if (!failed) {

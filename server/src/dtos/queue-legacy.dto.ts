@@ -1,7 +1,7 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { QueueResponseDto, QueueStatisticsSchema } from 'src/dtos/queue.dto.js';
 import { QueueName } from 'src/enum.js';
-import { createZodDto } from 'src/zod.js';
 
 const QueueStatusLegacySchema = z
   .object({
@@ -17,32 +17,29 @@ const QueueResponseLegacySchema = z
   })
   .meta({ id: 'QueueResponseLegacyDto' });
 
-const QueuesResponseLegacySchema = z
-  .object({
-    [QueueName.ThumbnailGeneration]: QueueResponseLegacySchema,
-    [QueueName.MetadataExtraction]: QueueResponseLegacySchema,
-    [QueueName.VideoConversion]: QueueResponseLegacySchema,
-    [QueueName.SmartSearch]: QueueResponseLegacySchema,
-    [QueueName.StorageTemplateMigration]: QueueResponseLegacySchema,
-    [QueueName.Migration]: QueueResponseLegacySchema,
-    [QueueName.BackgroundTask]: QueueResponseLegacySchema,
-    [QueueName.Search]: QueueResponseLegacySchema,
-    [QueueName.DuplicateDetection]: QueueResponseLegacySchema,
-    [QueueName.FaceDetection]: QueueResponseLegacySchema,
-    [QueueName.FacialRecognition]: QueueResponseLegacySchema,
-    [QueueName.Sidecar]: QueueResponseLegacySchema,
-    [QueueName.Library]: QueueResponseLegacySchema,
-    [QueueName.Notification]: QueueResponseLegacySchema,
-    [QueueName.BackupDatabase]: QueueResponseLegacySchema,
-    [QueueName.Ocr]: QueueResponseLegacySchema,
-    [QueueName.Workflow]: QueueResponseLegacySchema,
-    [QueueName.Editor]: QueueResponseLegacySchema,
-    [QueueName.IntegrityCheck]: QueueResponseLegacySchema,
-  })
-  .meta({ id: 'QueuesResponseLegacyDto' });
-
 export class QueueResponseLegacyDto extends createZodDto(QueueResponseLegacySchema) {}
-export class QueuesResponseLegacyDto extends createZodDto(QueuesResponseLegacySchema) {}
+
+export class QueuesResponseLegacyDto extends createZodDto({
+  [QueueName.ThumbnailGeneration]: QueueResponseLegacySchema,
+  [QueueName.MetadataExtraction]: QueueResponseLegacySchema,
+  [QueueName.VideoConversion]: QueueResponseLegacySchema,
+  [QueueName.SmartSearch]: QueueResponseLegacySchema,
+  [QueueName.StorageTemplateMigration]: QueueResponseLegacySchema,
+  [QueueName.Migration]: QueueResponseLegacySchema,
+  [QueueName.BackgroundTask]: QueueResponseLegacySchema,
+  [QueueName.Search]: QueueResponseLegacySchema,
+  [QueueName.DuplicateDetection]: QueueResponseLegacySchema,
+  [QueueName.FaceDetection]: QueueResponseLegacySchema,
+  [QueueName.FacialRecognition]: QueueResponseLegacySchema,
+  [QueueName.Sidecar]: QueueResponseLegacySchema,
+  [QueueName.Library]: QueueResponseLegacySchema,
+  [QueueName.Notification]: QueueResponseLegacySchema,
+  [QueueName.BackupDatabase]: QueueResponseLegacySchema,
+  [QueueName.Ocr]: QueueResponseLegacySchema,
+  [QueueName.Workflow]: QueueResponseLegacySchema,
+  [QueueName.Editor]: QueueResponseLegacySchema,
+  [QueueName.IntegrityCheck]: QueueResponseLegacySchema,
+}) {}
 
 export const mapQueueLegacy = (response: QueueResponseDto): QueueResponseLegacyDto => {
   return {

@@ -54,6 +54,7 @@ import { PasskeyRepository } from 'src/repositories/passkey.repository.js';
 import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
 import { SessionRepository } from 'src/repositories/session.repository.js';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository.js';
@@ -411,7 +412,7 @@ export class SyncTestContext extends MediumTestContext<typeof SyncService> {
   constructor(database: Kysely<DB>) {
     super(SyncService, {
       database,
-      real: [SyncRepository, SyncCheckpointRepository, SessionRepository],
+      real: [DatabaseRepository, SyncRepository, SyncCheckpointRepository, SessionRepository],
       mock: [LoggingRepository],
     });
   }
@@ -670,6 +671,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
 
     case MachineLearningRepository: {
       return automock(MachineLearningRepository, { args: [{ setContext: () => {} }] });
+    }
+
+    case ResourceRepository: {
+      return automock(ResourceRepository, { strict: false });
     }
 
     case StorageRepository: {

@@ -1,6 +1,8 @@
 <script lang="ts">
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
-  import { searchUsers, type UserResponseDto } from '@immich/sdk';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchUsersQuery } from '#lib/queries/user.query.ts';
+  import type { UserResponseDto } from '@immich/sdk';
   import { Button, ListButton, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -15,7 +17,7 @@
   let selectedUsers: UserResponseDto[] = $state([]);
 
   const loadUsers = async () => {
-    const users = await searchUsers();
+    const users = await queryClient.query(searchUsersQuery());
     const excluded = new Set(excludedUserIds);
     availableUsers = users.filter(({ id }) => !excluded.has(id));
   };

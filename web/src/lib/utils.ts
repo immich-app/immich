@@ -1,5 +1,7 @@
 import { defaultLang, locales } from '#lib/constants.ts';
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { startOAuthMutation } from '#lib/queries/oauth.query.ts';
 import { alwaysLoadOriginalFile, lang, locale } from '#lib/stores/preferences.store.ts';
 import { isWebCompatibleImage } from '#lib/utils/asset-utils.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
@@ -8,16 +10,12 @@ import {
   AssetMediaSize,
   AssetTypeEnum,
   MemoryType,
-  finishOAuth,
   getAssetOriginalPath,
   getAssetPlaybackPath,
   getAssetThumbnailPath,
   getBaseUrl,
   getPeopleThumbnailPath,
   getUserProfileImagePath,
-  linkOAuthAccount,
-  startOAuth,
-  unlinkOAuthAccount,
   type AssetResponseDto,
   type MemoryResponseDto,
   type PersonResponseDto,
@@ -345,27 +343,8 @@ export const oauth = {
     const value = 'autoLaunch=1';
     return location.search.includes(value);
   },
-  authorize: async (location: Location) => {
-    const $t = get(t);
-    try {
-      const redirectUri = location.href.split('?', 1)[0];
-      const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
-      globalThis.location.assign(url);
-      return true;
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_login_with_oauth'));
-      return false;
-    }
-  },
-  login: (location: Location) => {
-    return finishOAuth({ oAuthCallbackDto: { url: location.href } });
-  },
-  link: (location: Location) => {
-    return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
-  },
-  unlink: () => {
-    return unlinkOAuthAccount();
-  },
+  authorize: (location: Location) =>
+    executeMutation(startOAuthMutation, [{ oAuthConfigDto: { redirectUri: location.href.split('?', 1)[0] } }]),
 };
 
 export const findLocale = (code: string | undefined) => {

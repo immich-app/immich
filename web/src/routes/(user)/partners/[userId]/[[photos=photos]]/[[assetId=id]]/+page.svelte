@@ -4,6 +4,8 @@
   import Timeline from '#lib/components/timeline/Timeline.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserQuery } from '#lib/queries/user.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { AssetVisibility } from '@immich/sdk';
@@ -11,16 +13,15 @@
   import { mdiArrowLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
-  import type { PageData } from './$types';
+  import type { PageProps } from './$types';
 
-  interface Props {
-    data: PageData;
-  }
+  let { params }: PageProps = $props();
 
-  let { data }: Props = $props();
+  const query = createPreloadedQuery(() => getUserQuery(params.userId));
+  const partner = $derived(query.data);
 
   const options = $derived({
-    userId: data.partner.id,
+    userId: partner.id,
     visibility: AssetVisibility.Timeline,
     withStacked: true,
   });
@@ -52,7 +53,7 @@
   <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(Route.sharing())}>
     {#snippet leading()}
       <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-        {$t('partner_list_user_photos', { values: { user: data.partner.name } })}
+        {$t('partner_list_user_photos', { values: { user: partner.name } })}
       </p>
     {/snippet}
   </ControlAppBar>

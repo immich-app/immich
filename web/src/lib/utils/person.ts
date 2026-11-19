@@ -1,4 +1,5 @@
-import type { PersonResponseDto } from '@immich/sdk';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { PersonUpdateStrategy, type PersonResponseDto, type PersonUpdateDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { derived } from 'svelte/store';
 import { normalizeSearchString } from './string-utils';
@@ -32,3 +33,8 @@ export const searchNameLocal = (
 export const getPersonNameWithHiddenValue = derived(t, ($t) => {
   return (name: string, isHidden: boolean) => $t('person_hidden', { values: { name, hidden: isHidden } });
 });
+
+export const withUpdateStrategy = (dto: PersonUpdateDto): PersonUpdateDto =>
+  authManager.preferences.people?.updateStrategy === PersonUpdateStrategy.Self
+    ? { ...dto, userId: authManager.user.id }
+    : dto;

@@ -1,9 +1,10 @@
 <script lang="ts">
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { changePasswordMutation } from '#lib/queries/auth.query.ts';
   import { Route } from '#lib/route.ts';
-  import { handleChangePassword } from '#lib/services/user.service.ts';
   import { Alert, Button, Field, HelperText, PasswordInput, Stack, Text } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
   import type { PageData } from './$types';
@@ -14,21 +15,24 @@
 
   let { data }: Props = $props();
 
+  const changePassword = createMutation(changePasswordMutation);
+
   let currentPassword = $state('');
   let password = $state('');
   let passwordConfirm = $state('');
   const valid = $derived(currentPassword.length > 0 && password === passwordConfirm && passwordConfirm.length > 0);
   const errorMessage = $derived(passwordConfirm.length === 0 || valid ? '' : $t('password_does_not_match'));
 
-  const onSubmit = async () => {
+  const onSubmit = (event: Event) => {
+    event.preventDefault();
+
     if (!valid) {
       return;
     }
 
-    const success = await handleChangePassword({ password: currentPassword, newPassword: password });
-    if (success) {
-      await goto(Route.logout());
-    }
+    changePassword.mutate([{ changePasswordDto: { password: currentPassword, newPassword: password } }], {
+      onSuccess: () => void goto(Route.logout()),
+    });
   };
 </script>
 

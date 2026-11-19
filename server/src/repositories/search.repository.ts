@@ -318,7 +318,7 @@ export class SearchRepository {
     ],
   })
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions) {
-    if (!z.int().min(1).max(1000).safeParse(pagination.size).success) {
+    if (!z.int().min(1).max(1000).validate(pagination.size)) {
       throw new Error(`Invalid value for 'size': ${pagination.size}`);
     }
 
@@ -354,7 +354,7 @@ export class SearchRepository {
     ],
   })
   searchFaces({ clusterGroupId, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
-    if (!z.int().min(1).max(1000).safeParse(numResults).success) {
+    if (!z.int().min(1).max(1000).validate(numResults)) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
 

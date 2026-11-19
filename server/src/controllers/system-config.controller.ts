@@ -65,7 +65,11 @@ export class SystemConfigController {
   @Endpoint({
     summary: 'Get storage template options',
     description: 'Retrieve exemplary storage template options.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v4.0.0', { replacementId: 'getAdminStorageTemplateOptions' }),
   })
   getStorageTemplateOptions(): ConfigTemplateStorageOptionDto {
     return this.storageTemplateService.getStorageTemplateOptions();

@@ -5,6 +5,7 @@ on:
     branches: [main, 'release/*']
     types:
       - opened
+      - edited
       - synchronize
       - ready_for_review
       - auto_merge_enabled

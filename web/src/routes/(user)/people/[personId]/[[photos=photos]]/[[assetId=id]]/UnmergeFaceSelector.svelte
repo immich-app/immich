@@ -1,17 +1,14 @@
 <script lang="ts">
   import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
-  import { timeBeforeShowLoadingSpinner } from '#lib/constants.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { createPersonMutation, getAllPeopleQuery, reassignFacesMutation } from '#lib/queries/person.query.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import {
-    createPerson,
-    getAllPeople,
-    reassignFaces,
-    type AssetFaceUpdateItem,
-    type PersonResponseDto,
-  } from '@immich/sdk';
+  import { type AssetFaceUpdateItem, type PersonResponseDto } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
   import { mdiMerge, mdiPlus } from '@mdi/js';
-  import { onMount, type Snippet } from 'svelte';
+  import { createMutation, createQuery } from '@tanstack/svelte-query';
+  import { noop } from 'lodash-es';
+  import { type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -29,11 +26,21 @@
 
   let { assetIds, personAssets, onConfirm, onClose, header, merge }: Props = $props();
 
-  let people: PersonResponseDto[] = $state([]);
+  const query = createQuery(
+    () => ({ ...getAllPeopleQuery({ withHidden: false }), staleTime: 0 }),
+    () => queryClient,
+  );
+  const people = $derived(query.data?.people ?? []);
+  const createPerson = createMutation(
+    () => createPersonMutation({ error: { toast: false } }),
+    () => queryClient,
+  );
+  const reassignFaces = createMutation(
+    () => reassignFacesMutation({ error: { toast: false } }),
+    () => queryClient,
+  );
+  const isPending = $derived(createPerson.isPending || reassignFaces.isPending);
   let selectedPerson: PersonResponseDto | null = $state(null);
-  let disableButtons = $state(false);
-  let showLoadingSpinnerCreate = $state(false);
-  let showLoadingSpinnerReassign = $state(false);
   let hasSelection = $state(false);
   let screenHeight: number = $state(0);
 
@@ -43,11 +50,6 @@
     assetId,
     personId: personAssets.id,
   }));
-
-  onMount(async () => {
-    const data = await getAllPeople({ withHidden: false });
-    people = data.people;
-  });
 
   const handleSelectedPerson = (person: PersonResponseDto) => {
     if (selectedPerson && selectedPerson.id === person.id) {
@@ -64,45 +66,32 @@
   };
 
   const handleCreate = async () => {
-    const timeout = setTimeout(() => (showLoadingSpinnerCreate = true), timeBeforeShowLoadingSpinner);
-
-    try {
-      disableButtons = true;
-      const data = await createPerson({ personCreateDto: {} });
-      await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
-      toastManager.primary($t('reassigned_assets_to_new_person', { values: { count: assetIds.length } }));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_reassign_assets_new_person'));
-    } finally {
-      clearTimeout(timeout);
+    const onError = (error: unknown) => handleError(error, $t('errors.unable_to_reassign_assets_new_person'));
+    const person = await createPerson.mutateAsync([{ personCreateDto: {} }], { onError }).catch(noop);
+    if (person) {
+      await reassignFaces
+        .mutateAsync([{ id: person.id, assetFaceUpdateDto: { data: selectedPeople } }], {
+          onSuccess: () =>
+            toastManager.primary($t('reassigned_assets_to_new_person', { values: { count: assetIds.length } })),
+          onError,
+        })
+        .catch(noop);
     }
 
-    showLoadingSpinnerCreate = false;
     onConfirm();
   };
 
   const handleReassign = async () => {
-    const timeout = setTimeout(() => (showLoadingSpinnerReassign = true), timeBeforeShowLoadingSpinner);
-    try {
-      disableButtons = true;
-      if (selectedPerson) {
-        await reassignFaces({ id: selectedPerson.id, assetFaceUpdateDto: { data: selectedPeople } });
-        toastManager.primary(
-          $t('reassigned_assets_to_existing_person', {
-            values: { count: assetIds.length, name: selectedPerson.name || null },
-          }),
-        );
-      }
-    } catch (error) {
-      handleError(
-        error,
-        $t('errors.unable_to_reassign_assets_existing_person', { values: { name: selectedPerson?.name || null } }),
-      );
-    } finally {
-      clearTimeout(timeout);
+    if (selectedPerson) {
+      const values = { count: assetIds.length, name: selectedPerson.name || null };
+      await reassignFaces
+        .mutateAsync([{ id: selectedPerson.id, assetFaceUpdateDto: { data: selectedPeople } }], {
+          onSuccess: () => toastManager.primary($t('reassigned_assets_to_existing_person', { values })),
+          onError: (error) => handleError(error, $t('errors.unable_to_reassign_assets_existing_person', { values })),
+        })
+        .catch(noop);
     }
 
-    showLoadingSpinnerReassign = false;
     onConfirm();
   };
 </script>
@@ -124,9 +113,9 @@
           shape="round"
           title={$t('create_new_person_hint')}
           leadingIcon={mdiPlus}
-          loading={showLoadingSpinnerCreate}
+          loading={isPending && !hasSelection}
           size="small"
-          disabled={disableButtons || hasSelection}
+          disabled={isPending || hasSelection}
           onclick={handleCreate}
         >
           {$t('create_new_person')}</Button
@@ -136,8 +125,8 @@
           shape="round"
           title={$t('reassing_hint')}
           leadingIcon={mdiMerge}
-          loading={showLoadingSpinnerReassign}
-          disabled={disableButtons || !hasSelection}
+          loading={isPending && hasSelection}
+          disabled={isPending || !hasSelection}
           onclick={handleReassign}
         >
           {$t('reassign')}

@@ -1,4 +1,5 @@
 import { MutationCancelledError, asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   deletePasskey,
   finishAuthentication,
@@ -28,7 +29,7 @@ const withPasskeyPrompt = async <T>(flow: () => Promise<T>) => {
 
 export const searchPasskeysQuery = () =>
   queryOptions({
-    queryKey: ['passkeys'],
+    queryKey: QueryKeys.passkeys(),
     queryFn: ({ signal }) => searchPasskeys({}, { signal }),
   });
 
@@ -42,7 +43,7 @@ export const createPasskeyMutation = () =>
         });
         return finishRegistration({ passkeyRegistrationFinishDto: { response } });
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: searchPasskeysQuery().queryKey, exact: true }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.passkeys(), exact: true }),
   });
 
 export const loginWithPasskeyMutation = () =>

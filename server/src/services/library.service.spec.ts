@@ -5,14 +5,16 @@ import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { mapLibrary } from 'src/dtos/library.dto.js';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { LibraryService } from 'src/services/library.service.js';
 import type { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { makeMockWatcher } from 'test/repositories/storage.repository.mock.js';
+import { mockAdmins } from 'test/repositories/user.repository.mock.js';
 import { factory, newDate, newUuid } from 'test/small.factory.js';
-import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, makeStream, newTestService } from 'test/utils.js';
 
 async function* mockWalk() {
   // eslint-disable-next-line unicorn/no-useless-promise-resolve-reject
@@ -29,6 +31,7 @@ describe(LibraryService.name, () => {
 
     mocks.database.tryLock.mockResolvedValue(true);
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
+    mocks.user.getAdminIds.mockResolvedValue([]);
   });
 
   it('should work', () => {
@@ -628,6 +631,16 @@ describe(LibraryService.name, () => {
       expect(mocks.event.emit).toHaveBeenCalledWith('LibraryDelete');
     });
 
+    it('should tell every admin', async () => {
+      const adminIds = mockAdmins(mocks.user);
+      const library = factory.library();
+      mocks.library.get.mockResolvedValue(library);
+
+      await sut.delete(library.id);
+
+      expectResourceEvents(mocks, { userIds: adminIds, deleted: [Resource.library(library)] });
+    });
+
     it('should allow an external library to be deleted', async () => {
       const library = factory.library();
 
@@ -705,6 +718,15 @@ describe(LibraryService.name, () => {
   });
 
   describe('create', () => {
+    it('should tell every admin', async () => {
+      const adminIds = mockAdmins(mocks.user);
+      mocks.library.create.mockResolvedValue(factory.library());
+
+      await sut.create({ ownerId: authStub.admin.user.id });
+
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.libraries()] });
+    });
+
     describe('external library', () => {
       it('should create with default settings', async () => {
         const library = factory.library();
@@ -882,6 +904,7 @@ describe(LibraryService.name, () => {
       await expect(sut.update('library-id', { importPaths: ['foo/bar'] })).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.library.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should update library', async () => {
@@ -900,6 +923,17 @@ describe(LibraryService.name, () => {
         expect.objectContaining({ importPaths: [`${cwd}/foo/bar`] }),
       );
       expect(mocks.event.emit).toHaveBeenCalledWith('LibraryUpdate');
+    });
+
+    it('should tell every admin', async () => {
+      const adminIds = mockAdmins(mocks.user);
+      const library = factory.library();
+      mocks.library.get.mockResolvedValue(library);
+      mocks.library.update.mockResolvedValue(library);
+
+      await sut.update(library.id, { name: 'New Name' });
+
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.library(library)] });
     });
   });
 

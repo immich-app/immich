@@ -1,10 +1,10 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { HistoryBuilder } from 'src/decorators.js';
 import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto.js';
 import { AssetType, AssetVisibilitySchema } from 'src/enum.js';
 import { AssetStats } from 'src/repositories/asset.repository.js';
 import { IsNotSiblingOf, isoDatetimeToDate, latitudeSchema, longitudeSchema, stringToBool } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 const UpdateAssetBaseSchema = z
   .object({
@@ -76,41 +76,12 @@ const AssetJobsSchema = AssetIdsSchema.extend({
   name: AssetJobNameSchema,
 }).meta({ id: 'AssetJobsDto' });
 
-const AssetStatsSchema = z
-  .object({
-    visibility: AssetVisibilitySchema.optional(),
-    isFavorite: stringToBool.optional().describe('Filter by favorite status'),
-    isTrashed: stringToBool.optional().describe('Filter by trash status'),
-  })
-  .meta({ id: 'AssetStatsDto' });
-
-const AssetStatsResponseSchema = z
-  .object({
-    images: z.int().describe('Number of images'),
-    videos: z.int().describe('Number of videos'),
-    total: z.int().describe('Total number of assets'),
-  })
-  .meta({ id: 'AssetStatsResponseDto' });
-
-const AssetMetadataRouteParamsSchema = z
-  .object({
-    id: z.uuidv4().describe('Asset ID'),
-    key: z.string().describe('Metadata key'),
-  })
-  .meta({ id: 'AssetMetadataRouteParams' });
-
 export const AssetMetadataUpsertItemSchema = z
   .object({
     key: z.string().describe('Metadata key'),
     value: z.record(z.string(), z.unknown()).describe('Metadata value (object)'),
   })
   .meta({ id: 'AssetMetadataUpsertItemDto' });
-
-const AssetMetadataUpsertSchema = z
-  .object({
-    items: z.array(AssetMetadataUpsertItemSchema).describe('Metadata items to upsert'),
-  })
-  .meta({ id: 'AssetMetadataUpsertDto' });
 
 const AssetMetadataBulkUpsertItemSchema = z
   .object({
@@ -120,24 +91,12 @@ const AssetMetadataBulkUpsertItemSchema = z
   })
   .meta({ id: 'AssetMetadataBulkUpsertItemDto' });
 
-const AssetMetadataBulkUpsertSchema = z
-  .object({
-    items: z.array(AssetMetadataBulkUpsertItemSchema).describe('Metadata items to upsert'),
-  })
-  .meta({ id: 'AssetMetadataBulkUpsertDto' });
-
 const AssetMetadataBulkDeleteItemSchema = z
   .object({
     assetId: z.uuidv4().describe('Asset ID'),
     key: z.string().describe('Metadata key'),
   })
   .meta({ id: 'AssetMetadataBulkDeleteItemDto' });
-
-const AssetMetadataBulkDeleteSchema = z
-  .object({
-    items: z.array(AssetMetadataBulkDeleteItemSchema).describe('Metadata items to delete'),
-  })
-  .meta({ id: 'AssetMetadataBulkDeleteDto' });
 
 const AssetMetadataResponseSchema = z
   .object({
@@ -151,24 +110,6 @@ const AssetMetadataBulkResponseSchema = AssetMetadataResponseSchema.extend({
   assetId: z.uuidv4().describe('Asset ID'),
 }).meta({ id: 'AssetMetadataBulkResponseDto' });
 
-const AssetCopySchema = z
-  .object({
-    sourceId: z.uuidv4().describe('Source asset ID'),
-    targetId: z.uuidv4().describe('Target asset ID'),
-    sharedLinks: z.boolean().default(true).optional().describe('Copy shared links'),
-    albums: z.boolean().default(true).optional().describe('Copy album associations'),
-    sidecar: z.boolean().default(true).optional().describe('Copy sidecar file'),
-    stack: z.boolean().default(true).optional().describe('Copy stack association'),
-    favorite: z.boolean().default(true).optional().describe('Copy favorite status'),
-  })
-  .meta({ id: 'AssetCopyDto' });
-
-const AssetDownloadOriginalSchema = z
-  .object({
-    edited: stringToBool.default(false).optional().describe('Return edited asset if available'),
-  })
-  .meta({ id: 'AssetDownloadOriginalDto' });
-
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
     images: stats[AssetType.Image],
@@ -178,17 +119,58 @@ export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
 };
 
 export class AssetBulkUpdateDto extends createZodDto(AssetBulkUpdateSchema) {}
+
 export class UpdateAssetDto extends createZodDto(UpdateAssetSchema) {}
+
 export class AssetBulkDeleteDto extends createZodDto(AssetBulkDeleteSchema) {}
+
 export class AssetIdsDto extends createZodDto(AssetIdsSchema) {}
+
 export class AssetJobsDto extends createZodDto(AssetJobsSchema) {}
-export class AssetStatsDto extends createZodDto(AssetStatsSchema) {}
-export class AssetStatsResponseDto extends createZodDto(AssetStatsResponseSchema) {}
-export class AssetMetadataRouteParams extends createZodDto(AssetMetadataRouteParamsSchema) {}
-export class AssetMetadataUpsertDto extends createZodDto(AssetMetadataUpsertSchema) {}
-export class AssetMetadataBulkUpsertDto extends createZodDto(AssetMetadataBulkUpsertSchema) {}
-export class AssetMetadataBulkDeleteDto extends createZodDto(AssetMetadataBulkDeleteSchema) {}
+
+export class AssetStatsDto extends createZodDto({
+  visibility: AssetVisibilitySchema.optional(),
+  isFavorite: stringToBool.optional().describe('Filter by favorite status'),
+  isTrashed: stringToBool.optional().describe('Filter by trash status'),
+}) {}
+
+export class AssetStatsResponseDto extends createZodDto({
+  images: z.int().describe('Number of images'),
+  videos: z.int().describe('Number of videos'),
+  total: z.int().describe('Total number of assets'),
+}) {}
+
+export class AssetMetadataRouteParams extends createZodDto({
+  id: z.uuidv4().describe('Asset ID'),
+  key: z.string().describe('Metadata key'),
+}) {}
+
+export class AssetMetadataUpsertDto extends createZodDto({
+  items: z.array(AssetMetadataUpsertItemSchema).describe('Metadata items to upsert'),
+}) {}
+
+export class AssetMetadataBulkUpsertDto extends createZodDto({
+  items: z.array(AssetMetadataBulkUpsertItemSchema).describe('Metadata items to upsert'),
+}) {}
+
+export class AssetMetadataBulkDeleteDto extends createZodDto({
+  items: z.array(AssetMetadataBulkDeleteItemSchema).describe('Metadata items to delete'),
+}) {}
+
 export class AssetMetadataResponseDto extends createZodDto(AssetMetadataResponseSchema) {}
+
 export class AssetMetadataBulkResponseDto extends createZodDto(AssetMetadataBulkResponseSchema) {}
-export class AssetCopyDto extends createZodDto(AssetCopySchema) {}
-export class AssetDownloadOriginalDto extends createZodDto(AssetDownloadOriginalSchema) {}
+
+export class AssetCopyDto extends createZodDto({
+  sourceId: z.uuidv4().describe('Source asset ID'),
+  targetId: z.uuidv4().describe('Target asset ID'),
+  sharedLinks: z.boolean().default(true).optional().describe('Copy shared links'),
+  albums: z.boolean().default(true).optional().describe('Copy album associations'),
+  sidecar: z.boolean().default(true).optional().describe('Copy sidecar file'),
+  stack: z.boolean().default(true).optional().describe('Copy stack association'),
+  favorite: z.boolean().default(true).optional().describe('Copy favorite status'),
+}) {}
+
+export class AssetDownloadOriginalDto extends createZodDto({
+  edited: stringToBool.default(false).optional().describe('Return edited asset if available'),
+}) {}

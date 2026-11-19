@@ -8,7 +8,7 @@ import 'package:immich_mobile/domain/models/passkey.model.dart';
 import 'package:openapi/api.dart';
 
 void main() {
-  test('startRegistration decodes the Map<String, Object> answer through the generated client', () async {
+  test('startRegistration decodes the Map<String, Object?> answer through the generated client', () async {
     const options = {
       'challenge': 'challenge',
       'rp': {'name': 'Immich', 'id': 'my.immich.app'},

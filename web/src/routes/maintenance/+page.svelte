@@ -1,12 +1,11 @@
 <script lang="ts">
-  /* eslint-disable unicorn/no-optional-chaining-on-undeclared-variable */
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
-  import { handleSetMaintenanceMode } from '#lib/services/maintenance.service.ts';
-  import { maintenanceStore } from '#lib/stores/maintenance.store.ts';
+  import { getMaintenanceStatusQuery, setMaintenanceModeMutation } from '#lib/queries/maintenance.query.ts';
   import { ViewStatusModal, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import { MaintenanceAction } from '@immich/sdk';
   import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
+  import { createMutation, createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import MaintenanceRestoreFlow from './MaintenanceRestoreFlow.svelte';
@@ -17,7 +16,10 @@
 
   const { data }: Props = $props();
 
-  const { auth, status } = maintenanceStore;
+  const statusQuery = createQuery(getMaintenanceStatusQuery);
+  const status = $derived(statusQuery.data);
+  const setMaintenanceMode = createMutation(setMaintenanceModeMutation);
+  let dismissedJobId = $state<string>();
 
   // strip token from URL after load
   const url = new URL(location.href);
@@ -26,18 +28,13 @@
     history.replaceState({}, document.title, url);
   }
 
-  const end = () =>
-    handleSetMaintenanceMode({
-      action: MaintenanceAction.End,
-    });
+  const end = () => setMaintenanceMode.mutate([{ setMaintenanceModeDto: { action: MaintenanceAction.End } }]);
 
   const startRestore = () =>
-    handleSetMaintenanceMode({
-      action: MaintenanceAction.SelectDatabaseRestore,
-    });
+    setMaintenanceMode.mutate([{ setMaintenanceModeDto: { action: MaintenanceAction.SelectDatabaseRestore } }]);
 
   const error = $derived(
-    $status?.error
+    status?.error
       ?.split('\n')
       .filter((line) => !line.includes('drop cascades'))
       .join('\n'),
@@ -53,42 +50,42 @@
 
 <YuccaContext>
   <AuthPageLayout
-    withHeader={$status?.action === MaintenanceAction.Start || $status?.action === MaintenanceAction.End}
-    withBackdrop={$status?.action === MaintenanceAction.Start}
+    withHeader={status?.action === MaintenanceAction.Start || status?.action === MaintenanceAction.End}
+    withBackdrop={status?.action === MaintenanceAction.Start}
   >
     <div class="flex flex-col place-items-center gap-8 text-center">
-      {#if $status?.action === MaintenanceAction.RestoreDatabase}
+      {#if status?.action === MaintenanceAction.RestoreDatabase}
         <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_restore')}</Heading>
-        {#if $status.error}
+        {#if status.error}
           {@render errorLog()}
         {:else}
-          <ProgressBar progress={$status.progress || 0} />
-          {#if $status.task === 'backup'}
+          <ProgressBar progress={status.progress || 0} />
+          {#if status.task === 'backup'}
             <Text>{$t('maintenance_task_backup')}</Text>
           {/if}
-          {#if $status.task === 'restore'}
+          {#if status.task === 'restore'}
             <Text>{$t('maintenance_task_restore')}</Text>
           {/if}
-          {#if $status.task === 'migrations'}
+          {#if status.task === 'migrations'}
             <Text>{$t('maintenance_task_migrations')}</Text>
           {/if}
-          {#if $status.task === 'rollback'}
+          {#if status.task === 'rollback'}
             <Text>{$t('maintenance_task_rollback')}</Text>
           {/if}
         {/if}
-      {:else if $status?.action === MaintenanceAction.Rollback && $status.futoBackupsJobId}
+      {:else if status?.action === MaintenanceAction.Rollback && status.futoBackupsJobId && status.futoBackupsJobId !== dismissedJobId}
         <ViewStatusModal
-          jobId={$status.futoBackupsJobId}
+          jobId={status.futoBackupsJobId}
           onClose={() => {
-            if ($status?.error) {
-              $status.futoBackupsJobId = '';
+            if (status?.error) {
+              dismissedJobId = status.futoBackupsJobId;
             }
           }}
         />
-      {:else if $status?.action === MaintenanceAction.Rollback && $status.error}
+      {:else if status?.action === MaintenanceAction.Rollback && status.error}
         <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_rollback')}</Heading>
         {@render errorLog()}
-      {:else if $status?.action === MaintenanceAction.SelectDatabaseRestore && $auth}
+      {:else if status?.action === MaintenanceAction.SelectDatabaseRestore && data.auth}
         <MaintenanceRestoreFlow {end} expectedVersion={data.expectedVersion} />
       {:else}
         <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>
@@ -103,11 +100,11 @@
             {/snippet}
           </FormatMessage>
         </p>
-        {#if $auth}
+        {#if data.auth}
           <p>
             {$t('maintenance_logged_in_as', {
               values: {
-                user: $auth.username,
+                user: data.auth.username,
               },
             })}
           </p>

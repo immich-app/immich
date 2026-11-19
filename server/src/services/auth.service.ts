@@ -25,6 +25,7 @@ import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
 import { OAuthConfig, OAuthRawProfile } from 'src/repositories/oauth.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { isGranted } from 'src/utils/access.js';
 import { generateProfileImage } from 'src/utils/profile-image.js';
@@ -145,6 +146,7 @@ export class AuthService extends BaseService {
       currentSessionId: auth.session?.id,
       invalidateSessions: dto.invalidateSessions,
     });
+    this.resourceRepository.send({ userIds: [user.id], changed: [Resource.myUser(), Resource.sessions()] });
 
     return mapUserAdmin(updatedUser);
   }
@@ -161,6 +163,7 @@ export class AuthService extends BaseService {
 
     const hashed = await this.cryptoRepository.hashBcrypt(pinCode, SALT_ROUNDS);
     await this.userRepository.update(auth.user.id, { pinCode: hashed });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.authStatus()] });
   }
 
   async resetPinCode(auth: AuthDto, dto: PinCodeResetDto) {
@@ -169,6 +172,7 @@ export class AuthService extends BaseService {
 
     await this.userRepository.update(auth.user.id, { pinCode: null });
     await this.sessionRepository.lockAll(auth.user.id);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.authStatus()] });
   }
 
   async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
@@ -438,6 +442,7 @@ export class AuthService extends BaseService {
     }
 
     const user = await this.userRepository.update(auth.user.id, { oauthId });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myUser()] });
     return mapUserAdmin(user);
   }
 
@@ -447,6 +452,7 @@ export class AuthService extends BaseService {
     }
 
     const user = await this.userRepository.update(auth.user.id, { oauthId: null });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myUser()] });
     return mapUserAdmin(user);
   }
 
@@ -605,6 +611,7 @@ export class AuthService extends BaseService {
     await this.sessionRepository.update(auth.session.id, {
       pinExpiresAt: DateTime.now().plus({ minutes: 15 }).toJSDate(),
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.authStatus()] });
   }
 
   async lockSession(auth: AuthDto): Promise<void> {
@@ -613,6 +620,7 @@ export class AuthService extends BaseService {
     }
 
     await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.authStatus()] });
   }
 
   private async syncOAuthClaims(user: UserAdmin, profile: OAuthProfile, oauth: OAuthClaimsConfig): Promise<UserAdmin> {

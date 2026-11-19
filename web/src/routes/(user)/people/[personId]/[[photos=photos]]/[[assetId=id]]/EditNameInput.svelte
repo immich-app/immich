@@ -1,6 +1,7 @@
 <script lang="ts">
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import SearchPeople from '#lib/components/faces-page/PeopleSearch.svelte';
+  import { Draft } from '#lib/utils/draft.svelte.ts';
   import { type PersonResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -16,16 +17,18 @@
 
   let {
     person,
-    name = $bindable(),
+    name,
     suggestedPeople = $bindable(),
     thumbnailData,
     isSearchingPeople = $bindable(),
     onChange,
   }: Props = $props();
 
+  const draft = new Draft(() => name);
+
   const onsubmit = (event: Event) => {
     event.preventDefault();
-    onChange(name);
+    onChange(draft.value);
   };
 </script>
 
@@ -37,7 +40,7 @@
   <ImageThumbnail circle shadow url={thumbnailData} altText={person.name} widthStyle="2rem" heightStyle="2rem" />
   <form class="ms-4 flex w-full justify-between gap-16" autocomplete="off" {onsubmit}>
     <SearchPeople
-      bind:searchName={name}
+      bind:searchName={draft.value}
       bind:searchedPeopleLocal={suggestedPeople}
       type="input"
       numberPeopleToSearch={5}

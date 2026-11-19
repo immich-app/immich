@@ -1,10 +1,11 @@
 <script lang="ts">
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+  import { updateAdminOnboardingMutation } from '#lib/queries/system-metadata.query.ts';
+  import { setUserOnboardingMutation } from '#lib/queries/user.query.ts';
   import { Route } from '#lib/route.ts';
   import { OnboardingRole } from '#lib/types.ts';
-  import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
     mdiCellphoneArrowDownVariant,
     mdiCloudCheckOutline,
@@ -122,18 +123,21 @@
 
   const nextStepIndex = $derived(onboardingSteps.findIndex((step, i) => shouldRunStep(step.role) && i > index));
 
+  const finishUserOnboarding = () =>
+    executeMutation(setUserOnboardingMutation, [{ onboardingDto: { isOnboarded: true } }], {
+      onSuccess: () => void goto(Route.photos()),
+    });
+
   const handleNextClicked = async () => {
     if (nextStepIndex === -1) {
       if (authManager.user.isAdmin) {
-        await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
-        await queryClient.invalidateQueries({ queryKey: getServerConfigQuery().queryKey });
+        await executeMutation(updateAdminOnboardingMutation, [{ adminOnboardingUpdateDto: { isOnboarded: true } }], {
+          onSuccess: () => void finishUserOnboarding(),
+        });
+        return;
       }
 
-      await setUserOnboarding({
-        onboardingDto: { isOnboarded: true },
-      });
-
-      await goto(Route.photos());
+      await finishUserOnboarding();
     } else {
       await goto(Route.onboarding({ step: onboardingSteps[nextStepIndex].name }));
     }

@@ -1,13 +1,17 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { describe } from 'vitest';
 import { mapUserAdmin } from 'src/dtos/user.dto.js';
-import { JobName, UserStatus } from 'src/enum.js';
+import { AlbumUserRole, JobName, UserStatus } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { UserAdminService } from 'src/services/user-admin.service.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { getForAlbum } from 'test/mappers.js';
+import { mockAdmins } from 'test/repositories/user.repository.mock.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(UserAdminService.name, () => {
   let sut: UserAdminService;
@@ -19,7 +23,14 @@ describe(UserAdminService.name, () => {
     mocks.user.get.mockImplementation((userId) =>
       Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? undefined),
     );
+    mocks.user.getAdminIds.mockResolvedValue([]);
+    mocks.album.getAll.mockResolvedValue([]);
   });
+
+  const setup = (user = UserFactory.create()) => {
+    mocks.user.get.mockResolvedValue(user);
+    return { auth: authStub.admin, adminIds: mockAdmins(mocks.user), user };
+  };
 
   describe('create', () => {
     it('should not create a user if there is no local admin account', async () => {
@@ -56,6 +67,16 @@ describe(UserAdminService.name, () => {
         clusterGroupId: expect.any(String),
       });
     });
+
+    it('should tell every admin about the new user', async () => {
+      const { adminIds, user } = setup();
+      mocks.user.getAdmin.mockResolvedValue(userStub.admin);
+      mocks.user.create.mockResolvedValue(user);
+
+      await sut.create({ email: user.email, name: user.name, password: 'password' });
+
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.adminUsers()] });
+    });
   });
 
   describe('update', () => {
@@ -73,6 +94,19 @@ describe(UserAdminService.name, () => {
 
       expect(mocks.user.getByEmail).toHaveBeenCalledWith(update.email);
       expect(mocks.user.getByStorageLabel).toHaveBeenCalledWith(update.storageLabel);
+    });
+
+    it('should tell every admin and the changed user', async () => {
+      const { auth, adminIds, user } = setup();
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.update(auth, user.id, { name: 'New Name' });
+
+      expectResourceEvents(
+        mocks,
+        { userIds: adminIds, changed: [Resource.adminUser(user)] },
+        { userIds: [user.id], changed: [Resource.myUser()] },
+      );
     });
 
     it('should not set an empty string for storage label', async () => {
@@ -93,6 +127,7 @@ describe(UserAdminService.name, () => {
       await expect(sut.update(authStub.admin, userStub.user1.id, dto)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should not let the admin change the storage label to one already in use', async () => {
@@ -104,6 +139,7 @@ describe(UserAdminService.name, () => {
       await expect(sut.update(authStub.admin, userStub.user1.id, dto)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('update user information should throw error if user not found', async () => {
@@ -112,6 +148,7 @@ describe(UserAdminService.name, () => {
       await expect(
         sut.update(authStub.admin, userStub.user1.id, { shouldChangePassword: true }),
       ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -121,6 +158,7 @@ describe(UserAdminService.name, () => {
 
       await expect(sut.delete(authStub.admin, 'not-found', {})).rejects.toThrowError(BadRequestException);
       expect(mocks.user.delete).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('cannot delete admin user', async () => {
@@ -134,6 +172,25 @@ describe(UserAdminService.name, () => {
       await expect(sut.delete(auth, user.id, {})).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(mocks.user.delete).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell every admin, the deleted user and the users of their albums', async () => {
+      const sharedUser = UserFactory.create();
+      const album = AlbumFactory.from().albumUser({ userId: sharedUser.id, role: AlbumUserRole.Editor }).build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      const { auth, adminIds, user } = setup(owner);
+      mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.delete(auth, user.id, {});
+
+      expectResourceEvents(
+        mocks,
+        { userIds: adminIds, changed: [Resource.adminUser(user)] },
+        { userIds: [user.id], changed: [Resource.myUser()] },
+        { userIds: [user.id, sharedUser.id], changed: [Resource.albums()] },
+      );
     });
 
     it('should delete user', async () => {
@@ -171,6 +228,25 @@ describe(UserAdminService.name, () => {
       mocks.user.get.mockResolvedValue(void 0);
       await expect(sut.restore(authStub.admin, userStub.admin.id)).rejects.toThrowError(BadRequestException);
       expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell every admin, the restored user and the users of their albums', async () => {
+      const sharedUser = UserFactory.create();
+      const album = AlbumFactory.from().albumUser({ userId: sharedUser.id, role: AlbumUserRole.Viewer }).build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      const { auth, adminIds, user } = setup(owner);
+      mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
+      mocks.user.restore.mockResolvedValue(user);
+
+      await sut.restore(auth, user.id);
+
+      expectResourceEvents(
+        mocks,
+        { userIds: adminIds, changed: [Resource.adminUser(user)] },
+        { userIds: [user.id], changed: [Resource.myUser()] },
+        { userIds: [user.id, sharedUser.id], changed: [Resource.albums()] },
+      );
     });
 
     it('should restore an user', async () => {
@@ -178,6 +254,30 @@ describe(UserAdminService.name, () => {
       mocks.user.restore.mockResolvedValue(userStub.user1);
       await expect(sut.restore(authStub.admin, userStub.user1.id)).resolves.toEqual(mapUserAdmin(userStub.user1));
       expect(mocks.user.restore).toHaveBeenCalledWith(userStub.user1.id);
+    });
+  });
+
+  describe('updatePreferences', () => {
+    it('should throw error if user could not be found', async () => {
+      mocks.user.get.mockResolvedValue(void 0);
+
+      await expect(sut.updatePreferences(authStub.admin, 'not-found', {})).rejects.toThrowError(BadRequestException);
+
+      expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell every admin and the changed user', async () => {
+      const { auth, adminIds, user } = setup();
+      mocks.user.getMetadata.mockResolvedValue([]);
+
+      await sut.updatePreferences(auth, user.id, { memories: { enabled: false } });
+
+      expectResourceEvents(
+        mocks,
+        { userIds: adminIds, changed: [Resource.adminUserPreferences(user)] },
+        { userIds: [user.id], changed: [Resource.myPreferences()] },
+      );
     });
   });
 });

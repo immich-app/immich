@@ -370,17 +370,31 @@
             "type": "string",
             "array": true,
             "uiHint": {
+              "order": 1,
               "type": "TagId"
+            }
+          },
+          "tagValues": {
+            "title": "Tag names",
+            "description": "Assets with this tag value or any of its children",
+            "type": "string",
+            "array": true,
+            "uiHint": {
+              "order": 2,
+              "type": "TagValue"
             }
           },
           "matching": {
             "title": "Matching",
             "description": "Whether assets must have all, any, or none of the listed tags",
             "type": "string",
-            "enum": ["all", "any", "none"]
+            "enum": ["all", "any", "none"],
+            "uiHint": {
+              "order": 3
+            }
           }
         },
-        "required": ["tags", "matching"]
+        "required": ["matching"]
       },
       "uiHints": ["Filter"]
     },

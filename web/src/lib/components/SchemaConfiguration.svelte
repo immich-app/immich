@@ -82,7 +82,9 @@
 {:else if schema.uiHint?.type === 'AlbumId'}
   <SchemaAlbumPicker {label} {description} array={schema.array} bind:albumIds={getUiHintValue, setUiHintValue} />
 {:else if schema.uiHint?.type === 'TagId'}
-  <SchemaTagPicker bind:tagIds={getUiHintValue, setUiHintValue} />
+  <SchemaTagPicker {label} {description} bind:selectedTags={getUiHintValue, setUiHintValue} type="ids" />
+{:else if schema.uiHint?.type === 'TagValue'}
+  <SchemaTagPicker {label} {description} bind:selectedTags={getUiHintValue, setUiHintValue} type="values" />
 {:else if schema.enum && schema.array}
   <Field {label} {description}>
     <MultiSelect options={schema.enum} bind:values={getEnum, setValue} />

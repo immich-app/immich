@@ -1,10 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
 import { JobName, JobStatus } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { TagService } from 'src/services/tag.service.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(TagService.name, () => {
   let sut: TagService;
@@ -48,6 +50,7 @@ describe(TagService.name, () => {
         BadRequestException,
       );
       expect(mocks.tag.create).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should create a tag with a parent', async () => {
@@ -65,6 +68,7 @@ describe(TagService.name, () => {
         BadRequestException,
       );
       expect(mocks.tag.create).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -74,6 +78,7 @@ describe(TagService.name, () => {
       await expect(sut.create(authStub.admin, { name: 'tag-1' })).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.tag.getByValue).toHaveBeenCalledWith(authStub.admin.user.id, 'tag-1');
       expect(mocks.tag.create).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should create a new tag', async () => {
@@ -99,6 +104,15 @@ describe(TagService.name, () => {
         color: '#000000',
       });
     });
+
+    it('should tell the owner about the new tag', async () => {
+      const auth = AuthFactory.create();
+      mocks.tag.create.mockResolvedValue(tagStub.tagCreate);
+
+      await sut.create(auth, { name: 'tag-1' });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.tags()] });
+    });
   });
 
   describe('update', () => {
@@ -108,6 +122,7 @@ describe(TagService.name, () => {
         BadRequestException,
       );
       expect(mocks.tag.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should throw an error if updated tag name has a slash', async () => {
@@ -116,6 +131,7 @@ describe(TagService.name, () => {
         BadRequestException,
       );
       expect(mocks.tag.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should update a tag', async () => {
@@ -146,6 +162,16 @@ describe(TagService.name, () => {
       expect(mocks.tag.getAssetIdsByTagId).not.toHaveBeenCalled();
       expect(mocks.asset.upsertExif).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should tell the owner about the updated tag', async () => {
+      const auth = AuthFactory.create();
+      mocks.tag.update.mockResolvedValue(tagStub.colorCreate);
+      mocks.tag.get.mockResolvedValue(tagStub.tag);
+
+      await sut.update(auth, 'tag-1', { color: '#000000' });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.tag({ id: 'tag-1' })] });
     });
   });
 
@@ -191,6 +217,21 @@ describe(TagService.name, () => {
         parentId: 'tag-parent',
       });
     });
+
+    it('should tell the owner about the upserted tags', async () => {
+      const auth = AuthFactory.create();
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
+
+      await sut.upsert(auth, { tags: ['Parent'] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.tags()] });
+    });
+
+    it('should not tell anyone when no tags are upserted', async () => {
+      await sut.upsert(AuthFactory.create(), { tags: [] });
+
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
   });
 
   describe('remove', () => {
@@ -198,6 +239,7 @@ describe(TagService.name, () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set());
       await expect(sut.remove(authStub.admin, 'tag-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.tag.delete).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should remove a tag', async () => {
@@ -215,6 +257,16 @@ describe(TagService.name, () => {
       });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
+
+    it('should tell the owner about the removed tag and its children', async () => {
+      const auth = AuthFactory.create();
+      mocks.tag.delete.mockResolvedValue();
+      mocks.tag.getAssetIdsByTagId.mockResolvedValue([]);
+
+      await sut.remove(auth, 'tag-1');
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.tag({ id: 'tag-1' })] });
+    });
   });
 
   describe('bulkTagAssets', () => {
@@ -225,6 +277,7 @@ describe(TagService.name, () => {
         count: 0,
       });
       expect(mocks.tag.upsertAssetIds).toHaveBeenCalledWith([]);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should upsert records', async () => {
@@ -271,6 +324,21 @@ describe(TagService.name, () => {
         { tagId: 'tag-2', assetId: 'asset-3' },
       ]);
     });
+
+    it('should tell the owner once about all tagged assets', async () => {
+      const auth = AuthFactory.create();
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1', 'tag-2']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'tag-1' }, { value: 'tag-2' }] });
+      mocks.tag.upsertAssetIds.mockResolvedValue([
+        { tagId: 'tag-1', assetId: 'asset-1' },
+        { tagId: 'tag-2', assetId: 'asset-1' },
+      ]);
+
+      await sut.bulkTagAssets(auth, { tagIds: ['tag-1', 'tag-2'], assetIds: ['asset-1'] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.tags()] });
+    });
   });
 
   describe('addAssets', () => {
@@ -281,6 +349,7 @@ describe(TagService.name, () => {
       ]);
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1']);
       expect(mocks.tag.addAssetIds).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should accept accept ids that are new and reject the rest', async () => {
@@ -314,6 +383,18 @@ describe(TagService.name, () => {
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
       expect(mocks.tag.addAssetIds).toHaveBeenCalledWith('tag-1', ['asset-2']);
     });
+
+    it('should tell the owner about the tagged assets', async () => {
+      const auth = AuthFactory.create();
+      mocks.tag.getAssetIds.mockResolvedValue(new Set());
+      mocks.tag.addAssetIds.mockResolvedValue();
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'tag-1' }] });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.addAssets(auth, 'tag-1', { ids: ['asset-1'] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.tag({ id: 'tag-1' })] });
+    });
   });
 
   describe('removeAssets', () => {
@@ -325,6 +406,7 @@ describe(TagService.name, () => {
       await expect(sut.removeAssets(authStub.admin, 'tag-1', { ids: ['asset-1'] })).resolves.toEqual([
         { id: 'asset-1', success: false, error: 'not_found' },
       ]);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should accept accept ids that are tagged and reject the rest', async () => {
@@ -344,6 +426,17 @@ describe(TagService.name, () => {
 
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
       expect(mocks.tag.removeAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1']);
+    });
+
+    it('should tell the owner about the untagged assets', async () => {
+      const auth = AuthFactory.create();
+      mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
+      mocks.tag.removeAssetIds.mockResolvedValue();
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [] });
+
+      await sut.removeAssets(auth, 'tag-1', { ids: ['asset-1'] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.tag({ id: 'tag-1' })] });
     });
   });
 

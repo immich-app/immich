@@ -562,6 +562,7 @@ export class PersonRepository {
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
       .select([
         'person.ownerId',
+        'person.thumbnailPath',
         'asset_face.boundingBoxX1 as x1',
         'asset_face.boundingBoxY1 as y1',
         'asset_face.boundingBoxX2 as x2',
@@ -797,7 +798,7 @@ export class PersonRepository {
     });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, 2] })
+  @GenerateSql({ params: [[{ clusterGroupId: DummyValue.UUID }]] })
   async createGroups(personGroups: Insertable<PersonGroupTable>[]) {
     if (personGroups.length === 0) {
       return [];
