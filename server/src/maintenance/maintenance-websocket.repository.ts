@@ -75,14 +75,13 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
   }
 
   async handleConnection(client: Socket) {
-    try {
-      await this.authFn!(client);
-      await client.join('private');
-      this.logger.log(`Websocket Connect:    ${client.id} (private)`);
-    } catch {
-      await client.join('public');
-      this.logger.log(`Websocket Connect:    ${client.id} (public)`);
-    }
+    const isAuthenticated = await this.authFn!(client)
+      .then(() => true)
+      .catch(() => false);
+    const room = isAuthenticated ? 'private' : 'public';
+    await client.join(room);
+    this.logger.log(`Websocket Connect:    ${client.id} (${room})`);
+    await this.eventRepository.emit('MaintenanceWebsocketConnect', { clientId: client.id, isAuthenticated });
   }
 
   async handleDisconnect(client: Socket) {
