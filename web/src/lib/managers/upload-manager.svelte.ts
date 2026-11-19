@@ -1,7 +1,9 @@
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getSupportedMediaTypesQuery } from '#lib/queries/server-info.query.ts';
 import { uploadAssetsStore } from '#lib/stores/upload.ts';
 import { cancelUploadRequests } from '#lib/utils.ts';
-import { getSupportedMediaTypes, type ServerMediaTypesResponseDto } from '@immich/sdk';
+import type { ServerMediaTypesResponseDto } from '@immich/sdk';
 
 class UploadManager {
   mediaTypes = $state<ServerMediaTypesResponseDto>({ image: [], sidecar: [], video: [] });
@@ -20,7 +22,7 @@ class UploadManager {
 
   async #loadExtensions() {
     try {
-      this.mediaTypes = await getSupportedMediaTypes();
+      this.mediaTypes = await queryClient.query(getSupportedMediaTypesQuery());
     } catch {
       console.error('Failed to load supported media types');
     }

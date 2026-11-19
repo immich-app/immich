@@ -197,6 +197,22 @@ describe('storage template settings with a custom template', () => {
   });
 });
 
+describe('saving settings', () => {
+  test('reloads the server features', async ({ router, render, settle, api, app }) => {
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+    await app.admin.settings.open('admin.storage_template_settings');
+    await app.admin.settings.storageTemplate.option('YYYY/MM/DD').click();
+    const before = api.getServerFeatures.calls.length;
+
+    await app.admin.settings.saveButton.click();
+    await settle();
+
+    expect(api.updateAdminConfig).toHaveBeenCalled();
+    expect(api.getServerFeatures.calls.length).toBe(before + 1);
+  });
+});
+
 describe('storage template settings from a config file', () => {
   test('cannot be changed', async ({ data, router, render, app }) => {
     data.serverFeatures.configFile = true;

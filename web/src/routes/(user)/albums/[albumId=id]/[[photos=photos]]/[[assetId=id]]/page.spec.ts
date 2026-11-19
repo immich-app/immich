@@ -1,3 +1,5 @@
+import { getAlbumInfoQuery } from '#lib/queries/album.query.ts';
+import { queryClient } from '#lib/queries/client.ts';
 import { Route } from '#lib/route.ts';
 import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
@@ -36,6 +38,61 @@ test('owner saves a new description when leaving the field', async ({ data, rout
     params: { id: album.id },
     body: { description: 'A week in the mountains' },
   });
+});
+
+test('keeps a typed description when the album is renamed', async ({ data, router, render, settle, api, app }) => {
+  const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user }) });
+  data.addAlbums(album);
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+  await app.album.descriptionInput.fill('Typed description');
+
+  data.updateAlbum(album.id, { albumName: 'Renamed elsewhere' });
+  await queryClient.invalidateQueries({ queryKey: getAlbumInfoQuery(album.id).queryKey });
+  await settle();
+
+  await expect.element(app.album.descriptionInput).toHaveValue('Typed description');
+  await userEvent.keyboard('{Control>}{Enter}{/Control}');
+  await settle();
+  expect(api.updateAlbumInfo).toHaveBeenCalledWith({
+    params: { id: album.id },
+    body: { description: 'Typed description' },
+  });
+});
+
+test('keeps a typed title when a photo is added elsewhere', async ({ data, router, render, settle, api, app }) => {
+  const album = factory.album({ albumName: 'Car', albumUsers: factory.albumUsers({ owner: data.user }) });
+  const asset = factory.asset();
+  data.addAssets(asset);
+  data.addAlbums(album);
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+  await app.album.titleInput.fill('Car typed');
+
+  data.addToAlbum(album.id, asset);
+  await queryClient.invalidateQueries({ queryKey: getAlbumInfoQuery(album.id).queryKey });
+  await settle();
+
+  await expect.element(app.album.titleInput).toHaveValue('Car typed');
+  await userEvent.keyboard('{Enter}');
+  await settle();
+  expect(api.updateAlbumInfo).toHaveBeenCalledWith({ params: { id: album.id }, body: { albumName: 'Car typed' } });
+});
+
+test('shows a title renamed elsewhere when not editing it', async ({ data, router, render, settle, app }) => {
+  const album = factory.album({ albumName: 'Car', albumUsers: factory.albumUsers({ owner: data.user }) });
+  data.addAlbums(album);
+  await router.goto(Route.viewAlbum(album), { albumId: album.id });
+  await render(Page, load);
+  await settle();
+
+  data.updateAlbum(album.id, { albumName: 'Car remote' });
+  await queryClient.invalidateQueries({ queryKey: getAlbumInfoQuery(album.id).queryKey });
+  await settle();
+
+  await expect.element(app.album.titleInput).toHaveValue('Car remote');
 });
 
 test('editor can edit the description', async ({ data, router, render, settle, app }) => {

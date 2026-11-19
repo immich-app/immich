@@ -34,6 +34,7 @@ overrides:
   sharp: ^0.35.3
   # 1.9.3-1.9.5 are confirmed broken
   tsc-alias: 1.9.10
+  svelte-eslint-parser: 1.9.0
 packageExtensions:
   nestjs-kysely:
     dependencies:

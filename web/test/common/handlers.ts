@@ -95,6 +95,11 @@ export const createHandlers = (data: MockData): Handlers => {
       return partner ? { json: partner } : notFound;
     },
     getNotifications: () => ({ json: data.notifications }),
+    setUserOnboarding: ({ body }) => ({ json: body }),
+    updateAdminOnboarding: () => {
+      data.isOnboarded = true;
+      return { status: 204 };
+    },
     deleteProfileImage: () => {
       data.user.profileImagePath = '';
       return { status: 204 };

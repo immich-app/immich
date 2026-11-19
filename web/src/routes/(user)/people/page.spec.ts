@@ -1,3 +1,5 @@
+import { queryClient } from '#lib/queries/client.ts';
+import { getAllPeoplePagesQuery } from '#lib/queries/person.query.ts';
 import { Route } from '#lib/route.ts';
 import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
@@ -61,6 +63,24 @@ test('renaming a person to a new name saves it', async ({ data, router, render, 
 
   expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: unnamed.id }, body: { name: 'Bob' } });
   await expect.element(app.people.mergeDialog('Alice')).not.toBeInTheDocument();
+});
+
+test('saves the shown name when renamed elsewhere', async ({ data, router, render, settle, app, api }) => {
+  const ariel = factory.person({ name: 'Ariel' });
+  data.addPeople(ariel);
+  await router.goto(Route.people());
+  await render(Page, load);
+  await settle();
+  await app.people.nameInput(0).fill('Ariel typed');
+
+  data.updatePerson(ariel.id, { name: 'Ariel remote' });
+  await queryClient.invalidateQueries({ queryKey: getAllPeoplePagesQuery({ withHidden: true }).queryKey });
+  await settle();
+
+  await expect.element(app.people.nameInput(0)).toHaveValue('Ariel typed');
+  await userEvent.keyboard('{Enter}');
+  await settle();
+  expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: ariel.id }, body: { name: 'Ariel typed' } });
 });
 
 test('hiding a person removes the card', async ({ data, router, render, settle, api, app }) => {
