@@ -52,9 +52,9 @@ class LogRepository {
     return true;
   }
 
-  Future<void> truncate({int limit = kLogTruncateLimit}) async {
+  Future<void> truncate({int limit = kLogTruncateLimit, int threshold = kLogTruncateThreshold}) async {
     final totalCount = await _db.managers.logMessageEntity.count();
-    if (totalCount > limit) {
+    if (totalCount > threshold) {
       final newest = _db.selectOnly(_db.logMessageEntity)
         ..addColumns([_db.logMessageEntity.id])
         ..orderBy([OrderingTerm.desc(_db.logMessageEntity.createdAt)])

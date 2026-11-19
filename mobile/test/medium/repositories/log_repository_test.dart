@@ -9,9 +9,12 @@ void main() {
   late DriftLogger db;
   late LogRepository sut;
 
-  setUp(() {
+  setUp(() async {
     db = DriftLogger.fromExecutor(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     sut = LogRepository(db);
+    for (final minute in [3, 1, 5, 2, 4]) {
+      await sut.insert(LogMessage(message: '$minute', level: .info, createdAt: DateTime(2026, 1, 1, 0, minute)));
+    }
   });
 
   tearDown(() async {
@@ -19,13 +22,16 @@ void main() {
   });
 
   test('truncate deletes only the oldest logs', () async {
-    for (final minute in [3, 1, 5, 2, 4]) {
-      await sut.insert(LogMessage(message: '$minute', level: .info, createdAt: DateTime(2026, 1, 1, 0, minute)));
-    }
-
-    await sut.truncate(limit: 3);
+    await sut.truncate(limit: 3, threshold: 4);
 
     final logs = await sut.getAll();
     expect(logs.map((log) => log.message), ['5', '4', '3']);
+  });
+
+  test('truncate keeps every log until the threshold', () async {
+    await sut.truncate(limit: 3, threshold: 5);
+
+    final logs = await sut.getAll();
+    expect(logs.map((log) => log.message), ['5', '4', '3', '2', '1']);
   });
 }
