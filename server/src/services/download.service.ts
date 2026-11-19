@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { AuthDto, isEditedOnly } from 'src/dtos/auth.dto.js';
 import {
@@ -12,7 +11,7 @@ import { Permission } from 'src/enum.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
-import { getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
+import { getDownloadFile } from 'src/utils/file.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
@@ -104,13 +103,7 @@ export class DownloadService extends BaseService {
         continue;
       }
 
-      const { editedPath, originalPath, originalFileName } = asset;
-
-      let path = editedPath ?? originalPath;
-
-      const name =
-        sanitize(getFileNameWithoutExtension(config.storageTemplate.enabled ? path : originalFileName)) || 'unnamed';
-      const extension = getFilenameExtension(path);
+      const { path, name, extension } = getDownloadFile(asset, config);
       let filename = name + extension;
 
       const count = paths[filename] || 0;
@@ -119,13 +112,14 @@ export class DownloadService extends BaseService {
         filename = `${name}+${count}${extension}`;
       }
 
+      let realpath = path;
       try {
-        path = await this.storageRepository.realpath(path);
+        realpath = await this.storageRepository.realpath(path);
       } catch {
-        this.logger.warn('Unable to resolve realpath', { realpath: path });
+        this.logger.warn('Unable to resolve realpath', { realpath });
       }
 
-      zip.addFile(path, filename);
+      zip.addFile(realpath, filename);
     }
 
     void zip.finalize();

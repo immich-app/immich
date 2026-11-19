@@ -141,6 +141,40 @@ describe(DownloadService.name, () => {
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, asset2.originalPath, asset2.originalFileName);
     });
 
+    it('should name files after the library path when the storage template is enabled', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create({
+        originalPath: '/data/library/admin/2024/IMG_1234.jpg',
+        originalFileName: 'upload.jpg',
+      });
+      const editedAsset = AssetFactory.create({
+        originalPath: '/data/library/admin/2024/IMG_5678.heic',
+        originalFileName: 'upload.heic',
+      });
+
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id, editedAsset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([
+        asset,
+        { ...editedAsset, editedPath: '/data/thumbs/admin/ab/cd/asset-2_fullsize_edited.jpeg' },
+      ]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await sut.downloadArchive(authStub.admin, { assetIds: [asset.id, editedAsset.id] });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/admin/2024/IMG_1234.jpg', 'IMG_1234.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(
+        2,
+        '/data/thumbs/admin/ab/cd/asset-2_fullsize_edited.jpeg',
+        'IMG_5678.jpeg',
+      );
+    });
+
     it('should handle duplicate file names', async () => {
       const archiveMock = {
         addFile: vitest.fn(),

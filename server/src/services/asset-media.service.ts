@@ -33,7 +33,12 @@ import type { UploadFile, UploadRequest } from 'src/types.js';
 import { requireUploadAccess } from 'src/utils/access.js';
 import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util.js';
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
-import { ImmichFileResponse, getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
+import {
+  ImmichFileResponse,
+  getDownloadFile,
+  getFileNameWithoutExtension,
+  getFilenameExtension,
+} from 'src/utils/file.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { fromChecksum } from 'src/utils/request.js';
 
@@ -246,21 +251,12 @@ export class AssetMediaService extends BaseService {
 
     const config = await this.getConfig({ withCache: true });
 
-    const { editedPath, originalPath, originalFileName } = await this.assetRepository.getForOriginal(
-      id,
-      isEditedOnly(auth, dto.edited),
-    );
-
-    const path = editedPath ?? originalPath;
-
-    const name =
-      sanitize(getFileNameWithoutExtension(config.storageTemplate.enabled ? path : originalFileName)) || 'unnamed';
-    const extension = getFilenameExtension(path);
-    const fileName = name + extension;
+    const asset = await this.assetRepository.getForOriginal(id, isEditedOnly(auth, dto.edited));
+    const { path, name, extension } = getDownloadFile(asset, config);
 
     return new ImmichFileResponse({
       path,
-      fileName,
+      fileName: name + extension,
       contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
     });
