@@ -17,6 +17,7 @@ import { MachineLearningRepository } from 'src/repositories/machine-learning.rep
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
 import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
@@ -45,7 +46,7 @@ const setup = (db?: Kysely<DB>) => {
       ClusterGroupRepository,
       PartnerRepository,
     ],
-    mock: [JobRepository, LoggingRepository, StorageRepository, MachineLearningRepository],
+    mock: [ResourceRepository, JobRepository, LoggingRepository, StorageRepository, MachineLearningRepository],
   });
 };
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { activateProduct, getActivationKey } from '#lib/utils/license-utils.ts';
   import { Button, Heading, LoadingSpinner, Text } from '@immich/ui';
@@ -8,7 +7,7 @@
   import ServerPurchaseOptionCard from './ServerPurchaseOptionCard.svelte';
 
   interface Props {
-    onActivate: () => void;
+    onActivate?: () => void;
     showTitle?: boolean;
     showMessage?: boolean;
   }
@@ -17,16 +16,14 @@
   let productKey = $state('');
   let isLoading = $state(false);
 
-  const activate = async () => {
+  const activate = async (event: Event) => {
+    event.preventDefault();
     try {
       productKey = productKey.trim();
       isLoading = true;
 
       const activationKey = await getActivationKey(productKey);
-      await activateProduct(productKey, activationKey);
-
-      onActivate();
-      authManager.isPurchased = true;
+      await activateProduct(productKey, activationKey, { onSuccess: onActivate });
     } catch (error) {
       handleError(error, $t('purchase_failed_activation'));
     } finally {

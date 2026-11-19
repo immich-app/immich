@@ -15,6 +15,44 @@ test('sets an asset as the profile picture', async ({ page, data, api, app }) =>
 
   await expect(app.toast('profile_picture_set')).toBeVisible();
   await expect(app.dialog).toHaveCount(0);
+  await app.viewer.backButton.click();
+  await expect(app.navbar.avatarImage).toHaveAttribute('src', new RegExp(`/users/${data.user.id}/profile-image`));
+  expect(api.createProfileImage).toHaveBeenCalledWith({
+    body: expect.stringMatching(/filename="profile-picture\.png"\r\nContent-Type: image\/png/),
+  });
+});
+
+test('cancels setting the profile picture', async ({ page, data, api, app }) => {
+  const asset = factory.asset({ width: 1000, height: 1000 });
+  data.addAssets(asset);
+  api.on({ viewAsset: () => ({ body: opaquePng, contentType: 'image/png' }) });
+  await page.goto(Route.viewAsset({ id: asset.id }));
+  await app.viewer.waitForAsset(asset);
+
+  await app.viewer.setProfilePicture();
+  await app.viewer.profilePicture.cancelButton.click();
+
+  await expect(app.dialog).toHaveCount(0);
+  expect(api.createProfileImage).not.toHaveBeenCalled();
+});
+
+test('keeps the cropper open when setting the profile picture fails', async ({ page, data, api, app, logger }) => {
+  const asset = factory.asset({ width: 1000, height: 1000 });
+  data.addAssets(asset);
+  api.on({
+    viewAsset: () => ({ body: opaquePng, contentType: 'image/png' }),
+    createProfileImage: () => ({ status: 500, json: { message: 'Server error', statusCode: 500 } }),
+  });
+  await page.goto(Route.viewAsset({ id: asset.id }));
+  await app.viewer.waitForAsset(asset);
+
+  await app.viewer.setProfilePicture();
+  await app.viewer.profilePicture.saveButton.click();
+
+  await expect(app.toast(/Server error/)).toBeVisible();
+  await expect(app.viewer.profilePicture.saveButton).toBeVisible();
+  expect(logger.error).toHaveBeenCalledWith(/handleError/);
+  expect(logger.error).toHaveBeenCalledWith(/status of 500/);
   expect(api.createProfileImage).toHaveBeenCalledWith({
     body: expect.stringMatching(/filename="profile-picture\.png"\r\nContent-Type: image\/png/),
   });

@@ -7,7 +7,7 @@
   import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
-  import { Colorspace, ImageFormat } from '@immich/sdk';
+  import { Colorspace, ImageEffort, ImageFormat } from '@immich/sdk';
   import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -18,6 +18,13 @@
 
   const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
+
+  const effortOptions = $derived([
+    { value: ImageEffort.Low, text: $t('admin.image_effort_low') },
+    { value: ImageEffort.Medium, text: $t('admin.image_effort_medium') },
+    { value: ImageEffort.High, text: $t('admin.image_effort_high') },
+    { value: ImageEffort.Max, text: $t('admin.image_effort_max') },
+  ]);
 </script>
 
 <div>
@@ -57,6 +64,7 @@
               { value: 1080, text: '1080p' },
               { value: 720, text: '720p' },
               { value: 480, text: '480p' },
+              { value: 360, text: '360p' },
               { value: 250, text: '250p' },
               { value: 200, text: '200p' },
             ]}
@@ -72,6 +80,16 @@
             bind:value={configToEdit.image.thumbnail.quality}
             isEdited={configToEdit.image.thumbnail.quality !== config.image.thumbnail.quality}
             {disabled}
+          />
+
+          <SettingSelect
+            label={$t('admin.image_effort')}
+            desc={$t('admin.image_effort_description')}
+            bind:value={configToEdit.image.thumbnail.effort}
+            options={effortOptions}
+            name="effort"
+            isEdited={configToEdit.image.thumbnail.effort !== config.image.thumbnail.effort}
+            disabled={disabled || configToEdit.image.thumbnail.format === ImageFormat.Jpeg}
           />
 
           <SettingSwitch
@@ -133,6 +151,16 @@
             {disabled}
           />
 
+          <SettingSelect
+            label={$t('admin.image_effort')}
+            desc={$t('admin.image_effort_description')}
+            bind:value={configToEdit.image.preview.effort}
+            options={effortOptions}
+            name="effort"
+            isEdited={configToEdit.image.preview.effort !== config.image.preview.effort}
+            disabled={disabled || configToEdit.image.preview.format === ImageFormat.Jpeg}
+          />
+
           <SettingSwitch
             title={$t('admin.image_progressive')}
             subtitle={$t('admin.image_progressive_description')}
@@ -185,6 +213,18 @@
             bind:value={configToEdit.image.fullsize.quality}
             isEdited={configToEdit.image.fullsize.quality !== config.image.fullsize.quality}
             disabled={disabled || !configToEdit.image.fullsize.enabled}
+          />
+
+          <SettingSelect
+            label={$t('admin.image_effort')}
+            desc={$t('admin.image_effort_description')}
+            bind:value={configToEdit.image.fullsize.effort}
+            options={effortOptions}
+            name="effort"
+            isEdited={configToEdit.image.fullsize.effort !== config.image.fullsize.effort}
+            disabled={disabled ||
+              !configToEdit.image.fullsize.enabled ||
+              configToEdit.image.fullsize.format === ImageFormat.Jpeg}
           />
 
           <SettingSwitch

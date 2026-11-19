@@ -1,24 +1,40 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
 import { queryClient } from '#lib/queries/client.ts';
-import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
-import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
-import { getFormatter } from '#lib/utils/i18n.ts';
-import { getAdminConfig, getAdminConfigDefaults, updateAdminConfig, type AdminConfigDto } from '@immich/sdk';
-import { toastManager } from '@immich/ui';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
+import {
+  getAdminConfig,
+  getAdminConfigDefaults,
+  getAdminStorageTemplateOptions,
+  previewStorageTemplate,
+  updateAdminConfig,
+  type AdminConfigDto,
+} from '@immich/sdk';
 import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
 import { isEqual } from 'lodash-es';
 
 export const getAdminConfigQuery = () =>
   queryOptions({
-    queryKey: ['config', 'admin'],
+    queryKey: QueryKeys.adminConfig(),
     queryFn: ({ signal }) => getAdminConfig({ signal }),
     gcTime: Infinity,
   });
 
 export const getAdminConfigDefaultsQuery = () =>
   queryOptions({
-    queryKey: ['config', 'admin', 'defaults'],
+    queryKey: QueryKeys.adminConfigDefaults(),
     queryFn: ({ signal }) => getAdminConfigDefaults({ signal }),
+  });
+
+export const getStorageTemplateOptionsQuery = () =>
+  queryOptions({
+    queryKey: QueryKeys.storageTemplate(),
+    queryFn: ({ signal }) => getAdminStorageTemplateOptions({ signal }),
+  });
+
+export const getStorageTemplatePreviewQuery = (template: string) =>
+  queryOptions({
+    queryKey: QueryKeys.storageTemplatePreview({ template }),
+    queryFn: ({ signal }) => previewStorageTemplate({ storageTemplatePreviewDto: { template } }, { signal }),
   });
 
 export const updateAdminConfigMutation = () =>
@@ -40,13 +56,10 @@ export const updateAdminConfigMutation = () =>
 
       queryClient.setQueryData(getAdminConfigQuery().queryKey, config);
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: getUserConfigQuery().queryKey }),
-        queryClient.invalidateQueries({ queryKey: getPublicConfigQuery().queryKey }),
+        queryClient.invalidateQueries({ queryKey: QueryKeys.userConfig() }),
+        queryClient.invalidateQueries({ queryKey: QueryKeys.publicConfig() }),
+        featureFlagsManager.init(),
       ]);
-      eventManager.emit('SystemConfigUpdate', config);
-
-      const $t = await getFormatter();
-      toastManager.primary($t('settings_saved'));
     },
-    meta: { error: { toast: 'errors.unable_to_save_settings' } },
+    meta: { success: { toast: 'settings_saved' }, error: { toast: 'errors.unable_to_save_settings' } },
   });

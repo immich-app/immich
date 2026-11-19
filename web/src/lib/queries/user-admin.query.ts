@@ -1,5 +1,6 @@
 import { getHeatmapRange } from '#lib';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   CalendarHeatmapType,
   createUserAdmin,
@@ -25,7 +26,7 @@ const findOrFail = (users: UserAdminResponseDto[], id: string) => {
 
 export const searchUsersAdminQuery = ({ withDeleted = false }: { withDeleted?: boolean } = {}) =>
   queryOptions({
-    queryKey: ['user-admin'],
+    queryKey: QueryKeys.adminUsers({ withDeleted: true }),
     queryFn: ({ signal }) => searchUsersAdmin({ withDeleted: true }, { signal }),
     select: (users) => (withDeleted ? users : users.filter((user) => !user.deletedAt)),
   });
@@ -38,28 +39,26 @@ export const getUserAdminQuery = (id: string) =>
 
 export const getUserPreferencesAdminQuery = (id: string) =>
   queryOptions({
-    queryKey: ['user-admin', id, 'preferences'],
+    queryKey: QueryKeys.adminUserPreferences({ id }),
     queryFn: ({ signal }) => getUserPreferencesAdmin({ id }, { signal }),
-    staleTime: 0,
   });
 
 export const getUserStatisticsAdminQuery = (id: string) =>
   queryOptions({
-    queryKey: ['user-admin', id, 'statistics'],
+    queryKey: QueryKeys.adminUserStatistics({ id }),
     queryFn: ({ signal }) => getUserStatisticsAdmin({ id }, { signal }),
     staleTime: 0,
   });
 
 export const getUserSessionsAdminQuery = (id: string) =>
   queryOptions({
-    queryKey: ['user-admin', id, 'sessions'],
+    queryKey: QueryKeys.adminUserSessions({ id }),
     queryFn: ({ signal }) => getUserSessionsAdmin({ id }, { signal }),
-    staleTime: 0,
   });
 
 export const getUserCalendarHeatmapAdminQuery = (id: string) =>
   queryOptions({
-    queryKey: ['user-admin', id, 'heatmap'],
+    queryKey: QueryKeys.adminUserCalendarHeatmap({ id, type: CalendarHeatmapType.Upload }),
     queryFn: ({ signal }) =>
       getUserCalendarHeatmapAdmin({ ...getHeatmapRange(), id, $type: CalendarHeatmapType.Upload }, { signal }),
     staleTime: 0,
@@ -67,7 +66,8 @@ export const getUserCalendarHeatmapAdminQuery = (id: string) =>
 
 export const createUserAdminMutation = () =>
   asMutation(createUserAdmin, {
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: searchUsersAdminQuery().queryKey, exact: true }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: QueryKeys.adminUsers({ withDeleted: true }), exact: true }),
     meta: { error: { toast: 'errors.unable_to_create_user' } },
   });
 

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { handleUpdatePerson } from '#lib/services/person.service.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { updatePersonMutation } from '#lib/queries/person.query.ts';
   import { PersonUpdateStrategy, type PersonResponseDto } from '@immich/sdk';
   import { Checkbox, DatePicker, Field, FormModal, HStack, HelperText, Input, Label, Stack } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
@@ -19,16 +20,11 @@
   let onlyForMe = $state(authManager.preferences.people?.updateStrategy !== PersonUpdateStrategy.Everyone);
 
   const onSubmit = async () => {
-    const response = await handleUpdatePerson({
-      id: person.id,
-      name,
-      birthDate,
-      userId: onlyForMe ? authManager.user.id : undefined,
-    });
-
-    if (response) {
-      onClose();
-    }
+    await executeMutation(
+      updatePersonMutation,
+      [{ id: person.id, personUpdateDto: { name, birthDate, userId: onlyForMe ? authManager.user.id : undefined } }],
+      { onSuccess: onClose },
+    );
   };
 </script>
 
@@ -48,7 +44,8 @@
     <Field label={$t('date_of_birth')}>
       <DatePicker
         bind:value={
-          () => (birthDate ? DateTime.fromISO(birthDate) : undefined), (value) => (birthDate = value?.toISO() ?? null)
+          () => (birthDate ? DateTime.fromISO(birthDate) : undefined),
+          (value) => (birthDate = value?.toISODate() ?? null)
         }
         maxDate={DateTime.now()}
       />

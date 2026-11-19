@@ -265,7 +265,7 @@ describe('/futo-backups', () => {
         },
       };
 
-      await expect(sdk.futoBackupsGetSchedules(maintenanceRequestOpts)).resolves.toEqual({ schedules: [] });
+      await expect(sdk.futoBackupsGetSchedules(maintenanceRequestOpts)).resolves.toMatchObject({ schedules: [] });
 
       await sdk.futoBackupsImportRecoveryKey({ recoveryKey: '0'.repeat(64) }, maintenanceRequestOpts);
 
@@ -344,7 +344,7 @@ describe('/futo-backups', () => {
         )
         .toBeFalsy();
 
-      await expect(sdk.futoBackupsGetSchedules(requestOpts)).resolves.toEqual({
+      await expect(sdk.futoBackupsGetSchedules(requestOpts)).resolves.toMatchObject({
         schedules: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
       });
     });

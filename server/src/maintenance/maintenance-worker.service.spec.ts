@@ -106,6 +106,32 @@ describe(MaintenanceWorkerService.name, () => {
     });
   });
 
+  describe('onWebsocketConnect', () => {
+    beforeEach(() => {
+      sut.mock({ active: true, action: MaintenanceAction.RestoreDatabase, error: 'restore failed' });
+    });
+
+    it('should send the full status to an authenticated client', () => {
+      sut.onWebsocketConnect({ clientId: 'client-1', isAuthenticated: true });
+
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledExactlyOnceWith(
+        'MaintenanceStatusV1',
+        'client-1',
+        { active: true, action: 'restore_database', error: 'restore failed' },
+      );
+    });
+
+    it('should send the public status to an unauthenticated client', () => {
+      sut.onWebsocketConnect({ clientId: 'client-1', isAuthenticated: false });
+
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledExactlyOnceWith(
+        'MaintenanceStatusV1',
+        'client-1',
+        { active: true, action: 'restore_database', error: 'Something went wrong, see logs!' },
+      );
+    });
+  });
+
   describe('logSecret', () => {
     const RE_LOGIN_URL = /https:\/\/my.immich.app\/maintenance\?token=([A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*)/;
 

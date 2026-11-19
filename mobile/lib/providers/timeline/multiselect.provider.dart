@@ -1,9 +1,12 @@
 // ignore_for_file: use-ref-and-state-synchronously
 
+import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 part 'multiselect.provider.freezed.dart';
@@ -45,7 +48,23 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
   @override
   MultiSelectState build() {
+    final reloads = EventStream.shared.listen<TimelineReloadEvent>((_) => _refreshSelection());
+    ref.onDispose(reloads.cancel);
+
     return _defaultState ?? const MultiSelectState(selectedAssets: {}, lockedSelectionAssets: {}, forceEnable: false);
+  }
+
+  void _refreshSelection() {
+    if (!state.isEnabled) {
+      return;
+    }
+
+    final selectedAssets = _timelineService.refreshAssets(state.selectedAssets);
+    if (const SetEquality<BaseAsset>().equals(selectedAssets, state.selectedAssets)) {
+      return;
+    }
+
+    state = state.copyWith(selectedAssets: selectedAssets);
   }
 
   void selectAsset(BaseAsset asset) {

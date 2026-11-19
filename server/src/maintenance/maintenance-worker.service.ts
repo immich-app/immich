@@ -9,6 +9,7 @@ import { IncomingHttpHeaders } from 'node:http';
 import { basename } from 'node:path';
 import { serverVersion } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent } from 'src/decorators.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
@@ -16,12 +17,13 @@ import {
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto.js';
 import { ServerConfigDto, ServerPingResponse, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
-import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { DatabaseLock, ImmichCookie, ImmichWorker, MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
@@ -81,7 +83,6 @@ export class MaintenanceWorkerService {
     StorageCore.setMediaLocation(this.detectMediaLocation());
 
     this.maintenanceWebsocketRepository.setAuthFn(async (client) => this.authenticate(client.request.headers));
-    this.maintenanceWebsocketRepository.setStatusUpdateFn((status) => (this.#status = status));
 
     await this.logSecret();
 
@@ -194,6 +195,17 @@ export class MaintenanceWorkerService {
     }
 
     return state;
+  }
+
+  @OnEvent({ name: 'MaintenanceStatus', server: true, workers: [ImmichWorker.Maintenance] })
+  onMaintenanceStatus(status: ArgOf<'MaintenanceStatus'>) {
+    this.#status = status;
+  }
+
+  @OnEvent({ name: 'MaintenanceWebsocketConnect', workers: [ImmichWorker.Maintenance] })
+  onWebsocketConnect({ clientId, isAuthenticated }: ArgOf<'MaintenanceWebsocketConnect'>) {
+    const status = isAuthenticated ? this.getStatus() : this.getPublicStatus();
+    this.maintenanceWebsocketRepository.clientSend('MaintenanceStatusV1', clientId, status);
   }
 
   setStatus(status: MaintenanceStatusResponseDto): void {

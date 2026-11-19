@@ -9,6 +9,7 @@ import { DuplicateRepository } from 'src/repositories/duplicate.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
 import { TagRepository } from 'src/repositories/tag.repository.js';
 import { DB } from 'src/schema/index.js';
@@ -33,7 +34,7 @@ const setup = (db?: Kysely<DB>) => {
       SystemMetadataRepository,
       TagRepository,
     ],
-    mock: [EventRepository, JobRepository, LoggingRepository],
+    mock: [ResourceRepository, EventRepository, JobRepository, LoggingRepository],
   });
 
   ctx.getMock(EventRepository).emit.mockResolvedValue();

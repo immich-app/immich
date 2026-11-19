@@ -1,5 +1,6 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { uploadManager } from '#lib/managers/upload-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
 import { uploadAssetsStore } from '#lib/stores/upload.ts';
 import { UploadState } from '#lib/types.ts';
 import { uploadRequest } from '#lib/utils.ts';
@@ -22,7 +23,7 @@ describe('fileUploader error handling', () => {
     vi.clearAllMocks();
     vi.spyOn(uploadManager, 'getExtensions').mockReturnValue(['.jpg']);
     uploadAssetsStore.reset();
-    authManager.reset();
+    queryClient.clear();
   });
 
   for (const [name, mockUser] of [
@@ -63,7 +64,7 @@ describe('fileUploader error handling', () => {
     authManager.setUser(mockUserObject);
     authManager.setPreferences(factory.preferences());
     vi.mocked(uploadRequest).mockImplementationOnce(() => {
-      authManager.reset();
+      queryClient.clear();
       return Promise.reject(mockError);
     });
 

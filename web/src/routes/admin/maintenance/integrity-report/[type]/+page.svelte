@@ -1,13 +1,13 @@
 <script lang="ts">
-  import OnEvents from '#lib/components/OnEvents.svelte';
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
   import IntegrityReportTableItem from '#lib/components/maintenance/integrity/IntegrityReportTableItem.svelte';
+  import { getIntegrityReportQuery } from '#lib/queries/integrity-admin.query.ts';
+  import { getQueuesLegacyQuery } from '#lib/queries/queue.query.ts';
   import { Route } from '#lib/route.ts';
   import { getIntegrityReportActions } from '#lib/services/integrity.service.ts';
-  import { asyncTimeout } from '#lib/utils.ts';
-  import { IntegrityReport, getIntegrityReport, getQueuesLegacy } from '@immich/sdk';
   import { Button, Table, TableBody, TableHeader, TableHeading } from '@immich/ui';
-  import { onDestroy, onMount } from 'svelte';
+  import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -15,56 +15,30 @@
     data: PageData;
   };
 
-  let { data }: Props = $props();
+  const { data }: Props = $props();
 
-  let integrityReport = $state(data.integrityReport);
-
-  const loadMore = async () => {
-    const { items, nextCursor } = await getIntegrityReport({
-      $type: data.type,
-      cursor: integrityReport.nextCursor,
-    });
-
-    integrityReport.items.push(...items);
-    integrityReport.nextCursor = nextCursor;
-  };
-
-  let running = true;
+  const report = createInfiniteQuery(() => getIntegrityReportQuery(data.type));
+  const items = $derived(report.data?.pages.flatMap((page) => page.items) ?? []);
+  const queues = createQuery(getQueuesLegacyQuery);
   let expectingUpdate = false;
 
-  onMount(async () => {
-    while (running) {
-      const jobs = await getQueuesLegacy();
-      if (jobs.integrityCheck.queueStatus.isActive) {
+  $effect(() => {
+    if (!queues.dataUpdatedAt) {
+      return;
+    }
+
+    untrack(() => {
+      if (queues.data?.integrityCheck.queueStatus.isActive) {
         expectingUpdate = true;
       } else if (expectingUpdate) {
-        integrityReport = await getIntegrityReport({
-          $type: data.type,
-        });
         expectingUpdate = false;
+        void report.refetch();
       }
-
-      await asyncTimeout(2000);
-    }
-  });
-
-  onDestroy(() => {
-    running = false;
+    });
   });
 
   const { Download, Delete } = $derived(getIntegrityReportActions($t, data.type));
-
-  const onIntegrityReportDeleted = ({ id, type }: { id?: string; type?: IntegrityReport }) => {
-    if (type === data.type) {
-      integrityReport.items = [];
-      integrityReport.nextCursor = undefined;
-    } else {
-      integrityReport.items = integrityReport.items.filter((report) => report.id !== id);
-    }
-  };
 </script>
-
-<OnEvents {onIntegrityReportDeleted} />
 
 <AdminPageLayout
   breadcrumbs={[
@@ -83,14 +57,14 @@
         </TableHeader>
 
         <TableBody>
-          {#each integrityReport.items as { id, path } (id)}
+          {#each items as { id, path } (id)}
             <IntegrityReportTableItem {id} {path} reportType={data.type} />
           {/each}
         </TableBody>
 
-        {#if integrityReport.nextCursor}
+        {#if report.hasNextPage}
           <tfoot class="mt-4 flex justify-center">
-            <Button size="medium" color="secondary" onclick={() => loadMore()}>{$t('load_more')}</Button>
+            <Button size="medium" color="secondary" onclick={() => report.fetchNextPage()}>{$t('load_more')}</Button>
           </tfoot>
         {/if}
       </Table>

@@ -68,6 +68,16 @@ where
   "album"."id" = $3
   and "album"."deletedAt" is null
 
+-- AlbumRepository.getUserIds
+select
+  "album_user"."userId"
+from
+  "album_user"
+  inner join "album" on "album"."id" = "album_user"."albumId"
+where
+  "album_user"."albumId" = $1
+  and "album"."deletedAt" is null
+
 -- AlbumRepository.getByAssetId
 select
   "album".*,

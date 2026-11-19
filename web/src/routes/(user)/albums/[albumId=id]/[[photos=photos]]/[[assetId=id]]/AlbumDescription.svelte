@@ -1,6 +1,7 @@
 <script lang="ts">
   import { updateAlbumInfoMutation } from '#lib/queries/album.query.ts';
   import { executeMutation } from '#lib/queries/client.ts';
+  import { Draft } from '#lib/utils/draft.svelte.ts';
   import { Textarea, shortcut } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -12,18 +13,19 @@
 
   let { id, description, isEditor }: Props = $props();
 
-  let value = $derived(description);
+  const draft = new Draft(() => description);
 
   const handleFocusOut = () =>
     executeMutation(
       () => updateAlbumInfoMutation({ error: { toast: 'errors.unable_to_save_album' } }),
-      [{ id, updateAlbumDto: { description: value || null } }],
+      [{ id, updateAlbumDto: { description: draft.value || null } }],
+      { onSuccess: () => draft.reset() },
     );
 </script>
 
 {#if isEditor}
   <Textarea
-    bind:value
+    bind:value={draft.value}
     variant="ghost"
     onfocusout={handleFocusOut}
     placeholder={$t('add_a_description')}

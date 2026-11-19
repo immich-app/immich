@@ -1,38 +1,24 @@
 <script lang="ts">
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { setupPinCode } from '@immich/sdk';
-  import { Button, Field, Heading, PinInput, toastManager } from '@immich/ui';
+  import { setupPinCodeMutation } from '#lib/queries/auth.query.ts';
+  import { Button, Field, Heading, PinInput } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    onCreated?: (pinCode: string) => void;
     showLabel?: boolean;
   }
 
-  let { onCreated, showLabel = true }: Props = $props();
+  let { showLabel = true }: Props = $props();
 
   let newPinCode = $state('');
   let confirmPinCode = $state('');
-  let isLoading = $state(false);
   let canSubmit = $derived(confirmPinCode.length === 6 && newPinCode === confirmPinCode);
 
-  const handleSubmit = async (event: Event) => {
-    event.preventDefault();
-    await createPinCode();
-  };
+  const setupPinCode = createMutation(setupPinCodeMutation);
 
-  const createPinCode = async () => {
-    isLoading = true;
-    try {
-      await setupPinCode({ pinCodeSetupDto: { pinCode: newPinCode } });
-      toastManager.primary($t('pin_code_setup_successfully'));
-      onCreated?.(newPinCode);
-      resetForm();
-    } catch (error) {
-      handleError(error, $t('unable_to_setup_pin_code'));
-    } finally {
-      isLoading = false;
-    }
+  const handleSubmit = (event: Event) => {
+    event.preventDefault();
+    setupPinCode.mutate([{ pinCodeSetupDto: { pinCode: newPinCode } }], { onSuccess: resetForm });
   };
 
   const resetForm = () => {
@@ -58,7 +44,7 @@
     <Button shape="round" color="secondary" type="button" size="small" onclick={resetForm}>
       {$t('clear')}
     </Button>
-    <Button shape="round" type="submit" size="small" loading={isLoading} disabled={!canSubmit}>
+    <Button shape="round" type="submit" size="small" loading={setupPinCode.isPending} disabled={!canSubmit}>
       {$t('create')}
     </Button>
   </div>

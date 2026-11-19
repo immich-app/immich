@@ -11,6 +11,7 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { ClusterGroupRequestTable } from 'src/schema/tables/cluster-group-request.table.js';
 import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table.js';
 import { MemoryTable } from 'src/schema/tables/memory.table.js';
 import { PartnerTable } from 'src/schema/tables/partner.table.js';
@@ -41,6 +42,7 @@ export type PersonRow = Selectable<PersonTable> & {
 export type PersonLike = Partial<PersonRow>;
 export type PersonGroupLike = Partial<Selectable<PersonGroupTable>>;
 export type ClusterGroupLike = Partial<Selectable<ClusterGroupTable>>;
+export type ClusterGroupRequestLike = Partial<Selectable<ClusterGroupRequestTable>>;
 export type StackLike = Partial<Selectable<StackTable>>;
 export type MemoryLike = Partial<Selectable<MemoryTable>>;
 export type PartnerLike = Partial<Selectable<PartnerTable>>;

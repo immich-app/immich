@@ -1,5 +1,6 @@
 <script lang="ts">
   import SharedLinkFormFields from '#lib/components/SharedLinkFormFields.svelte';
+  import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
   import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getSharedLinkQuery, updateSharedLinkMutation } from '#lib/queries/shared-link.query.ts';
   import { Route } from '#lib/route.ts';
@@ -25,6 +26,7 @@
   let expiresAt = $state(sharedLink.expiresAt);
 
   const onClose = () => void goto(Route.sharedLinks());
+  onResourceDelete(() => `/shared-links/${sharedLink.id}`, onClose);
   const onSubmit = async () => {
     const sharedLinkEditDto = {
       description,

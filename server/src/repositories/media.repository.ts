@@ -21,6 +21,8 @@ import {
   DvSignalCompatibility,
   H264Profile,
   HevcProfile,
+  ImageEffort,
+  ImageFormat,
   LogLevel,
   RawExtractedFormat,
 } from 'src/enum.js';
@@ -42,11 +44,25 @@ import { createAffineMatrix } from 'src/utils/transform.js';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
-    // eslint-disable-next-line import-x/no-named-as-default-member
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
 
 const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
+
+const IMAGE_EFFORT: Partial<Record<ImageFormat, Record<ImageEffort, number>>> = {
+  [ImageFormat.Jxl]: {
+    [ImageEffort.Low]: 3,
+    [ImageEffort.Medium]: 5,
+    [ImageEffort.High]: 7,
+    [ImageEffort.Max]: 9,
+  },
+  [ImageFormat.Webp]: {
+    [ImageEffort.Low]: 2,
+    [ImageEffort.Medium]: 4,
+    [ImageEffort.High]: 5,
+    [ImageEffort.Max]: 6,
+  },
+};
 
 type ProgressEvent = {
   frames: number;
@@ -73,7 +89,7 @@ export class MediaRepository {
   }
 
   /**
-  
+
   @param input file path to the input image
   @returns ExtractResult if succeeded, or null if failed
   */
@@ -186,6 +202,7 @@ export class MediaRepository {
         // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
         chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
         progressive: options.progressive,
+        effort: IMAGE_EFFORT[options.format]?.[options.effort],
         decodingTier: options.decodingTier,
       })
       .toFile(output);

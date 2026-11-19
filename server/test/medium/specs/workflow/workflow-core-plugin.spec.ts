@@ -12,6 +12,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
@@ -42,7 +43,7 @@ class WorkflowTestContext extends MediumTestContext<typeof WorkflowExecutionServ
         UserRepository,
         WorkflowRepository,
       ],
-      mock: [ConfigRepository, EventRepository, WebsocketRepository],
+      mock: [ResourceRepository, ConfigRepository, EventRepository, WebsocketRepository],
     });
   }
 
@@ -1007,6 +1008,36 @@ describe('core plugin', () => {
           {
             method: 'immich-plugin-core#assetTagFilter',
             config: { matching: 'any', tags: [tag.id, newUuid()] },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(
+        ctx.sut.handleAssetTrigger({
+          workflowId: workflow.id,
+          assetId: asset.id,
+          trigger: WorkflowTrigger.AssetCreate,
+        }),
+      ).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+
+    it('should favorite asset if it matches a parent tag', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { tag } = await ctx.newTag({ userId: user.id, value: 'parent/child' });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetTagFilter',
+            config: { matching: 'all', tagValues: ['parent'] },
           },
           {
             method: 'immich-plugin-core#assetFavorite',

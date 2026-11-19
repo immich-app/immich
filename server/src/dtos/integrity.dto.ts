@@ -1,24 +1,6 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { IntegrityReport, IntegrityReportSchema } from 'src/enum.js';
-import { createZodDto } from 'src/zod.js';
-
-const IntegrityReportSummaryResponseSchema = z
-  .object({
-    [IntegrityReport.ChecksumFail]: z.int().nonnegative(),
-    [IntegrityReport.MissingFile]: z.int().nonnegative(),
-    [IntegrityReport.UntrackedFile]: z.int().nonnegative(),
-  })
-  .meta({ id: 'IntegrityReportSummaryResponseDto' });
-
-const IntegrityGetReportSchema = z
-  .object({
-    type: IntegrityReportSchema,
-    cursor: z.string().optional().describe('Cursor for pagination'),
-    limit: z.coerce.number().int().positive().default(500).optional().describe('Number of items per page'),
-  })
-  .meta({ id: 'IntegrityGetReportDto' });
-
-const IntegrityDeleteReportSchema = z.object({ type: IntegrityReport }).meta({ id: 'IntegrityDeleteReportDto' });
 
 const IntegrityReportResponseItemSchema = z.object({
   id: z.uuidv4().describe('Integrity report item id'),
@@ -26,17 +8,25 @@ const IntegrityReportResponseItemSchema = z.object({
   path: z.string().describe('Integrity report item path'),
 });
 
-const IntegrityReportResponseSchema = z
-  .object({
-    items: z.array(IntegrityReportResponseItemSchema),
-    nextCursor: z.string().optional(),
-  })
-  .meta({ id: 'IntegrityReportResponseDto' });
-
 const IntegrityReportParamSchema = z.object({ type: IntegrityReportSchema }).meta({ id: 'IntegrityReportDto' });
 
-export class IntegrityReportSummaryResponseDto extends createZodDto(IntegrityReportSummaryResponseSchema) {}
-export class IntegrityGetReportDto extends createZodDto(IntegrityGetReportSchema) {}
-export class IntegrityDeleteReportDto extends createZodDto(IntegrityDeleteReportSchema) {}
-export class IntegrityReportResponseDto extends createZodDto(IntegrityReportResponseSchema) {}
+export class IntegrityReportSummaryResponseDto extends createZodDto({
+  [IntegrityReport.ChecksumFail]: z.int().nonnegative(),
+  [IntegrityReport.MissingFile]: z.int().nonnegative(),
+  [IntegrityReport.UntrackedFile]: z.int().nonnegative(),
+}) {}
+
+export class IntegrityGetReportDto extends createZodDto({
+  type: IntegrityReportSchema,
+  cursor: z.string().optional().describe('Cursor for pagination'),
+  limit: z.coerce.number().int().positive().default(500).optional().describe('Number of items per page'),
+}) {}
+
+export class IntegrityDeleteReportDto extends createZodDto({ type: IntegrityReport }) {}
+
+export class IntegrityReportResponseDto extends createZodDto({
+  items: z.array(IntegrityReportResponseItemSchema),
+  nextCursor: z.string().optional(),
+}) {}
+
 export class IntegrityReportTypeParamDto extends createZodDto(IntegrityReportParamSchema) {}

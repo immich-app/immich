@@ -39,6 +39,7 @@ export const createApp = () => {
         await button('edit_avatar').click();
       },
     },
+    avatarColor: (color: string) => dialog.getByTitle(color, { exact: true }),
     userPicker: {
       searchInput: dialog.getByPlaceholder('search', { exact: true }),
       user: (name: string) => dialog.getByText(name, { exact: true }),
@@ -127,8 +128,22 @@ export const createApp = () => {
       },
       settings: {
         open: (title: string) => page.getByRole('button', { name: title, exact: false }).click(),
-        numberInput: page.getByRole('spinbutton'),
+        numberInput: page.getByRole('spinbutton', { name: 'admin.user_delete_delay_settings', exact: true }),
         unlinkAllOAuthAccountsButton: button('admin.unlink_all_oauth_accounts'),
+        saveButton: button('save'),
+        resetButton: button('reset'),
+        resetToDefaultButton: button('reset_to_default'),
+        text: (text: string) => page.getByText(text, { exact: true }),
+        storageTemplate: {
+          option: (label: string) => page.getByRole('radio', { name: new RegExp(`^${label}`) }),
+          presetSelect: page.getByRole('combobox', { name: 'preset', exact: true }),
+          templateInput: page.getByRole('textbox', { name: 'template', exact: true }),
+        },
+        notifications: {
+          secureSwitch: page.getByRole('switch', { name: 'admin.notification_email_secure', exact: true }),
+          sendTestEmailButton: button('admin.notification_email_sent_test_email_button'),
+          testEmailButton: button('admin.notification_email_test_email'),
+        },
       },
     },
     albums: {
@@ -140,6 +155,7 @@ export const createApp = () => {
       deleteMenuItem: page.getByRole('menuitem', { name: 'delete_album', exact: true }),
       leaveMenuItem: page.getByRole('menuitem', { name: 'leave_album', exact: true }),
       descriptionInput: page.getByTestId('autogrow-textarea'),
+      titleInput: page.getByTitle('edit_title', { exact: true }),
       commentsButton: button('activity'),
       likeButton: page.getByRole('button', { name: 'like', exact: true, pressed: false }),
       likedButton: page.getByRole('button', { name: 'like', exact: true, pressed: true }),
@@ -151,6 +167,7 @@ export const createApp = () => {
       },
     },
     confirmButton: page.getByRole('dialog').getByRole('button', { name: 'confirm', exact: true }),
+    toast: (text: string | RegExp) => page.getByText(text, { exact: true }),
     dialogButton: (name: string) => page.getByRole('dialog').getByRole('button', { name, exact: true }),
     cancelButton: page.getByRole('dialog').getByRole('button', { name: 'cancel', exact: true }),
     duplicates: {
@@ -176,6 +193,16 @@ export const createApp = () => {
         deleteButton: page.getByRole('dialog').getByRole('button', { name: 'delete', exact: true }),
       },
     },
+    workflowLogs: {
+      result: (label: string) => dialog.getByRole('cell').getByText(label, { exact: true }),
+      loadingRow: dialog.getByText('...', { exact: true }),
+      filter: async (label: string) => {
+        await dialog.getByRole('button', { name: 'filter' }).click();
+        await page.getByRole('option', { name: label, exact: true }).click();
+      },
+      enableButton: button('workflow_logging_enable'),
+      disableButton: button('workflow_logging_disable'),
+    },
     workflows: {
       menuButton: (index: number) => page.getByRole('button', { name: 'open', exact: true }).nth(index),
       deleteMenuItem: page.getByRole('menuitem', { name: 'delete', exact: true }),
@@ -186,9 +213,12 @@ export const createApp = () => {
       restoreSelectedButton: button('restore'),
     },
     maintenanceMode: {
+      title: page.getByRole('heading', { name: 'maintenance_title', exact: true }),
       loggedInAs: page.getByText('maintenance_logged_in_as', { exact: true }),
       endButton: button('maintenance_end'),
       restoreFromBackupButton: button('maintenance_restore_from_backup'),
+      databaseBackupButton: button('maintenance_restore_source_database_backup'),
+      nextButton: button('next'),
     },
     auth: {
       input: (label: string) => page.getByLabelText(label, { exact: true }),
@@ -210,6 +240,16 @@ export const createApp = () => {
       logOutDeviceButton: button('log_out'),
       logOutAllDevicesButton: button('log_out_all_devices'),
       pinCodeTitle: (title: string) => main.getByText(title, { exact: true }),
+      input: (label: string) => main.getByLabelText(label, { exact: true }),
+      switch: (label: string) => main.getByRole('switch', { name: label, exact: true }),
+      numberInput: main.getByRole('spinbutton'),
+      saveButton: button('save'),
+      usageCell: (view: string, column: number) => tableRow(view).getByRole('cell').nth(column),
+      purchase: {
+        productKeyInput: main.getByPlaceholder(/^IMCL-/),
+        removeKeyButton: button('purchase_button_remove_key'),
+        removeButton: page.getByRole('dialog').getByRole('button', { name: 'remove', exact: true }),
+      },
       partners: {
         addButton: button('add_partner'),
         removeButton: button('stop_sharing_photos_with_user'),
@@ -223,10 +263,46 @@ export const createApp = () => {
         cancelRequestButton: main.getByRole('button', { name: 'cancel', exact: true }),
       },
     },
+    onboarding: {
+      doneButton: button('done'),
+    },
+    person: {
+      menuButton: button('open'),
+      openNameEditor: () => (page.getByTitle('edit_name', { exact: true }).element() as HTMLElement).click(),
+      nameInput: page.getByPlaceholder('name_or_nickname', { exact: true }),
+      menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
+      altNames: (names: string) => main.getByText(`also_known_as ${names}`, { exact: true }),
+      birthDateSegments: dialog.getByRole('spinbutton'),
+      face: (name: string) => page.getByRole('button').filter({ has: page.getByText(name, { exact: true }) }),
+      mergeButton: button('merge'),
+      swapMergeDirectionButton: button('swap_merge_direction'),
+      createNewPersonButton: button('create_new_person'),
+      reassignButton: button('reassign'),
+      selectionMenuButton: button('menu'),
+      access: {
+        openButton: button('manage_person_access'),
+        addUserButton: dialog.getByRole('button', { name: 'add_user', exact: true }),
+        removeButton: dialog.getByRole('button', { name: 'stop_sharing_person_with_user', exact: true }),
+        shareBackButton: dialog.getByRole('button', { name: 'share_back', exact: true }),
+        user: (name: string) => dialog.getByText(name, { exact: true }),
+        closeButton: dialog.getByRole('button', { name: 'close', exact: true }).first(),
+      },
+    },
     people: {
+      filterSharedByButton: page.getByRole('button', { name: /^shared_by/ }),
       nameInput: (index: number) => main.getByPlaceholder('add_a_name').nth(index),
+      cardMenuButton: (index: number) => button('show_person_options').nth(index),
+      menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
       mergeDialog: (name: string) => page.getByRole('dialog').getByText(`merge_people - ${name}`, { exact: true }),
       declineMergeButton: page.getByRole('dialog').getByRole('button', { name: 'no', exact: true }),
+      filtersButton: button('filters'),
+      filter: {
+        favoriteCheckbox: dialog.getByRole('checkbox', { name: 'favorite', exact: true }),
+        sharedByButton: dialog.getByRole('button', { name: /^shared_by/ }),
+        user: (name: string) => page.getByRole('dialog').getByRole('button').filter({ hasText: name }),
+        resetButton: dialog.getByRole('button', { name: 'reset', exact: true }),
+        saveButton: dialog.getByRole('button', { name: 'save', exact: true }),
+      },
       manage: {
         hideButtons: page.getByRole('button', { name: 'hide_named_person' }),
         hidden: page.getByRole('button', { pressed: true }),

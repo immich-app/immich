@@ -68,3 +68,55 @@ test('loads the next page of the report', async ({ data, router, render, settle,
   await expect.element(app.admin.integrityReport.row(items[50].path)).toBeVisible();
   await expect.element(app.admin.integrityReport.loadMoreButton).not.toBeInTheDocument();
 });
+
+test('disables an item menu while its delete is pending', async ({ data, router, render, settle, api, app }) => {
+  const item = factory.integrityReportItem({ type: reportType });
+  data.addIntegrityReportItems(item);
+  const pending = Promise.withResolvers<void>();
+  api.on({
+    deleteIntegrityReport: async ({ params }) => {
+      await pending.promise;
+      data.deleteIntegrityReportItem(params.id);
+      return { status: 200 };
+    },
+  });
+  await goto(router);
+  await render(Page, load);
+
+  await app.admin.integrityReport.rowMenuButton(item.path).click();
+  await app.admin.integrityReport.deleteMenuItem.click();
+  await app.dialogButton('delete').click();
+
+  await expect.element(app.admin.integrityReport.rowMenuButton(item.path)).toBeDisabled();
+
+  pending.resolve();
+  await settle();
+
+  expect(api.deleteIntegrityReport).toHaveBeenCalledWith({ params: { id: item.id } });
+  await expect.element(app.admin.integrityReport.row(item.path)).not.toBeInTheDocument();
+});
+
+test('disables item menus while deleting all is pending', async ({ data, router, render, settle, api, app }) => {
+  const item = factory.integrityReportItem({ type: reportType });
+  data.addIntegrityReportItems(item);
+  const pending = Promise.withResolvers<void>();
+  api.on({
+    createJob: async () => {
+      await pending.promise;
+      return { status: 201 };
+    },
+  });
+  await goto(router);
+  await render(Page, load);
+
+  await app.admin.integrityReport.deleteAllButton.click();
+  await app.dialogButton('delete').click();
+
+  await expect.element(app.admin.integrityReport.rowMenuButton(item.path)).toBeDisabled();
+
+  pending.resolve();
+  await settle();
+
+  expect(api.createJob).toHaveBeenCalledWith({ body: { name: ManualJobName.IntegrityMissingFilesDeleteAll } });
+  await expect.element(app.admin.integrityReport.row(item.path)).not.toBeInTheDocument();
+});
