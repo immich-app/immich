@@ -179,6 +179,7 @@ export class ApiModule extends BaseModule {
     UserRepository,
     SystemMetadataRepository,
     AppRepository,
+    EventRepository,
     MaintenanceHealthRepository,
     MaintenanceWebsocketRepository,
     DatabaseBackupService,
@@ -197,12 +198,14 @@ export class MaintenanceModule {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
+    private eventRepository: EventRepository,
     private maintenanceWorkerService: MaintenanceWorkerService,
   ) {
     logger.setAppName(this.worker);
   }
 
   async onModuleInit() {
+    this.eventRepository.setup({ services: [MaintenanceWorkerService] });
     await this.maintenanceWorkerService.init();
   }
 }
