@@ -36,29 +36,23 @@ data class Request(
 // Impeller shrinks each side to the GPU texture limit on its own, which squishes long images.
 const val MAX_PIXEL_SIZE = 16384
 
-/** Set [exactSize] to decode at the smallest size that covers [target] without upscaling. */
+/** Decodes at the smallest size that covers [target] without upscaling. */
 @RequiresApi(Build.VERSION_CODES.Q)
-inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0), exactSize: Boolean = false): Bitmap {
+inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
   return ImageDecoder.decodeBitmap(this) { decoder, info, _ ->
     var scale = 1.0
     if (target.width > 0 && target.height > 0) {
-      if (exactSize) {
-        val fillScale = max(
-          target.width.toDouble() / info.size.width,
-          target.height.toDouble() / info.size.height
-        )
-        scale = min(1.0, fillScale)
-        if (scale < 1) {
-          val width = ceil(info.size.width * scale).toInt()
-          val height = ceil(info.size.height * scale).toInt()
-          if (width > 0 && height > 0) {
-            decoder.setTargetSize(width, height)
-          }
+      val fillScale = max(
+        target.width.toDouble() / info.size.width,
+        target.height.toDouble() / info.size.height
+      )
+      scale = min(1.0, fillScale)
+      if (scale < 1) {
+        val width = ceil(info.size.width * scale).toInt()
+        val height = ceil(info.size.height * scale).toInt()
+        if (width > 0 && height > 0) {
+          decoder.setTargetSize(width, height)
         }
-      } else {
-        val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
-        decoder.setTargetSampleSize(sample)
-        scale = 1.0 / sample
       }
     }
     val longSide = max(info.size.width, info.size.height)
@@ -264,7 +258,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     val orientation = if (handleRaw) rawOrientation(uri) else ExifInterface.ORIENTATION_NORMAL
 
     if (size.width <= 0 || size.height <= 0 || size.width > 768 || size.height > 768) {
-      // A "load original" request is unsized -> a full-res decode (a sized > 768 just samples to target).
+      // A "load original" request is unsized -> a full-res decode (a sized > 768 decodes to cover the target).
       return decodeSource(uri, size, signal) to orientation
     }
 
@@ -302,7 +296,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   private fun decodeSource(uri: Uri, target: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      ImageDecoder.createSource(resolver, uri).decodeBitmap(target, exactSize = true)
+      ImageDecoder.createSource(resolver, uri).decodeBitmap(target)
     } else {
       val ref =
         Glide.with(ctx).asBitmap().priority(Priority.IMMEDIATE).load(uri).disallowHardwareConfig()

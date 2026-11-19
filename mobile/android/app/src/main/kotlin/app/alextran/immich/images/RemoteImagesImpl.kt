@@ -169,7 +169,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
                 else -> Size(width?.toInt() ?: 0, height?.toInt() ?: 0)
               }
               val source = ImageDecoder.createSource(NativeBuffer.wrap(buffer.pointer, buffer.offset))
-              val bitmap = source.decodeBitmap(target, exactSize = true)
+              val bitmap = source.decodeBitmap(target)
               if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
                 bitmap.toNativeBuffer()
               } else {
