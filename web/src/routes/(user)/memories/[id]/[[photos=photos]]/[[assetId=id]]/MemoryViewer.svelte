@@ -63,7 +63,8 @@
   let galleryFirstLoad = $state(true);
   let playerInitialized = $state(false);
   let paused = $state(false);
-  const memories = createPreloadedQuery(() => searchMemoriesQuery(memoryManager.filters));
+  const filters = memoryManager.filters;
+  const memories = createPreloadedQuery(() => searchMemoriesQuery(filters));
   const current = $derived(memoryManager.getCurrent(memories.data));
   onResourceDelete(
     () => current && `/memories/${current.memory.id}`,

@@ -62,4 +62,18 @@ test.describe('memory lane', () => {
     await expect(app.memories.card()).toHaveCount(2);
     await expect(app.memories.card().first()).toHaveAttribute('href', new RegExp(birthday.id));
   });
+
+  test('closes a memory opened from the lane', async ({ page, data, app }) => {
+    const asset = factory.asset();
+    data.addAssets(asset);
+    data.addMemories(factory.memory({ assets: [asset], memoryAt: DateTime.utc().minus({ years: 1 }).toISO()! }));
+    await page.goto(Route.photos());
+    await app.memories.card().first().click();
+    await expect(app.memory.root).toBeVisible();
+
+    await page.keyboard.press('Escape');
+
+    await expect(page).toHaveURL(Route.memories());
+    await expect(app.memories.card()).toHaveCount(1);
+  });
 });

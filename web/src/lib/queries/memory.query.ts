@@ -32,8 +32,17 @@ export const memoriesStatisticsQuery = (filters: MemoryFilters) =>
 
 export const updateMemoryMutation = (meta?: MutationMeta) =>
   asMutation(updateMemory, {
-    onSuccess: (memory) =>
-      updateCachedMemories((memories) => memories.map((item) => (item.id === memory.id ? memory : item))),
+    onSuccess: (memory) => {
+      updateCachedMemories((memories) =>
+        memories.map((item) => (item.id === memory.id ? { ...memory, assets: item.assets } : item)),
+      );
+      return queryClient.invalidateQueries({
+        queryKey: QueryKeys.memories(),
+        predicate: ({ queryKey }) =>
+          queryKey.some((part) => typeof part === 'object' && part !== null && 'isSaved' in part),
+        refetchType: 'none',
+      });
+    },
     meta,
   });
 
