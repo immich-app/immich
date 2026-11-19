@@ -2,7 +2,7 @@ import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { Colorspace, ImageFormat } from 'src/enum.js';
+import { Colorspace, ImageEffort, ImageFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { testAssetsDir } from 'test/medium.factory.js';
@@ -32,6 +32,7 @@ describe(MediaRepository.name, () => {
         {
           colorspace: Colorspace.P3,
           quality: 80,
+          effort: ImageEffort.Medium,
           format: ImageFormat.Webp,
           processInvalidImages: false,
           decodingTier: 0,
