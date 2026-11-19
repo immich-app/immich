@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { Memory } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
@@ -5,7 +6,6 @@ import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AssetOrderWithRandomSchema, MemoryType, MemoryTypeSchema } from 'src/enum.js';
 import { isoDateToDate, isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 const MemorySearchSchema = z
   .object({

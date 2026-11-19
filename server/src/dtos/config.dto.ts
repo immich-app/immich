@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { CronExpression } from '@nestjs/schedule';
 import { validateCronExpression } from 'cron';
 import z from 'zod';
@@ -33,7 +34,6 @@ import {
   VideoContainerSchema,
 } from 'src/enum.js';
 import type { DeepPartial } from 'src/types.js';
-import { createZodDto } from 'src/zod.js';
 
 const { Admin, User, Public } = ConfigVisibility;
 

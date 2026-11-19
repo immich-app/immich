@@ -1,5 +1,5 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
-import { createZodDto } from 'src/zod.js';
 
 const OnboardingSchema = z.object({
   isOnboarded: z.boolean().describe('Is user onboarded'),
