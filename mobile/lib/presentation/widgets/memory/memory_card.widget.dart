@@ -54,7 +54,7 @@ class MemoryCard extends StatelessWidget {
               }
 
               if (asset.isImage) {
-                return FullImage(asset, fit: fit, size: Size.infinite);
+                return FullImage(asset, fit: fit, size: context.sizeData);
               }
 
               return Center(
