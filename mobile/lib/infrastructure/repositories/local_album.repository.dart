@@ -219,6 +219,7 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
       await _deleteAssets(deletes);
 
       await _upsertAssets(updates);
+      // A changed asset may have a new file type, so let backup check it again
       for (final slice in updates.map((asset) => asset.id).slices(kDriftMaxChunk)) {
         await _db.managers.localAssetEntity
             .filter((row) => row.id.isIn(slice) & row.unsupported.equals(true))

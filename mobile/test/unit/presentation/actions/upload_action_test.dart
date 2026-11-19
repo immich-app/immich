@@ -51,7 +51,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  void answerUploadWith({Set<String> succeeded = const {}, Set<String> failed = const {}, Completer<void>? until}) {
+  void answerUploadWith({
+    Set<String> succeeded = const {},
+    Set<String> failed = const {},
+    Object error = 'boom',
+    Completer<void>? until,
+  }) {
     when(
       () => uploadService.uploadManual(
         any(),
@@ -67,7 +72,7 @@ void main() {
         callbacks.onSuccess?.call(id, id);
       }
       for (final id in failed) {
-        callbacks.onError?.call(id, 'boom');
+        callbacks.onError?.call(id, error);
       }
     });
   }
@@ -123,6 +128,18 @@ void main() {
 
       final message = verify(() => context.service.toast.error(captureAny())).captured.single as String;
       expect(message, StaticTranslations.instance.scaffold_body_error_occurred);
+    });
+
+    testWidgets('names the file when the server does not accept its type', (tester) async {
+      final asset = LocalAssetFactory.create();
+      answerUploadWith(failed: {asset.id}, error: const UnsupportedFileTypeException('scan.djvu', '.djvu'));
+
+      await pumpUpload(tester, {asset});
+      await tester.tap(find.byType(ImmichIconButton));
+      await settleUpload(tester);
+
+      final message = verify(() => context.service.toast.error(captureAny())).captured.single as String;
+      expect(message, StaticTranslations.instance.unsupported_file_type(file: 'scan.djvu', type: '.djvu'));
     });
 
     testWidgets('treats a cancelled upload as deliberate, not a failure', (tester) async {

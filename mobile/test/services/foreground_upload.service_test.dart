@@ -265,12 +265,12 @@ void main() {
   });
 
   group('uploadCandidates', () {
-    test('skips a file the server does not accept in both backup runs, manual upload still sends it', () async {
+    test('skips a file the server does not accept in both backup runs, manual upload reports it', () async {
       final refused = LocalAssetStub.image1;
       final accepted = LocalAssetStub.image2;
       final mockEntity = MockAssetEntity();
-      final errors = <String>[];
-      final callbacks = UploadCallbacks(onError: (id, _) => errors.add(id));
+      final errors = <String, Object>{};
+      final callbacks = UploadCallbacks(onError: (id, error) => errors[id] = error);
 
       when(() => mockEntity.isLivePhoto).thenReturn(false);
       when(() => mockStorageRepository.clearCache()).thenAnswer((_) async {});
@@ -294,7 +294,10 @@ void main() {
 
       await sut.uploadManual([refused], callbacks: callbacks);
 
-      expect(uploaded.last, 'AAAAA.djvu');
+      expect(uploaded, hasLength(2));
+      expect(errors, {
+        refused.localId: isA<UnsupportedFileTypeException>().having((e) => e.fileName, 'fileName', 'AAAAA.djvu'),
+      });
     });
   });
 }

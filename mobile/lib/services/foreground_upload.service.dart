@@ -31,10 +31,17 @@ import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 class UploadCallbacks {
   final void Function(String id, String filename, int bytes, int totalBytes)? onProgress;
   final void Function(String localId, String remoteId)? onSuccess;
-  final void Function(String id, String errorMessage)? onError;
+  final void Function(String id, Object error)? onError;
   final void Function(String id, double progress)? onICloudProgress;
 
   const UploadCallbacks({this.onProgress, this.onSuccess, this.onError, this.onICloudProgress});
+}
+
+class UnsupportedFileTypeException implements Exception {
+  final String fileName;
+  final String extension;
+
+  const UnsupportedFileTypeException(this.fileName, this.extension);
 }
 
 final foregroundUploadServiceProvider = Provider((ref) {
@@ -151,7 +158,7 @@ class ForegroundUploadService {
     await _executeWithWorkerPool<LocalAsset>(
       items: localAssets,
       cancelToken: cancelToken,
-      processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks, skipUnsupported: false),
+      processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks, reportUnsupported: true),
     );
   }
 
@@ -247,7 +254,7 @@ class ForegroundUploadService {
     LocalAsset asset,
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,
-    bool skipUnsupported = true,
+    bool reportUnsupported = false,
   }) async {
     final t = StaticTranslations.instance;
     final assetNotFoundOnDevice = CurrentPlatform.isAndroid
@@ -323,8 +330,11 @@ class ForegroundUploadService {
       // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
       final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
       final originalFileName = p.setExtension(fileName, extension);
-      if (skipUnsupported && await _backupRepository.markIfUnsupported(asset.id, extension)) {
+      if (await _backupRepository.markIfUnsupported(asset.id, extension)) {
         _logger.info("Skipping ${asset.id}, the server does not accept $originalFileName");
+        if (reportUnsupported) {
+          callbacks.onError?.call(asset.localId!, UnsupportedFileTypeException(originalFileName, extension));
+        }
         return;
       }
 
