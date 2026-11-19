@@ -602,6 +602,52 @@ describe(AssetMediaService.name, () => {
       );
     });
 
+    it('should name the file after the library path when the storage template is enabled', async () => {
+      const asset = AssetFactory.create({
+        originalPath: '/data/library/admin/2024/IMG_1234.jpg',
+        originalFileName: 'upload.jpg',
+      });
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+
+      await expect(sut.downloadOriginal(authStub.admin, asset.id, {})).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/data/library/admin/2024/IMG_1234.jpg',
+          fileName: 'IMG_1234.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+        }),
+      );
+    });
+
+    it('should name an edited file after the library path when the storage template is enabled', async () => {
+      const fullsizeEdited = AssetFileFactory.create({
+        type: AssetFileType.FullSize,
+        isEdited: true,
+        path: '/data/thumbs/admin/ab/cd/asset-1_fullsize_edited.jpeg',
+      });
+      const asset = AssetFactory.from({
+        originalPath: '/data/library/admin/2024/IMG_1234.heic',
+        originalFileName: 'upload.heic',
+      })
+        .edit()
+        .file(fullsizeEdited)
+        .build();
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue({ ...asset, editedPath: fullsizeEdited.path });
+
+      await expect(sut.downloadOriginal(authStub.admin, asset.id, {})).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/data/thumbs/admin/ab/cd/asset-1_fullsize_edited.jpeg',
+          fileName: 'IMG_1234.jpeg',
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+        }),
+      );
+    });
+
     it('should not return the unedited version if requested using a shared link', async () => {
       const fullsizeEdited = AssetFileFactory.create({ type: AssetFileType.FullSize, isEdited: true });
       const editedAsset = AssetFactory.from().edit({ action: AssetEditAction.Crop }).file(fullsizeEdited).build();
