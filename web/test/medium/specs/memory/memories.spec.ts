@@ -52,4 +52,29 @@ test.describe('memories', () => {
 
     await expect(app.memories.cover(0)).toHaveAttribute('src', new RegExp(`c=${validThumbhash}`));
   });
+
+  test('includes a memory favorited in the viewer when filtering favorites', async ({ page, data, api, app }) => {
+    const [memory] = addMemories(data, [false]);
+    await page.goto(Route.memories());
+    await app.memories.filtersButton.click();
+    await app.memories.onlyFavoritesSwitch.click();
+    await app.memories.saveFiltersButton.click();
+    await expect(app.memories.card()).toHaveCount(0);
+    await app.memories.filtersButton.click();
+    await app.memories.onlyFavoritesSwitch.click();
+    await app.memories.saveFiltersButton.click();
+    await app.memories.card().first().click();
+    await app.memory.favoriteButton.click();
+    await expect(app.memory.unfavoriteButton).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(Route.memories());
+
+    await app.memories.filtersButton.click();
+    await app.memories.onlyFavoritesSwitch.click();
+    await app.memories.saveFiltersButton.click();
+
+    await expect(app.memories.card()).toHaveCount(1);
+    await expect(app.memories.card()).toHaveAttribute('href', new RegExp(memory.id));
+    expect(api.updateMemory).toHaveBeenCalledWith({ params: { id: memory.id }, body: { isSaved: true } });
+  });
 });

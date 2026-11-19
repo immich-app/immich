@@ -168,4 +168,34 @@ test.describe('memory viewer', () => {
 
     await expect(app.memory.photo).toHaveAttribute('src', new RegExp(`c=${validThumbhash}`));
   });
+
+  test('closes a memory opened from a link', async ({ page, data, app }) => {
+    const [memory] = addMemories(data, [1, 1]);
+    await page.goto(Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }));
+    await expect(app.memory.root).toBeVisible();
+
+    await page.keyboard.press('Escape');
+
+    await expect(page).toHaveURL(Route.memories());
+    await expect(app.memories.card()).toHaveCount(2);
+  });
+
+  test('keeps the shown photos when favoriting', async ({ page, data, api, app }) => {
+    const [memory] = addMemories(data, [2]);
+    const hidden = factory.asset();
+    data.addAssets(hidden);
+    api.on({
+      updateMemory: ({ params, body }) => ({
+        json: { ...data.updateMemory(params.id, body)!, assets: [...memory.assets, hidden] },
+      }),
+    });
+    await page.goto(Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }));
+
+    await app.memory.favoriteButton.click();
+
+    await expect(app.memory.unfavoriteButton).toBeVisible();
+    await expect(app.memory.gallery.thumbnail(memory.assets[1])).toHaveCount(1);
+    await expect(app.memory.gallery.thumbnail(hidden)).toHaveCount(0);
+    expect(api.updateMemory).toHaveBeenCalledWith({ params: { id: memory.id }, body: { isSaved: true } });
+  });
 });
