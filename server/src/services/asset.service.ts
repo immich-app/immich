@@ -656,6 +656,10 @@ export class AssetService extends BaseService {
           await this.jobRepository.queue({ name: JobName.AssetDelete, data: { id: motion.id, deleteOnDisk: true } });
         }
         await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id } });
+        this.resourceRepository.send({
+          userIds: [asset.ownerId],
+          changed: [Resource.assets(), Resource.asset({ id })],
+        });
         this.websocketRepository.clientSend(
           'on_asset_update',
           asset.ownerId,

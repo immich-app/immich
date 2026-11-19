@@ -690,9 +690,14 @@ const handleConvertMotionPhotos = async (assetIds: string[]): Promise<boolean> =
       return false;
     }
 
-    await runAssetJobs({ assetJobsDto: { name: AssetJobName.ConvertMotionPhoto, assetIds } });
-    toastManager.primary($t('converting_motion_photos'));
-    return true;
+    let submitted = false;
+    await executeMutation(runAssetJobsMutation, [{ assetJobsDto: { name: AssetJobName.ConvertMotionPhoto, assetIds } }], {
+      onSuccess: () => {
+        submitted = true;
+        toastManager.primary($t('converting_motion_photos'));
+      },
+    });
+    return submitted;
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));
     return false;

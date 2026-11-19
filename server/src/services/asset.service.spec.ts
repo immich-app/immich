@@ -127,6 +127,10 @@ describe(AssetService.name, () => {
         expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.AssetDelete }));
       }
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetExtractMetadata, data: { id: asset.id } });
+      expectResourceEvents(mocks, {
+        userIds: [asset.ownerId],
+        changed: [Resource.assets(), Resource.asset({ id: asset.id })],
+      });
     });
 
     it('does not touch the original when the converted still cannot be validated', async () => {
