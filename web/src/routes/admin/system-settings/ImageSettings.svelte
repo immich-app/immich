@@ -64,6 +64,7 @@
               { value: 1080, text: '1080p' },
               { value: 720, text: '720p' },
               { value: 480, text: '480p' },
+              { value: 360, text: '360p' },
               { value: 250, text: '250p' },
               { value: 200, text: '200p' },
             ]}
