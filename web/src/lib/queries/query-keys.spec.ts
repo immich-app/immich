@@ -31,6 +31,7 @@ import { getIntegrityReportQuery, getIntegrityReportSummaryQuery } from '#lib/qu
 import { getAllLibrariesQuery, getLibraryQuery, getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
 import { detectPriorInstallQuery, getMaintenanceStatusQuery } from '#lib/queries/maintenance.query.ts';
 import { getMapMarkersQuery } from '#lib/queries/map.query.ts';
+import { memoriesStatisticsQuery, searchMemoriesQuery } from '#lib/queries/memory.query.ts';
 import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
 import { getPartnersQuery } from '#lib/queries/partner.query.ts';
 import { searchPasskeysQuery } from '#lib/queries/passkey.query.ts';
@@ -127,6 +128,8 @@ const queries: Record<string, QueryFactory> = {
   getAlbumInfoQuery: () => getAlbumInfoQuery(id),
   getAlbumMapMarkersQuery: () => getAlbumMapMarkersQuery(id),
   getApiKeysQuery: () => getApiKeysQuery(),
+  searchMemoriesQuery: () => searchMemoriesQuery({ isSaved: true }),
+  memoriesStatisticsQuery: () => memoriesStatisticsQuery({ isSaved: true }),
   getAssetStatisticsQuery: () => getAssetStatisticsQuery({ isFavorite: true }),
   getAuthStatusQuery: () => getAuthStatusQuery(),
   getClusterGroupRequestsQuery: () => getClusterGroupRequestsQuery(),

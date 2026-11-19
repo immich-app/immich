@@ -12,6 +12,7 @@ import type {
   getMySharedLink,
   getSearchSuggestions,
   getUsersForPeople,
+  searchMemories,
   searchPerson,
   searchPlaces,
 } from '@immich/sdk';
@@ -19,6 +20,7 @@ import type {
 type IdParams = { id: string };
 type ActivityParams = { albumId: string; assetId?: string };
 type PeopleParams = Parameters<typeof getAllPeople>[0];
+type MemoryParams = Parameters<typeof searchMemories>[0];
 
 export const QueryKeys = {
   // activities
@@ -93,6 +95,10 @@ export const QueryKeys = {
 
   // map
   mapMarkers: (...params: [Parameters<typeof getMapMarkers>[0]?]) => ['map', 'markers', ...params],
+
+  // memories
+  memories: (...params: [MemoryParams?]) => ['memories', ...params],
+  memoryStatistics: (...params: [MemoryParams?]) => [...QueryKeys.memories(), 'statistics', ...params],
 
   // notifications
   notifications: (params: { unread: boolean }) => ['notifications', params],
