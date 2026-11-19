@@ -4,6 +4,7 @@ import { ClusterGroupRepository } from 'src/repositories/cluster-group.repositor
 import { EventRepository } from 'src/repositories/event.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { DB } from 'src/schema/index.js';
 import { ClusterGroupService } from 'src/services/cluster-group.service.js';
@@ -17,7 +18,7 @@ const setup = (db?: Kysely<DB>) => {
   const ctx = newMediumService(ClusterGroupService, {
     database: db || defaultDatabase,
     real: [AccessRepository, ClusterGroupRepository, PersonRepository, UserRepository],
-    mock: [LoggingRepository, EventRepository],
+    mock: [LoggingRepository, EventRepository, ResourceRepository],
   });
 
   ctx.ctx.getMock(EventRepository).emit.mockResolvedValue();

@@ -12,7 +12,7 @@ import { ClsService } from 'nestjs-cls';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Duplex, Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
-import { Mock, Mocked, assert, vitest } from 'vitest';
+import { Mock, Mocked, assert, expect, vitest } from 'vitest';
 import { UploadFieldName } from 'src/dtos/asset-media.dto.js';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor.js';
 import { AuthGuard } from 'src/middleware/auth.guard.js';
@@ -58,6 +58,7 @@ import { PersonUserRepository } from 'src/repositories/person-user.repository.js
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
+import { ResourceEvent, ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository.js';
 import { SessionRepository } from 'src/repositories/session.repository.js';
@@ -280,6 +281,7 @@ export type ServiceOverrides = {
   personUser: PersonUserRepository;
   plugin: PluginRepository;
   process: ProcessRepository;
+  resource: ResourceRepository;
   search: SearchRepository;
   serverInfo: ServerInfoRepository;
   session: SessionRepository;
@@ -370,6 +372,7 @@ export const getMocks = () => {
     personUser: automock(PersonUserRepository, { strict: false }),
     plugin: automock(PluginRepository, { strict: true, args: [databaseMock, loggerMock] }),
     process: automock(ProcessRepository),
+    resource: automock(ResourceRepository, { strict: false }),
     search: automock(SearchRepository, { strict: false }),
     // eslint-disable-next-line no-sparse-arrays
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),
@@ -400,6 +403,17 @@ export const getMocks = () => {
   mocks.clusterGroup.create.mockResolvedValue(ClusterGroupFactory.create());
 
   return mocks;
+};
+
+export const expectResourceEvents = (mocks: Pick<ServiceMocks, 'resource'>, ...events: ResourceEvent[]) => {
+  const normalize = ({ userIds, changed = [], deleted = [] }: ResourceEvent) => ({
+    userIds: [...userIds].sort(),
+    changed: [...new Set(changed.filter(Boolean))],
+    deleted: [...new Set(deleted.filter(Boolean))],
+  });
+  const actual = mocks.resource.send.mock.calls.map(([event]) => normalize(event));
+  expect(actual).toHaveLength(events.length);
+  expect(actual).toEqual(expect.arrayContaining(events.map((event) => normalize(event))));
 };
 
 export const newTestService = <T extends BaseService>(
@@ -448,6 +462,7 @@ export const newTestService = <T extends BaseService>(
     overrides.personUser || (mocks.personUser as As<PersonUserRepository>),
     overrides.plugin || (mocks.plugin as As<PluginRepository>),
     overrides.process || (mocks.process as As<ProcessRepository>),
+    overrides.resource || (mocks.resource as As<ResourceRepository>),
     overrides.search || (mocks.search as As<SearchRepository>),
     overrides.serverInfo || (mocks.serverInfo as As<ServerInfoRepository>),
     overrides.session || (mocks.session as As<SessionRepository>),

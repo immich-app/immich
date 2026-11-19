@@ -2,13 +2,17 @@ import { BadRequestException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
-import { AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum.js';
+import { AlbumUserRole, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { DuplicateService } from 'src/services/duplicate.service.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForDuplicate } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, makeStream, newTestService } from 'test/utils.js';
 
 vitest.useFakeTimers();
 
@@ -155,6 +159,7 @@ describe(DuplicateService.name, () => {
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set());
       await expect(sut.delete(authStub.admin, 'group-1')).rejects.toThrow(BadRequestException);
       expect(mocks.duplicateRepository.delete).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should dismiss the duplicate group', async () => {
@@ -163,6 +168,16 @@ describe(DuplicateService.name, () => {
       await expect(sut.delete(authStub.admin, 'group-1')).resolves.toBeUndefined();
       expect(mocks.duplicateRepository.delete).toHaveBeenCalledWith(authStub.admin.user.id, 'group-1');
     });
+
+    it('should tell the owner about the dismissed group', async () => {
+      const auth = AuthFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.delete.mockResolvedValue();
+
+      await sut.delete(auth, 'group-1');
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.duplicates()] });
+    });
   });
 
   describe('deleteAll', () => {
@@ -170,6 +185,7 @@ describe(DuplicateService.name, () => {
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
       await expect(sut.deleteAll(authStub.admin, { ids: ['group-1', 'group-2'] })).rejects.toThrow(BadRequestException);
       expect(mocks.duplicateRepository.deleteAll).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should dismiss all duplicate groups', async () => {
@@ -177,6 +193,16 @@ describe(DuplicateService.name, () => {
       mocks.duplicateRepository.deleteAll.mockResolvedValue();
       await expect(sut.deleteAll(authStub.admin, { ids: ['group-1', 'group-2'] })).resolves.toBeUndefined();
       expect(mocks.duplicateRepository.deleteAll).toHaveBeenCalledWith(authStub.admin.user.id, ['group-1', 'group-2']);
+    });
+
+    it('should tell the owner once about all dismissed groups', async () => {
+      const auth = AuthFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1', 'group-2']));
+      mocks.duplicateRepository.deleteAll.mockResolvedValue();
+
+      await sut.deleteAll(auth, { ids: ['group-1', 'group-2'] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.duplicates()] });
     });
   });
 
@@ -203,6 +229,57 @@ describe(DuplicateService.name, () => {
       ]);
     });
 
+    it('should tell the owner once about the resolved groups', async () => {
+      const auth = AuthFactory.create();
+      const [asset1, asset2] = [AssetFactory.create(), AssetFactory.create()];
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1', 'group-2']));
+      mocks.duplicateRepository.get.mockResolvedValueOnce({
+        duplicateId: 'group-1',
+        assets: [asset1 as unknown as MapAsset],
+      });
+      mocks.duplicateRepository.get.mockResolvedValueOnce({
+        duplicateId: 'group-2',
+        assets: [asset2 as unknown as MapAsset],
+      });
+
+      await sut.resolve(auth, {
+        groups: [
+          { duplicateId: 'group-1', keepAssetIds: [asset1.id], trashAssetIds: [] },
+          { duplicateId: 'group-2', keepAssetIds: [asset2.id], trashAssetIds: [] },
+        ],
+      });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.duplicates()] });
+    });
+
+    it('should tell the album users when assets are merged into their album', async () => {
+      const auth = AuthFactory.create();
+      const member = UserFactory.create();
+      const album = AlbumFactory.from().albumUser({ userId: member.id }).build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      const [keep, trash] = [AssetFactory.create(), AssetFactory.create()];
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValueOnce(new Set([trash.id]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValueOnce(new Set([keep.id]));
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [keep, trash] as unknown as MapAsset[],
+      });
+      mocks.album.getByAssetIds.mockResolvedValue(new Map([[trash.id, [album.id]]]));
+      mocks.album.getUserIds.mockResolvedValue([owner.id, member.id]);
+
+      await sut.resolve(auth, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [keep.id], trashAssetIds: [trash.id] }],
+      });
+
+      expectResourceEvents(
+        mocks,
+        { userIds: [owner.id, member.id], changed: [Resource.album(album)] },
+        { userIds: [auth.user.id], changed: [Resource.duplicates()] },
+      );
+    });
+
     it('should catch and report errors', async () => {
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
       mocks.duplicateRepository.get.mockRejectedValue(new Error('Database error'));
@@ -212,6 +289,7 @@ describe(DuplicateService.name, () => {
           groups: [{ duplicateId: 'group-1', keepAssetIds: [], trashAssetIds: [] }],
         }),
       ).resolves.toEqual([{ id: 'group-1', success: false, error: BulkIdErrorReason.UNKNOWN }]);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -231,6 +309,7 @@ describe(DuplicateService.name, () => {
           error: BulkIdErrorReason.NOT_FOUND,
         },
       ]);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should only load the assets owned by the user', async () => {
@@ -389,6 +468,29 @@ describe(DuplicateService.name, () => {
 
       // Verify SidecarWrite was queued (to write tags to sidecar)
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: asset1.id } }]);
+    });
+
+    it('should tell the owner when tags are merged into the kept asset', async () => {
+      const auth = AuthFactory.create();
+      const tag = { id: 'tag-1', value: 'Work', createdAt: '', updatedAt: '', parentId: null, color: null };
+      const [keep, trash] = [AssetFactory.create(), AssetFactory.create()];
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([trash.id]));
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set([tag.id]));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [keep, { ...trash, tags: [tag] }] as unknown as MapAsset[],
+      });
+
+      await sut.resolve(auth, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [keep.id], trashAssetIds: [trash.id] }],
+      });
+
+      expectResourceEvents(
+        mocks,
+        { userIds: [auth.user.id], changed: [Resource.tags()] },
+        { userIds: [auth.user.id], changed: [Resource.duplicates()] },
+      );
     });
 
     it('should not merge metadata when multiple assets are kept', async () => {

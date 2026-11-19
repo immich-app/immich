@@ -16,6 +16,7 @@ import {
 } from 'src/dtos/server.dto.js';
 import { StorageFolder, SystemMetadataKey } from 'src/enum.js';
 import { UserStatsQueryResponse } from 'src/repositories/user.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { asHumanReadable } from 'src/utils/bytes.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -186,6 +187,10 @@ export class ServerService extends BaseService {
 
   async deleteLicense(): Promise<void> {
     await this.systemMetadataRepository.delete(SystemMetadataKey.License);
+    this.resourceRepository.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.serverLicense(), Resource.serverAbout()],
+    });
   }
 
   async getLicense(): Promise<LicenseResponseDto> {
@@ -213,6 +218,10 @@ export class ServerService extends BaseService {
     const licenseData = { ...dto, activatedAt: new Date() };
 
     await this.systemMetadataRepository.set(SystemMetadataKey.License, licenseData);
+    this.resourceRepository.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.serverLicense(), Resource.serverAbout()],
+    });
 
     return licenseData;
   }

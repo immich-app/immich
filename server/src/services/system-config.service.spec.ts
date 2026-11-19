@@ -17,10 +17,12 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
 import type { DeepPartial } from 'src/types.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { mockAdmins } from 'test/repositories/user.repository.mock.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const partialConfig = {
   ffmpeg: { crf: 30 },
@@ -269,6 +271,7 @@ describe(SystemConfigService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(SystemConfigService));
+    mocks.user.getAdminIds.mockResolvedValue([]);
   });
 
   it('should work', () => {
@@ -499,11 +502,21 @@ describe(SystemConfigService.name, () => {
       );
     });
 
+    it('should tell every admin', async () => {
+      const adminIds = mockAdmins(mocks.user);
+      mocks.systemMetadata.get.mockResolvedValue(partialConfig);
+
+      await sut.updateAdminConfig(updatedConfig);
+
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.adminConfig()] });
+    });
+
     it('should throw an error if a config file is in use', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({}));
       await expect(sut.updateAdminConfig(defaults)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 

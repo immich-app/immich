@@ -1,9 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { ImmichWorker, JobName, QueueCommand, QueueName } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { QueueService } from 'src/services/queue.service.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { mockAdmins } from 'test/repositories/user.repository.mock.js';
 import { factory } from 'test/small.factory.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(QueueService.name, () => {
   let sut: QueueService;
@@ -13,6 +16,7 @@ describe(QueueService.name, () => {
     ({ sut, mocks } = newTestService(QueueService));
 
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
+    mocks.user.getAdminIds.mockResolvedValue([]);
   });
 
   it('should work', () => {
@@ -84,7 +88,79 @@ describe(QueueService.name, () => {
     });
   });
 
+  describe('update', () => {
+    it('should tell every admin when a queue is paused', async () => {
+      const adminIds = mockAdmins(mocks.user);
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+
+      await sut.update(AuthFactory.create(), QueueName.MetadataExtraction, { isPaused: true });
+
+      expectResourceEvents(mocks, {
+        userIds: adminIds,
+        changed: [Resource.queue({ name: QueueName.MetadataExtraction }), Resource.jobs()],
+      });
+    });
+
+    it('should not tell anyone when nothing changes', async () => {
+      mockAdmins(mocks.user);
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+
+      await sut.update(AuthFactory.create(), QueueName.MetadataExtraction, {});
+
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should not pause the background task queue', async () => {
+      mockAdmins(mocks.user);
+
+      await expect(
+        sut.update(AuthFactory.create(), QueueName.BackgroundTask, { isPaused: true }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.job.pause).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('emptyQueue', () => {
+    it('should tell every admin', async () => {
+      const adminIds = mockAdmins(mocks.user);
+
+      await sut.emptyQueue(AuthFactory.create(), QueueName.MetadataExtraction, { failed: true });
+
+      expectResourceEvents(mocks, {
+        userIds: adminIds,
+        changed: [Resource.queue({ name: QueueName.MetadataExtraction }), Resource.jobs()],
+      });
+    });
+  });
+
   describe('handleCommand', () => {
+    it.each([QueueCommand.Pause, QueueCommand.Resume, QueueCommand.Empty, QueueCommand.ClearFailed])(
+      'should tell every admin after a %s command',
+      async (command) => {
+        const adminIds = mockAdmins(mocks.user);
+        mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+
+        await sut.runCommandLegacy(QueueName.MetadataExtraction, { command, force: false });
+
+        expectResourceEvents(mocks, {
+          userIds: adminIds,
+          changed: [Resource.queue({ name: QueueName.MetadataExtraction }), Resource.jobs()],
+        });
+      },
+    );
+
+    it('should not tell anyone after a start command', async () => {
+      mockAdmins(mocks.user);
+      mocks.job.isActive.mockResolvedValue(false);
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+
+      await sut.runCommandLegacy(QueueName.MetadataExtraction, { command: QueueCommand.Start, force: false });
+
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
     it('should handle a pause command', async () => {
       mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
 
@@ -118,6 +194,7 @@ describe(QueueService.name, () => {
 
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should handle a start video conversion command', async () => {
@@ -216,6 +293,7 @@ describe(QueueService.name, () => {
 
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 });

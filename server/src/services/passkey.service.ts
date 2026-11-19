@@ -22,6 +22,7 @@ import {
   mapPasskey,
 } from 'src/dtos/passkey.dto.js';
 import { AuthChallengeType, JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import type { LoginDetails } from 'src/services/auth.service.js';
 import { BaseService } from 'src/services/base.service.js';
 import { findOrFail } from 'src/utils/misc.js';
@@ -129,6 +130,7 @@ export class PasskeyService extends BaseService {
       backedUp: credentialBackedUp,
       deviceType: credentialDeviceType,
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.passkeys()] });
 
     return mapPasskey(passkey);
   }
@@ -226,12 +228,14 @@ export class PasskeyService extends BaseService {
   async update(auth: AuthDto, id: string, dto: PasskeyUpdateDto): Promise<PasskeyResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PasskeyUpdate, ids: [id] });
     const passkey = await this.passkeyRepository.update(id, { name: dto.name });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.passkey({ id })] });
     return mapPasskey(passkey);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.PasskeyDelete, ids: [id] });
     await this.passkeyRepository.delete(id);
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.passkey({ id })] });
   }
 
   private requireSession(auth: AuthDto) {

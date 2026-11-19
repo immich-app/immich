@@ -1,11 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
 import { ReactionType } from 'src/dtos/activity.dto.js';
+import { AlbumUserRole } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { ActivityService } from 'src/services/activity.service.js';
 import { ActivityFactory } from 'test/factories/activity.factory.js';
+import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
 import { getForActivity } from 'test/mappers.js';
 import { newUuid, newUuids } from 'test/small.factory.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;
@@ -79,6 +83,22 @@ describe(ActivityService.name, () => {
       await expect(
         sut.create(AuthFactory.create(), { albumId, assetId, type: ReactionType.COMMENT, comment: 'comment' }),
       ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell every album user about a new comment', async () => {
+      const member = UserFactory.create();
+      const album = AlbumFactory.from().albumUser({ userId: member.id }).build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      const activity = ActivityFactory.create({ albumId: album.id, userId: member.id });
+      mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([album.id]));
+      mocks.activity.create.mockResolvedValue(getForActivity(activity));
+      mocks.album.getUserIds.mockResolvedValue([owner.id, member.id]);
+
+      await sut.create(AuthFactory.create(member), { albumId: album.id, type: ReactionType.COMMENT, comment: 'hi' });
+
+      expectResourceEvents(mocks, { userIds: [owner.id, member.id], changed: [Resource.activities()] });
     });
 
     it('should create a comment', async () => {
@@ -140,6 +160,7 @@ describe(ActivityService.name, () => {
       await sut.create(AuthFactory.create(), { albumId, assetId, type: ReactionType.LIKE });
 
       expect(mocks.activity.create).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -148,13 +169,31 @@ describe(ActivityService.name, () => {
       await expect(sut.delete(AuthFactory.create(), newUuid())).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.activity.delete).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell every album user about a deleted comment', async () => {
+      const member = UserFactory.create();
+      const album = AlbumFactory.from().albumUser({ userId: member.id }).build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      const activity = ActivityFactory.create({ albumId: album.id, userId: member.id });
+      mocks.access.activity.checkOwnerAccess.mockResolvedValue(new Set([activity.id]));
+      mocks.activity.delete.mockResolvedValue({ albumId: album.id });
+      mocks.album.getUserIds.mockResolvedValue([owner.id, member.id]);
+
+      await sut.delete(AuthFactory.create(member), activity.id);
+
+      expectResourceEvents(mocks, {
+        userIds: [owner.id, member.id],
+        changed: [Resource.activities(), Resource.activityStatistics()],
+      });
     });
 
     it('should let the activity owner delete a comment', async () => {
       const activity = ActivityFactory.create();
 
       mocks.access.activity.checkOwnerAccess.mockResolvedValue(new Set([activity.id]));
-      mocks.activity.delete.mockResolvedValue();
+      mocks.activity.delete.mockResolvedValue({ albumId: activity.albumId });
 
       await sut.delete(AuthFactory.create(), activity.id);
 
@@ -165,7 +204,7 @@ describe(ActivityService.name, () => {
       const activity = ActivityFactory.create();
 
       mocks.access.activity.checkAlbumOwnerAccess.mockResolvedValue(new Set([activity.id]));
-      mocks.activity.delete.mockResolvedValue();
+      mocks.activity.delete.mockResolvedValue({ albumId: activity.albumId });
 
       await sut.delete(AuthFactory.create(), activity.id);
 
