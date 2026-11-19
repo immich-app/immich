@@ -657,7 +657,7 @@ const handleRemoveAssetsFromAlbum = async (
 
 const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
   const messages: Record<AssetJobName, string> = {
-    [AssetJobName.ConvertMotionPhoto]: $t('converting_motion_photos'),
+    [AssetJobName.ConvertMotionPhoto]: $t('converted_motion_photos'),
     [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
     [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
     [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
@@ -684,19 +684,44 @@ const handleConvertMotionPhotos = async (assetIds: string[]): Promise<boolean> =
       !(await modalManager.showDialog({
         title: $t('convert_motion_photo'),
         prompt: $t('confirm_convert_motion_photo'),
-        confirmText: $t('convert_motion_photo'),
+        confirmText: $t('convert'),
       }))
     ) {
       return false;
     }
 
-    let submitted = false;
-    await executeMutation(runAssetJobsMutation, [{ assetJobsDto: { name: AssetJobName.ConvertMotionPhoto, assetIds } }], {
-      onSuccess: () => {
-        submitted = true;
-        toastManager.primary($t('converting_motion_photos'));
+    const remainingAssetIds = new Set(assetIds);
+    const unsubscribe = eventManager.on({
+      AssetUpdate: (asset) => {
+        if (!remainingAssetIds.has(asset.id) || asset.livePhotoVideoId) {
+          return;
+        }
+
+        remainingAssetIds.delete(asset.id);
+        if (remainingAssetIds.size === 0) {
+          cleanup();
+          toastManager.success($t('converted_motion_photos'));
+        }
       },
+      AuthLogout: () => cleanup(),
     });
+    const timeout = setTimeout(() => cleanup(), 30 * 60 * 1000);
+    const cleanup = () => {
+      clearTimeout(timeout);
+      unsubscribe();
+    };
+
+    let submitted = false;
+    await executeMutation(
+      runAssetJobsMutation,
+      [{ assetJobsDto: { name: AssetJobName.ConvertMotionPhoto, assetIds } }],
+      {
+        onSuccess: () => {
+          submitted = true;
+        },
+        onError: cleanup,
+      },
+    );
     return submitted;
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));

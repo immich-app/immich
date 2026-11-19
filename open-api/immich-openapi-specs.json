@@ -23509,6 +23509,7 @@
       "JobName": {
         "description": "Job name",
         "enum": [
+          "AssetConvertMotionPhoto",
           "AssetDelete",
           "AssetDeleteCheck",
           "AssetDetectFacesQueueAll",
