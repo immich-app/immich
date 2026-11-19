@@ -64,6 +64,7 @@ export const AssetIdsSchema = z
   .meta({ id: 'AssetIdsDto' });
 
 export enum AssetJobName {
+  CONVERT_MOTION_PHOTO = 'convert-motion-photo',
   REFRESH_FACES = 'refresh-faces',
   REFRESH_METADATA = 'refresh-metadata',
   REGENERATE_THUMBNAIL = 'regenerate-thumbnail',

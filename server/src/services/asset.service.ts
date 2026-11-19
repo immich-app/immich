@@ -3,6 +3,7 @@ import { isUndefined, omitBy } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
 import { ASSET_VISIBILITY_DEPENDENT_PATHS } from 'src/constants.js';
 import type { AssetFile } from 'src/database.js';
+import { StorageCore } from 'src/cores/storage.core.js';
 import { OnJob } from 'src/decorators.js';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto.js';
 import {
@@ -33,6 +34,8 @@ import {
   AssetStatus,
   AssetType,
   AssetVisibility,
+  ChecksumAlgorithm,
+  DatabaseLock,
   JobName,
   JobStatus,
   Permission,
@@ -511,6 +514,14 @@ export class AssetService extends BaseService {
 
     for (const id of dto.assetIds) {
       switch (dto.name) {
+        case AssetJobName.CONVERT_MOTION_PHOTO: {
+          const asset = await this.assetRepository.getById(id);
+          if (!asset || asset.ownerId !== auth.user.id || !this.isConvertibleMotionPhoto(asset)) {
+            throw new BadRequestException('Only uploaded JPEG motion photos can be converted');
+          }
+          jobs.push({ name: JobName.AssetConvertMotionPhoto, data: { id } });
+          break;
+        }
         case AssetJobName.REFRESH_FACES: {
           jobs.push({ name: JobName.AssetDetectFaces, data: { id } });
           break;
@@ -534,6 +545,130 @@ export class AssetService extends BaseService {
     }
 
     await this.jobRepository.queueAll(jobs);
+  }
+
+  private isConvertibleMotionPhoto(asset: {
+    type: AssetType;
+    originalPath: string;
+    libraryId: string | null;
+    isExternal: boolean;
+    isOffline: boolean;
+    deletedAt: Date | null;
+    visibility: AssetVisibility;
+    livePhotoVideoId: string | null;
+    checksumAlgorithm: ChecksumAlgorithm;
+  }) {
+    return (
+      asset.type === AssetType.Image &&
+      !!asset.livePhotoVideoId &&
+      !asset.libraryId &&
+      !asset.isExternal &&
+      !asset.isOffline &&
+      !asset.deletedAt &&
+      asset.visibility !== AssetVisibility.Locked &&
+      asset.checksumAlgorithm === ChecksumAlgorithm.sha1File &&
+      /\.jpe?g$/i.test(asset.originalPath)
+    );
+  }
+
+  @OnJob({ name: JobName.AssetConvertMotionPhoto, queue: QueueName.BackgroundTask })
+  async handleConvertMotionPhoto({ id }: JobOf<JobName.AssetConvertMotionPhoto>): Promise<JobStatus> {
+    return this.databaseRepository.withLock(DatabaseLock.MotionPhotoConversion, async () => {
+      const asset = await this.assetRepository.getById(id);
+      if (!asset || !this.isConvertibleMotionPhoto(asset)) {
+        return JobStatus.Skipped;
+      }
+
+      const motion = await this.assetRepository.getById(asset.livePhotoVideoId!);
+      if (!motion || !StorageCore.isAndroidMotionPath(motion.originalPath)) {
+        throw new BadRequestException('Only embedded motion videos can be converted');
+      }
+
+      const tags = await this.metadataRepository.readTags(asset.originalPath);
+      if (
+        tags.FileType !== 'JPEG' ||
+        (!tags.MotionPhoto && !tags.MicroVideo) ||
+        !tags.ImageWidth ||
+        !tags.ImageHeight
+      ) {
+        throw new BadRequestException('The original image does not contain motion data');
+      }
+
+      const originalStat = await this.storageRepository.stat(asset.originalPath);
+      const originalChecksum = await this.cryptoRepository.hashFile(asset.originalPath);
+      if (!originalChecksum.equals(asset.checksum)) {
+        throw new Error('The original image has changed since it was uploaded');
+      }
+
+      const suffix = this.cryptoRepository.randomUUID();
+      const temporaryPath = `${asset.originalPath}.${suffix}.jpg`;
+      const backupPath = `${asset.originalPath}.${suffix}.backup`;
+      let hasBackup = false;
+      try {
+        await this.storageRepository.copyFile(asset.originalPath, temporaryPath);
+        await this.metadataRepository.removeMotionPhoto(temporaryPath);
+
+        const [stillStat, stillTags, checksum] = await Promise.all([
+          this.storageRepository.stat(temporaryPath),
+          this.metadataRepository.readTags(temporaryPath),
+          this.cryptoRepository.hashFile(temporaryPath),
+        ]);
+        if (
+          stillStat.size >= originalStat.size ||
+          stillTags.MotionPhoto ||
+          stillTags.MicroVideo ||
+          stillTags.ContainerDirectory ||
+          stillTags.EmbeddedVideoFile ||
+          stillTags.MotionPhotoVideo ||
+          stillTags.FileType !== 'JPEG' ||
+          stillTags.ImageWidth !== tags.ImageWidth ||
+          stillTags.ImageHeight !== tags.ImageHeight
+        ) {
+          throw new Error('The converted image could not be validated');
+        }
+
+        const duplicate = await this.assetRepository.getByChecksum({ ownerId: asset.ownerId, checksum });
+        if (duplicate && duplicate.id !== id) {
+          throw new BadRequestException('The still image already exists in the library');
+        }
+
+        await this.storageRepository.utimes(temporaryPath, originalStat.atime, originalStat.mtime);
+        await this.storageRepository.copyFile(asset.originalPath, backupPath);
+        hasBackup = true;
+        await this.storageRepository.rename(temporaryPath, asset.originalPath);
+        try {
+          await this.assetRepository.update({ id, checksum, livePhotoVideoId: null });
+        } catch (error) {
+          await this.storageRepository.rename(backupPath, asset.originalPath);
+          hasBackup = false;
+          throw error;
+        }
+
+        await this.assetRepository.upsertExif({
+          exif: { assetId: id, fileSizeInByte: stillStat.size },
+          lockedPropertiesBehavior: 'skip',
+        });
+        await this.userRepository.updateUsage(asset.ownerId, stillStat.size - originalStat.size);
+        await this.storageRepository.unlink(backupPath);
+        hasBackup = false;
+
+        if ((await this.assetRepository.getLivePhotoCount(motion.id)) === 0) {
+          await this.jobRepository.queue({ name: JobName.AssetDelete, data: { id: motion.id, deleteOnDisk: true } });
+        }
+        await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id } });
+        this.websocketRepository.clientSend(
+          'on_asset_update',
+          asset.ownerId,
+          mapAsset((await this.assetRepository.getById(id, { exifInfo: true }))!),
+        );
+        return JobStatus.Success;
+      } finally {
+        await this.storageRepository.unlink(temporaryPath);
+        if (hasBackup) {
+          this.logger.warn(`Motion photo conversion backup left at ${backupPath}`);
+        }
+      }
+    });
   }
 
   private findOrFail(id: string) {

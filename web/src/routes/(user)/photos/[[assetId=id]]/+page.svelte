@@ -144,6 +144,7 @@
         <ChangeLocation menuItem />
         <ActionMenuItem action={Actions.Archive} />
         <ActionMenuItem action={Actions.Unarchive} />
+        <ActionMenuItem action={Actions.ConvertMotionPhoto} />
         <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets
           menuItem

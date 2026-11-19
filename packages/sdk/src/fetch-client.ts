@@ -8593,6 +8593,7 @@ export enum AssetRejectReason {
     UnsupportedFormat = "unsupported-format"
 }
 export enum AssetJobName {
+    ConvertMotionPhoto = "convert-motion-photo",
     RefreshFaces = "refresh-faces",
     RefreshMetadata = "refresh-metadata",
     RegenerateThumbnail = "regenerate-thumbnail",

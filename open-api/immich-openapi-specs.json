@@ -21418,6 +21418,7 @@
       "AssetJobName": {
         "description": "Job name",
         "enum": [
+          "convert-motion-photo",
           "refresh-faces",
           "refresh-metadata",
           "regenerate-thumbnail",

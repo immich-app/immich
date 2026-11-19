@@ -133,6 +133,18 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     },
   };
 
+  const ConvertMotionPhoto: ActionItem = {
+    title: $t('convert_motion_photo'),
+    icon: mdiImageRemoveOutline,
+    $if: () =>
+      assetMultiSelectManager.isAllUserOwned && ownedAssets.every((asset) => asset.isImage && !!asset.livePhotoVideoId),
+    onAction: async () => {
+      if (await handleConvertMotionPhotos(ownedAssets.map(({ id }) => id))) {
+        assetMultiSelectManager.clear();
+      }
+    },
+  };
+
   const RefreshFacesJob: ActionItem = {
     title: $t('refresh_faces'),
     icon: mdiHeadSyncOutline,
@@ -162,6 +174,7 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     AddToAlbum,
     Archive,
     CreateSharedLink,
+    ConvertMotionPhoto,
     RemoveFromAlbum,
     Tag,
     Unarchive,
@@ -226,6 +239,21 @@ export const getAssetActions = (
     onAction: () => {
       assetViewerManager.isPlayingMotionPhoto = false;
     },
+  };
+
+  const ConvertMotionPhoto: ActionItem = {
+    title: $t('convert_motion_photo'),
+    icon: mdiImageRemoveOutline,
+    $if: () =>
+      isOwner &&
+      !asset.isTrashed &&
+      !asset.libraryId &&
+      !asset.isOffline &&
+      asset.visibility !== AssetVisibility.Locked &&
+      asset.type === AssetTypeEnum.Image &&
+      !!asset.livePhotoVideoId &&
+      /\.jpe?g$/i.test(asset.originalPath),
+    onAction: () => handleConvertMotionPhotos([asset.id]),
   };
 
   const PlaySlideshow: ActionItem = {
@@ -403,6 +431,7 @@ export const getAssetActions = (
     Rate,
     PlayMotionPhoto,
     StopMotionPhoto,
+    ConvertMotionPhoto,
     PlaySlideshow,
     AddToAlbum,
     RemoveFromAlbum,
@@ -628,6 +657,7 @@ const handleRemoveAssetsFromAlbum = async (
 
 const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
   const messages: Record<AssetJobName, string> = {
+    [AssetJobName.ConvertMotionPhoto]: $t('converting_motion_photos'),
     [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
     [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
     [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
@@ -635,6 +665,38 @@ const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
   };
 
   return messages[job];
+};
+
+const handleConvertMotionPhotos = async (assetIds: string[]): Promise<boolean> => {
+  const $t = await getFormatter();
+  if (assetIds.length === 0) {
+    return false;
+  }
+
+  try {
+    const assets = await Promise.all(assetIds.map((id) => getAssetInfo({ ...authManager.params, id })));
+    if (assets.some((asset) => !asset.livePhotoVideoId || asset.libraryId || !/\.jpe?g$/i.test(asset.originalPath))) {
+      toastManager.danger($t('only_jpeg_motion_photos_supported'));
+      return false;
+    }
+
+    if (
+      !(await modalManager.showDialog({
+        title: $t('convert_motion_photo'),
+        prompt: $t('confirm_convert_motion_photo'),
+        confirmText: $t('convert_motion_photo'),
+      }))
+    ) {
+      return false;
+    }
+
+    await runAssetJobs({ assetJobsDto: { name: AssetJobName.ConvertMotionPhoto, assetIds } });
+    toastManager.primary($t('converting_motion_photos'));
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_submit_job'));
+    return false;
+  }
 };
 
 const handleRunAssetJob = async (dto: AssetJobsDto) => {

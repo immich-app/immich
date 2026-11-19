@@ -371,6 +371,7 @@ export type JobItem =
   | { name: JobName.PersonFileMigration; data: IPersonJob }
 
   // Metadata Extraction
+  | { name: JobName.AssetConvertMotionPhoto; data: IEntityJob }
   | { name: JobName.AssetExtractMetadataQueueAll; data: IBaseJob }
   | { name: JobName.AssetExtractMetadata; data: IEntityJob }
 

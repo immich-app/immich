@@ -893,6 +893,7 @@ export enum QueueJobStatus {
 export const QueueJobStatusSchema = z.enum(QueueJobStatus).describe('Queue job status').meta({ id: 'QueueJobStatus' });
 
 export enum JobName {
+  AssetConvertMotionPhoto = 'AssetConvertMotionPhoto',
   AssetDelete = 'AssetDelete',
   AssetDeleteCheck = 'AssetDeleteCheck',
   AssetDetectFacesQueueAll = 'AssetDetectFacesQueueAll',
@@ -1022,6 +1023,7 @@ export enum VectorIndex {
 }
 
 export enum DatabaseLock {
+  MotionPhotoConversion = 1100,
   GeodataImport = 100,
   Migrations = 200,
   SystemFileMounts = 300,

@@ -139,6 +139,23 @@ export class MetadataRepository {
     return this.exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
+  async removeMotionPhoto(path: string): Promise<void> {
+    const tags = {
+      'Trailer:All': '',
+      'XMP-GCamera:MotionPhoto': '',
+      'XMP-GCamera:MotionPhotoVersion': '',
+      'XMP-GCamera:MotionPhotoPresentationTimestampUs': '',
+      'XMP-GCamera:MicroVideo': '',
+      'XMP-GCamera:MicroVideoVersion': '',
+      'XMP-GCamera:MicroVideoOffset': '',
+      'XMP-GContainer:ContainerDirectory': '',
+    } as Parameters<ExifTool['write']>[1];
+    const result = await this.exiftool.write(path, tags);
+    if (result.warnings?.length) {
+      throw new Error(`Unable to remove motion photo: ${result.warnings.join(', ')}`);
+    }
+  }
+
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     // If exiftool assigns a field with ^= instead of =, empty values will be written too.
     // Since exiftool-vendored doesn't support an option for this, we append the ^ to the name of the tag instead.

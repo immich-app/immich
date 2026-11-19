@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { StorageCore } from 'src/cores/storage.core.js';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto.js';
 import { AssetEditAction } from 'src/dtos/editing.dto.js';
 import {
@@ -8,6 +9,7 @@ import {
   AssetStatus,
   AssetType,
   AssetVisibility,
+  DatabaseLock,
   JobName,
   JobStatus,
 } from 'src/enum.js';
@@ -54,6 +56,136 @@ describe(AssetService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AssetService));
+  });
+
+  describe('convert motion photo', () => {
+    it('queues conversion only for owned, uploaded JPEG motion photos', async () => {
+      const asset = AssetFactory.create({ ownerId: authStub.admin.user.id, livePhotoVideoId: newUuid() });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+
+      await sut.run(authStub.admin, { name: AssetJobName.CONVERT_MOTION_PHOTO, assetIds: [asset.id] });
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetConvertMotionPhoto, data: { id: asset.id } },
+      ]);
+    });
+
+    it('does not queue conversion of external library assets', async () => {
+      const asset = AssetFactory.create({
+        ownerId: authStub.admin.user.id,
+        livePhotoVideoId: newUuid(),
+        isExternal: true,
+      });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+
+      await expect(
+        sut.run(authStub.admin, { name: AssetJobName.CONVERT_MOTION_PHOTO, assetIds: [asset.id] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it.each([0, 1])('replaces the original and only deletes an unreferenced video (references: %s)', async (count) => {
+      const motion = AssetFactory.create({
+        type: AssetType.Video,
+        originalPath: StorageCore.getAndroidMotionPath({ id: newUuid(), ownerId: authStub.admin.user.id }, newUuid()),
+      });
+      const asset = AssetFactory.create({ ownerId: authStub.admin.user.id, livePhotoVideoId: motion.id });
+      const newChecksum = Buffer.alloc(20, 1);
+      const stats = { size: 100, atime: new Date(), mtime: new Date() } as Awaited<
+        ReturnType<typeof mocks.storage.stat>
+      >;
+      mocks.database.withLock.mockImplementation(async (_, callback) => callback());
+      mocks.asset.getById
+        .mockResolvedValueOnce(getForAsset(asset))
+        .mockResolvedValueOnce(getForAsset(motion))
+        .mockResolvedValue(getForAsset(asset));
+      mocks.metadata.readTags
+        .mockResolvedValueOnce({ FileType: 'JPEG', MotionPhoto: 1, ImageWidth: 100, ImageHeight: 200 })
+        .mockResolvedValueOnce({ FileType: 'JPEG', ImageWidth: 100, ImageHeight: 200 });
+      mocks.crypto.hashFile.mockResolvedValueOnce(asset.checksum).mockResolvedValueOnce(newChecksum);
+      mocks.crypto.randomUUID.mockReturnValue(newUuid());
+      mocks.storage.stat.mockResolvedValueOnce(stats).mockResolvedValueOnce({ ...stats, size: 60 });
+      mocks.asset.getLivePhotoCount.mockResolvedValue(count);
+
+      await expect(sut.handleConvertMotionPhoto({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.database.withLock).toHaveBeenCalledWith(DatabaseLock.MotionPhotoConversion, expect.any(Function));
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, checksum: newChecksum, livePhotoVideoId: null });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({
+        exif: { assetId: asset.id, fileSizeInByte: 60 },
+        lockedPropertiesBehavior: 'skip',
+      });
+      expect(mocks.user.updateUsage).toHaveBeenCalledWith(asset.ownerId, -40);
+      if (count === 0) {
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.AssetDelete,
+          data: { id: motion.id, deleteOnDisk: true },
+        });
+      } else {
+        expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.AssetDelete }));
+      }
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetExtractMetadata, data: { id: asset.id } });
+    });
+
+    it('does not touch the original when the converted still cannot be validated', async () => {
+      const motion = AssetFactory.create({
+        type: AssetType.Video,
+        originalPath: StorageCore.getAndroidMotionPath({ id: newUuid(), ownerId: authStub.admin.user.id }, newUuid()),
+      });
+      const asset = AssetFactory.create({ livePhotoVideoId: motion.id });
+      const stats = { size: 100, atime: new Date(), mtime: new Date() } as Awaited<
+        ReturnType<typeof mocks.storage.stat>
+      >;
+      mocks.database.withLock.mockImplementation(async (_, callback) => callback());
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(asset)).mockResolvedValueOnce(getForAsset(motion));
+      mocks.metadata.readTags
+        .mockResolvedValueOnce({ FileType: 'JPEG', MotionPhoto: 1, ImageWidth: 100, ImageHeight: 200 })
+        .mockResolvedValueOnce({ FileType: 'JPEG', MotionPhoto: 1, ImageWidth: 100, ImageHeight: 200 });
+      mocks.crypto.hashFile.mockResolvedValue(asset.checksum);
+      mocks.storage.stat.mockResolvedValueOnce(stats).mockResolvedValueOnce({ ...stats, size: 60 });
+
+      await expect(sut.handleConvertMotionPhoto({ id: asset.id })).rejects.toThrow('could not be validated');
+
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('restores the original if updating the asset fails', async () => {
+      const motion = AssetFactory.create({
+        type: AssetType.Video,
+        originalPath: StorageCore.getAndroidMotionPath({ id: newUuid(), ownerId: authStub.admin.user.id }, newUuid()),
+      });
+      const asset = AssetFactory.create({ livePhotoVideoId: motion.id });
+      const stats = { size: 100, atime: new Date(), mtime: new Date() } as Awaited<
+        ReturnType<typeof mocks.storage.stat>
+      >;
+      mocks.database.withLock.mockImplementation(async (_, callback) => callback());
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(asset)).mockResolvedValueOnce(getForAsset(motion));
+      mocks.metadata.readTags
+        .mockResolvedValueOnce({ FileType: 'JPEG', MotionPhoto: 1, ImageWidth: 100, ImageHeight: 200 })
+        .mockResolvedValueOnce({ FileType: 'JPEG', ImageWidth: 100, ImageHeight: 200 });
+      mocks.crypto.hashFile.mockResolvedValueOnce(asset.checksum).mockResolvedValueOnce(Buffer.alloc(20, 1));
+      mocks.crypto.randomUUID.mockReturnValue('conversion');
+      mocks.storage.stat.mockResolvedValueOnce(stats).mockResolvedValueOnce({ ...stats, size: 60 });
+      mocks.asset.update.mockRejectedValue(new Error('Database error'));
+
+      await expect(sut.handleConvertMotionPhoto({ id: asset.id })).rejects.toThrow('Database error');
+
+      expect(mocks.storage.rename).toHaveBeenNthCalledWith(
+        1,
+        `${asset.originalPath}.conversion.jpg`,
+        asset.originalPath,
+      );
+      expect(mocks.storage.rename).toHaveBeenNthCalledWith(
+        2,
+        `${asset.originalPath}.conversion.backup`,
+        asset.originalPath,
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
   });
 
   describe('getStatistics', () => {

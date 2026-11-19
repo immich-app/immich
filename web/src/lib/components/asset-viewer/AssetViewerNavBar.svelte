@@ -128,6 +128,7 @@
 
         <ActionMenuItem action={Actions.Download} />
         <ActionMenuItem action={Actions.DownloadOriginal} />
+        <ActionMenuItem action={Actions.ConvertMotionPhoto} />
 
         {#if !isLocked && asset.isTrashed}
           <RestoreAction {asset} {onAction} />
