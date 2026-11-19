@@ -1,11 +1,9 @@
 <script lang="ts">
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
-  import { queryClient } from '#lib/queries/client.ts';
-  import { QueryKeys } from '#lib/queries/query-keys.ts';
+  import { signUpAdminMutation } from '#lib/queries/auth.query.ts';
   import { Route } from '#lib/route.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { signUpAdmin } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Text } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
   import type { PageData } from './$types';
@@ -14,7 +12,6 @@
   let password = $state('');
   let confirmPassword = $state('');
   let name = $state('');
-  let loading = $state(false);
   let errorMessage = $derived(
     password === confirmPassword || confirmPassword.length === 0 ? '' : $t('password_does_not_match'),
   );
@@ -26,26 +23,21 @@
 
   let { data }: Props = $props();
 
-  const onSubmit = async (event: Event) => {
+  const signUp = createMutation(signUpAdminMutation);
+  const loading = $derived(signUp.isPending);
+
+  const onSubmit = (event: Event) => {
     event.preventDefault();
 
     if (!valid || loading) {
       return;
     }
 
-    loading = true;
     errorMessage = '';
-
-    try {
-      await signUpAdmin({ signUpDto: { email, password, name } });
-      await queryClient.refetchQueries({ queryKey: QueryKeys.serverConfig() });
-      await goto(Route.login());
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_create_admin_account'));
-      errorMessage = $t('errors.unable_to_create_admin_account');
-    } finally {
-      loading = false;
-    }
+    signUp.mutate([{ signUpDto: { email, password, name } }], {
+      onSuccess: () => void goto(Route.login()),
+      onError: () => (errorMessage = $t('errors.unable_to_create_admin_account')),
+    });
   };
 </script>
 
