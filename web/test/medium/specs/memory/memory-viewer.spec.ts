@@ -1,7 +1,23 @@
 import { Route } from '#lib/route.ts';
-import { factory } from '#test/common/factories.ts';
+import type { MockData } from '#test/common/data.ts';
+import { factory, validThumbhash } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
 import { DateTime } from 'luxon';
+
+const addMemories = (data: MockData, assetCounts: number[]) => {
+  const memories = assetCounts.map((count, index) => {
+    const assets = Array.from({ length: count }, () => factory.asset());
+    data.addAssets(assets);
+    return factory.memory({
+      assets,
+      memoryAt: DateTime.utc()
+        .minus({ years: index + 1 })
+        .toISO()!,
+    });
+  });
+  data.addMemories(memories);
+  return memories;
+};
 
 test.describe('memory viewer', () => {
   test('walks through every asset across memories with buttons and arrow keys', async ({ page, data, app }) => {
@@ -77,5 +93,79 @@ test.describe('memory viewer', () => {
     await page.goBack();
 
     await expect(app.memories.card().last()).toBeInViewport();
+  });
+
+  test('favorites a memory', async ({ page, data, api, app }) => {
+    const [memory] = addMemories(data, [2]);
+    await page.goto(Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }));
+
+    await app.memory.favoriteButton.click();
+
+    await expect(app.memory.unfavoriteButton).toBeVisible();
+    await expect(app.toast('added_to_favorites')).toBeVisible();
+    expect(api.updateMemory).toHaveBeenCalledWith({ params: { id: memory.id }, body: { isSaved: true } });
+  });
+
+  test('removes a memory and shows the next one', async ({ page, data, api, app }) => {
+    const [first, second] = addMemories(data, [2, 2]);
+    await page.goto(Route.viewMemory({ id: first.id, assetId: first.assets[0].id }));
+
+    await app.memory.removeMemory();
+
+    await expect(app.toast('removed_memory')).toBeVisible();
+    await expect.poll(() => app.memory.currentMemoryId()).toBe(second.id);
+    expect(api.deleteMemory).toHaveBeenCalledWith({ params: { id: first.id } });
+  });
+
+  test('removes a photo from a memory', async ({ page, data, api, app }) => {
+    const [memory] = addMemories(data, [2]);
+    const [removed, kept] = memory.assets;
+    await page.goto(Route.viewMemory({ id: memory.id, assetId: removed.id }));
+
+    await app.memory.removePhoto();
+
+    await expect.poll(() => app.memory.currentAssetId()).toBe(kept.id);
+    expect(api.removeMemoryAssets).toHaveBeenCalledWith({ params: { id: memory.id }, body: { ids: [removed.id] } });
+  });
+
+  test('removing the last photo removes the memory', async ({ page, data, api, app }) => {
+    const [single, next] = addMemories(data, [1, 2]);
+    await page.goto(Route.viewMemory({ id: single.id, assetId: single.assets[0].id }));
+
+    await app.memory.removePhoto();
+
+    await expect.poll(() => app.memory.currentMemoryId()).toBe(next.id);
+    expect(api.deleteMemory).toHaveBeenCalledWith({ params: { id: single.id } });
+    expect(api.removeMemoryAssets).not.toHaveBeenCalled();
+  });
+
+  test('opens a memory past the first page', async ({ page, data, api, app }) => {
+    const memories = addMemories(
+      data,
+      Array.from({ length: 251 }, () => 1),
+    );
+    const oldest = memories.at(-1)!;
+
+    await page.goto(Route.viewMemory({ id: oldest.id, assetId: oldest.assets[0].id }));
+
+    await expect(app.memory.root).toBeVisible();
+    expect(app.memory.currentMemoryId()).toBe(oldest.id);
+    expect(api.searchMemories).toHaveBeenCalledWith({ params: { id: oldest.id } });
+  });
+
+  test('goes to the memories list for an unknown memory', async ({ page, data }) => {
+    addMemories(data, [1]);
+
+    await page.goto(Route.viewMemory({ id: crypto.randomUUID(), assetId: crypto.randomUUID() }));
+
+    await expect(page).toHaveURL(Route.memories());
+  });
+
+  test('shows the photo with its thumbhash cache key', async ({ page, data, app }) => {
+    const [memory] = addMemories(data, [1]);
+
+    await page.goto(Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }));
+
+    await expect(app.memory.photo).toHaveAttribute('src', new RegExp(`c=${validThumbhash}`));
   });
 });

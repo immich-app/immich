@@ -121,3 +121,39 @@ test('finishes an OAuth login from the callback url', async ({ data, router, ren
     history.replaceState({}, '', path);
   }
 });
+
+test('shows an error when the OAuth login cannot start', async ({ data, router, render, settle, api, app, logger }) => {
+  data.publicConfig.oauth.enabled = true;
+  await queryClient.refetchQueries({ queryKey: getPublicConfigQuery().queryKey, exact: true });
+  api.on({ startOAuth: () => ({ status: 500, json: { message: 'Server error', statusCode: 500 } }) });
+  await router.goto(Route.login());
+  await render(Page, load);
+
+  await app.auth.button(data.publicConfig.oauth.buttonText).click();
+  await settle();
+
+  expect(api.startOAuth).toHaveBeenCalled();
+  expect(logger.error).toHaveBeenCalledWith(/handleError/);
+  await expect.element(app.auth.text('errors.unable_to_login_with_oauth')).toBeVisible();
+  expect(router.url.pathname).toBe(Route.login());
+});
+
+test('shows the error when the OAuth callback fails', async ({ data, router, render, settle, api, app }) => {
+  data.publicConfig.oauth.enabled = true;
+  await queryClient.refetchQueries({ queryKey: getPublicConfigQuery().queryKey, exact: true });
+  api.on({ finishOAuth: () => ({ status: 401, json: { message: 'Invalid OAuth state', statusCode: 401 } }) });
+  const path = location.pathname;
+  history.replaceState({}, '', '?code=oauth-code&state=oauth-state');
+
+  try {
+    await router.goto(Route.login());
+    await render(Page, load);
+    await settle();
+
+    expect(api.finishOAuth).toHaveBeenCalled();
+    await expect.element(app.auth.text('Invalid OAuth state')).toBeVisible();
+    expect(router.url.pathname).toBe(Route.login());
+  } finally {
+    history.replaceState({}, '', path);
+  }
+});

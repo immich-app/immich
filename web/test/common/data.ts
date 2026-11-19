@@ -123,6 +123,7 @@ export type SuggestionFilter = {
 
 export type MemoryFilter = {
   id?: string;
+  isSaved?: boolean;
   page?: number;
   size?: number;
 };
@@ -1502,11 +1503,22 @@ export class MockData {
     }
   }
 
-  memoryList({ id, page = 1, size = 250 }: MemoryFilter = {}) {
+  memoryList({ id, isSaved, page = 1, size = 250 }: MemoryFilter = {}) {
     const memories = [...this.memories.values()]
       .filter((memory) => id === undefined || memory.id === id)
+      .filter((memory) => isSaved === undefined || memory.isSaved === isSaved)
       .sort((a, b) => b.memoryAt.localeCompare(a.memoryAt));
     return memories.slice((page - 1) * size, page * size);
+  }
+
+  removeMemoryAssets(id: string, assetIds: string[]) {
+    const memory = this.memories.get(id);
+    if (!memory) {
+      return;
+    }
+    const ids = new Set(assetIds);
+    this.memories.set(id, { ...memory, assets: memory.assets.filter((asset) => !ids.has(asset.id)) });
+    return assetIds.map((assetId) => ({ id: assetId, success: true }));
   }
 
   deleteMemory(id: string) {

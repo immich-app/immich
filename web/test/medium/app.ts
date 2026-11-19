@@ -139,6 +139,11 @@ export const createApp = (page: Page, data: MockData) => {
 
     memories: {
       card: () => page.getByTestId('memory-card'),
+      cover: (index: number) => page.getByTestId('memory-card').nth(index).getByRole('img'),
+      filtersButton: labelled('filters'),
+      onlyFavoritesSwitch: dialog.getByRole('switch', { name: 'only_favorites' }),
+      showUpcomingSwitch: dialog.getByRole('switch', { name: 'memories_show_upcoming' }),
+      saveFiltersButton: dialog.getByRole('button', { name: 'save', exact: true }),
     },
 
     person: {
@@ -163,6 +168,18 @@ export const createApp = (page: Page, data: MockData) => {
 
     memory: {
       root: memoryRoot,
+      photo: memoryRoot.locator('.main-view img'),
+      favoriteButton: memoryRoot.getByRole('button', { name: 'favorite', exact: true }),
+      unfavoriteButton: memoryRoot.getByRole('button', { name: 'unfavorite', exact: true }),
+      removeMemory: async () => {
+        await memoryRoot.getByRole('button', { name: 'menu', exact: true }).click();
+        await page.getByRole('menuitem', { name: 'remove_memory', exact: true }).click();
+      },
+      removePhoto: async () => {
+        await memoryRoot.getByRole('button', { name: 'menu', exact: true }).click();
+        await page.getByRole('menuitem', { name: 'remove_photo_from_memory', exact: true }).click();
+      },
+      currentMemoryId: () => new URL(page.url()).pathname.match(/\/memories\/([^/]+)/)?.[1],
       gallery: {
         root: memoryGallery,
         thumbnail: (asset: Asset) =>
