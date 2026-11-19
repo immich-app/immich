@@ -2,7 +2,7 @@ import { SystemMetadataKey } from 'src/enum.js';
 import { Resource } from 'src/resource-paths.js';
 import { SystemMetadataService } from 'src/services/system-metadata.service.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(SystemMetadataService.name, () => {
   let sut: SystemMetadataService;
@@ -46,7 +46,7 @@ describe(SystemMetadataService.name, () => {
 
       await sut.updateAdminOnboarding({ isOnboarded: true });
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.adminOnboarding()] });
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.adminOnboarding()] });
     });
   });
 

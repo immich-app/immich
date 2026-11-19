@@ -53,7 +53,7 @@ export class TagService extends BaseService {
 
     const { color } = dto;
     const tag = await this.tagRepository.create({ userId, value, color, parentId: parent?.id });
-    this.resourceRepository.send({ userIds: [userId], paths: [Resource.tags()] });
+    this.resourceRepository.send({ userIds: [userId], changed: [Resource.tags()] });
 
     return mapTag(tag);
   }
@@ -76,7 +76,7 @@ export class TagService extends BaseService {
     const assetIds = value === existing.value ? [] : await this.tagRepository.getAssetIdsByTagId(id);
     const tag = await this.tagRepository.update(id, { value, color });
     await this.syncAssetTags(assetIds);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.tag({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tag({ id })] });
 
     return mapTag(tag);
   }
@@ -84,7 +84,7 @@ export class TagService extends BaseService {
   async upsert(auth: AuthDto, dto: TagUpsertDto) {
     const tags = await upsertTags(this.tagRepository, { userId: auth.user.id, tags: dto.tags });
     if (tags.length > 0) {
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.tags()] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tags()] });
     }
 
     return tags.map((tag) => mapTag(tag));
@@ -96,8 +96,7 @@ export class TagService extends BaseService {
     const assetIds = await this.tagRepository.getAssetIdsByTagId(id);
     await this.tagRepository.delete(id);
     await this.syncAssetTags(assetIds);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.tags()] });
-    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.tag({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.tag({ id })] });
   }
 
   async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
@@ -120,7 +119,7 @@ export class TagService extends BaseService {
     }
 
     if (results.length > 0) {
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.tags()] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tags()] });
     }
 
     return { count: results.length };
@@ -145,7 +144,7 @@ export class TagService extends BaseService {
     }
 
     if (results.some(({ success }) => success)) {
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.tag({ id })] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tag({ id })] });
     }
 
     return results;
@@ -170,7 +169,7 @@ export class TagService extends BaseService {
     }
 
     if (results.some(({ success }) => success)) {
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.tag({ id })] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tag({ id })] });
     }
 
     return results;

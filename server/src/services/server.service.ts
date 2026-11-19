@@ -189,7 +189,7 @@ export class ServerService extends BaseService {
     await this.systemMetadataRepository.delete(SystemMetadataKey.License);
     this.resourceRepository.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.serverLicense(), Resource.serverAbout()],
+      changed: [Resource.serverLicense(), Resource.serverAbout()],
     });
   }
 
@@ -220,7 +220,7 @@ export class ServerService extends BaseService {
     await this.systemMetadataRepository.set(SystemMetadataKey.License, licenseData);
     this.resourceRepository.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.serverLicense(), Resource.serverAbout()],
+      changed: [Resource.serverLicense(), Resource.serverAbout()],
     });
 
     return licenseData;

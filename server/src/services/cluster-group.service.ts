@@ -55,9 +55,9 @@ export class ClusterGroupService extends BaseService {
       const { readerIds } = await this.getAudience(auth, clusterGroupId);
       this.resourceRepository.send({
         userIds: readerIds,
-        paths: [Resource.clusterGroupRequestsForGroup({ id: clusterGroupId })],
+        changed: [Resource.clusterGroupRequestsForGroup({ id: clusterGroupId })],
       });
-      this.resourceRepository.send({ userIds: [userId], paths: [Resource.clusterGroupRequests()] });
+      this.resourceRepository.send({ userIds: [userId], changed: [Resource.clusterGroupRequests()] });
       await this.eventRepository.emit('ClusterGroupRequest', { clusterGroupId, userId, senderName: auth.user.name });
     }
 
@@ -81,16 +81,16 @@ export class ClusterGroupService extends BaseService {
 
     this.resourceRepository.send({
       userIds: oldGroup.readerIds,
-      paths: [Resource.clusterGroup({ id: oldClusterGroupId })],
+      changed: [Resource.clusterGroup({ id: oldClusterGroupId })],
     });
-    this.resourceRepository.send({ userIds: oldGroup.memberIds, paths: [Resource.people()] });
+    this.resourceRepository.send({ userIds: oldGroup.memberIds, changed: [Resource.people()] });
     this.resourceRepository.send({
       userIds: newGroup.readerIds,
-      paths: [Resource.clusterGroup({ id: request.clusterGroupId })],
+      changed: [Resource.clusterGroup({ id: request.clusterGroupId })],
     });
     this.resourceRepository.send({
       userIds: [auth.user.id],
-      paths: [Resource.clusterGroupRequests(), Resource.myUser()],
+      changed: [Resource.clusterGroupRequests(), Resource.myUser()],
     });
   }
 
@@ -102,9 +102,9 @@ export class ClusterGroupService extends BaseService {
     await this.clusterGroupRepository.deleteRequest(id);
     this.resourceRepository.send({
       userIds: readerIds,
-      paths: [Resource.clusterGroupRequestsForGroup({ id: request.clusterGroupId })],
+      changed: [Resource.clusterGroupRequestsForGroup({ id: request.clusterGroupId })],
     });
-    this.resourceRepository.send({ userIds: [request.userId], paths: [Resource.clusterGroupRequests()] });
+    this.resourceRepository.send({ userIds: [request.userId], changed: [Resource.clusterGroupRequests()] });
   }
 
   async regeneratePeople(auth: AuthDto, id: string) {
@@ -134,10 +134,10 @@ export class ClusterGroupService extends BaseService {
 
     this.resourceRepository.send({
       userIds: oldGroup.readerIds,
-      paths: [Resource.clusterGroup({ id: clusterGroupId })],
+      changed: [Resource.clusterGroup({ id: clusterGroupId })],
     });
-    this.resourceRepository.send({ userIds: oldGroup.memberIds, paths: [Resource.people()] });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.myUser()] });
+    this.resourceRepository.send({ userIds: oldGroup.memberIds, changed: [Resource.people()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myUser()] });
   }
 
   private async getAudience(auth: AuthDto, clusterGroupId: string) {

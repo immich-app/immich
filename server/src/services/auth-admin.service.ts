@@ -10,8 +10,8 @@ export class AuthAdminService extends BaseService {
     const users = await this.userRepository.getList();
     this.resourceRepository.send({
       userIds: users.filter(({ isAdmin }) => isAdmin).map(({ id }) => id),
-      paths: [Resource.adminUsers()],
+      changed: [Resource.adminUsers()],
     });
-    this.resourceRepository.send({ userIds: users.map(({ id }) => id), paths: [Resource.myUser()] });
+    this.resourceRepository.send({ userIds: users.map(({ id }) => id), changed: [Resource.myUser()] });
   }
 }

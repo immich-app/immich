@@ -185,7 +185,7 @@ export class IntegrityService extends BaseService {
       if (asset) {
         this.resourceRepository.send({
           userIds: [asset.ownerId],
-          paths: [Resource.asset({ id: assetId }), Resource.assetStatistics(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
+          changed: [Resource.asset({ id: assetId }), Resource.assetStatistics(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
         });
       }
 
@@ -207,7 +207,7 @@ export class IntegrityService extends BaseService {
 
     this.resourceRepository.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.integrityReport(), Resource.integrityReportSummary()],
+      changed: [Resource.integrityReport(), Resource.integrityReportSummary()],
     });
   }
 

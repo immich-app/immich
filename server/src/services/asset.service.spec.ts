@@ -19,7 +19,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForAsset, getForAssetDeletion } from 'test/mappers.js';
 import { factory, newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, makeStream, newTestService } from 'test/utils.js';
 
 const stats: AssetStats = {
   [AssetType.Image]: 10,
@@ -209,7 +209,7 @@ describe(AssetService.name, () => {
 
       await sut.update(auth, asset.id, dto);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.asset(asset), ...paths] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.asset(asset), ...paths] });
     });
 
     it('should not tell anyone when nothing changes', async () => {
@@ -451,7 +451,7 @@ describe(AssetService.name, () => {
 
       await sut.updateAll(auth, { ids: [asset1.id, asset2.id], ...dto });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.assets(), ...paths] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.assets(), ...paths] });
     });
 
     it('should not tell anyone when nothing changes', async () => {
@@ -590,7 +590,7 @@ describe(AssetService.name, () => {
 
       await sut.deleteAll(auth, { ids: [asset1.id, asset2.id] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.assets(), ...visibilityPaths] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.assets(), ...visibilityPaths] });
     });
 
     it('should force delete a batch of assets', async () => {
@@ -638,9 +638,9 @@ describe(AssetService.name, () => {
 
       await sut.copy(auth, { sourceId: source.id, targetId: target.id });
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [auth.user.id],
-        paths: [
+        changed: [
           Resource.asset(target),
           Resource.albums(),
           Resource.sharedLinks(),
@@ -922,7 +922,7 @@ describe(AssetService.name, () => {
 
       await sut.deleteMetadataByKey(auth, asset.id, AssetMetadataKey.MobileApp);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.asset(asset)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.asset(asset)] });
     });
   });
 
@@ -939,7 +939,7 @@ describe(AssetService.name, () => {
         ],
       });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.assets()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.assets()] });
     });
   });
 
@@ -953,7 +953,7 @@ describe(AssetService.name, () => {
 
       await sut.removeAssetEdits(auth, asset.id);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.asset(asset)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.asset(asset)] });
     });
   });
 
@@ -996,7 +996,7 @@ describe(AssetService.name, () => {
 
       await sut.editAsset(auth, asset.id, { edits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.asset(asset)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.asset(asset)] });
     });
   });
 });

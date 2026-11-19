@@ -7,7 +7,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { notificationStub } from 'test/fixtures/notification.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const smtpTransport = Object.freeze<SystemConfig>({
   ...defaults,
@@ -131,7 +131,7 @@ describe(NotificationAdminService.name, () => {
 
       await sut.create(AuthFactory.create(admin), { userId: recipient.id, title: 'Hello' });
 
-      expectResourceUpdates(mocks, { userIds: [recipient.id], paths: [Resource.notifications()] });
+      expectResourceEvents(mocks, { userIds: [recipient.id], changed: [Resource.notifications()] });
     });
   });
 });

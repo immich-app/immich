@@ -19,7 +19,7 @@ export class NotificationAdminService extends BaseService {
       description: dto.description,
       data: dto.data,
     });
-    this.resourceRepository.send({ userIds: [dto.userId], paths: [Resource.notifications()] });
+    this.resourceRepository.send({ userIds: [dto.userId], changed: [Resource.notifications()] });
 
     return mapNotification(item);
   }

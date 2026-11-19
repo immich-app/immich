@@ -22,7 +22,7 @@ export class SystemMetadataService extends BaseService {
     });
     this.resourceRepository.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.adminOnboarding()],
+      changed: [Resource.adminOnboarding()],
     });
   }
 

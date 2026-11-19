@@ -4,7 +4,7 @@ import { AssetFactory } from 'test/factories/asset.factory.js';
 import { getForAsset } from 'test/mappers.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(IntegrityService.name, () => {
   let sut: IntegrityService;
@@ -99,9 +99,9 @@ describe(IntegrityService.name, () => {
 
       await sut.deleteIntegrityReport(adminIds[0], id);
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: adminIds,
-        paths: [Resource.integrityReport(), Resource.integrityReportSummary()],
+        changed: [Resource.integrityReport(), Resource.integrityReportSummary()],
       });
     });
 
@@ -114,12 +114,12 @@ describe(IntegrityService.name, () => {
 
       await sut.deleteIntegrityReport(adminIds[0], id);
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: adminIds, paths: [Resource.integrityReport(), Resource.integrityReportSummary()] },
+        { userIds: adminIds, changed: [Resource.integrityReport(), Resource.integrityReportSummary()] },
         {
           userIds: [asset.ownerId],
-          paths: [
+          changed: [
             Resource.asset(asset),
             Resource.assetStatistics(),
             Resource.albums(),

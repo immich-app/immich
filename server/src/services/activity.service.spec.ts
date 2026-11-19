@@ -9,7 +9,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { getForActivity } from 'test/mappers.js';
 import { newUuid, newUuids } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;
@@ -98,7 +98,7 @@ describe(ActivityService.name, () => {
 
       await sut.create(AuthFactory.create(member), { albumId: album.id, type: ReactionType.COMMENT, comment: 'hi' });
 
-      expectResourceUpdates(mocks, { userIds: [owner.id, member.id], paths: [Resource.activities()] });
+      expectResourceEvents(mocks, { userIds: [owner.id, member.id], changed: [Resource.activities()] });
     });
 
     it('should create a comment', async () => {
@@ -183,9 +183,9 @@ describe(ActivityService.name, () => {
 
       await sut.delete(AuthFactory.create(member), activity.id);
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [owner.id, member.id],
-        paths: [Resource.activities(), Resource.activityStatistics()],
+        changed: [Resource.activities(), Resource.activityStatistics()],
       });
     });
 

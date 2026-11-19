@@ -249,7 +249,7 @@ export class LibraryService extends BaseService {
       ],
     });
 
-    this.resourceRepository.send({ userIds: await this.userRepository.getAdminIds(), paths: [Resource.libraries()] });
+    this.resourceRepository.send({ userIds: await this.userRepository.getAdminIds(), changed: [Resource.libraries()] });
     await this.eventRepository.emit('LibraryCreate');
     return mapLibrary(library);
   }
@@ -364,7 +364,7 @@ export class LibraryService extends BaseService {
     const library = await this.libraryRepository.update(id, dto);
     this.resourceRepository.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.library({ id })],
+      changed: [Resource.library({ id })],
     });
     await this.eventRepository.emit('LibraryUpdate');
     return mapLibrary(library);
@@ -378,9 +378,9 @@ export class LibraryService extends BaseService {
     }
 
     await this.libraryRepository.softDelete(id);
-    this.resourceRepository.delete({
+    this.resourceRepository.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.library({ id })],
+      deleted: [Resource.library({ id })],
     });
     await this.jobRepository.queue({ name: JobName.LibraryDelete, data: { id } });
 

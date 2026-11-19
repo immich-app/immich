@@ -3,7 +3,7 @@ import { Resource } from 'src/resource-paths.js';
 import { ServerService } from 'src/services/server.service.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(ServerService.name, () => {
   let sut: ServerService;
@@ -288,7 +288,7 @@ describe(ServerService.name, () => {
 
       await sut.setLicense({ licenseKey: 'IMSV-license-key', activationKey: 'activation-key' });
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.serverLicense(), Resource.serverAbout()] });
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.serverLicense(), Resource.serverAbout()] });
     });
 
     it('should not save license if invalid', async () => {
@@ -317,7 +317,7 @@ describe(ServerService.name, () => {
 
       await sut.deleteLicense();
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.serverLicense(), Resource.serverAbout()] });
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.serverLicense(), Resource.serverAbout()] });
     });
   });
 });

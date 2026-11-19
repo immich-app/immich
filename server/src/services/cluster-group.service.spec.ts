@@ -5,7 +5,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { ClusterGroupRequestFactory } from 'test/factories/cluster-group-request.factory.js';
 import { ClusterGroupFactory } from 'test/factories/cluster-group.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(ClusterGroupService.name, () => {
   let sut: ClusterGroupService;
@@ -29,13 +29,13 @@ describe(ClusterGroupService.name, () => {
 
       await sut.createRequest(AuthFactory.create(owner), clusterGroupId, { userId: requested.id });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
         {
           userIds: [owner.id, member.id, requested.id],
-          paths: [Resource.clusterGroupRequestsForGroup({ id: clusterGroupId })],
+          changed: [Resource.clusterGroupRequestsForGroup({ id: clusterGroupId })],
         },
-        { userIds: [requested.id], paths: [Resource.clusterGroupRequests()] },
+        { userIds: [requested.id], changed: [Resource.clusterGroupRequests()] },
       );
     });
 
@@ -95,15 +95,15 @@ describe(ClusterGroupService.name, () => {
 
       await sut.acceptRequest(AuthFactory.create(user), request.id);
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
         {
           userIds: [user.id, oldMember.id, oldGroupRequest.userId],
-          paths: [Resource.clusterGroup({ id: oldGroupId })],
+          changed: [Resource.clusterGroup({ id: oldGroupId })],
         },
-        { userIds: [newMember.id, user.id], paths: [Resource.clusterGroup({ id: newGroupId })] },
-        { userIds: [user.id, oldMember.id], paths: [Resource.people()] },
-        { userIds: [user.id], paths: [Resource.clusterGroupRequests(), Resource.myUser()] },
+        { userIds: [newMember.id, user.id], changed: [Resource.clusterGroup({ id: newGroupId })] },
+        { userIds: [user.id, oldMember.id], changed: [Resource.people()] },
+        { userIds: [user.id], changed: [Resource.clusterGroupRequests(), Resource.myUser()] },
       );
     });
 
@@ -131,13 +131,13 @@ describe(ClusterGroupService.name, () => {
 
       await sut.deleteRequest(AuthFactory.create(requested), request.id);
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
         {
           userIds: [member.id, requested.id, otherRequest.userId],
-          paths: [Resource.clusterGroupRequestsForGroup({ id: clusterGroupId })],
+          changed: [Resource.clusterGroupRequestsForGroup({ id: clusterGroupId })],
         },
-        { userIds: [requested.id], paths: [Resource.clusterGroupRequests()] },
+        { userIds: [requested.id], changed: [Resource.clusterGroupRequests()] },
       );
     });
 
@@ -162,11 +162,11 @@ describe(ClusterGroupService.name, () => {
 
       await sut.leave(AuthFactory.create(user), clusterGroupId);
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [user.id, member.id, request.userId], paths: [Resource.clusterGroup({ id: clusterGroupId })] },
-        { userIds: [user.id, member.id], paths: [Resource.people()] },
-        { userIds: [user.id], paths: [Resource.myUser()] },
+        { userIds: [user.id, member.id, request.userId], changed: [Resource.clusterGroup({ id: clusterGroupId })] },
+        { userIds: [user.id, member.id], changed: [Resource.people()] },
+        { userIds: [user.id], changed: [Resource.myUser()] },
       );
     });
 

@@ -11,7 +11,7 @@ import { DB } from 'src/schema/index.js';
 import { WorkflowService } from 'src/services/workflow.service.js';
 import { newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
-import { expectResourceDeletes, expectResourceUpdates, getKyselyDB } from 'test/utils.js';
+import { expectResourceEvents, getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -104,9 +104,9 @@ describe(WorkflowService.name, () => {
 
       await sut.create(factory.auth({ user }), { trigger: WorkflowTrigger.AssetCreate, name: 'test-workflow' });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         { resource: ctx.getMock(ResourceRepository) },
-        { userIds: [user.id], paths: [Resource.workflows()] },
+        { userIds: [user.id], changed: [Resource.workflows()] },
       );
     });
   });
@@ -121,9 +121,9 @@ describe(WorkflowService.name, () => {
 
       await sut.update(factory.auth({ user }), workflow.id, { name: 'renamed' });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         { resource: ctx.getMock(ResourceRepository) },
-        { userIds: [user.id], paths: [Resource.workflow(workflow)] },
+        { userIds: [user.id], changed: [Resource.workflow(workflow)] },
       );
     });
 
@@ -150,11 +150,9 @@ describe(WorkflowService.name, () => {
         .create({ ownerId: user.id, trigger: WorkflowTrigger.AssetCreate, name: 'test-workflow' });
 
       await sut.delete(factory.auth({ user }), workflow.id);
-
-      expectResourceUpdates({ resource: ctx.getMock(ResourceRepository) });
-      expectResourceDeletes(
+      expectResourceEvents(
         { resource: ctx.getMock(ResourceRepository) },
-        { userIds: [user.id], paths: [Resource.workflow(workflow)] },
+        { userIds: [user.id], deleted: [Resource.workflow(workflow)] },
       );
     });
 
@@ -169,7 +167,6 @@ describe(WorkflowService.name, () => {
       await expect(sut.delete(factory.auth({ user: stranger }), workflow.id)).rejects.toThrow();
 
       expect(ctx.getMock(ResourceRepository).send).not.toHaveBeenCalled();
-      expect(ctx.getMock(ResourceRepository).delete).not.toHaveBeenCalled();
     });
   });
 

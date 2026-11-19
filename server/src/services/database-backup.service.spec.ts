@@ -13,7 +13,7 @@ import {
   AutoMocked,
   ServiceMocks,
   automock,
-  expectResourceUpdates,
+  expectResourceEvents,
   getMocks,
   mockDuplex,
   mockSpawn,
@@ -686,7 +686,7 @@ describe(DatabaseBackupService.name, () => {
 
       await sut.uploadBackup({ originalname: 'path.sql.gz', buffer: 'buffer' } as never);
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.databaseBackups()] });
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.databaseBackups()] });
     });
   });
 
@@ -737,7 +737,7 @@ describe(DatabaseBackupService.name, () => {
 
       await sut.deleteBackup(['filename.sql']);
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.databaseBackups()] });
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.databaseBackups()] });
     });
 
     it('should unlink the target file', async () => {

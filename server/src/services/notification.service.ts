@@ -45,16 +45,15 @@ export class NotificationService extends BaseService {
     await this.notificationRepository.updateAll(dto.ids, {
       readAt: dto.readAt,
     });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.notifications()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.notifications()] });
   }
 
   async deleteAll(auth: AuthDto, dto: NotificationDeleteAllDto) {
     await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NotificationDelete });
     await this.notificationRepository.deleteAll(dto.ids);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.notifications()] });
-    this.resourceRepository.delete({
+    this.resourceRepository.send({
       userIds: [auth.user.id],
-      paths: dto.ids.map((id) => Resource.notification({ id })),
+      deleted: dto.ids.map((id) => Resource.notification({ id })),
     });
   }
 
@@ -72,14 +71,14 @@ export class NotificationService extends BaseService {
     const item = await this.notificationRepository.update(id, {
       readAt: dto.readAt,
     });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.notification({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.notification({ id })] });
     return mapNotification(item);
   }
 
   async delete(auth: AuthDto, id: string) {
     await this.requireAccess({ auth, ids: [id], permission: Permission.NotificationDelete });
     await this.notificationRepository.delete(id);
-    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.notification({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.notification({ id })] });
   }
 
   @OnJob({ name: JobName.NotificationsCleanup, queue: QueueName.BackgroundTask })

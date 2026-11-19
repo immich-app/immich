@@ -6,7 +6,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { PartnerFactory } from 'test/factories/partner.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { getForPartner } from 'test/mappers.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(PartnerService.name, () => {
   let sut: PartnerService;
@@ -75,10 +75,10 @@ describe(PartnerService.name, () => {
 
       await sut.create(AuthFactory.create(user1), { sharedWithId: user2.id });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [user1.id, user2.id], paths: [Resource.partners()] },
-        { userIds: [user2.id], paths: [Resource.mapMarkers()] },
+        { userIds: [user1.id, user2.id], changed: [Resource.partners()] },
+        { userIds: [user2.id], changed: [Resource.mapMarkers()] },
       );
     });
 
@@ -132,10 +132,10 @@ describe(PartnerService.name, () => {
 
       await sut.remove(AuthFactory.create(user1), user2.id);
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [user1.id], paths: [Resource.partners()] },
-        { userIds: [user2.id], paths: [Resource.partners(), Resource.mapMarkers()] },
+        { userIds: [user1.id], changed: [Resource.partners()] },
+        { userIds: [user2.id], changed: [Resource.partners(), Resource.mapMarkers()] },
       );
     });
 
@@ -170,10 +170,10 @@ describe(PartnerService.name, () => {
 
       await sut.update(AuthFactory.create(user1), user2.id, { inTimeline: false });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [user1.id], paths: [Resource.partners()] },
-        { userIds: [user2.id], paths: [Resource.partners()] },
+        { userIds: [user1.id], changed: [Resource.partners()] },
+        { userIds: [user2.id], changed: [Resource.partners()] },
       );
     });
 

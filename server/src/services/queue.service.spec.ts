@@ -6,7 +6,7 @@ import { QueueService } from 'src/services/queue.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
 import { factory } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(QueueService.name, () => {
   let sut: QueueService;
@@ -95,9 +95,9 @@ describe(QueueService.name, () => {
 
       await sut.update(AuthFactory.create(), QueueName.MetadataExtraction, { isPaused: true });
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: adminIds,
-        paths: [Resource.queue({ name: QueueName.MetadataExtraction }), Resource.jobs()],
+        changed: [Resource.queue({ name: QueueName.MetadataExtraction }), Resource.jobs()],
       });
     });
 
@@ -128,9 +128,9 @@ describe(QueueService.name, () => {
 
       await sut.emptyQueue(AuthFactory.create(), QueueName.MetadataExtraction, { failed: true });
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: adminIds,
-        paths: [Resource.queue({ name: QueueName.MetadataExtraction }), Resource.jobs()],
+        changed: [Resource.queue({ name: QueueName.MetadataExtraction }), Resource.jobs()],
       });
     });
   });
@@ -144,9 +144,9 @@ describe(QueueService.name, () => {
 
         await sut.runCommandLegacy(QueueName.MetadataExtraction, { command, force: false });
 
-        expectResourceUpdates(mocks, {
+        expectResourceEvents(mocks, {
           userIds: adminIds,
-          paths: [Resource.queue({ name: QueueName.MetadataExtraction }), Resource.jobs()],
+          changed: [Resource.queue({ name: QueueName.MetadataExtraction }), Resource.jobs()],
         });
       },
     );

@@ -57,7 +57,7 @@ import { PersonUserRepository } from 'src/repositories/person-user.repository.js
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
-import { ResourceRepository, ResourceUpdate } from 'src/repositories/resource.repository.js';
+import { ResourceEvent, ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository.js';
 import { SessionRepository } from 'src/repositories/session.repository.js';
@@ -405,21 +405,16 @@ export const getMocks = () => {
   return mocks;
 };
 
-const expectResourceCalls = (calls: [ResourceUpdate][], expected: ResourceUpdate[]) => {
-  const normalize = ({ userIds, paths }: ResourceUpdate) => ({
+export const expectResourceEvents = (mocks: Pick<ServiceMocks, 'resource'>, ...events: ResourceEvent[]) => {
+  const normalize = ({ userIds, changed = [], deleted = [] }: ResourceEvent) => ({
     userIds: [...userIds].sort(),
-    paths: [...new Set(paths.filter(Boolean))],
+    changed: [...new Set(changed.filter(Boolean))],
+    deleted: [...new Set(deleted.filter(Boolean))],
   });
-  const actual = calls.map(([update]) => normalize(update));
-  expect(actual).toHaveLength(expected.length);
-  expect(actual).toEqual(expect.arrayContaining(expected.map((update) => normalize(update))));
+  const actual = mocks.resource.send.mock.calls.map(([event]) => normalize(event));
+  expect(actual).toHaveLength(events.length);
+  expect(actual).toEqual(expect.arrayContaining(events.map((event) => normalize(event))));
 };
-
-export const expectResourceUpdates = (mocks: Pick<ServiceMocks, 'resource'>, ...updates: ResourceUpdate[]) =>
-  expectResourceCalls(mocks.resource.send.mock.calls, updates);
-
-export const expectResourceDeletes = (mocks: Pick<ServiceMocks, 'resource'>, ...deletes: ResourceUpdate[]) =>
-  expectResourceCalls(mocks.resource.delete.mock.calls, deletes);
 
 export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,

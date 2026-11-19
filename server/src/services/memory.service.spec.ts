@@ -8,7 +8,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { MemoryFactory } from 'test/factories/memory.factory.js';
 import { getForMemory } from 'test/mappers.js';
 import { factory, newUuid, newUuids } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(MemoryService.name, () => {
   let sut: MemoryService;
@@ -161,7 +161,7 @@ describe(MemoryService.name, () => {
 
       await sut.create(auth, { type: MemoryType.OnThisDay, data: { year: 2020 }, memoryAt: memory.memoryAt });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.memories()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.memories()] });
     });
   });
 
@@ -183,7 +183,7 @@ describe(MemoryService.name, () => {
 
       await sut.update(auth, memory.id, { isSaved: true });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.memory(memory)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.memory(memory)] });
     });
 
     it('should update a memory', async () => {
@@ -204,7 +204,6 @@ describe(MemoryService.name, () => {
 
       expect(mocks.memory.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should tell the owner about the deleted memory', async () => {
@@ -214,9 +213,7 @@ describe(MemoryService.name, () => {
       mocks.memory.delete.mockResolvedValue();
 
       await sut.remove(auth, memoryId);
-
-      expectResourceUpdates(mocks);
-      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.memory({ id: memoryId })] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.memory({ id: memoryId })] });
     });
 
     it('should delete a memory', async () => {
@@ -305,7 +302,7 @@ describe(MemoryService.name, () => {
 
       await sut.addAssets(auth, memory.id, { ids: [asset.id] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.memory(memory)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.memory(memory)] });
     });
   });
 
@@ -360,7 +357,7 @@ describe(MemoryService.name, () => {
 
       await sut.removeAssets(auth, memory.id, { ids: [asset.id] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.memory(memory)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.memory(memory)] });
     });
   });
 });

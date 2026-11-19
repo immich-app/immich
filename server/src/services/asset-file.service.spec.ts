@@ -4,7 +4,7 @@ import { Resource } from 'src/resource-paths.js';
 import { AssetFileService } from 'src/services/asset-file.service.js';
 import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
-import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(AssetFileService.name, () => {
   let sut: AssetFileService;
@@ -24,7 +24,6 @@ describe(AssetFileService.name, () => {
 
       expect(mocks.assetFile.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should tell the owner about the deleted file', async () => {
@@ -35,9 +34,7 @@ describe(AssetFileService.name, () => {
       mocks.assetFile.delete.mockResolvedValue(true);
 
       await sut.delete(auth, file.id);
-
-      expectResourceUpdates(mocks);
-      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.assetFile(file)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.assetFile(file)] });
     });
   });
 });

@@ -65,7 +65,7 @@ export class ActivityService extends BaseService {
         comment: dto.comment,
       });
       const userIds = await this.albumRepository.getUserIds(dto.albumId);
-      this.resourceRepository.send({ userIds, paths: [Resource.activities()] });
+      this.resourceRepository.send({ userIds, changed: [Resource.activities()] });
     }
 
     return { duplicate: isDuplicate, value: mapActivity(activity) };
@@ -79,6 +79,6 @@ export class ActivityService extends BaseService {
     }
 
     const userIds = await this.albumRepository.getUserIds(deleted.albumId);
-    this.resourceRepository.send({ userIds, paths: [Resource.activities(), Resource.activityStatistics()] });
+    this.resourceRepository.send({ userIds, changed: [Resource.activities(), Resource.activityStatistics()] });
   }
 }

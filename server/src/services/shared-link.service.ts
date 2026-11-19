@@ -105,12 +105,12 @@ export class SharedLinkService extends BaseService {
         showExif: dto.showMetadata ?? true,
         slug: dto.slug || null,
       });
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.sharedLinks()] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sharedLinks()] });
       if (sharedLink.albumId) {
         const userIds = await this.albumRepository.getUserIds(sharedLink.albumId);
         this.resourceRepository.send({
           userIds,
-          paths: [Resource.album({ id: sharedLink.albumId }), Resource.albumStatistics()],
+          changed: [Resource.album({ id: sharedLink.albumId }), Resource.albumStatistics()],
         });
       }
 
@@ -142,7 +142,7 @@ export class SharedLinkService extends BaseService {
         showExif: dto.showMetadata,
         slug: dto.slug || null,
       });
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.sharedLink({ id })] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sharedLink({ id })] });
       return mapSharedLink(sharedLink, { auth });
     } catch (error) {
       this.handleError(error);
@@ -152,7 +152,7 @@ export class SharedLinkService extends BaseService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
     await this.sharedLinkRepository.remove(sharedLink.id);
-    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.sharedLink({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.sharedLink({ id })] });
     if (!sharedLink.albumId) {
       return;
     }
@@ -160,7 +160,7 @@ export class SharedLinkService extends BaseService {
     const userIds = await this.albumRepository.getUserIds(sharedLink.albumId);
     this.resourceRepository.send({
       userIds,
-      paths: [Resource.album({ id: sharedLink.albumId }), Resource.albumStatistics()],
+      changed: [Resource.album({ id: sharedLink.albumId }), Resource.albumStatistics()],
     });
   }
 
@@ -203,7 +203,7 @@ export class SharedLinkService extends BaseService {
     const addedAssetIds = results.filter(({ success }) => success).map(({ assetId }) => assetId);
     await this.sharedLinkRepository.update({ ...sharedLink, assetIds: addedAssetIds });
     if (addedAssetIds.length > 0) {
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.sharedLink({ id })] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sharedLink({ id })] });
     }
 
     return results;
@@ -232,7 +232,7 @@ export class SharedLinkService extends BaseService {
 
     await this.sharedLinkRepository.update(sharedLink);
     if (removedAssetIds.length > 0) {
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.sharedLink({ id })] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sharedLink({ id })] });
     }
 
     return results;

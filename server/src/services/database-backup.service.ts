@@ -293,7 +293,7 @@ export class DatabaseBackupService {
     await this.storageRepository.createOrOverwriteFile(filePath, file.buffer);
     this.resourceRepository?.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.databaseBackups()],
+      changed: [Resource.databaseBackups()],
     });
   }
 
@@ -344,7 +344,7 @@ export class DatabaseBackupService {
     await Promise.all(files.map((filename) => this.storageRepository.unlink(path.join(backupsFolder, filename))));
     this.resourceRepository?.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.databaseBackups()],
+      changed: [Resource.databaseBackups()],
     });
   }
 

@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 
-export type ResourceUpdate = { userIds: string[]; paths: (string | false | undefined)[] };
+type ResourcePaths = (string | false | undefined)[];
+
+export type ResourceEvent = { userIds: string[]; changed?: ResourcePaths; deleted?: ResourcePaths };
 
 @Injectable()
 export class ResourceRepository {
@@ -11,23 +13,17 @@ export class ResourceRepository {
     private websocketRepository: WebsocketRepository,
   ) {}
 
-  send(update: ResourceUpdate) {
-    this.emit('ResourceUpdateV1', update);
-  }
-
-  delete(update: ResourceUpdate) {
-    this.emit('ResourceDeleteV1', update);
-  }
-
-  private emit(event: 'ResourceUpdateV1' | 'ResourceDeleteV1', { userIds, paths }: ResourceUpdate) {
-    const resourcePaths = [...new Set(paths.filter((path) => typeof path === 'string'))];
-    if (userIds.length === 0 || resourcePaths.length === 0) {
+  send({ userIds, changed = [], deleted = [] }: ResourceEvent) {
+    const event = { changed: toUniquePaths(changed), deleted: toUniquePaths(deleted) };
+    if (userIds.length === 0 || (event.changed.length === 0 && event.deleted.length === 0)) {
       return;
     }
 
-    this.websocketRepository.clientSend(event, [...new Set(userIds)], {
-      paths: resourcePaths,
+    this.websocketRepository.clientSend('ResourceEventV1', [...new Set(userIds)], {
+      ...event,
       correlationId: this.cls.getId(),
     });
   }
 }
+
+const toUniquePaths = (paths: ResourcePaths) => [...new Set(paths.filter((path) => typeof path === 'string'))];

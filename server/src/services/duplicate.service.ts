@@ -84,13 +84,13 @@ export class DuplicateService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.DuplicateDelete, ids: [id] });
     await this.duplicateRepository.delete(auth.user.id, id);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.duplicates()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.duplicates()] });
   }
 
   async deleteAll(auth: AuthDto, dto: BulkIdsDto) {
     await this.requireAccess({ auth, permission: Permission.DuplicateDelete, ids: dto.ids });
     await this.duplicateRepository.deleteAll(auth.user.id, dto.ids);
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.duplicates()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.duplicates()] });
   }
 
   async resolve(auth: AuthDto, dto: DuplicateResolveDto) {
@@ -110,7 +110,7 @@ export class DuplicateService extends BaseService {
     }
 
     if (results.some(({ success }) => success)) {
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.duplicates()] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.duplicates()] });
     }
 
     return results;
@@ -191,7 +191,7 @@ export class DuplicateService extends BaseService {
           await Promise.all(
             [...allowedAlbumIds].map(async (albumId) => {
               const userIds = await this.albumRepository.getUserIds(albumId);
-              this.resourceRepository.send({ userIds, paths: [Resource.album({ id: albumId })] });
+              this.resourceRepository.send({ userIds, changed: [Resource.album({ id: albumId })] });
             }),
           );
         }
@@ -210,7 +210,7 @@ export class DuplicateService extends BaseService {
           );
 
           await this.assetRepository.updateAllExif(idsToKeep, { tags: mergedTagValues });
-          this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.tags()] });
+          this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tags()] });
         }
       }
 

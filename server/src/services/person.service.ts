@@ -138,9 +138,9 @@ export class PersonService extends BaseService {
     if (changedGroupIds.size > 0) {
       this.resourceRepository.send({
         userIds: await this.getOwnerIds([...changedGroupIds]),
-        paths: [Resource.people()],
+        changed: [Resource.people()],
       });
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.faces()] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
     }
 
     return result;
@@ -167,9 +167,9 @@ export class PersonService extends BaseService {
     const groupIds = [...new Set([personGroupId, face.personGroupId])].filter((id) => id !== null);
     this.resourceRepository.send({
       userIds: await this.getOwnerIds(groupIds),
-      paths: groupIds.map((id) => Resource.person({ id })),
+      changed: groupIds.map((id) => Resource.person({ id })),
     });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.faces()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
 
     return mapPerson(await this.findOrFail(auth, personGroupId));
   }
@@ -258,14 +258,17 @@ export class PersonService extends BaseService {
       isFavorite: dto.isFavorite,
       color: dto.color,
     });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.people(), Resource.searchPerson()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.people(), Resource.searchPerson()] });
 
     return mapPerson(person);
   }
 
   async update(auth: AuthDto, personGroupId: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
     const { person, userIds } = await this.updatePerson(auth, personGroupId, dto);
-    this.resourceRepository.send({ userIds, paths: [Resource.person({ id: personGroupId }), Resource.searchPerson()] });
+    this.resourceRepository.send({
+      userIds,
+      changed: [Resource.person({ id: personGroupId }), Resource.searchPerson()],
+    });
 
     return mapPerson(person);
   }
@@ -300,7 +303,7 @@ export class PersonService extends BaseService {
     }
 
     if (userIds.size > 0) {
-      this.resourceRepository.send({ userIds: [...userIds], paths: [Resource.people(), Resource.searchPerson()] });
+      this.resourceRepository.send({ userIds: [...userIds], changed: [Resource.people(), Resource.searchPerson()] });
     }
 
     return results;
@@ -323,8 +326,11 @@ export class PersonService extends BaseService {
     await this.removeAllPersonGroups(ids, ownerId);
     await this.personRepository.deleteEmptyGroups();
     const userIds = [ownerId, ...sharedWithIds];
-    this.resourceRepository.send({ userIds, paths: [Resource.people(), Resource.searchPerson()] });
-    this.resourceRepository.delete({ userIds, paths: ids.map((id) => Resource.person({ id })) });
+    this.resourceRepository.send({
+      userIds,
+      changed: [Resource.searchPerson()],
+      deleted: ids.map((id) => Resource.person({ id })),
+    });
   }
 
   private async updatePerson(auth: AuthDto, personGroupId: string, dto: PersonUpdateDto) {
@@ -836,12 +842,12 @@ export class PersonService extends BaseService {
     await this.personRepository.deleteEmptyGroups();
 
     if (merged.length > 0) {
-      this.resourceRepository.send({ userIds: [...ownerIds], paths: [Resource.people(), Resource.searchPerson()] });
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.faces()] });
+      this.resourceRepository.send({ userIds: [...ownerIds], changed: [Resource.people(), Resource.searchPerson()] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
     }
 
     for (const [ownerId, people] of Map.groupBy(merged, ({ ownerId }) => ownerId)) {
-      this.resourceRepository.delete({ userIds: [ownerId], paths: people.map(({ id }) => Resource.person({ id })) });
+      this.resourceRepository.send({ userIds: [ownerId], deleted: people.map(({ id }) => Resource.person({ id })) });
     }
 
     return results.values().toArray();
@@ -933,9 +939,9 @@ export class PersonService extends BaseService {
 
     this.resourceRepository.send({
       userIds: await this.getOwnerIds([person.personGroupId]),
-      paths: [Resource.person({ id: person.personGroupId })],
+      changed: [Resource.person({ id: person.personGroupId })],
     });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.faces()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
@@ -950,10 +956,10 @@ export class PersonService extends BaseService {
     if (face.personGroupId) {
       this.resourceRepository.send({
         userIds: await this.getOwnerIds([face.personGroupId]),
-        paths: [Resource.person({ id: face.personGroupId })],
+        changed: [Resource.person({ id: face.personGroupId })],
       });
     }
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.faces()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
   }
 
   async getUsersForPeople(auth: AuthDto, dto: PersonUsersSearchDto): Promise<PersonUsersResponseDto> {
@@ -1011,7 +1017,7 @@ export class PersonService extends BaseService {
     if (shares.length > 0) {
       this.resourceRepository.send({
         userIds: shares.flatMap((share) => [share.sharedById, share.sharedWithId]),
-        paths: [Resource.people(), Resource.searchPerson()],
+        changed: [Resource.people(), Resource.searchPerson()],
       });
     }
   }
@@ -1035,7 +1041,7 @@ export class PersonService extends BaseService {
     if (removedUserIds.length > 0) {
       this.resourceRepository.send({
         userIds: [auth.user.id, ...removedUserIds],
-        paths: [Resource.people(), Resource.searchPerson()],
+        changed: [Resource.people(), Resource.searchPerson()],
       });
     }
   }

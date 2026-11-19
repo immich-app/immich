@@ -11,7 +11,7 @@ import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForAlbum } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(AlbumService.name, () => {
   let sut: AlbumService;
@@ -319,7 +319,7 @@ describe(AlbumService.name, () => {
         albumUsers: [{ userId: invited.id, role: AlbumUserRole.Editor }],
       });
 
-      expectResourceUpdates(mocks, { userIds: [owner.id, invited.id], paths: [Resource.albums()] });
+      expectResourceEvents(mocks, { userIds: [owner.id, invited.id], changed: [Resource.albums()] });
     });
 
     it('should require valid userIds', async () => {
@@ -456,7 +456,7 @@ describe(AlbumService.name, () => {
 
       await sut.update(AuthFactory.create(owner), album.id, { albumName: 'new album name' });
 
-      expectResourceUpdates(mocks, { userIds: [owner.id, viewer.id], paths: [Resource.album(album)] });
+      expectResourceEvents(mocks, { userIds: [owner.id, viewer.id], changed: [Resource.album(album)] });
     });
   });
 
@@ -470,7 +470,6 @@ describe(AlbumService.name, () => {
 
       expect(mocks.album.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should not let a shared user delete the album', async () => {
@@ -506,15 +505,10 @@ describe(AlbumService.name, () => {
 
       await sut.delete(AuthFactory.create(owner), album.id);
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [owner.id, editor.id], paths: [Resource.albumStatistics()] },
-        { userIds: [editor.id], paths: [Resource.sharedLinks()] },
-      );
-      expectResourceDeletes(
-        mocks,
-        { userIds: [owner.id, editor.id], paths: [Resource.album(album)] },
-        { userIds: [editor.id], paths: [Resource.sharedLink(albumWithLink.sharedLinks[0])] },
+        { userIds: [owner.id, editor.id], changed: [Resource.albumStatistics()], deleted: [Resource.album(album)] },
+        { userIds: [editor.id], deleted: [Resource.sharedLink(albumWithLink.sharedLinks[0])] },
       );
     });
   });
@@ -640,9 +634,9 @@ describe(AlbumService.name, () => {
 
       await sut.addUsers(AuthFactory.create(owner), album.id, { albumUsers: [{ userId: added.id }] });
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [owner.id, existing.id, added.id],
-        paths: [Resource.album(album), Resource.albumStatistics()],
+        changed: [Resource.album(album), Resource.albumStatistics()],
       });
     });
   });
@@ -682,9 +676,9 @@ describe(AlbumService.name, () => {
 
       await sut.removeUser(AuthFactory.create(owner), album.id, removed.id);
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [owner.id, removed.id, remaining.id],
-        paths: [Resource.album(album), Resource.albumStatistics()],
+        changed: [Resource.album(album), Resource.albumStatistics()],
       });
     });
 
@@ -779,7 +773,7 @@ describe(AlbumService.name, () => {
 
       await sut.updateUser(AuthFactory.create(owner), album.id, changed.id, { role: AlbumUserRole.Viewer });
 
-      expectResourceUpdates(mocks, { userIds: [owner.id, changed.id, other.id], paths: [Resource.album(album)] });
+      expectResourceEvents(mocks, { userIds: [owner.id, changed.id, other.id], changed: [Resource.album(album)] });
     });
 
     it('should not tell anyone without share access', async () => {
@@ -981,7 +975,7 @@ describe(AlbumService.name, () => {
 
       await sut.addAssets(AuthFactory.create(editor), album.id, { ids: [asset.id] });
 
-      expectResourceUpdates(mocks, { userIds: [owner.id, editor.id], paths: [Resource.album(album)] });
+      expectResourceEvents(mocks, { userIds: [owner.id, editor.id], changed: [Resource.album(album)] });
     });
 
     it('should not allow a shared user with viewer access to add assets', async () => {
@@ -1448,10 +1442,10 @@ describe(AlbumService.name, () => {
 
       await sut.addAssetsToAlbums(AuthFactory.create(user), { albumIds: [album1.id, album2.id], assetIds: [asset.id] });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [owner1.id, user.id], paths: [Resource.album(album1)] },
-        { userIds: [owner2.id, user.id, member2.id], paths: [Resource.album(album2)] },
+        { userIds: [owner1.id, user.id], changed: [Resource.album(album1)] },
+        { userIds: [owner2.id, user.id, member2.id], changed: [Resource.album(album2)] },
       );
     });
 
@@ -1603,7 +1597,7 @@ describe(AlbumService.name, () => {
 
       await sut.removeAssets(AuthFactory.create(editor), album.id, { ids: [asset.id] });
 
-      expectResourceUpdates(mocks, { userIds: [owner.id, editor.id], paths: [Resource.album(album)] });
+      expectResourceEvents(mocks, { userIds: [owner.id, editor.id], changed: [Resource.album(album)] });
     });
 
     it('should allow owner to remove all assets from the album', async () => {

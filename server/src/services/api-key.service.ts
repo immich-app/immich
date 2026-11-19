@@ -24,7 +24,7 @@ export class ApiKeyService extends BaseService {
       userId: auth.user.id,
       permissions: dto.permissions,
     });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.apiKeys()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.apiKeys()] });
     const apiKey = this.map(entity);
 
     return { ...apiKey, secret: token, apiKey };
@@ -45,7 +45,7 @@ export class ApiKeyService extends BaseService {
     }
 
     const key = await this.apiKeyRepository.update(auth.user.id, id, { name: dto.name, permissions: dto.permissions });
-    this.sendApiKeyUpdate(auth, id);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.apiKey({ id })] });
 
     return this.map(key);
   }
@@ -63,7 +63,7 @@ export class ApiKeyService extends BaseService {
     const token = this.cryptoRepository.randomBytesAsText(32);
     const hashed = this.cryptoRepository.hashSha256(token);
     const newKey = await this.apiKeyRepository.update(auth.user.id, id, { key: hashed });
-    this.sendApiKeyUpdate(auth, id);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.apiKey({ id })] });
     const apiKey = this.map(newKey);
 
     return { ...apiKey, secret: token, apiKey };
@@ -76,7 +76,7 @@ export class ApiKeyService extends BaseService {
     }
 
     await this.apiKeyRepository.delete(auth.user.id, id);
-    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.apiKey({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.apiKey({ id })] });
   }
 
   async getMine(auth: AuthDto): Promise<ApiKeyResponseDto> {
@@ -103,10 +103,6 @@ export class ApiKeyService extends BaseService {
   async getAll(auth: AuthDto): Promise<ApiKeyResponseDto[]> {
     const keys = await this.apiKeyRepository.getByUserId(auth.user.id);
     return keys.map((key) => this.map(key));
-  }
-
-  private sendApiKeyUpdate(auth: AuthDto, id: string) {
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.apiKey({ id })] });
   }
 
   private map(entity: ApiKey): ApiKeyResponseDto {

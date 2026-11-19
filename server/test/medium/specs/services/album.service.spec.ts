@@ -38,10 +38,10 @@ describe(AlbumService.name, () => {
 
       const send = ctx.getMock(ResourceRepository).send;
       expect(send).toHaveBeenCalledTimes(1);
-      const [{ userIds, paths }] = send.mock.calls[0];
+      const [{ userIds, changed }] = send.mock.calls[0];
       expect(userIds.toSorted()).toEqual([owner.id, sharedWith.id].toSorted());
       expect(userIds).not.toContain(stranger.id);
-      expect(paths).toEqual([Resource.album(album)]);
+      expect(changed).toEqual([Resource.album(album)]);
     });
   });
 

@@ -51,8 +51,7 @@ export interface ClientEventMap {
   AssetUploadReadyV2: [{ asset: SyncAssetV2; exif: SyncAssetExifV1 }];
   AppRestartV1: [AppRestartEvent];
   AssetEditReadyV2: [{ asset: SyncAssetV2; edit: SyncAssetEditV1[] }];
-  ResourceUpdateV1: [{ paths: string[]; correlationId?: string }];
-  ResourceDeleteV1: [{ paths: string[]; correlationId?: string }];
+  ResourceEventV1: [{ changed: string[]; deleted: string[]; correlationId?: string }];
 }
 
 export type AuthFn = (client: Socket) => Promise<AuthDto>;

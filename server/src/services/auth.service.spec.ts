@@ -16,7 +16,7 @@ import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const email = 'test@immich.com';
 const loginDetails = {
@@ -158,7 +158,7 @@ describe(AuthService.name, () => {
 
       await sut.changePassword(AuthFactory.create(user), { password: 'old-password', newPassword: 'new-password' });
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myUser(), Resource.sessions()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser(), Resource.sessions()] });
     });
 
     it('should change the password and logout other sessions', async () => {
@@ -1559,7 +1559,7 @@ describe(AuthService.name, () => {
         {},
       );
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myUser()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser()] });
     });
 
     it('should not link an already linked oauth.sub', async () => {
@@ -1614,7 +1614,7 @@ describe(AuthService.name, () => {
 
       await sut.unlink(AuthFactory.create(user));
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myUser()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser()] });
     });
   });
 
@@ -1641,7 +1641,7 @@ describe(AuthService.name, () => {
 
       await sut.setupPinCode(AuthFactory.create(user), { pinCode: '123456' });
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.authStatus()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.authStatus()] });
     });
 
     it('should fail if the user already has a PIN code', async () => {
@@ -1705,7 +1705,7 @@ describe(AuthService.name, () => {
 
       await sut.resetPinCode(AuthFactory.create(user), { pinCode: '123456' });
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.authStatus()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.authStatus()] });
     });
 
     it('should throw if the PIN code does not match', async () => {
@@ -1728,7 +1728,7 @@ describe(AuthService.name, () => {
 
       await sut.unlockSession(AuthFactory.from(user).session(session).build(), { pinCode: '123456' });
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.authStatus()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.authStatus()] });
     });
 
     it('should not unlock with a wrong PIN code', async () => {
@@ -1751,7 +1751,7 @@ describe(AuthService.name, () => {
 
       await sut.lockSession(AuthFactory.from(user).session(session).build());
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.authStatus()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.authStatus()] });
     });
 
     it('should require a session', async () => {

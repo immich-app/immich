@@ -87,7 +87,7 @@ export class UserService extends BaseService {
       key: UserMetadataKey.Preferences,
       value: getPreferencesPartial(updated),
     });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.myPreferences()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myPreferences()] });
 
     return mapPreferences(updated);
   }
@@ -168,7 +168,7 @@ export class UserService extends BaseService {
 
   async deleteLicense({ user }: AuthDto): Promise<void> {
     await this.userRepository.deleteMetadata(user.id, UserMetadataKey.License);
-    this.resourceRepository.send({ userIds: [user.id], paths: [Resource.myLicense()] });
+    this.resourceRepository.send({ userIds: [user.id], changed: [Resource.myLicense()] });
   }
 
   async setLicense(auth: AuthDto, license: LicenseKeyDto): Promise<LicenseResponseDto> {
@@ -200,7 +200,7 @@ export class UserService extends BaseService {
       key: UserMetadataKey.License,
       value: { ...license, activatedAt: activatedAt.toISOString() },
     });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.myLicense()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myLicense()] });
 
     return { ...license, activatedAt };
   }
@@ -223,7 +223,7 @@ export class UserService extends BaseService {
 
   async deleteOnboarding({ user }: AuthDto): Promise<void> {
     await this.userRepository.deleteMetadata(user.id, UserMetadataKey.Onboarding);
-    this.resourceRepository.send({ userIds: [user.id], paths: [Resource.myOnboarding()] });
+    this.resourceRepository.send({ userIds: [user.id], changed: [Resource.myOnboarding()] });
   }
 
   async setOnboarding(auth: AuthDto, onboarding: OnboardingDto): Promise<OnboardingResponseDto> {
@@ -233,7 +233,7 @@ export class UserService extends BaseService {
         isOnboarded: onboarding.isOnboarded,
       },
     });
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.myOnboarding()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myOnboarding()] });
 
     return {
       isOnboarded: onboarding.isOnboarded,
@@ -306,7 +306,7 @@ export class UserService extends BaseService {
   }
 
   private sendProfileUpdate(userId: string) {
-    this.resourceRepository.send({ userIds: [userId], paths: [Resource.myUser(), Resource.user({ id: userId })] });
+    this.resourceRepository.send({ userIds: [userId], changed: [Resource.myUser(), Resource.user({ id: userId })] });
   }
 
   private findOrFail(id: string, options: UserFindOptions) {

@@ -59,7 +59,7 @@ export class WorkflowService extends BaseService {
       })),
     );
 
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.workflows()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.workflows()] });
 
     return mapWorkflow({ ...workflow, steps: [] });
   }
@@ -79,7 +79,7 @@ export class WorkflowService extends BaseService {
         pluginMethodId: step.pluginMethod.id,
       })),
     );
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.workflow({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.workflow({ id })] });
 
     return mapWorkflow(workflow);
   }
@@ -87,7 +87,7 @@ export class WorkflowService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.WorkflowDelete, ids: [id] });
     await this.workflowRepository.delete(id);
-    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.workflow({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.workflow({ id })] });
   }
 
   async getLogs(auth: AuthDto, id: string, dto: WorkflowGetLogsDto): Promise<WorkflowLogEntryDto[]> {

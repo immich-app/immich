@@ -238,10 +238,10 @@ describe(ActivityService.name, () => {
       await sut.delete(auth, value.id);
 
       expect(send).toHaveBeenCalledTimes(1);
-      const [{ userIds, paths }] = send.mock.calls[0];
+      const [{ userIds, changed }] = send.mock.calls[0];
       expect(userIds.toSorted()).toEqual([owner.id, sharedWith.id].toSorted());
       expect(userIds).not.toContain(stranger.id);
-      expect(paths).toEqual([Resource.activities(), Resource.activityStatistics()]);
+      expect(changed).toEqual([Resource.activities(), Resource.activityStatistics()]);
     });
 
     it('should remove a comment from an album', async () => {

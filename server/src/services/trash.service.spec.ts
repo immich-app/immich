@@ -5,7 +5,7 @@ import { TrashService } from 'src/services/trash.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { newUuids } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const visibilityPaths = [
   Resource.albums(),
@@ -60,7 +60,7 @@ describe(TrashService.name, () => {
 
       await sut.restoreAssets(auth, { ids });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.assets(), ...visibilityPaths] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.assets(), ...visibilityPaths] });
     });
 
     it('should restore a batch of assets', async () => {
@@ -90,7 +90,7 @@ describe(TrashService.name, () => {
 
       await sut.restore(auth);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.assets(), ...visibilityPaths] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.assets(), ...visibilityPaths] });
     });
 
     it('should restore', async () => {
@@ -116,7 +116,7 @@ describe(TrashService.name, () => {
 
       await sut.empty(auth);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.assets()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.assets()] });
     });
 
     it('should empty the trash', async () => {

@@ -100,7 +100,7 @@ export class SystemConfigService extends BaseService {
     const newConfig = await this.updateConfig(dto);
     this.resourceRepository.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.adminConfig()],
+      changed: [Resource.adminConfig()],
     });
 
     await this.eventRepository.emit('ConfigUpdate', { newConfig, oldConfig });

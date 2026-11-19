@@ -11,7 +11,7 @@ import { authStub } from 'test/fixtures/auth.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { getForAlbum } from 'test/mappers.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(UserAdminService.name, () => {
   let sut: UserAdminService;
@@ -75,7 +75,7 @@ describe(UserAdminService.name, () => {
 
       await sut.create({ email: user.email, name: user.name, password: 'password' });
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.adminUsers()] });
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.adminUsers()] });
     });
   });
 
@@ -102,10 +102,10 @@ describe(UserAdminService.name, () => {
 
       await sut.update(auth, user.id, { name: 'New Name' });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: adminIds, paths: [Resource.adminUser(user)] },
-        { userIds: [user.id], paths: [Resource.myUser()] },
+        { userIds: adminIds, changed: [Resource.adminUser(user)] },
+        { userIds: [user.id], changed: [Resource.myUser()] },
       );
     });
 
@@ -185,11 +185,11 @@ describe(UserAdminService.name, () => {
 
       await sut.delete(auth, user.id, {});
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: adminIds, paths: [Resource.adminUser(user)] },
-        { userIds: [user.id], paths: [Resource.myUser()] },
-        { userIds: [user.id, sharedUser.id], paths: [Resource.albums()] },
+        { userIds: adminIds, changed: [Resource.adminUser(user)] },
+        { userIds: [user.id], changed: [Resource.myUser()] },
+        { userIds: [user.id, sharedUser.id], changed: [Resource.albums()] },
       );
     });
 
@@ -241,11 +241,11 @@ describe(UserAdminService.name, () => {
 
       await sut.restore(auth, user.id);
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: adminIds, paths: [Resource.adminUser(user)] },
-        { userIds: [user.id], paths: [Resource.myUser()] },
-        { userIds: [user.id, sharedUser.id], paths: [Resource.albums()] },
+        { userIds: adminIds, changed: [Resource.adminUser(user)] },
+        { userIds: [user.id], changed: [Resource.myUser()] },
+        { userIds: [user.id, sharedUser.id], changed: [Resource.albums()] },
       );
     });
 
@@ -273,10 +273,10 @@ describe(UserAdminService.name, () => {
 
       await sut.updatePreferences(auth, user.id, { memories: { enabled: false } });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: adminIds, paths: [Resource.adminUserPreferences(user)] },
-        { userIds: [user.id], paths: [Resource.myPreferences()] },
+        { userIds: adminIds, changed: [Resource.adminUserPreferences(user)] },
+        { userIds: [user.id], changed: [Resource.myPreferences()] },
       );
     });
   });

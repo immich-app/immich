@@ -9,7 +9,7 @@ import { PasskeyFactory } from 'test/factories/passkey.factory.js';
 import { SessionFactory } from 'test/factories/session.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const loginDetails = {
   isSecure: true,
@@ -424,7 +424,7 @@ describe(PasskeyService.name, () => {
 
       await sut.finishRegistration(auth, { response: registrationResponse }, headers, loginDetails);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.passkeys()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.passkeys()] });
     });
 
     it('should use a default name', async () => {
@@ -696,7 +696,7 @@ describe(PasskeyService.name, () => {
 
       await sut.update(auth, passkey.id, { name: 'New name' });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.passkey(passkey)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.passkey(passkey)] });
     });
   });
 
@@ -706,7 +706,6 @@ describe(PasskeyService.name, () => {
 
       expect(mocks.passkey.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should delete a passkey', async () => {
@@ -728,9 +727,7 @@ describe(PasskeyService.name, () => {
       mocks.passkey.delete.mockResolvedValue();
 
       await sut.delete(auth, passkey.id);
-
-      expectResourceUpdates(mocks);
-      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.passkey(passkey)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.passkey(passkey)] });
     });
   });
 });

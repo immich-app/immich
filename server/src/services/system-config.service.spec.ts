@@ -22,7 +22,7 @@ import { SystemConfigService } from 'src/services/system-config.service.js';
 import type { DeepPartial } from 'src/types.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const partialConfig = {
   ffmpeg: { crf: 30 },
@@ -508,7 +508,7 @@ describe(SystemConfigService.name, () => {
 
       await sut.updateAdminConfig(updatedConfig);
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.adminConfig()] });
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.adminConfig()] });
     });
 
     it('should throw an error if a config file is in use', async () => {

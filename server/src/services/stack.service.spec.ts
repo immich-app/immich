@@ -7,7 +7,7 @@ import { StackFactory } from 'test/factories/stack.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForStack } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(StackService.name, () => {
   let sut: StackService;
@@ -88,7 +88,7 @@ describe(StackService.name, () => {
 
       await sut.create(auth, { assetIds: [primaryAsset.id, asset.id] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.stacks()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.stacks()] });
     });
   });
 
@@ -211,7 +211,7 @@ describe(StackService.name, () => {
 
       await sut.update(auth, stack.id, { primaryAssetId: asset.id });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.stack(stack)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.stack(stack)] });
     });
   });
 
@@ -222,7 +222,6 @@ describe(StackService.name, () => {
       expect(mocks.stack.delete).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should delete stack', async () => {
@@ -247,9 +246,7 @@ describe(StackService.name, () => {
       mocks.stack.delete.mockResolvedValue();
 
       await sut.delete(auth, stackId);
-
-      expectResourceUpdates(mocks);
-      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.stack({ id: stackId })] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.stack({ id: stackId })] });
     });
   });
 
@@ -260,7 +257,6 @@ describe(StackService.name, () => {
       expect(mocks.stack.deleteAll).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should delete all stacks', async () => {
@@ -284,8 +280,7 @@ describe(StackService.name, () => {
 
       await sut.deleteAll(auth, { ids: stackIds });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.stacks()] });
-      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: stackIds.map((id) => Resource.stack({ id })) });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: stackIds.map((id) => Resource.stack({ id })) });
     });
   });
 
@@ -351,7 +346,7 @@ describe(StackService.name, () => {
 
       await sut.removeAsset(auth, { id: stackId, assetId: asset.id });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.stack({ id: stackId })] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.stack({ id: stackId })] });
     });
   });
 });

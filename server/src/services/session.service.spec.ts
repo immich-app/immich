@@ -6,7 +6,7 @@ import { AuthFactory } from 'test/factories/auth.factory.js';
 import { SessionFactory } from 'test/factories/session.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe('SessionService', () => {
   let sut: SessionService;
@@ -34,7 +34,7 @@ describe('SessionService', () => {
 
       await sut.create(auth, {});
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.sessions()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.sessions()] });
     });
 
     it('should require a session', async () => {
@@ -54,7 +54,7 @@ describe('SessionService', () => {
 
       await sut.update(auth, session.id, { isPendingSyncReset: true });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.sessions()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.sessions()] });
     });
 
     it('should not update a session of another user', async () => {
@@ -76,7 +76,7 @@ describe('SessionService', () => {
 
       await sut.lock(auth, session.id);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.authStatus()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.authStatus()] });
     });
   });
 
@@ -118,7 +118,7 @@ describe('SessionService', () => {
 
       await sut.deleteAll(auth);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.sessions()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.sessions()] });
     });
   });
 
@@ -144,7 +144,7 @@ describe('SessionService', () => {
 
       await sut.delete(auth, session.id);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.sessions()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.sessions()] });
     });
 
     it('should not delete a session of another user', async () => {

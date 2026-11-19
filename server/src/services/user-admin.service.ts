@@ -41,7 +41,7 @@ export class UserAdminService extends BaseService {
     const user = await this.createUser(userDto);
     this.resourceRepository.send({
       userIds: await this.userRepository.getAdminIds(),
-      paths: [Resource.adminUsers()],
+      changed: [Resource.adminUsers()],
     });
 
     await this.eventRepository.emit('UserSignup', {
@@ -116,7 +116,7 @@ export class UserAdminService extends BaseService {
     const status = force ? UserStatus.Removing : UserStatus.Deleted;
     const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
     await this.sendUserUpdate(id);
-    this.resourceRepository.send({ userIds: albumUserIds, paths: [Resource.albums()] });
+    this.resourceRepository.send({ userIds: albumUserIds, changed: [Resource.albums()] });
 
     await this.eventRepository.emit('UserTrash', user);
 
@@ -135,7 +135,7 @@ export class UserAdminService extends BaseService {
     const ownedAlbums = await this.albumRepository.getAll(id, { isOwned: true });
     this.resourceRepository.send({
       userIds: ownedAlbums.flatMap(({ albumUsers = [] }) => albumUsers.map(({ user }) => user.id)),
-      paths: [Resource.albums()],
+      changed: [Resource.albums()],
     });
     await this.eventRepository.emit('UserRestore', user);
     return mapUserAdmin(user);
@@ -178,8 +178,8 @@ export class UserAdminService extends BaseService {
 
   private async sendUserUpdate(id: string, adminPath = Resource.adminUser({ id }), userPath = Resource.myUser()) {
     const adminIds = await this.userRepository.getAdminIds();
-    this.resourceRepository.send({ userIds: adminIds, paths: [adminPath] });
-    this.resourceRepository.send({ userIds: [id], paths: [userPath] });
+    this.resourceRepository.send({ userIds: adminIds, changed: [adminPath] });
+    this.resourceRepository.send({ userIds: [id], changed: [userPath] });
   }
 
   private findOrFail(id: string, options: UserFindOptions) {

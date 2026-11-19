@@ -33,7 +33,7 @@ import {
   getForPartner,
 } from 'test/mappers.js';
 import { newDate, newUuid, newUuidV7 } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, makeStream, newTestService } from 'test/utils.js';
 
 const PERSON_READ_ROLES = [PersonUserRole.Read, PersonUserRole.Write, PersonUserRole.Admin];
 const PERSON_WRITE_ROLES = [PersonUserRole.Write, PersonUserRole.Admin];
@@ -538,9 +538,9 @@ describe(PersonService.name, () => {
 
       await sut.update(auth, person.personGroupId, { isHidden: true });
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [auth.user.id],
-        paths: [Resource.person({ id: person.personGroupId }), Resource.searchPerson()],
+        changed: [Resource.person({ id: person.personGroupId }), Resource.searchPerson()],
       });
     });
 
@@ -567,9 +567,9 @@ describe(PersonService.name, () => {
         personId: personGroupId,
         direction: SharingDirection.SharedBy,
       });
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [auth.user.id, sharee.id, writer.id, writerSharee.id],
-        paths: [Resource.person({ id: personGroupId }), Resource.searchPerson()],
+        changed: [Resource.person({ id: personGroupId }), Resource.searchPerson()],
       });
     });
 
@@ -586,9 +586,9 @@ describe(PersonService.name, () => {
 
       await sut.update(auth, person.personGroupId, { name: 'Person 1', userId: person.ownerId });
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [person.ownerId, auth.user.id, sharee.id],
-        paths: [Resource.person({ id: person.personGroupId }), Resource.searchPerson()],
+        changed: [Resource.person({ id: person.personGroupId }), Resource.searchPerson()],
       });
     });
   });
@@ -630,9 +630,9 @@ describe(PersonService.name, () => {
         ],
       });
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [auth.user.id, sharee.id],
-        paths: [Resource.people(), Resource.searchPerson()],
+        changed: [Resource.people(), Resource.searchPerson()],
       });
     });
   });
@@ -643,7 +643,6 @@ describe(PersonService.name, () => {
 
       expect(mocks.person.delete).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should tell the owner and the users it was shared with', async () => {
@@ -663,13 +662,10 @@ describe(PersonService.name, () => {
       expect(mocks.personUser.searchPeopleUsers).toHaveBeenCalledWith(auth.user.id, {
         direction: SharingDirection.SharedBy,
       });
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [auth.user.id, sharee.id],
-        paths: [Resource.people(), Resource.searchPerson()],
-      });
-      expectResourceDeletes(mocks, {
-        userIds: [auth.user.id, sharee.id],
-        paths: [Resource.person({ id: personGroupId })],
+        changed: [Resource.searchPerson()],
+        deleted: [Resource.person({ id: personGroupId })],
       });
     });
   });
@@ -687,8 +683,11 @@ describe(PersonService.name, () => {
 
       await sut.deleteAll(auth, { ids });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.people(), Resource.searchPerson()] });
-      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: ids.map((id) => Resource.person({ id })) });
+      expectResourceEvents(mocks, {
+        userIds: [auth.user.id],
+        changed: [Resource.searchPerson()],
+        deleted: ids.map((id) => Resource.person({ id })),
+      });
     });
   });
 
@@ -699,7 +698,6 @@ describe(PersonService.name, () => {
       );
 
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should not tell anyone when no person can be merged', async () => {
@@ -709,7 +707,6 @@ describe(PersonService.name, () => {
       await sut.mergePeople(AuthFactory.create(), { ids });
 
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should tell every owner of the merged people', async () => {
@@ -729,15 +726,12 @@ describe(PersonService.name, () => {
 
       await sut.mergePeople(auth, { ids });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [auth.user.id, other.id], paths: [Resource.people(), Resource.searchPerson()] },
-        { userIds: [auth.user.id], paths: [Resource.faces()] },
-      );
-      expectResourceDeletes(
-        mocks,
-        { userIds: [auth.user.id], paths: [Resource.person({ id: source.personGroupId })] },
-        { userIds: [other.id], paths: [Resource.person({ id: source.personGroupId })] },
+        { userIds: [auth.user.id, other.id], changed: [Resource.people(), Resource.searchPerson()] },
+        { userIds: [auth.user.id], changed: [Resource.faces()] },
+        { userIds: [auth.user.id], deleted: [Resource.person({ id: source.personGroupId })] },
+        { userIds: [other.id], deleted: [Resource.person({ id: source.personGroupId })] },
       );
     });
 
@@ -766,10 +760,12 @@ describe(PersonService.name, () => {
 
       await sut.mergePeople(auth, { ids });
 
-      expectResourceDeletes(mocks, {
-        userIds: [auth.user.id],
-        paths: [Resource.person({ id: source.personGroupId })],
-      });
+      expectResourceEvents(
+        mocks,
+        { userIds: [auth.user.id, other.id], changed: [Resource.people(), Resource.searchPerson()] },
+        { userIds: [auth.user.id], changed: [Resource.faces()] },
+        { userIds: [auth.user.id], deleted: [Resource.person({ id: source.personGroupId })] },
+      );
     });
   });
 
@@ -807,10 +803,10 @@ describe(PersonService.name, () => {
       });
 
       expect(mocks.person.getForMergePerson).toHaveBeenCalledWith([person.personGroupId, source.personGroupId]);
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [auth.user.id, other.id], paths: [Resource.people()] },
-        { userIds: [auth.user.id], paths: [Resource.faces()] },
+        { userIds: [auth.user.id, other.id], changed: [Resource.people()] },
+        { userIds: [auth.user.id], changed: [Resource.faces()] },
       );
     });
 
@@ -1020,10 +1016,10 @@ describe(PersonService.name, () => {
         height: 110,
       });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [auth.user.id, other.id], paths: [Resource.person({ id: person.personGroupId })] },
-        { userIds: [auth.user.id], paths: [Resource.faces()] },
+        { userIds: [auth.user.id, other.id], changed: [Resource.person({ id: person.personGroupId })] },
+        { userIds: [auth.user.id], changed: [Resource.faces()] },
       );
     });
   });
@@ -1052,10 +1048,10 @@ describe(PersonService.name, () => {
 
       await sut.deleteFace(auth, face.id, { force: false });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [auth.user.id, other.id], paths: [Resource.person({ id: person.personGroupId })] },
-        { userIds: [auth.user.id], paths: [Resource.faces()] },
+        { userIds: [auth.user.id, other.id], changed: [Resource.person({ id: person.personGroupId })] },
+        { userIds: [auth.user.id], changed: [Resource.faces()] },
       );
     });
 
@@ -1068,7 +1064,7 @@ describe(PersonService.name, () => {
       await sut.deleteFace(auth, face.id, { force: true });
 
       expect(mocks.person.getForMergePerson).not.toHaveBeenCalled();
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.faces()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.faces()] });
     });
 
     it('should not tell anyone when the face was already deleted', async () => {
@@ -1169,13 +1165,13 @@ describe(PersonService.name, () => {
 
       await sut.reassignFacesById(auth, person.personGroupId, { id: face.id });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
         {
           userIds: [auth.user.id, other.id],
-          paths: [Resource.person({ id: person.personGroupId }), Resource.person({ id: source.personGroupId })],
+          changed: [Resource.person({ id: person.personGroupId }), Resource.person({ id: source.personGroupId })],
         },
-        { userIds: [auth.user.id], paths: [Resource.faces()] },
+        { userIds: [auth.user.id], changed: [Resource.faces()] },
       );
     });
   });
@@ -1201,7 +1197,7 @@ describe(PersonService.name, () => {
 
       await sut.create(auth, {});
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.people(), Resource.searchPerson()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.people(), Resource.searchPerson()] });
     });
   });
 
@@ -2090,9 +2086,9 @@ describe(PersonService.name, () => {
         role: share.role,
       });
 
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [auth.user.id, sharedWith.id],
-        paths: [Resource.people(), Resource.searchPerson()],
+        changed: [Resource.people(), Resource.searchPerson()],
       });
     });
 
@@ -2143,9 +2139,9 @@ describe(PersonService.name, () => {
       expect(mocks.personUser.searchPeopleUsers).toHaveBeenCalledWith(auth.user.id, {
         direction: SharingDirection.SharedBy,
       });
-      expectResourceUpdates(mocks, {
+      expectResourceEvents(mocks, {
         userIds: [auth.user.id, removed.id],
-        paths: [Resource.people(), Resource.searchPerson()],
+        changed: [Resource.people(), Resource.searchPerson()],
       });
     });
 

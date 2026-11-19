@@ -9,7 +9,7 @@ import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
-import { ServiceMocks, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
@@ -102,7 +102,7 @@ describe(UserService.name, () => {
 
       await sut.updateMe(AuthFactory.create(user), { name: 'New name' });
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myUser(), Resource.user(user)] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser(), Resource.user(user)] });
     });
 
     it('should not change the email to one already in use', async () => {
@@ -126,7 +126,7 @@ describe(UserService.name, () => {
 
       await sut.updateMyPreferences(AuthFactory.create(user), { memories: { enabled: false } });
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myPreferences()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myPreferences()] });
     });
   });
 
@@ -199,7 +199,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(AuthFactory.create(user), file);
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myUser(), Resource.user(user)] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser(), Resource.user(user)] });
     });
   });
 
@@ -231,7 +231,7 @@ describe(UserService.name, () => {
 
       await sut.deleteProfileImage(AuthFactory.create(user));
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myUser(), Resource.user(user)] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser(), Resource.user(user)] });
     });
   });
 
@@ -408,7 +408,7 @@ describe(UserService.name, () => {
         activationKey: 'activation-key',
       });
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myLicense()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myLicense()] });
     });
   });
 
@@ -427,7 +427,7 @@ describe(UserService.name, () => {
 
       await sut.deleteLicense(AuthFactory.create(user));
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myLicense()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myLicense()] });
     });
   });
 
@@ -438,7 +438,7 @@ describe(UserService.name, () => {
 
       await sut.setOnboarding(AuthFactory.create(user), { isOnboarded: true });
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myOnboarding()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myOnboarding()] });
     });
   });
 
@@ -449,7 +449,7 @@ describe(UserService.name, () => {
 
       await sut.deleteOnboarding(AuthFactory.create(user));
 
-      expectResourceUpdates(mocks, { userIds: [user.id], paths: [Resource.myOnboarding()] });
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myOnboarding()] });
     });
   });
 

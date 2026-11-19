@@ -6,7 +6,7 @@ import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { SessionFactory } from 'test/factories/session.factory.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(ApiKeyService.name, () => {
   let sut: ApiKeyService;
@@ -74,7 +74,7 @@ describe(ApiKeyService.name, () => {
 
       await sut.create(auth, { permissions: [Permission.All] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.apiKeys()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.apiKeys()] });
     });
   });
 
@@ -117,7 +117,7 @@ describe(ApiKeyService.name, () => {
 
       await sut.update(auth, apiKey.id, { name: 'New name' });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.apiKey(apiKey)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.apiKey(apiKey)] });
     });
 
     it('should update permissions', async () => {
@@ -251,7 +251,7 @@ describe(ApiKeyService.name, () => {
 
       await sut.rotate(auth, apiKey.id);
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.apiKey(apiKey)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.apiKey(apiKey)] });
     });
 
     it('should not rotate a key with permissions the caller does not have', async () => {
@@ -282,7 +282,6 @@ describe(ApiKeyService.name, () => {
 
       expect(mocks.apiKey.delete).not.toHaveBeenCalledWith(id);
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should delete a key', async () => {
@@ -304,9 +303,7 @@ describe(ApiKeyService.name, () => {
       mocks.apiKey.delete.mockResolvedValue();
 
       await sut.delete(auth, apiKey.id);
-
-      expectResourceUpdates(mocks);
-      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.apiKey(apiKey)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.apiKey(apiKey)] });
     });
   });
 

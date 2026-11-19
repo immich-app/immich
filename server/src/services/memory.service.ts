@@ -189,7 +189,7 @@ export class MemoryService extends BaseService {
       },
       allowedAssetIds,
     );
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.memories()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.memories()] });
 
     return mapMemory(memory, auth);
   }
@@ -210,7 +210,7 @@ export class MemoryService extends BaseService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.MemoryDelete, ids: [id] });
     await this.memoryRepository.delete(id);
-    this.resourceRepository.delete({ userIds: [auth.user.id], paths: [Resource.memory({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.memory({ id })] });
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
@@ -252,7 +252,7 @@ export class MemoryService extends BaseService {
   }
 
   private sendMemoryChange(auth: AuthDto, id: string) {
-    this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.memory({ id })] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.memory({ id })] });
   }
 
   private findOrFail(id: string) {

@@ -14,7 +14,7 @@ import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { makeMockWatcher } from 'test/repositories/storage.repository.mock.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
 import { factory, newDate, newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, makeStream, newTestService } from 'test/utils.js';
 
 async function* mockWalk() {
   // eslint-disable-next-line unicorn/no-useless-promise-resolve-reject
@@ -638,8 +638,7 @@ describe(LibraryService.name, () => {
 
       await sut.delete(library.id);
 
-      expectResourceDeletes(mocks, { userIds: adminIds, paths: [Resource.library(library)] });
-      expectResourceUpdates(mocks);
+      expectResourceEvents(mocks, { userIds: adminIds, deleted: [Resource.library(library)] });
     });
 
     it('should allow an external library to be deleted', async () => {
@@ -725,7 +724,7 @@ describe(LibraryService.name, () => {
 
       await sut.create({ ownerId: authStub.admin.user.id });
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.libraries()] });
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.libraries()] });
     });
 
     describe('external library', () => {
@@ -934,7 +933,7 @@ describe(LibraryService.name, () => {
 
       await sut.update(library.id, { name: 'New Name' });
 
-      expectResourceUpdates(mocks, { userIds: adminIds, paths: [Resource.library(library)] });
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.library(library)] });
     });
   });
 

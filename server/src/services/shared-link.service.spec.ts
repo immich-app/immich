@@ -13,7 +13,7 @@ import { authStub } from 'test/fixtures/auth.stub.js';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
 import { getForSharedLink } from 'test/mappers.js';
 import { factory } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceDeletes, expectResourceUpdates, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
@@ -269,10 +269,10 @@ describe(SharedLinkService.name, () => {
 
       await sut.create(AuthFactory.create(owner), { type: SharedLinkType.Album, albumId: album.id });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [owner.id], paths: [Resource.sharedLinks()] },
-        { userIds: [owner.id, editor.id], paths: [Resource.album(album), Resource.albumStatistics()] },
+        { userIds: [owner.id], changed: [Resource.sharedLinks()] },
+        { userIds: [owner.id, editor.id], changed: [Resource.album(album), Resource.albumStatistics()] },
       );
     });
 
@@ -287,7 +287,7 @@ describe(SharedLinkService.name, () => {
 
       await sut.create(auth, { type: SharedLinkType.Individual, assetIds: [asset.id] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.sharedLinks()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.sharedLinks()] });
     });
   });
 
@@ -326,7 +326,7 @@ describe(SharedLinkService.name, () => {
 
       await sut.update(auth, sharedLink.id, { allowDownload: false });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.sharedLink(sharedLink)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.sharedLink(sharedLink)] });
     });
   });
 
@@ -339,7 +339,6 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, 'missing-id');
       expect(mocks.sharedLink.update).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
-      expect(mocks.resource.delete).not.toHaveBeenCalled();
     });
 
     it('should remove a key', async () => {
@@ -361,8 +360,7 @@ describe(SharedLinkService.name, () => {
 
       await sut.remove(auth, sharedLink.id);
 
-      expectResourceUpdates(mocks);
-      expectResourceDeletes(mocks, { userIds: [auth.user.id], paths: [Resource.sharedLink(sharedLink)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.sharedLink(sharedLink)] });
     });
 
     it('should tell the link owner and the album users about a removed album link', async () => {
@@ -376,11 +374,14 @@ describe(SharedLinkService.name, () => {
 
       await sut.remove(AuthFactory.create(owner), sharedLink.id);
 
-      expectResourceUpdates(mocks, {
-        userIds: [owner.id, editor.id],
-        paths: [Resource.album(album), Resource.albumStatistics()],
-      });
-      expectResourceDeletes(mocks, { userIds: [owner.id], paths: [Resource.sharedLink(sharedLink)] });
+      expectResourceEvents(
+        mocks,
+        {
+          userIds: [owner.id, editor.id],
+          changed: [Resource.album(album), Resource.albumStatistics()],
+        },
+        { userIds: [owner.id], deleted: [Resource.sharedLink(sharedLink)] },
+      );
     });
   });
 
@@ -434,7 +435,7 @@ describe(SharedLinkService.name, () => {
 
       await sut.addAssets(auth, sharedLink.id, { assetIds: [asset.id] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.sharedLink(sharedLink)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.sharedLink(sharedLink)] });
     });
 
     it('should not tell anyone when no asset was added', async () => {
@@ -497,7 +498,7 @@ describe(SharedLinkService.name, () => {
 
       await sut.removeAssets(auth, sharedLink.id, { assetIds: [asset.id] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.sharedLink(sharedLink)] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.sharedLink(sharedLink)] });
     });
 
     it('should not tell anyone when no asset was removed', async () => {

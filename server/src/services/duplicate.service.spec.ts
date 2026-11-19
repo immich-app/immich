@@ -12,7 +12,7 @@ import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForDuplicate } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, expectResourceUpdates, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, makeStream, newTestService } from 'test/utils.js';
 
 vitest.useFakeTimers();
 
@@ -176,7 +176,7 @@ describe(DuplicateService.name, () => {
 
       await sut.delete(auth, 'group-1');
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.duplicates()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.duplicates()] });
     });
   });
 
@@ -202,7 +202,7 @@ describe(DuplicateService.name, () => {
 
       await sut.deleteAll(auth, { ids: ['group-1', 'group-2'] });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.duplicates()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.duplicates()] });
     });
   });
 
@@ -249,7 +249,7 @@ describe(DuplicateService.name, () => {
         ],
       });
 
-      expectResourceUpdates(mocks, { userIds: [auth.user.id], paths: [Resource.duplicates()] });
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.duplicates()] });
     });
 
     it('should tell the album users when assets are merged into their album', async () => {
@@ -273,10 +273,10 @@ describe(DuplicateService.name, () => {
         groups: [{ duplicateId: 'group-1', keepAssetIds: [keep.id], trashAssetIds: [trash.id] }],
       });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [owner.id, member.id], paths: [Resource.album(album)] },
-        { userIds: [auth.user.id], paths: [Resource.duplicates()] },
+        { userIds: [owner.id, member.id], changed: [Resource.album(album)] },
+        { userIds: [auth.user.id], changed: [Resource.duplicates()] },
       );
     });
 
@@ -486,10 +486,10 @@ describe(DuplicateService.name, () => {
         groups: [{ duplicateId: 'group-1', keepAssetIds: [keep.id], trashAssetIds: [trash.id] }],
       });
 
-      expectResourceUpdates(
+      expectResourceEvents(
         mocks,
-        { userIds: [auth.user.id], paths: [Resource.tags()] },
-        { userIds: [auth.user.id], paths: [Resource.duplicates()] },
+        { userIds: [auth.user.id], changed: [Resource.tags()] },
+        { userIds: [auth.user.id], changed: [Resource.duplicates()] },
       );
     });
 

@@ -22,7 +22,7 @@ export class TrashService extends BaseService {
     if (count > 0) {
       this.resourceRepository.send({
         userIds: [auth.user.id],
-        paths: [Resource.assets(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
+        changed: [Resource.assets(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
       });
     }
 
@@ -38,7 +38,7 @@ export class TrashService extends BaseService {
     if (count > 0) {
       this.resourceRepository.send({
         userIds: [auth.user.id],
-        paths: [Resource.assets(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
+        changed: [Resource.assets(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
       });
       this.logger.log(`Restored ${count} asset(s) from trash`);
     }
@@ -48,7 +48,7 @@ export class TrashService extends BaseService {
   async empty(auth: AuthDto): Promise<TrashResponseDto> {
     const count = await this.trashRepository.empty(auth.user.id);
     if (count > 0) {
-      this.resourceRepository.send({ userIds: [auth.user.id], paths: [Resource.assets()] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.assets()] });
       await this.jobRepository.queue({ name: JobName.AssetEmptyTrash, data: {} });
     }
     return { count };

@@ -192,7 +192,7 @@ export class QueueService extends BaseService {
 
   private async sendQueueUpdate(name: QueueName) {
     const userIds = await this.userRepository.getAdminIds();
-    this.resourceRepository.send({ userIds, paths: [Resource.queue({ name }), Resource.jobs()] });
+    this.resourceRepository.send({ userIds, changed: [Resource.queue({ name }), Resource.jobs()] });
   }
 
   private async getByName(name: QueueName): Promise<QueueResponseDto> {

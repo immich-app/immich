@@ -135,7 +135,7 @@ export class AlbumService extends BaseService {
     );
     this.resourceRepository.send({
       userIds: [auth.user.id, ...albumUsers.map(({ userId }) => userId)],
-      paths: [Resource.albums()],
+      changed: [Resource.albums()],
     });
 
     for (const { userId } of albumUsers) {
@@ -168,7 +168,7 @@ export class AlbumService extends BaseService {
       },
       auth.user.id,
     );
-    this.resourceRepository.send({ userIds: getUserIds(album), paths: [Resource.album({ id })] });
+    this.resourceRepository.send({ userIds: getUserIds(album), changed: [Resource.album({ id })] });
 
     return this.mapWithMetadata(updatedAlbum);
   }
@@ -178,16 +178,15 @@ export class AlbumService extends BaseService {
     const album = await this.findOrFail(id, auth.user.id);
 
     await this.albumRepository.delete(id);
-    this.resourceRepository.send({ userIds: getUserIds(album), paths: [Resource.albumStatistics()] });
-    this.resourceRepository.delete({ userIds: getUserIds(album), paths: [Resource.album({ id })] });
     this.resourceRepository.send({
-      userIds: album.sharedLinks.map(({ userId }) => userId),
-      paths: [Resource.sharedLinks()],
+      userIds: getUserIds(album),
+      changed: [Resource.albumStatistics()],
+      deleted: [Resource.album({ id })],
     });
     for (const [userId, sharedLinks] of Map.groupBy(album.sharedLinks, ({ userId }) => userId)) {
-      this.resourceRepository.delete({
+      this.resourceRepository.send({
         userIds: [userId],
-        paths: sharedLinks.map((link) => Resource.sharedLink(link)),
+        deleted: sharedLinks.map((link) => Resource.sharedLink(link)),
       });
     }
   }
@@ -215,7 +214,7 @@ export class AlbumService extends BaseService {
       );
 
       const userIds = getUserIds(album);
-      this.resourceRepository.send({ userIds, paths: [Resource.album({ id })] });
+      this.resourceRepository.send({ userIds, changed: [Resource.album({ id })] });
       const recipientIds = userIds.filter((userId) => userId !== auth.user.id);
       await this.eventRepository.emit('AlbumUpdate', { id, userIds, recipientIds });
     }
@@ -276,7 +275,7 @@ export class AlbumService extends BaseService {
 
     await this.albumRepository.addAssetIdsToAlbums(albumAssetValues);
     for (const event of events) {
-      this.resourceRepository.send({ userIds: event.userIds, paths: [Resource.album(event)] });
+      this.resourceRepository.send({ userIds: event.userIds, changed: [Resource.album(event)] });
       await this.eventRepository.emit('AlbumUpdate', event);
     }
 
@@ -300,7 +299,7 @@ export class AlbumService extends BaseService {
       }
 
       const userIds = getUserIds(album);
-      this.resourceRepository.send({ userIds, paths: [Resource.album({ id })] });
+      this.resourceRepository.send({ userIds, changed: [Resource.album({ id })] });
       await this.eventRepository.emit('AlbumUpdate', { id, userIds, recipientIds: [] });
     }
 
@@ -337,7 +336,7 @@ export class AlbumService extends BaseService {
     if (addedUserIds.length > 0) {
       this.resourceRepository.send({
         userIds: [...getUserIds(album), ...addedUserIds],
-        paths: [Resource.album({ id }), Resource.albumStatistics()],
+        changed: [Resource.album({ id }), Resource.albumStatistics()],
       });
     }
 
@@ -371,7 +370,7 @@ export class AlbumService extends BaseService {
     await this.albumUserRepository.delete({ albumId: id, userId });
     this.resourceRepository.send({
       userIds: getUserIds(album),
-      paths: [Resource.album({ id }), Resource.albumStatistics()],
+      changed: [Resource.album({ id }), Resource.albumStatistics()],
     });
   }
 
@@ -386,7 +385,7 @@ export class AlbumService extends BaseService {
     }
 
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
-    this.resourceRepository.send({ userIds: getUserIds(album), paths: [Resource.album({ id })] });
+    this.resourceRepository.send({ userIds: getUserIds(album), changed: [Resource.album({ id })] });
   }
 
   private findOrFail(id: string, authUserId: string) {
