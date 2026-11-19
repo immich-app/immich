@@ -1,4 +1,5 @@
 /* eslint-disable unicorn/no-this-outside-of-class */
+import { registerSchemas } from '@immich/nestjs-standard-schema';
 import { DatabaseConnectionParams, createPostgres } from '@immich/sql-tools';
 import { CallHandler, ExecutionContext, Provider } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
@@ -82,7 +83,6 @@ import { AuthService } from 'src/services/auth.service.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { RepositoryInterface } from 'src/types.js';
 import { getKyselyConfig } from 'src/utils/database.js';
-import { registerSchemas } from 'src/zod.js';
 import { ClusterGroupFactory } from 'test/factories/cluster-group.factory.js';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock.js';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock.js';

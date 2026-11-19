@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { SharedLink } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
@@ -6,7 +7,6 @@ import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum.js';
 import { isoDatetimeToDate } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 const SharedLinkSearchSchema = z
   .object({

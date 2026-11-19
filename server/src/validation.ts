@@ -1,9 +1,9 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { FileValidator, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
 import validator from 'validator';
 import z from 'zod';
-import { createZodDto } from 'src/zod.js';
 
 export type IsIPRangeOptions = { requireCIDR?: boolean };
 

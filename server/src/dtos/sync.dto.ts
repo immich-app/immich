@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { ExtraModel } from 'src/decorators.js';
 import { AssetEditActionSchema } from 'src/dtos/editing.dto.js';
@@ -14,7 +15,6 @@ import {
   UserMetadataKeySchema,
 } from 'src/enum.js';
 import { isoDatetimeToDate } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 const SyncUserV1Schema = z
   .object({
