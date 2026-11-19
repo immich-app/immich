@@ -23,7 +23,7 @@ abstract class MemoryData with _$MemoryData {
   }
 
   factory MemoryData.fromMap(Map<String, dynamic> map) {
-    return MemoryData(year: map['year'] as int, personName: map['personName'] as String?);
+    return MemoryData(year: map['year'] as int? ?? 0, personName: map['personName'] as String?);
   }
 
   @visibleForTesting
