@@ -13,7 +13,7 @@
 
   const { data, itemLabel, totalLabel }: Props = $props();
 
-  const startDate = $derived(DateTime.fromISO(data.from, { zone: 'utc' }));
+  const startDate = $derived(DateTime.fromISO(data.from, { zone: 'utc', locale: $locale }));
   const padding = $derived(startDate.diff(startDate.startOf('week', { useLocaleWeeks: true })).as('days'));
 
   const maxCount = $derived(Math.max(...data.series.map((item) => item.count), 0));
