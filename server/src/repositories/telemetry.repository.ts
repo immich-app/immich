@@ -14,6 +14,7 @@ import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic
 import { snakeCase, startCase } from 'lodash-es';
 import { MetricService } from 'nestjs-otel';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils.js';
+import { Server, createServer } from 'node:http';
 import { excludePaths, serverVersion } from 'src/constants.js';
 import { ImmichTelemetry, MetadataKey } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -55,20 +56,28 @@ const aggregationBoundaries = [
 ];
 
 let instance: NodeSDK | undefined;
+let metricsServer: Server | undefined;
 
 export const bootstrapTelemetry = (port: number) => {
   if (instance) {
     throw new Error('OpenTelemetry SDK already started');
   }
 
-  const { telemetry, host = '::' } = new ConfigRepository().getEnv();
+  const { telemetry, host } = new ConfigRepository().getEnv();
+  const exporter = new PrometheusExporter({ preventServerStart: true });
+  const logger = LoggingRepository.create('Telemetry');
+
+  metricsServer = createServer((request, response) => exporter.getMetricsRequestHandler(request, response))
+    .on('error', (error) => logger.error(`Failed to start metrics server: ${error}`))
+    .listen(port, host)
+    .unref();
 
   instance = new NodeSDK({
     resource: resourceFromAttributes({
       [ATTR_SERVICE_NAME]: `immich`,
       [ATTR_SERVICE_VERSION]: serverVersion.toString(),
     }),
-    metricReaders: [new PrometheusExporter({ port, host })],
+    metricReaders: [exporter],
     contextManager: new AsyncLocalStorageContextManager(),
     instrumentations: [
       new HttpInstrumentation({
@@ -99,6 +108,8 @@ export const teardownTelemetry = async () => {
     return;
   }
 
+  metricsServer?.close();
+  metricsServer = undefined;
   await instance.shutdown();
   instance = undefined;
 };
