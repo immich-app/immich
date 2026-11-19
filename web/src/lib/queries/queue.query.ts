@@ -1,4 +1,5 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import type { QueueSnapshot } from '#lib/types.ts';
 import {
   ManualJobName,
@@ -14,9 +15,6 @@ import {
 } from '@immich/sdk';
 import { mutationOptions, queryOptions, type MutationFilters, type MutationMeta } from '@tanstack/svelte-query';
 
-export const queuesQueryKey = ['queues'];
-const queueSnapshotsQueryKey = ['queue-snapshots'];
-
 const findOrFail = (queues: QueueResponseDto[], name: QueueName) => {
   const queue = queues.find((queue) => queue.name === name);
   if (!queue) {
@@ -27,10 +25,10 @@ const findOrFail = (queues: QueueResponseDto[], name: QueueName) => {
 
 export const getQueuesQuery = () =>
   queryOptions({
-    queryKey: queuesQueryKey,
+    queryKey: QueryKeys.queues(),
     queryFn: async ({ signal }) => {
       const queues = await getQueues({ signal });
-      queryClient.setQueryData<QueueSnapshot[]>(queueSnapshotsQueryKey, (snapshots = []) =>
+      queryClient.setQueryData(getQueueSnapshotsQuery().queryKey, (snapshots = []) =>
         [...snapshots, { timestamp: Date.now(), snapshot: queues }].slice(-30),
       );
       return queues;
@@ -40,7 +38,7 @@ export const getQueuesQuery = () =>
 
 export const getQueueSnapshotsQuery = () =>
   queryOptions({
-    queryKey: queueSnapshotsQueryKey,
+    queryKey: QueryKeys.queueSnapshots(),
     queryFn: () => [] as QueueSnapshot[],
     initialData: [],
     staleTime: Infinity,
@@ -49,7 +47,7 @@ export const getQueueSnapshotsQuery = () =>
 
 export const getQueuesLegacyQuery = () =>
   queryOptions({
-    queryKey: ['queues-legacy'],
+    queryKey: QueryKeys.jobs(),
     queryFn: ({ signal }) => getQueuesLegacy({ signal }),
     refetchInterval: 2000,
   });
@@ -60,12 +58,12 @@ export const getQueueQuery = (name: QueueName) =>
     select: (queues) => findOrFail(queues, name),
   });
 
-const invalidateQueues = () => queryClient.invalidateQueries({ queryKey: queuesQueryKey });
+const invalidateQueues = () => queryClient.invalidateQueries({ queryKey: QueryKeys.queues() });
 
 export const updateQueueMutation = () =>
   asMutation(updateQueue, {
     onSuccess: (queue) =>
-      queryClient.setQueryData<QueueResponseDto[]>(queuesQueryKey, (queues) =>
+      queryClient.setQueryData(getQueuesQuery().queryKey, (queues) =>
         queues?.map((item) => (item.name === queue.name ? queue : item)),
       ),
   });

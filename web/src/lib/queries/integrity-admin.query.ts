@@ -1,4 +1,5 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   IntegrityReport,
   ManualJobName,
@@ -9,8 +10,6 @@ import {
 } from '@immich/sdk';
 import { infiniteQueryOptions, queryOptions, type InfiniteData, type MutationFilters } from '@tanstack/svelte-query';
 
-const integrityReportsQueryKey = ['integrity-reports'];
-
 export const integrityReportDeleteAllJobs: Record<IntegrityReport, ManualJobName> = {
   [IntegrityReport.UntrackedFile]: ManualJobName.IntegrityUntrackedFilesDeleteAll,
   [IntegrityReport.MissingFile]: ManualJobName.IntegrityMissingFilesDeleteAll,
@@ -19,14 +18,14 @@ export const integrityReportDeleteAllJobs: Record<IntegrityReport, ManualJobName
 
 export const getIntegrityReportSummaryQuery = () =>
   queryOptions({
-    queryKey: ['integrity-report-summary'],
+    queryKey: QueryKeys.integrityReportSummary(),
     queryFn: ({ signal }) => getIntegrityReportSummary({ signal }),
     staleTime: 0,
   });
 
 export const getIntegrityReportQuery = (type: IntegrityReport) =>
   infiniteQueryOptions({
-    queryKey: [...integrityReportsQueryKey, type],
+    queryKey: QueryKeys.integrityReport({ type }),
     queryFn: ({ pageParam, signal }) => getIntegrityReport({ $type: type, cursor: pageParam }, { signal }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: ({ nextCursor }) => nextCursor,
@@ -37,7 +36,7 @@ export const getIntegrityReportQuery = (type: IntegrityReport) =>
 export const clearIntegrityReport = (type: IntegrityReport) =>
   queryClient.setQueryData(getIntegrityReportQuery(type).queryKey, { pages: [{ items: [] }], pageParams: [undefined] });
 
-const deleteIntegrityReportMutationKey = [...integrityReportsQueryKey, 'delete'];
+const deleteIntegrityReportMutationKey = [...QueryKeys.integrityReport(), 'delete'];
 
 export const isDeletingIntegrityReport = (id: string): MutationFilters => ({
   mutationKey: deleteIntegrityReportMutationKey,
@@ -52,7 +51,7 @@ export const deleteIntegrityReportMutation = () =>
     mutationKey: deleteIntegrityReportMutationKey,
     onSuccess: (_, [{ id }]) =>
       queryClient.setQueriesData<InfiniteData<IntegrityReportResponseDto>>(
-        { queryKey: integrityReportsQueryKey },
+        { queryKey: QueryKeys.integrityReport() },
         (report) =>
           report && {
             ...report,

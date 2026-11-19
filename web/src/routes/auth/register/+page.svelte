@@ -1,7 +1,7 @@
 <script lang="ts">
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
   import { queryClient } from '#lib/queries/client.ts';
-  import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+  import { QueryKeys } from '#lib/queries/query-keys.ts';
   import { Route } from '#lib/route.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { signUpAdmin } from '@immich/sdk';
@@ -38,7 +38,7 @@
 
     try {
       await signUpAdmin({ signUpDto: { email, password, name } });
-      await queryClient.refetchQueries({ queryKey: getServerConfigQuery().queryKey });
+      await queryClient.refetchQueries({ queryKey: QueryKeys.serverConfig() });
       await goto(Route.login());
     } catch (error) {
       handleError(error, $t('errors.unable_to_create_admin_account'));
