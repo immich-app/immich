@@ -302,7 +302,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   private fun decodeSource(uri: Uri, target: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      ImageDecoder.createSource(resolver, uri).decodeBitmap(target)
+      ImageDecoder.createSource(resolver, uri).decodeBitmap(target, exactSize = true)
     } else {
       val ref =
         Glide.with(ctx).asBitmap().priority(Priority.IMMEDIATE).load(uri).disallowHardwareConfig()
