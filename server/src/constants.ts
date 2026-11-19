@@ -36,6 +36,7 @@ export const ASSET_VISIBILITY_DEPENDENT_PATHS = [
 ];
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
+export const JOBS_CLEAN_BATCH_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
 
 export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {

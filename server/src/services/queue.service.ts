@@ -133,8 +133,8 @@ export class QueueService extends BaseService {
       }
 
       case QueueCommand.ClearFailed: {
-        const failedJobs = await this.jobRepository.clear(name, QueueCleanType.Failed);
-        this.logger.debug(`Cleared failed jobs: ${failedJobs}`);
+        const count = await this.jobRepository.clear(name, QueueCleanType.Failed);
+        this.logger.debug(`Cleared ${count} failed jobs`);
         break;
       }
     }
