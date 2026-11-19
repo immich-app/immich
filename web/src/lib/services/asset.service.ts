@@ -110,7 +110,7 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
   };
 
   const Tag: ActionItem = {
-    title: $t('tag'),
+    title: $t('tag_add_edit'),
     icon: mdiTagMultipleOutline,
     $if: () => authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned,
     onAction: async () => {

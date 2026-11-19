@@ -7,6 +7,7 @@ import type { Call, Handler, Handlers, OperationId } from '#test/common/types.ts
 const mutationMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const readOperations = new Set<OperationId>([
   'searchAssets',
+  'queryTagsForAssets',
   'searchSmart',
   'getDownloadInfo',
   'downloadArchive',

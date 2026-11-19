@@ -2,8 +2,10 @@ import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
 import {
   bulkTagAssets,
+  bulkTagUntagAssets,
   deleteTag,
   getAllTags,
+  queryTagsForAssets,
   untagAssets,
   updateTag,
   upsertTags,
@@ -51,3 +53,19 @@ export const bulkTagAssetsMutation = () =>
   });
 
 export const untagAssetsMutation = () => asMutation(untagAssets);
+
+export const getTagsForAssetsQuery = (assetIds: string[]) =>
+  queryOptions({
+    queryKey: [...tagsQueryKey, 'assets', [...assetIds].sort()],
+    queryFn: ({ signal }) => queryTagsForAssets({ tagsForAssetsDto: { assetIds } }, { signal }),
+    staleTime: 0,
+  });
+
+export const bulkTagUntagAssetsMutation = () =>
+  asMutation(bulkTagUntagAssets, {
+    onSuccess: async (_, [{ tagBulkAddRemoveAssetsDto }]) => {
+      eventManager.emit('AssetsTag', tagBulkAddRemoveAssetsDto.assetIds);
+      await invalidateTags();
+    },
+    meta: { error: { toast: 'errors.failed_to_tag_assets' } },
+  });
