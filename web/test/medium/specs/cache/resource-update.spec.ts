@@ -10,7 +10,7 @@ test('api key list shows keys added elsewhere', async ({ page, data, api, app })
 
   data.addApiKeys(factory.apiKey({ name: 'Added elsewhere' }));
   await expect(() =>
-    api.emit('ResourceUpdateV1', { paths: ['/api-keys'], correlationId: 'another-device.1' }),
+    api.emit('ResourceEventV1', { changed: ['/api-keys'], deleted: [], correlationId: 'another-device.1' }),
   ).toPass();
 
   await expect(app.settings.apiKeys.name('Added elsewhere')).toBeVisible();

@@ -7,7 +7,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const isInvalidated = (queryKey: QueryKey) => queryClient.getQueryState(queryKey)?.isInvalidated ?? false;
 
-const fromElsewhere = (...paths: string[]) => ({ paths, correlationId: 'another-device.1' });
+const fromElsewhere = ({ changed = [], deleted = [] }: { changed?: string[]; deleted?: string[] }) => ({
+  changed,
+  deleted,
+  correlationId: 'another-device.1',
+});
 
 const sendRequest = async () => {
   const impl = vi.fn<typeof fetch>(() => Promise.resolve(new Response()));
@@ -30,7 +34,7 @@ describe('resourceManager', () => {
     queryClient.clear();
   });
 
-  describe('handleUpdate', () => {
+  describe('handleEvent changed', () => {
     it.each([
       { name: 'equal path', path: '/albums/1', queryKey: ['albums', '1'], hit: true },
       { name: 'descendant query', path: '/albums/1', queryKey: ['albums', '1', 'map-markers'], hit: true },
@@ -44,7 +48,7 @@ describe('resourceManager', () => {
     ])('$name: $path hit $queryKey is $hit', ({ path, queryKey, hit }) => {
       queryClient.setQueryData(queryKey, []);
 
-      resourceManager.handleUpdate(fromElsewhere(path));
+      resourceManager.handleEvent(fromElsewhere({ changed: [path] }));
       vi.advanceTimersByTime(500);
 
       expect(isInvalidated(queryKey)).toBe(hit);
@@ -55,9 +59,9 @@ describe('resourceManager', () => {
       await queryClient.fetchQuery({ queryKey: ['albums'], queryFn });
       const unsubscribe = new QueryObserver(queryClient, { queryKey: ['albums'], queryFn }).subscribe(noop);
 
-      resourceManager.handleUpdate(fromElsewhere('/albums/1'));
-      resourceManager.handleUpdate(fromElsewhere('/albums/1', '/albums/2'));
-      resourceManager.handleUpdate(fromElsewhere('/tags'));
+      resourceManager.handleEvent(fromElsewhere({ changed: ['/albums/1'] }));
+      resourceManager.handleEvent(fromElsewhere({ changed: ['/albums/1', '/albums/2'] }));
+      resourceManager.handleEvent(fromElsewhere({ changed: ['/tags'] }));
       await vi.advanceTimersByTimeAsync(499);
       expect(queryFn).toHaveBeenCalledTimes(1);
       await vi.advanceTimersByTimeAsync(1);
@@ -67,7 +71,7 @@ describe('resourceManager', () => {
     });
   });
 
-  describe('handleDelete', () => {
+  describe('handleEvent deleted', () => {
     it.each([
       { name: 'equal path', queryKey: ['albums', '1'], removed: true, invalidated: false },
       { name: 'descendant', queryKey: ['albums', '1', 'map-markers'], removed: true, invalidated: false },
@@ -78,7 +82,7 @@ describe('resourceManager', () => {
     ])('$name: /albums/1 removes $queryKey is $removed', ({ queryKey, removed, invalidated }) => {
       queryClient.setQueryData(queryKey, []);
 
-      resourceManager.handleDelete(fromElsewhere('/albums/1'));
+      resourceManager.handleEvent(fromElsewhere({ deleted: ['/albums/1'] }));
 
       expect(queryClient.getQueryData(queryKey) === undefined).toBe(removed);
       expect(isInvalidated(queryKey)).toBe(invalidated);
@@ -89,9 +93,9 @@ describe('resourceManager', () => {
       await queryClient.fetchQuery({ queryKey: ['albums'], queryFn });
       const unsubscribe = new QueryObserver(queryClient, { queryKey: ['albums'], queryFn }).subscribe(noop);
       queryClient.setQueryData(['tags'], []);
-      resourceManager.handleUpdate(fromElsewhere('/albums/1/assets', '/tags'));
+      resourceManager.handleEvent(fromElsewhere({ changed: ['/albums/1/assets', '/tags'] }));
 
-      resourceManager.handleDelete(fromElsewhere('/albums/1'));
+      resourceManager.handleEvent(fromElsewhere({ deleted: ['/albums/1'] }));
       await vi.advanceTimersByTimeAsync(500);
 
       expect(queryFn).toHaveBeenCalledTimes(2);
@@ -105,7 +109,11 @@ describe('resourceManager', () => {
       const unsubscribe = resourceManager.onDelete('/albums/1', onDelete);
       const headers = await sendRequest();
 
-      resourceManager.handleDelete({ paths: ['/albums/1'], correlationId: headers.get('X-Correlation-ID') ?? '' });
+      resourceManager.handleEvent({
+        changed: [],
+        deleted: ['/albums/1'],
+        correlationId: headers.get('X-Correlation-ID') ?? '',
+      });
 
       expect(queryClient.getQueryData(['albums', '1'])).toEqual([]);
       expect(onDelete).not.toHaveBeenCalled();
@@ -118,12 +126,38 @@ describe('resourceManager', () => {
       const observer = new QueryObserver(queryClient, { queryKey: ['albums', '1'], queryFn });
       const unsubscribe = observer.subscribe(noop);
 
-      resourceManager.handleDelete(fromElsewhere('/albums/1'));
-      resourceManager.handleUpdate(fromElsewhere('/albums'));
+      resourceManager.handleEvent(fromElsewhere({ deleted: ['/albums/1'] }));
+      resourceManager.handleEvent(fromElsewhere({ changed: ['/albums'] }));
       await vi.advanceTimersByTimeAsync(500);
 
       expect(queryFn).toHaveBeenCalledTimes(1);
       expect(observer.getCurrentResult()).toMatchObject({ data: { id: '1' }, status: 'success' });
+      unsubscribe();
+    });
+  });
+
+  describe('handleEvent', () => {
+    it('removes deleted paths at once and invalidates changed paths after the batch', () => {
+      queryClient.setQueryData(['albums', '1'], []);
+      queryClient.setQueryData(['tags'], []);
+
+      resourceManager.handleEvent(fromElsewhere({ changed: ['/tags'], deleted: ['/albums/1'] }));
+      expect(isInvalidated(['tags'])).toBe(false);
+      vi.advanceTimersByTime(500);
+
+      expect(queryClient.getQueryData(['albums', '1'])).toBeUndefined();
+      expect(isInvalidated(['tags'])).toBe(true);
+    });
+
+    it('keeps changed paths below a path deleted by the same event', async () => {
+      const queryFn = vi.fn(() => Promise.resolve([]));
+      await queryClient.fetchQuery({ queryKey: ['albums'], queryFn });
+      const unsubscribe = new QueryObserver(queryClient, { queryKey: ['albums'], queryFn }).subscribe(noop);
+
+      resourceManager.handleEvent(fromElsewhere({ changed: ['/albums/1/assets'], deleted: ['/albums/1'] }));
+      await vi.advanceTimersByTimeAsync(500);
+
+      expect(queryFn).toHaveBeenCalledTimes(3);
       unsubscribe();
     });
   });
@@ -134,7 +168,7 @@ describe('resourceManager', () => {
       const onDelete = vi.fn(() => queryClient.getQueryData(['albums', '1']));
       const unsubscribe = resourceManager.onDelete('/albums/1', onDelete);
 
-      resourceManager.handleDelete(fromElsewhere('/albums/1'));
+      resourceManager.handleEvent(fromElsewhere({ deleted: ['/albums/1'] }));
 
       expect(onDelete).toHaveReturnedWith([]);
       unsubscribe();
@@ -149,7 +183,7 @@ describe('resourceManager', () => {
       const onDelete = vi.fn();
       const unsubscribe = resourceManager.onDelete(path, onDelete);
 
-      resourceManager.handleDelete(fromElsewhere(deleted));
+      resourceManager.handleEvent(fromElsewhere({ deleted: [deleted] }));
 
       expect(onDelete).toHaveBeenCalledTimes(called ? 1 : 0);
       unsubscribe();
@@ -160,7 +194,7 @@ describe('resourceManager', () => {
       const unsubscribe = resourceManager.onDelete('/albums/1', onDelete);
       unsubscribe();
 
-      resourceManager.handleDelete(fromElsewhere('/albums/1'));
+      resourceManager.handleEvent(fromElsewhere({ deleted: ['/albums/1'] }));
 
       expect(onDelete).not.toHaveBeenCalled();
     });
@@ -171,7 +205,11 @@ describe('resourceManager', () => {
       queryClient.setQueryData(['albums'], []);
       const headers = await sendRequest();
 
-      resourceManager.handleUpdate({ paths: ['/albums'], correlationId: headers.get('X-Correlation-ID') ?? '' });
+      resourceManager.handleEvent({
+        changed: ['/albums'],
+        deleted: [],
+        correlationId: headers.get('X-Correlation-ID') ?? '',
+      });
       vi.advanceTimersByTime(500);
 
       expect(isInvalidated(['albums'])).toBe(false);
@@ -180,7 +218,7 @@ describe('resourceManager', () => {
     it('applies an update that has no correlation id', () => {
       queryClient.setQueryData(['albums'], []);
 
-      resourceManager.handleUpdate({ paths: ['/albums'] });
+      resourceManager.handleEvent({ changed: ['/albums'], deleted: [] });
       vi.advanceTimersByTime(500);
 
       expect(isInvalidated(['albums'])).toBe(true);

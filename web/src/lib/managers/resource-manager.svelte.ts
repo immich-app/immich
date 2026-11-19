@@ -3,7 +3,7 @@ import { queryClient } from '#lib/queries/client.ts';
 import type { QueryKey } from '@tanstack/svelte-query';
 import type { Socket } from 'socket.io-client';
 
-type ResourceEvent = { paths: string[]; correlationId?: string };
+type ResourceEvent = { changed: string[]; deleted: string[]; correlationId?: string };
 type DeleteListener = { path: string[]; onDelete: () => void };
 
 class ResourceManager {
@@ -22,28 +22,12 @@ class ResourceManager {
     };
   }
 
-  handleUpdate({ paths, correlationId }: ResourceEvent) {
+  handleEvent({ changed, deleted, correlationId }: ResourceEvent) {
     if (this.#isFromThisTab(correlationId)) {
       return;
     }
 
-    for (const path of paths) {
-      this.#pendingPaths.add(path);
-    }
-
-    if (this.#flushTimer) {
-      return;
-    }
-
-    this.#flushTimer = setTimeout(() => this.#flush(), resourceUpdateBatchDelay);
-  }
-
-  handleDelete({ paths, correlationId }: ResourceEvent) {
-    if (this.#isFromThisTab(correlationId)) {
-      return;
-    }
-
-    const deletedPaths = paths.map((path) => toSegments(path));
+    const deletedPaths = deleted.map((path) => toSegments(path));
     const isDeleted = (path: string[]) => deletedPaths.some((deletedPath) => isAtOrBelow(path, deletedPath));
 
     for (const path of this.#pendingPaths) {
@@ -65,6 +49,16 @@ class ResourceManager {
         return deletedPaths.some((deletedPath) => isAtOrBelow(deletedPath, resourcePath));
       },
     });
+
+    for (const path of changed) {
+      this.#pendingPaths.add(path);
+    }
+
+    if (this.#flushTimer) {
+      return;
+    }
+
+    this.#flushTimer = setTimeout(() => this.#flush(), resourceUpdateBatchDelay);
   }
 
   onDelete(path: string, onDelete: () => void) {
