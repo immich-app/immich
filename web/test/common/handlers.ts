@@ -361,7 +361,9 @@ export const createHandlers = (data: MockData): Handlers => {
     },
 
     searchMemories: ({ params = {} }) => ({ json: data.memoryList(params) }),
-    memoriesStatistics: () => ({ json: { total: data.memoryList().length } }),
+    memoriesStatistics: ({ params = {} }) => ({
+      json: { total: data.memoryList({ ...params, page: 1, size: Infinity }).length },
+    }),
     getMemory: ({ params }) => {
       const memory = data.getMemory(params.id);
       return memory ? { json: memory } : notFound;
@@ -373,6 +375,10 @@ export const createHandlers = (data: MockData): Handlers => {
     deleteMemory: ({ params }) => {
       data.deleteMemory(params.id);
       return { status: 204 };
+    },
+    removeMemoryAssets: ({ params, body }) => {
+      const results = data.removeMemoryAssets(params.id, body.ids);
+      return results ? { json: results } : notFound;
     },
 
     searchAssets: ({ body }) => ({ json: data.searchAssets(body) }),
