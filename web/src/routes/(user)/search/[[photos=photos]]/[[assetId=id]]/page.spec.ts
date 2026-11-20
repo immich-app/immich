@@ -2,9 +2,11 @@ import { QueryParameter } from '#lib/constants.ts';
 import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
 import { searchManager } from '#lib/managers/search-manager.svelte.ts';
 import { Route } from '#lib/route.ts';
+import type { App } from '#test/unit/app.ts';
 import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
 import type { MockRouter } from '#test/unit/mocks/router.ts';
+import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
 import { Settings } from 'luxon';
 import { afterEach, beforeEach, describe, expect } from 'vitest';
 import { userEvent } from 'vitest/browser';
@@ -75,6 +77,164 @@ test.for([
   await settle();
 
   expect(api[operation]).toHaveBeenCalledWith({ body: expect.objectContaining({ ...terms, visibility: 'timeline' }) });
+});
+
+const favorites = (count: number) => Array.from({ length: count }, () => factory.asset({ isFavorite: true }));
+
+const expectResults = async (app: App, assets: AssetResponseDto[]) => {
+  await expect.element(app.gallery.thumbnail(assets[0])).toBeVisible();
+  await expect.poll(() => app.gallery.thumbnails.all()).toHaveLength(assets.length);
+};
+
+test('loads every page of results', async ({ data, router, render, settle, api, app }) => {
+  data.addAssets(Array.from({ length: 5 }, () => factory.asset({ isFavorite: true, width: 4000, height: 500 })));
+  await router.goto(Route.search({ isFavorite: true, size: 2 }));
+
+  await render(Page, load);
+  await settle();
+
+  await expect.poll(() => app.gallery.thumbnails.all()).toHaveLength(5);
+  expect(api.searchAssets).toHaveBeenCalledWith({ body: expect.objectContaining({ page: 3 }) });
+});
+
+test('a new search replaces the results', async ({ data, router, render, settle, app }) => {
+  const [favorite, other] = [factory.asset({ isFavorite: true }), factory.asset({ isFavorite: false })];
+  data.addAssets([favorite, other]);
+  await router.goto(Route.search({ isFavorite: true, tagIds: [holiday.id] }));
+  await render(Page, load);
+  await settle();
+  await expect.element(app.gallery.thumbnail(favorite)).toBeVisible();
+  await expect.element(app.gallery.thumbnail(other)).not.toBeInTheDocument();
+
+  await app.search.removeChipButtons.first().click();
+  await settle();
+
+  await expectResults(app, [other, favorite]);
+});
+
+test('query uses metadata search when smart search is off', async ({ router, render, settle, api }) => {
+  await router.goto(Route.search({ query: 'beach' }));
+
+  await render(Page, load);
+  await settle();
+
+  expect(api.searchAssets).toHaveBeenCalledWith({ body: expect.objectContaining({ query: 'beach' }) });
+  expect(api.searchSmart).not.toHaveBeenCalled();
+});
+
+test('deleting removes the assets from the results', async ({ data, router, render, settle, api, app }) => {
+  const [kept, deleted] = favorites(2);
+  data.addAssets([kept, deleted]);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.gallery.select(deleted);
+
+  await app.gallery.menuButton.click();
+  await app.gallery.menuItem('delete').click();
+  await settle();
+
+  await expectResults(app, [kept]);
+  expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [deleted.id], force: false } });
+});
+
+test('undoing a delete brings the assets back', async ({ data, router, render, settle, api, app }) => {
+  const [kept, deleted] = favorites(2);
+  data.addAssets([kept, deleted]);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.gallery.select(deleted);
+  await app.gallery.menuButton.click();
+  await app.gallery.menuItem('delete').click();
+  await settle();
+  await expectResults(app, [kept]);
+
+  await app.gallery.undoButton.click();
+  await settle();
+
+  await expectResults(app, [kept, deleted]);
+  expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [deleted.id], force: false } });
+  expect(api.restoreAssets).toHaveBeenCalledWith({ body: { ids: [deleted.id] } });
+});
+
+test('returning to the window keeps the loaded results', async ({ data, router, render, settle, api, app }) => {
+  data.addAssets(favorites(1));
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+
+  app.refocusWindow();
+  await settle();
+
+  expect(api.searchAssets.calls).toHaveLength(1);
+});
+
+test('favoriting marks the assets in the results', async ({ data, router, render, settle, api, app }) => {
+  const asset = factory.asset({ isFavorite: false, visibility: AssetVisibility.Archive });
+  data.addAssets(asset);
+  await router.goto(Route.search({ visibility: AssetVisibility.Archive }));
+  await render(Page, load);
+  await settle();
+  await app.gallery.select(asset);
+
+  await app.gallery.favoriteButton.click();
+  await settle();
+
+  await expect.element(app.gallery.favoriteIcon(asset)).toBeVisible();
+  expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], isFavorite: true } });
+});
+
+test('unarchiving removes the assets from archive results', async ({ data, router, render, settle, api, app }) => {
+  const [kept, unarchived] = [1, 2].map(() => factory.asset({ visibility: AssetVisibility.Archive }));
+  data.addAssets([kept, unarchived]);
+  await router.goto(Route.search({ visibility: AssetVisibility.Archive }));
+  await render(Page, load);
+  await settle();
+  await app.gallery.select(unarchived);
+
+  await app.gallery.menuButton.click();
+  await app.gallery.menuItem('unarchive').click();
+  await settle();
+
+  await expectResults(app, [kept]);
+  expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [unarchived.id], visibility: 'timeline' } });
+});
+
+test('archiving removes the assets from timeline results', async ({ data, router, render, settle, api, app }) => {
+  const [kept, archived] = favorites(2);
+  data.addAssets([kept, archived]);
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.gallery.select(archived);
+
+  await app.gallery.menuButton.click();
+  await app.gallery.menuItem('to_archive').click();
+  await settle();
+
+  await expectResults(app, [kept]);
+  expect(api.updateAssets).toHaveBeenCalledWith({ body: { ids: [archived.id], visibility: 'archive' } });
+});
+
+test.for([
+  { name: 'removes them when not in any album', terms: { isNotInAlbum: true }, removed: true },
+  { name: 'keeps them without the album filter', terms: {}, removed: false },
+])('adding to an album $name', async ({ terms, removed }, { data, router, render, settle, api, app }) => {
+  const album = factory.album({ albumName: 'Trip' });
+  const [kept, added] = favorites(2);
+  data.addAssets([kept, added]).addAlbums(album);
+  await router.goto(Route.search({ isFavorite: true, ...terms }));
+  await render(Page, load);
+  await settle();
+  await app.gallery.select(added);
+
+  await app.gallery.addToAlbumButton.click();
+  await app.gallery.album('Trip').click();
+  await settle();
+
+  await expectResults(app, removed ? [kept] : [kept, added]);
+  expect(api.addAssetsToAlbum).toHaveBeenCalledWith({ params: { id: album.id }, body: { ids: [added.id] } });
 });
 
 const submittedTerms = (router: MockRouter) => JSON.parse(router.url.searchParams.get(QueryParameter.QUERY) ?? '{}');

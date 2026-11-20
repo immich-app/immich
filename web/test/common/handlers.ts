@@ -377,6 +377,7 @@ export const createHandlers = (data: MockData): Handlers => {
 
     searchAssets: ({ body }) => ({ json: data.searchAssets(body) }),
     searchSmart: ({ body }) => ({ json: data.searchAssets(body) }),
+    searchLargeAssets: () => ({ json: data.searchLargeAssets() }),
     getExploreData: () => ({ json: data.exploreData() }),
     getAssetsByCity: () => ({ json: data.assetsByCity() }),
 
