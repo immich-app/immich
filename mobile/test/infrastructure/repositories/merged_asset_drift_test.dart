@@ -23,8 +23,12 @@ void main() {
 
   // the timeline pairs headers to assets by running offset into one flat list
   Future<List<(String, String)>> headerForEachAsset(GroupAssetsBy groupBy) async {
-    final buckets = await ctx.db.mergedAssetDrift.mergedBucket(groupBy: groupBy.index, userIds: [userId]).get();
-    final assets = await ctx.db.mergedAssetDrift.mergedAsset(userIds: [userId], limit: (_) => Limit(1000, 0)).get();
+    final buckets = await ctx.db.mergedAssetDrift
+        .mergedBucket(groupBy: groupBy.index, userIds: [userId], localFilter: (_) => const Constant(true))
+        .get();
+    final assets = await ctx.db.mergedAssetDrift
+        .mergedAsset(userIds: [userId], limit: (_) => Limit(1000, 0), localFilter: (_) => const Constant(true))
+        .get();
 
     final pairs = <(String, String)>[];
     var offset = 0;
@@ -50,7 +54,7 @@ void main() {
 
     await ctx.db.remoteAssetEntity.deleteWhere((row) => row.id.equals('ghost'));
     final buckets = await ctx.db.mergedAssetDrift
-        .mergedBucket(groupBy: GroupAssetsBy.day.index, userIds: [userId])
+        .mergedBucket(groupBy: GroupAssetsBy.day.index, userIds: [userId], localFilter: (_) => const Constant(true))
         .get();
     expect(buckets.map((b) => b.bucketDate), ['2026-04-26']);
     expect(buckets.single.assetCount, 2);
