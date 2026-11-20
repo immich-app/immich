@@ -3,7 +3,6 @@
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import { AssetAction } from '#lib/constants.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
@@ -206,7 +205,6 @@
     bind:timelineManager
     {options}
     assetInteraction={assetMultiSelectManager}
-    removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked
     onThumbnailClick={handleThumbnailClick}

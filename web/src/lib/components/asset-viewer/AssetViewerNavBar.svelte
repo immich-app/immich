@@ -1,11 +1,6 @@
 <script lang="ts">
   import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import LoadingDots from '#lib/components/LoadingDots.svelte';
-  import ArchiveAction from '#lib/components/asset-viewer/actions/ArchiveAction.svelte';
-  import DeleteAction from '#lib/components/asset-viewer/actions/DeleteAction.svelte';
-  import RestoreAction from '#lib/components/asset-viewer/actions/RestoreAction.svelte';
-  import SetVisibilityAction from '#lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
-  import type { OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
@@ -16,11 +11,8 @@
   import { getPersonAssetActions } from '#lib/services/person.service.ts';
   import { getStackActions } from '#lib/services/stack.service.ts';
   import { getSharedLink, withoutIcons } from '#lib/utils.ts';
-  import type { OnUndoDelete } from '#lib/utils/actions.ts';
-  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import {
     AssetTypeEnum,
-    AssetVisibility,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -35,9 +27,6 @@
     album?: AlbumResponseDto;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto;
-    preAction: PreAction;
-    onAction: OnAction;
-    onUndoDelete?: OnUndoDelete;
     onClose?: () => void;
     isPlayingOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -48,16 +37,12 @@
     album,
     person = null,
     stack,
-    preAction,
-    onAction,
-    onUndoDelete = undefined,
     onClose,
     isPlayingOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
 
   const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
-  const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
 
   const { Cast } = $derived(getGlobalActions($t));
 
@@ -117,10 +102,8 @@
     <ActionButton action={Actions.Favorite} />
     <ActionButton action={Actions.Unfavorite} />
     <ActionButton action={Actions.Edit} />
-
-    {#if isOwner}
-      <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
-    {/if}
+    <ActionButton action={Actions.Trash} />
+    <ActionButton action={Actions.PermanentlyDelete} />
 
     {#if !sharedLink}
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
@@ -128,10 +111,7 @@
 
         <ActionMenuItem action={Actions.Download} />
         <ActionMenuItem action={Actions.DownloadOriginal} />
-
-        {#if !isLocked && asset.isTrashed}
-          <RestoreAction {asset} {onAction} />
-        {/if}
+        <ActionMenuItem action={Actions.Restore} />
 
         <ActionMenuItem action={Actions.AddToAlbum} />
         <ActionMenuItem action={Actions.RemoveFromAlbum} />
@@ -152,16 +132,12 @@
         {/if}
 
         <ActionMenuItem action={Actions.SetProfilePicture} />
-
-        {#if isOwner && !isLocked}
-          <ArchiveAction {asset} {onAction} {preAction} />
-        {/if}
+        <ActionMenuItem action={Actions.Archive} />
+        <ActionMenuItem action={Actions.Unarchive} />
         <ActionMenuItem action={Actions.ViewInTimeline} />
         <ActionMenuItem action={Actions.ViewSimilar} />
-
-        {#if !asset.isTrashed && isOwner}
-          <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
-        {/if}
+        <ActionMenuItem action={Actions.Lock} />
+        <ActionMenuItem action={Actions.Unlock} />
 
         <ActionMenuItem action={PlayOriginalVideo} />
 
