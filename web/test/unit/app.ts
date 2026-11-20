@@ -236,6 +236,7 @@ export const createApp = () => {
       restoreAllButton: button('restore_all'),
       restoreSelectedButton: button('restore'),
       permanentlyDeleteButton: button('permanently_delete'),
+      emptyPlaceholder: page.getByText('trash_no_results_message', { exact: true }),
     },
     maintenanceMode: {
       title: page.getByRole('heading', { name: 'maintenance_title', exact: true }),

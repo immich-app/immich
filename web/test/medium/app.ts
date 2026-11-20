@@ -286,6 +286,11 @@ export const createApp = (page: Page, data: MockData) => {
 
     timeline: createTimeline(page, data),
 
+    trash: {
+      emptyTrashButton: button('empty_trash'),
+      restoreAllButton: button('restore_all'),
+    },
+
     largeFiles: {
       thumbnails: page.locator('[data-asset]'),
       thumbnail: (asset: { id: string }) => page.locator(`[data-asset="${asset.id}"]`),
@@ -354,6 +359,8 @@ const createTimeline = (page: Page, data: MockData) => {
       unfavoriteButton: page.getByLabel('remove_from_favorites', { exact: true }),
       unarchiveButton: page.getByLabel('unarchive', { exact: true }),
       restoreButton: page.getByRole('button', { name: 'restore', exact: true }),
+      selectAllButton: page.getByLabel('select_all', { exact: true }),
+      permanentlyDeleteButton: page.getByLabel('permanently_delete', { exact: true }),
       // TODO: wire the app translations into the @immich/ui ControlBar so this can target the `close` key
       closeButton: page.getByTestId('control-bar').getByLabel('Close'),
 
