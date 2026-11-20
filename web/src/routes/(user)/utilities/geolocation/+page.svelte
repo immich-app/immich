@@ -13,6 +13,7 @@
   import GeolocationUpdateConfirmModal from '#lib/modals/GeolocationUpdateConfirmModal.svelte';
   import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
   import type { LatLng } from '#lib/types.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { setQueryValue } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { AssetVisibility, getAssetInfo, updateAssets } from '@immich/sdk';
@@ -55,22 +56,27 @@
       return;
     }
 
-    await updateAssets({
-      assetBulkUpdateDto: {
-        ids: assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
-        latitude: point.lat,
-        longitude: point.lng,
-      },
-    });
+    try {
+      await updateAssets({
+        assetBulkUpdateDto: {
+          ids: assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
+          latitude: point.lat,
+          longitude: point.lng,
+        },
+      });
 
-    const updatedAssets = await Promise.all(
-      assetMultiSelectManager.assets.map(async (asset) => {
-        const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
-        return toTimelineAsset(updatedAsset);
-      }),
-    );
+      const updatedAssets = await Promise.all(
+        assetMultiSelectManager.assets.map(async (asset) => {
+          const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
+          return toTimelineAsset(updatedAsset);
+        }),
+      );
 
-    timelineManager.upsertAssets(updatedAssets);
+      timelineManager.upsertAssets(updatedAssets);
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_change_location'));
+      return;
+    }
 
     assetMultiSelectManager.clear();
   };
