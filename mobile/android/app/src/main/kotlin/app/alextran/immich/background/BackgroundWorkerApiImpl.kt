@@ -31,8 +31,8 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
 
   override fun configure(settings: BackgroundWorkerSettings) {
     BackgroundWorkerPreferences(ctx).updateSettings(settings)
-      // If the user has switched background sync off, changing an unrelated
-      // option (charging, delay) must not quietly bring the workers back.
+    // If the user has switched background sync off, changing an unrelated
+    // option (charging, delay) must not quietly bring the workers back.
     if (!BackgroundWorkerPreferences(ctx).isSyncEnabled()) {
       Log.i(TAG, "Background sync disabled, not rescheduling after configure")
       return
@@ -116,8 +116,8 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     }
 
     fun enqueueBackgroundWorker(ctx: Context) {
-        // Reached from ImmichApp.onCreate's 15s timer and from runNow(). Without
-        // this the schedule comes back even while the switch is off.
+      // Reached from ImmichApp.onCreate's 15s timer and from runNow(). Without
+      // this the schedule comes back even while the switch is off.
       if (!BackgroundWorkerPreferences(ctx).isSyncEnabled()) {
         Log.i(TAG, "Background sync disabled, skipping enqueue")
         return
