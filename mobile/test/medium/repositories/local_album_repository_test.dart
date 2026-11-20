@@ -104,6 +104,19 @@ void main() {
       expect(await row('edited'), (checksum: null, previousChecksum: 'b'));
     });
   });
+
+  group('processDelta', () {
+    test('clears the unsupported mark of a reported asset even when its updatedAt is the same', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      await ctx.newLocalAsset(id: 'renamed', updatedAt: DateTime(2024), unsupported: true);
+      await ctx.newLocalAsset(id: 'unreported', updatedAt: DateTime(2024), unsupported: true);
+
+      await sut.processDelta(updates: [_localAsset('renamed')], deletes: [], assetAlbums: {});
+
+      final rows = await ctx.db.managers.localAssetEntity.get();
+      expect({for (final row in rows) row.id: row.unsupported}, {'renamed': false, 'unreported': true});
+    });
+  });
 }
 
 LocalAsset _localAsset(String id, {DateTime? updatedAt, DateTime? adjustmentTime}) => LocalAsset(

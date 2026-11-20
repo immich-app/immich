@@ -305,6 +305,10 @@ class BackgroundUploadService {
     // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
     final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
     final originalFileName = p.setExtension(fileName, extension);
+    if (await _backupRepository.markIfUnsupported(asset.id, extension)) {
+      _logger.info("Skipping ${asset.id}, the server does not accept $originalFileName");
+      return null;
+    }
 
     final String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
