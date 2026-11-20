@@ -31,6 +31,7 @@ import { getIntegrityReportQuery, getIntegrityReportSummaryQuery } from '#lib/qu
 import { getAllLibrariesQuery, getLibraryQuery, getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
 import { detectPriorInstallQuery, getMaintenanceStatusQuery } from '#lib/queries/maintenance.query.ts';
 import { getMapMarkersQuery } from '#lib/queries/map.query.ts';
+import { memoriesStatisticsQuery, searchMemoriesQuery } from '#lib/queries/memory.query.ts';
 import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
 import { getPartnersQuery } from '#lib/queries/partner.query.ts';
 import { searchPasskeysQuery } from '#lib/queries/passkey.query.ts';
@@ -53,8 +54,11 @@ import {
   getAssetsByCityQuery,
   getExploreDataQuery,
   getSearchSuggestionsQuery,
+  searchAssetsQuery,
+  searchLargeAssetsQuery,
   searchPersonQuery,
   searchPlacesQuery,
+  searchSmartQuery,
 } from '#lib/queries/search.query.ts';
 import {
   getAboutInfoQuery,
@@ -124,6 +128,8 @@ const queries: Record<string, QueryFactory> = {
   getAlbumInfoQuery: () => getAlbumInfoQuery(id),
   getAlbumMapMarkersQuery: () => getAlbumMapMarkersQuery(id),
   getApiKeysQuery: () => getApiKeysQuery(),
+  searchMemoriesQuery: () => searchMemoriesQuery({ isSaved: true }),
+  memoriesStatisticsQuery: () => memoriesStatisticsQuery({ isSaved: true }),
   getAssetStatisticsQuery: () => getAssetStatisticsQuery({ isFavorite: true }),
   getAuthStatusQuery: () => getAuthStatusQuery(),
   getClusterGroupRequestsQuery: () => getClusterGroupRequestsQuery(),
@@ -162,6 +168,9 @@ const queries: Record<string, QueryFactory> = {
   getSearchSuggestionsQuery: () => getSearchSuggestionsQuery({ $type: SearchSuggestionType.Country }),
   searchPersonQuery: () => searchPersonQuery({ name: 'name' }),
   searchPlacesQuery: () => searchPlacesQuery({ name: 'name' }),
+  searchAssetsQuery: () => searchAssetsQuery({ isFavorite: true }),
+  searchSmartQuery: () => searchSmartQuery({ query: 'beach' }),
+  searchLargeAssetsQuery: () => searchLargeAssetsQuery(),
   getExploreDataQuery: () => getExploreDataQuery(),
   getAssetsByCityQuery: () => getAssetsByCityQuery(),
   getAboutInfoQuery: () => getAboutInfoQuery(),
@@ -202,7 +211,12 @@ const queries: Record<string, QueryFactory> = {
 };
 
 const clientOnlyQueries = new Set(['getQueueSnapshotsQuery']);
-const nonGetQueries = new Set(['getStorageTemplatePreviewQuery']);
+const nonGetQueries = new Set([
+  'getStorageTemplatePreviewQuery',
+  'searchAssetsQuery',
+  'searchLargeAssetsQuery',
+  'searchSmartQuery',
+]);
 
 const queryModules = import.meta.glob<Record<string, unknown>>('./*.query.ts', { eager: true });
 

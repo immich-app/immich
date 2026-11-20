@@ -63,6 +63,7 @@ const videoRow = (assetId: string, n: number) => ({
   formatName: `format-${n}`,
   formatLongName: `format long ${n}`,
   pixelFormat: `pixfmt-${n}`,
+  isFragmented: n % 2 === 0,
 });
 
 const keyframeRow = (assetId: string, n: number) => ({

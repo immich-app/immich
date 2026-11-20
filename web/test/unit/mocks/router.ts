@@ -1,3 +1,5 @@
+import { setPage } from '#test/unit/mocks/app-state.svelte.ts';
+
 const origin = 'http://localhost';
 
 export class MockRouter {
@@ -22,10 +24,11 @@ export class MockRouter {
     MockRouter.#active = undefined;
   }
 
-  goto(target: string | URL, params: Record<string, string> = {}) {
+  goto(target: string | URL, params?: Record<string, string>) {
     this.url = new URL(String(target), this.url);
-    this.params = params;
+    this.params = params ?? this.params;
     this.history.push(this.url);
+    setPage({ url: this.url, params: this.params });
     return Promise.resolve();
   }
 }

@@ -70,7 +70,7 @@ The default configuration looks like this:
       "effort": "medium",
       "format": "webp",
       "quality": 80,
-      "size": 250
+      "size": 360
     }
   },
   "job": {

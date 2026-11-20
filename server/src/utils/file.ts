@@ -3,6 +3,7 @@ import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import { promisify } from 'node:util';
+import sanitize from 'sanitize-filename';
 import { CacheControl } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
@@ -18,6 +19,18 @@ export function getFilenameExtension(path: string) {
     return path;
   }
   return extension;
+}
+
+type DownloadAsset = { originalPath: string; originalFileName: string; editedPath?: string | null };
+
+export function getDownloadFile(
+  { originalPath, originalFileName, editedPath }: DownloadAsset,
+  { storageTemplate }: { storageTemplate: { enabled: boolean } },
+) {
+  const path = editedPath ?? originalPath;
+  const libraryFileName = storageTemplate.enabled ? originalPath : originalFileName;
+  const name = sanitize(getFileNameWithoutExtension(libraryFileName)) || 'unnamed';
+  return { path, name, extension: getFilenameExtension(path) };
 }
 
 export function getLivePhotoMotionFilename(stillName: string, motionName: string) {

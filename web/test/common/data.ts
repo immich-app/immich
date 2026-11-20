@@ -1,4 +1,4 @@
-import { adminUserId, factory, type TimelineConfig } from '#test/common/factories.ts';
+import { adminUserId, editedThumbhash, factory, type TimelineConfig } from '#test/common/factories.ts';
 import { SeededRandom } from '#test/common/helpers.ts';
 import { payload } from '#test/common/payloads.ts';
 import type { Call, ResponseOf } from '#test/common/types.ts';
@@ -123,6 +123,7 @@ export type SuggestionFilter = {
 
 export type MemoryFilter = {
   id?: string;
+  isSaved?: boolean;
   page?: number;
   size?: number;
 };
@@ -1375,6 +1376,8 @@ export class MockData {
       livePhotoVideoId: bucket.map((asset) => asset.livePhotoVideoId ?? null),
       city: bucket.map((asset) => asset.exifInfo?.city ?? null),
       country: bucket.map((asset) => asset.exifInfo?.country ?? null),
+      latitude: bucket.map((asset) => asset.exifInfo?.latitude ?? null),
+      longitude: bucket.map((asset) => asset.exifInfo?.longitude ?? null),
       visibility: bucket.map((asset) => asset.visibility),
       stack: bucket.map((asset) => (asset.stack ? [asset.stack.id, String(asset.stack.assetCount)] : null)),
     };
@@ -1439,7 +1442,7 @@ export class MockData {
       assetId,
       edits.map((edit) => factory.assetEdit(edit)),
     );
-    this.assets.set(assetId, { ...asset, isEdited: true });
+    this.assets.set(assetId, { ...asset, isEdited: true, thumbhash: editedThumbhash });
     return this.getAssetEdits(assetId);
   }
 
@@ -1502,11 +1505,22 @@ export class MockData {
     }
   }
 
-  memoryList({ id, page = 1, size = 250 }: MemoryFilter = {}) {
+  memoryList({ id, isSaved, page = 1, size = 250 }: MemoryFilter = {}) {
     const memories = [...this.memories.values()]
       .filter((memory) => id === undefined || memory.id === id)
+      .filter((memory) => isSaved === undefined || memory.isSaved === isSaved)
       .sort((a, b) => b.memoryAt.localeCompare(a.memoryAt));
     return memories.slice((page - 1) * size, page * size);
+  }
+
+  removeMemoryAssets(id: string, assetIds: string[]) {
+    const memory = this.memories.get(id);
+    if (!memory) {
+      return;
+    }
+    const ids = new Set(assetIds);
+    this.memories.set(id, { ...memory, assets: memory.assets.filter((asset) => !ids.has(asset.id)) });
+    return assetIds.map((assetId) => ({ id: assetId, success: true }));
   }
 
   deleteMemory(id: string) {
@@ -1530,15 +1544,19 @@ export class MockData {
     return updated;
   }
 
-  searchAssets(dto: Pick<MetadataSearchDto, 'visibility' | 'isFavorite' | 'size'>): SearchResponseDto {
-    const items = this.timelineAssets({ visibility: dto.visibility, isFavorite: dto.isFavorite ?? undefined }).slice(
-      0,
-      dto.size ?? 250,
-    );
+  searchAssets(dto: Pick<MetadataSearchDto, 'visibility' | 'isFavorite' | 'page' | 'size'>): SearchResponseDto {
+    const { page = 1, size = 250 } = dto;
+    const matches = this.timelineAssets({ visibility: dto.visibility, isFavorite: dto.isFavorite ?? undefined });
+    const items = matches.slice((page - 1) * size, page * size);
+    const nextPage = matches.length > page * size ? String(page + 1) : null;
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
-      assets: { total: items.length, count: items.length, items, facets: [], nextPage: null, nextCursor: null },
+      assets: { total: items.length, count: items.length, items, facets: [], nextPage, nextCursor: null },
     };
+  }
+
+  searchLargeAssets() {
+    return this.timelineAssets().sort((a, b) => (b.exifInfo?.fileSizeInByte ?? 0) - (a.exifInfo?.fileSizeInByte ?? 0));
   }
 
   searchSuggestions({ $type, country, state, make, model, includeNull }: SuggestionFilter) {
@@ -1578,5 +1596,19 @@ export class MockData {
       }
     }
     return [...byCity.values()];
+  }
+
+  uniqueOriginalPaths() {
+    const folders = this.timelineAssets({ visibility: AssetVisibility.Timeline }).map(({ originalPath }) =>
+      originalPath.slice(0, originalPath.lastIndexOf('/')),
+    );
+    return [...new Set(folders)].sort();
+  }
+
+  assetsByOriginalPath(path: string) {
+    const folder = `/${path.replaceAll(/^\/+|\/+$/g, '')}`;
+    return this.timelineAssets({ visibility: AssetVisibility.Timeline })
+      .filter(({ originalPath }) => originalPath.slice(0, originalPath.lastIndexOf('/')) === folder)
+      .sort((a, b) => a.originalFileName.localeCompare(b.originalFileName));
   }
 }

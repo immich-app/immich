@@ -41,7 +41,6 @@ export const getUserPreferencesAdminQuery = (id: string) =>
   queryOptions({
     queryKey: QueryKeys.adminUserPreferences({ id }),
     queryFn: ({ signal }) => getUserPreferencesAdmin({ id }, { signal }),
-    staleTime: 0,
   });
 
 export const getUserStatisticsAdminQuery = (id: string) =>
@@ -55,7 +54,6 @@ export const getUserSessionsAdminQuery = (id: string) =>
   queryOptions({
     queryKey: QueryKeys.adminUserSessions({ id }),
     queryFn: ({ signal }) => getUserSessionsAdmin({ id }, { signal }),
-    staleTime: 0,
   });
 
 export const getUserCalendarHeatmapAdminQuery = (id: string) =>

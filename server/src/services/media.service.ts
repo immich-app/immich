@@ -728,7 +728,10 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isRemuxRequired(ffmpegConfig: ConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
+  private isRemuxRequired(
+    ffmpegConfig: ConfigFFmpegDto,
+    { formatName, formatLongName, isFragmented }: VideoFormat,
+  ): boolean {
     if (ffmpegConfig.transcode === TranscodePolicy.Disabled) {
       return false;
     }
@@ -740,7 +743,7 @@ export class MediaService extends BaseService {
 
     const name = (formatLongName ? formatLongNameMapping[formatLongName] : undefined) ?? (formatName as VideoContainer);
 
-    return name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name);
+    return isFragmented || (name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name));
   }
 
   isSRGB({
