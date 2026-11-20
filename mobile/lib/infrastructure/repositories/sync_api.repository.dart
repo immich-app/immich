@@ -69,6 +69,7 @@ class SyncApiRepository {
               ? SyncRequestType.assetFacesV2
               : SyncRequestType.assetFacesV1,
           if (serverVersion.supports(.syncAssetOcrV1)) SyncRequestType.assetOcrV1,
+          if (serverVersion.supports(.syncPendingResetV1)) SyncRequestType.pendingResetV1,
         ],
       ).toJson(),
     );
@@ -184,6 +185,7 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.albumToAssetDeleteV1: SyncAlbumToAssetDeleteV1.fromJson,
   SyncEntityType.syncAckV1: _SyncEmptyDto.fromJson,
   SyncEntityType.syncResetV1: _SyncEmptyDto.fromJson,
+  SyncEntityType.syncPendingResetV1: SyncPendingResetV1.fromJson,
   SyncEntityType.memoryV1: SyncMemoryV2.fromJson,
   SyncEntityType.memoryV2: SyncMemoryV2.fromJson,
   SyncEntityType.memoryDeleteV1: SyncMemoryDeleteV1.fromJson,

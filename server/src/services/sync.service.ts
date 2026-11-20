@@ -87,7 +87,12 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.UserMetadataV1,
   SyncRequestType.AssetMetadataV1,
   SyncRequestType.AssetEditsV1,
+  SyncRequestType.PendingResetV1,
 ];
+
+const SYNC_REQUEST_ENTITY_TYPES: Partial<Record<SyncRequestType, SyncEntityType[]>> = {
+  [SyncRequestType.AssetOcrV1]: [SyncEntityType.AssetOcrV1, SyncEntityType.AssetOcrDeleteV1],
+};
 
 const sessionOrThrow = (auth: AuthDto) => {
   const session = auth.session;
@@ -112,6 +117,10 @@ export class SyncService extends BaseService {
       if (type === SyncEntityType.SyncResetV1) {
         await this.sessionRepository.resetSyncProgress(sessionId);
         return;
+      }
+      if (type === SyncEntityType.SyncPendingResetV1) {
+        await this.syncCheckpointRepository.deletePendingResets(sessionId);
+        continue;
       }
       // TODO proper ack validation via class validator
       if (!Object.values(SyncEntityType).includes(type)) {
@@ -166,6 +175,15 @@ export class SyncService extends BaseService {
       return;
     }
 
+    const pendingResetTypes = checkpoints.filter((row) => row.isPendingReset).map((row) => row.type);
+    if (pendingResetTypes.length > 0 && dto.types.includes(SyncRequestType.PendingResetV1)) {
+      await send(response, {
+        type: SyncEntityType.SyncPendingResetV1,
+        ids: ['reset'],
+        data: { types: pendingResetTypes },
+      });
+    }
+
     const { nowId } = await this.syncCheckpointRepository.getNow(trx);
     const options: SyncQueryOptions = { trx, nowId, userId: auth.user.id };
 
@@ -205,10 +223,17 @@ export class SyncService extends BaseService {
       [SyncRequestType.AssetFacesV3]: () => this.syncAssetFacesV3(options, response, checkpointMap),
       [SyncRequestType.UserMetadataV1]: () => this.syncUserMetadataV1(options, response, checkpointMap),
       [SyncRequestType.AssetOcrV1]: () => this.syncAssetOcrV1(options, response, checkpointMap, auth),
+      [SyncRequestType.PendingResetV1]: () => this.syncPendingResetV1(),
     } as const;
 
     for (const type of SYNC_TYPES_ORDER) {
       if (!dto.types.includes(type)) {
+        continue;
+      }
+      if (
+        dto.types.includes(SyncRequestType.PendingResetV1) &&
+        SYNC_REQUEST_ENTITY_TYPES[type]?.some((entityType) => pendingResetTypes.includes(entityType))
+      ) {
         continue;
       }
 
@@ -1011,6 +1036,10 @@ export class SyncService extends BaseService {
     for await (const { updateId, ...data } of upserts) {
       await send(response, { type: upsertType, ids: [updateId], data });
     }
+  }
+
+  private async syncPendingResetV1(): Promise<void> {
+    // Empty on purpose: the reset event is sent before the handler loop.
   }
 
   private async upsertBackfillCheckpoint(
