@@ -23,6 +23,7 @@ import {
 } from 'src/enum.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { EmailImageAttachment, JobOf } from 'src/types.js';
 import { getFilenameExtension } from 'src/utils/file.js';
@@ -44,11 +45,16 @@ export class NotificationService extends BaseService {
     await this.notificationRepository.updateAll(dto.ids, {
       readAt: dto.readAt,
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.notifications()] });
   }
 
   async deleteAll(auth: AuthDto, dto: NotificationDeleteAllDto) {
     await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NotificationDelete });
     await this.notificationRepository.deleteAll(dto.ids);
+    this.resourceRepository.send({
+      userIds: [auth.user.id],
+      deleted: dto.ids.map((id) => Resource.notification({ id })),
+    });
   }
 
   async get(auth: AuthDto, id: string) {
@@ -65,12 +71,14 @@ export class NotificationService extends BaseService {
     const item = await this.notificationRepository.update(id, {
       readAt: dto.readAt,
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.notification({ id })] });
     return mapNotification(item);
   }
 
   async delete(auth: AuthDto, id: string) {
     await this.requireAccess({ auth, ids: [id], permission: Permission.NotificationDelete });
     await this.notificationRepository.delete(id);
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.notification({ id })] });
   }
 
   @OnJob({ name: JobName.NotificationsCleanup, queue: QueueName.BackgroundTask })

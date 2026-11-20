@@ -15,6 +15,7 @@ import {
 } from 'src/dtos/user.dto.js';
 import { JobName, UserMetadataKey, UserStatus } from 'src/enum.js';
 import { UserFindOptions } from 'src/repositories/user.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getCalendarHeatmap } from 'src/services/shared/user-methods.js';
 import { findOrFail } from 'src/utils/misc.js';
@@ -38,6 +39,10 @@ export class UserAdminService extends BaseService {
     }
 
     const user = await this.createUser(userDto);
+    this.resourceRepository.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.adminUsers()],
+    });
 
     await this.eventRepository.emit('UserSignup', {
       notify: !!notify,
@@ -92,6 +97,7 @@ export class UserAdminService extends BaseService {
     }
 
     const updatedUser = await this.userRepository.update(id, { ...dto, updatedAt: new Date() });
+    await this.sendUserUpdate(id);
 
     return mapUserAdmin(updatedUser);
   }
@@ -103,10 +109,14 @@ export class UserAdminService extends BaseService {
       throw new ForbiddenException('Cannot delete your own account');
     }
 
+    const ownedAlbums = await this.albumRepository.getAll(id, { isOwned: true });
+    const albumUserIds = ownedAlbums.flatMap(({ albumUsers = [] }) => albumUsers.map(({ user }) => user.id));
     await this.albumRepository.softDeleteAll(id);
 
     const status = force ? UserStatus.Removing : UserStatus.Deleted;
     const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
+    await this.sendUserUpdate(id);
+    this.resourceRepository.send({ userIds: albumUserIds, changed: [Resource.albums()] });
 
     await this.eventRepository.emit('UserTrash', user);
 
@@ -121,6 +131,12 @@ export class UserAdminService extends BaseService {
     await this.findOrFail(id, { withDeleted: true });
     await this.albumRepository.restoreAll(id);
     const user = await this.userRepository.restore(id);
+    await this.sendUserUpdate(id);
+    const ownedAlbums = await this.albumRepository.getAll(id, { isOwned: true });
+    this.resourceRepository.send({
+      userIds: ownedAlbums.flatMap(({ albumUsers = [] }) => albumUsers.map(({ user }) => user.id)),
+      changed: [Resource.albums()],
+    });
     await this.eventRepository.emit('UserRestore', user);
     return mapUserAdmin(user);
   }
@@ -155,8 +171,15 @@ export class UserAdminService extends BaseService {
       key: UserMetadataKey.Preferences,
       value: getPreferencesPartial(newPreferences),
     });
+    await this.sendUserUpdate(id, Resource.adminUserPreferences({ id }), Resource.myPreferences());
 
     return mapPreferences(newPreferences);
+  }
+
+  private async sendUserUpdate(id: string, adminPath = Resource.adminUser({ id }), userPath = Resource.myUser()) {
+    const adminIds = await this.userRepository.getAdminIds();
+    this.resourceRepository.send({ userIds: adminIds, changed: [adminPath] });
+    this.resourceRepository.send({ userIds: [id], changed: [userPath] });
   }
 
   private findOrFail(id: string, options: UserFindOptions) {

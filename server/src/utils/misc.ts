@@ -1,3 +1,4 @@
+import { patchOpenApiParameters, toOpenApiComponents, toOpenApiSchema } from '@immich/nestjs-standard-schema';
 import { BadRequestException, INestApplication } from '@nestjs/common';
 import {
   ApiBodyOptions,
@@ -16,7 +17,6 @@ import { extraModels } from 'src/decorators.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
-import { patchOpenApiParameters, toOpenApiComponents, toOpenApiSchema } from 'src/zod.js';
 
 type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
 type ReferenceOrSchemaObject = Extract<ApiBodyOptions, { schema: unknown }>['schema'];

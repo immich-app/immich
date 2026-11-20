@@ -1,6 +1,7 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { Route } from '#lib/route.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import {
@@ -30,8 +31,6 @@ import { goto } from '$app/navigation';
 
 type AlbumsFilter = { isOwned?: boolean; isShared?: boolean };
 
-export const albumsQueryKey = ['albums'];
-
 const isOwned = (album: AlbumResponseDto) =>
   authManager.authenticated &&
   album.albumUsers.some(({ role, user }) => role === AlbumUserRole.Owner && user.id === authManager.user.id);
@@ -50,7 +49,7 @@ const findOrFail = (albums: AlbumResponseDto[], id: string) => {
 
 export const getAllAlbumsQuery = (filter: AlbumsFilter = {}) =>
   queryOptions({
-    queryKey: albumsQueryKey,
+    queryKey: QueryKeys.albums(),
     queryFn: ({ signal }) => getAllAlbums({}, { signal }),
     select: (albums) => albums.filter(matchesFilter(filter)),
   });
@@ -70,32 +69,36 @@ export const getAlbumQuery = (id: string) =>
 
 export const getAlbumsByAssetQuery = (assetId: string) =>
   queryOptions({
-    queryKey: [...albumsQueryKey, 'asset', assetId],
+    queryKey: QueryKeys.albums({ assetId }),
     queryFn: ({ signal }) => getAllAlbums({ assetId }, { signal }),
   });
 
 export const getAlbumStatisticsQuery = () =>
   queryOptions({
-    queryKey: [...albumsQueryKey, 'statistics'],
+    queryKey: QueryKeys.albumStatistics(),
     queryFn: ({ signal }) => getAlbumStatistics({ signal }),
   });
 
 export const getAlbumInfoQuery = (id: string) =>
   queryOptions({
-    queryKey: ['album', id],
+    queryKey: QueryKeys.album({ id }),
     queryFn: ({ signal }) => getAlbumInfo({ ...authManager.params, id }, { signal }),
   });
 
 export const getAlbumMapMarkersQuery = (id: string) =>
   queryOptions({
-    queryKey: ['album', id, 'map-markers'],
+    queryKey: QueryKeys.albumMapMarkers({ id }),
     queryFn: ({ signal }) => getAlbumMapMarkers({ ...authManager.params, id }, { signal }),
   });
 
-export const invalidateAlbums = () => queryClient.invalidateQueries({ queryKey: albumsQueryKey });
+export const invalidateAlbums = () =>
+  Promise.all([
+    queryClient.invalidateQueries({ queryKey: QueryKeys.albums(), exact: true }),
+    queryClient.invalidateQueries({ queryKey: QueryKeys.albums({}) }),
+    queryClient.invalidateQueries({ queryKey: QueryKeys.albumStatistics() }),
+  ]);
 
-export const invalidateAlbum = (id: string) =>
-  queryClient.invalidateQueries({ queryKey: getAlbumInfoQuery(id).queryKey });
+export const invalidateAlbum = (id: string) => queryClient.invalidateQueries({ queryKey: QueryKeys.album({ id }) });
 
 const onAlbumChange = async (album: AlbumResponseDto) => {
   queryClient.setQueryData(getAlbumInfoQuery(album.id).queryKey, album);
@@ -122,10 +125,10 @@ export const updateAlbumInfoMutation = (meta?: MutationMeta) =>
 export const deleteAlbumMutation = (meta?: MutationMeta) =>
   asMutation(deleteAlbum, {
     onSuccess: (_, [{ id }]) => {
-      queryClient.removeQueries({ queryKey: ['album', id] });
+      queryClient.removeQueries({ queryKey: QueryKeys.album({ id }) });
       return Promise.all([
         invalidateAlbums(),
-        queryClient.invalidateQueries({ queryKey: ['shared-links'], exact: true }),
+        queryClient.invalidateQueries({ queryKey: QueryKeys.sharedLinks(), exact: true }),
       ]);
     },
     meta: meta ?? { error: { toast: 'errors.unable_to_delete_album' } },

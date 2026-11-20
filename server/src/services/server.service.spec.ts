@@ -1,7 +1,9 @@
 import { SystemMetadataKey } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { ServerService } from 'src/services/server.service.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { mockAdmins } from 'test/repositories/user.repository.mock.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(ServerService.name, () => {
   let sut: ServerService;
@@ -272,11 +274,21 @@ describe(ServerService.name, () => {
   describe('setLicense', () => {
     it('should save license if valid', async () => {
       mocks.systemMetadata.set.mockResolvedValue();
+      mocks.user.getAdminIds.mockResolvedValue([]);
 
       const license = { licenseKey: 'IMSV-license-key', activationKey: 'activation-key' };
       await sut.setLicense(license);
 
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.License, expect.any(Object));
+    });
+
+    it('should tell every admin about the new license', async () => {
+      const adminIds = mockAdmins(mocks.user);
+      mocks.systemMetadata.set.mockResolvedValue();
+
+      await sut.setLicense({ licenseKey: 'IMSV-license-key', activationKey: 'activation-key' });
+
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.serverLicense(), Resource.serverAbout()] });
     });
 
     it('should not save license if invalid', async () => {
@@ -286,15 +298,26 @@ describe(ServerService.name, () => {
       const call = sut.setLicense(license);
       await expect(call).rejects.toThrowError('Invalid license key');
       expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
   describe('deleteLicense', () => {
     it('should delete license', async () => {
       mocks.user.upsertMetadata.mockResolvedValue();
+      mocks.user.getAdminIds.mockResolvedValue([]);
 
       await sut.deleteLicense();
       expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
+    });
+
+    it('should tell every admin about the removed license', async () => {
+      const adminIds = mockAdmins(mocks.user);
+      mocks.systemMetadata.delete.mockResolvedValue();
+
+      await sut.deleteLicense();
+
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.serverLicense(), Resource.serverAbout()] });
     });
   });
 });

@@ -62,8 +62,8 @@ export class ActivityRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async delete(id: string) {
-    await this.db.deleteFrom('activity').where('id', '=', asUuid(id)).execute();
+  delete(id: string) {
+    return this.db.deleteFrom('activity').where('id', '=', asUuid(id)).returning('albumId').executeTakeFirst();
   }
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })

@@ -1,5 +1,10 @@
+import { Resource } from 'src/resource-paths.js';
 import { IntegrityService } from 'src/services/integrity.service.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { AssetFactory } from 'test/factories/asset.factory.js';
+import { getForAsset } from 'test/mappers.js';
+import { mockAdmins } from 'test/repositories/user.repository.mock.js';
+import { newUuid } from 'test/small.factory.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(IntegrityService.name, () => {
   let sut: IntegrityService;
@@ -7,6 +12,7 @@ describe(IntegrityService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(IntegrityService));
+    mocks.user.getAdminIds.mockResolvedValue([]);
   });
 
   it('should work', () => {
@@ -83,6 +89,49 @@ describe(IntegrityService.name, () => {
 
       expect(mocks.storage.unlink).not.toHaveBeenCalled();
       expect(mocks.integrityReport.deleteById).toHaveBeenCalledWith('report-id');
+    });
+
+    it('should tell every admin when a file is deleted', async () => {
+      const adminIds = mockAdmins(mocks.user);
+      const id = newUuid();
+      mocks.integrityReport.getById.mockResolvedValue({ id, path: '/data/upload/orphan.mov' } as never);
+      mocks.integrityReport.getTrackedPaths.mockResolvedValue([]);
+
+      await sut.deleteIntegrityReport(adminIds[0], id);
+
+      expectResourceEvents(mocks, {
+        userIds: adminIds,
+        changed: [Resource.integrityReport(), Resource.integrityReportSummary()],
+      });
+    });
+
+    it('should tell every admin and the asset owner when an asset is trashed', async () => {
+      const adminIds = mockAdmins(mocks.user);
+      const asset = AssetFactory.create();
+      const id = newUuid();
+      mocks.integrityReport.getById.mockResolvedValue({ id, path: asset.originalPath, assetId: asset.id } as never);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+
+      await sut.deleteIntegrityReport(adminIds[0], id);
+
+      expectResourceEvents(
+        mocks,
+        { userIds: adminIds, changed: [Resource.integrityReport(), Resource.integrityReportSummary()] },
+        {
+          userIds: [asset.ownerId],
+          changed: [
+            Resource.asset(asset),
+            Resource.assetStatistics(),
+            Resource.albums(),
+            Resource.duplicates(),
+            Resource.mapMarkers(),
+            Resource.memories(),
+            Resource.people(),
+            Resource.search(),
+            Resource.view(),
+          ],
+        },
+      );
     });
   });
 

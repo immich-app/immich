@@ -1,25 +1,7 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { UserResponseSchema } from 'src/dtos/user.dto.js';
 import { PartnerDirectionSchema } from 'src/enum.js';
-import { createZodDto } from 'src/zod.js';
-
-const PartnerCreateSchema = z
-  .object({
-    sharedWithId: z.uuidv4().describe('User ID to share with'),
-  })
-  .meta({ id: 'PartnerCreateDto' });
-
-const PartnerUpdateSchema = z
-  .object({
-    inTimeline: z.boolean().describe('Show partner assets in timeline'),
-  })
-  .meta({ id: 'PartnerUpdateDto' });
-
-const PartnerSearchSchema = z
-  .object({
-    direction: PartnerDirectionSchema,
-  })
-  .meta({ id: 'PartnerSearchDto' });
 
 const PartnerResponseSchema = UserResponseSchema.extend({
   inTimeline: z.boolean().optional().describe('Show in timeline'),
@@ -27,7 +9,16 @@ const PartnerResponseSchema = UserResponseSchema.extend({
   .describe('Partner response')
   .meta({ id: 'PartnerResponseDto' });
 
-export class PartnerCreateDto extends createZodDto(PartnerCreateSchema) {}
-export class PartnerUpdateDto extends createZodDto(PartnerUpdateSchema) {}
-export class PartnerSearchDto extends createZodDto(PartnerSearchSchema) {}
+export class PartnerCreateDto extends createZodDto({
+  sharedWithId: z.uuidv4().describe('User ID to share with'),
+}) {}
+
+export class PartnerUpdateDto extends createZodDto({
+  inTimeline: z.boolean().describe('Show partner assets in timeline'),
+}) {}
+
+export class PartnerSearchDto extends createZodDto({
+  direction: PartnerDirectionSchema,
+}) {}
+
 export class PartnerResponseDto extends createZodDto(PartnerResponseSchema) {}

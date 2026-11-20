@@ -1,8 +1,8 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { BBoxSchema } from 'src/dtos/bbox.dto.js';
 import { AssetOrderBySchema, AssetOrderSchema, AssetVisibilitySchema } from 'src/enum.js';
 import { stringToBool } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 const TimeBucketQueryBaseSchema = z
   .object({
@@ -74,68 +74,61 @@ const TimeBucketAssetSchema = TimeBucketQueryBaseSchema.extend({
 
 const stackTupleSchema = z.array(z.string()).length(2).nullable();
 
-const TimeBucketAssetResponseSchema = z
-  .object({
-    id: z.array(z.string()).describe('Array of asset IDs in the time bucket'),
-    ownerId: z.array(z.string()).describe('Array of owner IDs for each asset'),
-    ratio: z
-      .array(z.number().meta({ format: 'double' }))
-      .describe('Array of aspect ratios (width/height) for each asset'),
-    isFavorite: z.array(z.boolean()).describe('Array indicating whether each asset is favorited'),
-    visibility: z
-      .array(AssetVisibilitySchema)
-      .describe('Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)'),
-    isTrashed: z.array(z.boolean()).describe('Array indicating whether each asset is in the trash'),
-    isImage: z.array(z.boolean()).describe('Array indicating whether each asset is an image (false for videos)'),
-    thumbhash: z
-      .array(z.string().nullable())
-      .describe('Array of BlurHash strings for generating asset previews (base64 encoded)'),
-    createdAt: z
-      .array(z.string())
-      .describe('Array of UTC timestamps when each asset was originally uploaded to Immich'),
-    fileCreatedAt: z.array(z.string()).describe('Array of file creation timestamps in UTC'),
-    localOffsetHours: z
-      .array(z.number().meta({ format: 'double' }))
-      .describe(
-        "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
-      ),
-    duration: z
-      .array(z.int32().min(0).nullable())
-      .describe('Array of video/gif durations in milliseconds (null for static images)'),
-    stack: z
-      .array(stackTupleSchema)
-      .optional()
-      .describe('Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets)'),
-    projectionType: z
-      .array(z.string().nullable())
-      .describe('Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL")'),
-    livePhotoVideoId: z
-      .array(z.string().nullable())
-      .describe('Array of live photo video asset IDs (null for non-live photos)'),
-    city: z.array(z.string().nullable()).optional().describe('Array of city names extracted from EXIF GPS data'),
-    country: z.array(z.string().nullable()).optional().describe('Array of country names extracted from EXIF GPS data'),
-    latitude: z
-      .array(z.number().meta({ format: 'double' }).nullable())
-      .optional()
-      .describe('Array of latitude coordinates extracted from EXIF GPS data'),
-    longitude: z
-      .array(z.number().meta({ format: 'double' }).nullable())
-      .optional()
-      .describe('Array of longitude coordinates extracted from EXIF GPS data'),
-  })
-  .meta({ id: 'TimeBucketAssetResponseDto' });
-
-const TimeBucketsResponseSchema = z
-  .object({
-    timeBucket: z
-      .string()
-      .describe('Time bucket identifier in YYYY-MM-DD format representing the start of the time period')
-      .meta({ example: '2024-01-01' }),
-    count: z.int().describe('Number of assets in this time bucket').meta({ example: 42 }),
-  })
-  .meta({ id: 'TimeBucketsResponseDto' });
-
 export class TimeBucketDto extends createZodDto(TimeBucketSchema) {}
+
 export class TimeBucketAssetDto extends createZodDto(TimeBucketAssetSchema) {}
-export class TimeBucketAssetResponseDto extends createZodDto(TimeBucketAssetResponseSchema) {}
-export class TimeBucketsResponseDto extends createZodDto(TimeBucketsResponseSchema) {}
+
+export class TimeBucketAssetResponseDto extends createZodDto({
+  id: z.array(z.string()).describe('Array of asset IDs in the time bucket'),
+  ownerId: z.array(z.string()).describe('Array of owner IDs for each asset'),
+  ratio: z
+    .array(z.number().meta({ format: 'double' }))
+    .describe('Array of aspect ratios (width/height) for each asset'),
+  isFavorite: z.array(z.boolean()).describe('Array indicating whether each asset is favorited'),
+  visibility: z
+    .array(AssetVisibilitySchema)
+    .describe('Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)'),
+  isTrashed: z.array(z.boolean()).describe('Array indicating whether each asset is in the trash'),
+  isImage: z.array(z.boolean()).describe('Array indicating whether each asset is an image (false for videos)'),
+  thumbhash: z
+    .array(z.string().nullable())
+    .describe('Array of BlurHash strings for generating asset previews (base64 encoded)'),
+  createdAt: z.array(z.string()).describe('Array of UTC timestamps when each asset was originally uploaded to Immich'),
+  fileCreatedAt: z.array(z.string()).describe('Array of file creation timestamps in UTC'),
+  localOffsetHours: z
+    .array(z.number().meta({ format: 'double' }))
+    .describe(
+      "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
+    ),
+  duration: z
+    .array(z.int32().min(0).nullable())
+    .describe('Array of video/gif durations in milliseconds (null for static images)'),
+  stack: z
+    .array(stackTupleSchema)
+    .optional()
+    .describe('Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets)'),
+  projectionType: z
+    .array(z.string().nullable())
+    .describe('Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL")'),
+  livePhotoVideoId: z
+    .array(z.string().nullable())
+    .describe('Array of live photo video asset IDs (null for non-live photos)'),
+  city: z.array(z.string().nullable()).optional().describe('Array of city names extracted from EXIF GPS data'),
+  country: z.array(z.string().nullable()).optional().describe('Array of country names extracted from EXIF GPS data'),
+  latitude: z
+    .array(z.number().meta({ format: 'double' }).nullable())
+    .optional()
+    .describe('Array of latitude coordinates extracted from EXIF GPS data'),
+  longitude: z
+    .array(z.number().meta({ format: 'double' }).nullable())
+    .optional()
+    .describe('Array of longitude coordinates extracted from EXIF GPS data'),
+}) {}
+
+export class TimeBucketsResponseDto extends createZodDto({
+  timeBucket: z
+    .string()
+    .describe('Time bucket identifier in YYYY-MM-DD format representing the start of the time period')
+    .meta({ example: '2024-01-01' }),
+  count: z.int().describe('Number of assets in this time bucket').meta({ example: 42 }),
+}) {}

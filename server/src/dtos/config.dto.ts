@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { CronExpression } from '@nestjs/schedule';
 import { validateCronExpression } from 'cron';
 import z from 'zod';
@@ -33,7 +34,6 @@ import {
   VideoContainerSchema,
 } from 'src/enum.js';
 import type { DeepPartial } from 'src/types.js';
-import { createZodDto } from 'src/zod.js';
 
 const { Admin, User, Public } = ConfigVisibility;
 
@@ -576,27 +576,27 @@ const StorageTemplateOptionsResponseSchema = ConfigTemplateStorageOptionSchema.o
   })
   .meta({ id: 'StorageTemplateOptionsResponseDto' });
 
-const StorageTemplatePreviewSchema = z
-  .object({
-    template: z.string().describe('Storage template'),
-  })
-  .meta({ id: 'StorageTemplatePreviewDto' });
-
-const StorageTemplatePreviewResponseSchema = z
-  .object({
-    preview: z.string().describe('Example path rendered from the template'),
-  })
-  .meta({ id: 'StorageTemplatePreviewResponseDto' });
-
 export class AdminConfigDto extends createZodDto(AdminConfigSchema) {}
+
 export class UserConfigDto extends createZodDto(UserConfigSchema) {}
+
 export class PublicConfigDto extends createZodDto(PublicConfigSchema) {}
+
 export class ConfigFFmpegDto extends createZodDto(AdminConfigFFmpegSchema) {}
+
 export class ConfigSmtpDto extends createZodDto(AdminConfigSmtpSchema) {}
+
 export class ConfigTemplateStorageOptionDto extends createZodDto(ConfigTemplateStorageOptionSchema) {}
+
 export class StorageTemplateOptionsResponseDto extends createZodDto(StorageTemplateOptionsResponseSchema) {}
-export class StorageTemplatePreviewDto extends createZodDto(StorageTemplatePreviewSchema) {}
-export class StorageTemplatePreviewResponseDto extends createZodDto(StorageTemplatePreviewResponseSchema) {}
+
+export class StorageTemplatePreviewDto extends createZodDto({
+  template: z.string().describe('Storage template'),
+}) {}
+
+export class StorageTemplatePreviewResponseDto extends createZodDto({
+  preview: z.string().describe('Example path rendered from the template'),
+}) {}
 
 /** @deprecated the `/system-config` endpoints these are named after are on their way out */
 export { AdminConfigDto as SystemConfigDto, ConfigSmtpDto as SystemConfigSmtpDto };

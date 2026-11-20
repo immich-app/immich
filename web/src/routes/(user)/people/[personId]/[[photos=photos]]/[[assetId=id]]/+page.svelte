@@ -22,6 +22,7 @@
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '#lib/constants.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
@@ -72,6 +73,10 @@
   };
   const numberOfAssets = $derived(queries.statistics.data.assets);
   const person = $derived(queries.person.data);
+  onResourceDelete(
+    () => `/people/${person.id}`,
+    () => void goto(Route.people()),
+  );
   const altNames = $derived([
     ...new Set(person.otherPeople.map(({ name }) => name).filter((name) => !!name && name !== person.name)),
   ]);

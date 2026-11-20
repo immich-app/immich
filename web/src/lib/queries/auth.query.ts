@@ -1,22 +1,40 @@
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   changePassword,
   changePinCode,
   getAuthStatus,
   lockAuthSession,
+  login,
+  logout,
   resetPinCode,
   setupPinCode,
+  signUpAdmin,
+  unlockAuthSession,
   type AuthStatusResponseDto,
 } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
 
 export const getAuthStatusQuery = () =>
   queryOptions({
-    queryKey: ['auth', 'status'],
+    queryKey: QueryKeys.authStatus(),
     queryFn: ({ signal }) => getAuthStatus({ signal }),
     staleTime: 0,
   });
+
+export const loginMutation = () => asMutation(login, { meta: { error: { toast: false } } });
+
+export const logoutMutation = () => asMutation(logout, { meta: { error: { toast: false } } });
+
+export const signUpAdminMutation = () =>
+  asMutation(signUpAdmin, {
+    onSuccess: () => queryClient.refetchQueries({ queryKey: QueryKeys.serverConfig() }),
+    meta: { error: { toast: 'errors.unable_to_create_admin_account' } },
+  });
+
+export const unlockAuthSessionMutation = () =>
+  asMutation(unlockAuthSession, { meta: { error: { toast: 'wrong_pin_code' } } });
 
 export const changePasswordMutation = () =>
   asMutation(changePassword, {

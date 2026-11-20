@@ -1,5 +1,6 @@
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   bulkTagAssets,
   deleteTag,
@@ -19,13 +20,11 @@ const findOrFail = (tags: TagResponseDto[], id: string) => {
   return tag;
 };
 
-export const tagsQueryKey = ['tags'];
-
-const invalidateTags = () => queryClient.invalidateQueries({ queryKey: tagsQueryKey });
+const invalidateTags = () => queryClient.invalidateQueries({ queryKey: QueryKeys.tags() });
 
 export const getAllTagsQuery = () =>
   queryOptions({
-    queryKey: tagsQueryKey,
+    queryKey: QueryKeys.tags(),
     queryFn: ({ signal }) => getAllTags({ signal }),
     // TODO: invalidate from a server websocket event when tags change, then drop staleTime: 0
     staleTime: 0,

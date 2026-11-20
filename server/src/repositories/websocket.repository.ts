@@ -51,6 +51,7 @@ export interface ClientEventMap {
   AssetUploadReadyV2: [{ asset: SyncAssetV2; exif: SyncAssetExifV1 }];
   AppRestartV1: [AppRestartEvent];
   AssetEditReadyV2: [{ asset: SyncAssetV2; edit: SyncAssetEditV1[] }];
+  ResourceEventV1: [{ changed: string[]; deleted: string[]; correlationId?: string }];
 }
 
 export type AuthFn = (client: Socket) => Promise<AuthDto>;
@@ -106,7 +107,7 @@ export class WebsocketRepository implements OnGatewayConnection, OnGatewayDiscon
     await client.leave(client.nsp.name);
   }
 
-  clientSend<T extends keyof ClientEventMap>(event: T, room: string, ...data: ClientEventMap[T]) {
+  clientSend<T extends keyof ClientEventMap>(event: T, room: string | string[], ...data: ClientEventMap[T]) {
     this.server?.to(room).emit(event, ...data);
   }
 

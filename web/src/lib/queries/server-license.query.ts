@@ -1,11 +1,12 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
 import { deleteServerLicense, getServerLicense, isHttpError, setServerLicense } from '@immich/sdk';
 import { queryOptions, type MutationMeta } from '@tanstack/svelte-query';
 
 export const getServerLicenseQuery = () =>
   queryOptions({
-    queryKey: ['server', 'license'],
+    queryKey: QueryKeys.serverLicense(),
     queryFn: ({ signal }) =>
       getServerLicense({ signal }).catch((error: unknown) => {
         if (isHttpError(error) && error.status === 404) {

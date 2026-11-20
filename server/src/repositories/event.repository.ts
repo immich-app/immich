@@ -6,6 +6,7 @@ import { Asset } from 'src/database.js';
 import { EventConfig } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
+import type { MaintenanceStatusResponseDto } from 'src/dtos/maintenance.dto.js';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -110,6 +111,9 @@ type EventMap = {
 
   // websocket events
   WebsocketConnect: [{ userId: string }];
+
+  MaintenanceStatus: [MaintenanceStatusResponseDto];
+  MaintenanceWebsocketConnect: [{ clientId: string; isAuthenticated: boolean }];
 };
 
 export type AppRestartEvent = {

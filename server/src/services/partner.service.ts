@@ -5,6 +5,7 @@ import { PartnerCreateDto, PartnerResponseDto, PartnerSearchDto, PartnerUpdateDt
 import { mapUser } from 'src/dtos/user.dto.js';
 import { Permission, SharingDirection } from 'src/enum.js';
 import { PartnerIds } from 'src/repositories/partner.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
@@ -23,6 +24,8 @@ export class PartnerService extends BaseService {
     }
 
     const partner = await this.partnerRepository.create(partnerId);
+    this.resourceRepository.send({ userIds: [auth.user.id, sharedWithId], changed: [Resource.partners()] });
+    this.resourceRepository.send({ userIds: [sharedWithId], changed: [Resource.mapMarkers()] });
     return this.mapPartner(partner, SharingDirection.SharedBy);
   }
 
@@ -34,6 +37,8 @@ export class PartnerService extends BaseService {
     }
 
     await this.partnerRepository.remove(partnerId);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.partners()] });
+    this.resourceRepository.send({ userIds: [sharedWithId], changed: [Resource.partners(), Resource.mapMarkers()] });
   }
 
   async search(auth: AuthDto, { direction }: PartnerSearchDto): Promise<PartnerResponseDto[]> {
@@ -50,6 +55,8 @@ export class PartnerService extends BaseService {
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
     const entity = await this.partnerRepository.update(partnerId, { inTimeline: dto.inTimeline });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.partners()] });
+    this.resourceRepository.send({ userIds: [sharedById], changed: [Resource.partners()] });
     return this.mapPartner(entity, SharingDirection.SharedWith);
   }
 

@@ -1,10 +1,9 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { resourceManager } from '#lib/managers/resource-manager.svelte.ts';
 import { queryClient } from '#lib/queries/client.ts';
 import { getMaintenanceStatusQuery } from '#lib/queries/maintenance.query.ts';
-import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
-import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
-import { searchUsersAdminQuery } from '#lib/queries/user-admin.query.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { Route } from '#lib/route.ts';
 import { createEventEmitter } from '#lib/utils/eventemitter.ts';
 import {
@@ -46,6 +45,7 @@ export interface Events {
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
   AssetEditReadyV2: (data: { asset: SyncAssetV2; edit: SyncAssetEditV1[] }) => void;
+  ResourceEventV1: (event: { changed: string[]; deleted: string[]; correlationId?: string }) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -66,20 +66,31 @@ export const websocketEvents = createEventEmitter(websocket);
 
 websocket
   .on('connect', () => {
+    resourceManager.handleConnect();
     eventManager.emit('WebsocketConnect');
     websocketStore.connected.set(true);
   })
-  .on('disconnect', () => websocketStore.connected.set(false))
+  .on('disconnect', (reason) => {
+    resourceManager.handleDisconnect(reason);
+    websocketStore.connected.set(false);
+  })
+  .on('ResourceEventV1', (event) => resourceManager.handleEvent(event))
   .on('on_server_version', (serverVersion) => {
     const previous = get(websocketStore.serverVersion);
     websocketStore.serverVersion.set(serverVersion);
     if (previous && !isEqual(previous, serverVersion)) {
-      void queryClient.invalidateQueries({ queryKey: ['server'] });
+      void queryClient.invalidateQueries({ queryKey: QueryKeys.server() });
     }
   })
   .on('on_config_update', () => {
-    void queryClient.invalidateQueries({ queryKey: ['config'] });
-    void queryClient.invalidateQueries({ queryKey: getServerConfigQuery().queryKey });
+    for (const queryKey of [
+      QueryKeys.adminConfig(),
+      QueryKeys.publicConfig(),
+      QueryKeys.userConfig(),
+      QueryKeys.serverConfig(),
+    ]) {
+      void queryClient.invalidateQueries({ queryKey });
+    }
   })
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
   .on('MaintenanceStatusV1', (status) => {
@@ -94,15 +105,18 @@ websocket
   .on('on_new_release', (event) => eventManager.emit('ReleaseEvent', event))
   .on('on_session_delete', () => eventManager.emit('SessionDelete'))
   .on('on_user_delete', (id) => {
-    queryClient.removeQueries({ queryKey: ['user-admin', id] });
-    void queryClient.invalidateQueries({ queryKey: searchUsersAdminQuery().queryKey, exact: true });
+    queryClient.removeQueries({ queryKey: QueryKeys.adminUser({ id }) });
+    void queryClient.invalidateQueries({ queryKey: QueryKeys.adminUsers({ withDeleted: true }), exact: true });
     eventManager.emit('UserAdminDeleted', { id });
   })
   .on('on_asset_delete', (asset) => eventManager.emit('AssetsDelete', [asset]))
   .on('on_asset_trash', (assets) => eventManager.emit('AssetsDelete', assets))
   .on('on_asset_update', (asset) => eventManager.emit('AssetUpdate', asset))
   .on('on_person_thumbnail', (id) => eventManager.emit('PersonThumbnailReady', { id }))
-  .on('on_notification', () => void queryClient.invalidateQueries({ queryKey: getNotificationsQuery().queryKey }))
+  .on(
+    'on_notification',
+    () => void queryClient.invalidateQueries({ queryKey: QueryKeys.notifications({ unread: true }) }),
+  )
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
 export const openWebsocketConnection = () => {
