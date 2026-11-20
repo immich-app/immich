@@ -38,8 +38,8 @@ export class SessionTable {
   @Column({ default: '' })
   deviceType!: Generated<string>;
 
-  @Column({ default: '' })
-  deviceOS!: Generated<string>;
+  @Column({ nullable: true })
+  deviceOS!: string | null;
 
   @Column({ nullable: true })
   appVersion!: string | null;
