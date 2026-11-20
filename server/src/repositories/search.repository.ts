@@ -477,6 +477,35 @@ export class SearchRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [{ userId: DummyValue.UUID, embedding: DummyValue.VECTOR, maxDistance: 0.6 }] })
+  searchFaceMatch({ userId, embedding, maxDistance }: { userId: string; embedding: string; maxDistance: number }) {
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Face])}`.execute(trx);
+      return trx
+        .with('match', (qb) =>
+          qb
+            .selectFrom('face_search')
+            .innerJoin('asset_face', 'asset_face.id', 'face_search.faceId')
+            .innerJoin('person', (join) =>
+              join.onRef('person.personGroupId', '=', 'asset_face.personGroupId').on('person.ownerId', '=', userId),
+            )
+            .select(['person.personGroupId', sql<number>`face_search.embedding <=> ${embedding}`.as('distance')])
+            .where('asset_face.ownerId', '=', userId)
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.assetDeletedAt', 'is', null)
+            .where('asset_face.isVisible', '=', true)
+            .where('asset_face.assetVisibility', 'in', [AssetVisibility.Timeline, AssetVisibility.Archive])
+            .where('person.isHidden', '=', false)
+            .orderBy('distance')
+            .limit(1),
+        )
+        .selectFrom('match')
+        .selectAll()
+        .where('distance', '<=', maxDistance)
+        .executeTakeFirst();
+    });
+  }
+
   async upsert(assetId: string, embedding: string): Promise<void> {
     await this.db
       .insertInto('smart_search')
