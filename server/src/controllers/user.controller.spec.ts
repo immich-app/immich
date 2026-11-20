@@ -23,19 +23,22 @@ describe(UserController.name, () => {
   });
 
   describe('PUT /users/me', () => {
-    for (const [key, message] of [
-      ['email', 'Invalid input: expected email, received object'],
-      ['name', 'Invalid input: expected string, received null'],
-    ] as const) {
-      it(`should not allow null ${key}`, async () => {
-        const { status, body } = await request(ctx.getHttpServer())
-          .put(`/users/me`)
-          .set('Authorization', `Bearer token`)
-          .send({ [key]: null });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
-      });
-    }
+    it('should not allow null email', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/users/me`)
+        .set('Authorization', `Bearer token`)
+        .send({ email: null });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['email'], message: 'Invalid input: expected email, received object' }]),
+      );
+    });
+
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const { status } = await request(ctx.getHttpServer()).put(`/users/me`).send({ name });
+      expect(status).toBe(200);
+      expect(service.updateMe).toHaveBeenCalledWith(undefined, { name: '' });
+    });
 
     it('should allow an empty avatarColor', async () => {
       await request(ctx.getHttpServer())

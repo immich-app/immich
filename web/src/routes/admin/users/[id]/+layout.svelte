@@ -98,7 +98,7 @@
 <CommandPaletteDefaultProvider name={$t('user')} actions={[ResetPassword, ResetPinCode, Update, Delete, Restore]} />
 
 <AdminPageLayout
-  breadcrumbs={[{ title: $t('admin.user_management'), href: Route.users() }, { title: user.name }]}
+  breadcrumbs={[{ title: $t('admin.user_management'), href: Route.users() }, { title: user.name ?? '' }]}
   actions={[ResetPassword, ResetPinCode, Update, Restore, MenuItemType.Divider, Delete]}
 >
   <div>

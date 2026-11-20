@@ -20407,7 +20407,10 @@
           },
           "description": {
             "description": "Album description",
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "x-immich-history": [
               {
                 "state": "Added",
@@ -20417,6 +20420,11 @@
                 "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4.",
                 "state": "Updated",
                 "version": "v3"
+              },
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
               }
             ]
           },
@@ -20806,7 +20814,17 @@
           },
           "description": {
             "description": "Asset description",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "duplicateId": {
             "description": "Duplicate ID",
@@ -22493,6 +22511,11 @@
                 "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.",
                 "state": "Updated",
                 "version": "v3"
+              },
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
               }
             ]
           }
@@ -23759,11 +23782,31 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "profileImagePath": {
             "description": "Profile image path",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "shouldChangePassword": {
             "description": "Should change password",
@@ -25674,7 +25717,17 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "profileChangedAt": {
             "description": "Profile change date",
@@ -25683,7 +25736,17 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           }
         },
         "required": [
@@ -26018,7 +26081,17 @@
           },
           "name": {
             "description": "Person name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "userId": {
             "description": "Restrict the update to the person record of this User ID",
@@ -26051,7 +26124,17 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "profileChangedAt": {
             "description": "Profile change date",
@@ -26060,7 +26143,17 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "role": {
             "$ref": "#/components/schemas/PersonUserRole",
@@ -26326,7 +26419,17 @@
           },
           "name": {
             "description": "Person name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           }
         },
         "type": "object"
@@ -26360,7 +26463,17 @@
             ]
           },
           "name": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "role": {
             "$ref": "#/components/schemas/PersonUserRole"
@@ -26431,7 +26544,17 @@
           },
           "name": {
             "description": "Person name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "otherPeople": {
             "items": {
@@ -26455,7 +26578,17 @@
           },
           "thumbnailPath": {
             "description": "Thumbnail path",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "updatedAt": {
             "description": "Last update date",
@@ -26535,7 +26668,17 @@
           },
           "name": {
             "description": "Person name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "userId": {
             "description": "Restrict the update to the person record of this User ID",
@@ -29215,11 +29358,31 @@
         "properties": {
           "deviceOS": {
             "description": "Device OS",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "deviceType": {
             "description": "Device type",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "duration": {
             "description": "Session duration in seconds",
@@ -29249,11 +29412,31 @@
           },
           "deviceOS": {
             "description": "Device OS",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "deviceType": {
             "description": "Device type",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "expiresAt": {
             "description": "Expiration date",
@@ -29310,11 +29493,31 @@
           },
           "deviceOS": {
             "description": "Device OS",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "deviceType": {
             "description": "Device type",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "expiresAt": {
             "description": "Expiration date",
@@ -29685,7 +29888,17 @@
           "name": {
             "description": "User name",
             "example": "Admin",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "password": {
             "description": "User password",
@@ -34098,6 +34311,11 @@
                 "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.",
                 "state": "Updated",
                 "version": "v3"
+              },
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
               }
             ]
           },
@@ -34130,7 +34348,17 @@
           },
           "description": {
             "description": "Asset description",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "isFavorite": {
             "description": "Mark as favorite",
@@ -34304,7 +34532,17 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "notify": {
             "description": "Send notification email",
@@ -34422,11 +34660,31 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "oauthId": {
             "description": "OAuth ID",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "profileChangedAt": {
             "description": "Profile change date",
@@ -34435,7 +34693,17 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "quotaSizeInBytes": {
             "description": "Storage quota in bytes",
@@ -34523,7 +34791,17 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "password": {
             "description": "User password",
@@ -35118,7 +35396,17 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "profileChangedAt": {
             "description": "Profile change date",
@@ -35127,7 +35415,17 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           }
         },
         "required": [
@@ -35169,7 +35467,17 @@
           },
           "name": {
             "description": "User name",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "description": "Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           }
         },
         "type": "object"
