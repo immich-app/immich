@@ -48,6 +48,7 @@ const rows: Array<{ page: FilteredPage; change: keyof typeof changes; expected: 
   { page: 'archive', change: 'trashed', expected: 'leaves' },
   { page: 'album', change: 'archived', expected: 'stays' },
   { page: 'album', change: 'trashed', expected: 'leaves' },
+  { page: 'trash', change: 'deleted', expected: 'leaves' },
 ];
 
 for (const { page: name, change, expected } of rows) {

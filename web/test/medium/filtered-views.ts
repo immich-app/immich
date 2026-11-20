@@ -46,6 +46,11 @@ export const filteredPages = {
     data.addAssets(assets);
     return { route: Route.folders({ path: '/library/trip' }), assets };
   },
+  trash: (data: MockData) => {
+    const assets = pair(data);
+    data.deleteAssets(assets.map(({ id }) => id));
+    return { route: Route.trash(), assets };
+  },
   search: (data: MockData) => ({ route: Route.search({ originalFileName: 'IMG' }), assets: pair(data) }),
   'search archive': (data: MockData) => ({
     route: Route.search({ visibility: AssetVisibility.Archive }),
