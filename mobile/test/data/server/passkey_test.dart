@@ -8,17 +8,85 @@ import 'package:immich_mobile/domain/models/passkey.model.dart';
 import 'package:openapi/api.dart';
 
 void main() {
-  test('startRegistration decodes the Map<String, Object?> answer through the generated client', () async {
+  test('getConfig gives the origin of the passkey domain, else of the server URL', () async {
+    late Map<String, Object?> passkey;
+    final apiClient = ApiClient(basePath: 'http://192.168.1.2:2283/api')
+      ..client = MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'ffmpeg': {
+              'realtime': {'enabled': false},
+            },
+            'map': {'darkStyle': '', 'enabled': false, 'lightStyle': ''},
+            'oauth': {'autoLaunch': false, 'buttonText': 'Login with OAuth', 'enabled': false},
+            'passkey': passkey,
+            'passwordLogin': {'enabled': true},
+            'server': {'loginPageMessage': ''},
+          }),
+          200,
+        ),
+      );
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+
+    passkey = {'enabled': true, 'domain': 'https://photos.example.com:8443/'};
+    expect(await sut.getConfig(), (enabled: true, origin: 'https://photos.example.com:8443'));
+    passkey = {'enabled': true, 'domain': null};
+    expect(await sut.getConfig(), (enabled: true, origin: 'http://192.168.1.2:2283'));
+    passkey = {'enabled': true};
+    expect(await sut.getConfig(), (enabled: true, origin: 'http://192.168.1.2:2283'));
+  });
+
+  test('startRegistration sends the passkey origin and decodes the Map<String, Object?> answer', () async {
     const options = {
       'challenge': 'challenge',
       'rp': {'name': 'Immich', 'id': 'my.immich.app'},
       'timeout': 60000,
     };
+    late http.Request sent;
     final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
-      ..client = MockClient((_) async => http.Response(jsonEncode(options), 200));
+      ..client = MockClient((request) async {
+        sent = request;
+        return http.Response(jsonEncode(options), 200);
+      });
     final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
 
-    expect(await sut.startRegistration(), options);
+    expect(await sut.startRegistration('https://photos.example.com'), options);
+    expect(sent.url.origin, 'https://demo.immich.app');
+    expect(sent.headers['Origin'], 'https://photos.example.com');
+  });
+
+  test('finishRegistration sends the server origin', () async {
+    late http.Request sent;
+    final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
+      ..client = MockClient((request) async {
+        sent = request;
+        return http.Response('', 201);
+      });
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+
+    await sut.finishRegistration('https://demo.immich.app', {'id': 'credential'});
+
+    expect(sent.headers['Origin'], 'https://demo.immich.app');
+  });
+
+  test('startAuthentication sends the code challenge and the server origin, and decodes the options', () async {
+    const options = {
+      'challenge': 'challenge',
+      'rpId': 'demo.immich.app',
+      'timeout': 60000,
+      'userVerification': 'required',
+    };
+    late http.Request sent;
+    final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
+      ..client = MockClient((request) async {
+        sent = request;
+        return http.Response(jsonEncode(options), 200);
+      });
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+
+    expect(await sut.startAuthentication('https://demo.immich.app', 'code-challenge'), options);
+    expect(sent.url.queryParameters, {'codeChallenge': 'code-challenge'});
+    expect(sent.headers['Origin'], 'https://demo.immich.app');
   });
 
   test('finishAuthentication sends the whole credential to the server', () async {
@@ -39,16 +107,17 @@ void main() {
       'userEmail': 'user@immich.app',
       'userId': 'user-id',
     };
-    Object? body;
+    late http.Request sent;
     final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
       ..client = MockClient((request) async {
-        body = jsonDecode(request.body);
+        sent = request;
         return http.Response(jsonEncode(login), 201);
       });
     final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
 
-    expect((await sut.finishAuthentication(credential)).accessToken, 'token');
-    expect(body, {'response': credential});
+    expect((await sut.finishAuthentication('https://demo.immich.app', credential, 'verifier')).accessToken, 'token');
+    expect(jsonDecode(sent.body), {'response': credential, 'codeVerifier': 'verifier'});
+    expect(sent.headers['Origin'], 'https://demo.immich.app');
   });
 
   test('getAll maps passkeys with and without a name and a last use', () async {
