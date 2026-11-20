@@ -176,6 +176,7 @@ export const createApp = (page: Page, data: MockData) => {
     memory: {
       root: memoryRoot,
       photo: memoryRoot.locator('.main-view img'),
+      progressSteps: memoryRoot.getByRole('link', { name: 'view', exact: true }),
       favoriteButton: memoryRoot.getByRole('button', { name: 'favorite', exact: true }),
       unfavoriteButton: memoryRoot.getByRole('button', { name: 'unfavorite', exact: true }),
       removeMemory: async () => {

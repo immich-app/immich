@@ -274,7 +274,7 @@
     }
   };
 
-  const onAssetsDelete = async (assetIds: string[]) => {
+  const onAssetsRemove = async (assetIds: string[]) => {
     if (assetIds.includes(assetCursor.current.id)) {
       await removeViewedAsset();
     }
@@ -288,13 +288,9 @@
   };
 
   const removeViewedAsset = async () => {
-    const { current, nextAsset, previousAsset } = assetCursor;
-    const index = assets.findIndex(({ id }) => id === current.id);
-    if (index === -1) {
-      return;
-    }
-
-    assets.splice(index, 1);
+    const { current, nextAsset, previousAsset } =
+      listedCursor?.current.id === assetCursor.current.id ? listedCursor : assetCursor;
+    assets = assets.filter(({ id }) => id !== current.id);
     await (assets.length === 0
       ? navigate({ targetRoute: 'current', assetId: null })
       : navigateToAsset(nextAsset ?? previousAsset));
@@ -329,6 +325,13 @@
     current: assetViewerManager.asset!,
     nextAsset: getNextAsset(navigationAssets, assetViewerManager.asset),
     previousAsset: getPreviousAsset(navigationAssets, assetViewerManager.asset),
+  });
+
+  let listedCursor = $state<AssetCursor>();
+  $effect(() => {
+    if (navigationAssets.some(({ id }) => id === assetCursor.current?.id)) {
+      listedCursor = assetCursor;
+    }
   });
 </script>
 
@@ -380,7 +383,7 @@
 {#if assetViewerManager.isViewing}
   <Portal target="body">
     {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
-      <OnEvents {onAssetsDelete} {onAssetUpdate} />
+      <OnEvents onAssetsDelete={onAssetsRemove} onAssetsArchive={onAssetsRemove} {onAssetUpdate} />
       <AssetViewer
         cursor={assetCursor}
         onRandom={handleRandom}
