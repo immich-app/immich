@@ -5,12 +5,13 @@
 
   type Props = {
     action: ActionItem;
+    disabled?: boolean;
   };
 
-  const { action }: Props = $props();
+  const { action, disabled = false }: Props = $props();
   const { title, icon, onAction } = $derived(action);
 </script>
 
 {#if icon && isEnabled(action)}
-  <MenuOption {icon} text={title} onClick={(event: Event) => onAction({ event, action })} />
+  <MenuOption {icon} text={title} {disabled} onClick={(event: Event) => onAction({ event, action })} />
 {/if}
