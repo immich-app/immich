@@ -32,15 +32,18 @@ extension type const PasskeyStore._(Provider<PasskeyMutations> _provider) implem
 }
 
 final _enabledProvider = FutureProvider.autoDispose<bool>((ref) async {
-  // browsers only offer passkeys to https pages
-  if (!ref.watch(serverInfoProvider.select((state) => state.serverVersion.supportsPasskeys)) ||
-      !ref.watch(passkeyApiRepositoryProvider).origin.startsWith('https:')) {
+  if (!ref.watch(serverInfoProvider.select((state) => state.serverVersion.supportsPasskeys))) {
     return false;
   }
 
   try {
-    return await ref.watch(passkeyHostApiProvider).isSupported() &&
-        await ref.watch(passkeyApiRepositoryProvider).isEnabled();
+    if (!await ref.watch(passkeyHostApiProvider).isSupported()) {
+      return false;
+    }
+
+    final config = await ref.watch(passkeyApiRepositoryProvider).getConfig();
+    // browsers only offer passkeys to https pages
+    return config.enabled && config.origin.startsWith('https:');
   } catch (error, stack) {
     _log.warning("Failed to get the passkey config", error, stack);
     return false;
@@ -64,13 +67,14 @@ class PasskeyMutations extends StoreMutations {
     final apiRepository = read(passkeyApiRepositoryProvider);
 
     try {
-      final options = await apiRepository.startRegistration();
-      final credential = await _prompt(apiRepository.origin, 'registration', options);
+      final origin = (await apiRepository.getConfig()).origin;
+      final options = await apiRepository.startRegistration(origin);
+      final credential = await _prompt(origin, 'registration', options);
       if (credential == null) {
         return false;
       }
 
-      await apiRepository.finishRegistration(credential);
+      await apiRepository.finishRegistration(origin, credential);
       invalidate(_allProvider);
       return true;
     } catch (error, stack) {
@@ -86,13 +90,14 @@ class PasskeyMutations extends StoreMutations {
     final codeChallenge = base64Url.encode(sha256.convert(utf8.encode(codeVerifier)).bytes).replaceAll('=', '');
 
     try {
-      final options = await apiRepository.startAuthentication(codeChallenge);
-      final credential = await _prompt(apiRepository.origin, 'authentication', options);
+      final origin = (await apiRepository.getConfig()).origin;
+      final options = await apiRepository.startAuthentication(origin, codeChallenge);
+      final credential = await _prompt(origin, 'authentication', options);
       if (credential == null) {
         return null;
       }
 
-      return await apiRepository.finishAuthentication(credential, codeVerifier);
+      return await apiRepository.finishAuthentication(origin, credential, codeVerifier);
     } catch (error, stack) {
       _log.severe("Failed to log in with a passkey", error, stack);
       rethrow;
