@@ -154,19 +154,18 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     }
 
     final loadOriginal = SettingsRepository.instance.appConfig.image.loadOriginal;
-    if (loadOriginal && !key.previewOnly && key.assetType == AssetType.image && isLargeImage(key.width, key.height)) {
-      yield* loader.loadProvider(
-        LocalFullImageProvider(
-          id: key.id,
-          assetType: key.assetType,
-          size: key.size,
-          isAnimated: key.isAnimated,
-          width: key.width,
-          height: key.height,
-          checksum: key.checksum,
-          previewOnly: true,
-        ),
-      );
+    final previewOnlyKey = LocalFullImageProvider(
+      id: key.id,
+      assetType: key.assetType,
+      size: key.size,
+      isAnimated: key.isAnimated,
+      width: key.width,
+      height: key.height,
+      checksum: key.checksum,
+      previewOnly: true,
+    );
+    if (!key.previewOnly && PaintingBinding.instance.imageCache.statusForKey(previewOnlyKey).tracked) {
+      yield* loader.loadProvider(previewOnlyKey);
     } else {
       final previewRequest = loader.request = _previewRequest(key, isFinal: !loadOriginal);
       yield* loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal || key.previewOnly);

@@ -68,8 +68,6 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
   final String thumbhash;
   final AssetType assetType;
   final bool isAnimated;
-  final int? width;
-  final int? height;
   final bool edited;
   final bool previewOnly;
 
@@ -81,8 +79,6 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
     required this.thumbhash,
     required this.assetType,
     required this.isAnimated,
-    this.width,
-    this.height,
     this.edited = true,
     this.previewOnly = false,
     this.thumbnailSize,
@@ -141,17 +137,16 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
     }
 
     final loadOriginal = assetType == AssetType.image && SettingsRepository.instance.appConfig.image.loadOriginal;
-    if (loadOriginal && !key.previewOnly && isLargeImage(key.width, key.height)) {
-      yield* loader.loadProvider(
-        RemoteFullImageProvider(
-          assetId: key.assetId,
-          thumbhash: key.thumbhash,
-          assetType: key.assetType,
-          isAnimated: key.isAnimated,
-          edited: key.edited,
-          previewOnly: true,
-        ),
-      );
+    final previewOnlyKey = RemoteFullImageProvider(
+      assetId: key.assetId,
+      thumbhash: key.thumbhash,
+      assetType: key.assetType,
+      isAnimated: key.isAnimated,
+      edited: key.edited,
+      previewOnly: true,
+    );
+    if (!key.previewOnly && PaintingBinding.instance.imageCache.statusForKey(previewOnlyKey).tracked) {
+      yield* loader.loadProvider(previewOnlyKey);
     } else {
       final previewRequest = loader.request = _previewRequest(key);
       yield* loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal || key.previewOnly);
@@ -224,6 +219,5 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
   }
 
   @override
-  int get hashCode =>
-      assetId.hashCode ^ thumbhash.hashCode ^ isAnimated.hashCode ^ edited.hashCode ^ previewOnly.hashCode;
+  int get hashCode => Object.hash(assetId, thumbhash, isAnimated, edited, previewOnly);
 }

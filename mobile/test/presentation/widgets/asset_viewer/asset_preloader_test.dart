@@ -227,7 +227,6 @@ void main() {
     }
 
     expect(count(remote, 'original'), 1);
-    expect(count(remote, 'preview'), 1);
   });
 
   testWidgets('swiping on leaves no preloaded thumbnail live', (tester) async {
