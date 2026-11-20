@@ -28,7 +28,7 @@ dependencies:
     sdk: flutter
   flutter_displaymode: ^0.7.0
   flutter_hooks: ^0.21.3+1
-  flutter_local_notifications: ^17.2.4
+  flutter_local_notifications: ^22.3.3
   flutter_secure_storage: ^9.2.4
   flutter_svg: ^2.2.4
   flutter_udid: ^4.1.6
@@ -72,7 +72,7 @@ dependencies:
   sqlite3: ^3.4.0
   sqlite_async: 0.14.8
   sqlite3_connection_pool: ^0.2.13
-  timezone: ^0.9.4
+  timezone: ^0.11.2
   url_launcher: ^6.3.2
   uuid: ^4.6.0
   wakelock_plus: ^1.3.3
