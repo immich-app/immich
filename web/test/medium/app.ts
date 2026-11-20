@@ -358,6 +358,7 @@ const createTimeline = (page: Page, data: MockData) => {
       closeButton: page.getByTestId('control-bar').getByLabel('Close'),
 
       archive: () => menuItem('to_archive'),
+      unarchive: () => menuItem('unarchive'),
       trash: () => menuItem('delete'),
       changeDate: () => menuItem('change_date'),
       changeDescription: () => menuItem('change_description'),
