@@ -319,7 +319,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       // Enforced here as well as in the native schedulers: WorkManager can hand us
       // a run queued before the switch was turned off, and iOS reschedules itself
       // without consulting Dart. Every platform funnels through here.
-      if (!SettingsRepository.instance.appConfig.backup.backgroundSync) {
+      if (!_isBackgroundSyncEnabled) {
         _logger.info("Background sync is disabled. Skipping backup routine");
         return false;
       }
