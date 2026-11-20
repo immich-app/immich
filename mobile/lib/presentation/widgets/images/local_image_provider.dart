@@ -153,13 +153,22 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
 
     final loadOriginal = SettingsRepository.instance.appConfig.image.loadOriginal;
     final previewRequest = loader.request = _previewRequest(key, isFinal: !loadOriginal);
-    yield* loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal);
+    var previewIsOriginal = false;
+    await for (final info in loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal)) {
+      previewIsOriginal = info.image.width == key.width && info.image.height == key.height;
+      yield info;
+    }
 
     if (!loadOriginal) {
       return;
     }
 
     if (loader.isCancelled) {
+      return;
+    }
+
+    if (previewIsOriginal) {
+      loader.isFinished = true;
       return;
     }
 
