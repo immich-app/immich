@@ -32,8 +32,12 @@ const mockWebSocket = async (context: BrowserContext) => {
   });
 };
 
-const fulfill = async (route: Route, { status, json, body, contentType, headers }: Response) => {
+const fulfill = async (route: Route, { status, json, body, contentType, headers, networkError }: Response) => {
   try {
+    if (networkError) {
+      await route.abort('failed');
+      return;
+    }
     await route.fulfill(
       body === undefined
         ? { status, json, headers }

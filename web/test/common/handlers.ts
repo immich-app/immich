@@ -296,7 +296,12 @@ export const createHandlers = (data: MockData): Handlers => {
       const person = data.reassignFace(body.id, params.id);
       return person ? { json: person } : notFound;
     },
-    createFace: () => ({ status: 201 }),
+    createFace: ({ body: { assetId, personId, x, y, width, height, ...size } }) => {
+      const person = data.getPerson(personId);
+      const box = { boundingBoxX1: x, boundingBoxY1: y, boundingBoxX2: x + width, boundingBoxY2: y + height };
+      data.addFaces(assetId, factory.face({ ...size, ...box, person }));
+      return { status: 201 };
+    },
     getAllPeople: ({ params = {} }) => ({ json: data.peoplePage(params) }),
     mergePeople: ({ body }) => ({ json: data.mergePeople(body.ids) }),
     reassignFaces: ({ params }) => {
