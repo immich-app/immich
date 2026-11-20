@@ -15,6 +15,7 @@ const probeStubDefaultFormat: VideoFormat = {
   formatLongName: 'QuickTime / MOV',
   duration: 0,
   bitrate: 0,
+  isFragmented: false,
 };
 
 const probeStubDefaultVideoStream: VideoStreamInfo[] = [
@@ -186,6 +187,7 @@ export const videoInfoStub = {
       formatLongName: 'MPEG-TS (MPEG-2 Transport Stream)',
       duration: 0,
       bitrate: 0,
+      isFragmented: false,
     },
   }),
   videoStreamHDR: Object.freeze<VideoInfo>({
@@ -389,6 +391,7 @@ export const videoInfoStub = {
       formatLongName: 'Matroska / WebM',
       duration: 0,
       bitrate: 0,
+      isFragmented: false,
     },
   }),
   videoStreamVp9: Object.freeze<VideoInfo>({
@@ -399,6 +402,7 @@ export const videoInfoStub = {
       formatLongName: 'Matroska / WebM',
       duration: 0,
       bitrate: 0,
+      isFragmented: false,
     },
   }),
   videoStreamH264: Object.freeze<VideoInfo>({
@@ -413,6 +417,7 @@ export const videoInfoStub = {
       formatLongName: 'AVI (Audio Video Interleaved)',
       duration: 0,
       bitrate: 0,
+      isFragmented: false,
     },
   }),
   videoStreamReserved: Object.freeze<VideoInfo>({
@@ -530,6 +535,7 @@ export const eiffelTower = {
     formatLongName: 'QuickTime / MOV',
     duration: 22_616,
     bitrate: 5_128_622,
+    isFragmented: false,
   },
 };
 
@@ -571,6 +577,7 @@ export const waterfall = {
     formatLongName: 'QuickTime / MOV',
     duration: 10_359,
     bitrate: 43_363_499,
+    isFragmented: false,
   },
 };
 
@@ -616,5 +623,6 @@ export const train = {
     formatLongName: 'QuickTime / MOV',
     duration: 21_738,
     bitrate: 12_595_191,
+    isFragmented: false,
   },
 };

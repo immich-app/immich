@@ -134,6 +134,7 @@ export interface VideoFormat {
   formatLongName?: string;
   duration: number;
   bitrate: number;
+  isFragmented: boolean;
 }
 
 export interface ImageDimensions {

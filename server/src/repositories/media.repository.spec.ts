@@ -1,3 +1,4 @@
+import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -317,6 +318,26 @@ describe(MediaRepository.name, () => {
 
       expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
       expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
+    });
+  });
+
+  describe('probe', () => {
+    it.each([
+      { formatLongName: 'QuickTime / MOV', nbFrames: 'N/A', isFragmented: true },
+      { formatLongName: 'QuickTime / MOV', nbFrames: '557', isFragmented: false },
+      { formatLongName: 'Matroska / WebM', nbFrames: 'N/A', isFragmented: false },
+    ])('should detect fragmentation for $formatLongName with $nbFrames frames', async (testCase) => {
+      const data = {
+        format: { format_name: 'test', format_long_name: testCase.formatLongName },
+        streams: [{ index: 0, codec_type: 'video', codec_name: 'h264', nb_frames: testCase.nbFrames }],
+      } as FfprobeData;
+      vi.spyOn(ffmpeg, 'ffprobe').mockImplementation((...args: unknown[]) =>
+        (args.at(-1) as (error: null, data: FfprobeData) => void)(null, data),
+      );
+
+      const { format } = await sut.probe('/path/to/video');
+
+      expect(format.isFragmented).toBe(testCase.isFragmented);
     });
   });
 
