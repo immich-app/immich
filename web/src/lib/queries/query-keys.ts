@@ -1,7 +1,9 @@
 import type {
   CalendarHeatmapType,
   IntegrityReport,
+  MetadataSearchDto,
   PartnerDirection,
+  SmartSearchDto,
   WorkflowResult,
   WorkflowTrigger,
   getAllPeople,
@@ -122,8 +124,11 @@ export const QueryKeys = {
   // search
   searchCities: () => ['search', 'cities'],
   searchExplore: () => ['search', 'explore'],
+  searchLargeAssets: () => ['search', 'large-assets'],
+  searchMetadata: (dto: MetadataSearchDto) => ['search', 'metadata', dto],
   searchPerson: (...params: [Parameters<typeof searchPerson>[0]?]) => ['search', 'person', ...params],
   searchPlaces: (params: Parameters<typeof searchPlaces>[0]) => ['search', 'places', params],
+  searchSmart: (dto: SmartSearchDto) => ['search', 'smart', dto],
   searchSuggestions: (params: Parameters<typeof getSearchSuggestions>[0]) => ['search', 'suggestions', params],
 
   // server
