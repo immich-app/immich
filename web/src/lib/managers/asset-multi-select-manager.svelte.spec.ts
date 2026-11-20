@@ -41,4 +41,13 @@ describe('AssetMultiSelectManager', () => {
     cleanup();
     queryClient.clear();
   });
+
+  it('resets hasMoreAssets when cleared', () => {
+    sut.setHasMoreAssets(true);
+    expect(sut.hasMoreAssets).toBe(true);
+
+    sut.clear();
+
+    expect(sut.hasMoreAssets).toBe(false);
+  });
 });

@@ -125,6 +125,7 @@
     nextPage = 1;
     searchResultAssets = [];
     searchResultAlbums = [];
+    assetMultiSelectManager.setHasMoreAssets(false);
     await loadNextPage(true);
   }
 
@@ -151,6 +152,7 @@
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
+      assetMultiSelectManager.setHasMoreAssets(!!assets.nextPage);
 
       nextPage = Number(assets.nextPage) || 0;
     } catch (error) {
