@@ -17,6 +17,7 @@ const PUBLIC_PROPERTIES = [
   'oauth.autoLaunch',
   'oauth.buttonText',
   'oauth.enabled',
+  'passkey.domain',
   'passkey.enabled',
   'passwordLogin.enabled',
   'server.loginPageMessage',
