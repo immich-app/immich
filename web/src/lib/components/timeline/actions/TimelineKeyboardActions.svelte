@@ -114,6 +114,7 @@
       { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
       { shortcut: { key: '/' }, onShortcut: () => goto(Route.explore()) },
       { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(timelineManager, assetInteraction) },
+      { shortcut: { key: 'A', meta: true }, onShortcut: () => selectAllAssets(timelineManager, assetInteraction) },
       { shortcut: { key: 'ArrowRight' }, onShortcut: () => setFocusTo('earlier', 'asset') },
       { shortcut: { key: 'ArrowLeft' }, onShortcut: () => setFocusTo('later', 'asset') },
       { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('earlier', 'day') },
@@ -132,6 +133,7 @@
         { shortcut: { key: 'Delete' }, onShortcut: onDelete },
         { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => assetInteraction.clear() },
+        { shortcut: { key: 'D', meta: true }, onShortcut: () => assetInteraction.clear() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
         { shortcut: { key: 'f' }, onShortcut: () => toggleFavoriteSelected() },
       );

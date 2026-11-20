@@ -229,6 +229,7 @@
         { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(Route.explore()) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
+        { shortcut: { key: 'A', meta: true }, onShortcut: () => selectAllAssets() },
         ...(arrowNavigation
           ? [
               { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
@@ -241,6 +242,7 @@
         shortcuts.push(
           { shortcut: { key: 'Escape' }, onShortcut: () => assetInteraction.clear() },
           { shortcut: { key: 'D', ctrl: true }, onShortcut: () => assetInteraction.clear() },
+          { shortcut: { key: 'D', meta: true }, onShortcut: () => assetInteraction.clear() },
         );
         if (allowDeletion) {
           shortcuts.push(
