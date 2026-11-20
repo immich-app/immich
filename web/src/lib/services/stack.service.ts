@@ -122,14 +122,17 @@ const handleKeepThisDeleteOthers = async (stack: StackResponseDto, asset: AssetR
     return;
   }
 
+  eventManager.emit('AssetsDelete', assetsToDeleteIds);
+
   await executeMutation(
     () => deleteStacksMutation({ error: { toast: 'errors.failed_to_keep_this_delete_others' } }),
     [{ bulkIdsDto: { ids: [stack.id] } }],
     {
       onSuccess: () => {
         toastManager.primary($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
-        eventManager.emit('StackDelete', { id: stack.id, assets: [asset] });
-        eventManager.emit('AssetUpdate', { ...asset, stack: null });
+        const keptAsset = { ...asset, stack: null };
+        eventManager.emit('StackDelete', { id: stack.id, assets: [keptAsset] });
+        eventManager.emit('AssetUpdate', keptAsset);
       },
     },
   );

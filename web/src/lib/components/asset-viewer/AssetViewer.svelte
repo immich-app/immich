@@ -112,7 +112,9 @@
   let previewStackedAsset: AssetResponseDto | undefined = $state();
 
   const asset = $derived(previewStackedAsset ?? cursor.current);
-  const stackId = $derived(withStacked && !authManager.isSharedLink ? cursor.current.stack?.id : undefined);
+  let deletedStackId = $state<string>();
+  const currentStackId = $derived(withStacked && !authManager.isSharedLink ? cursor.current.stack?.id : undefined);
+  const stackId = $derived(currentStackId === deletedStackId ? undefined : currentStackId);
   const activityParams = $derived({ albumId: album?.id ?? '', assetId: asset.id });
   const isActivityEnabled = $derived(!!album && isShared && authManager.authenticated);
   const queries = {
@@ -171,6 +173,11 @@
     const restoredAsset = assets[0];
     await assetViewerManager.setAssetId(restoredAsset.id);
     await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+  };
+
+  const onStackDelete = ({ id }: { id: string }) => {
+    deletedStackId = id;
+    closeViewer();
   };
 
   const onStackUpdate = ({ id, assets }: StackResponseDto) => {
@@ -482,13 +489,7 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents
-  {onAssetUpdate}
-  {onAssetsUndoArchive}
-  onStackDelete={() => closeViewer()}
-  {onStackUpdate}
-  {onPersonThumbnailReady}
-/>
+<OnEvents {onAssetUpdate} {onAssetsUndoArchive} {onStackDelete} {onStackUpdate} {onPersonThumbnailReady} />
 
 <svelte:document
   bind:fullscreenElement
