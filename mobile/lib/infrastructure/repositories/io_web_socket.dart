@@ -29,9 +29,9 @@ class IoWebSocket implements WebSocket {
           return;
         }
         switch (event) {
-          case String text:
+          case final String text:
             _events.add(TextDataReceived(text));
-          case List<int> bytes:
+          case final List<int> bytes:
             _events.add(BinaryDataReceived(Uint8List.fromList(bytes)));
         }
       },
@@ -49,9 +49,10 @@ class IoWebSocket implements WebSocket {
         if (_events.isClosed) {
           return;
         }
-        _events
-          ..add(CloseReceived(_socket.closeCode, _socket.closeReason ?? ''))
-          ..close();
+        // Deliver the close code first, then end the stream. `close()` returns a
+        // future nobody can await from a callback, hence the explicit unawaited.
+        _events.add(CloseReceived(_socket.closeCode, _socket.closeReason ?? ''));
+        unawaited(_events.close());
       },
     );
   }
