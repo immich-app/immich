@@ -15,12 +15,14 @@ class OcrOverlay extends ConsumerWidget {
   final Size imageSize;
   final Size viewportSize;
   final PhotoViewControllerBase? controller;
+  final bool showBoxes;
 
   const OcrOverlay({
     super.key,
     required this.asset,
     required this.imageSize,
     required this.viewportSize,
+    required this.showBoxes,
     this.controller,
   });
 
@@ -42,6 +44,7 @@ class OcrOverlay extends ConsumerWidget {
       imageSize: imageSize,
       viewportSize: viewportSize,
       controller: controller,
+      showBoxes: showBoxes,
       onSelectionStart: () => ref.read(hapticFeedbackProvider.notifier).selectionClick(),
     );
   }
@@ -55,6 +58,7 @@ class OcrSelectionLayer extends StatefulWidget {
   final Size imageSize;
   final Size viewportSize;
   final PhotoViewControllerBase? controller;
+  final bool showBoxes;
   final VoidCallback? onSelectionStart;
 
   const OcrSelectionLayer({
@@ -62,6 +66,7 @@ class OcrSelectionLayer extends StatefulWidget {
     required this.ocrData,
     required this.imageSize,
     required this.viewportSize,
+    required this.showBoxes,
     this.controller,
     this.onSelectionStart,
   });
@@ -107,6 +112,9 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
       _attachController(widget.controller);
     }
     _imageSize = _resolveImageSize();
+    if (oldWidget.showBoxes && !widget.showBoxes) {
+      _clearSelection();
+    }
   }
 
   @override
@@ -292,7 +300,9 @@ class _OcrSelectionLayerState extends State<OcrSelectionLayer> {
                     return Transform(
                       transform: transform,
                       child: CustomPaint(
-                        painter: _OcrBoxesPainter(scrim: _scrim, boxes: _textArea, scale: transform.storage[0]),
+                        painter: widget.showBoxes
+                            ? _OcrBoxesPainter(scrim: _scrim, boxes: _textArea, scale: transform.storage[0])
+                            : null,
                         child: lines,
                       ),
                     );

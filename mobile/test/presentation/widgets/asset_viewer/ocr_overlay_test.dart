@@ -64,7 +64,7 @@ void main() {
     );
   });
 
-  Future<_Below> pumpLayer(WidgetTester tester, {bool scalable = false}) async {
+  Future<_Below> pumpLayer(WidgetTester tester, {bool showBoxes = false, bool scalable = false}) async {
     final below = _Below();
     await tester.pumpWidget(
       MaterialApp(
@@ -91,6 +91,7 @@ void main() {
                       ocrData: ocrData,
                       imageSize: _imageSize,
                       viewportSize: _viewportSize,
+                      showBoxes: showBoxes,
                       onSelectionStart: () => below.selectionStarts++,
                     ),
                   ),
@@ -125,7 +126,7 @@ void main() {
   }, variant: mobile);
 
   testWidgets('copies lines separated by line breaks', (tester) async {
-    await pumpLayer(tester);
+    await pumpLayer(tester, showBoxes: true);
 
     await tester.longPressAt(_secondLine);
     await tester.pumpAndSettle();
@@ -154,8 +155,19 @@ void main() {
     expect(below.taps, 1);
   }, variant: mobile);
 
+  testWidgets('hiding the boxes clears the selection', (tester) async {
+    await pumpLayer(tester, showBoxes: true);
+
+    await tester.longPressAt(_firstLine);
+    await tester.pumpAndSettle();
+    expect(find.text('Copy'), findsOneWidget);
+
+    await pumpLayer(tester);
+    expect(find.text('Copy'), findsNothing);
+  }, variant: mobile);
+
   testWidgets('gestures next to the text reach the viewer', (tester) async {
-    final below = await pumpLayer(tester);
+    final below = await pumpLayer(tester, showBoxes: true);
 
     await tester.longPressAt(_noText);
     await tester.pumpAndSettle();
