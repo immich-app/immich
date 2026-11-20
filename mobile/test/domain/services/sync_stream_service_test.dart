@@ -147,6 +147,7 @@ void main() {
     when(() => mockSyncStreamRepo.deletePeopleV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetFacesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetFacesV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.pruneAssets()).thenAnswer(successHandler);
     when(() => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset()).thenAnswer(successHandler);
 
     sut = SyncStreamService(
@@ -388,6 +389,15 @@ void main() {
 
       verify(() => mockSyncStreamRepo.updateMemoriesV2(any())).called(1);
       verify(() => mockSyncApiRepo.ack(["5"])).called(1);
+    });
+
+    test("prunes stale assets before acking sync completion", () async {
+      await simulateEvents([SyncStreamStub.syncCompleteV1]);
+
+      verifyInOrder([
+        () => mockSyncStreamRepo.pruneAssets(),
+        () => mockSyncApiRepo.ack(["sync-complete-ack"]),
+      ]);
     });
 
     test("processes memory v2 events", () async {
