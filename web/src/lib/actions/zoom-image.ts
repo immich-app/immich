@@ -12,6 +12,9 @@ const asTouchEvent = (event: Event) => event as unknown as TouchEventLike;
 export const zoomImageAction = (options?: { zoomTarget?: HTMLElement }) => (node: HTMLElement) => {
   const zoomInstance = createZoomImageWheel(node, {
     maxZoom: 10,
+    maxWheelDelta: 60,
+    wheelZoomRatio: 0.0025,
+    pinchZoomRatio: 0.01,
     initialState: untrack(() => assetViewerManager.zoomState),
     zoomTarget: options?.zoomTarget,
   });
