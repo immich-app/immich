@@ -110,7 +110,17 @@ const UserAdminResponseSchema = UserResponseSchema.extend({
   createdAt: isoDatetimeToDate.describe('Creation date'),
   deletedAt: isoDatetimeToDate.nullable().describe('Deletion date'),
   updatedAt: isoDatetimeToDate.describe('Last update date'),
-  oauthId: z.string().describe('OAuth ID'),
+  oauthId: z
+    .string()
+    .describe('OAuth ID')
+    .meta({
+      ...new HistoryBuilder()
+        .updated(
+          'v4.0.0',
+          'An empty string is returned instead of null for backwards compatibility; null will be returned in v5.',
+        )
+        .getExtensions(),
+    }),
   quotaSizeInBytes: z.int().min(0).nullable().describe('Storage quota in bytes'),
   quotaUsageInBytes: z.int().min(0).nullable().describe('Storage usage in bytes'),
   status: UserStatusSchema,
@@ -134,7 +144,7 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     createdAt: entity.createdAt,
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
-    // TODO(v4): remove the mapping and make `oauthId` nullable
+    // TODO(v5): remove the mapping and make `oauthId` nullable
     oauthId: entity.oauthId ?? '',
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,

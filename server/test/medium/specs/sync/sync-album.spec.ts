@@ -233,3 +233,35 @@ describe(SyncRequestType.AlbumsV1, () => {
     });
   });
 });
+
+describe('album description', () => {
+  it.each([
+    { request: SyncRequestType.AlbumsV1, type: SyncEntityType.AlbumV1, description: '' },
+    { request: SyncRequestType.AlbumsV2, type: SyncEntityType.AlbumV2, description: '' },
+    { request: SyncRequestType.AlbumsV3, type: SyncEntityType.AlbumV3, description: null },
+  ])('should sync a missing description as $description with $request', async ({ request, type, description }) => {
+    const { auth, ctx } = await setup();
+    const { album } = await ctx.newAlbum({ ownerId: auth.user.id });
+
+    const response = await ctx.syncStream(auth, [request]);
+    expect(response).toEqual([
+      { ack: expect.any(String), data: expect.objectContaining({ id: album.id, description }), type },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  });
+
+  it('should sync a description with AlbumsV3', async () => {
+    const { auth, ctx } = await setup();
+    const { album } = await ctx.newAlbum({ ownerId: auth.user.id, description: 'Summer trip' });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AlbumsV3]);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({ id: album.id, description: 'Summer trip' }),
+        type: SyncEntityType.AlbumV3,
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  });
+});

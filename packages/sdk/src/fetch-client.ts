@@ -920,7 +920,7 @@ export type AlbumResponseDto = {
     /** Creation date */
     createdAt: string;
     /** Album description */
-    description: string;
+    description: string | null;
     /** UTC representation of (local) end date (latest asset) */
     endDate?: string;
     /** Has shared link */
@@ -3496,6 +3496,23 @@ export type SyncAlbumV2 = {
     createdAt: string;
     /** Album description */
     description: string;
+    /** Album ID */
+    id: string;
+    /** Is activity enabled */
+    isActivityEnabled: boolean;
+    /** Album name */
+    name: string;
+    order: AssetOrder;
+    /** Thumbnail asset ID */
+    thumbnailAssetId: string | null;
+    /** Updated at */
+    updatedAt: string;
+};
+export type SyncAlbumV3 = {
+    /** Created at */
+    createdAt: string;
+    /** Album description */
+    description: string | null;
     /** Album ID */
     id: string;
     /** Is activity enabled */
@@ -8831,6 +8848,7 @@ export enum SyncEntityType {
     PartnerStackV1 = "PartnerStackV1",
     AlbumV1 = "AlbumV1",
     AlbumV2 = "AlbumV2",
+    AlbumV3 = "AlbumV3",
     AlbumDeleteV1 = "AlbumDeleteV1",
     AlbumUserV1 = "AlbumUserV1",
     AlbumUserBackfillV1 = "AlbumUserBackfillV1",
@@ -8870,6 +8888,7 @@ export enum SyncEntityType {
 export enum SyncRequestType {
     AlbumsV1 = "AlbumsV1",
     AlbumsV2 = "AlbumsV2",
+    AlbumsV3 = "AlbumsV3",
     AlbumUsersV1 = "AlbumUsersV1",
     AlbumToAssetsV1 = "AlbumToAssetsV1",
     AlbumAssetsV1 = "AlbumAssetsV1",
@@ -8923,7 +8942,8 @@ export enum ReleaseType {
 }
 export enum ServerFeatureLevel {
     FeatureLevel = 1,
-    Passkeys = 2
+    Passkeys = 2,
+    SyncAlbumsV3 = 3
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

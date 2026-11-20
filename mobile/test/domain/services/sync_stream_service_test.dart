@@ -16,8 +16,8 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
@@ -57,7 +57,7 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     registerFallbackValue(LocalAssetStub.image1);
-    registerFallbackValue(const SemVer(major: 2, minor: 5, patch: 0));
+    registerFallbackValue(const ServerVersion(major: 2, minor: 5, patch: 0));
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: StoreRepository(db));
@@ -562,6 +562,38 @@ void main() {
     });
   });
 
+  group('SyncStreamService - server version', () {
+    Future<ServerVersion> streamedVersion(int featureLevel) async {
+      when(() => mockServerApi.getServerVersion()).thenAnswer(
+        (_) async =>
+            ServerVersionResponseDto(major: 4, minor: 0, patch_: 0, prerelease: null, featureLevel: featureLevel),
+      );
+      await sut.sync();
+
+      return verify(
+            () => mockSyncApiRepo.streamChanges(
+              any(),
+              onReset: any(named: 'onReset'),
+              serverVersion: captureAny(named: 'serverVersion'),
+              abortSignal: any(named: 'abortSignal'),
+            ),
+          ).captured.single
+          as ServerVersion;
+    }
+
+    test('supports AlbumsV3 sync at the SyncAlbumsV3 feature level', () async {
+      final version = await streamedVersion(ServerFeatureLevel.SyncAlbumsV3.toJson());
+
+      expect(version.supportsSyncAlbumsV3, isTrue);
+    });
+
+    test('does not support AlbumsV3 sync below the SyncAlbumsV3 feature level', () async {
+      final version = await streamedVersion(ServerFeatureLevel.SyncAlbumsV3.toJson() - 1);
+
+      expect(version.supportsSyncAlbumsV3, isFalse);
+    });
+  });
+
   group('SyncStreamService - Sync Migration', () {
     test('ensure that <2.5.0 migrations run', () async {
       await Store.put(StoreKey.syncMigrationStatus, "[]");
@@ -614,6 +646,16 @@ void main() {
       ]);
 
       // v20260128_ResetAssetV1 writes that v20260128_CopyExifWidthHeightToAsset has been completed
+      verifyNever(() => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset());
+    });
+
+    test('ensure that >=2.5.0 migrations run on a 2.5.0 release candidate', () async {
+      await Store.put(StoreKey.syncMigrationStatus, "[]");
+      when(
+        () => mockServerApi.getServerVersion(),
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0, prerelease: 0, featureLevel: 1));
+      await sut.sync();
+
       verifyNever(() => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset());
     });
 

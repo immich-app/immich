@@ -14,6 +14,7 @@ import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.da
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -64,12 +65,12 @@ class SyncStreamService {
       return false;
     }
 
-    final serverSemVer = SemVer(major: serverVersion.major, minor: serverVersion.minor, patch: serverVersion.patch_);
+    final version = ServerVersion.fromDto(serverVersion..prerelease = null);
 
     final value = Store.get(StoreKey.syncMigrationStatus, "[]");
     final migrations = (jsonDecode(value) as List).cast<String>();
     int previousLength = migrations.length;
-    await _runPreSyncTasks(migrations, serverSemVer);
+    await _runPreSyncTasks(migrations, version);
 
     if (migrations.length != previousLength) {
       _logger.info("Updated pre-sync migration status: $migrations");
@@ -80,17 +81,13 @@ class SyncStreamService {
     bool shouldReset = false;
     await _syncApiRepository.streamChanges(
       _handleEvents,
-      serverVersion: serverSemVer,
+      serverVersion: version,
       onReset: () => shouldReset = true,
       abortSignal: _cancellation?.future,
     );
     if (shouldReset) {
       _logger.info("Resetting sync state as requested by server");
-      await _syncApiRepository.streamChanges(
-        _handleEvents,
-        serverVersion: serverSemVer,
-        abortSignal: _cancellation?.future,
-      );
+      await _syncApiRepository.streamChanges(_handleEvents, serverVersion: version, abortSignal: _cancellation?.future);
     }
 
     previousLength = migrations.length;
@@ -252,6 +249,8 @@ class SyncStreamService {
         return _syncStreamRepository.updateAlbumsV1(data.cast());
       case SyncEntityType.albumV2:
         return _syncStreamRepository.updateAlbumsV2(data.cast());
+      case SyncEntityType.albumV3:
+        return _syncStreamRepository.updateAlbumsV3(data.cast());
       case SyncEntityType.albumDeleteV1:
         return _syncStreamRepository.deleteAlbumsV1(data.cast());
       case SyncEntityType.albumUserV1:

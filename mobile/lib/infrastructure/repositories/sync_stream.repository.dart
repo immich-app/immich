@@ -544,29 +544,51 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     }
   }
 
-  Future<void> updateAlbumsV2(Iterable<SyncAlbumV2> data) async {
+  Future<void> updateAlbumsV2(Iterable<SyncAlbumV2> data) => _upsertRemoteAlbums(
+    'updateAlbumsV2',
+    data.map(
+      (album) => RemoteAlbumEntityCompanion(
+        id: Value(album.id),
+        name: Value(album.name),
+        description: Value(album.description),
+        isActivityEnabled: Value(album.isActivityEnabled),
+        order: Value(album.order.toAlbumAssetOrder()),
+        thumbnailAssetId: Value(album.thumbnailAssetId),
+        createdAt: Value(album.createdAt),
+        updatedAt: Value(album.updatedAt),
+      ),
+    ),
+  );
+
+  Future<void> updateAlbumsV3(Iterable<SyncAlbumV3> data) => _upsertRemoteAlbums(
+    'updateAlbumsV3',
+    data.map(
+      (album) => RemoteAlbumEntityCompanion(
+        id: Value(album.id),
+        name: Value(album.name),
+        description: Value(album.description ?? ''),
+        isActivityEnabled: Value(album.isActivityEnabled),
+        order: Value(album.order.toAlbumAssetOrder()),
+        thumbnailAssetId: Value(album.thumbnailAssetId),
+        createdAt: Value(album.createdAt),
+        updatedAt: Value(album.updatedAt),
+      ),
+    ),
+  );
+
+  Future<void> _upsertRemoteAlbums(String operation, Iterable<RemoteAlbumEntityCompanion> albums) async {
     try {
       await _db.batch((batch) {
-        for (final album in data) {
-          final companion = RemoteAlbumEntityCompanion(
-            name: Value(album.name),
-            description: Value(album.description),
-            isActivityEnabled: Value(album.isActivityEnabled),
-            order: Value(album.order.toAlbumAssetOrder()),
-            thumbnailAssetId: Value(album.thumbnailAssetId),
-            createdAt: Value(album.createdAt),
-            updatedAt: Value(album.updatedAt),
-          );
-
+        for (final album in albums) {
           batch.insert(
             _db.remoteAlbumEntity,
-            companion.copyWith(id: Value(album.id)),
-            onConflict: DoUpdate((_) => companion),
+            album,
+            onConflict: DoUpdate((_) => album.copyWith(id: const Value.absent())),
           );
         }
       });
     } catch (error, stack) {
-      _logger.severe('Error: updateAlbumsV2', error, stack);
+      _logger.severe('Error: $operation', error, stack);
       rethrow;
     }
   }

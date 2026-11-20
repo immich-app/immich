@@ -20407,7 +20407,10 @@
           },
           "description": {
             "description": "Album description",
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "x-immich-history": [
               {
                 "state": "Added",
@@ -20417,6 +20420,11 @@
                 "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4.",
                 "state": "Updated",
                 "version": "v3"
+              },
+              {
+                "description": "Marked as nullable. An empty string is still returned instead of null; null will be returned in v5.",
+                "state": "Updated",
+                "version": "v4.0.0"
               }
             ]
           },
@@ -22493,6 +22501,11 @@
                 "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.",
                 "state": "Updated",
                 "version": "v3"
+              },
+              {
+                "description": "Empty strings are still coerced to null for backwards compatibility; this will be removed in v5.",
+                "state": "Updated",
+                "version": "v4.0.0"
               }
             ]
           }
@@ -28885,12 +28898,14 @@
         "description": "Server feature level",
         "enum": [
           1,
-          2
+          2,
+          3
         ],
         "type": "integer",
         "x-enum-varnames": [
           "FeatureLevel",
-          "Passkeys"
+          "Passkeys",
+          "SyncAlbumsV3"
         ]
       },
       "ServerFeaturesDto": {
@@ -31628,6 +31643,66 @@
         ],
         "type": "object"
       },
+      "SyncAlbumV3": {
+        "properties": {
+          "createdAt": {
+            "description": "Created at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "description": {
+            "description": "Album description",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Album ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "isActivityEnabled": {
+            "description": "Is activity enabled",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Album name",
+            "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
+          },
+          "thumbnailAssetId": {
+            "description": "Thumbnail asset ID",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "description": "Updated at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "description",
+          "id",
+          "isActivityEnabled",
+          "name",
+          "order",
+          "thumbnailAssetId",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "SyncAssetDeleteV1": {
         "properties": {
           "assetId": {
@@ -32839,6 +32914,7 @@
           "PartnerStackV1",
           "AlbumV1",
           "AlbumV2",
+          "AlbumV3",
           "AlbumDeleteV1",
           "AlbumUserV1",
           "AlbumUserBackfillV1",
@@ -33292,6 +33368,7 @@
         "enum": [
           "AlbumsV1",
           "AlbumsV2",
+          "AlbumsV3",
           "AlbumUsersV1",
           "AlbumToAssetsV1",
           "AlbumAssetsV1",
@@ -34098,6 +34175,11 @@
                 "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.",
                 "state": "Updated",
                 "version": "v3"
+              },
+              {
+                "description": "Empty strings are still coerced to null for backwards compatibility; this will be removed in v5.",
+                "state": "Updated",
+                "version": "v4.0.0"
               }
             ]
           },
@@ -34426,7 +34508,14 @@
           },
           "oauthId": {
             "description": "OAuth ID",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v5.",
+                "state": "Updated",
+                "version": "v4.0.0"
+              }
+            ]
           },
           "profileChangedAt": {
             "description": "Profile change date",

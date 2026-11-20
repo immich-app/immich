@@ -215,6 +215,18 @@ class SyncAlbumV2 extends createZodDto({
 }) {}
 
 @ExtraModel()
+class SyncAlbumV3 extends createZodDto({
+  id: z.uuidv4().describe('Album ID'),
+  name: z.string().describe('Album name'),
+  description: z.string().nullable().describe('Album description'),
+  createdAt: isoDatetimeToDate.describe('Created at'),
+  updatedAt: isoDatetimeToDate.describe('Updated at'),
+  thumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
+  isActivityEnabled: z.boolean().describe('Is activity enabled'),
+  order: AssetOrderSchema,
+}) {}
+
+@ExtraModel()
 class SyncAlbumToAssetV1 extends createZodDto({
   albumId: z.uuidv4().describe('Album ID'),
   assetId: z.uuidv4().describe('Asset ID'),
@@ -399,6 +411,7 @@ export type SyncItem = {
   [SyncEntityType.PartnerAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumV1]: SyncAlbumV1;
   [SyncEntityType.AlbumV2]: SyncAlbumV2;
+  [SyncEntityType.AlbumV3]: SyncAlbumV3;
   [SyncEntityType.AlbumDeleteV1]: SyncAlbumDeleteV1;
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;

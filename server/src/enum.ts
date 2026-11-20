@@ -1063,6 +1063,7 @@ export enum ExitCode {
 export enum SyncRequestType {
   AlbumsV1 = 'AlbumsV1',
   AlbumsV2 = 'AlbumsV2',
+  AlbumsV3 = 'AlbumsV3',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
   /** @deprecated */
@@ -1141,6 +1142,7 @@ export enum SyncEntityType {
 
   AlbumV1 = 'AlbumV1',
   AlbumV2 = 'AlbumV2',
+  AlbumV3 = 'AlbumV3',
   AlbumDeleteV1 = 'AlbumDeleteV1',
 
   AlbumUserV1 = 'AlbumUserV1',
@@ -1352,6 +1354,7 @@ export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'Searc
 export enum ServerFeatureLevel {
   FeatureLevel = 1,
   Passkeys = 2,
+  SyncAlbumsV3 = 3,
 }
 
 export const ServerFeatureLevelSchema = z

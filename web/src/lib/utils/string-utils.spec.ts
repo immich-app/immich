@@ -5,6 +5,7 @@ describe('normalizeSearchString', () => {
     { input: '  Émilie ', expected: 'emilie' },
     { input: 'José\t', expected: 'jose' },
     { input: 'plain', expected: 'plain' },
+    { input: null, expected: '' },
   ])('turns "$input" into "$expected"', ({ input, expected }) => {
     expect(normalizeSearchString(input)).toBe(expected);
   });

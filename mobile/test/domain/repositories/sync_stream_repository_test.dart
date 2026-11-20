@@ -472,4 +472,30 @@ void main() {
       expect(keepRows, hasLength(1));
     });
   });
+  group('SyncStreamRepository - updateAlbumsV3', () {
+    SyncAlbumV3 album({String? description}) => SyncAlbumV3(
+      id: 'album-1',
+      name: 'Album',
+      description: description,
+      createdAt: DateTime(2024, 1, 1),
+      updatedAt: DateTime(2024, 1, 1),
+      thumbnailAssetId: null,
+      isActivityEnabled: true,
+      order: AssetOrder.desc,
+    );
+
+    Future<String> storedDescription() async => (await db.select(db.remoteAlbumEntity).getSingle()).description;
+
+    test('stores a missing description as an empty string', () async {
+      await sut.updateAlbumsV3([album()]);
+
+      expect(await storedDescription(), '');
+    });
+
+    test('stores the description', () async {
+      await sut.updateAlbumsV3([album(description: 'Summer trip')]);
+
+      expect(await storedDescription(), 'Summer trip');
+    });
+  });
 }

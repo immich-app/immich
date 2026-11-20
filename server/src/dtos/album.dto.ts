@@ -46,6 +46,7 @@ export const AlbumResponseSchema = z
     albumName: z.string().describe('Album name'),
     description: z
       .string()
+      .nullable()
       .describe('Album description')
       .meta({
         ...new HistoryBuilder()
@@ -53,6 +54,10 @@ export const AlbumResponseSchema = z
           .updated(
             'v3',
             'An empty string is returned instead of null for backwards compatibility; null will be returned in v4.',
+          )
+          .updated(
+            'v4.0.0',
+            'Marked as nullable. An empty string is still returned instead of null; null will be returned in v5.',
           )
           .getExtensions(),
       }),
@@ -114,7 +119,6 @@ export class AlbumUserCreateDto extends createZodDto(AlbumUserCreateSchema) {}
 
 export class CreateAlbumDto extends createZodDto({
   albumName: z.string().describe('Album name'),
-  // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
   description: z
     .string()
     .nullable()
@@ -127,6 +131,10 @@ export class CreateAlbumDto extends createZodDto({
         .updated(
           'v3',
           'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+        )
+        .updated(
+          'v4.0.0',
+          'Empty strings are still coerced to null for backwards compatibility; this will be removed in v5.',
         )
         .getExtensions(),
     }),
@@ -146,7 +154,6 @@ export class AlbumsAddAssetsResponseDto extends createZodDto({
 
 export class UpdateAlbumDto extends createZodDto({
   albumName: z.string().optional().describe('Album name'),
-  // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
   description: z
     .string()
     .nullable()
@@ -159,6 +166,10 @@ export class UpdateAlbumDto extends createZodDto({
         .updated(
           'v3',
           'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+        )
+        .updated(
+          'v4.0.0',
+          'Empty strings are still coerced to null for backwards compatibility; this will be removed in v5.',
         )
         .getExtensions(),
     }),
@@ -234,7 +245,7 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>, { auth }: { auth?
 
   return {
     albumName: entity.albumName,
-    // TODO: return null instead of '' in v4
+    // TODO(v5): return null instead of ''
     description: entity.description ?? '',
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
     createdAt: asDateTimeString(entity.createdAt),

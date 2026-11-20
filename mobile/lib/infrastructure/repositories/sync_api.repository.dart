@@ -6,8 +6,8 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -26,7 +26,7 @@ class SyncApiRepository {
 
   Future<void> streamChanges(
     Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onData, {
-    required SemVer serverVersion,
+    required ServerVersion serverVersion,
     Function()? onReset,
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
@@ -52,7 +52,11 @@ class SyncApiRepository {
           SyncRequestType.partnersV1,
           serverVersion.supports(.syncV2) ? SyncRequestType.partnerAssetsV2 : SyncRequestType.partnerAssetsV1,
           SyncRequestType.partnerAssetExifsV1,
-          serverVersion.supports(.syncV2) ? SyncRequestType.albumsV2 : SyncRequestType.albumsV1,
+          serverVersion.supportsSyncAlbumsV3
+              ? SyncRequestType.albumsV3
+              : serverVersion.supports(.syncV2)
+              ? SyncRequestType.albumsV2
+              : SyncRequestType.albumsV1,
           SyncRequestType.albumUsersV1,
           serverVersion.supports(.syncV2) ? SyncRequestType.albumAssetsV2 : SyncRequestType.albumAssetsV1,
           SyncRequestType.albumAssetExifsV1,
@@ -166,6 +170,7 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.partnerAssetExifBackfillV1: SyncAssetExifV1.fromJson,
   SyncEntityType.albumV1: SyncAlbumV1.fromJson,
   SyncEntityType.albumV2: SyncAlbumV2.fromJson,
+  SyncEntityType.albumV3: SyncAlbumV3.fromJson,
   SyncEntityType.albumDeleteV1: SyncAlbumDeleteV1.fromJson,
   SyncEntityType.albumUserV1: SyncAlbumUserV1.fromJson,
   SyncEntityType.albumUserBackfillV1: SyncAlbumUserV1.fromJson,
