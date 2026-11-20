@@ -47,6 +47,7 @@ export const createApp = () => {
     },
     gallery: {
       selectAll: () => userEvent.keyboard('{Control>}a{/Control}'),
+      selectAllMeta: () => userEvent.keyboard('{Meta>}a{/Meta}'),
       selectAllButton: button('select_all'),
     },
     search: {

@@ -64,6 +64,15 @@ test('removing a chip clears the asset selection', async ({ data, router, render
   await expect.element(app.gallery.selectAllButton).not.toBeInTheDocument();
 });
 
+test('selects all assets with Cmd+A (metaKey) on macOS', async ({ data, router, render, settle, app }) => {
+  data.addAssets(factory.asset({ isFavorite: true }));
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.gallery.selectAllMeta();
+  await expect.element(app.gallery.selectAllButton).toBeVisible();
+});
+
 test.for([
   { name: 'smart', terms: { query: 'beach' }, operation: 'searchSmart' as const },
   { name: 'metadata', terms: { isFavorite: true }, operation: 'searchAssets' as const },
