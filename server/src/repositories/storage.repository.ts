@@ -1,3 +1,4 @@
+import { walk } from '@immich/walkrs';
 import { Injectable } from '@nestjs/common';
 import { ZipArchive } from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
@@ -243,32 +244,45 @@ export class StorageRepository {
   }
 
   async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[]> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = walkOptions;
+    const { pathsToCrawl, exclusionPatterns, includeHidden, take } = walkOptions;
     if (pathsToCrawl.length === 0) {
-      async function* emptyGenerator() {}
-      return emptyGenerator();
+      return;
     }
 
-    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
-
-    const stream = fastGlob.globStream(globbedPaths, {
-      absolute: true,
-      caseSensitiveMatch: false,
-      onlyFiles: true,
-      followSymbolicLinks: false,
-      dot: includeHidden,
-      ignore: exclusionPatterns,
+    const batches = walk({
+      paths: pathsToCrawl,
+      exclusionPatterns,
+      includeHidden,
+      extensions: mimeTypes.getSupportedFileExtensions(),
     });
 
-    let batch: string[] = [];
-    for await (const value of stream) {
-      batch.push(value.toString());
-      if (batch.length !== walkOptions.take) {
-        continue;
-      }
+    const isOverlapping = this.asOverlapMatcher(pathsToCrawl);
+    const overlappingPaths = new Set<string>();
 
-      yield batch;
-      batch = [];
+    let batch: string[] = [];
+    for await (const items of batches) {
+      for (const item of items) {
+        if (item.type === 'error') {
+          this.logger.warn(`Unable to walk: ${item.message}`);
+          continue;
+        }
+
+        if (isOverlapping(item.path)) {
+          if (overlappingPaths.has(item.path)) {
+            continue;
+          }
+
+          overlappingPaths.add(item.path);
+        }
+
+        batch.push(item.path);
+        if (batch.length !== take) {
+          continue;
+        }
+
+        yield batch;
+        batch = [];
+      }
     }
 
     if (batch.length > 0) {
@@ -301,6 +315,15 @@ export class StorageRepository {
   }
 
   watchDir = watch; // Native fs.watch without chokidar overhead
+
+  private asOverlapMatcher(pathsToCrawl: string[]) {
+    const folders = pathsToCrawl.map((pathToCrawl) => `${path.resolve(pathToCrawl)}${path.sep}`);
+    const overlappingFolders = folders.filter((folder, index) =>
+      folders.some((other, otherIndex) => index !== otherIndex && folder.startsWith(other)),
+    );
+
+    return (filePath: string) => overlappingFolders.some((folder) => filePath.startsWith(folder));
+  }
 
   private asGlob(pathToCrawl: string): string {
     const escapedPath = fastGlob
