@@ -806,7 +806,7 @@ describe(LibraryService.name, () => {
       },
     );
 
-    it.fails('should import a file with a backslash in its name', async () => {
+    it('should import a file with a backslash in its name', async () => {
       const { ctx } = setup();
       const assetPath = await createFile(join(importPath, String.raw`back\slash.png`));
       const library = await ctx.createLibrary({ importPaths: [importPath] });
@@ -855,7 +855,7 @@ describe(LibraryService.name, () => {
       expect(jobs).toEqual([{ name: JobName.SidecarCheck, data: { id: asset.id, source: 'upload' } }]);
     });
 
-    it.skipIf(process.getuid?.() === 0).fails('should keep scanning past a folder that cannot be read', async () => {
+    it.skipIf(process.getuid?.() === 0)('should keep scanning past a folder that cannot be read', async () => {
       const { ctx } = setup();
       const lockedFolder = join(importPath, 'locked');
       await createFile(join(lockedFolder, 'locked.png'));
