@@ -1,6 +1,6 @@
 <script lang="ts">
+  import AssetViewerEvents from '#lib/components/AssetViewerEvents.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
-  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import Portal from '#lib/elements/Portal.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
@@ -40,12 +40,13 @@
     return asset;
   };
 
-  const preAction = async (payload: Action) => {
-    if (payload.type === 'trash') {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      (await navigateToAsset(assetCursor?.nextAsset)) ||
-        (await navigateToAsset(assetCursor?.previousAsset)) ||
-        assetViewerManager.showAssetViewer(false);
+  const onAssetLeave = async ({ reason }: { reason: string }) => {
+    if (reason !== 'trash') {
+      return;
+    }
+
+    if (!(await navigateToAsset(assetCursor?.nextAsset)) && !(await navigateToAsset(assetCursor?.previousAsset))) {
+      assetViewerManager.showAssetViewer(false);
     }
   };
 
@@ -66,6 +67,7 @@
 </script>
 
 <OnEvents {onAssetsDelete} />
+<AssetViewerEvents {onAssetLeave} />
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
@@ -88,7 +90,6 @@
         cursor={assetCursor}
         showNavigation={assets.length > 1}
         {onRandom}
-        {preAction}
         onClose={() => {
           assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
