@@ -153,6 +153,21 @@ test.describe('memory viewer', () => {
     expect(api.searchMemories).toHaveBeenCalledWith({ params: { id: oldest.id } });
   });
 
+  test('trashing the only asset from the gallery returns to the memories list', async ({ page, data, api, app }) => {
+    const [memory] = addMemories(data, [1]);
+    const [asset] = memory.assets;
+    await page.goto(Route.memories());
+    await app.memories.card().click();
+    await app.memory.gallery.open(asset);
+
+    await app.viewer.deleteButton.click();
+
+    await expect(page).toHaveURL(Route.memories());
+    await expect(app.viewer.root).toHaveCount(0);
+    await expect(app.memories.card()).toHaveCount(0);
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
+  });
+
   test('goes to the memories list for an unknown memory', async ({ page, data }) => {
     addMemories(data, [1]);
 

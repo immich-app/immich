@@ -284,7 +284,7 @@
   )}
 />
 
-<OnEvents onAssetsArchive={handleHideAssets} />
+<OnEvents onAssetsArchive={handleHideAssets} onAssetsDelete={handleHideAssets} />
 
 {#if assetMultiSelectManager.selectionActive}
   <div class="dark sticky top-0 z-1">

@@ -1,3 +1,4 @@
+import { Route } from '#lib/route.ts';
 import { editedThumbhash, factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
 import { AssetEditAction } from '@immich/sdk';
@@ -93,5 +94,21 @@ test.describe('search gallery viewer', () => {
       params: { id: asset.id },
       body: { edits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }] },
     });
+  });
+
+  test('trashing the only result closes the viewer on the search page', async ({ page, data, api, app }) => {
+    const [asset] = setup();
+    data.addAssets(asset);
+    const searchUrl = Route.search({ originalFileName: 'test' });
+    await page.goto(searchUrl);
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.waitForAsset(asset);
+
+    await app.viewer.deleteButton.click();
+
+    await expect(page).toHaveURL(searchUrl);
+    await expect(app.viewer.root).toHaveCount(0);
+    expect(api.searchAssets).toHaveBeenCalledWith({ body: expect.objectContaining({ originalFileName: 'test' }) });
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
   });
 });

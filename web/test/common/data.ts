@@ -1595,4 +1595,18 @@ export class MockData {
     }
     return [...byCity.values()];
   }
+
+  uniqueOriginalPaths() {
+    const folders = this.timelineAssets({ visibility: AssetVisibility.Timeline }).map(({ originalPath }) =>
+      originalPath.slice(0, originalPath.lastIndexOf('/')),
+    );
+    return [...new Set(folders)].sort();
+  }
+
+  assetsByOriginalPath(path: string) {
+    const folder = `/${path.replaceAll(/^\/+|\/+$/g, '')}`;
+    return this.timelineAssets({ visibility: AssetVisibility.Timeline })
+      .filter(({ originalPath }) => originalPath.slice(0, originalPath.lastIndexOf('/')) === folder)
+      .sort((a, b) => a.originalFileName.localeCompare(b.originalFileName));
+  }
 }

@@ -286,7 +286,7 @@
           1,
         );
         if (assets.length === 0) {
-          await goto(Route.photos());
+          await navigate({ targetRoute: 'current', assetId: null });
         } else if (nextAsset) {
           await navigateToAsset(nextAsset);
         }
