@@ -386,6 +386,8 @@ export const createHandlers = (data: MockData): Handlers => {
     searchLargeAssets: () => ({ json: data.searchLargeAssets() }),
     getExploreData: () => ({ json: data.exploreData() }),
     getAssetsByCity: () => ({ json: data.assetsByCity() }),
+    getUniqueOriginalPaths: () => ({ json: data.uniqueOriginalPaths() }),
+    getAssetsByOriginalPath: ({ params }) => ({ json: data.assetsByOriginalPath(params.path) }),
 
     getAllSharedLinks: () => ({ json: data.sharedLinkList() }),
     removeSharedLink: ({ params }) => (data.removeSharedLink(params.id) ? { status: 204 } : notFound),
