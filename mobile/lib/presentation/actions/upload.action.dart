@@ -67,8 +67,7 @@ Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> 
   final progress = ref.read(assetUploadProgressProvider.notifier);
   final uploads = ref.read(foregroundUploadServiceProvider);
   final toastService = ref.read(toastServiceProvider);
-  final t = context.t;
-  var errorMessage = t.scaffold_body_error_occurred;
+  final errorMessage = context.t.scaffold_body_error_occurred;
 
   final cancelToken = Completer<void>();
   ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
@@ -89,12 +88,9 @@ Future<void> uploadAssets(BuildContext context, WidgetRef ref, List<LocalAsset> 
           uploaded.add(id);
           progress.remove(id);
         },
-        onError: (id, error) {
+        onError: (id, _) {
           failed.add(id);
           progress.setError(id);
-          if (error is UnsupportedFileTypeException) {
-            errorMessage = t.unsupported_file_type(file: error.fileName, type: error.extension);
-          }
         },
       ),
     );

@@ -269,8 +269,8 @@ void main() {
       final refused = LocalAssetStub.image1;
       final accepted = LocalAssetStub.image2;
       final mockEntity = MockAssetEntity();
-      final errors = <String, Object>{};
-      final callbacks = UploadCallbacks(onError: (id, error) => errors[id] = error);
+      final errors = <String>[];
+      final callbacks = UploadCallbacks(onError: (id, _) => errors.add(id));
 
       when(() => mockEntity.isLivePhoto).thenReturn(false);
       when(() => mockStorageRepository.clearCache()).thenAnswer((_) async {});
@@ -295,9 +295,7 @@ void main() {
       await sut.uploadManual([refused], callbacks: callbacks);
 
       expect(uploaded, hasLength(2));
-      expect(errors, {
-        refused.localId: isA<UnsupportedFileTypeException>().having((e) => e.fileName, 'fileName', 'AAAAA.djvu'),
-      });
+      expect(errors, [refused.localId]);
     });
   });
 }

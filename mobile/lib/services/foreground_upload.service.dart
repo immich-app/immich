@@ -31,17 +31,10 @@ import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 class UploadCallbacks {
   final void Function(String id, String filename, int bytes, int totalBytes)? onProgress;
   final void Function(String localId, String remoteId)? onSuccess;
-  final void Function(String id, Object error)? onError;
+  final void Function(String id, String errorMessage)? onError;
   final void Function(String id, double progress)? onICloudProgress;
 
   const UploadCallbacks({this.onProgress, this.onSuccess, this.onError, this.onICloudProgress});
-}
-
-class UnsupportedFileTypeException implements Exception {
-  final String fileName;
-  final String extension;
-
-  const UnsupportedFileTypeException(this.fileName, this.extension);
 }
 
 final foregroundUploadServiceProvider = Provider((ref) {
@@ -333,7 +326,7 @@ class ForegroundUploadService {
       if (await _backupRepository.markIfUnsupported(asset.id, extension)) {
         _logger.info("Skipping ${asset.id}, the server does not accept $originalFileName");
         if (reportUnsupported) {
-          callbacks.onError?.call(asset.localId!, UnsupportedFileTypeException(originalFileName, extension));
+          callbacks.onError?.call(asset.localId!, t.unsupported_file_type(file: originalFileName, type: extension));
         }
         return;
       }

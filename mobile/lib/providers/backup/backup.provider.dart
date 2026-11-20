@@ -150,7 +150,7 @@ class BackupNotifier extends StateNotifier<BackupState> {
       callbacks: UploadCallbacks(
         onProgress: _handleForegroundBackupProgress,
         onSuccess: _handleForegroundBackupSuccess,
-        onError: (id, error) => _handleForegroundBackupError(id, error.toString()),
+        onError: _handleForegroundBackupError,
         onICloudProgress: _handleICloudProgress,
       ),
     );
