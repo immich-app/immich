@@ -21,11 +21,11 @@ export type UserResponseDto = {
     /** User ID */
     id: string;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
 };
 export type ActivityResponseDto = {
     /** Asset ID (if activity is for an asset) */
@@ -620,13 +620,13 @@ export type UserAdminResponseDto = {
     isAdmin: boolean;
     license: UserLicense | null;
     /** User name */
-    name: string;
+    name: string | null;
     /** OAuth ID */
-    oauthId: string;
+    oauthId: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Storage quota in bytes */
     quotaSizeInBytes: number | null;
     /** Storage usage in bytes */
@@ -646,7 +646,7 @@ export type UserAdminCreateDto = {
     /** Grant admin privileges */
     isAdmin?: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** Send notification email */
     notify?: boolean;
     /** User password */
@@ -671,7 +671,7 @@ export type UserAdminUpdateDto = {
     /** Grant admin privileges */
     isAdmin?: boolean;
     /** User name */
-    name?: string;
+    name?: string | null;
     /** User password */
     password?: string;
     /** PIN code */
@@ -877,9 +877,9 @@ export type SessionResponseDto = {
     /** Is current session */
     current: boolean;
     /** Device OS */
-    deviceOS: string;
+    deviceOS: string | null;
     /** Device type */
-    deviceType: string;
+    deviceType: string | null;
     /** Expiration date */
     expiresAt?: string;
     /** Session ID */
@@ -920,7 +920,7 @@ export type AlbumResponseDto = {
     /** Creation date */
     createdAt: string;
     /** Album description */
-    description: string;
+    description: string | null;
     /** UTC representation of (local) end date (latest asset) */
     endDate?: string;
     /** Has shared link */
@@ -1125,7 +1125,7 @@ export type AssetBulkUpdateDto = {
     /** Relative time offset in minutes */
     dateTimeRelative?: number;
     /** Asset description */
-    description?: string;
+    description?: string | null;
     /** Duplicate ID */
     duplicateId?: string | null;
     /** Asset IDs to update */
@@ -1271,7 +1271,7 @@ export type ExifResponseDto = {
 };
 export type PersonOtherResponseDto = {
     birthDate: string | null;
-    name: string;
+    name: string | null;
     role: PersonUserRole;
     sharedById: string;
 };
@@ -1282,11 +1282,11 @@ export type PeopleUserResponseDto = {
     /** User ID */
     id: string;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Access role */
     role: PersonUserRole;
 };
@@ -1302,14 +1302,14 @@ export type PersonResponseDto = {
     /** Is hidden */
     isHidden: boolean;
     /** Person name */
-    name: string;
+    name: string | null;
     otherPeople: PersonOtherResponseDto[];
     /** Users that gave the current user access to this person */
     sharedBy: PeopleUserResponseDto[];
     /** Users the current user gave access to this person */
     sharedWith: PeopleUserResponseDto[];
     /** Thumbnail path */
-    thumbnailPath: string;
+    thumbnailPath: string | null;
     /** Last update date */
     updatedAt?: string;
 };
@@ -1400,7 +1400,7 @@ export type UpdateAssetDto = {
     /** Original date and time */
     dateTimeOriginal?: string;
     /** Asset description */
-    description?: string;
+    description?: string | null;
     /** Mark as favorite */
     isFavorite?: boolean;
     /** Latitude coordinate */
@@ -1496,7 +1496,7 @@ export type SignUpDto = {
     /** User email */
     email: string;
     /** User name */
-    name: string;
+    name: string | null;
     /** User password */
     password: string;
 };
@@ -1522,9 +1522,9 @@ export type LoginResponseDto = {
     /** Is onboarded */
     isOnboarded: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Should change password */
     shouldChangePassword: boolean;
     /** User email */
@@ -2041,11 +2041,11 @@ export type PartnerResponseDto = {
     /** Show in timeline */
     inTimeline?: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
 };
 export type PartnerCreateDto = {
     /** User ID to share with */
@@ -2120,7 +2120,7 @@ export type PersonCreateDto = {
     /** Person visibility (hidden) */
     isHidden?: boolean;
     /** Person name */
-    name?: string;
+    name?: string | null;
 };
 export type PeopleUpdateItem = {
     /** Person date of birth */
@@ -2136,7 +2136,7 @@ export type PeopleUpdateItem = {
     /** Person visibility (hidden) */
     isHidden?: boolean;
     /** Person name */
-    name?: string;
+    name?: string | null;
     /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
@@ -2194,7 +2194,7 @@ export type PersonUpdateDto = {
     /** Person visibility (hidden) */
     isHidden?: boolean;
     /** Person name */
-    name?: string;
+    name?: string | null;
     /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
@@ -3055,9 +3055,9 @@ export type ServerVersionHistoryResponseDto = {
 };
 export type SessionCreateDto = {
     /** Device OS */
-    deviceOS?: string;
+    deviceOS?: string | null;
     /** Device type */
-    deviceType?: string;
+    deviceType?: string | null;
     /** Session duration in seconds */
     duration?: number;
 };
@@ -3069,9 +3069,9 @@ export type SessionCreateResponseDto = {
     /** Is current session */
     current: boolean;
     /** Device OS */
-    deviceOS: string;
+    deviceOS: string | null;
     /** Device type */
-    deviceType: string;
+    deviceType: string | null;
     /** Expiration date */
     expiresAt?: string;
     /** Session ID */
@@ -3311,7 +3311,7 @@ export type UserUpdateMeDto = {
     /** User email */
     email?: string;
     /** User name */
-    name?: string;
+    name?: string | null;
 };
 export type OnboardingResponseDto = {
     /** Is user onboarded */
