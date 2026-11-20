@@ -35,4 +35,21 @@ describe(AlbumController.name, () => {
       expect(body).toEqual(factory.responses.validationError([{ path: ['assetId'], message: 'Invalid UUID' }]));
     });
   });
+
+  describe('POST /albums', () => {
+    it.each([null, ''])('should store %j as a null description', async (description) => {
+      const { status } = await request(ctx.getHttpServer()).post('/albums').send({ albumName: 'test', description });
+      expect(status).toEqual(201);
+      expect(service.create).toHaveBeenCalledWith(undefined, { albumName: 'test', description: null });
+    });
+  });
+
+  describe('PATCH /albums/:id', () => {
+    it.each([null, ''])('should store %j as a null description', async (description) => {
+      const id = factory.uuid();
+      const { status } = await request(ctx.getHttpServer()).patch(`/albums/${id}`).send({ description });
+      expect(status).toEqual(200);
+      expect(service.update).toHaveBeenCalledWith(undefined, id, { description: null });
+    });
+  });
 });

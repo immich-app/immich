@@ -298,7 +298,7 @@ export class MockData {
     };
   }
 
-  signUpAdmin(dto: { email: string; name: string }) {
+  signUpAdmin(dto: { email: string; name: string | null }) {
     Object.assign(this.user, { email: dto.email, name: dto.name, isAdmin: true });
     this.serverConfig.isInitialized = true;
     return this.user;
@@ -394,7 +394,7 @@ export class MockData {
     const all = this.getPeople().filter(
       (person) =>
         (isHidden === undefined || person.isHidden === isHidden) &&
-        (name === undefined || unaccent(person.name).includes(unaccent(name))),
+        (name === undefined || unaccent(person.name ?? '').includes(unaccent(name))),
     );
     const people = withHidden || isHidden !== undefined ? all : all.filter((person) => !person.isHidden);
     return {
@@ -410,7 +410,7 @@ export class MockData {
     return this.getPeople().filter(
       (person) =>
         (withHidden || !person.isHidden) &&
-        (unaccent(person.name).startsWith(query) || unaccent(person.name).includes(` ${query}`)),
+        (unaccent(person.name ?? '').startsWith(query) || unaccent(person.name ?? '').includes(` ${query}`)),
     );
   }
 
