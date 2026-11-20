@@ -12,8 +12,6 @@ import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:logging/logging.dart';
 
-const _kMaxPreloadOriginalBytes = 100 * 1024 * 1024;
-
 // The provider is also the cache key and can be resolved more than once.
 // Keep mutable state per load so cancelling one cannot affect the next load.
 class ImageLoader {
@@ -207,8 +205,6 @@ ImageProvider getFullImageProvider(
       thumbhash: thumbhash,
       assetType: asset.type,
       isAnimated: asset.isAnimatedImage,
-      width: asset.width,
-      height: asset.height,
       edited: edited,
       thumbnailSize: remoteThumbnailSize,
       previewOnly: previewOnly,
@@ -242,5 +238,3 @@ bool _shouldUseLocalAsset(BaseAsset asset) =>
     asset.hasLocal &&
     (!asset.hasRemote || !SettingsRepository.instance.appConfig.image.preferRemote) &&
     !asset.isEdited;
-
-bool isLargeImage(int? width, int? height) => (width ?? 0) * (height ?? 0) * 4 > _kMaxPreloadOriginalBytes;

@@ -6,6 +6,8 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 
+const _kMaxPreloadOriginalBytes = 100 * 1024 * 1024;
+
 class AssetPreloader {
   static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
 
@@ -40,15 +42,18 @@ class AssetPreloader {
         stream.removeListener(_dummyListener);
       }
       _thumbnailStreams.clear();
-      final loadOriginal = SettingsRepository.instance.appConfig.image.loadOriginal;
-      _prevStream = prev != null ? _resolveImage(prev, size, thumbnailSize, loadOriginal) : null;
-      _nextStream = next != null ? _resolveImage(next, size, thumbnailSize, loadOriginal) : null;
+      _prevStream = prev != null ? _resolveImage(prev, size, thumbnailSize) : null;
+      _nextStream = next != null ? _resolveImage(next, size, thumbnailSize) : null;
     });
   }
 
-  ImageStream _resolveImage(BaseAsset asset, Size size, Size? thumbnailSize, bool loadOriginal) {
+  ImageStream _resolveImage(BaseAsset asset, Size size, Size? thumbnailSize) {
+    final decodedBytes = (asset.width ?? 0) * (asset.height ?? 0) * 4;
     final previewOnly =
-        loadOriginal && asset.isImage && !asset.isAnimatedImage && isLargeImage(asset.width, asset.height);
+        SettingsRepository.instance.appConfig.image.loadOriginal &&
+        asset.isImage &&
+        !asset.isAnimatedImage &&
+        decodedBytes > _kMaxPreloadOriginalBytes;
     if (previewOnly) {
       final thumbnail = getThumbnailImageProvider(asset, remoteSize: thumbnailSize)?.resolve(ImageConfiguration.empty);
       if (thumbnail != null) {
@@ -70,5 +75,6 @@ class AssetPreloader {
     for (final stream in _thumbnailStreams) {
       stream.removeListener(_dummyListener);
     }
+    _thumbnailStreams.clear();
   }
 }
