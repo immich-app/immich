@@ -58,6 +58,21 @@ test.describe('asset viewer navigation', () => {
       expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [assets[41].id], force: false } });
     });
 
+    test('Delete pressed twice in a row keeps the viewer open', async ({ page, data, api, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      await page.goto(Route.viewAsset({ id: assets[40].id }));
+      await app.viewer.waitForAsset(assets[40]);
+      await expect(app.viewer.nextButton).toBeVisible();
+
+      await page.keyboard.press('Delete');
+      await page.keyboard.press('Delete');
+
+      await expect.poll(() => api.deleteAssets.calls.length).toBe(2);
+      await app.viewer.waitForAsset(assets[41]);
+      await expect(page).toHaveURL(Route.viewAsset({ id: assets[41].id }));
+      expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [assets[40].id], force: false } });
+    });
+
     test('delete at the end goes back to the previous asset', async ({ page, data, api, app }) => {
       const assets = data.addTimeline({ years: 1 });
       await page.goto(Route.viewAsset({ id: assets.at(-1)!.id }));
