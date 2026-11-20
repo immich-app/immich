@@ -341,7 +341,7 @@ const AdminConfigSchemaWithVisibility = z
     passkey: z
       .object({
         enabled: configBool.describe('Enabled').meta({ visibility: Public }),
-        domain: httpsDomain('Passkey domain').nullable().describe('Passkey domain'),
+        domain: httpsDomain('Passkey domain').nullable().describe('Passkey domain').meta({ visibility: Public }),
         additionalDomains: z
           .array(httpsDomain('Additional domain'))
           .refine(

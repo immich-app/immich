@@ -150,7 +150,7 @@ describe(PasskeyService.name, () => {
     it('should store a single-use challenge without a user', async () => {
       const { sut, ctx } = setup();
 
-      const { challenge } = await sut.startAuthentication(headers);
+      const { challenge } = await sut.startAuthentication({}, headers);
       const repository = ctx.get(AuthChallengeRepository);
 
       await expect(repository.consume({ type: AuthChallengeType.PasskeyAuthentication, challenge })).resolves.toEqual({
@@ -161,10 +161,26 @@ describe(PasskeyService.name, () => {
         repository.consume({ type: AuthChallengeType.PasskeyAuthentication, challenge }),
       ).resolves.toBeUndefined();
     });
+
+    it('should only give the challenge back with the code challenge it was started with', async () => {
+      const { sut, ctx } = setup();
+      const type = AuthChallengeType.PasskeyAuthentication;
+
+      const { challenge } = await sut.startAuthentication({ codeChallenge: 'code-challenge' }, headers);
+      const repository = ctx.get(AuthChallengeRepository);
+
+      await expect(repository.consume({ type, challenge })).resolves.toBeUndefined();
+      await expect(repository.consume({ type, challenge, codeChallenge: 'other' })).resolves.toBeUndefined();
+      await expect(repository.consume({ type, challenge, codeChallenge: 'code-challenge' })).resolves.toEqual({
+        id: expect.any(String),
+        userId: null,
+      });
+    });
+
     it('should generate authentication options', async () => {
       const { sut } = setup();
 
-      await expect(sut.startAuthentication(headers)).resolves.toEqual(
+      await expect(sut.startAuthentication({}, headers)).resolves.toEqual(
         expect.objectContaining({
           challenge: expect.any(String),
           rpId: 'immich.example',

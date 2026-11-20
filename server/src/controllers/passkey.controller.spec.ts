@@ -80,6 +80,19 @@ describe(PasskeyController.name, () => {
       expect(status).toEqual(200);
       expect(headers['set-cookie']).toBeUndefined();
     });
+
+    it('should reject an empty code challenge', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/passkeys/authentication/start')
+        .query({ codeChallenge: '' });
+      expect(status).toEqual(400);
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: ['codeChallenge'], message: 'Too small: expected string to have >=1 characters' },
+        ]),
+      );
+      expect(service.startAuthentication).not.toHaveBeenCalled();
+    });
   });
 
   describe('POST /passkeys/authentication/finish', () => {
@@ -91,6 +104,19 @@ describe(PasskeyController.name, () => {
           { path: ['response'], message: 'Invalid input: expected object, received undefined' },
         ]),
       );
+    });
+
+    it('should reject an empty code verifier', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/passkeys/authentication/finish')
+        .send({ response: authenticationResponse, codeVerifier: '' });
+      expect(status).toEqual(400);
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: ['codeVerifier'], message: 'Too small: expected string to have >=1 characters' },
+        ]),
+      );
+      expect(service.finishAuthentication).not.toHaveBeenCalled();
     });
 
     it('should respond with 201 and set the auth cookies', async () => {

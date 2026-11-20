@@ -64,6 +64,8 @@ final Map<String, Map<String, Object?>> openApiPatches = {
     'notifications': UserConfigNotificationsDto(smtp: UserConfigSmtpDto(enabled: false)).toJson(),
     'passkey': {'enabled': false},
   },
+  'PublicConfigPasskeyDto': {'domain': null},
+  'UserConfigPasskeyDto': {'domain': null},
 };
 
 // ignore: unused-code
