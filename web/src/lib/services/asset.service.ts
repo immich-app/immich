@@ -648,6 +648,7 @@ const handleArchive = async (asset: AssetResponseDto) => {
         },
       }),
     });
+    eventManager.emit('AssetsArchive', [asset.id]);
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: false } }));
