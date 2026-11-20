@@ -130,7 +130,7 @@ export class LibraryService extends BaseService {
         },
       });
 
-    const addHandler = async (path: string) => {
+    const creationHandler = async (path: string) => {
       if (!matcher(path)) {
         this.logger.verbose(`Ignoring file add event for ${path} in library ${library.id}`);
         return;
@@ -140,7 +140,7 @@ export class LibraryService extends BaseService {
       await queueImport(path);
     };
 
-    const changeHandler = async (path: string) => {
+    const modificationHandler = async (path: string) => {
       if (!matcher(path)) {
         this.logger.verbose(`Ignoring file change event for ${path} in library ${library.id}`);
         return;
@@ -173,10 +173,10 @@ export class LibraryService extends BaseService {
       {
         onReady: () => _resolve(),
         onAdd: (path) => {
-          return handlePromiseError(addHandler(path), this.logger);
+          return handlePromiseError(creationHandler(path), this.logger);
         },
         onChange: (path) => {
-          return handlePromiseError(changeHandler(path), this.logger);
+          return handlePromiseError(modificationHandler(path), this.logger);
         },
         onUnlink: (path) => {
           return handlePromiseError(deletionHandler(path), this.logger);
