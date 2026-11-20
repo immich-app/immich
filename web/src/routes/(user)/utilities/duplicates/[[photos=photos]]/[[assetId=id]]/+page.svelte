@@ -141,7 +141,13 @@
   };
 
   const handleStacked = async (duplicateId: string, assetIds: string[]) => {
-    await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
+    try {
+      await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_resolve_duplicate'));
+      return;
+    }
+
     removeDuplicateGroups([duplicateId]);
     await navigateToIndex(duplicatesIndex);
   };
