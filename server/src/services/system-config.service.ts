@@ -12,6 +12,7 @@ import {
 } from 'src/dtos/config.dto.js';
 import { BootstrapEventPriority } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { clearConfigCache } from 'src/utils/config.js';
 import { toPlainObject } from 'src/utils/object.js';
@@ -97,6 +98,10 @@ export class SystemConfigService extends BaseService {
     }
 
     const newConfig = await this.updateConfig(dto);
+    this.resourceRepository.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.adminConfig()],
+    });
 
     await this.eventRepository.emit('ConfigUpdate', { newConfig, oldConfig });
 

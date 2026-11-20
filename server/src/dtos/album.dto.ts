@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { ShallowDehydrateObject } from 'kysely';
 import z from 'zod';
 import { AlbumUser, AuthSharedLink } from 'src/database.js';
@@ -10,7 +11,6 @@ import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from
 import type { MaybeDehydrated } from 'src/types.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { stringToBool } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 const AlbumUserAddSchema = z
   .object({
@@ -19,109 +19,12 @@ const AlbumUserAddSchema = z
   })
   .meta({ id: 'AlbumUserAddDto' });
 
-const AddUsersSchema = z
-  .object({
-    albumUsers: z.array(AlbumUserAddSchema).min(1).describe('Album users to add'),
-  })
-  .meta({ id: 'AddUsersDto' });
-
 const AlbumUserCreateSchema = z
   .object({
     userId: z.uuidv4().describe('User ID'),
     role: AlbumUserRoleSchema,
   })
   .meta({ id: 'AlbumUserCreateDto' });
-
-const CreateAlbumSchema = z
-  .object({
-    albumName: z.string().describe('Album name'),
-    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
-    description: z
-      .string()
-      .nullable()
-      .transform((value) => (value === '' ? null : value))
-      .optional()
-      .describe('Album description')
-      .meta({
-        ...new HistoryBuilder()
-          .added('v1')
-          .updated(
-            'v3',
-            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
-          )
-          .getExtensions(),
-      }),
-    albumUsers: z.array(AlbumUserCreateSchema).optional().describe('Album users'),
-    assetIds: z.array(z.uuidv4()).optional().describe('Initial asset IDs'),
-  })
-  .meta({ id: 'CreateAlbumDto' });
-
-const AlbumsAddAssetsSchema = z
-  .object({
-    albumIds: z.array(z.uuidv4()).describe('Album IDs'),
-    assetIds: z.array(z.uuidv4()).describe('Asset IDs'),
-  })
-  .meta({ id: 'AlbumsAddAssetsDto' });
-
-const AlbumsAddAssetsResponseSchema = z
-  .object({
-    success: z.boolean().describe('Operation success'),
-    error: BulkIdErrorReasonSchema.optional(),
-  })
-  .meta({ id: 'AlbumsAddAssetsResponseDto' });
-
-const UpdateAlbumSchema = z
-  .object({
-    albumName: z.string().optional().describe('Album name'),
-    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
-    description: z
-      .string()
-      .nullable()
-      .transform((value) => (value === '' ? null : value))
-      .optional()
-      .describe('Album description')
-      .meta({
-        ...new HistoryBuilder()
-          .added('v1')
-          .updated(
-            'v3',
-            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
-          )
-          .getExtensions(),
-      }),
-    albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
-    isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
-    order: AssetOrderSchema.optional(),
-  })
-  .meta({ id: 'UpdateAlbumDto' });
-
-const GetAlbumsSchema = z
-  .object({
-    id: z.uuidv4().optional().describe('Album ID'),
-    name: z.string().optional().describe('Album name (exact match)'),
-    isOwned: stringToBool
-      .optional()
-      .describe('Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter'),
-    isShared: stringToBool
-      .optional()
-      .describe('Filter by shared status: true = only shared, false = not shared, undefined = no filter'),
-    assetId: z.uuidv4().optional().describe('Filter albums containing this asset ID (ignores other parameters)'),
-  })
-  .meta({ id: 'GetAlbumsDto' });
-
-const AlbumStatisticsResponseSchema = z
-  .object({
-    owned: z.int().min(0).describe('Number of owned albums'),
-    shared: z.int().min(0).describe('Number of shared albums'),
-    notShared: z.int().min(0).describe('Number of non-shared albums'),
-  })
-  .meta({ id: 'AlbumStatisticsResponseDto' });
-
-const UpdateAlbumUserSchema = z
-  .object({
-    role: AlbumUserRoleSchema,
-  })
-  .meta({ id: 'UpdateAlbumUserDto' });
 
 const AlbumUserResponseSchema = z
   .object({
@@ -191,7 +94,7 @@ export const AlbumResponseSchema = z
   })
   .meta({ id: 'AlbumResponseDto' });
 
-const AlbumUserParamSchema = z.object({
+export class AlbumUserParamDto extends createZodDto({
   id: z.uuidv4().describe('Album ID'),
   // TODO: disallow 'me' as a shortcut in v4 and type userId as uuidv4
   userId: z
@@ -201,19 +104,93 @@ const AlbumUserParamSchema = z.object({
     })
     .describe('Album user ID, or "me" to reference the current user.')
     .meta(new HistoryBuilder().updated('v3', '"me" as a value is deprecated').getExtensions()),
-});
+}) {}
 
-export class AlbumUserParamDto extends createZodDto(AlbumUserParamSchema) {}
-export class AddUsersDto extends createZodDto(AddUsersSchema) {}
+export class AddUsersDto extends createZodDto({
+  albumUsers: z.array(AlbumUserAddSchema).min(1).describe('Album users to add'),
+}) {}
+
 export class AlbumUserCreateDto extends createZodDto(AlbumUserCreateSchema) {}
-export class CreateAlbumDto extends createZodDto(CreateAlbumSchema) {}
-export class AlbumsAddAssetsDto extends createZodDto(AlbumsAddAssetsSchema) {}
-export class AlbumsAddAssetsResponseDto extends createZodDto(AlbumsAddAssetsResponseSchema) {}
-export class UpdateAlbumDto extends createZodDto(UpdateAlbumSchema) {}
-export class GetAlbumsDto extends createZodDto(GetAlbumsSchema) {}
-export class AlbumStatisticsResponseDto extends createZodDto(AlbumStatisticsResponseSchema) {}
-export class UpdateAlbumUserDto extends createZodDto(UpdateAlbumUserSchema) {}
+
+export class CreateAlbumDto extends createZodDto({
+  albumName: z.string().describe('Album name'),
+  // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+  description: z
+    .string()
+    .nullable()
+    .transform((value) => (value === '' ? null : value))
+    .optional()
+    .describe('Album description')
+    .meta({
+      ...new HistoryBuilder()
+        .added('v1')
+        .updated(
+          'v3',
+          'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+        )
+        .getExtensions(),
+    }),
+  albumUsers: z.array(AlbumUserCreateSchema).optional().describe('Album users'),
+  assetIds: z.array(z.uuidv4()).optional().describe('Initial asset IDs'),
+}) {}
+
+export class AlbumsAddAssetsDto extends createZodDto({
+  albumIds: z.array(z.uuidv4()).describe('Album IDs'),
+  assetIds: z.array(z.uuidv4()).describe('Asset IDs'),
+}) {}
+
+export class AlbumsAddAssetsResponseDto extends createZodDto({
+  success: z.boolean().describe('Operation success'),
+  error: BulkIdErrorReasonSchema.optional(),
+}) {}
+
+export class UpdateAlbumDto extends createZodDto({
+  albumName: z.string().optional().describe('Album name'),
+  // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+  description: z
+    .string()
+    .nullable()
+    .transform((value) => (value === '' ? null : value))
+    .optional()
+    .describe('Album description')
+    .meta({
+      ...new HistoryBuilder()
+        .added('v1')
+        .updated(
+          'v3',
+          'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+        )
+        .getExtensions(),
+    }),
+  albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
+  isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
+  order: AssetOrderSchema.optional(),
+}) {}
+
+export class GetAlbumsDto extends createZodDto({
+  id: z.uuidv4().optional().describe('Album ID'),
+  name: z.string().optional().describe('Album name (exact match)'),
+  isOwned: stringToBool
+    .optional()
+    .describe('Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter'),
+  isShared: stringToBool
+    .optional()
+    .describe('Filter by shared status: true = only shared, false = not shared, undefined = no filter'),
+  assetId: z.uuidv4().optional().describe('Filter albums containing this asset ID (ignores other parameters)'),
+}) {}
+
+export class AlbumStatisticsResponseDto extends createZodDto({
+  owned: z.int().min(0).describe('Number of owned albums'),
+  shared: z.int().min(0).describe('Number of shared albums'),
+  notShared: z.int().min(0).describe('Number of non-shared albums'),
+}) {}
+
+export class UpdateAlbumUserDto extends createZodDto({
+  role: AlbumUserRoleSchema,
+}) {}
+
 export class AlbumResponseDto extends createZodDto(AlbumResponseSchema) {}
+
 class AlbumUserResponseDto extends createZodDto(AlbumUserResponseSchema) {}
 
 export type MapAlbumDto = {

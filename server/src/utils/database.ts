@@ -191,7 +191,13 @@ export function withVideoFormat(eb: ExpressionBuilder<DB, 'asset' | 'asset_video
   return jsonObjectFrom(
     eb
       .selectFrom(dummy)
-      .select(['asset_video.formatName', 'asset_video.formatLongName', 'asset.duration', 'asset_video.bitrate'])
+      .select([
+        'asset_video.formatName',
+        'asset_video.formatLongName',
+        'asset.duration',
+        'asset_video.bitrate',
+        'asset_video.isFragmented',
+      ])
       .where('asset_video.assetId', 'is not', sql.lit(null)),
   ).$castTo<VideoFormat | null>();
 }

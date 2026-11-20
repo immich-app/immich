@@ -13,6 +13,7 @@ import {
 } from 'src/dtos/activity.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { Permission } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
@@ -63,6 +64,8 @@ export class ActivityService extends BaseService {
         isLiked: dto.type === ReactionType.LIKE,
         comment: dto.comment,
       });
+      const userIds = await this.albumRepository.getUserIds(dto.albumId);
+      this.resourceRepository.send({ userIds, changed: [Resource.activities()] });
     }
 
     return { duplicate: isDuplicate, value: mapActivity(activity) };
@@ -70,6 +73,12 @@ export class ActivityService extends BaseService {
 
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ActivityDelete, ids: [id] });
-    await this.activityRepository.delete(id);
+    const deleted = await this.activityRepository.delete(id);
+    if (!deleted) {
+      return;
+    }
+
+    const userIds = await this.albumRepository.getUserIds(deleted.albumId);
+    this.resourceRepository.send({ userIds, changed: [Resource.activities(), Resource.activityStatistics()] });
   }
 }

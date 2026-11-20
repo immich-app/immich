@@ -1,4 +1,5 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   createLibrary,
   deleteLibrary,
@@ -20,7 +21,7 @@ const findOrFail = (libraries: LibraryResponseDto[], id: string) => {
 
 export const getAllLibrariesQuery = () =>
   queryOptions({
-    queryKey: ['libraries'],
+    queryKey: QueryKeys.libraries(),
     queryFn: ({ signal }) => getAllLibraries({ signal }),
   });
 
@@ -32,14 +33,14 @@ export const getLibraryQuery = (id: string) =>
 
 export const getLibraryStatisticsQuery = (id: string) =>
   queryOptions({
-    queryKey: ['libraries', id, 'statistics'],
+    queryKey: QueryKeys.libraryStatistics({ id }),
     queryFn: ({ signal }) => getLibraryStatistics({ id }, { signal }),
     refetchInterval: 30_000,
   });
 
 export const createLibraryMutation = () =>
   asMutation(createLibrary, {
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getAllLibrariesQuery().queryKey, exact: true }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.libraries(), exact: true }),
     meta: { error: { toast: 'errors.unable_to_create_library' } },
   });
 
@@ -49,7 +50,7 @@ export const updateLibraryMutation = () =>
       queryClient.setQueryData(getAllLibrariesQuery().queryKey, (libraries) =>
         libraries?.map((item) => (item.id === library.id ? library : item)),
       );
-      await queryClient.invalidateQueries({ queryKey: getLibraryStatisticsQuery(library.id).queryKey });
+      await queryClient.invalidateQueries({ queryKey: QueryKeys.libraryStatistics({ id: library.id }) });
     },
     meta: { success: { toast: 'admin.library_updated' }, error: { toast: 'errors.unable_to_update_library' } },
   });
@@ -60,7 +61,7 @@ export const deleteLibraryMutation = () =>
       queryClient.setQueryData(getAllLibrariesQuery().queryKey, (libraries) =>
         libraries?.filter((library) => library.id !== id),
       );
-      queryClient.removeQueries({ queryKey: getLibraryStatisticsQuery(id).queryKey });
+      queryClient.removeQueries({ queryKey: QueryKeys.libraryStatistics({ id }) });
     },
     meta: { success: { toast: 'admin.library_deleted' }, error: { toast: 'errors.unable_to_remove_library' } },
   });

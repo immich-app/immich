@@ -1,12 +1,14 @@
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
-import { queryClient } from '#lib/queries/client.ts';
+import { logoutMutation } from '#lib/queries/auth.query.ts';
+import { executeMutation, queryClient } from '#lib/queries/client.ts';
 import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
 import { getMyPreferencesQuery, getMyUserQuery } from '#lib/queries/user.query.ts';
 import { Route } from '#lib/route.ts';
 import { isSharedLinkRoute } from '#lib/utils/navigation.ts';
-import { logout, type UserAdminResponseDto, type UserPreferencesResponseDto } from '@immich/sdk';
+import { type UserAdminResponseDto, type UserPreferencesResponseDto } from '@immich/sdk';
 import { hashKey } from '@tanstack/svelte-query';
 import { browser } from '$app/env';
 import { goto } from '$app/navigation';
@@ -18,7 +20,7 @@ class AuthManager {
 
   #cacheVersion = $state(0);
   #trackedQueryHashes = new Set(
-    [getMyUserQuery(), getMyPreferencesQuery(), getAboutInfoQuery()].map(({ queryKey }) => hashKey(queryKey)),
+    [QueryKeys.myUser(), QueryKeys.myPreferences(), QueryKeys.serverAbout()].map((queryKey) => hashKey(queryKey)),
   );
 
   get #user() {
@@ -105,16 +107,8 @@ class AuthManager {
   }
 
   async logout() {
-    let redirectUri = Route.login();
-
-    try {
-      const response = await logout();
-      if (response.redirectUri) {
-        redirectUri = response.redirectUri;
-      }
-    } catch {
-      // noop
-    }
+    const response = await executeMutation(logoutMutation, []);
+    const redirectUri = response?.redirectUri || Route.login();
 
     if (redirectUri.startsWith('/')) {
       eventManager.emit('AuthLogout');

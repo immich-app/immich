@@ -9,6 +9,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { EventRepository } from 'src/repositories/event.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { PasskeyRepository } from 'src/repositories/passkey.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SessionRepository } from 'src/repositories/session.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
@@ -66,7 +67,7 @@ const setup = (db?: Kysely<DB>) => {
       UserRepository,
       WebAuthnRepository,
     ],
-    mock: [LoggingRepository, StorageRepository, EventRepository, TelemetryRepository],
+    mock: [ResourceRepository, LoggingRepository, StorageRepository, EventRepository, TelemetryRepository],
   });
 };
 

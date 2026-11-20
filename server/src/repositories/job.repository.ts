@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { JobsOptions, Queue, Worker } from 'bullmq';
 import { setTimeout } from 'node:timers/promises';
+import { JOBS_CLEAN_BATCH_SIZE } from 'src/constants.js';
 import { JobConfig } from 'src/decorators.js';
 import { QueueJobResponseDto, QueueJobSearchDto } from 'src/dtos/queue.dto.js';
 import { ImmichWorker, JobName, JobStatus, MetadataKey, QueueCleanType, QueueJobStatus, QueueName } from 'src/enum.js';
@@ -176,8 +177,16 @@ export class JobRepository {
     return this.getQueue(name).drain();
   }
 
-  clear(name: QueueName, type: QueueCleanType) {
-    return this.getQueue(name).clean(0, 1000, type);
+  async clear(name: QueueName, type: QueueCleanType) {
+    const queue = this.getQueue(name);
+    let total = 0;
+    let removed: string[];
+    do {
+      removed = await queue.clean(0, JOBS_CLEAN_BATCH_SIZE, type);
+      total += removed.length;
+    } while (removed.length === JOBS_CLEAN_BATCH_SIZE);
+
+    return total;
   }
 
   getJobCounts(name: QueueName): Promise<JobCounts> {

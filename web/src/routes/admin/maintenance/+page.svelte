@@ -5,6 +5,7 @@
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import { createPreloadedQuery, executeMutation, queryClient } from '#lib/queries/client.ts';
   import { getIntegrityReportSummaryQuery } from '#lib/queries/integrity-admin.query.ts';
+  import { QueryKeys } from '#lib/queries/query-keys.ts';
   import { createJobMutation, getQueuesLegacyQuery } from '#lib/queries/queue.query.ts';
   import { getServerVersionQuery } from '#lib/queries/server-info.query.ts';
   import { Route } from '#lib/route.ts';
@@ -87,7 +88,7 @@
         activeJobs.add(ManualJobName.IntegrityUntrackedFilesRefresh);
       } else if (activeJobs.size > 0) {
         activeJobs.clear();
-        void queryClient.invalidateQueries({ queryKey: getIntegrityReportSummaryQuery().queryKey });
+        void queryClient.invalidateQueries({ queryKey: QueryKeys.integrityReportSummary() });
       }
     });
   });

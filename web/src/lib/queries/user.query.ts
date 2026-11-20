@@ -1,5 +1,6 @@
 import { getHeatmapRange } from '#lib';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   createProfileImage,
   deleteProfileImage,
@@ -18,39 +19,37 @@ import {
 } from '@immich/sdk';
 import { queryOptions, type MutationMeta } from '@tanstack/svelte-query';
 
-const myUserQueryKey = ['users', 'me'];
-
 export const getMyUserQuery = () =>
   queryOptions({
-    queryKey: myUserQueryKey,
+    queryKey: QueryKeys.myUser(),
     queryFn: ({ signal }) => getMyUser({ signal }),
     gcTime: Infinity,
   });
 
 export const getMyPreferencesQuery = () =>
   queryOptions({
-    queryKey: [...myUserQueryKey, 'preferences'],
+    queryKey: QueryKeys.myPreferences(),
     queryFn: ({ signal }) => getMyPreferences({ signal }),
     gcTime: Infinity,
   });
 
 export const getMyCalendarHeatmapQuery = ($type: CalendarHeatmapType) =>
   queryOptions({
-    queryKey: [...myUserQueryKey, 'heatmap', $type],
+    queryKey: QueryKeys.myCalendarHeatmap({ type: $type }),
     queryFn: ({ signal }) => getMyCalendarHeatmap({ ...getHeatmapRange(), $type }, { signal }),
     staleTime: 0,
   });
 
 export const searchUsersQuery = () =>
   queryOptions({
-    queryKey: ['users'],
+    queryKey: QueryKeys.users(),
     queryFn: ({ signal }) => searchUsers({ signal }),
     staleTime: 0,
   });
 
 export const getUserQuery = (id: string) =>
   queryOptions({
-    queryKey: ['users', id],
+    queryKey: QueryKeys.user({ id }),
     queryFn: ({ signal }) => getUser({ id }, { signal }),
     staleTime: 0,
   });

@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { AuthDto, isEditedOnly } from 'src/dtos/auth.dto.js';
 import {
@@ -12,7 +11,7 @@ import { Permission } from 'src/enum.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
-import { getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
+import { getDownloadFile } from 'src/utils/file.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
@@ -90,6 +89,8 @@ export class DownloadService extends BaseService {
   async downloadArchive(auth: AuthDto, dto: DownloadArchiveDto): Promise<ImmichReadStream> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
 
+    const config = await this.getConfig({ withCache: true });
+
     const edited = isEditedOnly(auth, dto.edited);
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getForOriginals(dto.assetIds, edited);
@@ -102,10 +103,7 @@ export class DownloadService extends BaseService {
         continue;
       }
 
-      const { originalPath, editedPath, originalFileName } = asset;
-
-      const name = getFileNameWithoutExtension(sanitize(originalFileName) || 'unnamed');
-      const extension = getFilenameExtension(editedPath || originalPath);
+      const { path, name, extension } = getDownloadFile(asset, config);
       let filename = name + extension;
 
       const count = paths[filename] || 0;
@@ -114,10 +112,9 @@ export class DownloadService extends BaseService {
         filename = `${name}+${count}${extension}`;
       }
 
-      let realpath = editedPath || originalPath;
-
+      let realpath = path;
       try {
-        realpath = await this.storageRepository.realpath(realpath);
+        realpath = await this.storageRepository.realpath(path);
       } catch {
         this.logger.warn('Unable to resolve realpath', { realpath });
       }

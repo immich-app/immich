@@ -11,6 +11,7 @@ import {
 } from 'src/dtos/session.dto.js';
 import { JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 
 @Injectable()
@@ -42,6 +43,7 @@ export class SessionService extends BaseService {
       deviceOS: dto.deviceOS,
       token: hashed,
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sessions()] });
 
     return { ...mapSession(session), token };
   }
@@ -61,6 +63,7 @@ export class SessionService extends BaseService {
     const session = await this.sessionRepository.update(id, {
       isPendingSyncReset: dto.isPendingSyncReset,
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sessions()] });
 
     return mapSession(session);
   }
@@ -68,17 +71,20 @@ export class SessionService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AuthDeviceDelete, ids: [id] });
     await this.sessionRepository.delete(id);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.sessions()] });
   }
 
   async deleteAll(auth: AuthDto): Promise<void> {
     const userId = auth.user.id;
     const currentSessionId = auth.session?.id;
     await this.sessionRepository.invalidateAll({ userId, excludeId: currentSessionId });
+    this.resourceRepository.send({ userIds: [userId], changed: [Resource.sessions()] });
   }
 
   async lock(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.SessionLock, ids: [id] });
     await this.sessionRepository.update(id, { pinExpiresAt: null });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.authStatus()] });
   }
 
   @OnEvent({ name: 'AuthChangePassword' })

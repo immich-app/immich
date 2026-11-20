@@ -1,6 +1,8 @@
 import { SystemMetadataKey } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { SystemMetadataService } from 'src/services/system-metadata.service.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { mockAdmins } from 'test/repositories/user.repository.mock.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(SystemMetadataService.name, () => {
   let sut: SystemMetadataService;
@@ -8,6 +10,7 @@ describe(SystemMetadataService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(SystemMetadataService));
+    mocks.user.getAdminIds.mockResolvedValue([]);
   });
 
   it('should work', () => {
@@ -36,6 +39,14 @@ describe(SystemMetadataService.name, () => {
     it('should update isOnboarded to false', async () => {
       await expect(sut.updateAdminOnboarding({ isOnboarded: false })).resolves.toBeUndefined();
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.AdminOnboarding, { isOnboarded: false });
+    });
+
+    it('should tell every admin', async () => {
+      const adminIds = mockAdmins(mocks.user);
+
+      await sut.updateAdminOnboarding({ isOnboarded: true });
+
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.adminOnboarding()] });
     });
   });
 

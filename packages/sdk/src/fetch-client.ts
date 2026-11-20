@@ -1668,6 +1668,8 @@ export type UserConfigOAuthDto = {
     enabled: boolean;
 };
 export type UserConfigPasskeyDto = {
+    /** Passkey domain */
+    domain: string | null;
     /** Enabled */
     enabled: boolean;
 };
@@ -2300,6 +2302,8 @@ export type PublicConfigOAuthDto = {
     enabled: boolean;
 };
 export type PublicConfigPasskeyDto = {
+    /** Passkey domain */
+    domain: string | null;
     /** Enabled */
     enabled: boolean;
 };

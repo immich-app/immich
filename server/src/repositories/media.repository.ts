@@ -278,6 +278,7 @@ export class MediaRepository {
         formatLongName: results.format.format_long_name,
         duration: this.parseFloat(results.format.duration),
         bitrate: this.parseInt(results.format.bit_rate),
+        isFragmented: this.isFragmented(results),
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video' && !stream.disposition?.attached_pic)
@@ -484,6 +485,11 @@ export class MediaRepository {
     }
 
     return ffmpegCall;
+  }
+
+  private isFragmented({ format, streams }: FfprobeData): boolean {
+    const video = streams.find((stream) => stream.codec_type === 'video' && !stream.disposition?.attached_pic);
+    return format.format_long_name === 'QuickTime / MOV' && !!video && this.parseInt(video.nb_frames) === 0;
   }
 
   private parseInt(value: string | number | undefined): number {

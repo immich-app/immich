@@ -15,6 +15,21 @@ const setup = (data: MockData, overrides = {}) => {
 };
 
 test.describe('shared link', () => {
+  test('shows new shared links from another source', async ({ page, data, api, app }) => {
+    const [existing, added] = [
+      factory.sharedLink({ assets: [factory.asset()] }),
+      factory.sharedLink({ assets: [factory.asset()] }),
+    ];
+    data.addSharedLinks(existing);
+    await page.goto(Route.sharedLinks());
+    await expect(app.sharedLink.card(existing)).toBeVisible();
+
+    data.addSharedLinks(added);
+    await api.emitResourceEvent({ changed: ['/shared-links'] });
+
+    await expect(app.sharedLink.card(added)).toBeVisible();
+  });
+
   test('guest downloads one asset and then the whole album', async ({ page, context, data, api, app }) => {
     const { link, album, assets } = setup(data);
     await context.clearCookies();

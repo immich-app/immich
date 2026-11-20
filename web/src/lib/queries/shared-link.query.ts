@@ -1,5 +1,6 @@
 import { invalidateAlbum, invalidateAlbums } from '#lib/queries/album.query.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   createSharedLink,
   getAllSharedLinks,
@@ -22,7 +23,7 @@ const findOrFail = (sharedLinks: SharedLinkResponseDto[], id: string) => {
 
 export const getAllSharedLinksQuery = ({ albumId }: { albumId?: string } = {}) =>
   queryOptions({
-    queryKey: ['shared-links'],
+    queryKey: QueryKeys.sharedLinks(),
     queryFn: ({ signal }) => getAllSharedLinks({}, { signal }),
     select: (sharedLinks) => (albumId ? sharedLinks.filter(({ album }) => album?.id === albumId) : sharedLinks),
   });
@@ -35,7 +36,7 @@ export const getSharedLinkQuery = (id: string) =>
 
 export const getMySharedLinkQuery = (params: Parameters<typeof getMySharedLink>[0]) =>
   queryOptions({
-    queryKey: ['shared-links', 'me', params],
+    queryKey: QueryKeys.mySharedLink(params),
     queryFn: ({ signal }) => getMySharedLink(params, { signal }),
     staleTime: 0,
   });
@@ -51,7 +52,7 @@ export const createSharedLinkMutation = () =>
   asMutation(createSharedLink, {
     onSuccess: async (_, [{ sharedLinkCreateDto }]) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: getAllSharedLinksQuery().queryKey, exact: true }),
+        queryClient.invalidateQueries({ queryKey: QueryKeys.sharedLinks(), exact: true }),
         onAlbumSharingChange(sharedLinkCreateDto.albumId),
       ]);
     },
@@ -60,7 +61,7 @@ export const createSharedLinkMutation = () =>
 
 export const updateSharedLinkMutation = () =>
   asMutation(updateSharedLink, {
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getAllSharedLinksQuery().queryKey, exact: true }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.sharedLinks(), exact: true }),
     meta: { success: { toast: 'saved' }, error: { toast: 'errors.failed_to_edit_shared_link' } },
   });
 
@@ -80,7 +81,7 @@ export const removeSharedLinkMutation = () =>
 
 export const removeSharedLinkAssetsMutation = () =>
   asMutation(removeSharedLinkAssets, {
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getAllSharedLinksQuery().queryKey, exact: true }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.sharedLinks(), exact: true }),
     meta: { error: { toast: 'errors.unable_to_remove_assets_from_shared_link' } },
   });
 

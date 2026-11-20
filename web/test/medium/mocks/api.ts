@@ -2,7 +2,7 @@ import type { MockData } from '#test/common/data.ts';
 import { Dispatcher, type Response } from '#test/common/dispatcher.ts';
 import { emptyMapStyle } from '#test/common/helpers.ts';
 import { getHelmetHeaders } from '#test/medium/mocks/helmet.ts';
-import type { BrowserContext, Request, Route, WebSocketRoute } from '@playwright/test';
+import { expect, type BrowserContext, type Request, type Route, type WebSocketRoute } from '@playwright/test';
 
 const apiPattern = /^https?:\/\/[^/]+\/api\//;
 const socketPattern = /\/api\/socket\.io\//;
@@ -93,6 +93,10 @@ export class MockNetwork extends Dispatcher {
       throw new Error('No websocket connection has been established by the page');
     }
     socket.send(`42${JSON.stringify(payload === undefined ? [event] : [event, payload])}`);
+  }
+
+  async emitResourceEvent({ changed = [], deleted = [] }: { changed?: string[]; deleted?: string[] }) {
+    await expect(() => this.emit('ResourceEventV1', { changed, deleted, correlationId: 'another-device.1' })).toPass();
   }
 
   override recordDownload(url: URL) {

@@ -1,11 +1,12 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Permission } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { ApiKeyService } from 'src/services/api-key.service.js';
 import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { SessionFactory } from 'test/factories/session.factory.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(ApiKeyService.name, () => {
   let sut: ApiKeyService;
@@ -64,6 +65,16 @@ describe(ApiKeyService.name, () => {
       await expect(sut.create(auth, { permissions: [Permission.AssetUpdate] })).rejects.toBeInstanceOf(
         BadRequestException,
       );
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell the user about the new key', async () => {
+      const auth = AuthFactory.create();
+      mocks.apiKey.create.mockResolvedValue(ApiKeyFactory.create({ userId: auth.user.id }));
+
+      await sut.create(auth, { permissions: [Permission.All] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.apiKeys()] });
     });
   });
 
@@ -79,6 +90,7 @@ describe(ApiKeyService.name, () => {
       );
 
       expect(mocks.apiKey.update).not.toHaveBeenCalledWith(id);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should update a key', async () => {
@@ -95,6 +107,17 @@ describe(ApiKeyService.name, () => {
         name: newName,
         permissions: [Permission.All],
       });
+    });
+
+    it('should tell the owner about the changed key', async () => {
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+      mocks.apiKey.update.mockResolvedValue(apiKey);
+
+      await sut.update(auth, apiKey.id, { name: 'New name' });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.apiKey(apiKey)] });
     });
 
     it('should update permissions', async () => {
@@ -126,6 +149,7 @@ describe(ApiKeyService.name, () => {
         );
 
         expect(mocks.apiKey.update).not.toHaveBeenCalled();
+        expect(mocks.resource.send).not.toHaveBeenCalled();
       });
 
       it('should prevent adding a new permission', async () => {
@@ -140,6 +164,7 @@ describe(ApiKeyService.name, () => {
         );
 
         expect(mocks.apiKey.update).not.toHaveBeenCalled();
+        expect(mocks.resource.send).not.toHaveBeenCalled();
       });
 
       it('should allow removing permissions', async () => {
@@ -198,6 +223,7 @@ describe(ApiKeyService.name, () => {
       await expect(sut.rotate(auth, id)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.apiKey.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should replace the secret of a key', async () => {
@@ -217,6 +243,17 @@ describe(ApiKeyService.name, () => {
       });
     });
 
+    it('should tell the owner about the rotated key', async () => {
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+      mocks.apiKey.update.mockResolvedValue(apiKey);
+
+      await sut.rotate(auth, apiKey.id);
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.apiKey(apiKey)] });
+    });
+
     it('should not rotate a key with permissions the caller does not have', async () => {
       const auth = AuthFactory.from()
         .apiKey({ permissions: [Permission.ApiKeyRotate] })
@@ -230,6 +267,7 @@ describe(ApiKeyService.name, () => {
       );
 
       expect(mocks.apiKey.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -243,6 +281,7 @@ describe(ApiKeyService.name, () => {
       await expect(sut.delete(auth, id)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.apiKey.delete).not.toHaveBeenCalledWith(id);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should delete a key', async () => {
@@ -255,6 +294,16 @@ describe(ApiKeyService.name, () => {
       await sut.delete(auth, apiKey.id);
 
       expect(mocks.apiKey.delete).toHaveBeenCalledWith(auth.user.id, apiKey.id);
+    });
+
+    it('should tell the owner about the deleted key', async () => {
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+      mocks.apiKey.delete.mockResolvedValue();
+
+      await sut.delete(auth, apiKey.id);
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.apiKey(apiKey)] });
     });
   });
 

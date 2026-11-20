@@ -28,6 +28,7 @@ export const createApp = (page: Page, data: MockData) => {
     dialog,
     dialogButton: (name: string) => dialog.getByRole('button', { name, exact: true }),
     toast: (text: string | RegExp) => page.getByText(text),
+    text: (text: string | RegExp) => page.getByText(text, { exact: true }),
     undoButton: page.getByRole('button', { name: 'undo', exact: true }),
 
     maintenanceMode: {
@@ -73,6 +74,7 @@ export const createApp = (page: Page, data: MockData) => {
     },
 
     workflows: {
+      emptyPlaceholder: page.getByText('create_first_workflow', { exact: true }),
       openLogs: async () => {
         await button('open').first().click();
         await page.getByRole('menuitem', { name: 'check_logs', exact: true }).click();
@@ -90,6 +92,9 @@ export const createApp = (page: Page, data: MockData) => {
           await toggle.click();
         }
       },
+      apiKeys: {
+        name: (name: string) => page.getByRole('cell', { name, exact: true }),
+      },
       purchase: {
         productKeyInput: page.getByPlaceholder(/^IMCL-/),
         activateButton: button('purchase_button_activate'),
@@ -106,6 +111,10 @@ export const createApp = (page: Page, data: MockData) => {
 
     tags: {
       child: (name: string) => page.getByRole('main').getByRole('button', { name, exact: true }),
+    },
+
+    workflow: {
+      nameInput: labelled('name'),
     },
 
     album: {
@@ -130,6 +139,11 @@ export const createApp = (page: Page, data: MockData) => {
 
     memories: {
       card: () => page.getByTestId('memory-card'),
+      cover: (index: number) => page.getByTestId('memory-card').nth(index).getByRole('img'),
+      filtersButton: labelled('filters'),
+      onlyFavoritesSwitch: dialog.getByRole('switch', { name: 'only_favorites' }),
+      showUpcomingSwitch: dialog.getByRole('switch', { name: 'memories_show_upcoming' }),
+      saveFiltersButton: dialog.getByRole('button', { name: 'save', exact: true }),
     },
 
     person: {
@@ -154,6 +168,18 @@ export const createApp = (page: Page, data: MockData) => {
 
     memory: {
       root: memoryRoot,
+      photo: memoryRoot.locator('.main-view img'),
+      favoriteButton: memoryRoot.getByRole('button', { name: 'favorite', exact: true }),
+      unfavoriteButton: memoryRoot.getByRole('button', { name: 'unfavorite', exact: true }),
+      removeMemory: async () => {
+        await memoryRoot.getByRole('button', { name: 'menu', exact: true }).click();
+        await page.getByRole('menuitem', { name: 'remove_memory', exact: true }).click();
+      },
+      removePhoto: async () => {
+        await memoryRoot.getByRole('button', { name: 'menu', exact: true }).click();
+        await page.getByRole('menuitem', { name: 'remove_photo_from_memory', exact: true }).click();
+      },
+      currentMemoryId: () => new URL(page.url()).pathname.match(/\/memories\/([^/]+)/)?.[1],
       gallery: {
         root: memoryGallery,
         thumbnail: (asset: Asset) =>
@@ -237,6 +263,16 @@ export const createApp = (page: Page, data: MockData) => {
 
     timeline: createTimeline(page, data),
 
+    largeFiles: {
+      thumbnails: page.locator('[data-asset]'),
+      thumbnail: (asset: { id: string }) => page.locator(`[data-asset="${asset.id}"]`),
+    },
+    geolocation: {
+      thumbnail: (asset: { id: string }) => page.locator(`[data-asset="${asset.id}"]`),
+      applyButton: button('apply_count'),
+      unselectAllButton: button('unselect_all'),
+      coordinates: page.getByTitle('latitude, longitude'),
+    },
     duplicates: {
       viewButton: button('view'),
     },
@@ -279,6 +315,7 @@ const createTimeline = (page: Page, data: MockData) => {
     grid,
     thumbnails,
     thumbnail,
+    thumbnailImage: (asset: Asset) => thumbnail(asset).locator('img').first(),
     selected: page.locator('[data-thumbnail-focus-container][data-selected]'),
     addPhotosButton: page.getByLabel('add_photos', { exact: true }),
     albumPicker: {

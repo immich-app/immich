@@ -11,7 +11,7 @@ export const load = (async ({ url }) => {
   const [$t] = await Promise.all([
     getFormatter(),
     queryClient.query({ ...getAllAlbumsQuery({ isShared: true }), staleTime: 0 }),
-    queryClient.query({ ...getPartnersQuery(PartnerDirection.SharedWith), staleTime: 0 }),
+    queryClient.query(getPartnersQuery(PartnerDirection.SharedWith)),
   ]);
 
   return {

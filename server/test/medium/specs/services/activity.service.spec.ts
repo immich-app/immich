@@ -6,7 +6,9 @@ import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
 import { AlbumRepository } from 'src/repositories/album.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { DB } from 'src/schema/index.js';
 import { ActivityService } from 'src/services/activity.service.js';
 import { newMediumService } from 'test/medium.factory.js';
@@ -20,7 +22,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(ActivityService, {
     database: db || defaultDatabase,
     real: [AccessRepository, ActivityRepository, AlbumRepository, AlbumUserRepository, AssetRepository, UserRepository],
-    mock: [LoggingRepository],
+    mock: [LoggingRepository, ResourceRepository],
   });
 };
 
@@ -224,6 +226,24 @@ describe(ActivityService.name, () => {
   });
 
   describe('delete', () => {
+    it('should tell the album users, but not a stranger', async () => {
+      const { sut, ctx } = setup();
+      const { album, owner, sharedWith } = await ctx.newSharedAlbum();
+      const { user: stranger } = await ctx.newUser();
+      const auth = factory.auth({ user: owner });
+      const { value } = await sut.create(auth, { albumId: album.id, type: ReactionType.COMMENT, comment: 'hi' });
+      const send = ctx.getMock(ResourceRepository).send;
+      send.mockClear();
+
+      await sut.delete(auth, value.id);
+
+      expect(send).toHaveBeenCalledTimes(1);
+      const [{ userIds, changed }] = send.mock.calls[0];
+      expect(userIds.toSorted()).toEqual([owner.id, sharedWith.id].toSorted());
+      expect(userIds).not.toContain(stranger.id);
+      expect(changed).toEqual([Resource.activities(), Resource.activityStatistics()]);
+    });
+
     it('should remove a comment from an album', async () => {
       const { sut, ctx } = setup();
       const { album, owner } = await ctx.newSharedAlbum();

@@ -7,7 +7,8 @@ export const load = (async ({ url }) => {
   const user = await authenticate(url);
   const $t = await getFormatter();
 
-  await memoryManager.applyPreferences();
+  memoryManager.applyPreferences();
+  await memoryManager.loadMemories();
 
   return {
     user,

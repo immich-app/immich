@@ -1,6 +1,5 @@
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
-import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
-import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { modalManager, toastManager } from '@immich/ui';
@@ -96,7 +95,7 @@ const createQueryClient = () => {
   });
 
   const publicQueryHashes = new Set(
-    [getServerConfigQuery(), getPublicConfigQuery()].map(({ queryKey }) => hashKey(queryKey)),
+    [QueryKeys.serverConfig(), QueryKeys.publicConfig()].map((queryKey) => hashKey(queryKey)),
   );
   eventManager.on({
     AuthLogout: () => {

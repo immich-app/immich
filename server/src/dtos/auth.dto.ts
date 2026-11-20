@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import sanitize from 'sanitize-filename';
 import z from 'zod';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
@@ -5,7 +6,6 @@ import { ImmichCookie, UserMetadataKey } from 'src/enum.js';
 import type { UserMetadataItem } from 'src/types.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
 import { toEmail } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 export type CookieResponse = {
   isSecure: boolean;
@@ -91,19 +91,6 @@ const LoginCredentialSchema = z
   })
   .meta({ id: 'LoginCredentialDto' });
 
-const LoginResponseSchema = z
-  .object({
-    accessToken: z.string().describe('Access token'),
-    userId: z.uuidv4().describe('User ID'),
-    userEmail: toEmail.describe('User email'),
-    name: z.string().describe('User name'),
-    profileImagePath: z.string().describe('Profile image path'),
-    isAdmin: z.boolean().describe('Is admin user'),
-    shouldChangePassword: z.boolean().describe('Should change password'),
-    isOnboarded: z.boolean().describe('Is onboarded'),
-  })
-  .meta({ id: 'LoginResponseDto' });
-
 export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginResponseDto {
   const onboardingMetadata = entity.metadata.find(
     (item): item is UserMetadataItem<UserMetadataKey.Onboarding> => item.key === UserMetadataKey.Onboarding,
@@ -121,30 +108,9 @@ export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginR
   };
 }
 
-const LogoutResponseSchema = z
-  .object({
-    successful: z.boolean().describe('Logout successful'),
-    redirectUri: z.string().describe('Redirect URI'),
-  })
-  .meta({ id: 'LogoutResponseDto' });
-
 const SignUpSchema = LoginCredentialSchema.extend({
   name: z.string().describe('User name').meta({ example: 'Admin' }),
 }).meta({ id: 'SignUpDto' });
-
-const ChangePasswordSchema = z
-  .object({
-    password: z.string().describe('Current password').meta({ example: 'password' }),
-    newPassword: z.string().min(8).describe('New password (min 8 characters)').meta({ example: 'password' }),
-    invalidateSessions: z.boolean().default(false).optional().describe('Invalidate all other sessions'),
-  })
-  .meta({ id: 'ChangePasswordDto' });
-
-const PinCodeSetupSchema = z
-  .object({
-    pinCode: z.string().regex(pinCodeRegex).describe('PIN code (4-6 digits)').meta({ example: '123456' }),
-  })
-  .meta({ id: 'PinCodeSetupDto' });
 
 const PinCodeResetSchema = z.object({
   pinCode: z.string().regex(pinCodeRegex).optional().describe('New PIN code (4-6 digits)').meta({ example: '123456' }),
@@ -161,60 +127,70 @@ const PinCodeChangeSchema = PinCodeResetSchema.extend({
   newPinCode: z.string().regex(pinCodeRegex).describe('New PIN code (4-6 digits)'),
 }).meta({ id: 'PinCodeChangeDto' });
 
-const ValidateAccessTokenResponseSchema = z
-  .object({
-    authStatus: z.boolean().describe('Authentication status'),
-  })
-  .meta({ id: 'ValidateAccessTokenResponseDto' });
-
-const OAuthCallbackSchema = z
-  .object({
-    url: z.string().min(1).describe('OAuth callback URL'),
-    state: z.string().optional().describe('OAuth state parameter'),
-    codeVerifier: z.string().optional().describe('OAuth code verifier (PKCE)'),
-  })
-  .meta({ id: 'OAuthCallbackDto' });
-
-const OAuthConfigSchema = z
-  .object({
-    redirectUri: z.string().describe('OAuth redirect URI'),
-    state: z.string().optional().describe('OAuth state parameter'),
-    codeChallenge: z.string().optional().describe('OAuth code challenge (PKCE)'),
-  })
-  .meta({ id: 'OAuthConfigDto' });
-
-const OAuthAuthorizeResponseSchema = z
-  .object({
-    url: z.string().describe('OAuth authorization URL'),
-  })
-  .meta({ id: 'OAuthAuthorizeResponseDto' });
-
-const OAuthBackchannelLogoutSchema = z
-  .object({ logout_token: z.string().describe('OAuth logout token') })
-  .meta({ id: 'OAuthBackchannelLogoutDto' });
-
-const AuthStatusResponseSchema = z
-  .object({
-    pinCode: z.boolean().describe('Has PIN code set'),
-    password: z.boolean().describe('Has password set'),
-    isElevated: z.boolean().describe('Is elevated session'),
-    expiresAt: z.string().optional().describe('Session expiration date'),
-    pinExpiresAt: z.string().optional().describe('PIN expiration date'),
-  })
-  .meta({ id: 'AuthStatusResponseDto' });
-
 export class LoginCredentialDto extends createZodDto(LoginCredentialSchema) {}
-export class LoginResponseDto extends createZodDto(LoginResponseSchema) {}
-export class LogoutResponseDto extends createZodDto(LogoutResponseSchema) {}
+
+export class LoginResponseDto extends createZodDto({
+  accessToken: z.string().describe('Access token'),
+  userId: z.uuidv4().describe('User ID'),
+  userEmail: toEmail.describe('User email'),
+  name: z.string().describe('User name'),
+  profileImagePath: z.string().describe('Profile image path'),
+  isAdmin: z.boolean().describe('Is admin user'),
+  shouldChangePassword: z.boolean().describe('Should change password'),
+  isOnboarded: z.boolean().describe('Is onboarded'),
+}) {}
+
+export class LogoutResponseDto extends createZodDto({
+  successful: z.boolean().describe('Logout successful'),
+  redirectUri: z.string().describe('Redirect URI'),
+}) {}
+
 export class SignUpDto extends createZodDto(SignUpSchema) {}
-export class ChangePasswordDto extends createZodDto(ChangePasswordSchema) {}
-export class PinCodeSetupDto extends createZodDto(PinCodeSetupSchema) {}
+
+export class ChangePasswordDto extends createZodDto({
+  password: z.string().describe('Current password').meta({ example: 'password' }),
+  newPassword: z.string().min(8).describe('New password (min 8 characters)').meta({ example: 'password' }),
+  invalidateSessions: z.boolean().default(false).optional().describe('Invalidate all other sessions'),
+}) {}
+
+export class PinCodeSetupDto extends createZodDto({
+  pinCode: z.string().regex(pinCodeRegex).describe('PIN code (4-6 digits)').meta({ example: '123456' }),
+}) {}
+
 export class PinCodeResetDto extends createZodDto(PinCodeResetSchema) {}
+
 export class SessionUnlockDto extends createZodDto(SessionUnlockSchema) {}
+
 export class PinCodeChangeDto extends createZodDto(PinCodeChangeSchema) {}
-export class ValidateAccessTokenResponseDto extends createZodDto(ValidateAccessTokenResponseSchema) {}
-export class OAuthCallbackDto extends createZodDto(OAuthCallbackSchema) {}
-export class OAuthConfigDto extends createZodDto(OAuthConfigSchema) {}
-export class OAuthAuthorizeResponseDto extends createZodDto(OAuthAuthorizeResponseSchema) {}
-export class OAuthBackchannelLogoutDto extends createZodDto(OAuthBackchannelLogoutSchema) {}
-export class AuthStatusResponseDto extends createZodDto(AuthStatusResponseSchema) {}
+
+export class ValidateAccessTokenResponseDto extends createZodDto({
+  authStatus: z.boolean().describe('Authentication status'),
+}) {}
+
+export class OAuthCallbackDto extends createZodDto({
+  url: z.string().min(1).describe('OAuth callback URL'),
+  state: z.string().optional().describe('OAuth state parameter'),
+  codeVerifier: z.string().optional().describe('OAuth code verifier (PKCE)'),
+}) {}
+
+export class OAuthConfigDto extends createZodDto({
+  redirectUri: z.string().describe('OAuth redirect URI'),
+  state: z.string().optional().describe('OAuth state parameter'),
+  codeChallenge: z.string().optional().describe('OAuth code challenge (PKCE)'),
+}) {}
+
+export class OAuthAuthorizeResponseDto extends createZodDto({
+  url: z.string().describe('OAuth authorization URL'),
+}) {}
+
+export class OAuthBackchannelLogoutDto extends createZodDto({
+  logout_token: z.string().describe('OAuth logout token'),
+}) {}
+
+export class AuthStatusResponseDto extends createZodDto({
+  pinCode: z.boolean().describe('Has PIN code set'),
+  password: z.boolean().describe('Has password set'),
+  isElevated: z.boolean().describe('Is elevated session'),
+  expiresAt: z.string().optional().describe('Session expiration date'),
+  pinExpiresAt: z.string().optional().describe('PIN expiration date'),
+}) {}
