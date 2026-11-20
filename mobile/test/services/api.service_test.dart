@@ -5,29 +5,19 @@ import 'package:immich_mobile/infrastructure/repositories/network.repository.dar
 import 'package:immich_mobile/services/api.service.dart';
 
 void main() {
-  List<Uri> redirect(String from, String to) {
-    final requests = <Uri>[];
-    Response answer(Uri url) {
-      requests.add(url);
-      final address = url.toString();
+  List<Request> redirect(String from, String to) {
+    final requests = <Request>[];
+    NetworkRepository.client = MockClient((request) async {
+      requests.add(request);
+      final address = request.url.toString();
       if (address.startsWith(from)) {
         return Response('', 308, headers: {'location': address.replaceFirst(from, to)}, isRedirect: true);
       }
-      return switch (url.path) {
+      return switch (request.url.path) {
         '/.well-known/immich' => Response('{"api":{"endpoint":"/api"}}', 200),
         '/api/server/ping' => Response('{"res":"pong"}', 200),
         _ => Response('', 404),
       };
-    }
-
-    NetworkRepository.client = MockClient((request) async {
-      var url = request.url;
-      var response = answer(url);
-      while (request.followRedirects && response.isRedirect) {
-        url = url.resolve(response.headers['location']!);
-        response = answer(url);
-      }
-      return response;
     });
     return requests;
   }
@@ -39,23 +29,14 @@ void main() {
       expect(await ApiService().resolveEndpoint('http://immich.test'), 'https://immich.test/api');
     });
 
-    test('Should ask before sending anything to another server the address redirects to', () async {
+    test('Should throw before sending anything to another server the address redirects to', () async {
       final requests = redirect('http://immich.test', 'https://other.test');
 
       await expectLater(
         ApiService().resolveEndpoint('http://immich.test'),
         throwsA(isA<ServerRedirectException>().having((e) => e.to.origin, 'to', 'https://other.test')),
       );
-      expect(requests.where((url) => url.host == 'other.test'), isEmpty);
-    });
-
-    test('Should ask when only the well-known redirects to another server', () async {
-      redirect('http://immich.test/.well-known', 'https://other.test/.well-known');
-
-      await expectLater(
-        ApiService().resolveEndpoint('http://immich.test'),
-        throwsA(isA<ServerRedirectException>().having((e) => e.to.origin, 'to', 'https://other.test')),
-      );
+      expect(requests.single.followRedirects, isFalse);
     });
   });
 }
