@@ -23,14 +23,17 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   static func register(with registrar: any FlutterPluginRegistrar) {
     let instance = NativeSyncApiImpl()
     NativeSyncApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+    StreamMediaChangesStreamHandler.register(with: registrar.messenger(), streamHandler: instance.mediaChanges)
     registrar.publish(instance)
   }
   
   func detachFromEngine(for registrar: any FlutterPluginRegistrar) {
+    mediaChanges.onCancel(withArguments: nil)
     super.detachFromEngine()
   }
   
   private let defaults: UserDefaults
+  private let mediaChanges = MediaChangeStreamHandler()
   private let changeTokenKey = "immich:changeToken"
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
   private let recoveredAlbumSubType = 1000000219
