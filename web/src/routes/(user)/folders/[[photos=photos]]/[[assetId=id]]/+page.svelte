@@ -111,7 +111,11 @@
     </Sidebar>
   {/snippet}
 
-  <OnEvents onAssetsDelete={refreshAll} onAssetsArchive={triggerAssetUpdate} onAssetsUnarchive={triggerAssetUpdate} />
+  <OnEvents
+    onAssetsDelete={triggerAssetUpdate}
+    onAssetsArchive={triggerAssetUpdate}
+    onAssetsUnarchive={triggerAssetUpdate}
+  />
 
   <TreeBreadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 
