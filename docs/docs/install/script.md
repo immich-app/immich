@@ -1,8 +1,8 @@
 ---
-sidebar_position: 20
+sidebar_position: 30
 ---
 
-# Install script [Experimental]
+# Install Script [Experimental]
 
 :::caution
 This method is experimental and not currently recommended for production use. For production, please refer to installing with [Docker Compose](/install/docker-compose.mdx).

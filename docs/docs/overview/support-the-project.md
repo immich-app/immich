@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# Support The Project
+# Support the Project
 
 ## Report issues
 
