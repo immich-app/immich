@@ -1,8 +1,7 @@
 <script lang="ts">
+  import OnEvents from '#lib/components/OnEvents.svelte';
   import type { AssetCursor } from '#lib/components/asset-viewer/AssetViewer.svelte';
-  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
   import Thumbnail from '#lib/components/assets/thumbnail/Thumbnail.svelte';
-  import { AssetAction } from '#lib/constants.ts';
   import Portal from '#lib/elements/Portal.svelte';
   import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
@@ -275,26 +274,31 @@
     }
   };
 
-  const handleAction = async (action: Action) => {
-    switch (action.type) {
-      case AssetAction.ARCHIVE:
-      case AssetAction.DELETE:
-      case AssetAction.TRASH: {
-        const nextAsset = assetCursor.nextAsset ?? assetCursor.previousAsset;
-        assets.splice(
-          assets.findIndex((currentAsset) => currentAsset.id === action.asset.id),
-          1,
-        );
-        if (assets.length === 0) {
-          await navigate({ targetRoute: 'current', assetId: null });
-        } else if (nextAsset) {
-          await navigateToAsset(nextAsset);
-        }
-        onAssetRemove?.(action.asset.id);
-        break;
-      }
-      // no default
+  const onAssetsDelete = async (assetIds: string[]) => {
+    if (assetIds.includes(assetCursor.current.id)) {
+      await removeViewedAsset();
     }
+  };
+
+  const onAssetUpdate = async ({ id, isArchived }: AssetResponseDto) => {
+    const listedAsset = assets.find((asset) => asset.id === id);
+    if (id === assetCursor.current.id && isArchived && listedAsset && !listedAsset.isArchived) {
+      await removeViewedAsset();
+    }
+  };
+
+  const removeViewedAsset = async () => {
+    const { current, nextAsset, previousAsset } = assetCursor;
+    const index = assets.findIndex(({ id }) => id === current.id);
+    if (index === -1) {
+      return;
+    }
+
+    assets.splice(index, 1);
+    await (assets.length === 0
+      ? navigate({ targetRoute: 'current', assetId: null })
+      : navigateToAsset(nextAsset ?? previousAsset));
+    onAssetRemove?.(current.id);
   };
 
   const assetMouseEventHandler = (asset: TimelineAsset | null) => {
@@ -376,9 +380,9 @@
 {#if assetViewerManager.isViewing}
   <Portal target="body">
     {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+      <OnEvents {onAssetsDelete} {onAssetUpdate} />
       <AssetViewer
         cursor={assetCursor}
-        onAction={handleAction}
         onRandom={handleRandom}
         onAssetChange={updateCurrentAsset}
         onClose={() => {
