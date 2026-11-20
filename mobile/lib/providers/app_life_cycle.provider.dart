@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -223,8 +222,15 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     if (_ref.read(authProvider).isAuthenticated) {
       _ref.read(backupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
 
-      if (_ref.read(appConfigProvider).backup.backgroundSync) {
-        unawaited(_ref.read(backgroundWorkerFgServiceProvider).runNow());
+      // 只有 Android 有 WorkManager 入队；iOS 走自己的后台任务调度。
+      if (CurrentPlatform.isAndroid && _ref.read(appConfigProvider).backup.backgroundSync) {
+        // 入队失败绝不能冒泡：_performPause 整体在 try/catch 里，一旦抛出去
+        // 后面的 websocket.disconnect() 就被跳过，连接会泄漏。
+        try {
+          unawaited(_ref.read(backgroundWorkerFgServiceProvider).runNow().catchError((_) {}));
+        } catch (error, stack) {
+          _log.warning("Failed to enqueue the background worker", error, stack);
+        }
       }
 
       _ref.read(websocketProvider.notifier).disconnect();

@@ -42,6 +42,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
 
+    registerFallbackValue(Completer<void>());
+    registerFallbackValue(const UploadCallbacks());
+
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await SettingsRepository.ensureInitialized(db);
     await SettingsRepository.instance.write(SettingsKey.backupEnabled, true);
