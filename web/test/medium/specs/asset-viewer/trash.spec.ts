@@ -33,4 +33,42 @@ test.describe('trash from the viewer', () => {
     expect(api.restoreAssets).toHaveBeenCalledWith({ body: { ids: [asset.id] } });
     expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: asset.id } });
   });
+
+  test('Delete moves the asset to the trash', async ({ page, data, api, app }) => {
+    const [asset, next] = data.addTimeline({ years: 1 });
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await expect(app.viewer.nextButton).toBeVisible();
+
+    await page.keyboard.press('Delete');
+
+    await app.viewer.waitForAsset(next);
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
+  });
+
+  test('Shift+Delete permanently deletes after confirmation', async ({ page, data, api, app }) => {
+    const [asset, next] = data.addTimeline({ years: 1 });
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+
+    await page.keyboard.press('Shift+Delete');
+    await app.dialogButton('delete').click();
+
+    await app.viewer.waitForAsset(next);
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: true } });
+  });
+
+  test('cancelling the Shift+Delete confirmation keeps the asset', async ({ page, data, api, app }) => {
+    const [asset] = data.addTimeline({ years: 1 });
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+
+    await page.keyboard.press('Shift+Delete');
+    await app.dialogButton('cancel').click();
+
+    await expect(app.dialog).toBeHidden();
+    await app.viewer.waitForAsset(asset);
+    await expect(page).toHaveURL(Route.viewAsset({ id: asset.id }));
+    expect(api.deleteAssets).not.toHaveBeenCalled();
+  });
 });
