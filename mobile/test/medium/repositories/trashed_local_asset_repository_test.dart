@@ -1,4 +1,6 @@
+import 'package:drift/drift.dart' show TableOrViewStatements;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 
@@ -52,6 +54,59 @@ void main() {
 
       final ids = result.map((a) => a.id);
       expect(ids, contains(trashed.id));
+    });
+
+    test('ignores trashed assets whose album is not selected', () async {
+      const checksum = 'not-selected';
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.none);
+      await ctx.newTrashedLocalAsset(albumId: album.id, checksum: checksum);
+      await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
+
+      final result = await sut.getToRestore();
+
+      expect(result, isEmpty);
+    });
+  });
+
+  group('trash and restore lifecycle', () {
+    Future<int> trashedCount(String assetId) async =>
+        await ctx.db.trashedLocalAssetEntity.count(where: (row) => row.id.equals(assetId)).getSingle();
+
+    test('trashing a candidate removes the local asset and cascades its album membership', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+
+      expect(
+        await ctx.isAssetBackupCandidate(asset.id),
+        isTrue,
+        reason: 'asset in a selected album starts as a candidate',
+      );
+      expect(await ctx.albumAssetCount(album.id), 1);
+
+      await sut.trashLocalAsset({
+        album.id: [asset.toDto()],
+      });
+
+      expect(await ctx.hasLocalAsset(asset.id), isFalse, reason: 'row moves out of local_asset_entity');
+      expect(await ctx.albumAssetCount(album.id), 0, reason: 'FK cascade removes the album membership');
+      expect(await trashedCount(asset.id), 1, reason: 'asset now lives in the trashed table');
+    });
+
+    test('restoring re-inserts the asset and marks it a backup candidate', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+      await sut.trashLocalAsset({
+        album.id: [asset.toDto()],
+      });
+
+      await sut.applyRestoredAssets([asset.id]);
+
+      expect(await ctx.hasLocalAsset(asset.id), isTrue, reason: 'row returns to local_asset_entity');
+      expect(await trashedCount(asset.id), 0, reason: 'trashed row is consumed');
+      expect(await ctx.isAssetBackupCandidate(asset.id), isTrue, reason: 'restored asset is a candidate again');
+      expect(await ctx.albumAssetCount(album.id), 0, reason: 'restore does not re-link membership');
     });
   });
 
