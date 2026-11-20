@@ -4,6 +4,50 @@ import { expect, test } from '#test/medium/fixtures.ts';
 import { AssetEditAction } from '@immich/sdk';
 
 test.describe('editor', () => {
+  test.describe('closing', () => {
+    test.beforeEach(async ({ page, data, app }) => {
+      const asset = factory.asset();
+      data.addAssets(asset);
+
+      await page.goto(Route.viewAsset({ id: asset.id }));
+      await app.viewer.waitForAsset(asset);
+      await app.viewer.editor.openButton.click();
+    });
+
+    test.describe('with unsaved edits', () => {
+      test.beforeEach(async ({ app }) => {
+        await app.viewer.editor.rotateRightButton.click();
+        await app.viewer.editor.rotateRightButton.blur();
+      });
+
+      test('confirm discarding edits and editor stays open when using close button', async ({ app }) => {
+        await app.viewer.editor.closeButton.click();
+        await expect(app.dialog.getByText('editor_discard_edits_title')).toBeVisible();
+        await expect(app.viewer.editor.openButton).toBeHidden();
+      });
+
+      test('confirm discarding edits and editor stays open when using Escape key', async ({ page, app }) => {
+        await page.keyboard.press('Escape');
+        await expect(app.dialog.getByText('editor_discard_edits_title')).toBeVisible();
+        await expect(app.viewer.editor.openButton).toBeHidden();
+      });
+    });
+
+    test.describe('without edits or with saved edits', () => {
+      test('closes without confirmation when using close button', async ({ app }) => {
+        await app.viewer.editor.closeButton.click();
+        await expect(app.dialog.getByText('editor_discard_edits_title')).toBeHidden();
+        await expect(app.viewer.editor.openButton).toBeVisible();
+      });
+
+      test('closes without confirmation when using Escape key', async ({ page, app }) => {
+        await page.keyboard.press('Escape');
+        await expect(app.dialog.getByText('editor_discard_edits_title')).toBeHidden();
+        await expect(app.viewer.editor.openButton).toBeVisible();
+      });
+    });
+  });
+
   test('opens with the saved edits of an asset', async ({ page, data, api, app }) => {
     const asset = factory.asset();
     data.addAssets(asset);
