@@ -3,6 +3,23 @@ import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
 import { AssetVisibility } from '@immich/sdk';
 
+const shiftA = [
+  {
+    name: 'archives',
+    route: Route.photos(),
+    from: AssetVisibility.Timeline,
+    to: AssetVisibility.Archive,
+    toast: 'added_to_archive',
+  },
+  {
+    name: 'unarchives',
+    route: Route.archive(),
+    from: AssetVisibility.Archive,
+    to: AssetVisibility.Timeline,
+    toast: 'removed_from_archive',
+  },
+];
+
 test('archive from the viewer, unarchive from the archive viewer', async ({ page, data, api, app }) => {
   const [asset, next] = data.addTimeline({ years: 1 });
   await page.goto(Route.photos());
@@ -95,5 +112,38 @@ test('archive of the only asset in an album keeps it in the album', async ({ pag
   expect(api.updateAsset).toHaveBeenCalledWith({
     params: { id: asset.id },
     body: { visibility: AssetVisibility.Archive },
+  });
+});
+
+for (const { name, route, from, to, toast } of shiftA) {
+  test(`Shift+A ${name} the open asset`, async ({ page, data, api, app }) => {
+    const asset = factory.asset();
+    data.addAssets(asset).updateAssets({ ids: [asset.id], visibility: from });
+    await page.goto(route);
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.waitForAsset(asset);
+
+    await page.keyboard.press('Shift+A');
+
+    await expect(app.toast(toast)).toBeVisible();
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { visibility: to } });
+  });
+}
+
+test('unarchive in the archive viewer offers archive in the menu', async ({ page, data, api, app }) => {
+  const asset = factory.asset();
+  data.addAssets(asset).updateAssets({ ids: [asset.id], visibility: AssetVisibility.Archive });
+  await page.goto(Route.archive());
+  await app.timeline.thumbnail(asset).click();
+  await app.viewer.waitForAsset(asset);
+
+  await app.viewer.unarchive();
+
+  await app.viewer.moreButton.click();
+  await expect(app.viewer.menuItem('to_archive')).toBeVisible();
+  await expect(app.viewer.menuItem('unarchive')).toHaveCount(0);
+  expect(api.updateAsset).toHaveBeenCalledWith({
+    params: { id: asset.id },
+    body: { visibility: AssetVisibility.Timeline },
   });
 });
