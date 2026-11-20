@@ -14,8 +14,8 @@ import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.j
 const loginDetails = {
   isSecure: true,
   clientIp: '127.0.0.1',
-  deviceOS: '',
-  deviceType: '',
+  deviceOS: null,
+  deviceType: null,
   appVersion: null,
 };
 
