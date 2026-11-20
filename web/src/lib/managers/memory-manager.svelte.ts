@@ -41,7 +41,7 @@ export type MemoryState = {
 };
 
 class MemoryManager {
-  filters = $state<MemoryFilters>({ size: 250, order: MemorySearchOrder.Desc });
+  #filters = $state<MemoryFilters>({ size: 250, order: MemorySearchOrder.Desc });
 
   #memoryLaneTitle = fromStore(memoryLaneTitle);
 
@@ -57,8 +57,12 @@ class MemoryManager {
     this.#scheduleHourlyRefresh();
   }
 
+  get filters() {
+    return this.#filters;
+  }
+
   setFilters(filters: MemoryFilters) {
-    this.filters = omitBy(filters, (item) => item === undefined);
+    this.#filters = omitBy(filters, (item) => item === undefined);
   }
 
   applyPreferences() {
@@ -71,7 +75,7 @@ class MemoryManager {
   }
 
   loadMemories() {
-    return queryClient.query(searchMemoriesQuery(this.filters));
+    return queryClient.query(searchMemoriesQuery(this.#filters));
   }
 
   /** Fetch a memory that is not part of the loaded list, i.e. when opening a link to an older one. */
@@ -88,7 +92,7 @@ class MemoryManager {
     }
 
     // memories are ordered by date, descending
-    queryClient.setQueryData(searchMemoriesQuery(this.filters).queryKey, (items = []) => {
+    queryClient.setQueryData(searchMemoriesQuery(this.#filters).queryKey, (items = []) => {
       const index = items.findIndex(({ memoryAt }) => memoryAt < loaded.memoryAt);
       const insertAt = index === -1 ? items.length : index;
       return [...items.slice(0, insertAt), loaded, ...items.slice(insertAt)];
