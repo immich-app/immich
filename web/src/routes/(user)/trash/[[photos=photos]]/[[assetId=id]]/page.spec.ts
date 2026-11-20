@@ -81,6 +81,33 @@ test('restores the selected assets', async ({ data, router, render, settle, api,
   await expect.element(app.trash.restoreAllButton).not.toBeInTheDocument();
 });
 
+test('permanently deletes the selected assets after confirmation', async ({
+  data,
+  router,
+  render,
+  settle,
+  api,
+  app,
+}) => {
+  const [asset] = data.addTimeline({ years: 1 });
+  data.deleteAssets([asset.id]);
+  await router.goto(Route.trash());
+  await render(Page, load);
+  await expect.element(app.trash.restoreAllButton).toBeVisible();
+  await app.gallery.selectAll();
+
+  await app.trash.permanentlyDeleteButton.click();
+  await app.cancelButton.click();
+  await settle();
+  expect(api.deleteAssets).not.toHaveBeenCalled();
+
+  await app.trash.permanentlyDeleteButton.click();
+  await app.dialogButton('delete').click();
+  await settle();
+
+  expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: true } });
+});
+
 test('finishes restoring when the selection ends mid-request', async ({ data, router, render, settle, api, app }) => {
   const [asset] = data.addTimeline({ years: 1 });
   data.deleteAssets([asset.id]);

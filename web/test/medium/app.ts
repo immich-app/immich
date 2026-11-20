@@ -31,6 +31,10 @@ export const createApp = (page: Page, data: MockData) => {
     text: (text: string | RegExp) => page.getByText(text, { exact: true }),
     undoButton: page.getByRole('button', { name: 'undo', exact: true }),
 
+    errorPage: {
+      title: page.getByRole('heading', { name: 'error_title' }),
+    },
+
     maintenanceMode: {
       title: page.getByRole('heading', { name: 'maintenance_title', exact: true }),
       restoreTask: page.getByText('maintenance_task_restore', { exact: true }),
@@ -113,6 +117,8 @@ export const createApp = (page: Page, data: MockData) => {
       child: (name: string) => page.getByRole('main').getByRole('button', { name, exact: true }),
     },
 
+    folders: createFolders(page),
+
     workflow: {
       nameInput: labelled('name'),
     },
@@ -122,6 +128,7 @@ export const createApp = (page: Page, data: MockData) => {
       summary: page.getByTestId('album-details'),
       selectPhotosButton: button('select_photos'),
       mapButton: labelled('map'),
+      slideshowButton: labelled('slideshow'),
       mapDialog: page.getByRole('dialog'),
       mapMarkers: page.getByRole('dialog').locator('.maplibregl-marker'),
       optionsMenuButton: labelled('album_options'),
@@ -267,14 +274,15 @@ export const createApp = (page: Page, data: MockData) => {
       thumbnails: page.locator('[data-asset]'),
       thumbnail: (asset: { id: string }) => page.locator(`[data-asset="${asset.id}"]`),
     },
-    geolocation: {
-      thumbnail: (asset: { id: string }) => page.locator(`[data-asset="${asset.id}"]`),
-      applyButton: button('apply_count'),
-      unselectAllButton: button('unselect_all'),
-      coordinates: page.getByTitle('latitude, longitude'),
-    },
     duplicates: {
       viewButton: button('view'),
+    },
+    geolocation: {
+      chooseOnMapButton: button('location_picker_choose_on_map'),
+      applyButton: button('apply_count'),
+      unselectAllButton: button('unselect_all'),
+      gpsBadge: (asset: Asset) => page.locator(`[data-asset-id="${asset.id}"]`).getByText('gps', { exact: true }),
+      locationPicker: createLocationPicker(page),
     },
 
     viewer,
@@ -295,6 +303,7 @@ const createTimeline = (page: Page, data: MockData) => {
   const grid = page.locator('#asset-grid');
   const thumbnails = page.locator('[data-thumbnail-focus-container]');
   const thumbnail = (asset: Asset) => page.locator(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
+  const currentScrollTop = () => grid.evaluate((element) => element.scrollTop);
   const menuItem = async (name: string) => {
     await page.getByLabel('menu', { exact: true }).click();
     await page.getByRole('menuitem', { name, exact: true }).click();
@@ -342,6 +351,11 @@ const createTimeline = (page: Page, data: MockData) => {
       unlinkLivePhoto: () => menuItem('unlink_motion_video'),
       stack: () => menuItem('stack'),
       unstack: () => menuItem('unstack'),
+
+      moveOffLockedFolder: async () => {
+        await page.getByRole('button', { name: 'move_off_locked_folder', exact: true }).click();
+        await page.getByRole('dialog').getByRole('button', { name: 'move', exact: true }).click();
+      },
 
       moveToLockedFolder: async () => {
         await menuItem('move_to_locked_folder');
@@ -402,10 +416,11 @@ const createTimeline = (page: Page, data: MockData) => {
       await page.getByRole('button', { name: 'confirm', exact: true }).click();
     },
 
+    currentScrollTop,
+
     scrollTop: async () => {
-      const read = () => grid.evaluate((element) => element.scrollTop);
-      await expect.poll(read).toBeGreaterThan(0);
-      return read();
+      await expect.poll(currentScrollTop).toBeGreaterThan(0);
+      return currentScrollTop();
     },
 
     renderedMonths: async () => {
@@ -430,6 +445,20 @@ const createTimeline = (page: Page, data: MockData) => {
 
     expectAtTop: (asset: Asset) => alignedWith(asset, 'top'),
     expectAtBottom: (asset: Asset) => alignedWith(asset, 'bottom'),
+  };
+};
+
+const createFolders = (page: Page) => {
+  const content = page.locator('section', { has: page.locator('[data-thumbnail-focus-container]') }).last();
+  const currentScrollTop = () => content.evaluate((element) => element.scrollTop);
+
+  return {
+    currentScrollTop,
+
+    scrollTop: async () => {
+      await expect.poll(currentScrollTop).toBeGreaterThan(0);
+      return currentScrollTop();
+    },
   };
 };
 
@@ -473,6 +502,7 @@ const createViewer = (page: Page) => {
       .getByRole('navigation')
       .filter({ has: page.getByLabel('exit_slideshow', { exact: true }) })
       .getByRole('button', { name: /^(play|pause)$/ }),
+    slideshowNextButton: page.getByLabel('next', { exact: true }),
     description: page.getByPlaceholder('add_a_description'),
     rating: page.getByTestId('star-container'),
     editDateButton: page.getByTestId('detail-panel-edit-date-button'),
@@ -514,6 +544,7 @@ const createViewer = (page: Page) => {
     },
     media,
     video: content.locator('video'),
+    isVideoPaused: () => content.locator('video').evaluate((element: HTMLVideoElement) => element.paused),
     image: (quality: 'thumbnail' | 'preview' | 'original') => content.getByTestId(quality).filter({ visible: true }),
     stackThumbnail: (asset: Asset) => stack.locator(`[data-asset="${asset.id}"]`),
     stackAssets: stack.locator('[data-asset]'),
@@ -558,6 +589,10 @@ const createViewer = (page: Page) => {
     unstack: () => moreMenuItem('unstack'),
     setStackPrimary: () => moreMenuItem('set_stack_primary_asset'),
     removeFromStack: () => moreMenuItem('viewer_remove_from_stack'),
+    keepThisDeleteOthers: async () => {
+      await moreMenuItem('keep_this_delete_others');
+      await page.getByRole('dialog').getByRole('button', { name: 'delete_others', exact: true }).click();
+    },
     restore: () => moreMenuItem('restore'),
     setFeaturedPhoto: () => moreMenuItem('set_as_featured_photo'),
     personThumbnail: (name: string) => detailPanel.getByRole('img', { name, exact: true }),
@@ -566,6 +601,11 @@ const createViewer = (page: Page) => {
 
     moveToLockedFolder: async () => {
       await moreMenuItem('move_to_locked_folder');
+      await page.getByRole('dialog').getByRole('button', { name: 'move', exact: true }).click();
+    },
+
+    moveOffLockedFolder: async () => {
+      await moreMenuItem('move_off_locked_folder');
       await page.getByRole('dialog').getByRole('button', { name: 'move', exact: true }).click();
     },
 

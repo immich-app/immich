@@ -111,4 +111,18 @@ test.describe('search gallery viewer', () => {
     expect(api.searchAssets).toHaveBeenCalledWith({ body: expect.objectContaining({ originalFileName: 'test' }) });
     expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
   });
+
+  test('delete key trashes the selected results', async ({ page, data, api, app }) => {
+    const [asset, other] = setup();
+    data.addAssets([asset, other]);
+    await page.goto(Route.search({ originalFileName: 'test' }));
+    await app.timeline.select(asset);
+
+    await page.keyboard.press('Delete');
+
+    await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
+    await expect(app.timeline.thumbnail(other)).toBeVisible();
+    expect(api.searchAssets).toHaveBeenCalledWith({ body: expect.objectContaining({ originalFileName: 'test' }) });
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
+  });
 });

@@ -204,4 +204,102 @@ test.describe('detail panel', () => {
     await expect(app.viewer.description).toBeVisible();
     await expect(app.viewer.description).toBeEnabled();
   });
+
+  for (const { key, rating } of [
+    { key: '1', rating: 1 },
+    { key: '2', rating: 2 },
+    { key: '3', rating: 3 },
+    { key: '4', rating: 4 },
+    { key: '5', rating: 5 },
+    { key: '0', rating: null },
+  ]) {
+    test(`pressing ${key} sets the rating to ${rating}`, async ({ page, data, api, app }) => {
+      data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+      const asset = factory.asset({ exifInfo: { rating: rating === 1 ? 2 : 1 } });
+      data.addAssets(asset);
+      await page.goto(Route.viewAsset({ id: asset.id }));
+      await app.viewer.waitForAsset(asset);
+
+      await page.keyboard.press(key);
+
+      await expect.poll(() => api.updateAsset.calls.length).toBe(1);
+      expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { rating } });
+    });
+  }
+
+  test('pressing the current rating sends no request', async ({ page, data, api, app }) => {
+    data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+    const asset = factory.asset({ exifInfo: { rating: 3 } });
+    data.addAssets(asset);
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.openDetailPanel();
+
+    await page.keyboard.press('3');
+    await page.keyboard.press('4');
+
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('4');
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { rating: 4 } });
+    expect(api.updateAsset.calls).toHaveLength(1);
+  });
+
+  for (const { name, viewers, visible } of [
+    { name: 'shows the owner in a shared album', viewers: [factory.user()], visible: true },
+    { name: 'hides the owner in an album only the user is in', viewers: [], visible: false },
+  ]) {
+    test(name, async ({ page, data, app }) => {
+      const partner = factory.user({ name: 'Partner Name' });
+      const asset = factory.asset({ ownerId: partner.id, owner: partner });
+      const album = factory.album({ albumUsers: factory.albumUsers({ owner: data.user, viewers }) });
+      data.addAssets(asset).addAlbums(album).addToAlbum(album.id, [asset]);
+      await page.goto(Route.viewAlbumAsset({ albumId: album.id, assetId: asset.id }));
+      await app.viewer.waitForAsset(asset);
+
+      await app.viewer.openDetailPanel();
+
+      await expect(app.viewer.detailPanel.getByText('Partner Name', { exact: true })).toHaveCount(visible ? 1 : 0);
+    });
+  }
+
+  test('an update from another device is kept after moving away and back', async ({ page, data, api, app }) => {
+    const [asset, next] = data.addTimeline({ years: 1 });
+    await page.goto(Route.photos());
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(next);
+    await app.viewer.previousButton.click();
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.openDetailPanel();
+    await expect(app.viewer.description).toHaveValue('');
+    data.updateAsset(asset.id, { description: 'edited elsewhere' });
+    api.emit('on_asset_update', data.getAsset(asset.id));
+    await expect(app.viewer.description).toHaveValue('edited elsewhere');
+
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(next);
+    await app.viewer.previousButton.click();
+
+    await app.viewer.waitForAsset(asset);
+    await expect(app.viewer.description).toHaveValue('edited elsewhere');
+  });
+
+  test('a favorite is kept after moving away and back', async ({ page, data, api, app }) => {
+    const [asset, next] = data.addTimeline({ years: 1 });
+    await page.goto(Route.photos());
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(next);
+    await app.viewer.previousButton.click();
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.favoriteButton.click();
+    await expect(app.viewer.unfavoriteButton).toBeVisible();
+
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(next);
+    await app.viewer.previousButton.click();
+
+    await app.viewer.waitForAsset(asset);
+    await expect(app.viewer.unfavoriteButton).toBeVisible();
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { isFavorite: true } });
+  });
 });

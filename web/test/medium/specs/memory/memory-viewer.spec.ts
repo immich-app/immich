@@ -184,6 +184,17 @@ test.describe('memory viewer', () => {
     await expect(app.memory.photo).toHaveAttribute('src', new RegExp(`c=${validThumbhash}`));
   });
 
+  test('shows the location of the full asset', async ({ page, data, api, app }) => {
+    const [memory] = addMemories(data, [1]);
+    const [asset] = memory.assets;
+    data.addAssets({ ...asset, exifInfo: { city: 'Paris', country: 'France' } });
+
+    await page.goto(Route.viewMemory({ id: memory.id, assetId: asset.id }));
+
+    await expect(app.memory.root.getByText('Paris')).toBeVisible();
+    expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: asset.id } });
+  });
+
   test('closes a memory opened from a link', async ({ page, data, app }) => {
     const [memory] = addMemories(data, [1, 1]);
     await page.goto(Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }));
