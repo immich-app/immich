@@ -53,8 +53,11 @@ import {
   getAssetsByCityQuery,
   getExploreDataQuery,
   getSearchSuggestionsQuery,
+  searchAssetsQuery,
+  searchLargeAssetsQuery,
   searchPersonQuery,
   searchPlacesQuery,
+  searchSmartQuery,
 } from '#lib/queries/search.query.ts';
 import {
   getAboutInfoQuery,
@@ -162,6 +165,9 @@ const queries: Record<string, QueryFactory> = {
   getSearchSuggestionsQuery: () => getSearchSuggestionsQuery({ $type: SearchSuggestionType.Country }),
   searchPersonQuery: () => searchPersonQuery({ name: 'name' }),
   searchPlacesQuery: () => searchPlacesQuery({ name: 'name' }),
+  searchAssetsQuery: () => searchAssetsQuery({ isFavorite: true }),
+  searchSmartQuery: () => searchSmartQuery({ query: 'beach' }),
+  searchLargeAssetsQuery: () => searchLargeAssetsQuery(),
   getExploreDataQuery: () => getExploreDataQuery(),
   getAssetsByCityQuery: () => getAssetsByCityQuery(),
   getAboutInfoQuery: () => getAboutInfoQuery(),
@@ -202,7 +208,12 @@ const queries: Record<string, QueryFactory> = {
 };
 
 const clientOnlyQueries = new Set(['getQueueSnapshotsQuery']);
-const nonGetQueries = new Set(['getStorageTemplatePreviewQuery']);
+const nonGetQueries = new Set([
+  'getStorageTemplatePreviewQuery',
+  'searchAssetsQuery',
+  'searchLargeAssetsQuery',
+  'searchSmartQuery',
+]);
 
 const queryModules = import.meta.glob<Record<string, unknown>>('./*.query.ts', { eager: true });
 
