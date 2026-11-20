@@ -11,7 +11,7 @@ import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
-import { runAssetJobsMutation } from '#lib/queries/asset.query.ts';
+import { runAssetJobsMutation, updateAssetMutation, updateAssetsMutation } from '#lib/queries/asset.query.ts';
 import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { Route } from '#lib/route.ts';
@@ -30,8 +30,6 @@ import {
   deleteAssets,
   getAssetInfo,
   restoreAssets,
-  updateAsset,
-  updateAssets,
   type AlbumResponseDto,
   type AssetJobsDto,
   type AssetResponseDto,
@@ -98,12 +96,11 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     icon: mdiArchiveArrowDownOutline,
     shortcuts: [{ key: 'a', shift: true }],
     $if: () => assetMultiSelectManager.isAllUserOwned && !assetMultiSelectManager.isAllArchived,
-    onAction: async () => {
-      const assets = ownedAssets.filter((asset) => asset.visibility !== AssetVisibility.Archive);
-      if (await handleSetVisibility(assets, AssetVisibility.Archive)) {
-        assetMultiSelectManager.clear();
-      }
-    },
+    onAction: () =>
+      handleSetVisibility(
+        ownedAssets.filter((asset) => asset.visibility !== AssetVisibility.Archive),
+        AssetVisibility.Archive,
+      ),
   };
 
   const CreateSharedLink: ActionItem = {
@@ -137,11 +134,7 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     icon: mdiArchiveArrowUpOutline,
     shortcuts: [{ key: 'a', shift: true }],
     $if: () => assetMultiSelectManager.isAllUserOwned && assetMultiSelectManager.isAllArchived,
-    onAction: async () => {
-      if (await handleSetVisibility(ownedAssets, AssetVisibility.Timeline)) {
-        assetMultiSelectManager.clear();
-      }
-    },
+    onAction: () => handleSetVisibility(ownedAssets, AssetVisibility.Timeline),
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -545,29 +538,25 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
   }
 };
 
-const handleFavorite = async (asset: AssetResponseDto) => {
-  const $t = await getFormatter();
+const handleFavorite = (asset: AssetResponseDto) =>
+  executeMutation(
+    () =>
+      updateAssetMutation({
+        success: { toast: 'added_to_favorites' },
+        error: { toast: 'errors.unable_to_add_remove_favorites', values: { favorite: asset.isFavorite } },
+      }),
+    [{ id: asset.id, updateAssetDto: { isFavorite: true } }],
+  );
 
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
-    toastManager.primary($t('added_to_favorites'));
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
-  }
-};
-
-const handleUnfavorite = async (asset: AssetResponseDto) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
-    toastManager.primary($t('removed_from_favorites'));
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
-  }
-};
+const handleUnfavorite = (asset: AssetResponseDto) =>
+  executeMutation(
+    () =>
+      updateAssetMutation({
+        success: { toast: 'removed_from_favorites' },
+        error: { toast: 'errors.unable_to_add_remove_favorites', values: { favorite: asset.isFavorite } },
+      }),
+    [{ id: asset.id, updateAssetDto: { isFavorite: false } }],
+  );
 
 const isShiftDelete = (event: Event) => event instanceof KeyboardEvent && event.key === 'Delete' && event.shiftKey;
 
@@ -636,36 +625,36 @@ const handleArchive = async (asset: AssetResponseDto) => {
   assetViewerManager.emit('AssetLeave', { asset, reason: 'archive' });
   const $t = await getFormatter();
 
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { visibility: AssetVisibility.Archive } });
-    toastManager.primary({
-      description: $t('added_to_archive'),
-      button: (close) => ({
-        label: $t('undo'),
-        onclick: () => {
-          close();
-          void undoArchiveAssets([toTimelineAsset(response)]);
-        },
+  await executeMutation(
+    () => updateAssetMutation({ error: { toast: 'errors.unable_to_add_remove_archive', values: { archived: false } } }),
+    [{ id: asset.id, updateAssetDto: { visibility: AssetVisibility.Archive } }],
+    {
+      onSuccess: (response) => {
+        toastManager.primary({
+          description: $t('added_to_archive'),
+          button: (close) => ({
+            label: $t('undo'),
+            onclick: () => {
+              close();
+              void undoArchiveAssets([toTimelineAsset(response)]);
+            },
+          }),
+        });
+        eventManager.emit('AssetsArchive', [asset.id]);
+      },
+    },
+  );
+};
+
+const handleUnarchive = (asset: AssetResponseDto) =>
+  executeMutation(
+    () =>
+      updateAssetMutation({
+        success: { toast: 'removed_from_archive' },
+        error: { toast: 'errors.unable_to_add_remove_archive', values: { archived: true } },
       }),
-    });
-    eventManager.emit('AssetsArchive', [asset.id]);
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: false } }));
-  }
-};
-
-const handleUnarchive = async (asset: AssetResponseDto) => {
-  const $t = await getFormatter();
-
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { visibility: AssetVisibility.Timeline } });
-    toastManager.primary($t('removed_from_archive'));
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: true } }));
-  }
-};
+    [{ id: asset.id, updateAssetDto: { visibility: AssetVisibility.Timeline } }],
+  );
 
 const handleToggleLocked = async (asset: AssetResponseDto) => {
   const $t = await getFormatter();
@@ -682,14 +671,12 @@ const handleToggleLocked = async (asset: AssetResponseDto) => {
     return;
   }
 
-  try {
-    assetViewerManager.emit('AssetLeave', { asset, reason: isLocked ? 'unlock' : 'lock' });
-    await updateAssets({
-      assetBulkUpdateDto: { ids: [asset.id], visibility: isLocked ? AssetVisibility.Timeline : AssetVisibility.Locked },
-    });
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_save_settings'));
-  }
+  const visibility = isLocked ? AssetVisibility.Timeline : AssetVisibility.Locked;
+  assetViewerManager.emit('AssetLeave', { asset, reason: isLocked ? 'unlock' : 'lock' });
+  await executeMutation(
+    () => updateAssetsMutation({ error: { toast: 'errors.unable_to_save_settings' } }),
+    [{ assetBulkUpdateDto: { ids: [asset.id], visibility } }],
+  );
 };
 
 export const toggleFavoriteAssets = async (
@@ -699,12 +686,7 @@ export const toggleFavoriteAssets = async (
 ) => {
   const ids = assets.map((a) => a.id);
   const $t = get(t);
-
-  try {
-    if (ids.length > 0) {
-      await updateAssets({ assetBulkUpdateDto: { ids, isFavorite } });
-    }
-
+  const onSuccess = () => {
     for (const asset of assets) {
       asset.isFavorite = isFavorite;
     }
@@ -716,9 +698,21 @@ export const toggleFavoriteAssets = async (
         ? $t('added_to_favorites_count', { values: { count: ids.length } })
         : $t('removed_from_favorites_count', { values: { count: ids.length } }),
     );
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: isFavorite } }));
+  };
+
+  if (ids.length === 0) {
+    onSuccess();
+    return;
   }
+
+  await executeMutation(
+    () =>
+      updateAssetsMutation({
+        error: { toast: 'errors.unable_to_add_remove_favorites', values: { favorite: isFavorite } },
+      }),
+    [{ assetBulkUpdateDto: { ids, isFavorite } }],
+    { onSuccess },
+  );
 };
 
 const handleRate = async (asset: AssetResponseDto, rating: number) => {
@@ -734,66 +728,62 @@ const handleRate = async (asset: AssetResponseDto, rating: number) => {
     return;
   }
 
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { rating: newRating } });
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_set_rating'));
-  }
+  await executeMutation(
+    () => updateAssetMutation({ error: { toast: 'errors.unable_to_set_rating' } }),
+    [{ id: asset.id, updateAssetDto: { rating: newRating } }],
+  );
 };
 
 const handleSetVisibility = async (assets: TimelineAsset[], visibility: AssetVisibility) => {
   const $t = await getFormatter();
   const ids = assets.map((asset) => asset.id);
+  const archived = visibility === AssetVisibility.Archive;
 
-  try {
-    await updateAssets({ assetBulkUpdateDto: { ids, visibility } });
+  await executeMutation(
+    () => updateAssetsMutation({ error: { toast: 'errors.unable_to_archive_unarchive', values: { archived } } }),
+    [{ assetBulkUpdateDto: { ids, visibility } }],
+    {
+      onSuccess: () => {
+        assetMultiSelectManager.clear();
+        if (!archived) {
+          toastManager.primary($t('unarchived_count', { values: { count: assets.length } }));
+          eventManager.emit('AssetsUnarchive', assets);
+          return;
+        }
 
-    if (visibility === AssetVisibility.Archive) {
-      toastManager.primary({
-        description: $t('archived_count', { values: { count: assets.length } }),
-        button: (close) => ({
-          label: $t('undo'),
-          onclick: () => {
-            close();
-            void undoArchiveAssets(assets);
-          },
-        }),
-      });
-      eventManager.emit('AssetsArchive', ids);
-    } else {
-      // Timeline
-      toastManager.primary($t('unarchived_count', { values: { count: assets.length } }));
-      eventManager.emit('AssetsUnarchive', assets);
-    }
-  } catch (error) {
-    handleError(
-      error,
-      $t('errors.unable_to_archive_unarchive', { values: { archived: visibility === AssetVisibility.Archive } }),
-    );
-    return false;
-  }
-
-  return true;
+        toastManager.primary({
+          description: $t('archived_count', { values: { count: assets.length } }),
+          button: (close) => ({
+            label: $t('undo'),
+            onclick: () => {
+              close();
+              void undoArchiveAssets(assets);
+            },
+          }),
+        });
+        eventManager.emit('AssetsArchive', ids);
+      },
+    },
+  );
 };
 
 const undoArchiveAssets = async (assets: TimelineAsset[]) => {
   const $t = await getFormatter();
-  try {
-    const ids = assets.map((a) => a.id);
-    await updateAssets({
-      assetBulkUpdateDto: { ids, visibility: AssetVisibility.Timeline },
-    });
 
-    for (const asset of assets) {
-      asset.visibility = AssetVisibility.Timeline;
-    }
-    toastManager.success($t('unarchived_count', { values: { count: assets.length } }));
-    eventManager.emit('AssetsUnarchive', assets);
-    eventManager.emit('AssetsUndoArchive', assets);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
-  }
+  await executeMutation(
+    () => updateAssetsMutation({ error: { toast: 'errors.unable_to_archive_unarchive', values: { archived: false } } }),
+    [{ assetBulkUpdateDto: { ids: assets.map((a) => a.id), visibility: AssetVisibility.Timeline } }],
+    {
+      onSuccess: () => {
+        for (const asset of assets) {
+          asset.visibility = AssetVisibility.Timeline;
+        }
+        toastManager.success($t('unarchived_count', { values: { count: assets.length } }));
+        eventManager.emit('AssetsUnarchive', assets);
+        eventManager.emit('AssetsUndoArchive', assets);
+      },
+    },
+  );
 };
 
 const handleBulkRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
