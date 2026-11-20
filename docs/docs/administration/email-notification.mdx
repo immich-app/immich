@@ -22,6 +22,29 @@ Users can manage their email notification settings from their account settings p
 
 <img src={require('./img/user-notifications-settings.webp').default} width="80%" title="User notification settings" />
 
+## Apprise notifications
+
+Immich can also send album notifications through an [Apprise API](https://github.com/caronc/apprise-api) server, which can forward them to services like Discord, Telegram or ntfy. This is optional and works alongside email; turning it on does not change how email works.
+
+Apprise sends notifications when a user is added to a shared album and when new assets are added to a shared album. Welcome messages for new users are only sent by email, because they can contain a password.
+
+### Server settings
+
+The administrator sets up the Apprise API server once, under Apprise in `Administration -> Settings -> Notification settings`:
+
+- **URL**: address of the Apprise API server, such as `http://apprise:8000` or `https://example.com/apprise`.
+- **Config ID**: optional. The Apprise configuration that the username and password belong to. Not needed for an admin login.
+- **Username** and **Password**: optional, for an Apprise API server that requires a login. A password can be used without a username.
+- **Timeout**: how many seconds to wait for the Apprise API server before giving up.
+
+**Test connection and save** checks that Immich can reach the server and log in; it does not send a notification. Immich does the same check when you save. If the server is slow or unavailable when a notification is sent, it is logged as failed. Email and in-app notifications are not affected.
+
+### User settings
+
+Once Apprise is turned on, each user sees an Apprise section on their account settings page. To receive notifications, a user turns it on and enters their own [Apprise URLs](https://appriseit.com/services/), separated by spaces. Notifications for that user are sent only to those URLs.
+
+Users who leave it off, or enter no URLs, do not receive Apprise notifications. Administrators cannot see the URLs a user enters.
+
 ## Notification templates
 
 You can override the default notification text with custom templates in HTML format. You can use tags to show dynamic tags in your templates.

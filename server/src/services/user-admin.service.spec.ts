@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { describe } from 'vitest';
 import { mapUserAdmin } from 'src/dtos/user.dto.js';
-import { AlbumUserRole, JobName, UserStatus } from 'src/enum.js';
+import { AlbumUserRole, JobName, UserMetadataKey, UserStatus } from 'src/enum.js';
 import { Resource } from 'src/resource-paths.js';
 import { UserAdminService } from 'src/services/user-admin.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
@@ -278,6 +278,42 @@ describe(UserAdminService.name, () => {
         { userIds: adminIds, changed: [Resource.adminUserPreferences(user)] },
         { userIds: [user.id], changed: [Resource.myPreferences()] },
       );
+    });
+  });
+
+  describe('getPreferences', () => {
+    it("should hide the user's apprise urls", async () => {
+      mocks.user.getMetadata.mockResolvedValue([
+        {
+          key: UserMetadataKey.Preferences,
+          value: { appriseNotifications: { enabled: true, urls: ['tgram://token'] } },
+        },
+      ]);
+
+      const preferences = await sut.getPreferences(authStub.admin, userStub.user1.id);
+
+      expect(preferences.appriseNotifications).toEqual(expect.objectContaining({ enabled: true, urls: [] }));
+    });
+  });
+
+  describe('updatePreferences', () => {
+    it("should keep the user's apprise urls", async () => {
+      mocks.user.get.mockResolvedValue(userStub.user1);
+      mocks.user.getMetadata.mockResolvedValue([
+        {
+          key: UserMetadataKey.Preferences,
+          value: { appriseNotifications: { enabled: true, urls: ['tgram://token'] } },
+        },
+      ]);
+
+      await sut.updatePreferences(authStub.admin, userStub.user1.id, {
+        appriseNotifications: { enabled: false, urls: [] },
+      });
+
+      expect(mocks.user.upsertMetadata).toHaveBeenCalledWith(userStub.user1.id, {
+        key: UserMetadataKey.Preferences,
+        value: { appriseNotifications: { urls: ['tgram://token'] } },
+      });
     });
   });
 });
