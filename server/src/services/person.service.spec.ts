@@ -209,10 +209,10 @@ describe(PersonService.name, () => {
 
     it('should throw an error when person has no thumbnail', async () => {
       const auth = AuthFactory.create();
-      const person = PersonFactory.create({ thumbnailPath: '' });
+      const person = PersonFactory.create({ thumbnailPath: null });
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
-      mocks.person.getForThumbnail.mockResolvedValue({ thumbnailPath: '', sharedThumbnailPath: null });
+      mocks.person.getForThumbnail.mockResolvedValue({ thumbnailPath: null, sharedThumbnailPath: null });
       mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
       await expect(sut.getThumbnail(auth, person.personGroupId)).rejects.toBeInstanceOf(NotFoundException);
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
@@ -221,17 +221,17 @@ describe(PersonService.name, () => {
 
     it('should serve the thumbnail', async () => {
       const auth = AuthFactory.create();
-      const person = PersonFactory.create();
+      const person = PersonFactory.create({ thumbnailPath: '/data/thumbs/person.jpg' });
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
       mocks.person.getForThumbnail.mockResolvedValue({
-        thumbnailPath: person.thumbnailPath,
+        thumbnailPath: '/data/thumbs/person.jpg',
         sharedThumbnailPath: null,
       });
       mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
       await expect(sut.getThumbnail(auth, person.personGroupId)).resolves.toEqual(
         new ImmichFileResponse({
-          path: person.thumbnailPath,
+          path: '/data/thumbs/person.jpg',
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithoutCache,
         }),
@@ -245,13 +245,13 @@ describe(PersonService.name, () => {
       const ids = [{ personGroupId: person.personGroupId, ownerId: auth.user.id }];
 
       mocks.person.getForThumbnail.mockResolvedValue({
-        thumbnailPath: '',
-        sharedThumbnailPath: person.thumbnailPath,
+        thumbnailPath: null,
+        sharedThumbnailPath: '/data/thumbs/shared.jpg',
       });
       mocks.access.person.checkAccess.mockResolvedValue(new Set(ids));
       await expect(sut.getThumbnail(auth, person.personGroupId)).resolves.toEqual(
         new ImmichFileResponse({
-          path: person.thumbnailPath,
+          path: '/data/thumbs/shared.jpg',
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithoutCache,
         }),
@@ -847,6 +847,15 @@ describe(PersonService.name, () => {
     it('should not move person files', async () => {
       await expect(sut.handlePersonMigration(PersonFactory.create())).resolves.toBe(JobStatus.Failed);
     });
+
+    it('should skip a person without a thumbnail', async () => {
+      const person = PersonFactory.create({ thumbnailPath: null });
+      mocks.person.getByGroupId.mockResolvedValue(person);
+
+      await expect(sut.handlePersonMigration(person)).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.move.getByEntity).not.toHaveBeenCalled();
+    });
   });
 
   describe('getFacesById', () => {
@@ -1213,6 +1222,18 @@ describe(PersonService.name, () => {
       expect(mocks.person.delete).toHaveBeenCalledWith([person.personGroupId], undefined);
       expect(mocks.person.deleteEmptyGroups).toHaveBeenCalledWith();
       expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
+    });
+
+    it('should not unlink a thumbnail for people without one', async () => {
+      const person = PersonFactory.create({ thumbnailPath: null });
+
+      mocks.person.getAllWithoutFaces.mockResolvedValue([person]);
+      mocks.person.delete.mockResolvedValue([person]);
+
+      await sut.handlePersonCleanup();
+
+      expect(mocks.person.delete).toHaveBeenCalledWith([person.personGroupId], undefined);
+      expect(mocks.storage.unlink).not.toHaveBeenCalled();
     });
   });
 

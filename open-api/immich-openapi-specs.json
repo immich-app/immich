@@ -26468,7 +26468,18 @@
           },
           "thumbnailPath": {
             "description": "Thumbnail path",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "state": "Added",
+                "version": "v1"
+              },
+              {
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v5.",
+                "state": "Updated",
+                "version": "v4"
+              }
+            ]
           },
           "updatedAt": {
             "description": "Last update date",

@@ -5,7 +5,7 @@ import { userStub } from 'test/fixtures/user.stub.js';
 export const personThumbnailStub = {
   newThumbnailStart: Object.freeze({
     ownerId: userStub.admin.id,
-    thumbnailPath: '',
+    thumbnailPath: null,
     x1: 5,
     y1: 5,
     x2: 505,
@@ -19,7 +19,7 @@ export const personThumbnailStub = {
   }),
   newThumbnailMiddle: Object.freeze({
     ownerId: userStub.admin.id,
-    thumbnailPath: '',
+    thumbnailPath: null,
     x1: 100,
     y1: 100,
     x2: 200,
@@ -33,7 +33,7 @@ export const personThumbnailStub = {
   }),
   newThumbnailEnd: Object.freeze({
     ownerId: userStub.admin.id,
-    thumbnailPath: '',
+    thumbnailPath: null,
     x1: 300,
     y1: 300,
     x2: 495,
@@ -47,7 +47,7 @@ export const personThumbnailStub = {
   }),
   rawEmbeddedThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
-    thumbnailPath: '',
+    thumbnailPath: null,
     x1: 100,
     y1: 100,
     x2: 200,
@@ -61,7 +61,7 @@ export const personThumbnailStub = {
   }),
   negativeCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
-    thumbnailPath: '',
+    thumbnailPath: null,
     x1: -176,
     y1: -230,
     x2: 193,
@@ -75,7 +75,7 @@ export const personThumbnailStub = {
   }),
   overflowingCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
-    thumbnailPath: '',
+    thumbnailPath: null,
     x1: 2097,
     y1: 0,
     x2: 2171,
@@ -89,7 +89,7 @@ export const personThumbnailStub = {
   }),
   videoThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
-    thumbnailPath: '',
+    thumbnailPath: null,
     x1: 100,
     y1: 100,
     x2: 200,

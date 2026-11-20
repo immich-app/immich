@@ -62,8 +62,8 @@ export class PersonTable {
   @Column({ default: '' })
   name!: Generated<string>;
 
-  @Column({ default: '' })
-  thumbnailPath!: Generated<string>;
+  @Column({ nullable: true })
+  thumbnailPath!: string | null;
 
   @Column({ type: 'boolean', default: false })
   isHidden!: Generated<boolean>;

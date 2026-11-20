@@ -180,8 +180,12 @@ export class StorageCore {
     });
   }
 
-  async movePersonFile(person: PersonThumbnailPathEntity & { thumbnailPath: string }, pathType: PersonPathType) {
+  async movePersonFile(person: PersonThumbnailPathEntity & { thumbnailPath: string | null }, pathType: PersonPathType) {
     const { ownerId, personGroupId, thumbnailPath } = person;
+    if (!thumbnailPath) {
+      return;
+    }
+
     switch (pathType) {
       case PersonPathType.Face: {
         await this.moveFile({

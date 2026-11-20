@@ -142,7 +142,7 @@ select
 from
   "person"
 where
-  "thumbnailPath" != ''
+  "thumbnailPath" is not null
 limit
   3
 
@@ -940,14 +940,14 @@ select
       and "person_user"."sharedWithId" = $2
     where
       "person"."personGroupId" = "person_group"."id"
-      and "person"."thumbnailPath" != $3
+      and "person"."thumbnailPath" is not null
     limit
-      $4
+      $3
   ) as "sharedThumbnailPath"
 from
   "person_group"
 where
-  "person_group"."id" = $5
+  "person_group"."id" = $4
 
 -- PersonRepository.getByName
 select

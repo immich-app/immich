@@ -104,3 +104,4 @@
 1792568637987-AddAssetOwnerIdUpdateIdIndex
 1795125596774-AddAssetVideoIsFragmented
 1795137120368-SessionDeviceNullable
+1795137186898-PersonThumbnailPathNullable

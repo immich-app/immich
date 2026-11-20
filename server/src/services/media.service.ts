@@ -88,7 +88,7 @@ export class MediaService extends BaseService {
       await this.jobRepository.queueAll(jobs);
     }
 
-    for await (const people of batched(this.personRepository.getAll(force ? undefined : { thumbnailPath: '' }))) {
+    for await (const people of batched(this.personRepository.getAll(force ? undefined : { thumbnailPath: null }))) {
       const jobs: JobItem[] = [];
       for (const person of people) {
         const { ownerId, personGroupId } = person;

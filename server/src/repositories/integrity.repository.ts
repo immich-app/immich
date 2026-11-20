@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { sql, type Insertable, type Kysely } from 'kysely';
+import { sql, type Insertable, type Kysely, type NotNull } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetFileType, IntegrityReport } from 'src/enum.js';
@@ -91,6 +91,7 @@ export class IntegrityRepository {
       .selectFrom('person')
       .select('person.thumbnailPath')
       .where('person.thumbnailPath', 'in', paths)
+      .$narrowType<{ thumbnailPath: NotNull }>()
       .execute();
   }
 

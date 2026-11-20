@@ -90,7 +90,18 @@ export const PersonResponseSchema = z
     name: z.string().describe('Person name'),
     // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
     birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
-    thumbnailPath: z.string().describe('Thumbnail path'),
+    thumbnailPath: z
+      .string()
+      .describe('Thumbnail path')
+      .meta(
+        new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v4',
+            'An empty string is returned instead of null for backwards compatibility; null will be returned in v5.',
+          )
+          .getExtensions(),
+      ),
     isHidden: z.boolean().describe('Is hidden'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     updatedAt: z
@@ -282,7 +293,7 @@ export function mapPerson(
     id: person.personGroupId,
     name: person.name,
     birthDate: asDateString(person.birthDate),
-    thumbnailPath: person.thumbnailPath,
+    thumbnailPath: person.thumbnailPath ?? '',
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,

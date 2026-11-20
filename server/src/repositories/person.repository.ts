@@ -77,7 +77,7 @@ export interface DeleteFacesOptions {
 
 export interface GetAllPeopleOptions {
   ownerId?: string;
-  thumbnailPath?: string;
+  thumbnailPath?: string | null;
   faceAssetId?: string | null;
   isHidden?: boolean;
 }
@@ -326,7 +326,8 @@ export class PersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .$if(!!options.ownerId, (qb) => qb.where('person.ownerId', '=', options.ownerId!))
-      .$if(options.thumbnailPath !== undefined, (qb) => qb.where('person.thumbnailPath', '=', options.thumbnailPath!))
+      .$if(options.thumbnailPath === null, (qb) => qb.where('person.thumbnailPath', 'is', null))
+      .$if(!!options.thumbnailPath, (qb) => qb.where('person.thumbnailPath', '=', options.thumbnailPath!))
       .$if(options.faceAssetId === null, (qb) => qb.where('person.faceAssetId', 'is', null))
       .$if(!!options.faceAssetId, (qb) => qb.where('person.faceAssetId', '=', options.faceAssetId!))
       .$if(options.isHidden !== undefined, (qb) => qb.where('person.isHidden', '=', options.isHidden!))
@@ -374,7 +375,7 @@ export class PersonRepository {
     return this.db
       .selectFrom('person')
       .select(['ownerId', 'personGroupId', 'thumbnailPath'])
-      .where('thumbnailPath', '!=', sql.lit(''))
+      .where('thumbnailPath', 'is not', null)
       .limit(sql.lit(3))
       .execute();
   }
@@ -623,7 +624,7 @@ export class PersonRepository {
           )
           .select('person.thumbnailPath')
           .whereRef('person.personGroupId', '=', 'person_group.id')
-          .where('person.thumbnailPath', '!=', '')
+          .where('person.thumbnailPath', 'is not', null)
           .limit(1)
           .as('sharedThumbnailPath'),
       ])

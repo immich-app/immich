@@ -138,6 +138,25 @@ describe(PersonRepository.name, () => {
     });
   });
 
+  describe('getAll', () => {
+    it('should return only people missing a thumbnail', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const [withoutThumbnail, withThumbnail] = await Promise.all([
+        sut.createGroup(user.id).then(({ id }) => sut.create({ ownerId: user.id, personGroupId: id })),
+        sut.createGroup(user.id).then(({ id }) => sut.create({ ownerId: user.id, personGroupId: id })),
+      ]);
+      await sut.update({ ownerId: user.id, personGroupId: withThumbnail.personGroupId, thumbnailPath: '/thumb.jpg' });
+
+      const people = [];
+      for await (const person of sut.getAll({ ownerId: user.id, thumbnailPath: null })) {
+        people.push(person.personGroupId);
+      }
+
+      expect(people).toEqual([withoutThumbnail.personGroupId]);
+    });
+  });
+
   describe('getByGroupId', () => {
     it('should not return a person owned by another user', async () => {
       const { ctx, sut } = setup();

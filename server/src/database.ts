@@ -285,7 +285,7 @@ export type Person = {
   color: string | null;
   faceAssetId: string | null;
   isHidden: boolean;
-  thumbnailPath: string;
+  thumbnailPath: string | null;
   otherPeople: { sharedById: string; name: string; birthDate: string | null; role: PersonUserRole }[];
   sharedBy: PersonUser[];
   sharedWith: PersonUser[];
