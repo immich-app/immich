@@ -126,6 +126,7 @@ class AuthService {
         .networkAutoEndpointSwitching,
         .networkPreferredWifiName,
         .networkLocalEndpoint,
+        .networkLocalWifiNetworks,
         .networkExternalEndpointList,
       ]),
     ]);
@@ -147,11 +148,11 @@ class AuthService {
     }
 
     final wifiName = await _networkService.getWifiName();
-    final savedWifiName = _authRepository.getPreferredWifiName();
+    final localEndpoint = wifiName == null ? null : _authRepository.getLocalEndpointForWifi(wifiName);
     String? endpoint;
 
-    if (wifiName == savedWifiName) {
-      endpoint = await _setLocalConnection();
+    if (localEndpoint != null) {
+      endpoint = await _setLocalConnection(localEndpoint);
     }
 
     endpoint ??= await _setRemoteConnection();
@@ -159,14 +160,11 @@ class AuthService {
     return endpoint;
   }
 
-  Future<String?> _setLocalConnection() async {
+  Future<String?> _setLocalConnection(String localEndpoint) async {
     try {
-      final localEndpoint = _authRepository.getLocalEndpoint();
-      if (localEndpoint != null) {
-        await _apiService.resolveAndSetEndpoint(localEndpoint);
-        _log.info("Using local endpoint");
-        return localEndpoint;
-      }
+      await _apiService.resolveAndSetEndpoint(localEndpoint);
+      _log.info("Using local endpoint");
+      return localEndpoint;
     } catch (error, stackTrace) {
       _log.severe("Cannot set local endpoint", error, stackTrace);
     }
