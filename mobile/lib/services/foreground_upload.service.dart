@@ -151,7 +151,7 @@ class ForegroundUploadService {
     await _executeWithWorkerPool<LocalAsset>(
       items: localAssets,
       cancelToken: cancelToken,
-      processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks, reportUnsupported: true),
+      processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
     );
   }
 
@@ -247,7 +247,6 @@ class ForegroundUploadService {
     LocalAsset asset,
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,
-    bool reportUnsupported = false,
   }) async {
     final t = StaticTranslations.instance;
     final assetNotFoundOnDevice = CurrentPlatform.isAndroid
@@ -325,9 +324,7 @@ class ForegroundUploadService {
       final originalFileName = p.setExtension(fileName, extension);
       if (await _backupRepository.markIfUnsupported(asset.id, extension)) {
         _logger.info("Skipping ${asset.id}, the server does not accept $originalFileName");
-        if (reportUnsupported) {
-          callbacks.onError?.call(asset.localId!, t.unsupported_file_type(file: originalFileName, type: extension));
-        }
+        callbacks.onError?.call(asset.localId!, t.unsupported_file_type(file: originalFileName, type: extension));
         return;
       }
 

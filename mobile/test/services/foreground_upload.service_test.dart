@@ -265,7 +265,7 @@ void main() {
   });
 
   group('uploadCandidates', () {
-    test('skips a file the server does not accept in both backup runs, manual upload reports it', () async {
+    test('skips and reports a file the server does not accept in both backup runs and manual upload', () async {
       final refused = LocalAssetStub.image1;
       final accepted = LocalAssetStub.image2;
       final mockEntity = MockAssetEntity();
@@ -290,12 +290,12 @@ void main() {
       await sut.uploadCandidates('user', Completer(), callbacks: callbacks, useSequentialUpload: true);
 
       expect(uploaded, ['IMG_1.JPG', 'IMG_1.JPG']);
-      expect(errors, isEmpty);
+      expect(errors, [refused.localId, refused.localId]);
 
       await sut.uploadManual([refused], callbacks: callbacks);
 
       expect(uploaded, hasLength(2));
-      expect(errors, [refused.localId]);
+      expect(errors, [refused.localId, refused.localId, refused.localId]);
     });
   });
 }
