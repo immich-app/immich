@@ -180,8 +180,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -715,7 +713,7 @@ importers:
         version: 0.29.8
       kysely-postgres-js:
         specifier: ^5.0.0
-        version: 5.1.0(kysely@0.29.8)(postgres@3.4.9)
+        version: 5.1.0(kysely@0.29.8)(postgres@4.1.1)
       lodash-es:
         specifier: ^4.17.21
         version: 4.18.1
@@ -753,8 +751,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.7
       postgres:
-        specifier: 3.4.9
-        version: 3.4.9
+        specifier: 4.1.1
+        version: 4.1.1
       react:
         specifier: ^19.0.0
         version: 19.3.1
@@ -10828,6 +10826,10 @@ packages:
     resolution: {integrity: sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw==}
     engines: {node: '>=12'}
 
+  postgres@4.1.1:
+    resolution: {integrity: sha512-1kJDojqNZC+iTHHXh6eif0J98LUtyLAePe/qkW1GK35eh2JixlsAiIKq3FGI+xqI+SUGTNodzf7TScVeIIyUug==}
+    engines: {node: '>=18'}
+
   potpack@2.1.0:
     resolution: {integrity: sha512-pcaShQc1Shq0y+E7GqJqvZj8DTthWV1KeHGdi0Z6IAin2Oi3JnLCOfwnCo84qc+HAp52wT9nK9H7FAJp5a44GQ==}
 
@@ -18345,7 +18347,7 @@ snapshots:
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 17.0.45
+      '@types/node': 26.6.6
 
   '@types/semver@7.8.0': {}
 
@@ -18360,7 +18362,7 @@ snapshots:
 
   '@types/serve-index@1.9.4':
     dependencies:
-      '@types/express': 4.17.25
+      '@types/express': 5.0.6
 
   '@types/serve-static@1.15.10':
     dependencies:
@@ -21374,18 +21376,19 @@ snapshots:
   exiftool-vendored.exe@13.61.0:
     optional: true
 
-  exiftool-vendored.pl@13.61.0: {}
+  exiftool-vendored.pl@13.61.0:
+    optional: true
 
   exiftool-vendored@39.2.0:
     dependencies:
       '@photostructure/tz-lookup': 11.8.0
       '@types/luxon': 3.7.6
       batch-cluster: 19.6.0
-      exiftool-vendored.pl: 13.61.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.61.0
+      exiftool-vendored.pl: 13.61.0
 
   expand-template@2.0.3: {}
 
@@ -22714,6 +22717,12 @@ snapshots:
       kysely: 0.29.8
     optionalDependencies:
       postgres: 3.4.9
+
+  kysely-postgres-js@5.1.0(kysely@0.29.8)(postgres@4.1.1):
+    dependencies:
+      kysely: 0.29.8
+    optionalDependencies:
+      postgres: 4.1.1
 
   kysely@0.29.8: {}
 
@@ -24810,6 +24819,8 @@ snapshots:
       xtend: 4.0.2
 
   postgres@3.4.9: {}
+
+  postgres@4.1.1: {}
 
   potpack@2.1.0: {}
 
