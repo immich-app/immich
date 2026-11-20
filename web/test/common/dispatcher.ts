@@ -8,6 +8,7 @@ const mutationMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const readOperations = new Set<OperationId>([
   'searchAssets',
   'searchSmart',
+  'searchLargeAssets',
   'getDownloadInfo',
   'downloadArchive',
   'checkBulkUpload',

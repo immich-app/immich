@@ -25,7 +25,7 @@ SvelteKit SPA (SSR off), Svelte 5 runes, Tailwind, `@immich/ui`, `@tanstack/svel
   | --- | --- | --- |
   | API calls | `fetch` stub in the page | Playwright route interception |
   | `<img>` / `<video>` / downloads | never load (404); a failed test prints the URLs | served by the mock |
-  | Routing | one route per test, `goto` only records the URL | real SvelteKit router, multi-page flows |
+  | Routing | one route per test, `goto` updates `page.url` without running loaders | real SvelteKit router, multi-page flows |
   | Layouts | root and `(user)` layouts are not rendered; routes nested in other `+layout.svelte` files are medium | all |
   | Websocket, service worker | none | mocked |
 

@@ -96,6 +96,7 @@ const memories = (assets: AssetResponseDto[], years: MemoryYearSpec[], seed = 42
 };
 
 export const validThumbhash = '1QcSHQRnh493V4dIh4eXh1h4kJUI';
+export const editedThumbhash = '3OcRJYB4d3h/iIeHeEh3eIhw+j3A';
 
 const asset = (overrides: Partial<AssetResponseDto> = {}): AssetResponseDto => {
   const index = assetIndex++;

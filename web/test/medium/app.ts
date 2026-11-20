@@ -246,6 +246,10 @@ export const createApp = (page: Page, data: MockData) => {
 
     timeline: createTimeline(page, data),
 
+    largeFiles: {
+      thumbnails: page.locator('[data-asset]'),
+      thumbnail: (asset: { id: string }) => page.locator(`[data-asset="${asset.id}"]`),
+    },
     duplicates: {
       viewButton: button('view'),
     },
@@ -288,6 +292,7 @@ const createTimeline = (page: Page, data: MockData) => {
     grid,
     thumbnails,
     thumbnail,
+    thumbnailImage: (asset: Asset) => thumbnail(asset).locator('img').first(),
     selected: page.locator('[data-thumbnail-focus-container][data-selected]'),
     addPhotosButton: page.getByLabel('add_photos', { exact: true }),
     albumPicker: {
