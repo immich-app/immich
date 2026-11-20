@@ -110,6 +110,27 @@ test.describe('stack', () => {
     await expect(app.timeline.stackIcon(primary)).toHaveText('2');
   });
 
+  test('keeping one asset of a stack leaves it alone on the timeline', async ({ page, data, api, app }) => {
+    const stack = factory.stack({ assets: [factory.asset(), factory.asset(), factory.asset()] });
+    data.addStacks(stack);
+    const [primary, kept, other] = stack.assets;
+    await page.goto(Route.photos());
+    await app.timeline.thumbnail(primary).click();
+    await app.viewer.waitForAsset(primary);
+    await app.viewer.stackThumbnail(kept).click();
+    await app.viewer.waitForAsset(kept);
+
+    await app.viewer.keepThisDeleteOthers();
+
+    await expect(app.viewer.root).not.toBeVisible();
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [primary.id, other.id] } });
+    expect(api.deleteStacks).toHaveBeenCalledWith({ body: { ids: [stack.id] } });
+    await expect(app.timeline.thumbnail(kept)).toBeVisible();
+    await expect(app.timeline.stackIcon(kept)).toHaveCount(0);
+    await expect(app.timeline.thumbnail(primary)).toHaveCount(0);
+    await expect(app.timeline.thumbnail(other)).toHaveCount(0);
+  });
+
   test('setting the primary asset of a stack', async ({ page, data, api, app }) => {
     const stack = factory.stack({ assets: [factory.asset(), factory.asset()] });
     data.addStacks(stack);
