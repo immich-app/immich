@@ -3,6 +3,11 @@ export interface PaginationOptions {
   skip?: number;
 }
 
+export interface CursorPaginationOptions<TCursor> {
+  take: number;
+  cursor?: TCursor;
+}
+
 export interface PaginationResult<T> {
   items: T[];
   hasNextPage: boolean;
