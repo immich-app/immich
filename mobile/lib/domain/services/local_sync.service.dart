@@ -125,6 +125,12 @@ class LocalSyncService {
     }
   }
 
+  Future<void> resetFullSync() async {
+    _log.info("Resetting local sync state, the next sync will re-read every asset");
+    await _nativeSyncApi.clearSyncCheckpoint();
+    await _localAlbumRepository.resetSync();
+  }
+
   Future<void> fullSync() async {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
@@ -298,7 +304,7 @@ class LocalSyncService {
         both: (dbAsset, deviceAsset) {
           // Custom comparison to check if the asset has been modified without
           // comparing the checksum
-          if (!_assetsEqual(dbAsset, deviceAsset)) {
+          if (!assetsEqual(dbAsset, deviceAsset)) {
             assetsToUpsert.add(deviceAsset);
             return true;
           }
@@ -331,13 +337,21 @@ class LocalSyncService {
   Future<void> _resolveCloudIds(Iterable<LocalAsset> assets) =>
       resolveCloudIds(_nativeSyncApi, _localAlbumRepository, assets.map((a) => a.id), cancellation: _cancellation);
 
-  bool _assetsEqual(LocalAsset a, LocalAsset b) {
+  @visibleForTesting
+  bool assetsEqual(LocalAsset a, LocalAsset b) {
     if (CurrentPlatform.isAndroid) {
-      return a.updatedAt.isAtSameMomentAs(b.updatedAt) &&
+      return a.id == b.id &&
+          a.name == b.name &&
+          a.type == b.type &&
           a.createdAt.isAtSameMomentAs(b.createdAt) &&
+          a.updatedAt.isAtSameMomentAs(b.updatedAt) &&
           a.width == b.width &&
           a.height == b.height &&
-          a.durationMs == b.durationMs;
+          a.durationMs == b.durationMs &&
+          a.isFavorite == b.isFavorite &&
+          a.orientation == b.orientation &&
+          a.playbackStyle == b.playbackStyle &&
+          a.size == b.size;
     }
 
     final firstAdjustment = a.adjustmentTime?.millisecondsSinceEpoch ?? 0;
@@ -439,6 +453,7 @@ extension PlatformToLocalAsset on PlatformAsset {
     adjustmentTime: tryFromSecondsSinceEpoch(adjustmentTime, isUtc: true),
     latitude: latitude,
     longitude: longitude,
+    size: size,
     isEdited: false,
   );
 }

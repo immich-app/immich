@@ -22,6 +22,8 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   IntColumn get orientation => integer().withDefault(const Constant(0))();
 
+  IntColumn get size => integer().nullable()();
+
   TextColumn get iCloudId => text().nullable()();
 
   DateTimeColumn get adjustmentTime => customType(clampedDateTime).nullable()();
@@ -55,6 +57,7 @@ extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
     width: width,
     remoteId: remoteId,
     orientation: orientation,
+    size: size,
     playbackStyle: playbackStyle,
     adjustmentTime: adjustmentTime,
     latitude: latitude,
