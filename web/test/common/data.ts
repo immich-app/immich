@@ -1376,6 +1376,8 @@ export class MockData {
       livePhotoVideoId: bucket.map((asset) => asset.livePhotoVideoId ?? null),
       city: bucket.map((asset) => asset.exifInfo?.city ?? null),
       country: bucket.map((asset) => asset.exifInfo?.country ?? null),
+      latitude: bucket.map((asset) => asset.exifInfo?.latitude ?? null),
+      longitude: bucket.map((asset) => asset.exifInfo?.longitude ?? null),
       visibility: bucket.map((asset) => asset.visibility),
       stack: bucket.map((asset) => (asset.stack ? [asset.stack.id, String(asset.stack.assetCount)] : null)),
     };

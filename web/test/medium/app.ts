@@ -267,6 +267,12 @@ export const createApp = (page: Page, data: MockData) => {
       thumbnails: page.locator('[data-asset]'),
       thumbnail: (asset: { id: string }) => page.locator(`[data-asset="${asset.id}"]`),
     },
+    geolocation: {
+      thumbnail: (asset: { id: string }) => page.locator(`[data-asset="${asset.id}"]`),
+      applyButton: button('apply_count'),
+      unselectAllButton: button('unselect_all'),
+      coordinates: page.getByTitle('latitude, longitude'),
+    },
     duplicates: {
       viewButton: button('view'),
     },
