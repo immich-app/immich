@@ -55,6 +55,28 @@ test.describe('timeline', () => {
       await expect(app.timeline.thumbnail(assets[15])).toBeInViewport();
       await app.timeline.expectAtBottom(assets[15]);
     });
+
+    test('go back lands on the viewed asset below the memory lane', async ({ page, data, app }) => {
+      const assets = data.addTimeline({ years: 3 });
+      data.addMemories(
+        factory.memories(assets, [
+          { year: 2025, assetCount: 3 },
+          { year: 2024, assetCount: 3 },
+        ]),
+      );
+      await page.goto(Route.photos({ at: assets[200].id }));
+      await app.timeline.thumbnail(assets[200]).click();
+      await app.viewer.waitForAsset(assets[200]);
+      for (let index = 201; index <= 212; index++) {
+        await app.viewer.nextButton.click();
+        await app.viewer.waitForAsset(assets[index]);
+      }
+
+      await app.viewer.backButton.click();
+      await page.waitForURL(/\/photos\?at=/);
+
+      await expect(app.timeline.thumbnail(assets[212])).toBeInViewport({ ratio: 0.9 });
+    });
   });
 
   test.describe('keyboard', () => {
