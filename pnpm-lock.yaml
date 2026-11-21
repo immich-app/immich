@@ -578,6 +578,9 @@ importers:
       '@immich/sql-tools':
         specifier: ^0.7.0
         version: 0.7.0
+      '@immich/walkrs':
+        specifier: 0.0.13
+        version: 0.0.13
       '@nestjs/bullmq':
         specifier: ^12.0.0
         version: 12.0.1(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.4.2)(bullmq@6.7.5(ioredis@6.0.0(supports-color@7.2.0))(pg@8.23.1))
@@ -3210,6 +3213,10 @@ packages:
     peerDependencies:
       '@sveltejs/kit': ^2.13.0 || ^3.0.0
       svelte: ^5.29.0
+
+  '@immich/walkrs@0.0.13':
+    resolution: {integrity: sha512-qKDoXFgy3d2Z7SIJBn25BcNyQnPLAp2zZEBcewpWxG5+qAXDPi3M3sweJ9qJ11Eha+YlmpUO3c8yd5CCBeq96A==}
+    engines: {pnpm: '>=10.0.0'}
 
   '@inquirer/ansi@2.1.0':
     resolution: {integrity: sha512-63GU5AD9KhNbWM0jlhHoMJTEFck2upFOPxHlnCKf3xYTV3rjTUUQfodihmTnfYQzMLS29oy8lK/gA1eJgu4bhA==}
@@ -16051,6 +16058,8 @@ snapshots:
       tailwindcss: 4.3.5
     transitivePeerDependencies:
       - zod
+
+  '@immich/walkrs@0.0.13': {}
 
   '@inquirer/ansi@2.1.0': {}
 
