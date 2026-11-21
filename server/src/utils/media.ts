@@ -155,6 +155,8 @@ export class BaseConfig implements VideoCodecSWConfig {
         'faststart',
         '-fps_mode',
         'passthrough',
+        '-enc_time_base:v',
+        'filter',
         '-v',
         'verbose',
       ],
@@ -955,7 +957,7 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
     const options = this.getToneMapping(videoStream);
     options.push('hwupload=extra_hw_frames=64');
     if (this.shouldScale(videoStream)) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`);
+      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:format=nv12`);
     }
 
     return options;
@@ -1044,9 +1046,9 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
     const options = [];
     const tonemapOptions = this.getToneMapping(videoStream);
     if (tonemapOptions.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`);
+      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:format=nv12`);
     } else if (this.shouldScale(videoStream)) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc`);
+      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq`);
     }
     options.push(...tonemapOptions);
     return options;

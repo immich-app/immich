@@ -58,11 +58,11 @@
     ),
     receivedRequests: createQuery(getClusterGroupRequestsQuery, () => queryClient),
     sharedBy: createQuery(
-      () => ({ ...getPartnersQuery(PartnerDirection.SharedBy), staleTime: 0 }),
+      () => getPartnersQuery(PartnerDirection.SharedBy),
       () => queryClient,
     ),
     sharedWith: createQuery(
-      () => ({ ...getPartnersQuery(PartnerDirection.SharedWith), staleTime: 0 }),
+      () => getPartnersQuery(PartnerDirection.SharedWith),
       () => queryClient,
     ),
   };

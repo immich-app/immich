@@ -45,6 +45,7 @@ import { PersonUserRepository } from 'src/repositories/person-user.repository.js
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository.js';
 import { SessionRepository } from 'src/repositories/session.repository.js';
@@ -118,6 +119,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   PersonUserRepository,
   PluginRepository,
   ProcessRepository,
+  ResourceRepository,
   SearchRepository,
   ServerInfoRepository,
   SessionRepository,
@@ -184,6 +186,7 @@ export class BaseService {
     protected personUserRepository: PersonUserRepository,
     protected pluginRepository: PluginRepository,
     protected processRepository: ProcessRepository,
+    protected resourceRepository: ResourceRepository,
     protected searchRepository: SearchRepository,
     protected serverInfoRepository: ServerInfoRepository,
     protected sessionRepository: SessionRepository,
@@ -259,6 +262,7 @@ export class BaseService {
       ctx.personUserRepository,
       ctx.pluginRepository,
       ctx.processRepository,
+      ctx.resourceRepository,
       ctx.searchRepository,
       ctx.serverInfoRepository,
       ctx.sessionRepository,

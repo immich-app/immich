@@ -17,7 +17,10 @@
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
+  import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
   import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { searchMemoriesQuery } from '#lib/queries/memory.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
@@ -60,7 +63,13 @@
   let galleryFirstLoad = $state(true);
   let playerInitialized = $state(false);
   let paused = $state(false);
-  const current = $derived(memoryManager.current);
+  const filters = memoryManager.filters;
+  const memories = createPreloadedQuery(() => searchMemoriesQuery(filters));
+  const current = $derived(memoryManager.getCurrent(memories.data));
+  onResourceDelete(
+    () => current && `/memories/${current.memory.id}`,
+    () => void goto(memoryManager.memoriesHref, { replace: true, reset: false }),
+  );
   const currentAssetId = $derived(current?.asset.id);
   // where the asset sits in its memory, for the progress bar and counter
   const assetIndex = $derived(current ? current.memory.assets.findIndex(({ id }) => id === currentAssetId) : -1);
@@ -171,7 +180,7 @@
     return progressBarController.current * 100;
   };
 
-  const handleHideAssets = (ids: string[]) => handlePromiseError(memoryManager.hideAssets(ids));
+  const handleHideAssets = (ids: string[]) => handlePromiseError(memoryManager.hideAssets(current, ids));
 
   const handleGalleryScrollsIntoView = () => {
     galleryInView = true;
@@ -275,7 +284,7 @@
   )}
 />
 
-<OnEvents onAssetsArchive={handleHideAssets} />
+<OnEvents onAssetsArchive={handleHideAssets} onAssetsDelete={handleHideAssets} />
 
 {#if assetMultiSelectManager.selectionActive}
   <div class="dark sticky top-0 z-1">
@@ -485,7 +494,7 @@
                   variant="ghost"
                   color="secondary"
                   aria-label={current.memory.isSaved ? $t('unfavorite') : $t('favorite')}
-                  onclick={() => memoryManager.toggleCurrentMemorySaved()}
+                  onclick={() => memoryManager.toggleSaved(current)}
                 />
                 <!-- <IconButton
                   icon={mdiShareVariantOutline}
@@ -504,12 +513,12 @@
                   align="bottom-right"
                 >
                   <MenuOption
-                    onClick={() => memoryManager.deleteCurrentMemory()}
+                    onClick={() => memoryManager.deleteCurrentMemory(current)}
                     text={$t('remove_memory')}
                     icon={mdiCardsOutline}
                   />
                   <MenuOption
-                    onClick={() => memoryManager.deleteCurrentAsset()}
+                    onClick={() => memoryManager.deleteCurrentAsset(current)}
                     text={$t('remove_photo_from_memory')}
                     icon={mdiImageMinusOutline}
                   />

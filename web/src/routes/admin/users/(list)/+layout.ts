@@ -6,7 +6,7 @@ import type { LayoutLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
-  await queryClient.query({ ...searchUsersAdminQuery(), staleTime: 0 });
+  await queryClient.query(searchUsersAdminQuery());
   const $t = await getFormatter();
 
   return {

@@ -708,3 +708,45 @@ test('shows the supporter badge', async ({ data, router, render, settle, api, ap
 
   expect(api.updateMyPreferences).toHaveBeenCalledWith({ body: { purchase: { showSupportBadge: true } } });
 });
+
+test('shows an error when linking the OAuth account fails', async ({ data, router, render, settle, api, logger }) => {
+  data.userConfig.oauth.enabled = true;
+  api.on({ linkOAuthAccount: () => ({ status: 400, json: { message: 'Bad request', statusCode: 400 } }) });
+  const path = location.pathname;
+  history.replaceState({}, '', '?code=oauth-code&state=oauth-state');
+
+  try {
+    await router.goto(Route.userSettings());
+    await render(Page, load);
+    await settle();
+
+    expect(api.linkOAuthAccount).toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith(/handleError/);
+    expect(router.url.searchParams.get(QueryParameter.IS_OPEN)).toBe(OpenQueryParam.OAUTH);
+  } finally {
+    history.replaceState({}, '', path);
+  }
+});
+
+test('keeps the OAuth account linked when unlinking fails', async ({
+  data,
+  router,
+  render,
+  settle,
+  api,
+  app,
+  logger,
+}) => {
+  data.user.oauthId = 'oauth-user';
+  data.userConfig.oauth.enabled = true;
+  api.on({ unlinkOAuthAccount: () => ({ status: 400, json: { message: 'Bad request', statusCode: 400 } }) });
+  await router.goto(Route.userSettings({ isOpen: OpenQueryParam.OAUTH }));
+  await render(Page, load);
+
+  await app.settings.unlinkOauthButton.click();
+  await settle();
+
+  expect(api.unlinkOAuthAccount).toHaveBeenCalled();
+  expect(logger.error).toHaveBeenCalledWith(/handleError/);
+  await expect.element(app.settings.unlinkOauthButton).toBeVisible();
+});

@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { Selectable, ShallowDehydrateObject } from 'kysely';
 import z from 'zod';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database.js';
@@ -20,7 +21,6 @@ import type { MaybeDehydrated } from 'src/types.js';
 import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { createZodDto } from 'src/zod.js';
 
 const SanitizedAssetResponseSchema = z
   .object({

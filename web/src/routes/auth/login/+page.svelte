@@ -1,14 +1,16 @@
 <script lang="ts">
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
   import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+  import { loginMutation } from '#lib/queries/auth.query.ts';
   import { MutationCancelledError, createPreloadedQuery } from '#lib/queries/client.ts';
   import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+  import { finishOAuthMutation } from '#lib/queries/oauth.query.ts';
   import { loginWithPasskeyMutation } from '#lib/queries/passkey.query.ts';
   import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
   import { Route } from '#lib/route.ts';
   import { oauth } from '#lib/utils.ts';
   import { getServerErrorMessage, handleError } from '#lib/utils/handle-error.ts';
-  import { login, type LoginResponseDto } from '@immich/sdk';
+  import type { LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
   import { mdiShieldKeyOutline } from '@mdi/js';
   import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
@@ -24,11 +26,9 @@
 
   let { data }: Props = $props();
 
-  let errorMessage: string = $state('');
   let email = $state('');
   let password = $state('');
   let oauthError = $state('');
-  let loading = $state(false);
   let oauthLoading = $state(true);
 
   const queries = {
@@ -41,6 +41,21 @@
 
   const passkeySupported = browserSupportsWebAuthn();
   const passkeyEnabled = $derived(publicConfig.passkey.enabled && passkeySupported);
+
+  const passwordLogin = createMutation(() => ({ ...loginMutation(), onSuccess: (user) => onLogin(user) }));
+  const loading = $derived(passwordLogin.isPending || passwordLogin.isSuccess);
+  const errorMessage = $derived(
+    passwordLogin.error ? getServerErrorMessage(passwordLogin.error) || $t('errors.incorrect_email_or_password') : '',
+  );
+
+  const oauthLogin = createMutation(() => ({
+    ...finishOAuthMutation(),
+    onSuccess: (user) => (user.isOnboarded ? onSuccess(user) : onOnboarding()),
+    onError: (error) => {
+      oauthError = getServerErrorMessage(error) || $t('errors.unable_to_complete_oauth_login');
+      oauthLoading = false;
+    },
+  }));
 
   const passkeyLogin = createMutation(() => ({ ...loginWithPasskeyMutation(), onSuccess: (user) => onLogin(user) }));
   const passkeyLoading = $derived(passkeyLogin.isPending || passkeyLogin.isSuccess);
@@ -87,22 +102,8 @@
     }
 
     if (oauth.isCallback(location)) {
-      try {
-        const user = await oauth.login(location);
-
-        if (!user.isOnboarded) {
-          await onOnboarding();
-          return;
-        }
-
-        await onSuccess(user);
-        return;
-      } catch (error) {
-        console.error('Error [login-form] [oauth.callback]', error);
-        oauthError = getServerErrorMessage(error) || $t('errors.unable_to_complete_oauth_login');
-        oauthLoading = false;
-        return;
-      }
+      oauthLogin.mutate([{ oAuthCallbackDto: { url: location.href } }]);
+      return;
     }
 
     try {
@@ -121,31 +122,19 @@
     oauthLoading = false;
   });
 
-  const handleLogin = async () => {
-    try {
-      errorMessage = '';
-      loading = true;
-      const user = await login({ loginCredentialDto: { email, password } });
-      await onLogin(user);
-    } catch (error) {
-      errorMessage = getServerErrorMessage(error) || $t('errors.incorrect_email_or_password');
-      loading = false;
-    }
-  };
-
   const handleOAuthLogin = async () => {
     oauthLoading = true;
     oauthError = '';
-    const success = await oauth.authorize(location);
-    if (!success) {
+    const response = await oauth.authorize(location);
+    if (!response) {
       oauthLoading = false;
       oauthError = $t('errors.unable_to_login_with_oauth');
     }
   };
 
-  const onsubmit = async (event: Event) => {
+  const onsubmit = (event: Event) => {
     event.preventDefault();
-    await handleLogin();
+    passwordLogin.mutate([{ loginCredentialDto: { email, password } }]);
   };
 </script>
 

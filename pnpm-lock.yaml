@@ -569,6 +569,9 @@ importers:
       '@futo-org/backups-orchestrator-api':
         specifier: 1.18.1
         version: 1.18.1(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.4.2)(@nestjs/platform-socket.io@12.4.2)(@nestjs/schedule@12.0.3(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.4.2))(@nestjs/swagger@12.1.1(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.4.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(@nestjs/websockets@12.4.2)(kysely@0.29.8)(reflect-metadata@0.2.2)(supports-color@7.2.0)
+      '@immich/nestjs-standard-schema':
+        specifier: ^0.1.0
+        version: 0.1.0(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/swagger@12.1.1(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.4.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)(zod@4.6.7)
       '@immich/plugin-sdk':
         specifier: workspace:*
         version: link:../packages/plugin-sdk
@@ -761,9 +764,6 @@ importers:
       react-email:
         specifier: ^6.0.0
         version: 6.11.11(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@7.2.0)
-      reflect-metadata:
-        specifier: ^0.2.0
-        version: 0.2.2
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
@@ -3183,6 +3183,17 @@ packages:
 
   '@immich/justified-layout-wasm@0.4.6':
     resolution: {integrity: sha512-+O009P5JQjrQt0QIMH0Lk9LLvsXKx6A9eftzzyYh3S4ND1m998HM2TRHc1Rw7jT2ZR+GRKzccwUfoNsTfmoGfg==}
+
+  '@immich/nestjs-standard-schema@0.1.0':
+    resolution: {integrity: sha512-lybVbJ3vKh/ayDdfzcmKNmGpVLz2RYgvm5eHPvWjDRG/NI7HO02z1T/n0zOn9tg1o/Itt6a/hStZFJc4wPIhwQ==}
+    peerDependencies:
+      '@nestjs/common': ^12.0.0
+      '@nestjs/swagger': ^12.0.0
+      reflect-metadata: ^0.2.0
+      zod: ^4.2.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
 
   '@immich/sql-tools@0.7.0':
     resolution: {integrity: sha512-RWSHO5UEza6zUrF1vncsbkeTT59MuWlUz6Ys47Dkujb+FqjBOsXnzQb0v8d5g4iTtIfXZzQKTWgvfIMY3GbzrA==}
@@ -15989,6 +16000,15 @@ snapshots:
     optional: true
 
   '@immich/justified-layout-wasm@0.4.6': {}
+
+  '@immich/nestjs-standard-schema@0.1.0(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/swagger@12.1.1(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.4.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)(zod@4.6.7)':
+    dependencies:
+      '@nestjs/common': 12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
+      '@nestjs/swagger': 12.1.1(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.4.2)(@typescript/typescript6@6.0.2)(reflect-metadata@0.2.2)
+      '@standard-schema/spec': 1.1.0
+      reflect-metadata: 0.2.2
+    optionalDependencies:
+      zod: 4.6.7
 
   '@immich/sql-tools@0.7.0':
     dependencies:

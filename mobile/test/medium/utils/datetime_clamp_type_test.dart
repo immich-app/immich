@@ -54,7 +54,7 @@ void main() {
     );
     final db = Drift(schema.newConnection());
     addTearDown(db.close);
-    await verifier.migrateAndValidate(db, 34);
+    await verifier.migrateAndValidate(db, db.schemaVersion);
 
     final row = await (db.select(db.localAssetEntity)..where((t) => t.id.equals('a'))).getSingle();
     expect(row.createdAt, DateTime.utc(9999, 12, 31));

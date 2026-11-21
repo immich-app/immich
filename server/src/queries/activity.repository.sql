@@ -59,6 +59,8 @@ returning
 delete from "activity"
 where
   "id" = $1::uuid
+returning
+  "albumId"
 
 -- ActivityRepository.getStatistics
 select

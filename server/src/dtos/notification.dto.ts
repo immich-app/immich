@@ -1,97 +1,66 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { NotificationLevel, NotificationLevelSchema, NotificationType, NotificationTypeSchema } from 'src/enum.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
 import { isoDatetimeToDate, stringToBool } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
-const TestEmailResponseSchema = z
-  .object({
-    messageId: z.string().describe('Email message ID'),
-  })
-  .meta({ id: 'TestEmailResponseDto' });
+export class TestEmailResponseDto extends createZodDto({
+  messageId: z.string().describe('Email message ID'),
+}) {}
 
-const TemplateResponseSchema = z
-  .object({
-    name: z.string().describe('Template name'),
-    html: z.string().describe('Template HTML content'),
-  })
-  .meta({ id: 'TemplateResponseDto' });
+export class TemplateResponseDto extends createZodDto({
+  name: z.string().describe('Template name'),
+  html: z.string().describe('Template HTML content'),
+}) {}
 
-const TemplateSchema = z
-  .object({
-    template: z.string().describe('Template name'),
-  })
-  .meta({ id: 'TemplateDto' });
+export class TemplateDto extends createZodDto({
+  template: z.string().describe('Template name'),
+}) {}
 
-const EmailTemplateParamSchema = z
-  .object({
-    name: z.enum(EmailTemplate).describe('Email template name').meta({ id: 'EmailTemplate' }),
-  })
-  .meta({ id: 'EmailTemplateParamDto' });
+export class EmailTemplateParamDto extends createZodDto({
+  name: z.enum(EmailTemplate).describe('Email template name').meta({ id: 'EmailTemplate' }),
+}) {}
 
-const NotificationSchema = z
-  .object({
-    id: z.uuidv4().describe('Notification ID'),
-    createdAt: isoDatetimeToDate.describe('Creation date'),
-    level: NotificationLevelSchema,
-    type: NotificationTypeSchema,
-    title: z.string().describe('Notification title'),
-    description: z.string().optional().describe('Notification description'),
-    data: z.record(z.string(), z.unknown()).optional().describe('Additional notification data'),
-    readAt: isoDatetimeToDate.optional().describe('Date when notification was read'),
-  })
-  .meta({ id: 'NotificationDto' });
+export class NotificationDto extends createZodDto({
+  id: z.uuidv4().describe('Notification ID'),
+  createdAt: isoDatetimeToDate.describe('Creation date'),
+  level: NotificationLevelSchema,
+  type: NotificationTypeSchema,
+  title: z.string().describe('Notification title'),
+  description: z.string().optional().describe('Notification description'),
+  data: z.record(z.string(), z.unknown()).optional().describe('Additional notification data'),
+  readAt: isoDatetimeToDate.optional().describe('Date when notification was read'),
+}) {}
 
-const NotificationSearchSchema = z
-  .object({
-    id: z.uuidv4().optional().describe('Filter by notification ID'),
-    level: NotificationLevelSchema.optional(),
-    type: NotificationTypeSchema.optional(),
-    unread: stringToBool.optional().describe('Filter by unread status'),
-  })
-  .meta({ id: 'NotificationSearchDto' });
+export class NotificationSearchDto extends createZodDto({
+  id: z.uuidv4().optional().describe('Filter by notification ID'),
+  level: NotificationLevelSchema.optional(),
+  type: NotificationTypeSchema.optional(),
+  unread: stringToBool.optional().describe('Filter by unread status'),
+}) {}
 
-const NotificationCreateSchema = z
-  .object({
-    level: NotificationLevelSchema.optional(),
-    type: NotificationTypeSchema.optional(),
-    title: z.string().describe('Notification title'),
-    description: z.string().nullish().describe('Notification description'),
-    data: z.record(z.string(), z.unknown()).optional().describe('Additional notification data'),
-    readAt: isoDatetimeToDate.nullish().describe('Date when notification was read'),
-    userId: z.uuidv4().describe('User ID to send notification to'),
-  })
-  .meta({ id: 'NotificationCreateDto' });
+export class NotificationCreateDto extends createZodDto({
+  level: NotificationLevelSchema.optional(),
+  type: NotificationTypeSchema.optional(),
+  title: z.string().describe('Notification title'),
+  description: z.string().nullish().describe('Notification description'),
+  data: z.record(z.string(), z.unknown()).optional().describe('Additional notification data'),
+  readAt: isoDatetimeToDate.nullish().describe('Date when notification was read'),
+  userId: z.uuidv4().describe('User ID to send notification to'),
+}) {}
 
-const NotificationUpdateSchema = z
-  .object({
-    readAt: isoDatetimeToDate.nullish().describe('Date when notification was read'),
-  })
-  .meta({ id: 'NotificationUpdateDto' });
+export class NotificationUpdateDto extends createZodDto({
+  readAt: isoDatetimeToDate.nullish().describe('Date when notification was read'),
+}) {}
 
-const NotificationUpdateAllSchema = z
-  .object({
-    ids: z.array(z.uuidv4()).min(1).describe('Notification IDs to update'),
-    readAt: isoDatetimeToDate.nullish().describe('Date when notifications were read'),
-  })
-  .meta({ id: 'NotificationUpdateAllDto' });
+export class NotificationUpdateAllDto extends createZodDto({
+  ids: z.array(z.uuidv4()).min(1).describe('Notification IDs to update'),
+  readAt: isoDatetimeToDate.nullish().describe('Date when notifications were read'),
+}) {}
 
-const NotificationDeleteAllSchema = z
-  .object({
-    ids: z.array(z.uuidv4()).min(1).describe('Notification IDs to delete'),
-  })
-  .meta({ id: 'NotificationDeleteAllDto' });
-
-export class TestEmailResponseDto extends createZodDto(TestEmailResponseSchema) {}
-export class TemplateResponseDto extends createZodDto(TemplateResponseSchema) {}
-export class TemplateDto extends createZodDto(TemplateSchema) {}
-export class EmailTemplateParamDto extends createZodDto(EmailTemplateParamSchema) {}
-export class NotificationDto extends createZodDto(NotificationSchema) {}
-export class NotificationSearchDto extends createZodDto(NotificationSearchSchema) {}
-export class NotificationCreateDto extends createZodDto(NotificationCreateSchema) {}
-export class NotificationUpdateDto extends createZodDto(NotificationUpdateSchema) {}
-export class NotificationUpdateAllDto extends createZodDto(NotificationUpdateAllSchema) {}
-export class NotificationDeleteAllDto extends createZodDto(NotificationDeleteAllSchema) {}
+export class NotificationDeleteAllDto extends createZodDto({
+  ids: z.array(z.uuidv4()).min(1).describe('Notification IDs to delete'),
+}) {}
 
 type MapNotification = {
   id: string;

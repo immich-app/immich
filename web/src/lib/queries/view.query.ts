@@ -1,3 +1,4 @@
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { TreeNode } from '#lib/utils/tree-utils.ts';
 import { getAssetsByOriginalPath, getUniqueOriginalPaths } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
@@ -10,7 +11,7 @@ const toTree = (paths: string[]) => {
 
 export const getUniqueOriginalPathsQuery = () =>
   queryOptions({
-    queryKey: ['view', 'folder', 'unique-paths'],
+    queryKey: QueryKeys.folderPaths(),
     queryFn: ({ signal }) => getUniqueOriginalPaths({ signal }),
   });
 
@@ -22,6 +23,6 @@ export const getFolderTreeQuery = () =>
 
 export const getAssetsByOriginalPathQuery = (path: string) =>
   queryOptions({
-    queryKey: ['view', 'folder', 'assets', path],
+    queryKey: QueryKeys.folderAssets({ path }),
     queryFn: ({ signal }) => getAssetsByOriginalPath({ path }, { signal }),
   });

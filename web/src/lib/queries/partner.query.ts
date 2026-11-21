@@ -1,16 +1,15 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { PartnerDirection, createPartner, getPartners, removePartner, updatePartner } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
 
-export const partnersQueryKey = ['partners'];
-
 export const getPartnersQuery = (direction: PartnerDirection) =>
   queryOptions({
-    queryKey: [...partnersQueryKey, direction],
+    queryKey: QueryKeys.partners({ direction }),
     queryFn: ({ signal }) => getPartners({ direction }, { signal }),
   });
 
-const invalidatePartners = () => queryClient.invalidateQueries({ queryKey: partnersQueryKey });
+const invalidatePartners = () => queryClient.invalidateQueries({ queryKey: QueryKeys.partners() });
 
 export const createPartnerMutation = () =>
   asMutation(createPartner, {

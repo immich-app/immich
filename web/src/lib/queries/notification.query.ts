@@ -1,10 +1,11 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { getNotifications, updateNotification, updateNotifications } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
 
 export const getNotificationsQuery = () =>
   queryOptions({
-    queryKey: ['notifications'],
+    queryKey: QueryKeys.notifications({ unread: true }),
     queryFn: ({ signal }) => getNotifications({ unread: true }, { signal }),
   });
 

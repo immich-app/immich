@@ -1,5 +1,5 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
-import { createZodDto } from 'src/zod.js';
 
 export enum AssetEditAction {
   Crop = 'crop',
@@ -109,28 +109,23 @@ function uniqueEditActions(edits: z.infer<typeof AssetEditActionItemSchema>[]): 
   return true;
 }
 
-const AssetEditsCreateSchema = z
-  .object({
-    edits: z
-      .array(AssetEditActionItemSchema)
-      .min(1)
-      .describe('List of edit actions to apply (crop, rotate, or mirror)')
-      .refine(uniqueEditActions, { error: 'Duplicate edit actions are not allowed' }),
-  })
-  .meta({ id: 'AssetEditsCreateDto' });
-
 const AssetEditActionItemResponseSchema = AssetEditActionItemSchema.extend({
   id: z.uuidv4().describe('Asset edit ID'),
 }).meta({ id: 'AssetEditActionItemResponseDto' });
 
-const AssetEditsResponseSchema = z
-  .object({
-    assetId: z.uuidv4().describe('Asset ID these edits belong to'),
-    edits: z.array(AssetEditActionItemResponseSchema).describe('List of edit actions applied to the asset'),
-  })
-  .meta({ id: 'AssetEditsResponseDto' });
-
 export class AssetEditActionItemResponseDto extends createZodDto(AssetEditActionItemResponseSchema) {}
-export class AssetEditsCreateDto extends createZodDto(AssetEditsCreateSchema) {}
-export class AssetEditsResponseDto extends createZodDto(AssetEditsResponseSchema) {}
+
+export class AssetEditsCreateDto extends createZodDto({
+  edits: z
+    .array(AssetEditActionItemSchema)
+    .min(1)
+    .describe('List of edit actions to apply (crop, rotate, or mirror)')
+    .refine(uniqueEditActions, { error: 'Duplicate edit actions are not allowed' }),
+}) {}
+
+export class AssetEditsResponseDto extends createZodDto({
+  assetId: z.uuidv4().describe('Asset ID these edits belong to'),
+  edits: z.array(AssetEditActionItemResponseSchema).describe('List of edit actions applied to the asset'),
+}) {}
+
 export type CropParameters = z.infer<typeof CropParametersSchema>;

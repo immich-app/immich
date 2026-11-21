@@ -1,52 +1,8 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { HistoryBuilder } from 'src/decorators.js';
 import { JobNameSchema, QueueCommandSchema, QueueJobStatusSchema, QueueNameSchema } from 'src/enum.js';
 import { queryParamArray } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
-
-const QueueNameParamSchema = z
-  .object({
-    name: QueueNameSchema,
-  })
-  .meta({ id: 'QueueNameParamDto' });
-
-const QueueCommandSchemaDto = z
-  .object({
-    command: QueueCommandSchema,
-    force: z.boolean().optional().describe('Force the command execution (if applicable)'),
-  })
-  .meta({ id: 'QueueCommandDto' });
-
-const QueueUpdateSchema = z
-  .object({
-    isPaused: z.boolean().optional().describe('Whether to pause the queue'),
-  })
-  .meta({ id: 'QueueUpdateDto' });
-
-const QueueDeleteSchema = z
-  .object({
-    failed: z
-      .boolean()
-      .optional()
-      .describe('If true, will also remove failed jobs from the queue.')
-      .meta(new HistoryBuilder().added('v2.4.0').alpha('v2.4.0').getExtensions()),
-  })
-  .meta({ id: 'QueueDeleteDto' });
-
-const QueueJobSearchSchema = z
-  .object({
-    status: queryParamArray(QueueJobStatusSchema).optional().describe('Filter jobs by status'),
-  })
-  .meta({ id: 'QueueJobSearchDto' });
-
-const QueueJobResponseSchema = z
-  .object({
-    id: z.string().optional().describe('Job ID'),
-    name: JobNameSchema,
-    data: z.record(z.string(), z.unknown()).describe('Job data payload'),
-    timestamp: z.int().describe('Job creation timestamp'),
-  })
-  .meta({ id: 'QueueJobResponseDto' });
 
 export const QueueStatisticsSchema = z
   .object({
@@ -68,19 +24,42 @@ export const QueueStatisticsSchema = z
   })
   .meta({ id: 'QueueStatisticsDto' });
 
-const QueueResponseSchema = z
-  .object({
-    name: QueueNameSchema,
-    isPaused: z.boolean().describe('Whether the queue is paused'),
-    statistics: QueueStatisticsSchema,
-  })
-  .meta({ id: 'QueueResponseDto' });
+export class QueueNameParamDto extends createZodDto({
+  name: QueueNameSchema,
+}) {}
 
-export class QueueNameParamDto extends createZodDto(QueueNameParamSchema) {}
-export class QueueCommandDto extends createZodDto(QueueCommandSchemaDto) {}
-export class QueueUpdateDto extends createZodDto(QueueUpdateSchema) {}
-export class QueueDeleteDto extends createZodDto(QueueDeleteSchema) {}
-export class QueueJobSearchDto extends createZodDto(QueueJobSearchSchema) {}
-export class QueueJobResponseDto extends createZodDto(QueueJobResponseSchema) {}
+export class QueueCommandDto extends createZodDto({
+  command: QueueCommandSchema,
+  force: z.boolean().optional().describe('Force the command execution (if applicable)'),
+}) {}
+
+export class QueueUpdateDto extends createZodDto({
+  isPaused: z.boolean().optional().describe('Whether to pause the queue'),
+}) {}
+
+export class QueueDeleteDto extends createZodDto({
+  failed: z
+    .boolean()
+    .optional()
+    .describe('If true, will also remove failed jobs from the queue.')
+    .meta(new HistoryBuilder().added('v2.4.0').alpha('v2.4.0').getExtensions()),
+}) {}
+
+export class QueueJobSearchDto extends createZodDto({
+  status: queryParamArray(QueueJobStatusSchema).optional().describe('Filter jobs by status'),
+}) {}
+
+export class QueueJobResponseDto extends createZodDto({
+  id: z.string().optional().describe('Job ID'),
+  name: JobNameSchema,
+  data: z.record(z.string(), z.unknown()).describe('Job data payload'),
+  timestamp: z.int().describe('Job creation timestamp'),
+}) {}
+
 export class QueueStatisticsDto extends createZodDto(QueueStatisticsSchema) {}
-export class QueueResponseDto extends createZodDto(QueueResponseSchema) {}
+
+export class QueueResponseDto extends createZodDto({
+  name: QueueNameSchema,
+  isPaused: z.boolean().describe('Whether the queue is paused'),
+  statistics: QueueStatisticsSchema,
+}) {}

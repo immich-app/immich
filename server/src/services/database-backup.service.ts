@@ -18,9 +18,11 @@ import type { ArgOf } from 'src/repositories/event.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { getConfig } from 'src/utils/config.js';
 import {
   UnsupportedPostgresError,
@@ -48,6 +50,8 @@ export class DatabaseBackupService {
     private readonly jobRepository: JobRepository,
     @Optional()
     private readonly maintenanceHealthRepository: MaintenanceHealthRepository,
+    @Optional()
+    private readonly resourceRepository?: ResourceRepository,
   ) {
     this.logger.setContext(this.constructor.name);
   }
@@ -287,6 +291,10 @@ export class DatabaseBackupService {
 
     const filePath = path.join(backupsFolder, `uploaded-${fn}`);
     await this.storageRepository.createOrOverwriteFile(filePath, file.buffer);
+    this.resourceRepository?.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.databaseBackups()],
+    });
   }
 
   downloadBackup(fileName: string): ImmichFileResponse {
@@ -334,6 +342,10 @@ export class DatabaseBackupService {
     }
 
     await Promise.all(files.map((filename) => this.storageRepository.unlink(path.join(backupsFolder, filename))));
+    this.resourceRepository?.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.databaseBackups()],
+    });
   }
 
   async cleanupDatabaseBackups() {

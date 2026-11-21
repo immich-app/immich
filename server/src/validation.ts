@@ -1,9 +1,9 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { FileValidator, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
 import validator from 'validator';
 import z from 'zod';
-import { createZodDto } from 'src/zod.js';
 
 export type IsIPRangeOptions = { requireCIDR?: boolean };
 
@@ -92,32 +92,24 @@ export class FileNotEmptyValidator extends FileValidator {
   }
 }
 
-const UUIDParamSchema = z.object({
+export class UUIDParamDto extends createZodDto({
   id: z.uuidv4(),
-});
+}) {}
 
-export class UUIDParamDto extends createZodDto(UUIDParamSchema) {}
-
-const UUIDv7ParamSchema = z.object({
+export class UUIDv7ParamDto extends createZodDto({
   id: z.uuidv7(),
-});
+}) {}
 
-export class UUIDv7ParamDto extends createZodDto(UUIDv7ParamSchema) {}
-
-const UUIDAssetIDParamSchema = z.object({
+export class UUIDAssetIDParamDto extends createZodDto({
   id: z.uuidv4(),
   assetId: z.uuidv4(),
-});
+}) {}
 
-export class UUIDAssetIDParamDto extends createZodDto(UUIDAssetIDParamSchema) {}
-
-const FilenameParamSchema = z.object({
+export class FilenameParamDto extends createZodDto({
   filename: z.string().regex(/^[a-zA-Z0-9_\-.]+$/, {
     error: 'Filename contains invalid characters',
   }),
-});
-
-export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
+}) {}
 
 /**
 The HTML5 email regex, but with unicode support, so that international email addresses

@@ -3,7 +3,7 @@ import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.
 import { queryClient } from '#lib/queries/client.ts';
 import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
 import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
-import { locale } from '#lib/stores/preferences.store.ts';
+import { localeSetting } from '#lib/stores/preferences.store.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { getUiTranslations } from '#lib/utils/ui-translations.ts';
 import { MockData } from '#test/common/data.ts';
@@ -44,7 +44,7 @@ export class Mock {
 
   async setup() {
     document.cookie = 'immich_is_authenticated=true';
-    locale.set('en');
+    localeSetting.set('en');
     this.router.setup();
     this.api.setup();
     this.logger.setup();
@@ -60,7 +60,7 @@ export class Mock {
       }
       cleanup();
       toastManager.setOptions(noToasts);
-      locale.set('default');
+      localeSetting.set('default');
       assetViewerManager.closeActivityPanel();
       queryClient.clear();
       resetPage();
