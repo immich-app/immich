@@ -10,6 +10,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/album/new_album_name_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
@@ -25,6 +26,7 @@ import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
 typedef AlbumSelectorCallback = void Function(RemoteAlbum album);
@@ -32,8 +34,14 @@ typedef AlbumSelectorCallback = void Function(RemoteAlbum album);
 class AlbumSelector extends ConsumerStatefulWidget {
   final AlbumSelectorCallback onAlbumSelected;
   final Function? onKeyboardExpanded;
+  final bool showAlbumActions;
 
-  const AlbumSelector({super.key, required this.onAlbumSelected, this.onKeyboardExpanded});
+  const AlbumSelector({
+    super.key,
+    required this.onAlbumSelected,
+    this.onKeyboardExpanded,
+    this.showAlbumActions = false,
+  });
 
   @override
   ConsumerState<AlbumSelector> createState() => _AlbumSelectorState();
@@ -208,7 +216,12 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
           ),
           isGrid
               ? _AlbumGrid(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected)
-              : _AlbumList(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected),
+              : _AlbumList(
+                  albums: shownAlbums,
+                  userId: userId,
+                  onAlbumSelected: widget.onAlbumSelected,
+                  showAlbumActions: widget.showAlbumActions,
+                ),
         ],
       ),
     );
@@ -554,15 +567,21 @@ class _QuickSortAndViewMode extends StatelessWidget {
   }
 }
 
-class _AlbumList extends ConsumerWidget {
-  const _AlbumList({required this.albums, required this.userId, required this.onAlbumSelected});
+class _AlbumList extends StatelessWidget {
+  const _AlbumList({
+    required this.albums,
+    required this.userId,
+    required this.onAlbumSelected,
+    required this.showAlbumActions,
+  });
 
   final List<RemoteAlbum> albums;
   final String? userId;
   final AlbumSelectorCallback onAlbumSelected;
+  final bool showAlbumActions;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (albums.isEmpty) {
       return SliverToBoxAdapter(
         child: Center(
@@ -578,44 +597,91 @@ class _AlbumList extends ConsumerWidget {
           final album = albums[index];
           final isOwner = album.ownerId == userId;
 
-          if (isOwner) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Dismissible(
-                key: ValueKey(album.id),
-                background: Container(
-                  color: context.colorScheme.error,
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Icon(Icons.delete, color: context.colorScheme.onError),
-                ),
-                direction: DismissDirection.endToStart,
-                confirmDismiss: (direction) {
-                  return showDialog<bool>(
-                    context: context,
-                    builder: (context) => ConfirmDialog(
-                      onOk: () => true,
-                      title: context.t.delete_album,
-                      content: context.t.album_delete_confirmation(album: album.name),
-                      ok: context.t.delete,
-                    ),
-                  );
-                },
-                onDismissed: (direction) async {
-                  await ref.read(remoteAlbumProvider.notifier).deleteAlbum(album.id);
-                },
-                child: AlbumTile(album: album, isOwner: isOwner, onAlbumSelected: onAlbumSelected),
-              ),
-            );
-          } else {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: AlbumTile(album: album, isOwner: isOwner, onAlbumSelected: onAlbumSelected),
-            );
-          }
+          final tile = AlbumTile(album: album, isOwner: isOwner, onAlbumSelected: onAlbumSelected);
+
+          return Padding(
+            key: ValueKey(album.id),
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: showAlbumActions && isOwner ? _AlbumContextMenu(album: album, child: tile) : tile,
+          );
         },
         itemCount: albums.length,
       ),
+    );
+  }
+}
+
+class _AlbumContextMenu extends ConsumerWidget {
+  const _AlbumContextMenu({required this.album, required this.child});
+
+  final RemoteAlbum album;
+  final Widget child;
+
+  Future<void> _deleteAlbum(BuildContext context, WidgetRef ref) async {
+    if (!context.mounted) {
+      return;
+    }
+
+    final albumNotifier = ref.read(remoteAlbumProvider.notifier);
+    final deleteFailedMessage = context.t.album_viewer_appbar_share_err_delete;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => ConfirmDialog(
+        onOk: () => true,
+        title: context.t.delete_album,
+        content: context.t.album_delete_confirmation(album: album.name),
+        ok: context.t.delete,
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      await albumNotifier.deleteAlbum(album.id);
+    } catch (_) {
+      const SnackbarManager().show(deleteFailedMessage, SnackbarType.error);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MenuAnchor(
+      consumeOutsideTap: true,
+      style: MenuStyle(
+        backgroundColor: WidgetStatePropertyAll(context.themeData.scaffoldBackgroundColor),
+        surfaceTintColor: const WidgetStatePropertyAll(Colors.grey),
+        elevation: const WidgetStatePropertyAll(4),
+        shape: const WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+        ),
+        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
+        alignment: AlignmentDirectional.topEnd,
+      ),
+      menuChildren: [
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 200),
+          child: BaseActionButton(
+            label: context.t.delete_album,
+            iconData: Icons.delete,
+            iconColor: context.isDarkTheme ? Colors.red[400] : Colors.red[800],
+            onPressed: () => unawaited(_deleteAlbum(context, ref)),
+            menuItem: true,
+          ),
+        ),
+      ],
+      builder: (context, controller, anchor) => PopScope(
+        onPopInvokedWithResult: (_, _) => controller.close(),
+        child: GestureDetector(
+          onLongPress: () {
+            unawaited(Feedback.forLongPress(context));
+            controller.open();
+          },
+          child: anchor,
+        ),
+      ),
+      child: child,
     );
   }
 }
