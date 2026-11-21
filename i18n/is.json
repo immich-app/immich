@@ -953,7 +953,6 @@
     "cant_change_activity": "Get ekki {enabled, select, true {afvirkjað} other {virkjað}} virkni",
     "cant_change_asset_favorite": "Get ekki breytt uppáhalds fyrir eign",
     "cant_change_metadata_assets_count": "Get ekki breytt lýsigögnum {count, plural, one {# eignar} other {# eigna}}",
-    "cant_get_faces": "Get ekki sótt andlit",
     "cant_get_number_of_comments": "Get ekki sótt fjölda athugasemda",
     "cant_search_people": "Get ekki leitað að fólki",
     "cant_search_places": "Get ekki leitað að stöðum",
