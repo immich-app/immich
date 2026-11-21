@@ -14,7 +14,6 @@ class FilmstripSetting extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewerConfig = ref.watch(appConfigProvider.select((c) => c.viewer));
     final filmstripEnabled = useState(viewerConfig.filmstripEnabled);
-    final filmstripHeight = useState(viewerConfig.filmstripHeight);
     useValueChanged<bool, void>(filmstripEnabled.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.viewerFilmstripEnabled, filmstripEnabled.value));
     });
@@ -27,17 +26,6 @@ class FilmstripSetting extends HookConsumerWidget {
           valueNotifier: filmstripEnabled,
           title: context.t.setting_filmstrip_enable_title,
           subtitle: context.t.setting_filmstrip_enable_subtitle,
-        ),
-        SettingsSliderListTile(
-          valueNotifier: filmstripHeight,
-          enabled: filmstripEnabled.value,
-          text: context.t.setting_filmstrip_height_title(height: filmstripHeight.value),
-          label: '${filmstripHeight.value} px',
-          minValue: 40,
-          maxValue: 120,
-          // 8 divisions in steps of 10px: 40, 50, ..., 120px
-          noDivisons: 8,
-          onChangeEnd: (value) => unawaited(ref.read(settingsProvider).write(.viewerFilmstripHeight, value)),
         ),
       ],
     );

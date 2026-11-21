@@ -24,7 +24,6 @@ enum SettingsKey<T> {
   viewerAutoPlayVideo<bool>(),
   viewerTapToNavigate<bool>(),
   viewerFilmstripEnabled<bool>(),
-  viewerFilmstripHeight<int>(),
 
   // Network
   networkAutoEndpointSwitching<bool>(),

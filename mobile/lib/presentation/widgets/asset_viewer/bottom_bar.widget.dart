@@ -61,6 +61,12 @@ class ViewerBottomBar extends ConsumerWidget {
         ..._actionColumnButtons(context, ref, const [DeleteAction(source: .viewer)]),
       ],
     ];
+    final actionRow = isReadonlyModeEnabled
+        ? null
+        : ImmichColorOverride(
+            color: Colors.white,
+            child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+          );
 
     return AnimatedSwitcher(
       duration: Durations.short4,
@@ -98,12 +104,7 @@ class ViewerBottomBar extends ConsumerWidget {
                         children: [
                           if (asset.isImage) OcrToggleButton(asset: asset),
                           if (asset.isVideo) VideoControls(videoPlayerName: asset.id),
-                          if (filmstripEnabled) const ViewerFilmstrip(),
-                          if (!isReadonlyModeEnabled)
-                            ImmichColorOverride(
-                              color: Colors.white,
-                              child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
-                            ),
+                          if (filmstripEnabled) ViewerFilmstrip(actions: actionRow) else ?actionRow,
                         ],
                       ),
                     ),
