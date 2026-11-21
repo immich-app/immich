@@ -732,7 +732,6 @@
     "cant_change_activity": "Није могуће {enabled, select, true {онемогућити} other {омогућити}} активност",
     "cant_change_asset_favorite": "Није могуће променити омиљено за датотеку",
     "cant_change_metadata_assets_count": "Није могуће променити метаподатке за {count, plural, one {# датотеку} other {# датотеке}}",
-    "cant_get_faces": "Не могу да нађем лица",
     "cant_get_number_of_comments": "Не могу добити број коментара",
     "cant_search_people": "Не могу претраживати особе",
     "cant_search_places": "Не могу претраживати места",

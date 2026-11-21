@@ -920,7 +920,6 @@
     "cant_change_activity": "क्रिया {enabled, select, true {निष्क्रिय} other {सक्रिय}} करू शकत नाही",
     "cant_change_asset_favorite": "फाईलसाठी आवड बदलता येत नाही",
     "cant_change_metadata_assets_count": "{count, plural, one {# अॅसेटचे मेटाडेटा बदलता येत नाही} other {# अॅसेट्सचे मेटाडेटा बदलता येत नाही}}",
-    "cant_get_faces": "चेहऱ्यांची माहिती मिळवता येत नाही",
     "cant_get_number_of_comments": "टिप्पण्यांची संख्या मिळवता येत नाही",
     "cant_search_people": "लोक शोधता येत नाही",
     "cant_search_places": "ठिकाणे शोधता येत नाही",

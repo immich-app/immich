@@ -587,7 +587,6 @@
     "cant_change_activity": "ఇతర యాక్టివిటీని {enabled, select, true {disable} other {enable}} చేయలేరు",
     "cant_change_asset_favorite": "ఆస్తికి ఇష్టమైనదాన్ని మార్చలేరు",
     "cant_change_metadata_assets_count": "{count, plural, one {# asset} other {# assets}} యొక్క మెటాడేటాను మార్చలేము",
-    "cant_get_faces": "ముఖాలను పొందలేకపోతున్నాను",
     "cant_get_number_of_comments": "వ్యాఖ్యల సంఖ్యను పొందలేకపోతున్నాను",
     "cant_search_people": "వ్యక్తులను శోధించడం సాధ్యం కాదు",
     "cant_search_places": "స్థలాలను శోధించడం సాధ్యం కాలేదు",
