@@ -154,6 +154,10 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     // or it does nothing on iOS at all.
     if (!_isBackgroundSyncEnabled) {
       _logger.info("Background sync is disabled. Skipping the whole run");
+      // Still has to run: this isolate opened its own database connection and
+      // provider container during bootstrap. Returning early left both open for
+      // the lifetime of the (now idle) background engine.
+      await _cleanup();
       return;
     }
     _logger.info('iOS background upload started with maxSeconds: ${maxSeconds}s');

@@ -210,6 +210,18 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    */
   override fun onStopped() {
     Log.d(TAG, "About to stop BackupWorker")
+    // `close()` reports Result.failure(), which WorkManager treats as "never run
+    // again". A system stop is not a finished job: a 54 minute budget can be cut
+    // short by the OS at any point, and the remaining files would then wait for
+    // the hourly periodic worker. Re-queue, unless the stop was asked for --
+    // a user cancel goes through disable() (switch already off) and the
+    // foreground lock goes through cancelBackgroundWorker().
+    if (!isComplete && !BackgroundWorkerApiImpl.explicitlyCancelled &&
+      BackgroundWorkerPreferences(ctx).isSyncEnabled()
+    ) {
+      Log.i(TAG, "Stopped by the system, scheduling another run")
+      BackgroundWorkerApiImpl.enqueueBackgroundWorkerWhenConnected(ctx)
+    }
     close()
   }
 
