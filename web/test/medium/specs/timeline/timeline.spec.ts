@@ -14,6 +14,12 @@ test.describe('timeline', () => {
       }
     });
 
+    test('deep link focuses the asset', async ({ page, data, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos({ at: assets[300].id }));
+      await expect(app.timeline.thumbnail(assets[300])).toBeFocused();
+    });
+
     test('browser back returns to the viewed asset and scroll position', async ({ page, data, app }) => {
       const assets = data.addTimeline({ years: 1 });
       const [asset, next] = assets.slice(300, 302);
