@@ -55,6 +55,19 @@ test.describe('timeline', () => {
       await expect(app.timeline.thumbnail(assets[15])).toBeInViewport();
       await app.timeline.expectAtBottom(assets[15]);
     });
+
+    test('view in timeline from the viewer outlines the asset', async ({ page, data, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      const asset = assets[300];
+      await page.goto(Route.photos({ at: asset.id }));
+      await app.timeline.thumbnail(asset).click();
+      await app.viewer.waitForAsset(asset);
+
+      await app.viewer.viewInTimeline();
+      await page.waitForURL(/\/photos\?at=/);
+
+      await expect(app.timeline.thumbnail(asset).and(page.locator(':focus-visible'))).toBeFocused();
+    });
   });
 
   test.describe('keyboard', () => {
