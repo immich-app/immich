@@ -132,3 +132,36 @@ test('finishes restoring when the selection ends mid-request', async ({ data, ro
   expect(api.restoreAssets).toHaveBeenCalledWith({ body: { ids: [asset.id] } });
   await expect.element(app.trash.restoreAllButton).not.toBeInTheDocument();
 });
+
+test('shows the empty placeholder while the trash is empty', async ({ router, render, settle, app }) => {
+  await router.goto(Route.trash());
+  await render(Page, load);
+  await settle();
+
+  await expect.element(app.trash.emptyPlaceholder).toBeVisible();
+});
+
+test('redirects to photos when the trash is disabled', async ({ data, router, render, settle, app }) => {
+  data.userConfig.trash.enabled = false;
+  await router.goto(Route.trash());
+
+  await render(Page, load);
+  await settle();
+
+  expect(router.url.pathname).toBe(Route.photos());
+  await expect.element(app.trash.emptyPlaceholder).not.toBeInTheDocument();
+});
+
+test('hides the trash actions while assets are selected', async ({ data, router, render, app }) => {
+  const [asset] = data.addTimeline({ years: 1 });
+  data.deleteAssets([asset.id]);
+  await router.goto(Route.trash());
+  await render(Page, load);
+  await expect.element(app.trash.restoreAllButton).toBeVisible();
+
+  await app.gallery.selectAll();
+
+  await expect.element(app.trash.restoreSelectedButton).toBeVisible();
+  await expect.element(app.trash.restoreAllButton).not.toBeInTheDocument();
+  await expect.element(app.trash.emptyTrashButton).not.toBeInTheDocument();
+});
