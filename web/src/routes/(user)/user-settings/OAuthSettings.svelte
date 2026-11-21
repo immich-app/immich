@@ -3,10 +3,10 @@
   import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { unlinkOAuthAccountMutation } from '#lib/queries/oauth.query.ts';
   import { Route } from '#lib/route.ts';
-  import { oauth } from '#lib/utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { Button, Stack, Text, toastManager } from '@immich/ui';
+  import { Button, Stack, Text } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { goto } from '$app/navigation';
@@ -14,15 +14,7 @@
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);
 
-  const handleUnlink = async () => {
-    try {
-      const response = await oauth.unlink();
-      authManager.setUser(response);
-      toastManager.primary($t('unlinked_oauth_account'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_unlink_account'));
-    }
-  };
+  const unlink = createMutation(unlinkOAuthAccountMutation);
 </script>
 
 {#if config.oauth.enabled}
@@ -38,7 +30,7 @@
               </Button>
             {/if}
             {#if featureFlagsManager.value.passwordLogin}
-              <Button shape="round" size="small" color="danger" onclick={() => handleUnlink()}>
+              <Button shape="round" size="small" color="danger" onclick={() => unlink.mutate([])}>
                 {$t('unlink_oauth')}
               </Button>
             {/if}

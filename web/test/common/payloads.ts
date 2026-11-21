@@ -4,6 +4,7 @@ import {
   AudioCodec,
   CQMode,
   Colorspace,
+  ImageEffort,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -98,6 +99,22 @@ const serverFeatures = (overrides: Partial<ResponseOf<'getServerFeatures'>> = {}
 });
 
 const backups = (): ResponseOf<'listDatabaseBackups'> => ({ backups: [] });
+
+const storageTemplateOptions = (): ResponseOf<'getAdminStorageTemplateOptions'> => ({
+  secondOptions: ['s', 'ss', 'SSS'],
+  minuteOptions: ['m', 'mm'],
+  dayOptions: ['d', 'dd'],
+  weekOptions: ['W', 'WW'],
+  hourOptions: ['h', 'hh', 'H', 'HH'],
+  yearOptions: ['y', 'yy'],
+  monthOptions: ['M', 'MM', 'MMM', 'MMMM'],
+  presets: [
+    { template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}', preview: '2022/2022-02-03/IMAGE_56437' },
+    { template: '{{y}}/{{MM}}/{{dd}}/{{filename}}', preview: '2022/02/03/IMAGE_56437' },
+    { template: '{{y}}/{{MMMM}}/{{filename}}', preview: '2022/February/IMAGE_56437' },
+    { template: '{{album}}/{{filename}}', preview: 'Album Name/IMAGE_56437' },
+  ],
+});
 
 const aboutInfo = (overrides: Partial<ResponseOf<'getAboutInfo'>> = {}): ResponseOf<'getAboutInfo'> => ({
   version: 'v2.2.3',
@@ -251,11 +268,11 @@ const adminConfig = (overrides: Partial<ResponseOf<'getAdminConfig'>> = {}): Res
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   image: {
-    thumbnail: { format: ImageFormat.Webp, size: 250, quality: 80, progressive: false },
-    preview: { format: ImageFormat.Jpeg, size: 1440, quality: 80, progressive: false },
+    thumbnail: { format: ImageFormat.Webp, size: 250, quality: 80, progressive: false, effort: ImageEffort.Medium },
+    preview: { format: ImageFormat.Jpeg, size: 1440, quality: 80, progressive: false, effort: ImageEffort.Medium },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
-    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80, progressive: false },
+    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80, progressive: false, effort: ImageEffort.Medium },
   },
   newVersionCheck: { enabled: true, channel: ReleaseChannel.Stable },
   nightlyTasks: {
@@ -338,5 +355,6 @@ export const payload = {
   queues,
   notifications,
   backups,
+  storageTemplateOptions,
   integrityReport,
 };

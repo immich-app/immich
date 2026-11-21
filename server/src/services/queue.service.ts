@@ -27,6 +27,7 @@ import {
   QueueName,
 } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { ConcurrentQueueName, JobItem } from 'src/types.js';
 import { handlePromiseError } from 'src/utils/misc.js';
@@ -132,10 +133,14 @@ export class QueueService extends BaseService {
       }
 
       case QueueCommand.ClearFailed: {
-        const failedJobs = await this.jobRepository.clear(name, QueueCleanType.Failed);
-        this.logger.debug(`Cleared failed jobs: ${failedJobs}`);
+        const count = await this.jobRepository.clear(name, QueueCleanType.Failed);
+        this.logger.debug(`Cleared ${count} failed jobs`);
         break;
       }
+    }
+
+    if (dto.command !== QueueCommand.Start) {
+      await this.sendQueueUpdate(name);
     }
 
     const response = await this.getByName(name);
@@ -166,6 +171,10 @@ export class QueueService extends BaseService {
       await this.jobRepository.resume(name);
     }
 
+    if (dto.isPaused !== undefined) {
+      await this.sendQueueUpdate(name);
+    }
+
     return this.getByName(name);
   }
 
@@ -178,6 +187,12 @@ export class QueueService extends BaseService {
     if (dto.failed) {
       await this.jobRepository.clear(name, QueueCleanType.Failed);
     }
+    await this.sendQueueUpdate(name);
+  }
+
+  private async sendQueueUpdate(name: QueueName) {
+    const userIds = await this.userRepository.getAdminIds();
+    this.resourceRepository.send({ userIds, changed: [Resource.queue({ name }), Resource.jobs()] });
   }
 
   private async getByName(name: QueueName): Promise<QueueResponseDto> {

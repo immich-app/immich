@@ -15,6 +15,21 @@ const setup = (data: MockData, overrides = {}) => {
 };
 
 test.describe('shared link', () => {
+  test('shows new shared links from another source', async ({ page, data, api, app }) => {
+    const [existing, added] = [
+      factory.sharedLink({ assets: [factory.asset()] }),
+      factory.sharedLink({ assets: [factory.asset()] }),
+    ];
+    data.addSharedLinks(existing);
+    await page.goto(Route.sharedLinks());
+    await expect(app.sharedLink.card(existing)).toBeVisible();
+
+    data.addSharedLinks(added);
+    await api.emitResourceEvent({ changed: ['/shared-links'] });
+
+    await expect(app.sharedLink.card(added)).toBeVisible();
+  });
+
   test('guest downloads one asset and then the whole album', async ({ page, context, data, api, app }) => {
     const { link, album, assets } = setup(data);
     await context.clearCookies();
@@ -57,6 +72,38 @@ test.describe('shared link', () => {
       body: { password: 'test-password' },
     });
     expect(logger.error).toHaveBeenCalledWith(/401/);
+  });
+
+  test('wrong password keeps the password prompt', async ({ page, context, data, api, logger, app }) => {
+    const { link } = setup(data, { password: 'test-password' });
+    await context.clearCookies();
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+
+    await app.sharedLink.passwordInput.fill('wrong-password');
+    await app.sharedLink.submitButton.click();
+
+    await expect(app.toast(/Invalid password/)).toBeVisible();
+    await expect(app.sharedLink.passwordInput).toBeVisible();
+    await expect(app.sharedLink.heading('Test Album')).toHaveCount(0);
+    expect(api.sharedLinkLogin).toHaveBeenCalledWith({
+      params: expect.objectContaining({ key: link.key }),
+      body: { password: 'wrong-password' },
+    });
+    expect(logger.error).toHaveBeenCalledWith(/401/);
+  });
+
+  test('a failed album download shows an error', async ({ page, context, data, api, logger, app }) => {
+    const { link } = setup(data);
+    api.on({ getDownloadInfo: () => ({ status: 500, json: { message: 'Server error', statusCode: 500 } }) });
+    await context.clearCookies();
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+    await expect(app.sharedLink.heading('Test Album')).toBeVisible();
+
+    await app.sharedLink.downloadButton.click();
+
+    await expect(app.toast(/Server error/)).toBeVisible();
+    expect(api.downloadArchive).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith(/500/);
   });
 
   test('invalid key shows the not found page', async ({ page, context, logger, app }) => {

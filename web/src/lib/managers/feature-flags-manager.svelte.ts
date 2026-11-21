@@ -1,17 +1,12 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
-import { getServerFeatures, type ServerFeaturesDto } from '@immich/sdk';
+import { queryClient } from '#lib/queries/client.ts';
+import { getServerFeaturesQuery } from '#lib/queries/server-info.query.ts';
+import type { ServerFeaturesDto } from '@immich/sdk';
 
 class FeatureFlagsManager {
   #value?: ServerFeaturesDto = $state();
 
-  constructor() {
-    eventManager.on({
-      SystemConfigUpdate: () => void this.#loadFeatureFlags(),
-    });
-  }
-
   async init() {
-    await this.#loadFeatureFlags();
+    this.#value = await queryClient.query(getServerFeaturesQuery());
   }
 
   get value() {
@@ -20,10 +15,6 @@ class FeatureFlagsManager {
     }
 
     return this.#value;
-  }
-
-  async #loadFeatureFlags() {
-    this.#value = await getServerFeatures();
   }
 }
 

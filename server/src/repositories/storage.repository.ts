@@ -232,7 +232,6 @@ export class StorageRepository {
 
     const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
 
-    // eslint-disable-next-line import-x/no-named-as-default-member
     return fastGlob.glob(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
@@ -252,7 +251,6 @@ export class StorageRepository {
 
     const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
 
-    // eslint-disable-next-line import-x/no-named-as-default-member
     const stream = fastGlob.globStream(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
@@ -305,7 +303,6 @@ export class StorageRepository {
   watchDir = watch; // Native fs.watch without chokidar overhead
 
   private asGlob(pathToCrawl: string): string {
-    // eslint-disable-next-line import-x/no-named-as-default-member
     const escapedPath = fastGlob
       .escapePath(pathToCrawl)
       .replaceAll('"', '["]')

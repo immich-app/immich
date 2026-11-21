@@ -5,6 +5,7 @@
   import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
   import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
   import MemoriesSettingsModal from '#lib/modals/MemoriesSettingsModal.svelte';
+  import { memoriesStatisticsQuery, searchMemoriesQuery } from '#lib/queries/memory.query.ts';
   import { Route } from '#lib/route.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl, memoryLaneTitle } from '#lib/utils.ts';
@@ -13,6 +14,7 @@
   import type { MemoryResponseDto } from '@immich/sdk';
   import { IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -22,10 +24,16 @@
 
   const { data }: Props = $props();
 
+  const queries = {
+    memories: createQuery(() => searchMemoriesQuery(memoryManager.filters)),
+    total: createQuery(() => memoriesStatisticsQuery(memoryManager.filters)),
+  };
+  const memories = $derived(queries.memories.data ?? []);
+
   // memories are generated a few days ahead of time, and sorted by `showAt`, so the ones that have
   // not been shown yet come first
   const isUpcoming = (memory: MemoryResponseDto) => !!memory.showAt && new Date(memory.showAt).getTime() > Date.now();
-  const upcomingCount = $derived(memoryManager.memories.filter((memory) => isUpcoming(memory)).length);
+  const upcomingCount = $derived(memories.filter((memory) => isUpcoming(memory)).length);
   const hasUpcoming = $derived(upcomingCount > 0);
 
   const handleSettings = async () => {
@@ -35,13 +43,13 @@
     }
 
     userPreferencesManager.memories = settings;
-    await memoryManager.applyPreferences();
+    memoryManager.applyPreferences();
   };
 </script>
 
 <UserPageLayout
   title={data.meta.title}
-  description={memoryManager.total === undefined ? undefined : `(${memoryManager.total.toLocaleString($locale)})`}
+  description={queries.total.data === undefined ? undefined : `(${queries.total.data.toLocaleString($locale)})`}
   {@attach scrollMemory({ routeStartsWith: Route.memories() })}
 >
   {#snippet buttons()}
@@ -57,12 +65,12 @@
       />
     </div>
   {/snippet}
-  {#if memoryManager.memories.length > 0}
+  {#if memories.length > 0}
     <div class="grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {#if hasUpcoming}
         <div class="col-span-full outline-none">{$t('memories_upcoming')}</div>
       {/if}
-      {#each memoryManager.memories as memory, index (memory.id)}
+      {#each memories as memory, index (memory.id)}
         {#if hasUpcoming && index === upcomingCount}
           <div class="col-span-full outline-none">{$t('memories_current')}</div>
         {/if}
@@ -84,7 +92,7 @@
         />
       {/each}
     </div>
-  {:else if memoryManager.loading}
+  {:else if queries.memories.isFetching}
     <div class="flex items-center justify-center py-16">
       <LoadingSpinner size="giant" />
     </div>

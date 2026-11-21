@@ -286,6 +286,7 @@ class MediumRepositoryContext {
     int? durationMs,
     int? orientation,
     DateTime? updatedAt,
+    bool? unsupported,
   }) async {
     id ??= TestUtils.uuid();
     createdAt ??= TestUtils.date();
@@ -310,6 +311,7 @@ class MediumRepositoryContext {
             adjustmentTime: _resolveUndefined(adjustmentTime, adjustmentTimeOption, DateTime.now()),
             latitude: .new(latitude ?? TestUtils.randDouble(-90, 90)),
             longitude: .new(longitude ?? TestUtils.randDouble(-180, 180)),
+            unsupported: .new(unsupported ?? false),
           ),
         );
   }

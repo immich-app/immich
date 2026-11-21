@@ -9,8 +9,9 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MaintenanceAuthDto, MaintenanceStatusResponseDto } from 'src/dtos/maintenance.dto.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
-import type { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository.js';
+import { EventRepository, type AppRestartEvent, type ArgsOf } from 'src/repositories/event.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { handlePromiseError } from 'src/utils/misc.js';
 
 interface ServerEventMap {
   AppRestart: [AppRestartEvent];
@@ -23,7 +24,6 @@ interface ClientEventMap {
 }
 
 type AuthFn = (client: Socket) => Promise<MaintenanceAuthDto>;
-type StatusUpdateFn = (status: MaintenanceStatusResponseDto) => void;
 
 @WebSocketGateway({
   cors: true,
@@ -33,7 +33,6 @@ type StatusUpdateFn = (status: MaintenanceStatusResponseDto) => void;
 @Injectable()
 export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   private authFn?: AuthFn;
-  private statusUpdateFn?: StatusUpdateFn;
 
   @WebSocketServer()
   private server?: Server;
@@ -41,13 +40,19 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
   constructor(
     private logger: LoggingRepository,
     private appRepository: AppRepository,
+    private eventRepository: EventRepository,
   ) {
     this.logger.setContext(MaintenanceWebsocketRepository.name);
   }
 
   afterInit(server: Server) {
     this.logger.log('Initialized websocket server');
-    server.on('MaintenanceStatus', (status) => this.statusUpdateFn?.(status));
+    server.on('MaintenanceStatus', (status: MaintenanceStatusResponseDto) =>
+      handlePromiseError(
+        this.eventRepository.onEvent({ name: 'MaintenanceStatus', args: [status], server: true }),
+        this.logger,
+      ),
+    );
     server.on('AppRestart', (event: ArgsOf<'AppRestart'>, ack?: (ok: 'ok') => void) => {
       this.logger.log(`Restarting due to event... ${JSON.stringify(event)}`);
 
@@ -70,14 +75,13 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
   }
 
   async handleConnection(client: Socket) {
-    try {
-      await this.authFn!(client);
-      await client.join('private');
-      this.logger.log(`Websocket Connect:    ${client.id} (private)`);
-    } catch {
-      await client.join('public');
-      this.logger.log(`Websocket Connect:    ${client.id} (public)`);
-    }
+    const isAuthenticated = await this.authFn!(client)
+      .then(() => true)
+      .catch(() => false);
+    const room = isAuthenticated ? 'private' : 'public';
+    await client.join(room);
+    this.logger.log(`Websocket Connect:    ${client.id} (${room})`);
+    await this.eventRepository.emit('MaintenanceWebsocketConnect', { clientId: client.id, isAuthenticated });
   }
 
   async handleDisconnect(client: Socket) {
@@ -87,9 +91,5 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
 
   setAuthFn(fn: (client: Socket) => Promise<MaintenanceAuthDto>) {
     this.authFn = fn;
-  }
-
-  setStatusUpdateFn(fn: (status: MaintenanceStatusResponseDto) => void) {
-    this.statusUpdateFn = fn;
   }
 }

@@ -1,6 +1,8 @@
 import { MediaType } from '#lib/constants.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getAllPeopleQuery } from '#lib/queries/person.query.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
-import { getAllPeople, type PersonResponseDto, type TagResponseDto } from '@immich/sdk';
+import { type PersonResponseDto, type TagResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import type { SvelteSet } from 'svelte/reactivity';
@@ -140,9 +142,8 @@ export const getSearchMediaTitle = (mediaType: MediaType) => {
 export const getPeople = async (selected: SvelteSet<string>): Promise<PersonResponseDto[]> => {
   const $t = get(t);
   try {
-    const res = await getAllPeople({ withHidden: false });
-    res.people.sort((a, b) => (selected.has(a.id) ? -1 : selected.has(b.id) ? 1 : 0));
-    return res.people;
+    const { people } = await queryClient.query({ ...getAllPeopleQuery({ withHidden: false }), staleTime: 0 });
+    return [...people].sort((a, b) => (selected.has(a.id) ? -1 : selected.has(b.id) ? 1 : 0));
   } catch (error) {
     handleError(error, $t('errors.failed_to_get_people'));
   }

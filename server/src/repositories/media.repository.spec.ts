@@ -1,9 +1,10 @@
+import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
-import { Colorspace, ImageFormat } from 'src/enum.js';
+import { Colorspace, ImageEffort, ImageFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { automock } from 'test/utils.js';
@@ -320,6 +321,26 @@ describe(MediaRepository.name, () => {
     });
   });
 
+  describe('probe', () => {
+    it.each([
+      { formatLongName: 'QuickTime / MOV', nbFrames: 'N/A', isFragmented: true },
+      { formatLongName: 'QuickTime / MOV', nbFrames: '557', isFragmented: false },
+      { formatLongName: 'Matroska / WebM', nbFrames: 'N/A', isFragmented: false },
+    ])('should detect fragmentation for $formatLongName with $nbFrames frames', async (testCase) => {
+      const data = {
+        format: { format_name: 'test', format_long_name: testCase.formatLongName },
+        streams: [{ index: 0, codec_type: 'video', codec_name: 'h264', nb_frames: testCase.nbFrames }],
+      } as FfprobeData;
+      vi.spyOn(ffmpeg, 'ffprobe').mockImplementation((...args: unknown[]) =>
+        (args.at(-1) as (error: null, data: FfprobeData) => void)(null, data),
+      );
+
+      const { format } = await sut.probe('/path/to/video');
+
+      expect(format.isFragmented).toBe(testCase.isFragmented);
+    });
+  });
+
   describe('generateThumbnail', () => {
     it('should process random Authentik thumbnail image', async () => {
       const response = await fetch(
@@ -335,6 +356,7 @@ describe(MediaRepository.name, () => {
           colorspace: Colorspace.P3,
           quality: 80,
           format: ImageFormat.Webp,
+          effort: ImageEffort.Medium,
           processInvalidImages: false,
           decodingTier: 0,
         },
@@ -342,6 +364,27 @@ describe(MediaRepository.name, () => {
       );
 
       expect(statSync(file).blksize).toBeGreaterThan(0);
+    });
+
+    it.each([
+      { format: ImageFormat.Webp, effort: ImageEffort.Low, expected: 2 },
+      { format: ImageFormat.Webp, effort: ImageEffort.Max, expected: 6 },
+      { format: ImageFormat.Jpeg, effort: ImageEffort.Max, expected: undefined },
+    ])('should encode $format at $effort effort', async ({ format, effort, expected }) => {
+      const toFormat = vi.spyOn(sharp.prototype, 'toFormat');
+      const dir = mkdtempDisposableSync(join(tmpdir(), 'media-repository-'));
+      const decoded = await sut.decodeImage(await buildTestQuadImage(), {
+        colorspace: Colorspace.Srgb,
+        processInvalidImages: false,
+      });
+
+      await sut.generateThumbnail(
+        decoded,
+        { colorspace: Colorspace.Srgb, quality: 80, format, effort, processInvalidImages: false, decodingTier: 0 },
+        join(dir.path, `test.${format}`),
+      );
+
+      expect(toFormat).toHaveBeenCalledWith(format, expect.objectContaining({ effort: expected }));
     });
   });
 });

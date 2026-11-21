@@ -5,11 +5,12 @@
   import ThemeButton from '#lib/components/shared-components/ThemeButton.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { sharedLinkLoginMutation } from '#lib/queries/shared-link.query.ts';
   import { setSharedLink } from '#lib/utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
   import { navigate } from '#lib/utils/navigation.ts';
-  import { SharedLinkType, sharedLinkLogin, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { Button, Logo, PasswordInput } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -38,25 +39,23 @@
     assetViewerManager.showAssetViewer(false);
   }
 
-  const handlePasswordSubmit = async () => {
-    try {
-      sharedLink = await sharedLinkLogin({ key, slug, sharedLinkLoginDto: { password } });
-      setSharedLink(sharedLink);
-      passwordRequired = false;
-      title = (sharedLink.album ? sharedLink.album.albumName : $t('public_share')) + ' - Immich';
-      await tick();
-      await navigate(
-        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetViewerManager.gridScrollTarget },
-        { forceNavigate: true, replace: true },
-      );
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_get_shared_link'));
-    }
+  const login = createMutation(sharedLinkLoginMutation);
+
+  const onLogin = async (link: SharedLinkResponseDto) => {
+    sharedLink = link;
+    setSharedLink(link);
+    passwordRequired = false;
+    title = (link.album ? link.album.albumName : $t('public_share')) + ' - Immich';
+    await tick();
+    await navigate(
+      { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetViewerManager.gridScrollTarget },
+      { forceNavigate: true, replace: true },
+    );
   };
 
-  const onsubmit = async (event: Event) => {
+  const onsubmit = (event: Event) => {
     event.preventDefault();
-    await handlePasswordSubmit();
+    login.mutate([{ key, slug, sharedLinkLoginDto: { password } }], { onSuccess: (link) => void onLogin(link) });
   };
 
   onDestroy(() => {

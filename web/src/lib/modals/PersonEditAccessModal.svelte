@@ -1,20 +1,15 @@
 <script lang="ts">
   import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
-  import OnEvents from '#lib/components/OnEvents.svelte';
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getClusterGroupUsersQuery } from '#lib/queries/cluster-group.query.ts';
+  import { getUsersForPeopleQuery } from '#lib/queries/person.query.ts';
   import { getPersonUserActions, getPersonUsersActions } from '#lib/services/person-user.service.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import {
-    SharingDirection,
-    getClusterGroupUsers,
-    getUsersForPeople,
-    type PersonResponseDto,
-    type UserResponseDto,
-  } from '@immich/sdk';
+  import { SharingDirection, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { ActionButton, BasicModal, HStack, Text, type ActionItem } from '@immich/ui';
   import { mdiAccountMultipleOutline } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -24,37 +19,29 @@
 
   let { person, onClose }: Props = $props();
 
-  let sharedByMe = $state<UserResponseDto[]>([]);
-  let sharedWithMe = $state<UserResponseDto[]>([]);
-  let clusterGroupUsers = $state<UserResponseDto[]>([]);
+  const queries = {
+    sharedBy: createQuery(
+      () => getUsersForPeopleQuery({ personId: person.id, direction: SharingDirection.SharedBy }),
+      () => queryClient,
+    ),
+    sharedWith: createQuery(
+      () => getUsersForPeopleQuery({ personId: person.id, direction: SharingDirection.SharedWith }),
+      () => queryClient,
+    ),
+    clusterGroupUsers: createQuery(
+      () => getClusterGroupUsersQuery(authManager.user.clusterGroupId),
+      () => queryClient,
+    ),
+  };
+  const sharedBy = $derived(queries.sharedBy.data ?? []);
+  const sharedByMeIds = $derived(new Set(sharedBy.map(({ sharedWithId }) => sharedWithId)));
+  const sharedByMe = $derived(sharedBy.map(({ sharedWith }) => sharedWith));
+  const sharedWithMe = $derived(
+    (queries.sharedWith.data ?? []).map(({ sharedBy }) => sharedBy).filter(({ id }) => !sharedByMeIds.has(id)),
+  );
+  const clusterGroupUsers = $derived(queries.clusterGroupUsers.data ?? []);
 
   const { AddUsers } = $derived(getPersonUsersActions($t, person, [...sharedByMe, ...sharedWithMe], clusterGroupUsers));
-
-  const refreshPersonUsers = async () => {
-    try {
-      const [sharedBy, sharedWith] = await Promise.all([
-        getUsersForPeople({ personId: person.id, direction: SharingDirection.SharedBy }),
-        getUsersForPeople({ personId: person.id, direction: SharingDirection.SharedWith }),
-      ]);
-      const sharedByMeIds = new Set(sharedBy.map(({ sharedWithId }) => sharedWithId));
-      sharedByMe = sharedBy.map(({ sharedWith }) => sharedWith);
-      sharedWithMe = sharedWith.map(({ sharedBy }) => sharedBy).filter(({ id }) => !sharedByMeIds.has(id));
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-    }
-  };
-
-  const loadClusterGroupUsers = async () => {
-    try {
-      clusterGroupUsers = await getClusterGroupUsers({ id: authManager.user.clusterGroupId });
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-    }
-  };
-
-  onMount(async () => {
-    await Promise.all([refreshPersonUsers(), loadClusterGroupUsers()]);
-  });
 </script>
 
 {#snippet userCard(user: UserResponseDto, action: ActionItem, type: 'icon' | 'button')}
@@ -71,8 +58,6 @@
     </div>
   </div>
 {/snippet}
-
-<OnEvents onPersonShare={refreshPersonUsers} onPersonUserDelete={refreshPersonUsers} />
 
 <BasicModal title={$t('manage_person_access')} size="medium" icon={mdiAccountMultipleOutline} {onClose}>
   <Text size="small" color="muted" class="mb-4">

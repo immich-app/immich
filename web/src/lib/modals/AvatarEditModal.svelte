@@ -1,9 +1,10 @@
 <script lang="ts">
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { UserAvatarColor, deleteProfileImage, updateMyUser } from '@immich/sdk';
-  import { Modal, ModalBody, toastManager } from '@immich/ui';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { deleteProfileImageMutation, updateMyUserMutation } from '#lib/queries/user.query.ts';
+  import { UserAvatarColor } from '@immich/sdk';
+  import { Modal, ModalBody } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -14,21 +15,16 @@
 
   const colors: UserAvatarColor[] = Object.values(UserAvatarColor);
 
-  const onSave = async (color: UserAvatarColor) => {
-    try {
-      if (authManager.user.profileImagePath !== '') {
-        await deleteProfileImage();
-      }
-
-      toastManager.primary($t('saved_profile'));
-
-      const response = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
-      authManager.setUser(response);
-      onClose();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_profile'));
+  const onSave = (color: UserAvatarColor) => {
+    if (authManager.user.profileImagePath === '') {
+      return setAvatarColor(color);
     }
+
+    return executeMutation(deleteProfileImageMutation, [], { onSuccess: () => void setAvatarColor(color) });
   };
+
+  const setAvatarColor = (avatarColor: UserAvatarColor) =>
+    executeMutation(updateMyUserMutation, [{ userUpdateMeDto: { avatarColor } }], { onSuccess: () => onClose() });
 </script>
 
 <Modal title={$t('select_avatar_color')} size="small" {onClose}>

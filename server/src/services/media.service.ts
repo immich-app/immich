@@ -348,6 +348,7 @@ export class MediaService extends BaseService {
         format: fullsizeFormat,
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
+        effort: image.fullsize.effort,
         decodingTier: 0,
       } as const;
       promises.push(this.mediaRepository.generateThumbnail(decoded, fullsizeOptions, fullsizeFile.path));
@@ -428,14 +429,15 @@ export class MediaService extends BaseService {
       orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
     });
 
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ ownerId, personGroupId });
+    const thumbnailPath = StorageCore.getPersonThumbnailPath({ ownerId, personGroupId }, image.thumbnail.format);
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions: GenerateThumbnailOptions = {
       colorspace: image.colorspace,
-      format: ImageFormat.Jpeg,
+      format: image.thumbnail.format,
       quality: image.thumbnail.quality,
-      progressive: false,
+      progressive: image.thumbnail.progressive,
+      effort: image.thumbnail.effort,
       processInvalidImages: false,
       size: FACE_THUMBNAIL_SIZE,
       edits: [
@@ -455,6 +457,9 @@ export class MediaService extends BaseService {
 
     await this.mediaRepository.generateThumbnail(decoded, thumbnailOptions, thumbnailPath);
     await this.personRepository.update({ ownerId, personGroupId, thumbnailPath });
+    if (data.thumbnailPath && data.thumbnailPath !== thumbnailPath) {
+      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [data.thumbnailPath] } });
+    }
 
     return JobStatus.Success;
   }
@@ -723,7 +728,10 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isRemuxRequired(ffmpegConfig: ConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
+  private isRemuxRequired(
+    ffmpegConfig: ConfigFFmpegDto,
+    { formatName, formatLongName, isFragmented }: VideoFormat,
+  ): boolean {
     if (ffmpegConfig.transcode === TranscodePolicy.Disabled) {
       return false;
     }
@@ -735,7 +743,7 @@ export class MediaService extends BaseService {
 
     const name = (formatLongName ? formatLongNameMapping[formatLongName] : undefined) ?? (formatName as VideoContainer);
 
-    return name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name);
+    return isFragmented || (name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name));
   }
 
   isSRGB({

@@ -1,8 +1,13 @@
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
+import { Resource } from 'src/resource-paths.js';
+import { NotificationAdminService } from 'src/services/notification-admin.service.js';
 import { NotificationService } from 'src/services/notification.service.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
+import { UserFactory } from 'test/factories/user.factory.js';
+import { notificationStub } from 'test/fixtures/notification.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const smtpTransport = Object.freeze<SystemConfig>({
   ...defaults,
@@ -107,6 +112,26 @@ describe(NotificationService.name, () => {
           replyTo: 'demo@immich.app',
         }),
       );
+    });
+  });
+});
+
+describe(NotificationAdminService.name, () => {
+  let sut: NotificationAdminService;
+  let mocks: ServiceMocks;
+
+  beforeEach(() => {
+    ({ sut, mocks } = newTestService(NotificationAdminService));
+  });
+
+  describe('create', () => {
+    it('should tell only the recipient', async () => {
+      const [admin, recipient] = [UserFactory.create({ isAdmin: true }), UserFactory.create()];
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
+
+      await sut.create(AuthFactory.create(admin), { userId: recipient.id, title: 'Hello' });
+
+      expectResourceEvents(mocks, { userIds: [recipient.id], changed: [Resource.notifications()] });
     });
   });
 });

@@ -21,6 +21,7 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
+  PersonUserRole,
   PersonUsersDeleteDto,
   PersonUsersResponseDto,
   PersonUsersSearchDto,
@@ -37,12 +38,14 @@ import {
   Permission,
   PersonPathType,
   QueueName,
+  SharingDirection,
   SourceType,
   SystemMetadataKey,
   VectorIndex,
 } from 'src/enum.js';
 import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
 import { PersonId } from 'src/repositories/person.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { DB } from 'src/schema/index.js';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
@@ -57,6 +60,8 @@ import { batched, findOrFail, hasSomeDefined, isFacialRecognitionEnabled } from 
 import { Point, transformPoints } from 'src/utils/transform.js';
 
 const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${personGroupId}`;
+const shareKey = ({ personId, sharedWithId }: { personId: string; sharedWithId: string }) =>
+  `${personId}/${sharedWithId}`;
 
 @Injectable()
 export class PersonService extends BaseService {
@@ -98,6 +103,7 @@ export class PersonService extends BaseService {
     const person = await this.findOrFail(auth, personGroupId);
 
     const result: PersonResponseDto[] = [];
+    const changedGroupIds = new Set<string>();
     const changeFeaturePhoto = new Map<string, PersonId>();
     for (const data of dto.data) {
       const faces = await this.personRepository.getFacesByIds(
@@ -120,6 +126,7 @@ export class PersonService extends BaseService {
         }
 
         await this.personRepository.reassignFace(face.id, person.personGroupId);
+        changedGroupIds.add(person.personGroupId).add(data.personId);
       }
 
       result.push(mapPerson(person));
@@ -127,6 +134,15 @@ export class PersonService extends BaseService {
     if (changeFeaturePhoto.size > 0) {
       await this.createNewFeaturePhoto(changeFeaturePhoto.values().toArray());
     }
+
+    if (changedGroupIds.size > 0) {
+      this.resourceRepository.send({
+        userIds: await this.getOwnerIds([...changedGroupIds]),
+        changed: [Resource.people()],
+      });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
+    }
+
     return result;
   }
 
@@ -147,6 +163,13 @@ export class PersonService extends BaseService {
     if (face.person && face.person.faceAssetId === face.id) {
       await this.createNewFeaturePhoto([face.person]);
     }
+
+    const groupIds = [...new Set([personGroupId, face.personGroupId])].filter((id) => id !== null);
+    this.resourceRepository.send({
+      userIds: await this.getOwnerIds(groupIds),
+      changed: groupIds.map((id) => Resource.person({ id })),
+    });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
 
     return mapPerson(await this.findOrFail(auth, personGroupId));
   }
@@ -235,11 +258,82 @@ export class PersonService extends BaseService {
       isFavorite: dto.isFavorite,
       color: dto.color,
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.people(), Resource.searchPerson()] });
 
     return mapPerson(person);
   }
 
   async update(auth: AuthDto, personGroupId: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
+    const { person, userIds } = await this.updatePerson(auth, personGroupId, dto);
+    this.resourceRepository.send({
+      userIds,
+      changed: [Resource.person({ id: personGroupId }), Resource.searchPerson()],
+    });
+
+    return mapPerson(person);
+  }
+
+  delete(auth: AuthDto, id: string, dto: PersonDeleteDto): Promise<void> {
+    return this.deleteAll(auth, { ids: [id], ...dto });
+  }
+
+  async updateAll(auth: AuthDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
+    const results: BulkIdResponseDto[] = [];
+    const userIds = new Set<string>();
+    for (const person of dto.people) {
+      try {
+        const updated = await this.updatePerson(auth, person.id, {
+          isHidden: person.isHidden,
+          name: person.name,
+          birthDate: person.birthDate,
+          featureFaceAssetId: person.featureFaceAssetId,
+          isFavorite: person.isFavorite,
+          userId: person.userId,
+        });
+        for (const userId of updated.userIds) {
+          userIds.add(userId);
+        }
+        results.push({ id: person.id, success: true });
+      } catch (error: Error | any) {
+        if (!isHttpException(error)) {
+          this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
+        }
+        results.push({ id: person.id, success: false, error: BulkIdErrorReason.UNKNOWN });
+      }
+    }
+
+    if (userIds.size > 0) {
+      this.resourceRepository.send({ userIds: [...userIds], changed: [Resource.people(), Resource.searchPerson()] });
+    }
+
+    return results;
+  }
+
+  async deleteAll(auth: AuthDto, { ids, userId }: PeopleDeleteDto): Promise<void> {
+    const ownerId = userId ?? auth.user.id;
+    await this.requirePersonAccess({
+      auth,
+      permission: Permission.PersonDelete,
+      ids: ids.map((id) => ({ personGroupId: id, ownerId })),
+    });
+
+    const groupIds = new Set(ids);
+    const shares = await this.personUserRepository.searchPeopleUsers(ownerId, { direction: SharingDirection.SharedBy });
+    const sharedWithIds = shares
+      .filter(({ personId }) => groupIds.has(personId))
+      .map(({ sharedWithId }) => sharedWithId);
+
+    await this.removeAllPersonGroups(ids, ownerId);
+    await this.personRepository.deleteEmptyGroups();
+    const userIds = [ownerId, ...sharedWithIds];
+    this.resourceRepository.send({
+      userIds,
+      changed: [Resource.searchPerson()],
+      deleted: ids.map((id) => Resource.person({ id })),
+    });
+  }
+
+  private async updatePerson(auth: AuthDto, personGroupId: string, dto: PersonUpdateDto) {
     const { userId: userIdOverride, name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite, color } = dto;
     const targetOwnerId = userIdOverride ?? auth.user.id;
     const hasSharedProperties = hasSomeDefined([name, birthDate]);
@@ -289,45 +383,30 @@ export class PersonService extends BaseService {
       });
     }
 
-    return mapPerson(person);
-  }
-
-  delete(auth: AuthDto, id: string, dto: PersonDeleteDto): Promise<void> {
-    return this.deleteAll(auth, { ids: [id], ...dto });
-  }
-
-  async updateAll(auth: AuthDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
-    const results: BulkIdResponseDto[] = [];
-    for (const person of dto.people) {
-      try {
-        await this.update(auth, person.id, {
-          isHidden: person.isHidden,
-          name: person.name,
-          birthDate: person.birthDate,
-          featureFaceAssetId: person.featureFaceAssetId,
-          isFavorite: person.isFavorite,
-          userId: person.userId,
-        });
-        results.push({ id: person.id, success: true });
-      } catch (error: Error | any) {
-        if (!isHttpException(error)) {
-          this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
-        }
-        results.push({ id: person.id, success: false, error: BulkIdErrorReason.UNKNOWN });
-      }
+    if (!hasSharedProperties) {
+      return { person, userIds: [person.ownerId] };
     }
-    return results;
-  }
 
-  async deleteAll(auth: AuthDto, { ids, userId }: PeopleDeleteDto): Promise<void> {
-    const ownerId = userId ?? auth.user.id;
-    await this.requirePersonAccess({
-      auth,
-      permission: Permission.PersonDelete,
-      ids: ids.map((id) => ({ personGroupId: id, ownerId })),
-    });
-    await this.removeAllPersonGroups(ids, ownerId);
-    await this.personRepository.deleteEmptyGroups();
+    const writableOwnerIds = userIdOverride
+      ? []
+      : person.sharedBy.filter(({ role }) => role !== PersonUserRole.Read).map(({ id }) => id);
+    const writableOwnerShares = await Promise.all(
+      writableOwnerIds.map((ownerId) =>
+        this.personUserRepository.searchPeopleUsers(ownerId, {
+          personId: personGroupId,
+          direction: SharingDirection.SharedBy,
+        }),
+      ),
+    );
+
+    const userIds = [
+      person.ownerId,
+      ...person.sharedWith.map(({ id }) => id),
+      ...writableOwnerIds,
+      ...writableOwnerShares.flat().map(({ sharedWithId }) => sharedWithId),
+    ];
+
+    return { person, userIds };
   }
 
   @Chunked()
@@ -700,6 +779,7 @@ export class PersonService extends BaseService {
     const targets = new Map(
       people.filter((person) => person.personGroupId === targetId).map((person) => [person.ownerId, person]),
     );
+    const merged: { ownerId: string; id: string }[] = [];
 
     if (targets.has(auth.user.id)) {
       results.set(targetId, { id: targetId, success: true });
@@ -726,6 +806,7 @@ export class PersonService extends BaseService {
               ownerId,
               await this.personRepository.updateGroupId({ ownerId, oldPersonGroupId: id, newPersonGroupId: targetId }),
             );
+            merged.push({ ownerId, id });
             continue;
           }
 
@@ -743,6 +824,7 @@ export class PersonService extends BaseService {
 
           await this.personRepository.reassignFaces({ oldPersonGroupId: id, newPersonGroupId: targetId, ownerId });
           await this.removeAllPersonGroups([id], ownerId);
+          merged.push({ ownerId, id });
           this.logger.log(`Merged ${source.name || id} into ${target.name || targetId}`);
 
           if (isAuthUser) {
@@ -759,11 +841,25 @@ export class PersonService extends BaseService {
 
     await this.personRepository.deleteEmptyGroups();
 
+    if (merged.length > 0) {
+      this.resourceRepository.send({ userIds: [...ownerIds], changed: [Resource.people(), Resource.searchPerson()] });
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
+    }
+
+    for (const [ownerId, people] of Map.groupBy(merged, ({ ownerId }) => ownerId)) {
+      this.resourceRepository.send({ userIds: [ownerId], deleted: people.map(({ id }) => Resource.person({ id })) });
+    }
+
     return results.values().toArray();
   }
 
   private findOrFail(auth: AuthDto, personGroupId: string) {
     return findOrFail(() => this.personRepository.getByGroupId({ ownerId: auth.user.id, personGroupId }), 'Person');
+  }
+
+  private async getOwnerIds(personGroupIds: string[]) {
+    const people = await this.personRepository.getForMergePerson(personGroupIds);
+    return people.map(({ ownerId }) => ownerId);
   }
 
   // TODO return a asset face response
@@ -840,12 +936,30 @@ export class PersonService extends BaseService {
     if (!person.faceAssetId) {
       await this.createNewFeaturePhoto([person]);
     }
+
+    this.resourceRepository.send({
+      userIds: await this.getOwnerIds([person.personGroupId]),
+      changed: [Resource.person({ id: person.personGroupId })],
+    });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FaceDelete, ids: [id] });
 
-    return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
+    const face = await this.personRepository.getFaceForFacialRecognitionJob(id);
+    await (dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id));
+    if (!face) {
+      return;
+    }
+
+    if (face.personGroupId) {
+      this.resourceRepository.send({
+        userIds: await this.getOwnerIds([face.personGroupId]),
+        changed: [Resource.person({ id: face.personGroupId })],
+      });
+    }
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.faces()] });
   }
 
   async getUsersForPeople(auth: AuthDto, dto: PersonUsersSearchDto): Promise<PersonUsersResponseDto> {
@@ -882,6 +996,7 @@ export class PersonService extends BaseService {
 
     const sharedById = auth.user.id;
 
+    let shares: { sharedById: string; sharedWithId: string }[];
     if (dto.personIds) {
       const items: Insertable<PersonUserTable>[] = [];
       for (const sharedWithId of dto.sharedWithIds) {
@@ -890,12 +1005,19 @@ export class PersonService extends BaseService {
         }
       }
 
-      await this.personUserRepository.createAll(items);
+      shares = await this.personUserRepository.createAll(items);
     } else {
-      await this.personUserRepository.createAllForOwner({
+      shares = await this.personUserRepository.createAllForOwner({
         ownerId: sharedById,
         sharedWithIds: dto.sharedWithIds,
         role: dto.role,
+      });
+    }
+
+    if (shares.length > 0) {
+      this.resourceRepository.send({
+        userIds: shares.flatMap((share) => [share.sharedById, share.sharedWithId]),
+        changed: [Resource.people(), Resource.searchPerson()],
       });
     }
   }
@@ -906,7 +1028,22 @@ export class PersonService extends BaseService {
       permission: Permission.PersonUpdate,
       ids: dto.map((item) => ({ personGroupId: item.personId, ownerId: item.sharedById ?? auth.user.id })),
     });
+
+    const removedKeys = new Set(dto.map((item) => shareKey(item)));
+    const shares = await this.personUserRepository.searchPeopleUsers(auth.user.id, {
+      direction: SharingDirection.SharedBy,
+    });
+    const removedUserIds = shares
+      .filter((share) => removedKeys.has(shareKey(share)))
+      .map(({ sharedWithId }) => sharedWithId);
+
     await this.personUserRepository.deleteAll(auth.user.id, dto);
+    if (removedUserIds.length > 0) {
+      this.resourceRepository.send({
+        userIds: [auth.user.id, ...removedUserIds],
+        changed: [Resource.people(), Resource.searchPerson()],
+      });
+    }
   }
 
   private vacuum(...tables: (keyof DB)[]): Promise<unknown> {

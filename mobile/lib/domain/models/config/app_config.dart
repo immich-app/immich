@@ -42,6 +42,7 @@ abstract class AppConfig with _$AppConfig {
     @Default(BackupConfig()) BackupConfig backup,
     @Default(NetworkConfig()) NetworkConfig network,
     @Default(ShareConfig()) ShareConfig share,
+    Set<String>? supportedFileExtensions,
     @Default(FeatureMessageConfig()) FeatureMessageConfig featureMessage,
   }) = _AppConfig;
 
@@ -93,6 +94,7 @@ abstract class AppConfig with _$AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .supportedFileExtensions => supportedFileExtensions,
             .featureMessageSeenRelease => featureMessage.seenRelease,
           })
           as T;
@@ -150,6 +152,7 @@ abstract class AppConfig with _$AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .supportedFileExtensions => copyWith(supportedFileExtensions: value as Set<String>?),
       .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
     };
   }

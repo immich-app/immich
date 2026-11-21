@@ -3,11 +3,14 @@
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { eventManager } from '#lib/managers/event-manager.svelte.ts';
   import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { loginMutation } from '#lib/queries/auth.query.ts';
+  import { registerOAuthMutation, startOAuthReLinkMutation } from '#lib/queries/oauth.query.ts';
   import { Route } from '#lib/route.ts';
   import { oauth } from '#lib/utils.ts';
-  import { getServerErrorMessage, handleError } from '#lib/utils/handle-error.ts';
-  import { login, register, startOAuthReLink } from '@immich/sdk';
+  import { getServerErrorMessage } from '#lib/utils/handle-error.ts';
+  import type { LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
@@ -22,54 +25,45 @@
   const linkingCurrentUser = authManager.authenticated;
   let email = $state(linkingCurrentUser ? authManager.user.email : data.email);
   let password = $state('');
-  let errorMessage = $state('');
-  let loading = $state(false);
-  let registering = $state(false);
-  let reLinkMode = $state(!!data.reLinkToken);
-  let reLinkLoading = $state(!!data.reLinkToken);
-  let reLinkError = $state('');
 
-  onMount(async () => {
+  const onSuccess = async (user: LoginResponseDto) => {
+    await goto(Route.photos(), { refreshAll: true });
+    eventManager.emit('AuthLogin', user);
+  };
+
+  const passwordLogin = createMutation(() => ({
+    ...loginMutation(),
+    onSuccess: async (user) => {
+      await onSuccess(user);
+      toastManager.primary($t('linked_oauth_account'));
+    },
+  }));
+  const loading = $derived(passwordLogin.isPending || passwordLogin.isSuccess);
+  const errorMessage = $derived(
+    passwordLogin.error ? getServerErrorMessage(passwordLogin.error) || $t('errors.incorrect_email_or_password') : '',
+  );
+
+  const registration = createMutation(() => ({ ...registerOAuthMutation(), onSuccess }));
+  const registering = $derived(registration.isPending || registration.isSuccess);
+
+  const reLink = createMutation(() => ({
+    ...startOAuthReLinkMutation(),
+    onSuccess: () => oauth.authorize(new URL(Route.login(), location.origin)),
+  }));
+  const reLinking = $derived(!!data.reLinkToken && !reLink.isError);
+  const reLinkError = $derived(
+    reLink.error ? getServerErrorMessage(reLink.error) || $t('errors.invalid_oauth_relink_token') : '',
+  );
+
+  onMount(() => {
     if (data.reLinkToken) {
-      try {
-        await startOAuthReLink({ oAuthReLinkStartDto: { token: data.reLinkToken } });
-        // the IdP redirects back to the login page, which completes the re-link via the cookie set above
-        await oauth.authorize(new URL(Route.login(), location.origin));
-      } catch (error) {
-        reLinkLoading = false;
-        reLinkMode = false;
-        reLinkError = getServerErrorMessage(error) || $t('errors.invalid_oauth_relink_token');
-      }
+      reLink.mutate([{ oAuthReLinkStartDto: { token: data.reLinkToken } }]);
     }
   });
 
-  const handleSubmit = async (event: Event) => {
+  const onsubmit = (event: Event) => {
     event.preventDefault();
-    try {
-      errorMessage = '';
-      loading = true;
-      const user = await login({ loginCredentialDto: { email, password } });
-      eventManager.emit('AuthLogin', user);
-      await authManager.refresh();
-      toastManager.primary($t('linked_oauth_account'));
-      await goto(Route.photos(), { refreshAll: true });
-    } catch (error) {
-      errorMessage = getServerErrorMessage(error) || $t('errors.incorrect_email_or_password');
-      loading = false;
-    }
-  };
-
-  const handleRegister = async () => {
-    try {
-      registering = true;
-      const user = await register();
-      eventManager.emit('AuthLogin', user);
-      await authManager.refresh();
-      await goto(Route.photos(), { refreshAll: true });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_create_user'));
-      registering = false;
-    }
+    passwordLogin.mutate([{ loginCredentialDto: { email, password } }]);
   };
 </script>
 
@@ -79,7 +73,7 @@
       <Alert color="danger" title={reLinkError} closable />
     {/if}
 
-    {#if reLinkMode && reLinkLoading}
+    {#if reLinking}
       <Alert color="primary">
         {$t('oauth_relink_in_progress')}
       </Alert>
@@ -89,7 +83,7 @@
           {$t('oauth_link_existing_account')}
         </Alert>
 
-        <form onsubmit={handleSubmit} class="flex flex-col gap-4">
+        <form {onsubmit} class="flex flex-col gap-4">
           {#if errorMessage}
             <Alert color="danger" title={errorMessage} closable />
           {/if}
@@ -130,7 +124,7 @@
           fullWidth
           color={featureFlagsManager.value.passwordLogin ? 'secondary' : 'primary'}
           loading={registering}
-          onclick={handleRegister}
+          onclick={() => registration.mutate([])}
         >
           {$t('create_new_account')}
         </Button>

@@ -52,12 +52,14 @@ class LogRepository {
     return true;
   }
 
-  Future<void> truncate({int limit = kLogTruncateLimit}) async {
+  Future<void> truncate({int limit = kLogTruncateLimit, int threshold = kLogTruncateThreshold}) async {
     final totalCount = await _db.managers.logMessageEntity.count();
-    if (totalCount > limit) {
-      final rowsToDelete = totalCount - limit;
-
-      await _db.managers.logMessageEntity.orderBy((o) => o.createdAt.asc()).limit(rowsToDelete).delete();
+    if (totalCount > threshold) {
+      final newest = _db.selectOnly(_db.logMessageEntity)
+        ..addColumns([_db.logMessageEntity.id])
+        ..orderBy([OrderingTerm.desc(_db.logMessageEntity.createdAt)])
+        ..limit(limit);
+      await _db.logMessageEntity.deleteWhere((row) => row.id.isNotInQuery(newest));
     }
   }
 }

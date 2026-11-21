@@ -14,6 +14,7 @@ import {
 } from 'src/dtos/memory.dto.js';
 import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum.js';
 import { type YearMonthDay } from 'src/repositories/asset.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { addAssets, removeAssets } from 'src/utils/asset.util.js';
 import { findOrFail } from 'src/utils/misc.js';
@@ -188,6 +189,7 @@ export class MemoryService extends BaseService {
       },
       allowedAssetIds,
     );
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.memories()] });
 
     return mapMemory(memory, auth);
   }
@@ -200,6 +202,7 @@ export class MemoryService extends BaseService {
       memoryAt: dto.memoryAt,
       seenAt: dto.seenAt,
     });
+    this.sendMemoryChange(auth, id);
 
     return mapMemory(memory, auth);
   }
@@ -207,6 +210,7 @@ export class MemoryService extends BaseService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.MemoryDelete, ids: [id] });
     await this.memoryRepository.delete(id);
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.memory({ id })] });
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
@@ -222,6 +226,7 @@ export class MemoryService extends BaseService {
     const hasSuccess = results.some(({ success }) => success);
     if (hasSuccess) {
       await this.memoryRepository.update(id, { updatedAt: new Date() });
+      this.sendMemoryChange(auth, id);
     }
 
     return results;
@@ -240,9 +245,14 @@ export class MemoryService extends BaseService {
     const hasSuccess = results.some(({ success }) => success);
     if (hasSuccess) {
       await this.memoryRepository.update(id, { id, updatedAt: new Date() });
+      this.sendMemoryChange(auth, id);
     }
 
     return results;
+  }
+
+  private sendMemoryChange(auth: AuthDto, id: string) {
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.memory({ id })] });
   }
 
   private findOrFail(id: string) {

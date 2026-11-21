@@ -30,6 +30,7 @@ import {
 } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { AssetSyncResult } from 'src/repositories/library.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { JobOf } from 'src/types.js';
@@ -248,6 +249,7 @@ export class LibraryService extends BaseService {
       ],
     });
 
+    this.resourceRepository.send({ userIds: await this.userRepository.getAdminIds(), changed: [Resource.libraries()] });
     await this.eventRepository.emit('LibraryCreate');
     return mapLibrary(library);
   }
@@ -360,6 +362,10 @@ export class LibraryService extends BaseService {
     }
 
     const library = await this.libraryRepository.update(id, dto);
+    this.resourceRepository.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.library({ id })],
+    });
     await this.eventRepository.emit('LibraryUpdate');
     return mapLibrary(library);
   }
@@ -372,6 +378,10 @@ export class LibraryService extends BaseService {
     }
 
     await this.libraryRepository.softDelete(id);
+    this.resourceRepository.send({
+      userIds: await this.userRepository.getAdminIds(),
+      deleted: [Resource.library({ id })],
+    });
     await this.jobRepository.queue({ name: JobName.LibraryDelete, data: { id } });
 
     await this.eventRepository.emit('LibraryDelete');

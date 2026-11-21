@@ -1,5 +1,6 @@
 import { QueryParameter } from '#lib/constants.ts';
 import { queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { getAssetsByOriginalPathQuery, getFolderTreeQuery } from '#lib/queries/view.query.ts';
 import { authenticate } from '#lib/utils/auth.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
@@ -14,7 +15,7 @@ export const load = (async ({ url }) => {
   if (path) {
     tree = tree.traverse(path);
   } else if (path === null) {
-    queryClient.removeQueries({ queryKey: ['view', 'folder', 'assets'] });
+    queryClient.removeQueries({ queryKey: QueryKeys.folderAssets({}) });
   }
 
   const pathAssets = tree.hasAssets ? await queryClient.query(getAssetsByOriginalPathQuery(tree.path)) : null;

@@ -166,24 +166,24 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       return false;
     }
 
-    if (notification is ScrollStartNotification || notification is ScrollUpdateNotification) {
-      ref.read(timelineStateProvider.notifier).setScrolling(true);
-    } else if (notification is ScrollEndNotification) {
-      ref.read(timelineStateProvider.notifier).setScrolling(false);
-    }
-
-    setState(() {
-      if (notification is ScrollUpdateNotification) {
-        _thumbTopOffset = _currentOffset;
-        if (_labelAnimation.status != AnimationStatus.reverse) {
+    switch (notification) {
+      case ScrollStartNotification():
+        ref.read(timelineStateProvider.notifier).setScrolling(true);
+        _fadeOutTimer?.cancel();
+      case ScrollUpdateNotification():
+        ref.read(timelineStateProvider.notifier).setScrolling(true);
+        _fadeOutTimer?.cancel();
+        if (_labelAnimationController.status.isForwardOrCompleted) {
           unawaited(_labelAnimationController.reverse());
         }
-        if (_thumbAnimationController.status != AnimationStatus.forward) {
+        if (!_thumbAnimationController.status.isForwardOrCompleted) {
           unawaited(_thumbAnimationController.forward());
         }
-      }
-      _resetThumbTimer();
-    });
+        setState(() => _thumbTopOffset = _currentOffset);
+      case ScrollEndNotification():
+        ref.read(timelineStateProvider.notifier).setScrolling(false);
+        _resetThumbTimer();
+    }
 
     return false;
   }

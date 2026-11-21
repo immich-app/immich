@@ -47,3 +47,30 @@ test('redirects to login when the server is initialized', async ({ router, rende
 
   await expect(render(Page, load)).rejects.toThrow(`redirected to ${Route.login()}`);
 });
+
+test('shows an error when the server rejects the sign up', async ({
+  data,
+  router,
+  render,
+  settle,
+  api,
+  app,
+  logger,
+}) => {
+  await uninitialize(data);
+  api.on({ signUpAdmin: () => ({ status: 400, json: { message: 'Bad request', statusCode: 400 } }) });
+  await router.goto(Route.register());
+  await render(Page, load);
+
+  await app.auth.input('admin_email').fill('new-admin@immich.cloud');
+  await app.auth.input('admin_password').fill('password');
+  await app.auth.input('confirm_admin_password').fill('password');
+  await app.auth.input('name').fill('New Admin');
+  await app.auth.signUpButton.click();
+  await settle();
+
+  expect(api.signUpAdmin).toHaveBeenCalled();
+  expect(logger.error).toHaveBeenCalledWith(/handleError/);
+  await expect.element(app.auth.text('errors.unable_to_create_admin_account')).toBeVisible();
+  expect(router.url.pathname).toBe(Route.register());
+});

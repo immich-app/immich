@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.dart';
 import 'package:immich_mobile/data/db/main/table/local/album.drift.dart';
@@ -217,6 +219,12 @@ class LocalAlbumRepository extends DatabaseAccessor<Drift> with $LocalAlbumRepos
       await _deleteAssets(deletes);
 
       await _upsertAssets(updates);
+      // A changed asset may have a new file type, so let backup check it again
+      for (final slice in updates.map((asset) => asset.id).slices(kDriftMaxChunk)) {
+        await _db.managers.localAssetEntity
+            .filter((row) => row.id.isIn(slice) & row.unsupported.equals(true))
+            .update((o) => o(unsupported: const Value(false)));
+      }
       // Drop every existing album link for each changed asset before re-adding the
       // ones the native side reports. A moved asset only reports its new album here,
       // so leaving the old link around makes the per-album delete sweep wipe the

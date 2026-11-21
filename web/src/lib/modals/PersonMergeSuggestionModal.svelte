@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { mergePeopleMutation } from '#lib/queries/person.query.ts';
   import { getPeopleThumbnailUrl } from '#lib/utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { mergePeople, type PersonResponseDto } from '@immich/sdk';
-  import { FormModal, Icon, IconButton, toastManager } from '@immich/ui';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { FormModal, Icon, IconButton } from '@immich/ui';
   import { mdiArrowLeft, mdiCallMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -34,13 +35,15 @@
   };
 
   const onSubmit = async () => {
-    try {
-      await mergePeople({ mergePersonDto: { ids: [personToBeMergedInto.id, personToMerge.id] } });
-      toastManager.primary($t('merge_people_successfully'));
-      onClose([personToMerge, personToBeMergedInto]);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_name'));
-    }
+    await executeMutation(
+      () =>
+        mergePeopleMutation({
+          success: { toast: 'merge_people_successfully' },
+          error: { toast: 'errors.unable_to_save_name' },
+        }),
+      [{ mergePersonDto: { ids: [personToBeMergedInto.id, personToMerge.id] } }],
+      { onSuccess: () => onClose([personToMerge, personToBeMergedInto]) },
+    );
   };
 
   onMount(async () => {

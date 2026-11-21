@@ -10,6 +10,7 @@ import {
   VectorIndex,
   VideoCodec,
 } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 
 export const IMMICH_SERVER_START = 'Immich Server is listening';
 
@@ -24,7 +25,18 @@ export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORCHORD_VERSION_RANGE = '>=0.3 <2';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
+export const ASSET_VISIBILITY_DEPENDENT_PATHS = [
+  Resource.albums(),
+  Resource.duplicates(),
+  Resource.mapMarkers(),
+  Resource.memories(),
+  Resource.people(),
+  Resource.search(),
+  Resource.view(),
+];
+
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
+export const JOBS_CLEAN_BATCH_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
 
 export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {

@@ -25,6 +25,7 @@
   import { AssetMultiSelectManager, assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import {
@@ -76,6 +77,10 @@
 
   const albumQuery = createPreloadedQuery(() => getAlbumInfoQuery(params.albumId));
   const album = $derived(albumQuery.data);
+  onResourceDelete(
+    () => `/albums/${album.id}`,
+    () => void goto(Route.albums()),
+  );
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   const isShared = $derived(viewMode !== AlbumPageViewMode.SELECT_ASSETS && album.albumUsers.length > 1);
 

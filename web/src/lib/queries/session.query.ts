@@ -1,22 +1,29 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
-import { deleteAllSessions, deleteSession, getSessions } from '@immich/sdk';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
+import { createSession, deleteAllSessions, deleteSession, getSessions } from '@immich/sdk';
 import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
 
 export const getSessionsQuery = () =>
   queryOptions({
-    queryKey: ['sessions'],
+    queryKey: QueryKeys.sessions(),
     queryFn: ({ signal }) => getSessions({ signal }),
+  });
+
+export const createSessionMutation = () =>
+  asMutation(createSession, {
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.sessions() }),
+    meta: { error: { toast: false } },
   });
 
 export const deleteSessionMutation = () =>
   asMutation(deleteSession, {
-    onSettled: () => queryClient.invalidateQueries({ queryKey: getSessionsQuery().queryKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: QueryKeys.sessions() }),
     meta: { success: { toast: 'logged_out_device' }, error: { toast: 'errors.unable_to_log_out_device' } },
   });
 
 export const deleteAllSessionsMutation = () =>
   mutationOptions({
     mutationFn: () => deleteAllSessions(),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: getSessionsQuery().queryKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: QueryKeys.sessions() }),
     meta: { success: { toast: 'logged_out_all_devices' }, error: { toast: 'errors.unable_to_log_out_all_devices' } },
   });

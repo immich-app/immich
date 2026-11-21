@@ -1,5 +1,7 @@
-import { factory } from '#test/common/factories.ts';
+import { Route } from '#lib/route.ts';
+import { editedThumbhash, factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
+import { AssetEditAction } from '@immich/sdk';
 
 const query = encodeURIComponent(JSON.stringify({ originalFileName: 'test' }));
 const searchAssetUrl = (asset: { id: string }) => `/search/photos/${asset.id}?query=${query}`;
@@ -53,5 +55,60 @@ test.describe('search gallery viewer', () => {
 
     expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [assets[1].id], force: false } });
     expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [assets[4].id], force: false } });
+  });
+
+  test('deleting in the viewer removes the result from the grid', async ({ page, data, api, app }) => {
+    const [deleted, next] = setup();
+    data.addAssets([deleted, next]);
+    await page.goto(searchAssetUrl(deleted));
+    await app.viewer.waitForAsset(deleted);
+
+    await app.viewer.deleteButton.click();
+    await app.viewer.waitForAsset(next);
+    await app.viewer.backButton.click();
+
+    await expect(app.timeline.thumbnail(next)).toBeVisible();
+    await expect(app.timeline.thumbnail(deleted)).toHaveCount(0);
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [deleted.id], force: false } });
+  });
+
+  test('editing in the viewer refreshes the result thumbnail', async ({ page, data, api, app }) => {
+    const [asset] = setup();
+    data.addAssets(asset);
+    await page.goto(searchAssetUrl(asset));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.editor.openButton.click();
+    await app.viewer.editor.rotateRightButton.click();
+
+    await app.viewer.editor.saveButton.click();
+    await expect.poll(() => api.editAsset.calls).toHaveLength(1);
+    api.emit('AssetEditReadyV2', { asset: { id: asset.id }, edit: [] });
+    await expect(app.toast('editor_edits_applied_success')).toBeVisible();
+    await app.viewer.backButton.click();
+
+    await expect(app.timeline.thumbnailImage(asset)).toHaveAttribute(
+      'src',
+      new RegExp(encodeURIComponent(editedThumbhash)),
+    );
+    expect(api.editAsset).toHaveBeenCalledWith({
+      params: { id: asset.id },
+      body: { edits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }] },
+    });
+  });
+
+  test('trashing the only result closes the viewer on the search page', async ({ page, data, api, app }) => {
+    const [asset] = setup();
+    data.addAssets(asset);
+    const searchUrl = Route.search({ originalFileName: 'test' });
+    await page.goto(searchUrl);
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.waitForAsset(asset);
+
+    await app.viewer.deleteButton.click();
+
+    await expect(page).toHaveURL(searchUrl);
+    await expect(app.viewer.root).toHaveCount(0);
+    expect(api.searchAssets).toHaveBeenCalledWith({ body: expect.objectContaining({ originalFileName: 'test' }) });
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
   });
 });

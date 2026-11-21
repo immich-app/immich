@@ -226,6 +226,7 @@ export class AssetRepository {
               formatName: ref('excluded.formatName'),
               formatLongName: ref('excluded.formatLongName'),
               pixelFormat: ref('excluded.pixelFormat'),
+              isFragmented: ref('excluded.isFragmented'),
             })),
           ),
       );

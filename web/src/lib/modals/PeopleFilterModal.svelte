@@ -1,12 +1,13 @@
 <script lang="ts">
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import PeopleFilterUserPicker from '#lib/modals/PeopleFilterUserPicker.svelte';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getClusterGroupUsersQuery } from '#lib/queries/cluster-group.query.ts';
   import type { PeopleFilter } from '#lib/types.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { getClusterGroupUsers, type UserResponseDto } from '@immich/sdk';
   import { Button, Checkbox, FormModal, Label, Stack, Text, modalManager } from '@immich/ui';
   import { mdiClose, mdiTune } from '@mdi/js';
-  import { onMount, untrack } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -20,7 +21,11 @@
   let sharedWithId = $state(untrack(() => filter.sharedWithId ?? ''));
   let isFavorite = $state(untrack(() => filter.isFavorite));
   let isHidden = $state(untrack(() => filter.isHidden));
-  let users = $state<UserResponseDto[]>([]);
+  const query = createQuery(
+    () => getClusterGroupUsersQuery(authManager.user.clusterGroupId),
+    () => queryClient,
+  );
+  const users = $derived((query.data ?? []).filter(({ id }) => id !== authManager.user.id));
 
   const cycle = (value?: boolean) => {
     switch (value) {
@@ -37,15 +42,6 @@
       }
     }
   };
-
-  onMount(async () => {
-    try {
-      const clusterGroupUsers = await getClusterGroupUsers({ id: authManager.user.clusterGroupId });
-      users = clusterGroupUsers.filter(({ id }) => id !== authManager.user.id);
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-    }
-  });
 
   const getUser = (userId: string) => [authManager.user, ...users].find(({ id }) => id === userId);
 
