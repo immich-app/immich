@@ -10,6 +10,46 @@ Immich does not support being served on a sub-path such as `location /immich {`.
 If your reverse proxy uses the [Let's Encrypt](https://letsencrypt.org/) [http-01 challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge), you may want to verify that the Immich well-known endpoint (`/.well-known/immich`) gets correctly routed to Immich, otherwise it will likely be routed elsewhere and the mobile app may run into connection issues.
 :::
 
+:::caution
+The default compose file publishes `2283:2283` on every interface. If Immich is reachable from the internet, it remains reachable over plain HTTP at `http://<server-ip>:2283`, bypassing the proxy and its TLS.
+
+If you're running your proxy in a container, delete the `ports:` line from the compose file and share the network.
+
+Create the shared network once e.g. `docker network create proxy`, and attach your proxy container to it as well:
+
+```bash
+docker network create proxy
+```
+
+```yaml
+services:
+  immich-server:
+    # ports:
+    #   - '2283:2283'
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    external: true
+```
+
+If you're running your proxy directly on the host, the fix is to publish it only on loopback, `127.0.0.1:2283:2283`, and point the proxy at `127.0.0.1:2283`. The difference here is that only applications running on your server (like your proxy, e.g. nginx) have access to the container via the port, rather than any request from the internet.
+
+```yaml
+services:
+  immich-server:
+    ports:
+      - '127.0.0.1:2283:2283'
+```
+
+```nginx
+proxy_pass http://127.0.0.1:2283;
+```
+
+:::
+
 ### Nginx example config
 
 Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Immich server.
