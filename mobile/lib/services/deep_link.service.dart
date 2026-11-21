@@ -114,9 +114,8 @@ class DeepLinkService {
 
     final album = albumId != null ? await _betaRemoteAlbumService.get(albumId) : null;
 
-    AssetViewer.setAsset(ref, asset);
+    AssetViewer.setAsset(ref, asset, initialIndex: 0);
     return AssetViewerRoute(
-      initialIndex: 0,
       timelineService: _betaTimelineFactory.fromAssets([asset], asset.isTrashed ? .trash : .deepLink),
       currentAlbum: album,
     );

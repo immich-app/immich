@@ -10,5 +10,9 @@ abstract class ViewerConfig with _$ViewerConfig {
     @Default(false) bool loadOriginalVideo,
     @Default(true) bool autoPlayVideo,
     @Default(false) bool tapToNavigate,
+    @Default(true) bool filmstripEnabled,
+
+    /// Filmstrip thumbnail height in logical pixels (40-120).
+    @Default(60) int filmstripHeight,
   }) = _ViewerConfig;
 }

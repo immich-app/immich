@@ -38,10 +38,9 @@ class CommentBubble extends ConsumerWidget {
         return;
       }
 
-      AssetViewer.setAsset(ref, asset);
+      AssetViewer.setAsset(ref, asset, initialIndex: 0);
       await context.pushRoute(
         AssetViewerRoute(
-          initialIndex: 0,
           timelineService: ref.read(timelineFactoryProvider).fromAssets([asset], TimelineOrigin.albumActivities),
           currentAlbum: ref.read(currentRemoteAlbumProvider),
         ),
