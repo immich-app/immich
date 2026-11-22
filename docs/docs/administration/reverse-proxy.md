@@ -11,31 +11,9 @@ If your reverse proxy uses the [Let's Encrypt](https://letsencrypt.org/) [http-0
 :::
 
 :::caution
-The default compose file publishes `2283:2283` on every interface. If Immich is reachable from the internet, it remains reachable over plain HTTP at `http://<server-ip>:2283`, bypassing the proxy and its TLS.
+The default compose file publishes `2283:2283` on every interface. If Immich is hosted on a rented server that is reachable from the internet (e.g. VPS), it remains reachable over plain HTTP at `http://<server-ip>:2283`, bypassing the proxy and its TLS.
 
-If you're running your proxy in a container, delete the `ports:` line from the compose file and share the network.
-
-Create the shared network once e.g. `docker network create proxy`, and attach your proxy container to it as well:
-
-```bash
-docker network create proxy
-```
-
-```yaml
-services:
-  immich-server:
-    # ports:
-    #   - '2283:2283'
-    networks:
-      - default
-      - proxy
-
-networks:
-  proxy:
-    external: true
-```
-
-If you're running your proxy directly on the host, the fix is to publish it only on loopback, `127.0.0.1:2283:2283`, and point the proxy at `127.0.0.1:2283`. The difference here is that only applications running on your server (like your proxy, e.g. nginx) have access to the container via the port, rather than any request from the internet.
+If you're using a reverse proxy in such a setup, publish it only on loopback, `127.0.0.1:2283:2283`, and point the proxy at `127.0.0.1:2283`.
 
 ```yaml
 services:
