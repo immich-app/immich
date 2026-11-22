@@ -281,6 +281,126 @@ function ransacOffset(
   return inliers[Math.floor(inliers.length / 2)] * 2;
 }
 
+/** Binary dilation with a kxk square structuring element. */
+function dilateBin(src: Uint8Array, w: number, h: number, k: number): Uint8Array {
+  const out = new Uint8Array(w * h);
+  const r = Math.floor(k / 2);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let v = 0;
+      for (let dy = -r; dy <= r && !v; dy++) {
+        const yy = y + dy;
+        if (yy < 0 || yy >= h) {
+          continue;
+        }
+        for (let dx = -r; dx <= r; dx++) {
+          const xx = x + dx;
+          if (xx < 0 || xx >= w) {
+            continue;
+          }
+          if (src[yy * w + xx]) {
+            v = 1;
+            break;
+          }
+        }
+      }
+      out[y * w + x] = v;
+    }
+  }
+  return out;
+}
+
+/** Binary erosion with a kxk square structuring element. */
+function erodeBin(src: Uint8Array, w: number, h: number, k: number): Uint8Array {
+  const out = new Uint8Array(w * h);
+  const r = Math.floor(k / 2);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let v = 1;
+      for (let dy = -r; dy <= r && v; dy++) {
+        const yy = y + dy;
+        if (yy < 0 || yy >= h) {
+          v = 0;
+          break;
+        }
+        for (let dx = -r; dx <= r; dx++) {
+          const xx = x + dx;
+          if (xx < 0 || xx >= w || !src[yy * w + xx]) {
+            v = 0;
+            break;
+          }
+        }
+      }
+      out[y * w + x] = v;
+    }
+  }
+  return out;
+}
+
+function openBin(src: Uint8Array, w: number, h: number, k: number): Uint8Array {
+  return dilateBin(erodeBin(src, w, h, k), w, h, k);
+}
+
+/** Connected-component labeling (4-connectivity, union-find). Labels are 1..count, 0 = background. */
+function ccLabels(src: Uint8Array, w: number, h: number): { labels: Int32Array; count: number } {
+  const labels = new Int32Array(w * h).fill(-1);
+  const parent: number[] = [];
+  const find = (x: number): number => {
+    let r = x;
+    while (parent[r] !== r) {
+      parent[r] = parent[parent[r]];
+      r = parent[r];
+    }
+    return r;
+  };
+  let next = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (!src[y * w + x]) {
+        continue;
+      }
+      const l = x > 0 ? labels[y * w + x - 1] : -1;
+      const t = y > 0 ? labels[(y - 1) * w + x] : -1;
+      if (l < 0 && t < 0) {
+        parent.push(next);
+        labels[y * w + x] = next;
+        next++;
+      } else if (l >= 0 && t >= 0) {
+        const rl = find(l);
+        const rt = find(t);
+        if (rl !== rt) {
+          parent[rl] = rt;
+        }
+        labels[y * w + x] = rt;
+      } else {
+        labels[y * w + x] = find(l >= 0 ? l : t);
+      }
+    }
+  }
+  const remap = new Map<number, number>();
+  let count = 0;
+  for (let i = 0; i < w * h; i++) {
+    if (labels[i] < 0) {
+      labels[i] = 0;
+      continue;
+    }
+    const r = find(labels[i]);
+    let id = remap.get(r);
+    if (id === undefined) {
+      id = ++count;
+      remap.set(r, id);
+    }
+    labels[i] = id;
+  }
+  return { labels, count };
+}
+
+/** Median of a Float32Array (sorts a copy). */
+function medianOf(values: Float32Array): number {
+  const arr = Array.from(values).sort((x, y) => x - y);
+  return arr.length ? arr[Math.floor(arr.length / 2)] : 0;
+}
+
 /**
  * Mean absolute difference between a[dy:] and b[:-dy], scored on content
  * pixels only (ink = brighter than 40) and only on rows marked dynamic in
@@ -391,21 +511,61 @@ function stitchVertical(images: RawImage[]): RawImage {
     }
     rowDyn[r] = s / w > 0.02;
   }
-  // Trim static chrome anchored at the top/bottom edges only. Interior
-  // blank rows are harmless for matching; splitting the band on them
-  // (longest-run) fragments it when big scroll steps align the blanks.
-  let y0 = 0;
-  let y1 = h;
-  for (let y = 0; y < h; y++) {
-    if (rowDyn[y] && hasNeighbor(rowDyn, y, 1)) {
-      y0 = y;
-      break;
+  // Static chrome forms long static runs; content blanks are short.
+  // y0 = end of the longest static run (>=48px) in the upper half,
+  // y1 = start of the longest static run (>=48px) in the lower half.
+  // (Interior blanks are ignored; a wrong split only moves the head/tail
+  // seam, matching itself is mask-based and unaffected.)
+  const runs: { start: number; end: number }[] = [];
+  {
+    let rs = -1;
+    for (let y = 0; y <= h; y++) {
+      const dyn = y < h && rowDyn[y];
+      if (!dyn && rs < 0) {
+        rs = y;
+      } else if (dyn && rs >= 0) {
+        runs.push({ start: rs, end: y });
+        rs = -1;
+      }
+    }
+    if (rs >= 0) {
+      runs.push({ start: rs, end: h });
     }
   }
-  for (let y = h - 1; y >= 0; y--) {
-    if (rowDyn[y] && hasNeighbor(rowDyn, y, -1)) {
-      y1 = y + 1;
-      break;
+  let y0 = 0;
+  let y1 = h;
+  {
+    let bestLen = 48;
+    for (const r of runs) {
+      if (r.end <= h / 2 && r.end - r.start >= bestLen) {
+        bestLen = r.end - r.start;
+        y0 = r.end;
+      }
+    }
+    if (y0 === 0) {
+      for (let y = 0; y < h; y++) {
+        if (rowDyn[y] && hasNeighbor(rowDyn, y, 1)) {
+          y0 = y;
+          break;
+        }
+      }
+    }
+  }
+  {
+    let bestLen = 48;
+    for (const r of runs) {
+      if (r.start >= h / 2 && r.end - r.start >= bestLen) {
+        bestLen = r.end - r.start;
+        y1 = r.start;
+      }
+    }
+    if (y1 === h) {
+      for (let y = h - 1; y >= 0; y--) {
+        if (rowDyn[y] && hasNeighbor(rowDyn, y, -1)) {
+          y1 = y + 1;
+          break;
+        }
+      }
     }
   }
   function hasNeighbor(rows: boolean[], y: number, dir: 1 | -1): boolean {
@@ -530,48 +690,211 @@ function stitchVertical(images: RawImage[]): RawImage {
   const total = tops[tops.length - 1] + rh;
   const reg = rgbs.map((rgb) => cropRgb(rgb, w, 0, y0, w, rh));
 
-  // Overlay mask in screen space: UI that stays fixed on screen while
-  // content scrolls (floating scroll button, sticky bars) matches across
-  // consecutive frames at the same screen pixels, scrolling text doesn't.
-  // Measured on downscaled gray so translucent edges still count.
+  // Fixed-overlay mask (port of it-tools Claude fix): a floating button is
+  // identical across consecutive frames at the same SCREEN pixels while the
+  // underlying content (scrolled) differs there. Mark those tiles, forbid
+  // picking them, and paint leftovers with the background color.
   const bw = 64;
   const nb = Math.ceil(w / bw);
-  const os = 4;
-  const ow = smallFull[0].w;
-  const oh = smallFull[0].h;
-  const ovSmall = new Float32Array(ow * oh);
-  for (let i = 0; i < smallFull.length - 1; i++) {
-    const a = smallFull[i].data;
-    const b = smallFull[i + 1].data;
-    // <=48 catches translucent overlays; scrolled text differs by ~200
-    for (let p = 0; p < ow * oh; p++) {
-      if (Math.abs(a[p] - b[p]) <= 48) {
-        ovSmall[p]++;
+
+  // pairwise disagreement votes between overlapping frames
+  const votes = new Float32Array(rh * nb);
+  for (let i = 0; i < offsets.length; i++) {
+    const d = offsets[i];
+    const a = reg[i];
+    const b = reg[i + 1];
+    for (let r = 0; r < rh - d; r++) {
+      for (let blk = 0; blk < nb; blk++) {
+        let bad = 0;
+        for (let k = 0; k < bw; k++) {
+          const c = blk * bw + k;
+          if (c >= w) {
+            break;
+          }
+          const pa = ((r + d) * w + c) * 3;
+          const pb = (r * w + c) * 3;
+          if (
+            Math.abs(a[pa] - b[pb]) > 12 ||
+            Math.abs(a[pa + 1] - b[pb + 1]) > 12 ||
+            Math.abs(a[pa + 2] - b[pb + 2]) > 12
+          ) {
+            bad++;
+          }
+        }
+        votes[(r + d) * nb + blk] += bad;
+        votes[r * nb + blk] += bad;
       }
     }
   }
-  const npairs = smallFull.length - 1;
-  for (let p = 0; p < ow * oh; p++) {
-    ovSmall[p] /= npairs;
+  // dilate 31x3 (separable max filter)
+  const dil = (() => {
+    const tmp = new Float32Array(rh * nb);
+    for (let r = 0; r < rh; r++) {
+      for (let c = 0; c < nb; c++) {
+        let m = 0;
+        for (let dc = -1; dc <= 1; dc++) {
+          const cc = c + dc;
+          if (cc >= 0 && cc < nb && votes[r * nb + cc] > m) {
+            m = votes[r * nb + cc];
+          }
+        }
+        tmp[r * nb + c] = m;
+      }
+    }
+    const out = new Float32Array(rh * nb);
+    for (let r = 0; r < rh; r++) {
+      for (let c = 0; c < nb; c++) {
+        let m = 0;
+        for (let dr = -15; dr <= 15; dr++) {
+          const rr = r + dr;
+          if (rr >= 0 && rr < rh && tmp[rr * nb + c] > m) {
+            m = tmp[rr * nb + c];
+          }
+        }
+        out[r * nb + c] = m;
+      }
+    }
+    return out;
+  })();
+
+  // fixed-overlay detection at s=4, then upscaled to full res
+  const fs = 4;
+  const regS4 = reg.map((frame) => downscale(toGray(frame), w, rh, fs));
+  const w4 = regS4[0].w;
+  const h4 = regS4[0].h;
+  const bgSamples: number[] = [];
+  for (const g of regS4) {
+    for (let p = 0; p < g.data.length; p += 16) {
+      bgSamples.push(g.data[p]);
+    }
   }
-  const ovBand = new Float32Array(rh * nb);
-  for (let r = 0; r < rh; r++) {
-    const sy0 = Math.floor((y0 + r) / os);
-    const sy1 = Math.min(oh, Math.floor((y0 + r) / os) + 1);
-    for (let blk = 0; blk < nb; blk++) {
-      const sx0 = Math.floor((blk * bw) / os);
-      const sx1 = Math.min(ow, Math.floor(((blk + 1) * bw) / os) + 1);
-      let sum = 0;
-      let n = 0;
-      for (let sy = sy0; sy < sy1; sy++) {
-        for (let sx = sx0; sx < sx1; sx++) {
-          sum += ovSmall[sy * ow + sx];
-          n++;
+  const bgG = medianOf(Float32Array.from(bgSamples));
+  const fixed2: Uint8Array[] = reg.map(() => new Uint8Array(w4 * h4));
+  const grow = (core: Uint8Array, cand: Uint8Array): Uint8Array => {
+    const both = new Uint8Array(w4 * h4);
+    for (let p = 0; p < w4 * h4; p++) {
+      both[p] = core[p] || cand[p] ? 1 : 0;
+    }
+    const { labels } = ccLabels(dilateBin(both, w4, h4, 3), w4, h4);
+    const touch = new Set<number>();
+    for (let p = 0; p < w4 * h4; p++) {
+      if (core[p] && labels[p] > 0) {
+        touch.add(labels[p]);
+      }
+    }
+    const keep = new Uint8Array(w4 * h4);
+    for (let p = 0; p < w4 * h4; p++) {
+      keep[p] = labels[p] > 0 && touch.has(labels[p]) ? 1 : 0;
+    }
+    return dilateBin(keep, w4, h4, 5);
+  };
+  for (let i = 0; i < offsets.length; i++) {
+    const d4 = Math.round(offsets[i] / fs);
+    if (d4 >= h4) {
+      continue;
+    }
+    const ga = regS4[i].data;
+    const gb = regS4[i + 1].data;
+    const inkA = new Uint8Array(w4 * h4);
+    const inkB = new Uint8Array(w4 * h4);
+    const same = new Uint8Array(w4 * h4);
+    const near = new Uint8Array(w4 * h4);
+    for (let p = 0; p < w4 * h4; p++) {
+      const ia = Math.abs(ga[p] - bgG) > 20 ? 1 : 0;
+      const ib = Math.abs(gb[p] - bgG) > 20 ? 1 : 0;
+      inkA[p] = ia;
+      inkB[p] = ib;
+      const eq = Math.abs(ga[p] - gb[p]) < 16 ? 1 : 0;
+      near[p] = eq;
+      same[p] = eq && ia && ib ? 1 : 0;
+    }
+    const movedA = new Uint8Array(w4 * h4);
+    const movedB = new Uint8Array(w4 * h4);
+    for (let r = 0; r < h4 - d4; r++) {
+      for (let c = 0; c < w4; c++) {
+        if (Math.abs(ga[(r + d4) * w4 + c] - gb[r * w4 + c]) > 30) {
+          movedA[(r + d4) * w4 + c] = 1;
+          movedB[r * w4 + c] = 1;
         }
       }
-      ovBand[r * nb + blk] = n ? sum / n : 0;
+    }
+    const coreIn = new Uint8Array(w4 * h4);
+    for (let p = 0; p < w4 * h4; p++) {
+      coreIn[p] = same[p] && (movedA[p] || movedB[p]) ? 1 : 0;
+    }
+    const core = openBin(coreIn, w4, h4, 3);
+    let hasCore = false;
+    for (let p = 0; p < w4 * h4 && !hasCore; p++) {
+      if (core[p]) {
+        hasCore = true;
+      }
+    }
+    if (!hasCore) {
+      continue;
+    }
+    // rows without correspondence: lenient same-screen equality counts
+    for (let idx = 0; idx < 2; idx++) {
+      const fi = i + idx;
+      const moved = idx === 0 ? movedA : movedB;
+      const g = idx === 0 ? ga : gb;
+      const cand = new Uint8Array(w4 * h4);
+      for (let r = 0; r < h4; r++) {
+        const out = idx === 0 ? r < d4 : r >= h4 - d4;
+        for (let c = 0; c < w4; c++) {
+          const p = r * w4 + c;
+          const ok = (moved[p] || (near[p] && out)) && Math.abs(g[p] - bgG) > 8;
+          cand[p] = ok ? 1 : 0;
+        }
+      }
+      const grown = grow(core, cand);
+      const dst = fixed2[fi];
+      for (let p = 0; p < w4 * h4; p++) {
+        dst[p] = dst[p] || grown[p] ? 1 : 0;
+      }
     }
   }
+  // upscale fixed masks to full res + per-block flags
+  const fixedFull: Uint8Array[] = fixed2.map((f2) => {
+    const out = new Uint8Array(rh * w);
+    for (let r = 0; r < rh; r++) {
+      const sr = Math.min(h4 - 1, Math.floor(r / fs));
+      for (let c = 0; c < w; c += 1) {
+        out[r * w + c] = f2[sr * w4 + Math.min(w4 - 1, Math.floor(c / fs))];
+      }
+    }
+    return out;
+  });
+  const fixedBlk: Uint8Array[] = fixedFull.map((ff) => {
+    const fb = new Uint8Array(rh * nb);
+    for (let r = 0; r < rh; r++) {
+      for (let blk = 0; blk < nb; blk++) {
+        let v = 0;
+        for (let k = 0; k < bw; k++) {
+          const c = blk * bw + k;
+          if (c >= w) {
+            break;
+          }
+          if (ff[r * w + c]) {
+            v = 1;
+            break;
+          }
+        }
+        fb[r * nb + blk] = v;
+      }
+    }
+    return fb;
+  });
+  // background color for inpainting hopeless tiles
+  const bgRgb = [0, 1, 2].map((ch) => {
+    const vals: number[] = [];
+    for (const frame of reg) {
+      for (let p = ch; p < frame.length; p += 3 * 16) {
+        vals.push(frame[p]);
+      }
+    }
+    vals.sort((x, y) => x - y);
+    return vals.length ? vals[Math.floor(vals.length / 2)] : 0;
+  });
   // prefer the middle of the scroll region; edges catch header/footer shadows
   const pen = new Float32Array(rh);
   for (let r = 0; r < rh; r++) {
@@ -579,65 +902,71 @@ function stitchVertical(images: RawImage[]): RawImage {
   }
   const edge = Math.floor(rh / 8);
   for (let r = 0; r < edge; r++) {
-    pen[r] += 30;
-    pen[rh - 1 - r] += 30;
+    pen[r] += 500;
+    pen[rh - 1 - r] += 500;
   }
 
-  // Per content row + column block, pick the covering frame with the least
-  // screen-space overlay, then the best agreement with the other covering
-  // frames (outlier overlay loses the vote), then the most central row.
+  const best = new Float32Array(total * nb).fill(Number.POSITIVE_INFINITY);
   const src = new Int32Array(total * nb);
-  for (let R = 0; R < total; R++) {
-    for (let blk = 0; blk < nb; blk++) {
-      const blkW = Math.min(bw, w - blk * bw);
-      let bestScore = Number.POSITIVE_INFINITY;
-      let bestI = -1;
-      for (let i = 0; i < reg.length; i++) {
-        const r = R - tops[i];
-        if (r < 0 || r >= rh) {
-          continue;
-        }
-        let agree = 0;
-        let cnt = 0;
-        for (let j = 0; j < reg.length; j++) {
-          if (j === i) {
-            continue;
-          }
-          const rj = R - tops[j];
-          if (rj < 0 || rj >= rh) {
-            continue;
-          }
-          const A = reg[i];
-          const B = reg[j];
-          const base = blk * bw;
-          let m = 0;
-          for (let k = 0; k < blkW; k++) {
-            const pa = (r * w + base + k) * 3;
-            const pb = (rj * w + base + k) * 3;
-            if (
-              Math.abs(A[pa] - B[pb]) <= 12 &&
-              Math.abs(A[pa + 1] - B[pb + 1]) <= 12 &&
-              Math.abs(A[pa + 2] - B[pb + 2]) <= 12
-            ) {
-              m++;
-            }
-          }
-          agree += m / blkW;
-          cnt++;
-        }
-        const agreeFrac = cnt > 0 ? agree / cnt : 1;
-        const score = ovBand[r * nb + blk] * 2 - agreeFrac + pen[r] * 0.02;
-        if (score < bestScore) {
-          bestScore = score;
-          bestI = i;
+  for (let i = 0; i < reg.length; i++) {
+    for (let r = 0; r < rh; r++) {
+      const R = tops[i] + r;
+      for (let blk = 0; blk < nb; blk++) {
+        const c = dil[r * nb + blk] + pen[r] + fixedBlk[i][r * nb + blk] * 1e4;
+        if (c < best[R * nb + blk]) {
+          best[R * nb + blk] = c;
+          src[R * nb + blk] = i;
         }
       }
-      src[R * nb + blk] = bestI;
     }
   }
+  // edge-touching overlay labels (band top/bottom rows): leftovers there
+  // usually belong to header/footer, don't paint them — unless most of the
+  // blob is interior (a floating button merely touching the footer shadow
+  // must still be erased)
+  const edgeLabels: Set<number>[] = fixed2.map((f2) => {
+    const { labels } = ccLabels(f2, w4, h4);
+    const total = new Map<number, number>();
+    const edgeCnt = new Map<number, number>();
+    for (let r = 0; r < h4; r++) {
+      const isEdgeRow = r < 3 || r >= h4 - 3;
+      for (let c = 0; c < w4; c++) {
+        const l = labels[r * w4 + c];
+        if (l > 0) {
+          total.set(l, (total.get(l) ?? 0) + 1);
+          if (isEdgeRow) {
+            edgeCnt.set(l, (edgeCnt.get(l) ?? 0) + 1);
+          }
+        }
+      }
+    }
+    const edge = new Set<number>();
+    for (const [l, n] of total) {
+      if ((edgeCnt.get(l) ?? 0) / n > 0.5) {
+        edge.add(l);
+      }
+    }
+    // upscale label map to full res for the paint test below
+    // (store per-frame on the side to avoid a megastructure)
+    (f2 as unknown as { __labels?: Int32Array }).__labels = labels;
+    return edge;
+  });
+  void edgeLabels;
   const content = Buffer.alloc(total * w * 3);
+  // per-frame full-res paint data (rebuilt per frame to bound memory)
+  const labelFull = new Int32Array(rh * w);
   for (let i = 0; i < reg.length; i++) {
     const frame = reg[i];
+    const f2 = fixed2[i];
+    const labSmall = (f2 as unknown as { __labels: Int32Array }).__labels;
+    const edge = edgeLabels[i];
+    for (let r = 0; r < rh; r++) {
+      const sr = Math.min(h4 - 1, Math.floor(r / fs));
+      for (let c = 0; c < w; c++) {
+        const v = f2[sr * w4 + Math.min(w4 - 1, Math.floor(c / fs))];
+        labelFull[r * w + c] = v ? labSmall[sr * w4 + Math.min(w4 - 1, Math.floor(c / fs))] : 0;
+      }
+    }
     for (let r = 0; r < rh; r++) {
       const R = tops[i] + r;
       for (let blk = 0; blk < nb; blk++) {
@@ -650,6 +979,13 @@ function stitchVertical(images: RawImage[]): RawImage {
             break;
           }
           frame.copy(content, (R * w + c) * 3, (r * w + c) * 3, (r * w + c) * 3 + 3);
+          // no clean frame covers this tile: paint background to erase the button
+          const lab = labelFull[r * w + c];
+          if (lab > 0 && !edge.has(lab)) {
+            content[(R * w + c) * 3] = bgRgb[0];
+            content[(R * w + c) * 3 + 1] = bgRgb[1];
+            content[(R * w + c) * 3 + 2] = bgRgb[2];
+          }
         }
       }
     }
