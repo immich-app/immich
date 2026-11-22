@@ -17,19 +17,21 @@
 
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  const handleChangeRating = async (assetId: string, ratingOnClick: Rating, savedRating: Rating) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(async () => {
-      try {
-        if (ratingOnClick === savedRating) {
-          return;
-        }
-
-        await updateAsset({ id: assetId, updateAssetDto: { rating: ratingOnClick } });
-      } catch (error) {
-        handleError(error, $t('errors.cant_apply_changes'));
+  const saveRating = async (assetId: string, ratingOnClick: Rating, savedRating: Rating) => {
+    try {
+      if (ratingOnClick === savedRating) {
+        return;
       }
-    }, 300);
+
+      await updateAsset({ id: assetId, updateAssetDto: { rating: ratingOnClick } });
+    } catch (error) {
+      handleError(error, $t('errors.cant_apply_changes'));
+    }
+  };
+
+  const handleChangeRating = (assetId: string, ratingOnClick: Rating, savedRating: Rating) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => handlePromiseError(saveRating(assetId, ratingOnClick, savedRating)), 300);
   };
 </script>
 
@@ -39,7 +41,7 @@
       <StarRating
         {rating}
         readOnly={!isOwner}
-        onRating={(ratingOnClick) => handlePromiseError(handleChangeRating(asset.id, ratingOnClick, rating))}
+        onRating={(ratingOnClick) => handleChangeRating(asset.id, ratingOnClick, rating)}
       />
     {/key}
   </section>
