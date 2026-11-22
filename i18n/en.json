@@ -2252,6 +2252,8 @@
   "stitch_mode_scroll": "Vertical scroll (long screenshots)",
   "stitch_mode_panorama": "Panorama (horizontal sweep)",
   "stitch_start": "Stitch",
+  "stitch_progress_title": "Stitching images",
+  "stitch_progress_description": "Merging {count} images, please wait...",
   "stitch_need_two": "Select at least 2 images to stitch.",
   "stitch_done": "Stitched {count} images into one.",
   "stitch_delete_originals": "Move {count} originals to trash",

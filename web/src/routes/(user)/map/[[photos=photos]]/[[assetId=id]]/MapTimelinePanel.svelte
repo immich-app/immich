@@ -133,9 +133,9 @@
 
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
-          <StitchAssetsAction menuItem onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} onUndoDelete={(assets) => timelineManager.upsertAssets(assets)} />
           <ActionMenuItem action={StackActions.Stack} />
           <ActionMenuItem action={StackActions.Unstack} />
+          <StitchAssetsAction menuItem onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} onUndoDelete={(assets) => timelineManager.upsertAssets(assets)} />
           {#if isLinkActionAvailable}
             <LinkLivePhotoAction
               menuItem

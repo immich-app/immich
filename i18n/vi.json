@@ -2246,6 +2246,8 @@
   "stitch_mode_scroll": "Cuộn dọc (screenshot dài)",
   "stitch_mode_panorama": "Panorama (quét ngang)",
   "stitch_start": "Ghép",
+  "stitch_progress_title": "Đang ghép ảnh",
+  "stitch_progress_description": "Đang gộp {count} ảnh, vui lòng chờ...",
   "stitch_need_two": "Chọn ít nhất 2 ảnh để ghép.",
   "stitch_done": "Đã ghép {count} ảnh thành một.",
   "stitch_delete_originals": "Chuyển {count} ảnh gốc vào thùng rác",
