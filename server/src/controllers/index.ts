@@ -34,6 +34,7 @@ import { ServerController } from 'src/controllers/server.controller.js';
 import { SessionController } from 'src/controllers/session.controller.js';
 import { SharedLinkController } from 'src/controllers/shared-link.controller.js';
 import { StackController } from 'src/controllers/stack.controller.js';
+import { StitchController } from 'src/controllers/stitch.controller.js';
 import { SyncController } from 'src/controllers/sync.controller.js';
 import { SystemConfigController } from 'src/controllers/system-config.controller.js';
 import { SystemMetadataController } from 'src/controllers/system-metadata.controller.js';
@@ -83,6 +84,7 @@ export const controllers = [
   SessionController,
   SharedLinkController,
   StackController,
+  StitchController,
   SyncController,
   SystemConfigController,
   SystemMetadataController,
