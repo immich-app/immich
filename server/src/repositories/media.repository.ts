@@ -98,10 +98,14 @@ export class MediaRepository {
       { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
       { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg },
       { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl },
+      // SubIFD1:PreviewImage must be tried before PreviewImage because Ricoh GR III/IV cameras
+      // store the full-resolution camera-rendered JPEG in SubIFD1, while the bare PreviewImage
+      // tag resolves to the much smaller Pentax-namespace preview (720×480) first.
+      { tag: 'SubIFD1:PreviewImage', format: RawExtractedFormat.Jpeg },
       { tag: 'PreviewImage', format: RawExtractedFormat.Jpeg },
     ]) {
       try {
-        const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        const buffer = await this.extractBinaryTagToBuffer(tag, input);
         this.logger.debug(`Successfully extracted ${tag} buffer from image`);
         return { buffer, format };
       } catch (error: any) {
@@ -109,6 +113,20 @@ export class MediaRepository {
       }
     }
     return null;
+  }
+
+  private async extractBinaryTagToBuffer(tag: string, input: string): Promise<Buffer> {
+    if (!tag.includes(':')) {
+      return exiftool.extractBinaryTagToBuffer(tag, input);
+    }
+
+    // exiftool omits the group from JSON keys unless -G1 is passed, which extractBinaryTagToBuffer doesn't do
+    const tags = await exiftool.readRaw(input, { readArgs: ['-G1', '-b', `-${tag}`] });
+    const value = (tags as Record<string, unknown>)[tag];
+    if (typeof value !== 'string' || !value.startsWith('base64:')) {
+      throw new Error(`${tag} not found`);
+    }
+    return Buffer.from(value.slice('base64:'.length), 'base64');
   }
 
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {
