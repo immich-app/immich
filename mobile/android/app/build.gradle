@@ -86,6 +86,28 @@ flutter {
 }
 
 dependencies {
+  // `cronet_http` picks its Cronet dependency from the `cronetHttpNoPlay`
+  // dart-define. Without it the package pulls in play-services-cronet, whose
+  // GooglePlayServicesCronetProvider wins engine selection and ships whatever
+  // version the Play Store feels like -- with no guarantee of X25519MLKEM768.
+  //
+  // Every build entry point therefore has to pass
+  // --dart-define=cronetHttpNoPlay=true. Checking it here turns a forgotten flag
+  // into a build error instead of a silently classical key exchange at runtime.
+  def buildDartDefines = [:]
+  if (project.hasProperty('dart-defines')) {
+    project.property('dart-defines').split(',').each { entry ->
+      def pair = new String(entry.decodeBase64(), 'UTF-8').split('=')
+      buildDartDefines[pair[0]] = pair.length > 1 ? pair[1] : ''
+    }
+  }
+  if (buildDartDefines['cronetHttpNoPlay'] != 'true') {
+    throw new GradleException(
+      "Build with --dart-define=cronetHttpNoPlay=true. Without it cronet_http " +
+      "depends on play-services-cronet and the post-quantum key exchange is lost."
+    )
+  }
+
   implementation libs.okhttp
   implementation libs.cronet.embedded
   implementation libs.media3.datasource.okhttp

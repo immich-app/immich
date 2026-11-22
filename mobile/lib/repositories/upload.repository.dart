@@ -67,13 +67,14 @@ class UploadRepository {
       // Unique per attempt, not just per asset: a retry must not collide with the
       // previous attempt's native request entry.
       final progressKey = '$logContext:${file.path}#$_uploadKeySalt-${_streamingUploadSeq++}';
-      var bytesSent = 0;
-      if (onProgress != null) {
-        _streamingProgressListeners[progressKey] = (sent, total) {
-          bytesSent = sent;
-          onProgress(sent, total);
-        };
-      }
+      var progressBytes = 0;
+      // Always subscribe, even when the caller does not want progress: the byte
+      // count is what decides whether a failed attempt may be resent, and callers
+      // like the background worker pass no onProgress at all.
+      _streamingProgressListeners[progressKey] = (sent, total) {
+        progressBytes = sent;
+        onProgress?.call(sent, total);
+      };
 
       // Abort the native upload when the caller cancels, otherwise the native
       // thread keeps streaming after the backup stopped. Register even for an
@@ -136,10 +137,12 @@ class UploadRepository {
         if (cancelToken?.isCompleted == true) {
           return UploadResult.cancelled();
         }
-        if (bytesSent == 0 && attempt == 0) {
-          // No StreamingUploadResult to read the real byte count from, so this
-          // falls back to what progress reported -- zero when the caller did not
-          // subscribe. Almost always the body was never accepted.
+        if (progressBytes == 0 && attempt == 0) {
+          // Nothing was reported as sent, so the body almost certainly never
+          // reached the server. The counter is fed from the native progress
+          // callback, which is subscribed even when the caller passed no
+          // onProgress -- otherwise this was always 0 and every exception
+          // looked like a safe retry.
           logger.warning("Streaming upload $logContext threw before any data was sent, resending once");
           continue;
         }
@@ -239,18 +242,23 @@ class UploadRepository {
     //
     // mTLS users stay on the buffered path: Cronet cannot present a client
     // certificate. Their client is OkHttp, which streams the body itself.
-    if (CurrentPlatform.isAndroid && !NetworkRepository.usingMtls && file.lengthSync() > kStreamingUploadThreshold) {
-      // No fallback to the Dart client on failure: it buffers the whole body in
-      // memory, so retrying a >16 MB file that way is exactly the OOM this path
-      // exists to prevent. Report the failure instead.
-      return _uploadFileStreaming(
-        file: file,
-        originalFileName: originalFileName,
-        fields: fields,
-        onProgress: onProgress,
-        logContext: logContext,
-        cancelToken: cancelToken,
-      );
+    if (CurrentPlatform.isAndroid && !NetworkRepository.usingMtls) {
+      // Not lengthSync(): this runs on the UI isolate, and a stat() per upload is
+      // a blocking syscall on the frame budget.
+      final length = await file.length();
+      if (length > kStreamingUploadThreshold) {
+        // No fallback to the Dart client on failure: it buffers the whole body in
+        // memory, so retrying a >16 MB file that way is exactly the OOM this path
+        // exists to prevent. Report the failure instead.
+        return _uploadFileStreaming(
+          file: file,
+          originalFileName: originalFileName,
+          fields: fields,
+          onProgress: onProgress,
+          logContext: logContext,
+          cancelToken: cancelToken,
+        );
+      }
     }
 
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
