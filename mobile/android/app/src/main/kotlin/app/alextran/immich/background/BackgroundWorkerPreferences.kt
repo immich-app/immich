@@ -18,10 +18,7 @@ class BackgroundWorkerPreferences(private val ctx: Context) {
     private const val DEFAULT_REQUIRE_CHARGING = false
     private const val DEFAULT_NOTIF_TITLE = "Uploading media"
     private const val DEFAULT_NOTIF_MSG = "Checking for new assets…"
-    // Must match the Dart default (BackupConfig.backgroundSync). It covers the
-    // window before the first frame, when Dart has not written the real value
-    // yet -- ImmichApp's 15s timer can fire in exactly that window. A mismatch
-    // here means logout-then-kill, or a fresh install, silently ingests nothing.
+    // 要和 BackupConfig.backgroundSync 一致。Dart 写之前就读的是它。
     private const val DEFAULT_SYNC_ENABLED = true
   }
 
@@ -72,10 +69,6 @@ class BackgroundWorkerPreferences(private val ctx: Context) {
     return sp.getBoolean(SHARED_PREF_LOCK_KEY, true)
   }
 
-    /// Whether background sync and upload is switched on in the app's settings.
-    ///
-    /// Kept natively so every enqueue path can honour it, including the ones that
-    /// run before Dart is up.
   fun setSyncEnabled(enabled: Boolean) {
     sp.edit {
       putBoolean(SHARED_PREF_SYNC_ENABLED_KEY, enabled)

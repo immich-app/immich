@@ -48,9 +48,8 @@ void main() {
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await SettingsRepository.ensureInitialized(db);
     await SettingsRepository.instance.write(SettingsKey.backupEnabled, true);
-    // The background worker refuses to run unless the switch is on, so every
-    // existing case below needs it enabled. The dedicated group at the bottom
-    // turns it off to cover the skip path.
+    // 开关没开时 worker 直接跳过，所以下面每个用例都要先打开。
+    // 末尾那组专门关掉它，覆盖跳过路径。
     await SettingsRepository.instance.write(SettingsKey.backgroundSync, true);
   });
 

@@ -222,10 +222,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     if (_ref.read(authProvider).isAuthenticated) {
       _ref.read(backupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
 
-      // 只有 Android 有 WorkManager 入队；iOS 走自己的后台任务调度。
       if (CurrentPlatform.isAndroid && _ref.read(appConfigProvider).backup.backgroundSync) {
-        // 入队失败绝不能冒泡：_performPause 整体在 try/catch 里，一旦抛出去
-        // 后面的 websocket.disconnect() 就被跳过，连接会泄漏。
+        // 抛出去会跳过下面的 websocket.disconnect。
         try {
           unawaited(_ref.read(backgroundWorkerFgServiceProvider).runNow().catchError((_) {}));
         } catch (error, stack) {

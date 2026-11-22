@@ -93,8 +93,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   bool get _isBackupEnabled => SettingsRepository.instance.appConfig.backup.enabled;
 
-  /// Whether the user has the background-sync switch on. Read from settings each
-  /// time: the background isolate gets no notification when the value changes.
+  /// 每次都重读，这个 isolate 收不到值变化的通知。
   bool get _isBackgroundSyncEnabled => SettingsRepository.instance.appConfig.backup.backgroundSync;
 
   Future<void> init() async {
@@ -130,9 +129,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   @override
   Future<bool> onAndroidUpload(int? maxMinutes) async {
-    // Enforced here as well as in the native scheduler: WorkManager can hand us a
-    // run that was queued before the switch was turned off, and startWork() has no
-    // way to know the Dart-side setting.
+    // 开关关掉之前排进去的任务，WorkManager 还会留着。
     if (!_isBackgroundSyncEnabled) {
       _logger.info("Background sync is disabled. Skipping the whole run");
       return false;
@@ -149,14 +146,9 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   @override
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds) async {
-    // iOS reschedules itself from handleBackgroundRefresh/handleBackgroundProcessing
-    // without consulting Dart, so the switch has to be enforced at this entry point
-    // or it does nothing on iOS at all.
+    // iOS 自己重排，不问 Dart。
     if (!_isBackgroundSyncEnabled) {
       _logger.info("Background sync is disabled. Skipping the whole run");
-      // Still has to run: this isolate opened its own database connection and
-      // provider container during bootstrap. Returning early left both open for
-      // the lifetime of the (now idle) background engine.
       await _cleanup();
       return;
     }
@@ -170,9 +162,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         await _optimizeDB();
       }
 
-      // Run the four phases concurrently so the bg refresh task (20s budget) can
-      // make progress on all of them. A new backup batch waits for the remote
-      // sync; the single budget caps the whole batch.
+      // 四个阶段并发跑，20 秒的后台刷新任务才能都推进一点。
+      // 新的上传批次要等远端同步，整批共用一个预算。
       final remoteSync = _remoteSyncService.sync();
       final all = Future.wait<dynamic>([
         _localSyncService.sync(),
@@ -222,8 +213,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       final backupFuture = _handleBackup(remoteSync: Future.value(true));
       Timer? cancelTimer;
-      // 预算超时是我们自己喊停的，语义上和「用户手动停止 / 系统回收」不同：
-      // 前者说明还有活没干完，应让 WorkManager 重排；后者重排只会再被杀一次。
+      // 我们自己喊停的，和用户手动停止不是一回事。
       var timedOut = false;
       if (backupTimeout != null) {
         cancelTimer = Timer(backupTimeout, () {
@@ -236,9 +226,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       }
       try {
         final needsRetry = await backupFuture;
-        // 预算到点被我们喊停时，本轮几乎必然还有待传文件：
-        // 报 false 会让 Kotlin 侧 complete(Result.success())，即「干完了」，
-        // 下次要等周期任务或用户开 App 才继续，观感就是「传一会儿就停」。
+        // 报 false 会被当成干完了，下一轮要等一小时。
         if (timedOut) {
           _logger.info("$debugLabel hit its budget, asking WorkManager to reschedule");
           return true;
@@ -320,9 +308,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         return false;
       }
 
-      // Enforced here as well as in the native schedulers: WorkManager can hand us
-      // a run queued before the switch was turned off, and iOS reschedules itself
-      // without consulting Dart. Every platform funnels through here.
       if (!_isBackgroundSyncEnabled) {
         _logger.info("Background sync is disabled. Skipping backup routine");
         return false;

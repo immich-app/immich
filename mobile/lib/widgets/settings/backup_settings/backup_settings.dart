@@ -177,8 +177,6 @@ class _BackupSwitchTile extends ConsumerWidget {
   final bool Function(AppConfig) selector;
   final String title;
   final String subtitle;
-  /// Awaitable so the tile can surface a failure in the native side instead of
-  /// dropping it: several of these switches schedule or cancel background work.
   final Future<void> Function(bool)? onChanged;
 
   const _BackupSwitchTile({
@@ -201,10 +199,7 @@ class _BackupSwitchTile extends ConsumerWidget {
           value: value,
           onChanged: (bool newValue) async {
             await ref.read(settingsProvider).write(metadataKey, newValue);
-            // Values this switch writes decide whether native work gets scheduled,
-            // so a failure there must not be swallowed. Callers do not await this
-            // callback (the tile would unmount), so report it instead of dropping
-            // it -- silence here previously hid a thrown runNow().
+            // 这几个开关会去排期或取消后台任务，失败不能吞掉。
             try {
               await onChanged?.call(newValue);
             } catch (error, stackTrace) {

@@ -21,7 +21,6 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
 
   override fun enable() {
     BackgroundWorkerPreferences(ctx).setSyncEnabled(true)
-    // A fresh enable clears the cancel flag left over from the last disable().
     BackgroundWorkerApiImpl.explicitlyCancelled = false
     enqueueMediaObserver(ctx)
     enqueuePeriodicWorker(ctx)
@@ -33,8 +32,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
 
   override fun configure(settings: BackgroundWorkerSettings) {
     BackgroundWorkerPreferences(ctx).updateSettings(settings)
-    // If the user has switched background sync off, changing an unrelated
-    // option (charging, delay) must not quietly bring the workers back.
+    // 改别的选项不能把 worker 又拉起来。
     if (!BackgroundWorkerPreferences(ctx).isSyncEnabled()) {
       Log.i(TAG, "Background sync disabled, not rescheduling after configure")
       return
@@ -45,8 +43,6 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
 
   override fun disable() {
     BackgroundWorkerPreferences(ctx).setSyncEnabled(false)
-    // The switch going off must not be undone by onStopped() re-queueing the
-    // work it is being told to cancel.
     BackgroundWorkerApiImpl.explicitlyCancelled = true
     WorkManager.getInstance(ctx).apply {
       cancelUniqueWork(OBSERVER_WORKER_NAME)
@@ -74,11 +70,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     const val ENGINE_CACHE_KEY = "immich::background_worker::engine"
     const val RETRY_TAG = "immich/retryWhenConnected"
 
-    /// True while a cancellation we asked for is in flight.
-    ///
-    /// onStopped() cannot tell a system stop from a requested one, and the two
-    /// need opposite handling: a system stop should reschedule, a requested one
-    /// must not.
+    /// onStopped() 分不出是系统停的还是自己要停的。
     @Volatile
     var explicitlyCancelled = false
 
@@ -129,16 +121,10 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     }
 
     fun enqueueBackgroundWorker(ctx: Context) {
-      // Reached from ImmichApp.onCreate's 15s timer, from MediaObserver, and from
-      // runNow() -- which the app calls on every pause when the switch is on.
-      // Without this the schedule comes back even while the switch is off.
       if (!BackgroundWorkerPreferences(ctx).isSyncEnabled()) {
         Log.i(TAG, "Background sync disabled, skipping enqueue")
         return
       }
-      // Honours "only when charging" like every other enqueue path. Missing this
-      // made a pause-triggered run ignore the setting: the user could have
-      // charging-only on and still get an upload the moment they pressed home.
       val settings = BackgroundWorkerPreferences(ctx).getSettings()
       val constraints = Constraints.Builder().apply {
         setRequiresBatteryNotLow(true)
@@ -155,8 +141,6 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     }
 
     fun enqueueBackgroundWorkerWhenConnected(ctx: Context) {
-      // Retry scheduling must also respect the switch, otherwise a run that was
-      // cancelled when the user turned sync off re-queues itself.
       if (!BackgroundWorkerPreferences(ctx).isSyncEnabled()) {
         Log.i(TAG, "Background sync disabled, skipping retry enqueue")
         return
@@ -172,8 +156,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
         .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
         .addTag(RETRY_TAG)
         .build()
-      // KEEP, not REPLACE: one pending retry is enough. Replacing would cancel
-      // a retry that may already be running.
+      // 用 KEEP：替换会把正在跑的重试取消掉。
       WorkManager.getInstance(ctx)
         .enqueueUniqueWork(RETRY_WORKER_NAME, ExistingWorkPolicy.KEEP, work)
 
@@ -187,8 +170,6 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     }
 
     fun cancelBackgroundWorker(ctx: Context) {
-      // Tells onStopped() this stop was requested, so it does not re-queue the
-      // work it is being told to cancel.
       explicitlyCancelled = true
       WorkManager.getInstance(ctx).cancelUniqueWork(BACKGROUND_WORKER_NAME)
       WorkManager.getInstance(ctx).cancelUniqueWork(RETRY_WORKER_NAME)

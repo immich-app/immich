@@ -64,26 +64,19 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   }
 
   override fun startWork(): ListenableFuture<Result> {
-    // WorkManager can still hold a task queued before the user turned background
-    // sync off (or before an upgrade, where the key does not exist yet). Nothing
-    // else checks the switch on this path.
+    // 开关关掉之前排进去的任务，WorkManager 还会留着。
     if (!BackgroundWorkerPreferences(ctx).isSyncEnabled()) {
       Log.i(TAG, "Background sync disabled, skipping worker start")
       return Futures.immediateFuture(Result.success())
     }
 
     if (!activeWorker.compareAndSet(null, this)) {
-      // Another worker already owns the upload. Reporting success keeps
-      // WorkManager's backoff from growing; the running worker is doing the work.
       Log.i(TAG, "Another background worker is running, skipping")
       return Futures.immediateFuture(Result.success())
     }
 
     if (BackgroundWorkerPreferences(ctx).isLocked() && BackgroundEngineLock.connectEngines > 0) {
-      // The foreground engine is mid-backup, so it is already doing what this
-      // worker would do. Report success rather than retry: a retry feeds
-      // WorkManager's exponential backoff every time a foreground backup overlaps
-      // a scheduled run, pushing the next attempt out to minutes.
+      // 这里重试会顺着退避把下一次往后推。
       Log.i(TAG, "Foreground engine active, skipping background worker")
       activeWorker.compareAndSet(this, null)
       return Futures.immediateFuture(Result.success())
@@ -210,12 +203,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    */
   override fun onStopped() {
     Log.d(TAG, "About to stop BackupWorker")
-    // `close()` reports Result.failure(), which WorkManager treats as "never run
-    // again". A system stop is not a finished job: a 54 minute budget can be cut
-    // short by the OS at any point, and the remaining files would then wait for
-    // the hourly periodic worker. Re-queue, unless the stop was asked for --
-    // a user cancel goes through disable() (switch already off) and the
-    // foreground lock goes through cancelBackgroundWorker().
+    // close() 报的是 Result.failure，WorkManager 当成「以后别再跑」。
     if (!isComplete && !BackgroundWorkerApiImpl.explicitlyCancelled &&
       BackgroundWorkerPreferences(ctx).isSyncEnabled()
     ) {
