@@ -7,7 +7,12 @@ type ResourceEvent = { changed: string[]; deleted: string[]; correlationId?: str
 type DeleteListener = { path: string[]; onDelete: () => void };
 
 class ResourceManager {
-  #clientId = crypto.randomUUID().split('-', 1)[0];
+  // crypto.randomUUID requires a secure context (https/localhost);
+  // fall back on plain http LAN hosts so the app still boots.
+  #clientId = (typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+  ).split('-', 1)[0];
   #requestCount = 0;
   #pendingPaths = new Set<string>();
   #flushTimer?: ReturnType<typeof setTimeout>;
