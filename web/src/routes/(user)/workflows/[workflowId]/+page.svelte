@@ -293,7 +293,7 @@
     </ActionBar>
   </AppShellBar>
 
-  <Container size="medium" class="pt-8 pb-24" center>
+  <Container size="medium" class="px-2 pt-8 pb-24" center>
     <VStack gap={4}>
       <div class="flex gap-1 rounded-full border border-light-200 bg-light p-1" role="group">
         <Button
