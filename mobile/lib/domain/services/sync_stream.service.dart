@@ -64,6 +64,15 @@ class SyncStreamService {
     final cancellation = _cancellation;
     final signals = <Future<void>>[?abortSignal, ?cancellation?.future];
     final signal = signals.isEmpty ? null : (signals.length == 1 ? signals.single : Future.any(signals));
+
+    // Which of the two fired. `isCancelled` only knows about this isolate's
+    // token, so a caller-supplied deadline would otherwise look like a successful
+    // sync and the caller would upload against a half-applied remote state.
+    var abortedSignal = false;
+    if (signal != null) {
+      unawaited(signal.then((_) => abortedSignal = true, onError: (_) => abortedSignal = true));
+    }
+
     final serverVersion = await _api.serverInfoApi.getServerVersion();
     if (serverVersion == null) {
       _logger.severe("Cannot perform sync: unable to determine server version");
@@ -105,8 +114,9 @@ class SyncStreamService {
 
     // streamChanges returns normally when the abort signal fires, so without this
     // an aborted sync would report success and the caller would upload against a
-    // half-applied remote state.
-    if (isCancelled) {
+    // half-applied remote state. Checking only isCancelled missed the caller's
+    // own deadline, which is the signal this method receives most often.
+    if (abortedSignal || isCancelled) {
       _logger.warning("Remote sync aborted");
       return false;
     }
