@@ -89,17 +89,225 @@ function downscale(gray: Float32Array, w: number, h: number, s: number): { data:
 }
 
 /**
- * Mean absolute difference between a[dy:] and b[:H-dy], scored on content
- * pixels only (ink = brighter than 40) so empty areas don't fake the score.
+ * Harris corner seeds on downscaled gray (text gives abundant strong corners).
+ * Returns up to maxPoints points, min ~6px apart.
  */
-function scoreVertical(a: Float32Array, b: Float32Array, w: number, h: number, dy: number): number {
-  const rows = h - dy;
-  if (rows <= 0) {
+function harrisCorners(gray: Float32Array, w: number, h: number, maxPoints: number): { x: number; y: number }[] {
+  const ix = new Float32Array(w * h);
+  const iy = new Float32Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const p = y * w + x;
+      ix[p] = gray[p + 1] - gray[p - 1];
+      iy[p] = gray[p + w] - gray[p - w];
+    }
+  }
+  const blur = (src: Float32Array): Float32Array => {
+    const out = new Float32Array(w * h);
+    for (let y = 2; y < h - 2; y++) {
+      for (let x = 2; x < w - 2; x++) {
+        let s = 0;
+        for (let dy = -2; dy <= 2; dy++) {
+          for (let dx = -2; dx <= 2; dx++) {
+            s += src[(y + dy) * w + x + dx];
+          }
+        }
+        out[y * w + x] = s / 25;
+      }
+    }
+    return out;
+  };
+  const ixx = new Float32Array(w * h);
+  const iyy = new Float32Array(w * h);
+  const ixy = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    ixx[i] = ix[i] * ix[i];
+    iyy[i] = iy[i] * iy[i];
+    ixy[i] = ix[i] * iy[i];
+  }
+  const bxx = blur(ixx);
+  const byy = blur(iyy);
+  const bxy = blur(ixy);
+  const cell = 6;
+  const gw = Math.ceil(w / cell);
+  const gh = Math.ceil(h / cell);
+  const bestR = new Float32Array(gw * gh);
+  const bestX = new Int32Array(gw * gh);
+  const bestY = new Int32Array(gw * gh);
+  for (let y = 3; y < h - 3; y++) {
+    for (let x = 3; x < w - 3; x++) {
+      const p = y * w + x;
+      const det = bxx[p] * byy[p] - bxy[p] * bxy[p];
+      const tr = bxx[p] + byy[p];
+      const r = det - 0.04 * tr * tr;
+      if (r <= 0) {
+        continue;
+      }
+      const c = Math.floor(y / cell) * gw + Math.floor(x / cell);
+      if (r > bestR[c]) {
+        bestR[c] = r;
+        bestX[c] = x;
+        bestY[c] = y;
+      }
+    }
+  }
+  const pts: { x: number; y: number; r: number }[] = [];
+  let rmax = 0;
+  for (let c = 0; c < gw * gh; c++) {
+    if (bestR[c] > rmax) {
+      rmax = bestR[c];
+    }
+  }
+  for (let c = 0; c < gw * gh; c++) {
+    if (bestR[c] > rmax * 0.01) {
+      pts.push({ x: bestX[c], y: bestY[c], r: bestR[c] });
+    }
+  }
+  pts.sort((p, q) => q.r - p.r);
+  return pts.slice(0, maxPoints);
+}
+
+/** Zero-mean normalized cross-correlation of (2*rad+1)^2 patches. -2 when flat. */
+function patchNcc(
+  a: Float32Array,
+  aw: number,
+  ah: number,
+  ax: number,
+  ay: number,
+  b: Float32Array,
+  bw: number,
+  bh: number,
+  bx: number,
+  by: number,
+  rad: number,
+): number {
+  const n = (2 * rad + 1) * (2 * rad + 1);
+  let ma = 0;
+  let mb = 0;
+  for (let dy = -rad; dy <= rad; dy++) {
+    for (let dx = -rad; dx <= rad; dx++) {
+      ma += a[(ay + dy) * aw + ax + dx];
+      mb += b[(by + dy) * bw + bx + dx];
+    }
+  }
+  ma /= n;
+  mb /= n;
+  let sab = 0;
+  let saa = 0;
+  let sbb = 0;
+  for (let dy = -rad; dy <= rad; dy++) {
+    for (let dx = -rad; dx <= rad; dx++) {
+      const da = a[(ay + dy) * aw + ax + dx] - ma;
+      const db = b[(by + dy) * bw + bx + dx] - mb;
+      sab += da * db;
+      saa += da * da;
+      sbb += db * db;
+    }
+  }
+  if (saa < 1e-6 || sbb < 1e-6) {
+    return -2;
+  }
+  return sab / Math.sqrt(saa * sbb);
+}
+
+/**
+ * Robust scroll offset via corner matching + consensus vote.
+ * Corners come from dynamic screen rows only (static chrome and static
+ * overlays can't vote), each corner votes its best vertical match;
+ * repetitive content scatters wrong votes while the true translation
+ * piles up. Returns null when nothing reaches consensus.
+ * Works on s=2 grids; the returned offset is in full-res pixels.
+ */
+function ransacOffset(
+  a: Float32Array,
+  b: Float32Array,
+  w: number,
+  h: number,
+  dynS: Uint8Array,
+  minOv: number,
+): number | null {
+  const corners = harrisCorners(b, w, h, 150).filter((p) => p.y < h && dynS[p.y]);
+  if (corners.length < 12) {
+    return null;
+  }
+  const maxDy = Math.max(0, h - minOv);
+  const rad = 3;
+  const votes: number[] = [];
+  for (const p of corners) {
+    if (p.x - rad - 2 < 0 || p.x + rad + 2 >= w || p.y - rad < 0 || p.y + rad >= h) {
+      continue;
+    }
+    let bestNcc = 0.75;
+    let bestDy = -1;
+    for (let dy = 0; dy <= maxDy; dy++) {
+      const ay = p.y + dy;
+      if (ay - rad < 0 || ay + rad >= h) {
+        break;
+      }
+      for (let dx = -2; dx <= 2; dx++) {
+        const ncc = patchNcc(a, w, h, p.x + dx, ay, b, w, h, p.x, p.y, rad);
+        if (ncc > bestNcc) {
+          bestNcc = ncc;
+          bestDy = dy;
+        }
+      }
+    }
+    if (bestDy >= 0) {
+      votes.push(bestDy);
+    }
+  }
+  if (votes.length < 12) {
+    return null;
+  }
+  const bin = 2;
+  const hist = new Map<number, number>();
+  for (const v of votes) {
+    const k = Math.round(v / bin);
+    hist.set(k, (hist.get(k) ?? 0) + 1);
+  }
+  let peak = 0;
+  let peakN = 0;
+  for (const [k, n] of hist) {
+    if (n > peakN) {
+      peakN = n;
+      peak = k;
+    }
+  }
+  if (peakN < Math.max(12, votes.length * 0.15)) {
+    return null;
+  }
+  const inliers = votes.filter((v) => Math.abs(v - peak * bin) <= 6);
+  inliers.sort((x, y) => x - y);
+  return inliers[Math.floor(inliers.length / 2)] * 2;
+}
+
+/**
+ * Mean absolute difference between a[dy:] and b[:-dy], scored on content
+ * pixels only (ink = brighter than 40) and only on rows marked dynamic in
+ * `dynRows` (screen coords of b). Static chrome rows are excluded so they
+ * can't outvote the true offset. Returns Inf when too few dynamic rows
+ * overlap (near-identical frames).
+ */
+function maskedScore(
+  a: Float32Array,
+  b: Float32Array,
+  w: number,
+  h: number,
+  dynRows: Uint8Array,
+  dy: number,
+  minOv: number,
+): number {
+  if (dy < 0 || dy >= h) {
     return Number.POSITIVE_INFINITY;
   }
   let sum = 0;
   let n = 0;
-  for (let r = 0; r < rows; r++) {
+  let rows = 0;
+  for (let r = 0; r < h - dy; r++) {
+    if (!dynRows[r]) {
+      continue;
+    }
+    rows++;
     const ba = (r + dy) * w;
     const bb = r * w;
     for (let c = 0; c < w; c++) {
@@ -111,38 +319,41 @@ function scoreVertical(a: Float32Array, b: Float32Array, w: number, h: number, d
       }
     }
   }
-  const size = rows * w;
-  if (n < size * 0.01) {
+  if (rows < minOv || n < 100) {
     return Number.POSITIVE_INFINITY;
   }
   return sum / n;
 }
 
-function argminVertical(
+function argminMasked(
   a: Float32Array,
   b: Float32Array,
   w: number,
   h: number,
+  dynRows: Uint8Array,
   lo: number,
   hi: number,
+  minOv: number,
 ): number {
   let best = lo;
   let bestScore = Number.POSITIVE_INFINITY;
   for (let k = lo; k <= hi; k++) {
-    const s = scoreVertical(a, b, w, h, k);
+    const s = maskedScore(a, b, w, h, dynRows, k, minOv);
     if (s < bestScore) {
       bestScore = s;
       best = k;
     }
   }
-  return best;
+  // no valid overlap (near-identical frames): keep stacked
+  return Number.isFinite(bestScore) ? best : 0;
 }
 
 /**
- * Vertical scroll stitch (port of the it-tools OpenCV stitcher):
- * detect static header/footer rows, match the scroll offset on content
- * pixels only (coarse-to-fine), then pick the seam per column-block by
- * voting so floating buttons/shadows don't duplicate.
+ * Vertical scroll stitch: edge-trim static chrome, match scroll offsets with
+ * masked SAD (static rows excluded) seeded by Harris-corner consensus
+ * (RANSAC-style vote, immune to repetitive content), then pick the seam per
+ * column block by screen-space overlay mask + inter-frame agreement so
+ * floating buttons and shadows don't duplicate.
  */
 function stitchVertical(images: RawImage[]): RawImage {
   if (images.length < 2 || images.length > MAX_IMAGES) {
@@ -180,79 +391,135 @@ function stitchVertical(images: RawImage[]): RawImage {
     }
     rowDyn[r] = s / w > 0.02;
   }
-  const dynCols: number[] = [];
-  for (let c = 0; c < w; c++) {
-    let s = 0;
-    for (let r = 0; r < h; r++) {
-      s += moving[r * w + c];
-    }
-    if (s / h > 0.02) {
-      dynCols.push(c);
-    }
-  }
-
-  // longest dynamic row run (allowing small gaps) = scroll region
+  // Trim static chrome anchored at the top/bottom edges only. Interior
+  // blank rows are harmless for matching; splitting the band on them
+  // (longest-run) fragments it when big scroll steps align the blanks.
   let y0 = 0;
   let y1 = h;
-  {
-    let start: number | null = null;
-    let gap = 0;
-    const tol = Math.max(1, Math.floor(h / 50));
-    const close = (endY: number) => {
-      if (start === null) {
-        return;
-      }
-      const end = endY - gap;
-      if (y0 === 0 && y1 === h) {
-        y0 = start;
-        y1 = end;
-      } else if (end - start > y1 - y0) {
-        y0 = start;
-        y1 = end;
-      }
-    };
-    for (let y = 0; y <= h; y++) {
-      if (y < h && rowDyn[y]) {
-        if (start === null) {
-          start = y;
-        }
-        gap = 0;
-      } else if (start !== null) {
-        gap++;
-        if (gap > tol || y === h) {
-          close(y);
-          start = null;
-          gap = 0;
-        }
-      }
+  for (let y = 0; y < h; y++) {
+    if (rowDyn[y] && hasNeighbor(rowDyn, y, 1)) {
+      y0 = y;
+      break;
     }
   }
+  for (let y = h - 1; y >= 0; y--) {
+    if (rowDyn[y] && hasNeighbor(rowDyn, y, -1)) {
+      y1 = y + 1;
+      break;
+    }
+  }
+  function hasNeighbor(rows: boolean[], y: number, dir: 1 | -1): boolean {
+    for (let k = 1; k <= 6; k++) {
+      const yy = y + dir * k;
+      if (yy < 0 || yy > h) {
+        break;
+      }
+      if (yy < h && rows[yy]) {
+        return true;
+      }
+    }
+    return false;
+  }
   const rh = y1 - y0;
-  const x0 = dynCols.length > 0 ? dynCols[0] : 0;
-  const x1 = dynCols.length > 0 ? dynCols[dynCols.length - 1] + 1 : w;
 
-  if (rh < 32 || x1 - x0 < 32) {
+  if (rh < 32) {
     // degenerate band: plain vertical stack
     const out = Buffer.alloc(w * h * images.length * 3);
     rgbs.forEach((rgb, i) => rgb.copy(out, i * w * h * 3));
     return { data: out, width: w, height: h * images.length };
   }
 
-  const regions = grays.map((g) => cropGray(g, w, x0, y0, x1 - x0, rh));
-  const rw = x1 - x0;
   const s = 4;
-  const small = regions.map((g) => downscale(g, rw, rh, s));
-  const minOv = Math.max(8, Math.floor(rh / 10));
+  const smallFull = grays.map((g) => downscale(g, w, h, s));
+  const sw = smallFull[0].w;
+  const sh = smallFull[0].h;
+  const minOv = Math.max(8, Math.floor(h / 10));
+
+  // Per-pair dynamic row masks (screen coords): rows that actually changed
+  // between the two frames. Static chrome is masked out of matching so it
+  // can't drag the match toward dy=0, and coincidentally-blank rows carry
+  // no weight instead of fragmenting the band.
+  const pairDyn: Uint8Array[] = [];
+  const pairDynSmall: Uint8Array[] = [];
+  for (let i = 0; i < grays.length - 1; i++) {
+    const ga = grays[i];
+    const gb = grays[i + 1];
+    const dyn = new Uint8Array(h);
+    for (let r = 0; r < h; r++) {
+      let m = 0;
+      for (let c = 0; c < w; c++) {
+        if (Math.abs(ga[r * w + c] - gb[r * w + c]) > 25) {
+          m++;
+        }
+      }
+      dyn[r] = m / w > 0.02 ? 1 : 0;
+    }
+    const dynS = new Uint8Array(sh);
+    for (let r = 0; r < sh; r++) {
+      for (let dr = 0; dr < s && r * s + dr < h; dr++) {
+        if (dyn[r * s + dr]) {
+          dynS[r] = 1;
+          break;
+        }
+      }
+    }
+    pairDyn.push(dyn);
+    pairDynSmall.push(dynS);
+  }
+
+  const s2 = 2;
+  const small2 = grays.map((g) => downscale(g, w, h, s2));
+  const minOv2 = Math.max(4, Math.floor(minOv / s2));
+  // s=2 dynamic masks for RANSAC corner selection
+  const pairDyn2: Uint8Array[] = pairDyn.map((dyn) => {
+    const sh2 = Math.ceil(h / s2);
+    const m = new Uint8Array(sh2);
+    for (let r = 0; r < sh2; r++) {
+      for (let dr = 0; dr < s2 && r * s2 + dr < h; dr++) {
+        if (dyn[r * s2 + dr]) {
+          m[r] = 1;
+          break;
+        }
+      }
+    }
+    return m;
+  });
 
   const offsets: number[] = [];
-  for (let i = 0; i < regions.length - 1; i++) {
-    const a = small[i];
-    const b = small[i + 1];
-    const minOvS = Math.max(1, Math.floor(minOv / s));
-    let d = argminVertical(a.data, b.data, a.w, a.h, 0, Math.max(0, a.h - minOvS)) * s;
-    const A = regions[i];
-    const B = regions[i + 1];
-    d = argminVertical(A, B, rw, rh, Math.max(0, d - s), Math.min(rh - minOv, d + s));
+  for (let i = 0; i < grays.length - 1; i++) {
+    // robust feature consensus first; masked SAD coarse search as fallback
+    let d = ransacOffset(
+      small2[i].data,
+      small2[i + 1].data,
+      small2[i].w,
+      small2[i].h,
+      pairDyn2[i],
+      minOv2,
+    );
+    if (d === null) {
+      const minOvS = Math.max(2, Math.floor(minOv / s));
+      d =
+        argminMasked(
+          smallFull[i].data,
+          smallFull[i + 1].data,
+          sw,
+          sh,
+          pairDynSmall[i],
+          0,
+          Math.max(0, sh - minOvS),
+          minOvS,
+        ) * s;
+    }
+    d = argminMasked(
+      grays[i],
+      grays[i + 1],
+      w,
+      h,
+      pairDyn[i],
+      Math.max(0, d - 8),
+      Math.min(h - minOv, d + 8),
+      minOv,
+    );
     offsets.push(d);
   }
 
@@ -263,63 +530,46 @@ function stitchVertical(images: RawImage[]): RawImage {
   const total = tops[tops.length - 1] + rh;
   const reg = rgbs.map((rgb) => cropRgb(rgb, w, 0, y0, w, rh));
 
-  // floating buttons/shadows are static on screen: blocks that disagree
-  // between the two overlapping frames get penalized -> taken from the other frame
+  // Overlay mask in screen space: UI that stays fixed on screen while
+  // content scrolls (floating scroll button, sticky bars) matches across
+  // consecutive frames at the same screen pixels, scrolling text doesn't.
+  // Measured on downscaled gray so translucent edges still count.
   const bw = 64;
   const nb = Math.ceil(w / bw);
-  const votes = new Float32Array(rh * nb);
-  for (let i = 0; i < offsets.length; i++) {
-    const d = offsets[i];
-    const a = reg[i];
-    const b = reg[i + 1];
-    for (let r = 0; r < rh - d; r++) {
-      for (let blk = 0; blk < nb; blk++) {
-        let bad = 0;
-        for (let k = 0; k < bw; k++) {
-          const c = blk * bw + k;
-          if (c >= w) {
-            break;
-          }
-          const pa = ((r + d) * w + c) * 3;
-          const pb = (r * w + c) * 3;
-          if (
-            Math.abs(a[pa] - b[pb]) > 12 ||
-            Math.abs(a[pa + 1] - b[pb + 1]) > 12 ||
-            Math.abs(a[pa + 2] - b[pb + 2]) > 12
-          ) {
-            bad++;
-          }
-        }
-        votes[(r + d) * nb + blk] += bad;
-        votes[r * nb + blk] += bad;
+  const os = 4;
+  const ow = smallFull[0].w;
+  const oh = smallFull[0].h;
+  const ovSmall = new Float32Array(ow * oh);
+  for (let i = 0; i < smallFull.length - 1; i++) {
+    const a = smallFull[i].data;
+    const b = smallFull[i + 1].data;
+    // <=48 catches translucent overlays; scrolled text differs by ~200
+    for (let p = 0; p < ow * oh; p++) {
+      if (Math.abs(a[p] - b[p]) <= 48) {
+        ovSmall[p]++;
       }
     }
   }
-  // dilate 31x3
-  const tmp = new Float32Array(rh * nb);
-  for (let r = 0; r < rh; r++) {
-    for (let c = 0; c < nb; c++) {
-      let m = 0;
-      for (let dc = -1; dc <= 1; dc++) {
-        const cc = c + dc;
-        if (cc >= 0 && cc < nb && votes[r * nb + cc] > m) {
-          m = votes[r * nb + cc];
-        }
-      }
-      tmp[r * nb + c] = m;
-    }
+  const npairs = smallFull.length - 1;
+  for (let p = 0; p < ow * oh; p++) {
+    ovSmall[p] /= npairs;
   }
-  const dil = new Float32Array(rh * nb);
+  const ovBand = new Float32Array(rh * nb);
   for (let r = 0; r < rh; r++) {
-    for (let c = 0; c < nb; c++) {
-      let m = 0;
-      for (let dr = -15; dr <= 15; dr++) {
-        const rr = r + dr;
-        if (rr >= 0 && rr < rh && tmp[rr * nb + c] > m) {
-          m = tmp[rr * nb + c];
+    const sy0 = Math.floor((y0 + r) / os);
+    const sy1 = Math.min(oh, Math.floor((y0 + r) / os) + 1);
+    for (let blk = 0; blk < nb; blk++) {
+      const sx0 = Math.floor((blk * bw) / os);
+      const sx1 = Math.min(ow, Math.floor(((blk + 1) * bw) / os) + 1);
+      let sum = 0;
+      let n = 0;
+      for (let sy = sy0; sy < sy1; sy++) {
+        for (let sx = sx0; sx < sx1; sx++) {
+          sum += ovSmall[sy * ow + sx];
+          n++;
         }
       }
-      dil[r * nb + c] = m;
+      ovBand[r * nb + blk] = n ? sum / n : 0;
     }
   }
   // prefer the middle of the scroll region; edges catch header/footer shadows
@@ -333,18 +583,56 @@ function stitchVertical(images: RawImage[]): RawImage {
     pen[rh - 1 - r] += 30;
   }
 
-  const best = new Float32Array(total * nb).fill(Number.POSITIVE_INFINITY);
+  // Per content row + column block, pick the covering frame with the least
+  // screen-space overlay, then the best agreement with the other covering
+  // frames (outlier overlay loses the vote), then the most central row.
   const src = new Int32Array(total * nb);
-  for (let i = 0; i < reg.length; i++) {
-    for (let r = 0; r < rh; r++) {
-      const R = tops[i] + r;
-      for (let c = 0; c < nb; c++) {
-        const cost = dil[r * nb + c] + pen[r];
-        if (cost < best[R * nb + c]) {
-          best[R * nb + c] = cost;
-          src[R * nb + c] = i;
+  for (let R = 0; R < total; R++) {
+    for (let blk = 0; blk < nb; blk++) {
+      const blkW = Math.min(bw, w - blk * bw);
+      let bestScore = Number.POSITIVE_INFINITY;
+      let bestI = -1;
+      for (let i = 0; i < reg.length; i++) {
+        const r = R - tops[i];
+        if (r < 0 || r >= rh) {
+          continue;
+        }
+        let agree = 0;
+        let cnt = 0;
+        for (let j = 0; j < reg.length; j++) {
+          if (j === i) {
+            continue;
+          }
+          const rj = R - tops[j];
+          if (rj < 0 || rj >= rh) {
+            continue;
+          }
+          const A = reg[i];
+          const B = reg[j];
+          const base = blk * bw;
+          let m = 0;
+          for (let k = 0; k < blkW; k++) {
+            const pa = (r * w + base + k) * 3;
+            const pb = (rj * w + base + k) * 3;
+            if (
+              Math.abs(A[pa] - B[pb]) <= 12 &&
+              Math.abs(A[pa + 1] - B[pb + 1]) <= 12 &&
+              Math.abs(A[pa + 2] - B[pb + 2]) <= 12
+            ) {
+              m++;
+            }
+          }
+          agree += m / blkW;
+          cnt++;
+        }
+        const agreeFrac = cnt > 0 ? agree / cnt : 1;
+        const score = ovBand[r * nb + blk] * 2 - agreeFrac + pen[r] * 0.02;
+        if (score < bestScore) {
+          bestScore = score;
+          bestI = i;
         }
       }
+      src[R * nb + blk] = bestI;
     }
   }
   const content = Buffer.alloc(total * w * 3);
