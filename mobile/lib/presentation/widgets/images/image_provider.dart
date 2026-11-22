@@ -112,6 +112,14 @@ class ImageLoader {
     }
   }
 
+  Stream<ImageInfo> loadProvider(ImageProvider provider) async* {
+    final image = getInitialImage(provider);
+    if (image != null) {
+      yield image;
+    }
+    yield* initialImageStream();
+  }
+
   Stream<ImageInfo> initialImageStream() async* {
     final cachedOperation = this.cachedOperation;
     if (isCancelled || cachedOperation == null) {
@@ -162,6 +170,7 @@ ImageProvider getFullImageProvider(
   bool edited = true,
   String? localFilePath,
   Size? remoteThumbnailSize,
+  bool previewOnly = false,
 }) {
   // Create new provider and cache it
   final ImageProvider provider;
@@ -177,6 +186,7 @@ ImageProvider getFullImageProvider(
       width: asset.width,
       height: asset.height,
       checksum: asset.checksum,
+      previewOnly: previewOnly,
     );
   } else {
     final String assetId;
@@ -197,6 +207,7 @@ ImageProvider getFullImageProvider(
       isAnimated: asset.isAnimatedImage,
       edited: edited,
       thumbnailSize: remoteThumbnailSize,
+      previewOnly: previewOnly,
     );
   }
 
