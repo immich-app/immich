@@ -58,16 +58,13 @@ class SyncStreamService {
 
   Future<bool> sync({Future<void>? abortSignal}) async {
     _logger.info("Remote sync request for user");
-    // Both signals must be honoured: a caller-supplied deadline and this
-    // isolate's cancellation token. Using `abortSignal ?? _cancellation` silently
-    // disabled the latter.
+    // 两个信号都要算：调用方的截止时间和本 isolate 的 token。
+    // 写成 `abortSignal ?? _cancellation` 会把后者废掉。
     final cancellation = _cancellation;
     final signals = <Future<void>>[?abortSignal, ?cancellation?.future];
     final signal = signals.isEmpty ? null : (signals.length == 1 ? signals.single : Future.any(signals));
 
-    // Which of the two fired. `isCancelled` only knows about this isolate's
-    // token, so a caller-supplied deadline would otherwise look like a successful
-    // sync and the caller would upload against a half-applied remote state.
+    // isCancelled 只认本 isolate 的 token。
     var abortedSignal = false;
     if (signal != null) {
       unawaited(signal.then((_) => abortedSignal = true, onError: (_) => abortedSignal = true));
@@ -112,10 +109,7 @@ class SyncStreamService {
       await Store.put(StoreKey.syncMigrationStatus, jsonEncode(migrations));
     }
 
-    // streamChanges returns normally when the abort signal fires, so without this
-    // an aborted sync would report success and the caller would upload against a
-    // half-applied remote state. Checking only isCancelled missed the caller's
-    // own deadline, which is the signal this method receives most often.
+    // 信号触发时 streamChanges 是正常返回的。
     if (abortedSignal || isCancelled) {
       _logger.warning("Remote sync aborted");
       return false;

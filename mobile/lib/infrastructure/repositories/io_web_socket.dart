@@ -5,22 +5,12 @@ import 'dart:typed_data';
 
 import 'package:web_socket/web_socket.dart';
 
-/// A [WebSocket] backed by `dart:io`'s own TLS stack.
+/// 基于 `dart:io` TLS 栈的 [WebSocket]。
 ///
-/// The API client was moved to Cronet so every connection negotiates a
-/// post-quantum key exchange (X25519MLKEM768). Neither of the other transports
-/// can do that for a WebSocket:
+/// Cronet 没有 WebSocket 接口，OkHttp 的 Conscrypt 也没有 ML-KEM 组；
+/// `dart:io` 自带 BoringSSL，有 X25519MLKEM768。
 ///
-/// * Cronet has no WebSocket surface in `package:cronet_http`, and its JNI
-///   bindings stop at `UrlRequest`.
-/// * OkHttp performs the handshake through the platform Conscrypt provider,
-///   whose group list is only x25519 / secp256r1 / secp384r1 -- no ML-KEM.
-///
-/// `dart:io` ships its own BoringSSL build, which does offer X25519MLKEM768,
-/// so the socket keeps the same security level as the REST traffic.
-///
-/// This mirrors the `dart:io` connector that ships with `package:web_socket`,
-/// with the addition of [headers], which that connector does not accept.
+/// 照 `package:web_socket` 的连接器写的，多了 [headers]。
 class IoWebSocket implements WebSocket {
   IoWebSocket._(this._socket) {
     _socket.listen(
@@ -49,15 +39,14 @@ class IoWebSocket implements WebSocket {
         if (_events.isClosed) {
           return;
         }
-        // Deliver the close code first, then end the stream. `close()` returns a
-        // future nobody can await from a callback, hence the explicit unawaited.
+        // 先送关闭码，回调里没法 await close()。
         _events.add(CloseReceived(_socket.closeCode, _socket.closeReason ?? ''));
         unawaited(_events.close());
       },
     );
   }
 
-  /// Opens a socket, attaching the headers the native client would have added.
+  /// 建连接，带上原生客户端本来会加的 header。
   static Future<WebSocket> connect(
     Uri uri, {
     Map<String, String>? headers,
@@ -73,7 +62,6 @@ class IoWebSocket implements WebSocket {
       throw WebSocketException(e.message);
     }
     if (socket.protocol != null && !(protocols ?? const []).contains(socket.protocol)) {
-      // dart:io does not validate the subprotocol chosen by the peer.
       // See https://github.com/dart-lang/sdk/issues/55106
       await socket.close(1002);
       throw WebSocketException('unexpected protocol selected by peer: ${socket.protocol}');

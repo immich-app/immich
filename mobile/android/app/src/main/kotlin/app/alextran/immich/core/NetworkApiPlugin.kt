@@ -16,8 +16,7 @@ class NetworkApiPlugin : FlutterPlugin, ActivityAware {
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     val impl = NetworkApiImpl(binding.applicationContext)
-    // Progress is pushed back through a FlutterApi bound to this engine's
-    // messenger, so it must be created per-attachment.
+    // FlutterApi 绑在这台引擎的 messenger 上，每次 attach 都要重建。
     val progress = StreamingUploadProgressApi(binding.binaryMessenger)
     impl.progressApi = progress
     networkApi = impl
@@ -52,9 +51,7 @@ class NetworkApiPlugin : FlutterPlugin, ActivityAware {
 private class NetworkApiImpl(private val context: Context) : NetworkApi {
   var activity: Activity? = null
 
-    // Cached per engine instance: rebuildCronetEngine() shuts the old engine down,
-    // and an uploader bound to it would fail every later upload with "Engine is
-    // shut down".
+    // 引擎换了就重建，绑在旧引擎上的 uploader 会失败。
   @Volatile private var uploaderEngine: CronetEngine? = null
   @Volatile private var uploaderRef: StreamingFileUploader? = null
 
@@ -136,8 +133,7 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
   }
 
   override fun cancelStreamingUpload(progressKey: String) {
-      // Created lazily on the first upload. Dropping the cancel when it does not
-      // exist yet loses the "cancelled while queued" signal.
+      // 懒创建；丢掉 cancel 就丢了「排队中被取消」这个信号。
     (uploaderRef ?: currentUploader())?.cancel(progressKey)
   }
 
@@ -157,7 +153,7 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
       return
     }
 
-    // Run off the main thread: the upload blocks on a latch until Cronet is done.
+    // 会阻塞到 Cronet 结束。
     Thread {
       val outcome = try {
         uploader.upload(
@@ -169,30 +165,25 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
           fields = fields,
           progressKey = progressKey,
           onProgress = { sent, total ->
-            // Cronet invokes this on its own thread. Pigeon channels must be used
-            // from the platform thread, so hop back before notifying Dart.
+            // Pigeon 必须在平台线程。
             mainHandler.post {
               progressApi?.onProgress(progressKey, sent, total) {}
             }
           },
         )
       } catch (t: Throwable) {
-        // Catch Throwable, not Exception: an Error (e.g. OOM while sizing a
-        // buffer) would kill this thread before the callback fires, leaving the
-        // Dart Future pending forever.
+        // catch Throwable 而不是 Exception：Error 会让 Dart 那边的 Future 挂着。
         StreamingFileUploader.Outcome(false, 0, null, t.toString())
       }
-      // Pigeon replies must go out on the platform thread; this runs on the
-      // upload thread.
+      // Pigeon 回复要在平台线程发。
       mainHandler.post {
-          // The engine can be destroyed while the upload is in flight. Replying on
-          // a dead BinaryMessenger throws, and that crashes the process.
+          // BinaryMessenger 已销毁时回复会抛。
         runCatching {
           callback(
             Result.success(
               StreamingUploadResult(
                 outcome.isSuccess,
-                // Pigeon maps Dart int to Kotlin Long.
+                // Pigeon 把 Dart 的 int 映射成 Kotlin 的 Long。
                 outcome.statusCode.toLong(),
                 outcome.body,
                 outcome.errorMessage,
@@ -205,7 +196,6 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
     }.start()
   }
 
-  /// Set by [NetworkApiPlugin] once the engine is attached so progress can be
-  /// pushed back to Dart.
+  /// 由 [NetworkApiPlugin] 赋值，进度靠它推回 Dart。
   var progressApi: StreamingUploadProgressApi? = null
 }

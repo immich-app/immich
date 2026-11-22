@@ -144,8 +144,8 @@ void main() {
   });
 
   group('_extractErrorMessage', () {
-    // The streaming path has to report the same text as the Dart path: callers
-    // match on the message, and "Quota has been exceeded!" stops the whole batch.
+    // 流式路径要和 Dart 路径报同样的文案：调用方是按消息判断的，
+    // 「Quota has been exceeded!」会中断整批。
     test('uses the server message when the body carries one', () {
       expect(
         UploadRepository.extractErrorMessage(statusCode: 400, body: '{"message":"Quota has been exceeded!"}'),

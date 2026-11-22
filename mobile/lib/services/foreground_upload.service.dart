@@ -34,9 +34,7 @@ class UploadCallbacks {
   final void Function(String id, String errorMessage)? onError;
   final void Function(String id, double progress)? onICloudProgress;
 
-  /// Invoked when an upload was aborted before completing. Distinct from
-  /// [onError]: the asset was still not backed up, so callers gating retries on
-  /// the failure count must count it.
+  /// 没传完就中断了。和 [onError] 不同：资产照样没备份上。
   final void Function(String id)? onCancelled;
 
   const UploadCallbacks({this.onProgress, this.onSuccess, this.onError, this.onICloudProgress, this.onCancelled});
@@ -96,8 +94,7 @@ class ForegroundUploadService {
   }) async {
     final candidates = await _backupRepository.getCandidates(userId);
     if (candidates.isEmpty) {
-      // Log it: returning silently made an empty run indistinguishable from a
-      // fully successful one.
+      // 空跑和全成功在日志里看不出区别。
       _logger.info('No backup candidates for $userId');
       return;
     }
@@ -361,10 +358,7 @@ class ForegroundUploadService {
         );
 
         if (livePhotoResult.isCancelled) {
-          // The pair uploads together; a cancelled video means the whole asset
-          // was cancelled, so the still image would become an orphan. Returning
-          // suffices -- setting shouldAbortUpload would abort unrelated runs
-          // sharing this service instance.
+          // 视频取消等于整个资产取消，否则静图就成孤儿了。
           callbacks.onCancelled?.call(asset.localId!);
           return;
         }

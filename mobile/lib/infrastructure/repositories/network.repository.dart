@@ -14,14 +14,12 @@ class NetworkRepository {
   static http.Client? _client;
   static Pointer<Void>? _clientPointer;
 
-  /// Tracked separately from [_clientPointer]: installing or removing a client
-  /// certificate keeps the pointer but changes which transport can connect.
+  /// 和 [_clientPointer] 分开记：装证书时指针不变，但能连的传输层变了。
   static bool _usingMtls = false;
 
   static Future<void> init() async {
     final clientPointer = Pointer<Void>.fromAddress(await networkApi.getClientPointer());
-    // Part of the "nothing to do" check: installing a certificate after init()
-    // would otherwise leave Cronet in place and every request would fail.
+    // 算在「要不要重建」的判断里：装了证书就必须重建客户端。
     final mtls = Platform.isIOS ? false : await networkApi.hasCertificate();
     if (clientPointer == _clientPointer && mtls == _usingMtls) {
       return;
@@ -33,8 +31,7 @@ class NetworkRepository {
       final session = URLSession.fromRawPointer(clientPointer.cast());
       _client = CupertinoClient.fromSharedSession(session);
     } else if (mtls) {
-      // Cronet cannot present a client certificate, so mTLS users stay on the
-      // native OkHttp client.
+      // Cronet 出不了客户端证书。
       _client?.close();
       _client = OkHttpClient.fromJniGlobalRef(
         clientPointer,
@@ -45,9 +42,7 @@ class NetworkRepository {
         ),
       );
     } else {
-      // Keep the wrapper identity stable: callers hold a snapshot of it
-      // (ApiService._apiClient.client), so replacing it would leave them holding a
-      // closed client.
+      // 保持包装对象的身份，调用方持有它的快照。
       final engine = await _buildCronetClient();
       final current = _client;
       if (current is _CronetAuthClient) {
@@ -84,28 +79,23 @@ class NetworkRepository {
       return CupertinoWebSocket.connectWithSession(session, uri, protocols: protocols);
     }
     if (_usingMtls) {
-      // A client certificate only exists on the native OkHttp client, and
-      // dart:io cannot present one.
+      // 只有原生客户端有证书，dart:io 出不了。
       return OkHttpWebSocket.connectFromJniGlobalRef(_clientPointer!, uri, protocols: protocols);
     }
-    // Every transport except dart:io negotiates a classical key exchange here:
-    // Cronet exposes no WebSocket API, and OkHttp goes through the platform
-    // Conscrypt provider, which has no ML-KEM group. The socket would then
-    // silently drop below the post-quantum level of the REST traffic.
+    // Cronet 没有 WebSocket 接口，OkHttp 的 provider 也没有 ML-KEM 组，
+    // 两者都会掉到 REST 流量之下。
     final authHeaders = await networkApi.requestAuthHeaders(_httpEquivalent(uri).toString());
     return IoWebSocket.connect(uri, headers: {...authHeaders, ...?headers}, protocols: protocols);
   }
 
-  /// The native header/cookie lookup goes through OkHttp's `HttpUrl`, which
-  /// rejects the `ws`/`wss` schemes, so ask for the equivalent http(s) URL.
+  /// OkHttp 的 `HttpUrl` 不认 `ws`/`wss`。
   static Uri _httpEquivalent(Uri uri) => switch (uri.scheme) {
     'wss' => uri.replace(scheme: 'https'),
     'ws' => uri.replace(scheme: 'http'),
     _ => uri,
   };
 
-  /// Clears the session cookies. The native jar is cleared directly; Cronet's own
-  /// cookie store has no clear API, so the engine is replaced in place.
+  /// Cronet 的 cookie store 没有清空接口，只能重建引擎。
   static Future<void> clearCookies() async {
     await networkApi.clearCookies();
     if (Platform.isAndroid && !_usingMtls) {
@@ -116,8 +106,7 @@ class NetworkRepository {
     }
   }
 
-  /// Releases the client and the native engine behind it. Each isolate builds its
-  /// own engine, holding native threads and a 64 MiB cache until `shutdown()`.
+  /// 每个 isolate 建自己的引擎，占线程和 64MB 缓存。
   static void dispose() {
     _client?.close();
     _client = null;
@@ -125,12 +114,10 @@ class NetworkRepository {
     _usingMtls = false;
   }
 
-  /// Shared HTTP client with native SSL configuration. Must call [init] first.
+  /// 带原生 SSL 配置的共享 HTTP 客户端。先调 [init]。
   ///
-  /// Throws instead of returning null when [dispose] already ran: a background
-  /// isolate disposes its client during cleanup, and a late request (or a provider
-  /// disposed after it) would otherwise crash on a null check with no clue about
-  /// the cause.
+  /// 抛异常而不是空指针解引用：后台 isolate 清理时会释放客户端，
+  /// 迟到的请求否则直接崩。
   static http.Client get client {
     final client = _client;
     if (client == null) {
@@ -139,35 +126,27 @@ class NetworkRepository {
     return client;
   }
 
-  /// Whether the active client is OkHttp because a client certificate is
-  /// installed. Callers that bypass [client] -- the native streaming uploader
-  /// talks to Cronet directly -- must consult this first.
+  /// 当前是不是 OkHttp。绕过 [client] 的代码必须先看这个。
   static bool get usingMtls => _usingMtls;
 }
 
-/// Attaches the headers the native client would have attached: Cronet cannot be
-/// given OkHttp-style interceptors, so they are copied onto each request.
+/// 复制原生客户端会加的 header，Cronet 没有拦截器。
 class _CronetAuthClient extends http.BaseClient {
   _CronetAuthClient(this._inner);
 
   http.Client _inner;
 
-  /// The engine from the last [reset] that is still waiting out its grace period.
-  /// A second reset inside that window closes the older one immediately instead of
-  /// leaving three engines alive at 64 MiB each.
+  /// 上一次 [reset] 留下的、还在宽限期内的引擎。
   http.Client? _pendingClose;
 
-  /// Swaps the underlying client without changing this object's identity.
+  /// 换掉底层客户端，但对象身份不变。
   ///
-  /// The old engine is closed on a delay: `CronetEngine.shutdown()` cancels every
-  /// in-flight request, and those aborts reach the upload path as
-  /// `RequestAbortedException`, which it treats as a user cancellation.
+  /// 旧引擎延迟关闭：`shutdown()` 会取消在途请求，那些中断会被当成用户取消。
   void reset(http.Client inner) {
     final previous = _inner;
     _inner = inner;
 
-    // This reset cuts the previous grace period short, so that engine no longer
-    // needs protecting; close it now rather than after another 30 seconds.
+    // 这次 reset 让上一个引擎不必再等了。
     final superseded = _pendingClose;
     _pendingClose = previous;
     if (superseded != null) {
@@ -176,8 +155,7 @@ class _CronetAuthClient extends http.BaseClient {
 
     unawaited(
       Future<void>.delayed(const Duration(seconds: 30), () {
-        // Only the newest engine is still on grace; an older one was either
-        // already closed above or is about to be by its own callback.
+        // 只有最新的引擎还在宽限期。
         if (identical(_pendingClose, previous)) {
           _pendingClose = null;
         }
@@ -190,39 +168,32 @@ class _CronetAuthClient extends http.BaseClient {
     try {
       client.close();
     } catch (_) {
-      // Closing is best-effort: a failure here must not break logout.
+      // 尽力而为，这里失败不能让登出挂掉。
     }
   }
 
-  /// Headers that must not travel to a redirect target on a different host.
+  /// 换主机时不能带过去。
   static const _sensitiveHeaders = {'cookie', 'authorization', 'proxy-authorization'};
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    // Cronet replays the same UrlRequest across redirects, so Cookie/Authorization
-    // set once would also reach the redirect target. OkHttp strips them when the
-    // host changes, and that matters here: a hijacked or mistyped server URL
-    // answering 302 would receive the user's access token.
+    // Cronet 重定向时重放同一个 UrlRequest，Cookie 和 Authorization 会跟到目标。
+    // OkHttp 换主机时会剥掉；地址输错或被劫持时回个 302，token 就送出去了。
     //
-    // Redirects are therefore followed here, one hop at a time, recomputing the
-    // headers against each hop's URL. Automatic following stays on for requests
-    // whose body cannot be re-issued from this layer -- Cronet buffers the body,
-    // so it can replay it, while a MultipartRequest has already been finalised.
+    // 所以这里自己一跳一跳地跟，每跳重算 header。
     var current = request;
     final firstHost = request.url.host;
     var hops = 0;
 
     if (!_canReplay(current)) {
-      // Cronet follows this one itself; nothing this loop could do with an
-      // already-finalised body. Headers still come from the native client.
+      // body 已经 finalize，交给 Cronet 自己跟。
       await _applyAuthHeaders(current, sameHost: true);
       return _inner.send(current);
     }
 
     while (true) {
       await _applyAuthHeaders(current, sameHost: current.url.host == firstHost);
-      // Cronet's own following must stay off for the hops this loop handles, or
-      // it would follow them before the response reaches us.
+      // 否则 Cronet 会抢先跟掉。
       current.followRedirects = false;
       final response = await _inner.send(current);
 
@@ -236,7 +207,7 @@ class _CronetAuthClient extends http.BaseClient {
       }
 
       final nextUrl = current.url.resolve(location);
-      // 301/302/303 rewrite the method to GET and drop the body; 307/308 keep it.
+      // 301/302/303 丢 body，307/308 保留。
       final next = _cloneForRedirect(current, nextUrl, keepBody: response.statusCode == 307 || response.statusCode == 308);
       if (next == null) {
         return response;
@@ -247,13 +218,7 @@ class _CronetAuthClient extends http.BaseClient {
     }
   }
 
-  /// Whether this loop can re-issue the request at a new location.
-  ///
-  /// Only bodies that live in memory qualify: [http.Request] keeps its bytes, and
-  /// an empty body needs none. A [http.MultipartRequest] or [http.StreamedRequest]
-  /// has already handed its stream to the engine, so a second send would upload
-  /// nothing -- those keep Cronet's own redirect following, which rewinds the
-  /// upload provider itself.
+  /// 只有放在内存里的 body 能重发。
   static bool _canReplay(http.BaseRequest request) =>
       request is http.Request || request.contentLength == 0;
 
@@ -267,12 +232,8 @@ class _CronetAuthClient extends http.BaseClient {
     return copy;
   }
 
-  /// Copies the headers the native client would attach onto [request].
-  ///
-  /// Credentials are dropped when the hop leaves the original host, matching what
-  /// OkHttp does on a cross-host redirect. They are *removed*, not merely not
-  /// re-added: a clone made by [_cloneForRedirect] starts with the previous hop's
-  /// headers, so skipping the assignment would leave the token in place.
+  /// 把原生 header 写到 [request]，跨主机时丢掉凭据。
+  /// 是删掉而不是不加，因为克隆出来的请求带着上一跳的 header。
   Future<void> _applyAuthHeaders(http.BaseRequest request, {required bool sameHost}) async {
     if (!sameHost) {
       _sensitiveHeaders.forEach(request.headers.remove);

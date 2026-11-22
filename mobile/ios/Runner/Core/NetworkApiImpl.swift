@@ -105,12 +105,7 @@ class NetworkApiImpl: NetworkApi {
     URLSessionManager.clearCookies()
   }
 
-    /// Headers the native client would attach to [url]: the user-configured headers
-    /// plus the session cookies for that host.
-    ///
-    /// Only used by the Android Cronet path, which cannot read the native client's
-    /// configuration the way OkHttp interceptors can. Implemented on iOS so the
-    /// Pigeon protocol is satisfied.
+    /// 只有 Android 的 Cronet 路径会调它，iOS 这里是为了补协议。
   func requestAuthHeaders(url: String) throws -> [String: String] {
     var headers = UserDefaults.group.dictionary(forKey: HEADERS_KEY) as? [String: String] ?? [:]
     headers["User-Agent"] = headers["User-Agent"] ?? URLSessionManager.userAgent
@@ -131,8 +126,7 @@ class NetworkApiImpl: NetworkApi {
     URLSessionManager.userAgent
   }
 
-  /// Cronet stores its cache on disk; iOS has no Cronet engine, so this is only
-  /// here to satisfy the protocol.
+  /// iOS 没有 Cronet 引擎，只是补协议。
   func getCronetStoragePath() throws -> String {
     FileManager.default.temporaryDirectory.appendingPathComponent("cronet").path
   }
@@ -147,8 +141,7 @@ class NetworkApiImpl: NetworkApi {
     progressKey: String,
     completion: @escaping (Result<StreamingUploadResult, any Error>) -> Void
   ) {
-      // iOS uses URLSession, which streams by itself, so the Dart client is the
-      // supported path and this entry point is never taken.
+      // URLSession 自己会流式发，这个入口不会走到。
     completion(
       .success(
         StreamingUploadResult(
@@ -163,7 +156,7 @@ class NetworkApiImpl: NetworkApi {
   }
 
   func cancelStreamingUpload(progressKey: String) throws {
-    // No-op: see uploadFileStreaming.
+    // 空实现，原因同上。
   }
 }
 

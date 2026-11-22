@@ -11,9 +11,8 @@ const int kSyncEventBatchSize = 5000;
 // Hash batch limits
 final int kBatchHashFileLimit = Platform.isIOS ? 32 : 512;
 
-// Uploads larger than this are sent through the native streaming uploader.
-// package:cronet_http materialises the whole request body in memory before
-// handing it to Cronet, so large videos would otherwise exhaust the heap.
+// 超过这个大小的走原生流式上传。
+// cronet_http 会把整个 body 读进内存，大视频会撑爆堆。
 const int kStreamingUploadThreshold = 16 * 1024 * 1024;
 
 // Secure storage keys

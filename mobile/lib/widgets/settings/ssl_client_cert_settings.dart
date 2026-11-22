@@ -89,9 +89,8 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         confirm: context.t.confirm,
       );
       await networkApi.selectCertificate(styling);
-      // Rebuild the client: the transport depends on whether a certificate is
-      // installed (Cronet cannot present one), and init() keys off that state.
-      // Without this the old client stays in place until the app restarts.
+      // 重建客户端：传输层取决于有没有装证书（Cronet 出不了证书），
+      // init() 就是按这个状态判断的。不调的话旧客户端要留到重启。
       await NetworkRepository.init();
       setState(() => isCertExist = true);
       showMessage(StaticTranslations.instance.client_cert_import_success_msg);
@@ -107,8 +106,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
   Future<void> removeCert() async {
     try {
       await networkApi.removeCertificate();
-      // Same reason as importCert: switching back to Cronet has to happen now,
-      // not on the next app start.
+      // 和导入时同理，切回 Cronet 得现在就发生。
       await NetworkRepository.init();
       setState(() => isCertExist = false);
       showMessage(StaticTranslations.instance.client_cert_remove_msg);

@@ -72,9 +72,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   bool _isCleanedUp = false;
 
-  /// Upper bound on the remote sync that primes a background backup. Without it
-  /// a stalled request leaves the worker RUNNING indefinitely with no log line
-  /// and no upload.
+  /// 后台上传前那次远端同步的上限。没有它，卡住的请求会让 worker
+  /// 一直 RUNNING，既不打日志也不传。
   static const remoteSyncTimeout = Duration(minutes: 2);
 
   BackgroundWorkerBgService({
@@ -278,9 +277,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _ref?.dispose();
       _ref = null;
 
-      // This isolate built its own Cronet engine. Release it now: the isolate is
-      // about to be torn down and the engine otherwise keeps its native threads
-      // and 64 MiB cache alive until the process exits.
+      // 这个 isolate 建了自己的引擎，现在释放掉，否则线程和 64MB 缓存留到进程退出。
       NetworkRepository.dispose();
     } catch (error, stack) {
       dPrint(() => 'Failed to cleanup background worker: $error with stack: $stack');
@@ -317,15 +314,13 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         _cancellationToken,
         callbacks: UploadCallbacks(
           onError: (_, _) => failed++,
-          // Tracked separately from failures: a cancel means the run was stopped
-          // (timeout, user stop, app idle), so it must not turn into a retry.
+          // 和失败分开算，取消不能变成重试。
           onCancelled: (_) => cancelled++,
         ),
         useSequentialUpload: true,
       );
       _logger.info("Background backup finished, $failed uploads failed, $cancelled cancelled");
-      // A cancellation is not a reason to retry -- whatever cancelled this run
-      // will cancel the next one too.
+      // 取消它的原因，下一轮还会取消。
       if (cancelled > 0 && failed == 0) {
         return false;
       }
@@ -340,9 +335,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       return false;
     }
 
-    // A remote sync that never returns wedges the whole run. The timeout needs its
-    // own abort signal: Future.timeout() only completes the outer Future, so
-    // without it the abandoned sync keeps writing to a closed database.
+    // 要单独的 signal：Future.timeout() 只结束外层 Future，
+    // 被丢下的同步会继续往关掉的数据库写。
     final syncAbort = Completer<void>();
     final isSuccess = await _remoteSyncService
         .sync(abortSignal: syncAbort.future)
@@ -350,8 +344,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
           remoteSyncTimeout,
           onTimeout: () {
             _logger.warning("Remote sync timed out after ${remoteSyncTimeout.inSeconds}s, aborting");
-            // Treat the timeout as a failed sync so the caller skips the backup
-            // instead of uploading against an unknown remote state.
+            // 当成同步失败，调用方就不会接着上传。
             if (!syncAbort.isCompleted) {
               syncAbort.complete();
             }
@@ -362,9 +355,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       return isSuccess;
     }
 
-    // Hash regardless of isSuccess, matching upstream: hashing is local work and
-    // its result is needed by later runs, so skipping it on a failed sync only
-    // defers the cost. (The 2-minute timeout above is the only added bound.)
+    // 无论同步成没成都要算哈希，和上游一致。
     var hashFuture = _hashService.hashAssets();
     if (hashTimeout != null) {
       hashFuture = hashFuture.timeout(
@@ -404,9 +395,8 @@ Future<void> backgroundSyncNativeEntrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
-  // This runs in the worker's own isolate, which does not inherit the handler
-  // registered in main(). Without it every progress tick from the native
-  // streaming uploader arrives with no listener and is logged as an error.
+  // worker 自己的 isolate 不继承 main() 里注册的 handler。
+  // 不注册的话原生流式上传的每次进度都会变成一条报错日志。
   StreamingUploadProgressApi.setUp(StreamingUploadProgressHandler());
 
   final (dataController, apiService) = await Bootstrap.initDomain(shouldBufferLogs: false, disableStoreWatching: true);

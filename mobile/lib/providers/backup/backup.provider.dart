@@ -76,14 +76,10 @@ class BackupNotifier extends StateNotifier<BackupState> {
   final UploadSpeedManager _uploadSpeedManager;
   Completer<void>? _cancelToken;
 
-  /// Bumped for every foreground run. Callbacks carry the value they were
-  /// created with, so anything from a stopped run is discarded on arrival.
+  /// 每轮都加一，停掉那轮的回调就丢掉。
   int _backupGeneration = 0;
 
-  // Which user the in-flight foreground backup belongs to, and a handle on that
-  // run. Resume and splash can both ask for the same user at almost the same
-  // time; without this the second cancels the first token and starts a duplicate
-  // pass over the same assets.
+  // resume 和启动页可能同时要同一个用户。
   String? _activeBackupUserId;
   Future<void>? _activeBackupRun;
 
@@ -134,11 +130,8 @@ class BackupNotifier extends StateNotifier<BackupState> {
   }
 
   Future<void> startForegroundBackup(String userId, {bool restart = false}) async {
-    // A resume and a splash resume can both land here within milliseconds. Letting
-    // the second through would cancel the first run and start a duplicate pass.
-    //
-    // User-initiated starts pass restart: true, which cancels and restarts so that
-    // "I took a new photo, back it up now" sees the new candidate list.
+    // 放第二个进来会取消第一轮、再跑一遍。
+    // 用户主动点的那种传 restart: true。
     final activeRun = _activeBackupRun;
     if (!restart && activeRun != null && _activeBackupUserId == userId) {
       _logger.info("Foreground backup for $userId already running, joining it");
@@ -152,21 +145,17 @@ class BackupNotifier extends StateNotifier<BackupState> {
 
     state = state.copyWith(error: BackupError.none);
 
-    // A pause during the recount below nulls _cancelToken, so the run keeps its own reference.
+    // 重算期间来一次 pause 会把 _cancelToken 置空，所以这轮留着自己的。
     final cancelToken = Completer<void>();
     _cancelToken = cancelToken;
 
-    // Identity for this run. Callbacks from a stopped run can arrive minutes
-    // later and would otherwise be counted into the next one.
+    // 停掉那轮的回调可能几分钟后才到。
     final generation = ++_backupGeneration;
 
-    // Claim the slot before the first await so a call arriving during the
-    // backup-status recount still joins this run instead of cancelling it.
+    // 在第一个 await 之前就占位，重算期间来的调用会并进这一轮。
     final runGuard = Completer<void>();
     _activeBackupUserId = userId;
-    // Mark the error as observed up front: most runs have no joiner, and
-    // completeError() on an unlistened Future would surface as an unhandled
-    // async error.
+    // 多数轮次没人等；没人监听的 Future 上 completeError 会变成未处理异常。
     _activeBackupRun = runGuard.future;
     unawaited(runGuard.future.then<void>((_) {}, onError: (Object _, StackTrace _) {}));
 
@@ -189,34 +178,26 @@ class BackupNotifier extends StateNotifier<BackupState> {
           onSuccess: (id, remoteId) => _handleForegroundBackupSuccess(generation, id, remoteId),
           onError: (id, message) => _handleForegroundBackupError(generation, id, message),
           onICloudProgress: (id, progress) => _handleICloudProgress(generation, id, progress),
-          // Generation-gated like the rest: stopping the previous run already
-          // cleared uploadItems, so a late cancel from it must not delete the row
-          // the *current* run is actively uploading for the same asset.
+          // 按 generation 过滤：迟到的取消不能删掉这轮正在传的那行。
           onCancelled: (id) => _handleForegroundBackupCancelled(generation, id),
         ),
       );
     } catch (error, stackTrace) {
-      // Propagate to joiners: they await runGuard.future, and completing it
-      // normally would tell them the run succeeded when it actually threw.
+      // 正常完成会告诉等它的人「成功了」。
       if (!runGuard.isCompleted) {
         runGuard.completeError(error, stackTrace);
       }
       rethrow;
     } finally {
-      // Release the slot only if it is still ours: a pause may have stopped this
-      // run and a newer one may already own it.
+      // 只有还是我们的才释放，pause 可能已经交给新一轮。
       if (identical(_activeBackupRun, runGuard.future)) {
         _activeBackupRun = null;
         _activeBackupUserId = null;
-        // Drop the token too. Leaving a completed Completer here makes the next
-        // startForegroundBackup() take the "restarting the backup" branch and
-        // log a cancellation that never happened, which hides real ones.
+        // 留着已完成的 Completer，下一轮会打一条并不存在的取消日志。
         if (identical(_cancelToken, cancelToken)) {
           _cancelToken = null;
         }
-        // Upstream relied on that "restarting" branch to clear the per-run UI
-        // state, so clearing the token alone would carry the finished run's
-        // failed rows and stale speed samples into the next one.
+        // 那条分支还负责清每轮的 UI 状态。
         _uploadSpeedManager.clear();
         state = state.copyWith(uploadItems: {}, iCloudDownloadProgress: {});
       }
@@ -226,9 +207,7 @@ class BackupNotifier extends StateNotifier<BackupState> {
     }
   }
 
-  /// Cancel path for an upload that stopped inside the current run. Does not
-  /// insert an item: the row is either gone already or owned by a newer run, and
-  /// re-adding it would resurrect a row the user just dismissed.
+  /// 不插入条目：加回去会让用户刚删掉的行复活。
   void _handleForegroundBackupCancelled(int generation, String localAssetId) {
     if (!mounted || generation != _backupGeneration) {
       return;
@@ -246,13 +225,9 @@ class BackupNotifier extends StateNotifier<BackupState> {
     }
     _cancelToken?.complete();
     _cancelToken = null;
-    // Invalidate this run's callbacks. Cancelling only asks the uploader to stop;
-    // an in-flight native transfer keeps reporting until Cronet reacts, and those
-    // late callbacks must not land in state after everything was cleared.
+    // 在途的原生传输在 Cronet 反应之前还会继续报。
     _backupGeneration++;
-    // Drop the active-run slot too. The run is being cancelled, so a resume that
-    // arrives before the old future unwinds must start a fresh run rather than
-    // joining one that is already shutting down.
+    // 旧 future 还没收尾时来的 resume 要开新的一轮。
     _activeBackupRun = null;
     _activeBackupUserId = null;
     _uploadSpeedManager.clear();
@@ -261,7 +236,7 @@ class BackupNotifier extends StateNotifier<BackupState> {
 
   void _handleICloudProgress(int generation, String localAssetId, double progress) {
     if (!mounted || generation != _backupGeneration) {
-      // Disposed, or a leftover callback from a stopped run.
+      // 已 dispose，或者停掉那轮漏过来的回调。
       return;
     }
     state = state.copyWith(iCloudDownloadProgress: {...state.iCloudDownloadProgress, localAssetId: progress});
@@ -335,8 +310,7 @@ class BackupNotifier extends StateNotifier<BackupState> {
 
   void _handleForegroundBackupError(int generation, String localAssetId, String errorMessage) {
     if (!mounted || generation != _backupGeneration) {
-      // Disposed, or a cancelled upload from a stopped run reporting its failure
-      // late -- which must not be added to the current run's list.
+      // 停掉那轮的上传被取消，迟到才报。
       return;
     }
     final currentItem = state.uploadItems[localAssetId];

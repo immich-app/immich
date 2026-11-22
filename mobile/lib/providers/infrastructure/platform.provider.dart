@@ -31,9 +31,8 @@ final remoteImageApi = RemoteImageApi();
 
 final networkApi = NetworkApi();
 
-/// Native streaming uploads report progress through a Pigeon FlutterApi. The
-/// handler is registered once at startup; [UploadRepository] routes events to
-/// the upload that owns the key.
+/// 原生流式上传用 Pigeon FlutterApi 报进度。启动时注册一次，
+/// [UploadRepository] 按 key 把事件派给对应的那次上传。
 class StreamingUploadProgressHandler implements StreamingUploadProgressApi {
   @override
   void onProgress(String progressKey, int transferred, int total) {

@@ -103,9 +103,9 @@ class _BackupPageState extends ConsumerState<BackupPage> {
       try {
         await backupNotifier.startForegroundBackup(currentUser.id, restart: true);
       } catch (error, stackTrace) {
-        // startForegroundBackup rethrows so joiners share the failure; the page
-        // has already surfaced it through backupProvider.error, so log and stop
-        // rather than letting an unhandled async error escape the button tap.
+        // startForegroundBackup 会重新抛，好让等它的人一起失败；
+        // 页面已经通过 backupProvider.error 展示过了，记一条日志就够，
+        // 别让未处理的异步异常从按钮点击里漏出去。
         Logger("BackupPage").warning("Foreground backup failed", error, stackTrace);
       }
     }

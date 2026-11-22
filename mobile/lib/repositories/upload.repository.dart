@@ -21,9 +21,7 @@ class UploadRepository {
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 
-  /// The generated Pigeon host API. Kept as a field rather than pulled from a
-  /// provider so this repository stays free of Riverpod wiring (platform.provider
-  /// already imports this file, so importing it back would be a cycle).
+  /// 写成字段：platform.provider 已经 import 这个文件，用 provider 会成环。
   final NetworkApi _networkApi = NetworkApi();
 
   UploadRepository() {
@@ -48,10 +46,7 @@ class UploadRepository {
     return FileDownloader().enqueueAll(tasks);
   }
 
-  /// Uploads through the native Cronet uploader, which streams the file off disk.
-  ///
-  /// Always returns a result; a broken transfer comes back as [UploadResult.error]
-  /// rather than a silent null.
+  /// 走原生 Cronet uploader，从磁盘流式发。
   Future<UploadResult> _uploadFileStreaming({
     required File file,
     required String originalFileName,
@@ -60,26 +55,18 @@ class UploadRepository {
     required String logContext,
     Completer<void>? cancelToken,
   }) async {
-    // Resend once when the request dies before any response arrives, matching the
-    // Dart path. Only when nothing reached the server: a resend after a partial
-    // body could leave a half-written asset plus a duplicate.
+    // 只重发一次，而且只在什么都没到服务器时。
     for (var attempt = 0; ; attempt++) {
-      // Unique per attempt, not just per asset: a retry must not collide with the
-      // previous attempt's native request entry.
+      // 每次尝试一个 key，重试不能和上一条撞。
       final progressKey = '$logContext:${file.path}#$_uploadKeySalt-${_streamingUploadSeq++}';
       var progressBytes = 0;
-      // Always subscribe, even when the caller does not want progress: the byte
-      // count is what decides whether a failed attempt may be resent, and callers
-      // like the background worker pass no onProgress at all.
+      // 无条件订阅：字节数决定能不能重发，而后台 worker 根本不传 onProgress。
       _streamingProgressListeners[progressKey] = (sent, total) {
         progressBytes = sent;
         onProgress?.call(sent, total);
       };
 
-      // Abort the native upload when the caller cancels, otherwise the native
-      // thread keeps streaming after the backup stopped. Register even for an
-      // already-completed token: then() fires immediately, covering the
-      // "cancelled while queued" window.
+      // 否则备份停了原生线程还在传。then() 也覆盖已经完成的那种。
       if (cancelToken != null) {
         unawaited(cancelToken.future.then((_) => _networkApi.cancelStreamingUpload(progressKey)).catchError((_) {}));
       }
@@ -110,24 +97,18 @@ class UploadRepository {
           }
         }
 
-        // Only an abort we asked for is a cancellation. Cronet also cancels the
-        // request itself on stall or hard deadline, which is a transport failure:
-        // treating that as a cancel sets shouldAbortUpload and kills the batch.
+        // 只有我们主动中断才算取消；Cronet 卡住也会取消，那会把整批干掉。
         if (cancelToken?.isCompleted == true) {
           return UploadResult.cancelled();
         }
 
-        // statusCode 0 means no HTTP response at all. Only then, and only with
-        // nothing on the wire, is a resend safe. The byte count comes from the
-        // native side because the progress callback is optional.
+        // statusCode 0 表示根本没拿到响应。
         if (result.statusCode == 0 && result.bytesSent == 0 && attempt == 0) {
           logger.warning("Streaming upload $logContext failed before any data was sent, resending once");
           continue;
         }
 
-        // Mirror the Dart path's error extraction so both routes report the same
-        // text. Callers match on the message ("Quota has been exceeded!" stops the
-        // whole batch), so handing them the raw JSON body would break that.
+        // 文案和 Dart 路径一致，调用方是按消息文本判断的。
         final body = result.body ?? '';
         final message = extractErrorMessage(statusCode: result.statusCode, body: body);
         logger.warning("Streaming upload $logContext failed: $message");
@@ -138,17 +119,11 @@ class UploadRepository {
           return UploadResult.cancelled();
         }
         if (progressBytes == 0 && attempt == 0) {
-          // Nothing was reported as sent, so the body almost certainly never
-          // reached the server. The counter is fed from the native progress
-          // callback, which is subscribed even when the caller passed no
-          // onProgress -- otherwise this was always 0 and every exception
-          // looked like a safe retry.
+          // 一个字节都没报过，body 多半没发出去。
           logger.warning("Streaming upload $logContext threw before any data was sent, resending once");
           continue;
         }
-        // Do NOT fall back to the Dart client here. It only applies when the engine
-        // is missing; an exception means the transfer broke, and package:cronet_http
-        // would buffer the whole file -- the OOM this path exists to avoid.
+        // 不回退到 Dart 客户端，它会把整个文件读进内存。
         return UploadResult.error(errorMessage: 'Native streaming upload failed: $error');
       } finally {
         _streamingProgressListeners.remove(progressKey);
@@ -156,12 +131,10 @@ class UploadRepository {
     }
   }
 
-  /// Progress callbacks are routed by [progressKey] so concurrent uploads do not
-  /// overwrite each other's progress.
+  /// 按 [progressKey] 派发，并发上传不会互相覆盖。
   static final Map<String, void Function(int, int)> _streamingProgressListeners = {};
 
-  /// Salt per isolate, keeping keys distinct if the native request tables ever
-  /// become process-wide again.
+  /// 每个 isolate 一个盐。
   static final String _uploadKeySalt = math.Random().nextInt(0x7FFFFFFF).toRadixString(36);
   static int _streamingUploadSeq = 0;
 
@@ -186,8 +159,7 @@ class UploadRepository {
     };
   }
 
-  /// Turns a failed upload response into the same message the Dart path produces.
-  /// Callers compare this string (the quota case stops the whole batch).
+  /// 和 Dart 路径产出同样的消息，配额那条会中断整批。
   static String extractErrorMessage({required int statusCode, required String body}) {
     if (statusCode == 413) {
       return 'Error(413) File is too large to upload';
@@ -199,7 +171,7 @@ class UploadRepository {
         return message;
       }
     } catch (_) {
-      // Not JSON; fall through to the raw body.
+      // 不是 JSON，直接用原始 body。
     }
     return body.isNotEmpty ? body : 'Upload failed with status $statusCode';
   }
@@ -230,26 +202,18 @@ class UploadRepository {
     required String logContext,
     Client? httpClient,
   }) async {
-    // A worker can be cancelled while it sits in the queue between picking an
-    // asset and reaching this call. Starting the transfer anyway would push the
-    // whole file to the server with nothing left to abort it.
+    // 排队时被取消，硬发出去就没东西能中断它了。
     if (cancelToken?.isCompleted == true) {
       return UploadResult.cancelled();
     }
 
-    // package:cronet_http buffers the entire body in memory before handing it to
-    // the native layer, so anything larger than the heap is unuploadable.
-    //
-    // mTLS users stay on the buffered path: Cronet cannot present a client
-    // certificate. Their client is OkHttp, which streams the body itself.
+    // cronet_http 会把整个 body 读进内存，大过堆就传不了。
+    // mTLS 用户仍走 buffered 路径。
     if (CurrentPlatform.isAndroid && !NetworkRepository.usingMtls) {
-      // Not lengthSync(): this runs on the UI isolate, and a stat() per upload is
-      // a blocking syscall on the frame budget.
+      // 不用 lengthSync，这跑在 UI isolate 上。
       final length = await file.length();
       if (length > kStreamingUploadThreshold) {
-        // No fallback to the Dart client on failure: it buffers the whole body in
-        // memory, so retrying a >16 MB file that way is exactly the OOM this path
-        // exists to prevent. Report the failure instead.
+        // 不回退：换 Dart 客户端重试，正是这里要避免的 OOM。
         return _uploadFileStreaming(
           file: file,
           originalFileName: originalFileName,

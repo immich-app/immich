@@ -61,7 +61,7 @@ void main() async {
 
     ImmichWidgetsBinding();
     unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
-    // Route native streaming-upload progress back to the upload that owns it.
+    // 把原生流式上传的进度，路由回它所属的那次上传。
     StreamingUploadProgressApi.setUp(StreamingUploadProgressHandler());
     await EasyLocalization.ensureInitialized();
     final (dataController, apiService) = await Bootstrap.initDomain();

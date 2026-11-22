@@ -86,14 +86,9 @@ flutter {
 }
 
 dependencies {
-  // `cronet_http` picks its Cronet dependency from the `cronetHttpNoPlay`
-  // dart-define. Without it the package pulls in play-services-cronet, whose
-  // GooglePlayServicesCronetProvider wins engine selection and ships whatever
-  // version the Play Store feels like -- with no guarantee of X25519MLKEM768.
-  //
-  // Every build entry point therefore has to pass
-  // --dart-define=cronetHttpNoPlay=true. Checking it here turns a forgotten flag
-  // into a build error instead of a silently classical key exchange at runtime.
+  // 不传 cronetHttpNoPlay=true 时 cronet_http 会拉进 play-services-cronet，
+  // 那个 provider 会被优先选中，且不保证有 X25519MLKEM768。
+  // 在这里构建失败，好过运行时丢掉密钥交换。
   def buildDartDefines = [:]
   if (project.hasProperty('dart-defines')) {
     project.property('dart-defines').split(',').each { entry ->
@@ -111,12 +106,7 @@ dependencies {
   implementation libs.okhttp
   implementation libs.cronet.embedded
   implementation libs.media3.datasource.okhttp
-  // media3-datasource-cronet 会通过传递依赖拉进 play-services-cronet
-  // （见它的 pom：com.google.android.gms:play-services-cronet）。那个 AAR 提供
-  // GooglePlayServicesCronetProvider，会被 CronetEngine.Builder 优先选中，
-  // 版本由 Play 商店推送、不受本包控制，也就无法保证有 X25519MLKEM768。
-  // 我们已经在上面直接依赖 cronet.embedded，这里把它排除掉，
-  // 让 provider 选择只剩 App-Packaged-Cronet-Provider。
+  // 它的 pom 会拉进 play-services-cronet，那个 provider 优先于我们打包的这个。
   implementation(libs.media3.datasource.cronet) {
     exclude group: 'com.google.android.gms', module: 'play-services-cronet'
   }

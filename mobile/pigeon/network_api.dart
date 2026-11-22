@@ -16,30 +16,27 @@ class ClientCertPrompt {
   ClientCertPrompt(this.title, this.message, this.cancel, this.confirm);
 }
 
-/// Result of a streaming upload performed natively.
+/// 原生流式上传的结果。
 class StreamingUploadResult {
   bool isSuccess;
   int statusCode;
   String? body;
   String? errorMessage;
 
-    /// How many body bytes actually reached the wire before the request ended.
+    /// 请求结束前真正发出去多少 body 字节。
     ///
-    /// The Dart side uses this to decide whether a failed transfer may be resent:
-    /// once bytes are on the wire the server may already have written part of the
-    /// asset, so a resend could duplicate it. Progress callbacks cannot be used --
-    /// they are optional, so a caller that does not subscribe sees zero bytes
-    /// regardless of what was sent.
+    /// Dart 侧靠它判断失败的传输能不能重发：字节在路上时服务器可能写了一部分，
+    /// 重发会变重复。不能用进度回调判断，那是可选的，
+    /// 不订阅的调用方看到的永远是 0。
   int bytesSent;
 
   StreamingUploadResult(this.isSuccess, this.statusCode, this.body, this.errorMessage, this.bytesSent);
 }
 
-/// Reports upload progress from the native streaming upload back to Dart.
+/// 把原生流式上传的进度报回 Dart。
 @FlutterApi()
 abstract class StreamingUploadProgressApi {
-  /// [progressKey] identifies which upload this belongs to, so concurrent
-  /// uploads do not overwrite each other's progress.
+  /// [progressKey] 标明属于哪次上传，并发时不会互相覆盖。
   void onProgress(String progressKey, int transferred, int total);
 }
 
@@ -82,15 +79,8 @@ abstract class NetworkApi {
 
   String getCronetStoragePath();
 
-  /// Uploads a single file as `multipart/form-data` from native code, streaming
-  /// it off disk rather than buffering the whole payload in memory.
-  ///
-  /// `package:cronet_http` calls `stream.toBytes()` before handing the body to
-  /// Cronet, so any payload larger than the heap kills the process. Small uploads
-  /// stay on the regular Dart client.
-  ///
-  /// Returns the raw response body on 2xx, and a result describing the failure
-  /// otherwise. Progress is reported through [StreamingUploadProgressApi].
+  /// 由原生代码以 multipart/form-data 上传文件，从磁盘流式读。
+  /// cronet_http 会缓冲整个 body，大文件会直接被杀。进度走 [StreamingUploadProgressApi]。
   @async
   StreamingUploadResult uploadFileStreaming(
     String url,
@@ -102,7 +92,6 @@ abstract class NetworkApi {
     String progressKey,
   );
 
-  /// Asks the native side to abort an in-flight streaming upload. Safe to call
-  /// for a key that is not uploading.
+  /// key 当前不在上传时调用也安全。
   void cancelStreamingUpload(String progressKey);
 }

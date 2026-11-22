@@ -57,8 +57,7 @@ Cancelable<T?> runInIsolateGentle<T>({
       await dbStore.Store.dispose();
       await LogService.I.dispose();
       await dataController.close();
-      // Each isolate owns its own Cronet engine; releasing it here keeps the
-      // native threads and 64 MiB cache from accumulating across isolate churn.
+      // 每个 isolate 有自己的引擎，在这里释放，免得线程和 64MB 缓存越积越多。
       NetworkRepository.dispose();
     }
   });
