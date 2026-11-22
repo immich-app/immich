@@ -120,6 +120,8 @@ class AuthService {
       _authRepository.clearLocalData(),
       Store.delete(StoreKey.currentUser),
       Store.delete(StoreKey.accessToken),
+      // 只清 native jar，不动引擎：本层没有 Cronet。
+      NetworkRepository.clearCookies(),
       SettingsRepository.instance.clear(const [
         .networkAutoEndpointSwitching,
         .networkPreferredWifiName,
