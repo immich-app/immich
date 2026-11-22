@@ -1,5 +1,15 @@
 import type { IntegrityReport } from '@immich/sdk';
-import { page, userEvent } from 'vitest/browser';
+import { locators, page, userEvent, type Locator } from 'vitest/browser';
+
+declare module 'vitest/browser' {
+  interface LocatorSelectors {
+    getByAssetId(id?: string): Locator;
+  }
+}
+
+locators.extend({
+  getByAssetId: (id?: string) => (id ? `[data-asset="${id}"]` : '[data-asset]'),
+});
 
 export const createApp = () => {
   const button = (name: string) => page.getByRole('button', { name, exact: true });
@@ -48,7 +58,21 @@ export const createApp = () => {
     gallery: {
       selectAll: () => userEvent.keyboard('{Control>}a{/Control}'),
       selectAllButton: button('select_all'),
+      thumbnails: page.getByAssetId(),
+      thumbnail: (asset: { id: string }) => page.getByAssetId(asset.id),
+      select: async (asset: { id: string }) => {
+        (page.getByAssetId(asset.id).element() as HTMLElement).focus();
+        await userEvent.keyboard('x');
+      },
+      menuButton: button('menu'),
+      menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
+      addToAlbumButton: button('add_to_album'),
+      album: (name: string) => dialog.getByRole('button').filter({ hasText: name }).first(),
+      undoButton: button('undo'),
+      favoriteButton: button('to_favorite'),
+      favoriteIcon: (asset: { id: string }) => page.getByAssetId(asset.id).getByTestId('favorite-icon'),
     },
+    refocusWindow: () => dispatchEvent(new Event('visibilitychange')),
     search: {
       filters: searchFilters,
       open: () => page.getByRole('combobox', { name: 'search_your_photos' }).click(),

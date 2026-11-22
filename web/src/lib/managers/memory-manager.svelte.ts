@@ -1,32 +1,25 @@
 import { QueryParameter } from '#lib/constants.ts';
-import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
+import { executeMutation, queryClient } from '#lib/queries/client.ts';
+import {
+  deleteMemoryMutation,
+  removeMemoryAssetsMutation,
+  searchMemoriesQuery,
+  updateCachedMemories,
+  updateMemoryMutation,
+  type MemoryFilters,
+} from '#lib/queries/memory.query.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { Route } from '#lib/route.ts';
 import { memoryLaneTitle } from '#lib/utils.ts';
 import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-import {
-  MemorySearchOrder,
-  MemoryType,
-  deleteMemory,
-  memoriesStatistics,
-  removeMemoryAssets,
-  searchMemories,
-  updateMemory,
-  type AssetResponseDto,
-  type MemoryResponseDto,
-} from '@immich/sdk';
-import { toastManager } from '@immich/ui';
-import { isEqual, omitBy } from 'lodash-es';
+import { MemorySearchOrder, type AssetResponseDto, type MemoryResponseDto } from '@immich/sdk';
+import { omitBy } from 'lodash-es';
 import { DateTime } from 'luxon';
-import { t } from 'svelte-i18n';
-import { SvelteMap } from 'svelte/reactivity';
-import { fromStore, get } from 'svelte/store';
+import { fromStore } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-
-type MemoriesSearchDto = Parameters<typeof searchMemories>[0];
 
 type AdjacentMemory = {
   href: string;
@@ -48,56 +41,7 @@ export type MemoryState = {
 };
 
 class MemoryManager {
-  #loading = $state<Promise<void>>();
-  #filters = $state<MemoriesSearchDto>({ size: 250, order: MemorySearchOrder.Desc });
-  #hasNextPage: boolean = true;
-  #page: number = 1;
-  #total: number | undefined = $state();
-  #queued: boolean = false;
-
-  constructor() {
-    eventManager.on({
-      AuthLogout: () => this.clearCache(),
-      AuthUserLoaded: () => this.initialize(),
-    });
-
-    // loaded event might have already happened
-    if (authManager.authenticated) {
-      void this.initialize();
-    }
-
-    this.scheduleHourlyRefresh();
-  }
-
-  get filters() {
-    return this.#filters;
-  }
-
-  setFilters(filters: MemoriesSearchDto) {
-    filters = omitBy(filters, (item) => item === undefined);
-    if (!isEqual(this.#filters, filters)) {
-      this.#filters = filters;
-      this.clearCache();
-      void this.loadNextPage();
-    }
-  }
-
-  refresh() {
-    return this.initialize();
-  }
-
-  applyPreferences() {
-    const { showUpcoming, onlyFavorites } = userPreferencesManager.memories;
-    this.setFilters({
-      order: MemorySearchOrder.Desc,
-      isSaved: onlyFavorites || undefined,
-      isUpcoming: showUpcoming && undefined,
-    });
-
-    return this.refresh();
-  }
-
-  memories = $state<MemoryResponseDto[]>([]);
+  #filters = $state<MemoryFilters>({ size: 250, order: MemorySearchOrder.Desc });
 
   #memoryLaneTitle = fromStore(memoryLaneTitle);
 
@@ -109,37 +53,73 @@ class MemoryManager {
 
   memoriesHref = $derived(Route.memories({ isSaved: this.#url.isSaved }));
 
-  #lookup = $derived.by(() => {
-    const lookup = new SvelteMap<string, { memoryIndex: number; assetIndexes: Map<string, number> }>();
+  constructor() {
+    this.#scheduleHourlyRefresh();
+  }
 
-    for (const [memoryIndex, memory] of this.memories.entries()) {
-      const assetIndexes = new Map(memory.assets.map((asset, assetIndex) => [asset.id, assetIndex] as const));
-      lookup.set(memory.id, { memoryIndex, assetIndexes });
+  get filters() {
+    return this.#filters;
+  }
+
+  setFilters(filters: MemoryFilters) {
+    this.#filters = omitBy(filters, (item) => item === undefined);
+  }
+
+  applyPreferences() {
+    const { showUpcoming, onlyFavorites } = userPreferencesManager.memories;
+    this.setFilters({
+      order: MemorySearchOrder.Desc,
+      isSaved: onlyFavorites || undefined,
+      isUpcoming: showUpcoming && undefined,
+    });
+  }
+
+  loadMemories() {
+    return queryClient.query(searchMemoriesQuery(this.#filters));
+  }
+
+  /** Fetch a memory that is not part of the loaded list, i.e. when opening a link to an older one. */
+  async loadMemory(id: string) {
+    const memories = await this.loadMemories();
+    const memory = memories.find((item) => item.id === id);
+    if (memory) {
+      return memory;
     }
 
-    return lookup;
-  });
+    const [loaded] = await queryClient.query(searchMemoriesQuery({ id })).catch(() => []);
+    if (!loaded) {
+      return;
+    }
 
-  current = $derived.by((): MemoryState | undefined => {
+    // memories are ordered by date, descending
+    queryClient.setQueryData(searchMemoriesQuery(this.#filters).queryKey, (items = []) => {
+      const index = items.findIndex(({ memoryAt }) => memoryAt < loaded.memoryAt);
+      const insertAt = index === -1 ? items.length : index;
+      return [...items.slice(0, insertAt), loaded, ...items.slice(insertAt)];
+    });
+
+    return loaded;
+  }
+
+  getCurrent(memories: MemoryResponseDto[]): MemoryState | undefined {
     const { memoryId, assetId } = this.#url;
     if (memoryId === undefined || assetId === undefined) {
       return;
     }
 
-    const location = this.#lookup.get(memoryId);
-    if (!location) {
+    const memoryIndex = memories.findIndex(({ id }) => id === memoryId);
+    if (memoryIndex === -1) {
       return;
     }
 
-    const { memoryIndex, assetIndexes } = location;
-    const assetIndex = assetIndexes.get(assetId);
-    if (assetIndex === undefined) {
+    const memory = memories[memoryIndex];
+    const assetIndex = memory.assets.findIndex(({ id }) => id === assetId);
+    if (assetIndex === -1) {
       return;
     }
 
-    const memory = this.memories[memoryIndex];
-    const previousMemory = this.memories[memoryIndex - 1];
-    const nextMemory = this.memories[memoryIndex + 1];
+    const previousMemory = memories[memoryIndex - 1];
+    const nextMemory = memories[memoryIndex + 1];
 
     return {
       memory,
@@ -157,7 +137,7 @@ class MemoryManager {
           : this.#toHref(nextMemory, nextMemory?.assets[0]),
       getAssetHref: (assetId: string) => this.#toHref(memory, { id: assetId }),
     };
-  });
+  }
 
   #toHref(memory: { id: string } | undefined, asset: { id: string } | undefined) {
     return memory && asset
@@ -180,94 +160,60 @@ class MemoryManager {
   }
 
   // the memory holding an asset, checking the given memory first, then the ones next to it
-  getMemoryWithAsset(assetId: string, memoryId: string) {
-    const location = this.#lookup.get(memoryId);
-    if (!location) {
+  getMemoryWithAsset(memories: MemoryResponseDto[], assetId: string, memoryId: string) {
+    const memoryIndex = memories.findIndex(({ id }) => id === memoryId);
+    if (memoryIndex === -1) {
       return;
     }
 
-    const { memoryIndex } = location;
     return [memoryIndex, memoryIndex - 1, memoryIndex + 1]
-      .map((index) => this.memories[index])
-      .find((memory) => memory && this.#lookup.get(memory.id)?.assetIndexes.has(assetId));
+      .map((index) => memories[index])
+      .find((memory) => memory?.assets.some(({ id }) => id === assetId));
   }
 
-  #getMemory(id: string) {
-    const location = this.#lookup.get(id);
-    return location ? this.memories[location.memoryIndex] : undefined;
-  }
-
-  /** Fetch a memory that is not part of the loaded pages, i.e. when opening a link to an older one. */
-  async loadMemory(id: string) {
-    const memory = this.#getMemory(id);
-    if (memory) {
-      return memory;
-    }
-
-    const [loaded] = await searchMemories({ id }).catch(() => []);
-    if (!loaded) {
-      return;
-    }
-
-    // memories are ordered by date, descending
-    const index = this.memories.findIndex(({ memoryAt }) => memoryAt < loaded.memoryAt);
-    this.memories.splice(index === -1 ? this.memories.length : index, 0, loaded);
-
-    return loaded;
-  }
-
-  async hideAssets(ids: string[]) {
-    if (this.current && ids.includes(this.current.asset.id)) {
-      await this.#leaveCurrentAsset();
+  async hideAssets(current: MemoryState | undefined, ids: string[]) {
+    if (current && ids.includes(current.asset.id)) {
+      await this.#leave(current);
     }
 
     const idSet = new Set<string>(ids);
-    for (const memory of this.memories) {
-      memory.assets = memory.assets.filter((asset) => !idSet.has(asset.id));
-    }
-    // if we removed all assets from a memory, then lets remove those memories (we don't show memories with 0 assets)
-    this.memories = this.memories.filter((memory) => memory.assets.length > 0);
+    updateCachedMemories((memories) =>
+      memories
+        .map((memory) => ({ ...memory, assets: memory.assets.filter((asset) => !idSet.has(asset.id)) }))
+        .filter((memory) => memory.assets.length > 0),
+    );
   }
 
-  async deleteCurrentAsset() {
-    const current = this.current;
-    if (!current) {
+  async deleteCurrentAsset(current: MemoryState) {
+    const { memory, asset } = current;
+    await this.#leave(current);
+
+    if (memory.assets.length === 1) {
+      await executeMutation(deleteMemoryMutation, [{ id: memory.id }]);
       return;
     }
 
-    const memoryId = current.memory.id;
-    const assetId = current.asset.id;
-    await this.#leaveCurrentAsset();
-    await this.#deleteAsset(memoryId, assetId);
+    await executeMutation(removeMemoryAssetsMutation, [{ id: memory.id, bulkIdsDto: { ids: [asset.id] } }]);
   }
 
-  async deleteCurrentMemory() {
-    const current = this.current;
-    if (!current) {
-      return;
-    }
-
-    const { id } = current.memory;
+  async deleteCurrentMemory(current: MemoryState) {
     await this.#goto(current.nextMemory?.href ?? current.previousMemory?.href ?? this.memoriesHref);
-    await this.#deleteMemory(id);
-    toastManager.primary(get(t)('removed_memory'));
+    await executeMutation(
+      () => deleteMemoryMutation({ success: { toast: 'removed_memory' } }),
+      [{ id: current.memory.id }],
+    );
   }
 
-  async toggleCurrentMemorySaved() {
-    const memory = this.current?.memory;
-    if (!memory) {
-      return;
-    }
-
+  toggleSaved({ memory }: MemoryState) {
     const isSaved = !memory.isSaved;
-    await updateMemory({ id: memory.id, memoryUpdateDto: { isSaved } });
-    memory.isSaved = isSaved;
-    toastManager.primary(get(t)(isSaved ? 'added_to_favorites' : 'removed_from_favorites'));
+    return executeMutation(
+      () => updateMemoryMutation({ success: { toast: isSaved ? 'added_to_favorites' : 'removed_from_favorites' } }),
+      [{ id: memory.id, memoryUpdateDto: { isSaved } }],
+    );
   }
 
   // navigate away before removing something, so the url never points at a deleted position
-  #leaveCurrentAsset() {
-    const { nextHref, previousHref } = this.current ?? {};
+  #leave({ nextHref, previousHref }: MemoryState) {
     return this.#goto(nextHref ?? previousHref ?? this.memoriesHref);
   }
 
@@ -275,97 +221,7 @@ class MemoryManager {
     return goto(href, { replace: true, reset: false });
   }
 
-  async #deleteMemory(id: string) {
-    if (!this.#getMemory(id)) {
-      return;
-    }
-
-    await deleteMemory({ id });
-    this.memories = this.memories.filter((memory) => memory.id !== id);
-  }
-
-  async #deleteAsset(memoryId: string, assetId: string) {
-    const memory = this.#getMemory(memoryId);
-    if (!memory?.assets.some((asset) => asset.id === assetId)) {
-      return;
-    }
-
-    if (memory.assets.length === 1) {
-      await this.#deleteMemory(memoryId);
-      return;
-    }
-
-    await removeMemoryAssets({ id: memoryId, bulkIdsDto: { ids: [assetId] } });
-    memory.assets = memory.assets.filter((asset) => asset.id !== assetId);
-  }
-
-  loadNextPage() {
-    if (this.#hasNextPage) {
-      if (this.#loading === undefined) {
-        this.#loading = this.load(this.#page++);
-      } else {
-        this.#queued = true;
-      }
-    }
-  }
-
-  get hasNextPage() {
-    return this.#hasNextPage;
-  }
-
-  get total() {
-    return this.#total;
-  }
-
-  get loading() {
-    return this.#loading;
-  }
-
-  private clearCache() {
-    this.#hasNextPage = true;
-    this.#page = 1;
-    this.#total = undefined;
-    this.memories = [];
-  }
-
-  private initialize() {
-    if (!this.#loading) {
-      this.#loading = this.load(this.#page++);
-    }
-
-    return this.#loading;
-  }
-
-  private async load(page: number) {
-    const items = await searchMemories({ ...this.#filters, page });
-
-    if (this.#queued) {
-      this.#queued = false;
-      this.#loading = this.load(this.#page++);
-      await this.#loading;
-      return;
-    }
-
-    for (const item of items) {
-      if (!this.#lookup.has(item.id)) {
-        this.memories.push(item);
-      }
-    }
-
-    if (this.#filters.$for) {
-      this.memories.sort((a, b) => Number(b.type === MemoryType.Birthday) - Number(a.type === MemoryType.Birthday));
-    }
-
-    if (this.#total === undefined) {
-      const { total } = await memoriesStatistics(this.#filters);
-      this.#total = total;
-    }
-
-    this.#hasNextPage = this.memories.length < this.#total;
-    this.#loading = undefined;
-  }
-
-  private scheduleHourlyRefresh() {
+  #scheduleHourlyRefresh() {
     const now = DateTime.utc();
     let nextEvent = now.set({ minute: 0, second: 5 });
 
@@ -373,26 +229,12 @@ class MemoryManager {
       nextEvent = nextEvent.plus({ hours: 1 });
     }
 
-    const initialDelay = nextEvent.diff(now).as('milliseconds');
+    const refresh = () => void queryClient.invalidateQueries({ queryKey: QueryKeys.memories() });
 
     setTimeout(() => {
-      if (this.#page <= 2) {
-        this.clearCache();
-        this.loadNextPage();
-      }
-
-      // Schedule subsequent events hourly
-      setInterval(
-        () => {
-          if (this.#page > 2) {
-            return;
-          }
-          this.clearCache();
-          this.loadNextPage();
-        },
-        60 * 60 * 1000,
-      );
-    }, initialDelay);
+      refresh();
+      setInterval(refresh, 60 * 60 * 1000);
+    }, nextEvent.diff(now).as('milliseconds'));
   }
 }
 

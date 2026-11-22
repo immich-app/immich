@@ -31,6 +31,9 @@ export class Mock {
       if (passed) {
         await settleExpectations(this.api, this.logger);
       }
+      if (page?.url().startsWith('http')) {
+        await page.evaluate(() => localStorage.clear());
+      }
       await page?.goto('about:blank');
       page?.off('download', onDownload);
       this.logger.teardown();

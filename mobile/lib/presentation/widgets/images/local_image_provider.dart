@@ -74,6 +74,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   final int? width;
   final int? height;
   final String? checksum;
+  final bool previewOnly;
 
   const LocalFullImageProvider({
     required this.id,
@@ -83,6 +84,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     this.width,
     this.height,
     this.checksum,
+    this.previewOnly = false,
   });
 
   Size _previewTarget(double dpr, bool previewIsFinal) =>
@@ -131,9 +133,9 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
 
     return OneFramePlaceholderImageStreamCompleter(
       _codec(loader, key, decode),
-      initialImage: loader.getInitialImage(
-        LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum),
-      ),
+      initialImage: key.previewOnly
+          ? null
+          : loader.getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),
@@ -152,14 +154,31 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     }
 
     final loadOriginal = SettingsRepository.instance.appConfig.image.loadOriginal;
-    final previewRequest = loader.request = _previewRequest(key, isFinal: !loadOriginal);
+    final previewOnlyKey = LocalFullImageProvider(
+      id: key.id,
+      assetType: key.assetType,
+      size: key.size,
+      isAnimated: key.isAnimated,
+      width: key.width,
+      height: key.height,
+      checksum: key.checksum,
+      previewOnly: true,
+    );
+    final Stream<ImageInfo> previews;
+    if (!key.previewOnly && PaintingBinding.instance.imageCache.statusForKey(previewOnlyKey).tracked) {
+      previews = loader.loadProvider(previewOnlyKey);
+    } else {
+      final previewRequest = loader.request = _previewRequest(key, isFinal: !loadOriginal);
+      previews = loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal || key.previewOnly);
+    }
+
     var previewIsOriginal = false;
-    await for (final info in loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal)) {
+    await for (final info in previews) {
       previewIsOriginal = info.image.width == key.width && info.image.height == key.height;
       yield info;
     }
 
-    if (!loadOriginal) {
+    if (!loadOriginal || key.previewOnly) {
       return;
     }
 
@@ -222,11 +241,12 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
           isAnimated == other.isAnimated &&
           width == other.width &&
           height == other.height &&
-          checksum == other.checksum;
+          checksum == other.checksum &&
+          previewOnly == other.previewOnly;
     }
     return false;
   }
 
   @override
-  int get hashCode => Object.hash(id, size, isAnimated, width, height, checksum);
+  int get hashCode => Object.hash(id, size, isAnimated, width, height, checksum, previewOnly);
 }

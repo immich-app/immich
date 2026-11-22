@@ -1,12 +1,18 @@
 import { asMutation, queryClient } from '#lib/queries/client.ts';
 import { QueryKeys } from '#lib/queries/query-keys.ts';
-import { deleteAllSessions, deleteSession, getSessions } from '@immich/sdk';
+import { createSession, deleteAllSessions, deleteSession, getSessions } from '@immich/sdk';
 import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
 
 export const getSessionsQuery = () =>
   queryOptions({
     queryKey: QueryKeys.sessions(),
     queryFn: ({ signal }) => getSessions({ signal }),
+  });
+
+export const createSessionMutation = () =>
+  asMutation(createSession, {
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.sessions() }),
+    meta: { error: { toast: false } },
   });
 
 export const deleteSessionMutation = () =>

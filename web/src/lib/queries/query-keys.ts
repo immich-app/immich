@@ -1,7 +1,9 @@
 import type {
   CalendarHeatmapType,
   IntegrityReport,
+  MetadataSearchDto,
   PartnerDirection,
+  SmartSearchDto,
   WorkflowResult,
   WorkflowTrigger,
   getAllPeople,
@@ -10,6 +12,7 @@ import type {
   getMySharedLink,
   getSearchSuggestions,
   getUsersForPeople,
+  searchMemories,
   searchPerson,
   searchPlaces,
 } from '@immich/sdk';
@@ -17,6 +20,7 @@ import type {
 type IdParams = { id: string };
 type ActivityParams = { albumId: string; assetId?: string };
 type PeopleParams = Parameters<typeof getAllPeople>[0];
+type MemoryParams = Parameters<typeof searchMemories>[0];
 
 export const QueryKeys = {
   // activities
@@ -92,6 +96,10 @@ export const QueryKeys = {
   // map
   mapMarkers: (...params: [Parameters<typeof getMapMarkers>[0]?]) => ['map', 'markers', ...params],
 
+  // memories
+  memories: (...params: [MemoryParams?]) => ['memories', ...params],
+  memoryStatistics: (...params: [MemoryParams?]) => [...QueryKeys.memories(), 'statistics', ...params],
+
   // notifications
   notifications: (params: { unread: boolean }) => ['notifications', params],
 
@@ -122,8 +130,11 @@ export const QueryKeys = {
   // search
   searchCities: () => ['search', 'cities'],
   searchExplore: () => ['search', 'explore'],
+  searchLargeAssets: () => ['search', 'large-assets'],
+  searchMetadata: (dto: MetadataSearchDto) => ['search', 'metadata', dto],
   searchPerson: (...params: [Parameters<typeof searchPerson>[0]?]) => ['search', 'person', ...params],
   searchPlaces: (params: Parameters<typeof searchPlaces>[0]) => ['search', 'places', params],
+  searchSmart: (dto: SmartSearchDto) => ['search', 'smart', dto],
   searchSuggestions: (params: Parameters<typeof getSearchSuggestions>[0]) => ['search', 'suggestions', params],
 
   // server

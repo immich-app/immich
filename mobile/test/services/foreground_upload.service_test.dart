@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNotNull, isNull;
@@ -10,6 +11,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -57,6 +59,7 @@ void main() {
     mockAssetService = MockAssetService();
     when(() => mockAssetService.getLocalAsset(any())).thenAnswer((_) async => null);
     when(() => mockAssetService.stackEditedUpload(any(), any(), any())).thenAnswer((_) async {});
+    when(() => mockBackupRepository.markIfUnsupported(any(), any())).thenAnswer((_) async => false);
 
     sut = ForegroundUploadService(
       mockUploadRepository,
@@ -258,6 +261,41 @@ void main() {
       verify(() => mockAssetService.stackEditedUpload(asset.localId!, 'remote', 'sha')).called(1);
       verifyZeroInteractions(mockStorageRepository);
       verifyZeroInteractions(mockUploadRepository);
+    });
+  });
+
+  group('uploadCandidates', () {
+    test('skips and reports a file the server does not accept in both backup runs and manual upload', () async {
+      final refused = LocalAssetStub.image1;
+      final accepted = LocalAssetStub.image2;
+      final mockEntity = MockAssetEntity();
+      final errors = <String>[];
+      final callbacks = UploadCallbacks(onError: (id, _) => errors.add(id));
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.clearCache()).thenAnswer((_) async {});
+      when(() => mockStorageRepository.getAssetEntityForAsset(refused)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getAssetEntityForAsset(accepted)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(any())).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(refused.id)).thenAnswer((_) async => File('/path/AAAAA.djvu'));
+      when(() => mockStorageRepository.getFileForAsset(accepted.id)).thenAnswer((_) async => File('/path/IMG_1.JPG'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(refused.id)).thenAnswer((_) async => 'AAAAA');
+      when(() => mockAssetMediaRepository.getOriginalFilename(accepted.id)).thenAnswer((_) async => 'IMG_1.JPG');
+      when(() => mockBackupRepository.getCandidates('user')).thenAnswer((_) async => [refused, accepted]);
+      when(() => mockBackupRepository.markIfUnsupported(refused.id, '.djvu')).thenAnswer((_) async => true);
+      when(() => mockConnectivityApi.getCapabilities()).thenAnswer((_) async => [NetworkCapability.unmetered]);
+      final uploaded = captureOriginalFileNames();
+
+      await sut.uploadCandidates('user', Completer(), callbacks: callbacks);
+      await sut.uploadCandidates('user', Completer(), callbacks: callbacks, useSequentialUpload: true);
+
+      expect(uploaded, ['IMG_1.JPG', 'IMG_1.JPG']);
+      expect(errors, [refused.localId, refused.localId]);
+
+      await sut.uploadManual([refused], callbacks: callbacks);
+
+      expect(uploaded, hasLength(2));
+      expect(errors, [refused.localId, refused.localId, refused.localId]);
     });
   });
 }

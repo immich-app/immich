@@ -37,6 +37,9 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   /// Checksum of the last synced version of this asset
   TextColumn get previousChecksum => text().nullable()();
 
+  /// Set by backup when the server does not accept the name the asset uploads with
+  BoolColumn get unsupported => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

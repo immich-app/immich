@@ -20,27 +20,19 @@
   import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
   import { getPersonQuery } from '#lib/queries/person.query.ts';
+  import { searchAssetsQuery, searchSmartQuery, updateSearchResults } from '#lib/queries/search.query.ts';
   import { getTagByIdQuery } from '#lib/queries/tag.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { lang, locale } from '#lib/stores/preferences.store.ts';
-  import { handlePromiseError } from '#lib/utils.ts';
   import { parseUtcDate } from '#lib/utils/date-time.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
   import { isAlbumsRoute, isPeopleRoute } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import {
-    AssetVisibility,
-    searchAssets,
-    searchSmart,
-    type AlbumResponseDto,
-    type AssetResponseDto,
-    type MetadataSearchDto,
-    type SmartSearchDto,
-  } from '@immich/sdk';
+  import { AssetVisibility, type AssetResponseDto, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
-  import { onMount, tick, untrack } from 'svelte';
+  import { createInfiniteQuery } from '@tanstack/svelte-query';
+  import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -56,10 +48,6 @@
   // manually and navigate back to that.
   let previousRoute = $state<string>(Route.explore());
 
-  let nextPage = $state(1);
-  let searchResultAlbums: AlbumResponseDto[] = $state([]);
-  let searchResultAssets: AssetResponseDto[] = $state([]);
-  let isLoading = $state(true);
   let scrollY = $state(0);
   let scrollYHistory = 0;
 
@@ -68,12 +56,31 @@
   let terms = $derived<SearchTerms>(searchQuery ? JSON.parse(searchQuery) : {});
   let searchTermKeys = $derived(getObjectKeys(terms));
 
-  $effect(() => {
-    // we want this to *only* be reactive on `terms`
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    terms;
-    untrack(() => handlePromiseError(onSearchQueryUpdate()));
-  });
+  const isSmartSearch = $derived(('query' in terms || 'queryAssetId' in terms) && config.machineLearning.clip.enabled);
+  const searchDto = $derived({ withExif: true, visibility: AssetVisibility.Timeline, ...terms });
+  const searchOptions = $derived(
+    isSmartSearch ? searchSmartQuery({ ...searchDto, language: $lang }) : searchAssetsQuery(searchDto),
+  );
+  const resultsQuery = createInfiniteQuery(() => searchOptions);
+  const searchResultAssets = $derived(resultsQuery.data?.pages.flatMap(({ assets }) => assets.items) ?? []);
+
+  const loadNextPage = () => {
+    if (resultsQuery.hasNextPage && !resultsQuery.isFetchingNextPage) {
+      void resultsQuery.fetchNextPage();
+    }
+  };
+
+  const reloadResults = () => void queryClient.resetQueries({ queryKey: searchOptions.queryKey });
+
+  const replaceResult = (updated: AssetResponseDto) =>
+    updateSearchResults(searchOptions.queryKey, (assets) =>
+      assets.map((asset) => (asset.id === updated.id ? updated : asset)),
+    );
+
+  const removeResults = (assetIds: string[]) => {
+    const ids = new Set(assetIds);
+    updateSearchResults(searchOptions.queryKey, (assets) => assets.filter(({ id }) => !ids.has(id)));
+  };
 
   $effect(() => {
     if (scrollY) {
@@ -107,57 +114,13 @@
       });
   });
 
-  const onAssetDelete = (assetIds: string[]) => {
-    const assetIdSet = new Set(assetIds);
-    searchResultAssets = searchResultAssets.filter((asset: AssetResponseDto) => !assetIdSet.has(asset.id));
-  };
-
   const handleSetVisibility = (assetIds: string[]) => {
     assetMultiSelectManager.clear();
-    onAssetDelete(assetIds);
+    removeResults(assetIds);
   };
 
   const handleSelectAll = () => {
     assetMultiSelectManager.selectAssets(searchResultAssets.map((asset) => toTimelineAsset(asset)));
-  };
-
-  async function onSearchQueryUpdate() {
-    nextPage = 1;
-    searchResultAssets = [];
-    searchResultAlbums = [];
-    await loadNextPage(true);
-  }
-
-  // eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
-  export const loadNextPage = async (force?: boolean) => {
-    if (!nextPage || (isLoading && !force)) {
-      return;
-    }
-    isLoading = true;
-
-    const searchDto: SearchTerms = {
-      page: nextPage,
-      withExif: true,
-      ...terms,
-    };
-
-    try {
-      const { albums, assets } =
-        ('query' in searchDto || 'queryAssetId' in searchDto) && config.machineLearning.clip.enabled
-          ? await searchSmart({
-              smartSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto, language: $lang },
-            })
-          : await searchAssets({ metadataSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto } });
-
-      searchResultAlbums.push(...albums.items);
-      searchResultAssets.push(...assets.items);
-
-      nextPage = Number(assets.nextPage) || 0;
-    } catch (error) {
-      handleError(error, $t('loading_search_results_failed'));
-    } finally {
-      isLoading = false;
-    }
   };
 
   function getHumanReadableDate(dateString: string) {
@@ -233,23 +196,20 @@
     assetMultiSelectManager.clear();
 
     if (terms.isNotInAlbum) {
-      const assetIdSet = new Set(assetIds);
-      searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
+      removeResults(assetIds);
     }
   };
 
   const onAssetsArchive = (assetIds: string[]) => {
     if (!terms.visibility || terms.visibility === AssetVisibility.Timeline) {
-      const assetIdSet = new Set(assetIds);
-      searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
+      removeResults(assetIds);
     }
   };
 
   // TODO: add back in opposite case
   const onAssetsUnarchive = (assets: TimelineAsset[]) => {
     if (terms.visibility === AssetVisibility.Archive) {
-      const assetIdSet = new Set(assets.map((asset) => asset.id));
-      searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
+      removeResults(assets.map(({ id }) => id));
     }
   };
 
@@ -335,10 +295,12 @@
         onEndReached={loadNextPage}
         showArchiveIcon={true}
         {viewport}
-        onReload={onSearchQueryUpdate}
+        onReload={reloadResults}
+        onAssetChange={replaceResult}
+        onAssetRemove={(id) => removeResults([id])}
         slidingWindowOffset={searchResultsElement.offsetTop}
       />
-    {:else if !isLoading}
+    {:else if !resultsQuery.isLoading}
       <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
         <div class="flex flex-col content-center items-center text-center">
           <Icon icon={mdiImageOffOutline} size="3.5em" />
@@ -348,7 +310,7 @@
       </div>
     {/if}
 
-    {#if isLoading}
+    {#if resultsQuery.isLoading || resultsQuery.isFetchingNextPage}
       <div class="flex items-center justify-center py-16">
         <LoadingSpinner size="giant" />
       </div>
@@ -376,12 +338,10 @@
             <FavoriteAction
               removeFavorite={assetMultiSelectManager.isAllFavorite}
               onFavorite={(ids, isFavorite) => {
-                for (const id of ids) {
-                  const asset = searchResultAssets.find((asset) => asset.id === id);
-                  if (asset) {
-                    asset.isFavorite = isFavorite;
-                  }
-                }
+                const favoriteIds = new Set(ids);
+                updateSearchResults(searchOptions.queryKey, (assets) =>
+                  assets.map((asset) => (favoriteIds.has(asset.id) ? { ...asset, isFavorite } : asset)),
+                );
               }}
             />
 
@@ -396,7 +356,7 @@
               <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
               <ActionMenuItem action={Actions.Tag} />
 
-              <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
+              <DeleteAssets menuItem onAssetDelete={removeResults} onUndoDelete={reloadResults} />
 
               <hr />
               <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
