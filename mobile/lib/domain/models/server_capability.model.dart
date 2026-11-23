@@ -4,8 +4,7 @@ enum ServerCapability {
   // Sync
   syncAssetFacesV3(SemVer(major: 3, minor: 3, patch: 0)),
   syncAuthUsersV2(SemVer(major: 3, minor: 3, patch: 0)),
-  syncMemoriesV2(SemVer(major: 3, minor: 3, patch: 0)),
-  syncPendingResetV1(SemVer(major: 3, minor: 5, patch: 0));
+  syncMemoriesV2(SemVer(major: 3, minor: 3, patch: 0));
 
   const ServerCapability(this.minVersion);
 

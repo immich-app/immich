@@ -15,8 +15,18 @@ export class SyncCheckpointRepository {
   getAll(sessionId: string, trx?: TransactionHandle) {
     return (trx?.unwrap() ?? this.db)
       .selectFrom('session_sync_checkpoint')
-      .select(['type', 'ack', 'isPendingReset'])
+      .select(['type', 'ack'])
       .where('sessionId', '=', sessionId)
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getPendingResets(sessionId: string, trx?: TransactionHandle) {
+    return (trx?.unwrap() ?? this.db)
+      .selectFrom('session_sync_checkpoint')
+      .select('type')
+      .where('sessionId', '=', sessionId)
+      .where('isPendingReset', '=', sql.lit(true))
       .execute();
   }
 
@@ -41,6 +51,16 @@ export class SyncCheckpointRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, SyncEntityType.AssetOcrV1] })
+  deletePendingReset(sessionId: string, type: SyncEntityType) {
+    return this.db
+      .deleteFrom('session_sync_checkpoint')
+      .where('sessionId', '=', sessionId)
+      .where('type', '=', type)
+      .where('isPendingReset', '=', sql.lit(true))
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.TRANSACTION] })
   getNow(trx: TransactionHandle) {
     return trx
@@ -49,14 +69,5 @@ export class SyncCheckpointRepository {
         eb.fn<string>('immich_uuid_v7', [sql.raw<Date>("now() - interval '1 millisecond'")]).as('nowId'),
       ])
       .executeTakeFirstOrThrow();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  deletePendingResets(sessionId: string) {
-    return this.db
-      .deleteFrom('session_sync_checkpoint')
-      .where('sessionId', '=', sessionId)
-      .where('isPendingReset', '=', true)
-      .execute();
   }
 }

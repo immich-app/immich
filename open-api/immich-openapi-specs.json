@@ -28940,12 +28940,14 @@
         "description": "Server feature level",
         "enum": [
           1,
-          2
+          2,
+          3
         ],
         "type": "integer",
         "x-enum-varnames": [
           "FeatureLevel",
-          "Passkeys"
+          "Passkeys",
+          "SyncPendingReset"
         ]
       },
       "ServerFeaturesDto": {
@@ -33322,16 +33324,13 @@
       },
       "SyncPendingResetV1": {
         "properties": {
-          "types": {
-            "description": "Sync reset types",
-            "items": {
-              "$ref": "#/components/schemas/SyncEntityType"
-            },
-            "type": "array"
+          "type": {
+            "$ref": "#/components/schemas/SyncRequestType",
+            "description": "Sync request type to reset"
           }
         },
         "required": [
-          "types"
+          "type"
         ],
         "type": "object"
       },

@@ -16,8 +16,8 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
@@ -57,7 +57,7 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     registerFallbackValue(LocalAssetStub.image1);
-    registerFallbackValue(const SemVer(major: 2, minor: 5, patch: 0));
+    registerFallbackValue(const ServerVersion(major: 2, minor: 5, patch: 0));
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: StoreRepository(db));
@@ -401,6 +401,79 @@ void main() {
         () => mockSyncStreamRepo.updateMemoryAssetsV1(any()),
         () => mockSyncApiRepo.ack(["10"]),
       ]);
+    });
+  });
+
+  group("SyncStreamService - pending reset", () {
+    SyncEvent pendingReset(SyncRequestType type, String ack) =>
+        SyncEvent(type: SyncEntityType.syncPendingResetV1, data: SyncPendingResetV1(type: type), ack: ack);
+
+    setUp(() {
+      when(() => mockSyncStreamRepo.resetAssetOcrV1()).thenAnswer((_) async {});
+    });
+
+    test("resets OCR and acks the event", () async {
+      await simulateEvents([pendingReset(SyncRequestType.assetOcrV1, "1")]);
+
+      verifyInOrder([() => mockSyncStreamRepo.resetAssetOcrV1(), () => mockSyncApiRepo.ack(["1"])]);
+    });
+
+    test("acks each reset individually", () async {
+      await simulateEvents([
+        pendingReset(SyncRequestType.assetOcrV1, "1"),
+        pendingReset(SyncRequestType.assetOcrV1, "2"),
+      ]);
+
+      verifyInOrder([
+        () => mockSyncStreamRepo.resetAssetOcrV1(),
+        () => mockSyncApiRepo.ack(["1"]),
+        () => mockSyncStreamRepo.resetAssetOcrV1(),
+        () => mockSyncApiRepo.ack(["2"]),
+      ]);
+    });
+
+    test("throws and does not ack an unsupported reset", () async {
+      await expectLater(
+        simulateEvents([pendingReset(SyncRequestType.usersV1, "1")]),
+        throwsA(isA<UnsupportedError>()),
+      );
+
+      verifyNever(() => mockSyncStreamRepo.resetAssetOcrV1());
+      verifyNever(() => mockSyncApiRepo.ack(any()));
+    });
+  });
+
+  group("SyncStreamService - server version", () {
+    Future<ServerVersion> syncWith(ServerVersionResponseDto dto) async {
+      when(() => mockServerApi.getServerVersion()).thenAnswer((_) async => dto);
+
+      await sut.sync();
+
+      final captured = verify(
+        () => mockSyncApiRepo.streamChanges(
+          any(),
+          onReset: any(named: 'onReset'),
+          serverVersion: captureAny(named: 'serverVersion'),
+          abortSignal: any(named: 'abortSignal'),
+        ),
+      ).captured;
+      return captured.single as ServerVersion;
+    }
+
+    test("supports pending resets from feature level 3", () async {
+      final version = await syncWith(
+        ServerVersionResponseDto(major: 3, minor: 4, patch_: 0, prerelease: null, featureLevel: 3),
+      );
+
+      expect(version.supportsSyncPendingReset, isTrue);
+    });
+
+    test("does not support pending resets below feature level 3", () async {
+      final version = await syncWith(
+        ServerVersionResponseDto(major: 3, minor: 4, patch_: 0, prerelease: null, featureLevel: 2),
+      );
+
+      expect(version.supportsSyncPendingReset, isFalse);
     });
   });
 

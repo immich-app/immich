@@ -6,8 +6,8 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -26,7 +26,7 @@ class SyncApiRepository {
 
   Future<void> streamChanges(
     Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onData, {
-    required SemVer serverVersion,
+    required ServerVersion serverVersion,
     Function()? onReset,
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
@@ -65,7 +65,7 @@ class SyncApiRepository {
           SyncRequestType.peopleV1,
           serverVersion.supports(.syncAssetFacesV3) ? SyncRequestType.assetFacesV3 : SyncRequestType.assetFacesV2,
           SyncRequestType.assetOcrV1,
-          if (serverVersion.supports(.syncPendingResetV1)) SyncRequestType.pendingResetV1,
+          if (serverVersion.supportsSyncPendingReset) SyncRequestType.pendingResetV1,
         ],
       ).toJson(),
     );

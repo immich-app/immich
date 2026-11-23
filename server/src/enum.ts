@@ -1345,6 +1345,7 @@ export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'Searc
 export enum ServerFeatureLevel {
   FeatureLevel = 1,
   Passkeys = 2,
+  SyncPendingReset = 3,
 }
 
 export const ServerFeatureLevelSchema = z

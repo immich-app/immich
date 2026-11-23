@@ -269,7 +269,7 @@ const SyncAssetFaceV3Schema = SyncAssetFaceV1Schema.extend({
 }).meta({ id: 'SyncAssetFaceV3' });
 
 const SyncPendingResetV1Schema = z
-  .object({ types: z.array(SyncEntityTypeSchema).describe('Sync reset types') })
+  .object({ type: SyncRequestTypeSchema.describe('Sync request type to reset') })
   .meta({ id: 'SyncPendingResetV1' });
 
 @ExtraModel()

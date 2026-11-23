@@ -524,13 +524,10 @@ void main() {
           y4: 4,
         ),
       ]);
-      // asset_ocr table has two rows
       final filledTable = await db.assetOcrEntity.select().get();
       expect(filledTable, hasLength(2));
 
-      // delete all rows
       await sut.resetAssetOcrV1();
-      //asset_ocr table is empty
       final emptyTable = await db.assetOcrEntity.select().get();
       expect(emptyTable, isEmpty);
       final remoteAssetRows = await db.remoteAssetEntity.select().get();

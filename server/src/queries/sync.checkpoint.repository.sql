@@ -3,24 +3,33 @@
 -- SyncCheckpointRepository.getAll
 select
   "type",
-  "ack",
-  "isPendingReset"
+  "ack"
 from
   "session_sync_checkpoint"
 where
   "sessionId" = $1
+
+-- SyncCheckpointRepository.getPendingResets
+select
+  "type"
+from
+  "session_sync_checkpoint"
+where
+  "sessionId" = $1
+  and "isPendingReset" = true
 
 -- SyncCheckpointRepository.deleteAll
 delete from "session_sync_checkpoint"
 where
   "sessionId" = $1
 
--- SyncCheckpointRepository.getNow
-select
-  immich_uuid_v7 (now() - interval '1 millisecond') as "nowId"
-
--- SyncCheckpointRepository.deletePendingResets
+-- SyncCheckpointRepository.deletePendingReset
 delete from "session_sync_checkpoint"
 where
   "sessionId" = $1
-  and "isPendingReset" = $2
+  and "type" = $2
+  and "isPendingReset" = true
+
+-- SyncCheckpointRepository.getNow
+select
+  immich_uuid_v7 (now() - interval '1 millisecond') as "nowId"

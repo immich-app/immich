@@ -3903,8 +3903,8 @@ export type SyncPartnerV1 = {
     sharedWithId: string;
 };
 export type SyncPendingResetV1 = {
-    /** Sync reset types */
-    types: SyncEntityType[];
+    /** Sync request type to reset */
+    "type": SyncRequestType;
 };
 export type SyncPersonDeleteV1 = {
     /** Person ID */
@@ -8905,7 +8905,8 @@ export enum ReleaseType {
 }
 export enum ServerFeatureLevel {
     FeatureLevel = 1,
-    Passkeys = 2
+    Passkeys = 2,
+    SyncPendingReset = 3
 }
 export enum UserMetadataKey {
     Preferences = "preferences",
