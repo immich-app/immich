@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -66,38 +67,67 @@ class Timeline extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
-    return LayoutBuilder(
-      builder: (_, constraints) {
-        return ProviderScope(
-          overrides: [
-            // overrideWithValue keeps the scoped args in sync with the latest constraints on rebuilds,
-            // a function override would stay locked to the first frame's constraints for the whole session
-            timelineArgsProvider.overrideWithValue(
-              TimelineArgs(
-                maxWidth: constraints.maxWidth,
-                maxHeight: constraints.maxHeight,
-                columnCount: columnCount,
-                showStorageIndicator: showStorageIndicator,
-                withStack: withStack,
-                groupBy: groupBy,
+    return _EndInsetBar(
+      child: LayoutBuilder(
+        builder: (_, constraints) {
+          return ProviderScope(
+            overrides: [
+              // overrideWithValue keeps the scoped args in sync with the latest constraints on rebuilds,
+              // a function override would stay locked to the first frame's constraints for the whole session
+              timelineArgsProvider.overrideWithValue(
+                TimelineArgs(
+                  maxWidth: constraints.maxWidth,
+                  maxHeight: constraints.maxHeight,
+                  columnCount: columnCount,
+                  showStorageIndicator: showStorageIndicator,
+                  withStack: withStack,
+                  groupBy: groupBy,
+                ),
               ),
+              if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+            ],
+            child: _SliverTimeline(
+              topSliverWidget: topSliverWidget,
+              topSliverWidgetHeight: topSliverWidgetHeight,
+              bottomSliverWidget: bottomSliverWidget,
+              appBar: appBar,
+              bottomSheet: bottomSheet,
+              withScrubber: withScrubber,
+              persistentBottomBar: persistentBottomBar,
+              snapToMonth: snapToMonth,
+              maxWidth: constraints.maxWidth,
+              loadingWidget: loadingWidget,
             ),
-            if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
-          ],
-          child: _SliverTimeline(
-            topSliverWidget: topSliverWidget,
-            topSliverWidgetHeight: topSliverWidgetHeight,
-            bottomSliverWidget: bottomSliverWidget,
-            appBar: appBar,
-            bottomSheet: bottomSheet,
-            withScrubber: withScrubber,
-            persistentBottomBar: persistentBottomBar,
-            snapToMonth: snapToMonth,
-            maxWidth: constraints.maxWidth,
-            loadingWidget: loadingWidget,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _EndInsetBar extends StatelessWidget {
+  const _EndInsetBar({required this.child});
+
+  static const _statusBarOverBlack = SystemUiOverlayStyle(statusBarBrightness: Brightness.dark);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final endInset = isRtl ? context.padding.left : context.padding.right;
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        ColoredBox(
+          color: Colors.black,
+          child: SafeArea(left: isRtl, right: !isRtl, top: false, bottom: false, child: child),
+        ),
+        if (endInset > 0)
+          const Positioned.fill(
+            child: AnnotatedRegion<SystemUiOverlayStyle>(value: _statusBarOverBlack, child: SizedBox.expand()),
           ),
-        );
-      },
+      ],
     );
   }
 }
