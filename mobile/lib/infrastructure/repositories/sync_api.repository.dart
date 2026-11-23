@@ -45,16 +45,16 @@ class SyncApiRepository {
         types: [
           serverVersion.supports(.syncAuthUsersV2) ? SyncRequestType.authUsersV2 : SyncRequestType.authUsersV1,
           SyncRequestType.usersV1,
-          serverVersion.supports(.syncV2) ? SyncRequestType.assetsV2 : SyncRequestType.assetsV1,
+          SyncRequestType.assetsV2,
           SyncRequestType.assetExifsV1,
-          if (serverVersion.supports(.syncAssetEditsV1)) SyncRequestType.assetEditsV1,
+          SyncRequestType.assetEditsV1,
           SyncRequestType.assetMetadataV1,
           SyncRequestType.partnersV1,
-          serverVersion.supports(.syncV2) ? SyncRequestType.partnerAssetsV2 : SyncRequestType.partnerAssetsV1,
+          SyncRequestType.partnerAssetsV2,
           SyncRequestType.partnerAssetExifsV1,
-          serverVersion.supports(.syncV2) ? SyncRequestType.albumsV2 : SyncRequestType.albumsV1,
+          SyncRequestType.albumsV2,
           SyncRequestType.albumUsersV1,
-          serverVersion.supports(.syncV2) ? SyncRequestType.albumAssetsV2 : SyncRequestType.albumAssetsV1,
+          SyncRequestType.albumAssetsV2,
           SyncRequestType.albumAssetExifsV1,
           SyncRequestType.albumToAssetsV1,
           serverVersion.supports(.syncMemoriesV2) ? SyncRequestType.memoriesV2 : SyncRequestType.memoriesV1,
@@ -63,12 +63,8 @@ class SyncApiRepository {
           SyncRequestType.partnerStacksV1,
           SyncRequestType.userMetadataV1,
           SyncRequestType.peopleV1,
-          serverVersion.supports(.syncAssetFacesV3)
-              ? SyncRequestType.assetFacesV3
-              : serverVersion.supports(.syncAssetFacesV2)
-              ? SyncRequestType.assetFacesV2
-              : SyncRequestType.assetFacesV1,
-          if (serverVersion.supports(.syncAssetOcrV1)) SyncRequestType.assetOcrV1,
+          serverVersion.supports(.syncAssetFacesV3) ? SyncRequestType.assetFacesV3 : SyncRequestType.assetFacesV2,
+          SyncRequestType.assetOcrV1,
         ],
       ).toJson(),
     );

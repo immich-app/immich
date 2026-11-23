@@ -1554,7 +1554,7 @@ export class MockData {
     const nextPage = matches.length > page * size ? String(page + 1) : null;
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
-      assets: { total: items.length, count: items.length, items, facets: [], nextPage, nextCursor: null },
+      assets: { count: items.length, items, facets: [], nextPage, nextCursor: null },
     };
   }
 

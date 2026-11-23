@@ -35,17 +35,6 @@ export class PartnerController {
     return this.service.create(auth, dto);
   }
 
-  @Post(':id')
-  @Endpoint({
-    summary: 'Create a partner',
-    description: 'Create a new partner to share assets with.',
-    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'createPartner' }),
-  })
-  @Authenticated({ permission: Permission.PartnerCreate })
-  createPartnerDeprecated(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PartnerResponseDto> {
-    return this.service.create(auth, { sharedWithId: id });
-  }
-
   @Put(':id')
   @Authenticated({ permission: Permission.PartnerUpdate })
   @Endpoint({

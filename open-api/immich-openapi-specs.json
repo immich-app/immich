@@ -9745,64 +9745,6 @@
         "x-immich-permission": "partner.delete",
         "x-immich-state": "Stable"
       },
-      "post": {
-        "deprecated": true,
-        "description": "Create a new partner to share assets with.",
-        "operationId": "createPartnerDeprecated",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PartnerResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Create a partner",
-        "tags": [
-          "Partners",
-          "Deprecated"
-        ],
-        "x-immich-history": [
-          {
-            "state": "Added",
-            "version": "v1"
-          },
-          {
-            "replacementId": "createPartner",
-            "state": "Deprecated",
-            "version": "v1"
-          }
-        ],
-        "x-immich-permission": "partner.create",
-        "x-immich-state": "Deprecated"
-      },
       "put": {
         "description": "Specify whether a partner's assets should appear in the user's timeline.",
         "operationId": "updatePartner",
@@ -21549,7 +21491,6 @@
       "AssetMediaSize": {
         "description": "Asset media size",
         "enum": [
-          "original",
           "fullsize",
           "preview",
           "thumbnail"
@@ -22000,21 +21941,6 @@
               "$ref": "#/components/schemas/PersonResponseDto"
             },
             "type": "array"
-          },
-          "resized": {
-            "description": "Is resized",
-            "type": "boolean",
-            "x-immich-history": [
-              {
-                "state": "Added",
-                "version": "v1"
-              },
-              {
-                "state": "Deprecated",
-                "version": "v1.113.0"
-              }
-            ],
-            "x-immich-state": "Deprecated"
           },
           "stack": {
             "anyOf": [
@@ -28453,19 +28379,6 @@
               }
             ],
             "x-immich-state": "Deprecated"
-          },
-          "total": {
-            "description": "Total number of matching assets",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer",
-            "x-immich-history": [
-              {
-                "state": "Deprecated",
-                "version": "v3.0.0"
-              }
-            ],
-            "x-immich-state": "Deprecated"
           }
         },
         "required": [
@@ -28473,8 +28386,7 @@
           "facets",
           "items",
           "nextCursor",
-          "nextPage",
-          "total"
+          "nextPage"
         ],
         "type": "object"
       },
@@ -33503,14 +33415,11 @@
       "SyncRequestType": {
         "description": "Sync request type",
         "enum": [
-          "AlbumsV1",
           "AlbumsV2",
           "AlbumUsersV1",
           "AlbumToAssetsV1",
-          "AlbumAssetsV1",
           "AlbumAssetsV2",
           "AlbumAssetExifsV1",
-          "AssetsV1",
           "AssetsV2",
           "AssetExifsV1",
           "AssetEditsV1",
@@ -33523,14 +33432,12 @@
           "MemoryToAssetsV1",
           "MemoryToAssetsV2",
           "PartnersV1",
-          "PartnerAssetsV1",
           "PartnerAssetsV2",
           "PartnerAssetExifsV1",
           "PartnerStacksV1",
           "StacksV1",
           "UsersV1",
           "PeopleV1",
-          "AssetFacesV1",
           "AssetFacesV2",
           "AssetFacesV3",
           "UserMetadataV1"

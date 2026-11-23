@@ -11,8 +11,8 @@ describe('types', () => {
   });
 
   it('should ensure album follows albums assets', () => {
-    const albumIndex = SYNC_TYPES_ORDER.indexOf(SyncRequestType.AlbumsV1);
-    const albumAssetsIndex = SYNC_TYPES_ORDER.indexOf(SyncRequestType.AlbumAssetsV1);
+    const albumIndex = SYNC_TYPES_ORDER.indexOf(SyncRequestType.AlbumsV2);
+    const albumAssetsIndex = SYNC_TYPES_ORDER.indexOf(SyncRequestType.AlbumAssetsV2);
 
     expect(albumIndex).toBeGreaterThan(albumAssetsIndex);
   });

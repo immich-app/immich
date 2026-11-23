@@ -101,7 +101,7 @@ void main() {
       }
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
+    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
 
     // Give the stream subscription time to start (longer delay to account for mock delay)
     await Future.delayed(const Duration(milliseconds: 50));
@@ -151,7 +151,7 @@ void main() {
       }
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
+    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
 
     await Future.delayed(const Duration(milliseconds: 50));
 
@@ -202,7 +202,7 @@ void main() {
       }
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
+    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
 
     await Future.delayed(const Duration(milliseconds: 50));
 
@@ -248,7 +248,7 @@ void main() {
       onDataCallCount++;
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
+    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
 
     await Future.delayed(const Duration(milliseconds: 50));
 
@@ -274,7 +274,7 @@ void main() {
       onDataCallCount++;
     }
 
-    final future = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
+    final future = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
 
     errorBodyController.add(utf8.encode('{"error":"Unauthorized"}'));
     await errorBodyController.close();

@@ -374,7 +374,6 @@ export class SearchService extends BaseService {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {
-        total: assets.length,
         count: assets.length,
         items: assets.map((asset) => mapAsset(asset, options)),
         facets: [],
