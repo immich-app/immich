@@ -248,6 +248,8 @@ test.describe('detail panel', () => {
     await app.viewer.ratingStar(3).click();
     await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('3');
 
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
     expect(api.updateAsset).not.toHaveBeenCalled();
   });
 });
