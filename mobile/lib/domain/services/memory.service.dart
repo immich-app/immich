@@ -7,12 +7,8 @@ class MemoryService {
 
   const MemoryService(this._repository);
 
-  Future<List<Memory>> getMemoryLane(String ownerId) async {
-    final memories = await _repository.getAll(ownerId);
-    return [
-      ...memories.where((memory) => memory.type == MemoryTypeEnum.birthday),
-      ...memories.where((memory) => memory.type != MemoryTypeEnum.birthday),
-    ];
+  Future<List<Memory>> getMemoryLane(String ownerId) {
+    return _repository.getAll(ownerId, birthdaysFirst: true);
   }
 
   Future<List<Memory>> getAll(String ownerId, {bool onlyFavorites = false}) {
