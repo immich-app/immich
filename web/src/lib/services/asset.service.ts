@@ -3,8 +3,10 @@ import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manage
 import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import AssetAddToAlbumModal from '#lib/modals/AssetAddToAlbumModal.svelte';
+import AssetDeleteConfirmModal from '#lib/modals/AssetDeleteConfirmModal.svelte';
 import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
@@ -13,17 +15,21 @@ import { runAssetJobsMutation } from '#lib/queries/asset.query.ts';
 import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { Route } from '#lib/route.ts';
+import { showDeleteModal } from '#lib/stores/preferences.store.ts';
 import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
 import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
 import type { OnFavorite } from '#lib/utils/actions.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
+import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetJobName,
   AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
+  deleteAssets,
   getAssetInfo,
+  restoreAssets,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
@@ -40,16 +46,21 @@ import {
   mdiCompare,
   mdiContentCopy,
   mdiDatabaseRefreshOutline,
+  mdiDeleteForeverOutline,
+  mdiDeleteOutline,
   mdiDownload,
   mdiDownloadBox,
   mdiFaceRecognition,
   mdiHeadSyncOutline,
   mdiHeart,
   mdiHeartOutline,
+  mdiHistory,
   mdiImageRefreshOutline,
   mdiImageRemoveOutline,
   mdiImageSearch,
   mdiInformationOutline,
+  mdiLockOpenVariantOutline,
+  mdiLockOutline,
   mdiMagnifyMinusOutline,
   mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
@@ -182,6 +193,8 @@ export const getAssetActions = (
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
   const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers.at(0)?.user.id);
   const smartSearchEnabled = !!authUser && readPreloadedQuery(getUserConfigQuery()).machineLearning.clip.enabled;
+  const isLocked = asset.visibility === AssetVisibility.Locked;
+  const isDeletePermanent = asset.isTrashed || !featureFlagsManager.value.trash;
 
   const Share: ActionItem = {
     title: $t('share'),
@@ -344,6 +357,59 @@ export const getAssetActions = (
     shortcuts: [{ key: 'e' }],
   };
 
+  const Trash: ActionItem = {
+    title: $t('delete'),
+    icon: mdiDeleteOutline,
+    $if: () => isOwner && !isDeletePermanent,
+    onAction: ({ event }) => (isShiftDelete(event) ? handlePermanentlyDelete(asset) : handleTrash(asset)),
+    shortcuts: [{ key: 'Delete' }, { key: 'Delete', shift: true }],
+  };
+
+  const PermanentlyDelete: ActionItem = {
+    title: $t('permanently_delete'),
+    icon: mdiDeleteForeverOutline,
+    $if: () => isOwner && isDeletePermanent,
+    onAction: () => handlePermanentlyDelete(asset),
+    shortcuts: [{ key: 'Delete' }, { key: 'Delete', shift: true }],
+  };
+
+  const Restore: ActionItem = {
+    title: $t('restore'),
+    icon: mdiHistory,
+    $if: () => !sharedLink && !isLocked && asset.isTrashed,
+    onAction: () => handleRestore(asset),
+  };
+
+  const Archive: ActionItem = {
+    title: $t('to_archive'),
+    icon: mdiArchiveArrowDownOutline,
+    $if: () => !sharedLink && isOwner && !isLocked && !asset.isArchived,
+    onAction: () => handleArchive(asset),
+    shortcuts: [{ key: 'a', shift: true }],
+  };
+
+  const Unarchive: ActionItem = {
+    title: $t('unarchive'),
+    icon: mdiArchiveArrowUpOutline,
+    $if: () => !sharedLink && isOwner && !isLocked && asset.isArchived,
+    onAction: () => handleUnarchive(asset),
+    shortcuts: [{ key: 'a', shift: true }],
+  };
+
+  const Lock: ActionItem = {
+    title: $t('move_to_locked_folder'),
+    icon: mdiLockOutline,
+    $if: () => !sharedLink && isOwner && !asset.isTrashed && !isLocked,
+    onAction: () => handleToggleLocked(asset),
+  };
+
+  const Unlock: ActionItem = {
+    title: $t('move_off_locked_folder'),
+    icon: mdiLockOpenVariantOutline,
+    $if: () => !sharedLink && isOwner && !asset.isTrashed && isLocked,
+    onAction: () => handleToggleLocked(asset),
+  };
+
   const SetProfilePicture: ActionItem = {
     title: $t('set_as_profile_picture'),
     icon: mdiAccountCircleOutline,
@@ -412,6 +478,13 @@ export const getAssetActions = (
     Tag,
     TagPeople,
     Edit,
+    Trash,
+    PermanentlyDelete,
+    Restore,
+    Archive,
+    Unarchive,
+    Lock,
+    Unlock,
     SetProfilePicture,
     ViewInTimeline,
     ViewSimilar,
@@ -493,6 +566,128 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+  }
+};
+
+const isShiftDelete = (event: Event) => event instanceof KeyboardEvent && event.key === 'Delete' && event.shiftKey;
+
+const handleTrash = async (asset: AssetResponseDto) => {
+  assetViewerManager.emit('AssetLeave', { asset, reason: 'trash' });
+  const $t = await getFormatter();
+
+  try {
+    await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: false } });
+    eventManager.emit('AssetsDelete', [asset.id]);
+    toastManager.primary(
+      {
+        description: $t('assets_trashed_count', { values: { count: 1 } }),
+        button: assetViewerManager.hasListeners('AssetReturn')
+          ? { label: $t('undo'), color: 'secondary', onclick: () => handleUndoTrash(asset) }
+          : undefined,
+      },
+      { timeout: 5000 },
+    );
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_delete_assets'));
+  }
+};
+
+const handleUndoTrash = async (asset: AssetResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
+    assetViewerManager.emit('AssetReturn', asset);
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_restore_assets'));
+  }
+};
+
+const handlePermanentlyDelete = async (asset: AssetResponseDto) => {
+  const $t = await getFormatter();
+
+  if (get(showDeleteModal) && !(await modalManager.show(AssetDeleteConfirmModal, { size: 1 }))) {
+    return;
+  }
+
+  try {
+    assetViewerManager.emit('AssetLeave', { asset, reason: 'delete' });
+    await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
+    eventManager.emit('AssetsDelete', [asset.id]);
+    toastManager.primary($t('permanently_deleted_asset'));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_delete_asset'));
+  }
+};
+
+const handleRestore = async (asset: AssetResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
+    eventManager.emit('AssetsRestore', [asset.id]);
+    toastManager.primary($t('restored_asset'));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_restore_assets'));
+  }
+};
+
+const handleArchive = async (asset: AssetResponseDto) => {
+  assetViewerManager.emit('AssetLeave', { asset, reason: 'archive' });
+  const $t = await getFormatter();
+
+  try {
+    const response = await updateAsset({ id: asset.id, updateAssetDto: { visibility: AssetVisibility.Archive } });
+    toastManager.primary({
+      description: $t('added_to_archive'),
+      button: (close) => ({
+        label: $t('undo'),
+        onclick: () => {
+          close();
+          void undoArchiveAssets([toTimelineAsset(response)]);
+        },
+      }),
+    });
+    eventManager.emit('AssetUpdate', response);
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: false } }));
+  }
+};
+
+const handleUnarchive = async (asset: AssetResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updateAsset({ id: asset.id, updateAssetDto: { visibility: AssetVisibility.Timeline } });
+    toastManager.primary($t('removed_from_archive'));
+    eventManager.emit('AssetUpdate', response);
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: true } }));
+  }
+};
+
+const handleToggleLocked = async (asset: AssetResponseDto) => {
+  const $t = await getFormatter();
+  const isLocked = asset.visibility === AssetVisibility.Locked;
+
+  const isConfirmed = await modalManager.showDialog({
+    title: isLocked ? $t('remove_from_locked_folder') : $t('move_to_locked_folder'),
+    prompt: isLocked ? $t('remove_from_locked_folder_confirmation') : $t('move_to_locked_folder_confirmation'),
+    confirmText: $t('move'),
+    confirmColor: isLocked ? 'danger' : 'primary',
+    icon: isLocked ? mdiLockOpenVariantOutline : mdiLockOutline,
+  });
+  if (!isConfirmed) {
+    return;
+  }
+
+  try {
+    assetViewerManager.emit('AssetLeave', { asset, reason: isLocked ? 'unlock' : 'lock' });
+    await updateAssets({
+      assetBulkUpdateDto: { ids: [asset.id], visibility: isLocked ? AssetVisibility.Timeline : AssetVisibility.Locked },
+    });
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_save_settings'));
   }
 };
 
