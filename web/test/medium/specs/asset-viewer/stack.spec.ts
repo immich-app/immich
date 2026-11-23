@@ -123,4 +123,19 @@ test.describe('stack', () => {
     await app.viewer.moreButton.click();
     await expect(page.getByRole('menuitem', { name: 'set_stack_primary_asset', exact: true })).toHaveCount(0);
   });
+
+  test('keep this, delete others trashes the rest and closes the viewer', async ({ page, data, api, app }) => {
+    const stack = factory.stack({ assets: [factory.asset(), factory.asset(), factory.asset()] });
+    data.addStacks(stack);
+    const [primary, kept, other] = stack.assets;
+    await page.goto(Route.viewAsset({ id: kept.id }));
+    await app.viewer.waitForAsset(kept);
+
+    await app.viewer.keepThisDeleteOthers();
+
+    await expect(app.toast('kept_this_deleted_others')).toBeVisible();
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [primary.id, other.id] } });
+    expect(api.deleteStacks).toHaveBeenCalledWith({ body: { ids: [stack.id] } });
+    await expect(app.viewer.root).not.toBeVisible();
+  });
 });

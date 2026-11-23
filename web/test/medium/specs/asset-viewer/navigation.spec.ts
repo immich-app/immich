@@ -104,4 +104,27 @@ test.describe('asset viewer navigation', () => {
       expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [trashed[18].id], force: true } });
     });
   });
+
+  test('a link to a missing asset shows the error page', async ({ page, api, logger, app }) => {
+    const id = crypto.randomUUID();
+
+    await page.goto(Route.viewAsset({ id }));
+
+    await expect(app.errorPage.title).toBeVisible();
+    await expect(app.viewer.root).toHaveCount(0);
+    expect(api.getAssetInfo).toHaveBeenCalledWith({ params: expect.objectContaining({ id }) });
+    expect(logger.error).toHaveBeenCalledWith(/404/);
+  });
+
+  test('opening an asset from the timeline loads it once', async ({ page, data, api, app }) => {
+    const [asset] = data.addTimeline({ years: 1 });
+    await page.goto(Route.photos());
+
+    await app.timeline.thumbnail(asset).click();
+
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.openDetailPanel();
+    const calls = api.getAssetInfo.calls.filter((call) => call.params.id === asset.id);
+    expect(calls).toHaveLength(1);
+  });
 });
