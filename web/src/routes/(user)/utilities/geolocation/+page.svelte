@@ -8,6 +8,7 @@
   import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import GeolocationHelpModal from '#lib/modals/GeolocationHelpModal.svelte';
   import GeolocationPointPickerModal from '#lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '#lib/modals/GeolocationUpdateConfirmModal.svelte';
   import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
@@ -17,8 +18,8 @@
   import { setQueryValue } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { AssetVisibility, getAssetInfo, reverseGeocode } from '@immich/sdk';
-  import { Button, LoadingSpinner, Text, modalManager } from '@immich/ui';
-  import { mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
+  import { Button, IconButton, LoadingSpinner, Text, modalManager } from '@immich/ui';
+  import { mdiInformationOutline, mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -179,6 +180,7 @@
       <div class="flex overflow-hidden rounded-full bg-gray-200 p-1 text-sm font-medium dark:bg-gray-700">
         <Button
           size="small"
+          shape="round"
           variant={showOnlyWithoutGps ? 'ghost' : 'filled'}
           color={showOnlyWithoutGps ? 'secondary' : 'primary'}
           onclick={() => (showOnlyWithoutGps = false)}
@@ -187,6 +189,7 @@
         </Button>
         <Button
           size="small"
+          shape="round"
           variant={showOnlyWithoutGps ? 'filled' : 'ghost'}
           color={showOnlyWithoutGps ? 'primary' : 'secondary'}
           onclick={() => (showOnlyWithoutGps = true)}
@@ -194,7 +197,6 @@
           {$t('no_gps')}
         </Button>
       </div>
-      <Text class="mr-4 hidden md:block" size="tiny" color="muted">{$t('geolocation_instruction_location')}</Text>
       <div class="flex place-content-center place-items-center rounded-2xl border bg-primary/10 px-2 py-1">
         <Text class="mr-5 ml-2 hidden font-mono md:inline-block" color="muted" size="tiny">
           {$t('selected_gps_location')}
@@ -239,6 +241,15 @@
           {$t('apply_count', { values: { count: assetMultiSelectManager.assets.length } })}
         </Text>
       </Button>
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        size="small"
+        icon={mdiInformationOutline}
+        aria-label={$t('about')}
+        onclick={() => modalManager.show(GeolocationHelpModal)}
+      />
     </div>
   {/snippet}
 
