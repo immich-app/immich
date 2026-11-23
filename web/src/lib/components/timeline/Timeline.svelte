@@ -213,16 +213,16 @@
     }
     const scrollTarget = assetViewerManager.gridScrollTarget?.at;
     const scrolled = scrollTarget ? await scrollAndLoadAsset(scrollTarget) : false;
-    if (scrolled && scrollTarget) {
-      await tick();
-      focusAsset(scrollTarget);
-    } else if (scrollTarget) {
-      timelineManager.scrollTo(lastVisibleScrollTop);
-    } else {
-      timelineManager.scrollTo(0);
+    if (!scrolled) {
+      timelineManager.scrollTo(scrollTarget ? lastVisibleScrollTop : 0);
     }
 
     invisible = false;
+
+    if (scrolled && scrollTarget) {
+      await tick();
+      focusAsset(scrollTarget);
+    }
   };
 
   // note: only modified once in afterNavigate()
