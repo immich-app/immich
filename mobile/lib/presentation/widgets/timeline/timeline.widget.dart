@@ -5,7 +5,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -14,6 +13,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/end_inset_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/multi_select_status_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
@@ -67,7 +67,7 @@ class Timeline extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
-    return _EndInsetBar(
+    return EndInsetBar(
       child: LayoutBuilder(
         builder: (_, constraints) {
           return ProviderScope(
@@ -101,33 +101,6 @@ class Timeline extends ConsumerWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class _EndInsetBar extends StatelessWidget {
-  const _EndInsetBar({required this.child});
-
-  static const _statusBarOverBlack = SystemUiOverlayStyle(statusBarBrightness: Brightness.dark);
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
-    final endInset = isRtl ? context.padding.left : context.padding.right;
-    return Stack(
-      fit: StackFit.passthrough,
-      children: [
-        ColoredBox(
-          color: Colors.black,
-          child: SafeArea(left: isRtl, right: !isRtl, top: false, bottom: false, child: child),
-        ),
-        if (endInset > 0)
-          const Positioned.fill(
-            child: AnnotatedRegion<SystemUiOverlayStyle>(value: _statusBarOverBlack, child: SizedBox.expand()),
-          ),
-      ],
     );
   }
 }
