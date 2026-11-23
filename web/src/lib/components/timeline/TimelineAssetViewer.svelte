@@ -70,17 +70,18 @@
 
   const loadCloseAssets = async (currentAsset: AssetResponseDto) => {
     const [nextAsset, previousAsset] = await Promise.all([getNextAsset(currentAsset), getPreviousAsset(currentAsset)]);
+    const hasLeftTimeline =
+      assetCursor.current.id === currentAsset.id && !timelineManager.getTimelineMonthByAssetId(currentAsset.id);
 
-    assetCursor = {
-      current: currentAsset,
-      nextAsset,
-      previousAsset,
-    };
+    assetCursor = hasLeftTimeline
+      ? { ...assetCursor, current: currentAsset }
+      : { current: currentAsset, nextAsset, previousAsset };
   };
 
   //TODO: replace this with async derived in svelte 6
   $effect(() => {
     const asset = assetViewerManager.asset;
+    void timelineManager.assetCount;
     if (asset) {
       untrack(() => handlePromiseError(loadCloseAssets(asset)));
     }

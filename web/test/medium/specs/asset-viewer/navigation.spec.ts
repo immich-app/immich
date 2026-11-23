@@ -1,4 +1,5 @@
 import { Route } from '#lib/route.ts';
+import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
 
 test.describe('asset viewer navigation', () => {
@@ -42,6 +43,41 @@ test.describe('asset viewer navigation', () => {
       await app.viewer.waitForAsset(assets.at(-1)!);
       await expect(app.viewer.previousButton).toBeVisible();
       await expect(app.viewer.nextButton).toHaveCount(0);
+    });
+
+    test('hides the next button when the next asset is trashed on another device', async ({ page, data, api, app }) => {
+      const asset = factory.asset({ fileCreatedAt: '2025-06-02T12:00:00.000Z' });
+      const next = factory.asset({ fileCreatedAt: '2025-05-01T12:00:00.000Z' });
+      data.addAssets([asset, next]);
+      await page.goto(Route.viewAsset({ id: asset.id }));
+      await app.viewer.waitForAsset(asset);
+      await expect(app.viewer.nextButton).toBeVisible();
+      data.deleteAssets([next.id]);
+
+      api.emit('on_asset_trash', [next.id]);
+
+      await expect(app.viewer.nextButton).toHaveCount(0);
+    });
+
+    test('shows the previous button when a newer asset is uploaded on another device', async ({
+      page,
+      data,
+      api,
+      app,
+    }) => {
+      const asset = factory.asset({ fileCreatedAt: '2025-06-02T12:00:00.000Z' });
+      const next = factory.asset({ fileCreatedAt: '2025-05-01T12:00:00.000Z' });
+      const uploaded = factory.asset({ fileCreatedAt: '2025-07-01T12:00:00.000Z' });
+      data.addAssets([asset, next]);
+      await page.goto(Route.viewAsset({ id: asset.id }));
+      await app.viewer.waitForAsset(asset);
+      await expect(app.viewer.nextButton).toBeVisible();
+      data.addAssets(uploaded);
+
+      api.emit('on_upload_success', uploaded);
+
+      await app.viewer.previousButton.click();
+      await app.viewer.waitForAsset(uploaded);
     });
 
     test('delete advances to the next asset', async ({ page, data, api, app }) => {
