@@ -47,6 +47,18 @@ const config = {
       };
     },
     require.resolve('docusaurus-lunr-search'),
+    // Ask AI on the reader's own AI (no API key, nothing paid per question)
+    [
+      '@leuria/docusaurus',
+      {
+        title: 'Ask the Immich docs',
+        suggestions: [
+          'How do I install Immich with Docker Compose?',
+          'How do I back up my Immich library?',
+          'How do I enable hardware transcoding?',
+        ],
+      },
+    ],
   ],
   presets: [
     [

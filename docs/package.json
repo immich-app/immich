@@ -21,6 +21,7 @@
     "@docusaurus/preset-classic": "~3.10.0",
     "@docusaurus/theme-common": "~3.10.0",
     "@docusaurus/theme-mermaid": "~3.10.0",
+    "@leuria/docusaurus": "0.1.4",
     "@mdi/js": "^7.3.67",
     "@mdi/react": "^1.6.1",
     "@mdx-js/react": "^3.0.0",
