@@ -190,6 +190,19 @@ test.describe('shared link', () => {
     expect(api.getAssetInfo).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id, key: link.key }) });
   });
 
+  test('the owner trashing the asset of a single asset link goes to the timeline', async ({ page, data, api, app }) => {
+    const asset = factory.asset();
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset] });
+    data.addSharedLinks(link);
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+    await app.viewer.waitForAsset(asset);
+
+    await app.viewer.deleteButton.click();
+
+    await expect(page).toHaveURL(Route.photos());
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
+  });
+
   test('the owner sees full metadata after opening the asset from a link without it', async ({ page, data, app }) => {
     const asset = factory.asset({ exifInfo: { make: 'Canon', model: 'EOS R5' } });
     const other = factory.asset();

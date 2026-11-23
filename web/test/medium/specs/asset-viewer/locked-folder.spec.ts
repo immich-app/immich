@@ -34,3 +34,18 @@ test('moves an asset off the locked folder from the viewer', async ({ page, data
   await expect(app.timeline.thumbnail(next)).toBeVisible();
   await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
 });
+
+test('cancelling the lock confirmation keeps the asset in the viewer', async ({ page, data, api, app }) => {
+  const [asset] = data.addTimeline({ years: 1 });
+  await page.goto(Route.viewAsset({ id: asset.id }));
+  await app.viewer.waitForAsset(asset);
+  await app.viewer.moreButton.click();
+  await app.viewer.menuItem('move_to_locked_folder').click();
+
+  await app.dialogButton('cancel').click();
+
+  await expect(app.dialog).toBeHidden();
+  await app.viewer.waitForAsset(asset);
+  await expect(page).toHaveURL(Route.viewAsset({ id: asset.id }));
+  expect(api.updateAssets).not.toHaveBeenCalled();
+});

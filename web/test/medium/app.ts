@@ -27,9 +27,24 @@ export const createApp = (page: Page, data: MockData) => {
   return {
     dialog,
     dialogButton: (name: string) => dialog.getByRole('button', { name, exact: true }),
+    dialogCheckbox: (name: string) => dialog.getByLabel(name, { exact: true }),
     toast: (text: string | RegExp) => page.getByText(text),
     text: (text: string | RegExp) => page.getByText(text, { exact: true }),
     undoButton: page.getByRole('button', { name: 'undo', exact: true }),
+
+    commandPalette: {
+      open: () => page.keyboard.press('Control+k'),
+      search: (query: string) => dialog.getByRole('textbox').fill(query),
+      item: (title: string) => dialog.getByRole('button').filter({ has: page.getByText(title, { exact: true }) }),
+      pressEnterOn: async (title: string) => {
+        const titles = await dialog.getByRole('button').allInnerTexts();
+        const index = titles.findIndex((text) => text.split('\n', 1)[0] === title);
+        for (let step = 0; step < index; step++) {
+          await page.keyboard.press('ArrowDown');
+        }
+        await page.keyboard.press('Enter');
+      },
+    },
 
     errorPage: {
       title: page.getByRole('heading', { name: 'error_title' }),
@@ -498,6 +513,7 @@ const createViewer = (page: Page) => {
     unfavoriteButton: page.getByRole('button', { name: 'unfavorite', exact: true }),
     infoButton: page.getByLabel('info', { exact: true }),
     moreButton: page.getByLabel('more', { exact: true }),
+    menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
     exitSlideshowButton: page.getByLabel('exit_slideshow', { exact: true }),
     slideshowPlayPauseButton: page
       .getByRole('navigation')
@@ -609,6 +625,11 @@ const createViewer = (page: Page) => {
     moveOffLockedFolder: async () => {
       await moreMenuItem('move_off_locked_folder');
       await page.getByRole('dialog').getByRole('button', { name: 'move', exact: true }).click();
+    },
+
+    permanentlyDeleteWithShortcut: async () => {
+      await page.keyboard.press('Shift+Delete');
+      await page.getByRole('dialog').getByRole('button', { name: 'delete', exact: true }).click();
     },
 
     permanentlyDelete: async () => {
