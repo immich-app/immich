@@ -204,4 +204,52 @@ test.describe('detail panel', () => {
     await expect(app.viewer.description).toBeVisible();
     await expect(app.viewer.description).toBeEnabled();
   });
+
+  test('saves the rating to the rated asset when moving to the next one straight away', async ({
+    page,
+    data,
+    api,
+    app,
+  }) => {
+    data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+    const asset = factory.asset({ fileCreatedAt: '2024-06-02T12:00:00.000Z', exifInfo: { rating: 3 } });
+    data.addAssets(asset);
+
+    const nextAsset = factory.asset({ fileCreatedAt: '2024-06-01T12:00:00.000Z' });
+    data.addAssets(nextAsset);
+
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.openDetailPanel();
+
+    await app.viewer.ratingStar(4).click();
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('4');
+
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(nextAsset);
+
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveCount(0);
+
+    expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { rating: 4 } });
+  });
+
+  test('does not save when the rating is changed and changed back', async ({ page, data, api, app }) => {
+    data.setPreferences(factory.preferences({ ratings: { enabled: true } }));
+    const asset = factory.asset({ fileCreatedAt: '2024-06-02T12:00:00.000Z', exifInfo: { rating: 3 } });
+    data.addAssets(asset);
+
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.openDetailPanel();
+
+    await app.viewer.ratingStar(4).click();
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('4');
+
+    await app.viewer.ratingStar(3).click();
+    await expect(app.viewer.rating.getByRole('radio', { checked: true })).toHaveValue('3');
+
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    expect(api.updateAsset).not.toHaveBeenCalled();
+  });
 });

@@ -15,17 +15,34 @@
 
   let rating = $derived(asset.exifInfo?.rating ?? null) as Rating;
 
-  const handleChangeRating = async (rating: Rating) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const saveRating = async (assetId: string, ratingOnClick: Rating, savedRating: Rating) => {
     try {
-      await updateAsset({ id: asset.id, updateAssetDto: { rating } });
+      if (ratingOnClick === savedRating) {
+        return;
+      }
+
+      await updateAsset({ id: assetId, updateAssetDto: { rating: ratingOnClick } });
     } catch (error) {
       handleError(error, $t('errors.cant_apply_changes'));
     }
+  };
+
+  const handleChangeRating = (assetId: string, ratingOnClick: Rating, savedRating: Rating) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => handlePromiseError(saveRating(assetId, ratingOnClick, savedRating)), 300);
   };
 </script>
 
 {#if !authManager.isSharedLink && authManager.authenticated && authManager.preferences.ratings.enabled}
   <section class="px-4 pt-4">
-    <StarRating {rating} readOnly={!isOwner} onRating={(rating) => handlePromiseError(handleChangeRating(rating))} />
+    {#key asset.id}
+      <StarRating
+        {rating}
+        readOnly={!isOwner}
+        onRating={(ratingOnClick) => handleChangeRating(asset.id, ratingOnClick, rating)}
+      />
+    {/key}
   </section>
 {/if}

@@ -18,16 +18,11 @@
   let ratingSelection = $derived(rating);
   let hoverRating: Rating = $state(null);
   let focusRating: Rating = $state(null);
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
   const id = $props.id();
 
   const handleSelect = (newRating: Rating) => {
     if (readOnly) {
-      return;
-    }
-
-    if (newRating === rating) {
       return;
     }
 
@@ -45,13 +40,6 @@
   const reset = () => {
     setHoverRating(null);
     focusRating = null;
-  };
-
-  const handleSelectDebounced = (value: Rating) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      handleSelect(value);
-    }, 300);
   };
 </script>
 
@@ -94,7 +82,7 @@
         onfocus={() => {
           focusRating = value as Rating;
         }}
-        onchange={() => handleSelectDebounced(value as Rating)}
+        onchange={() => handleSelect(value as Rating)}
         class="sr-only"
       />
     {/each}
