@@ -299,6 +299,9 @@ export const createApp = (page: Page, data: MockData) => {
       viewButton: button('view'),
     },
     geolocation: {
+      allButton: button('all'),
+      noGpsButton: button('no_gps'),
+      selectedLocation: page.getByText('selected_gps_location', { exact: true }).locator('..'),
       chooseOnMapButton: button('location_picker_choose_on_map'),
       applyButton: button('apply_count'),
       unselectAllButton: button('unselect_all'),
