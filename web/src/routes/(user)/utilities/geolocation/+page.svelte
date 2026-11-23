@@ -30,10 +30,9 @@
   let { data }: Props = $props();
 
   let isLoading = $state(false);
-  let point = $state<LatLng>();
+  let point = $state.raw<LatLng>();
   let locationUpdated = $state(false);
-  let selectedCity = $state<string>();
-  let selectedCountry = $state<string>();
+  let selectedPlace = $state.raw<Place>();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let showOnlyWithoutGps = $state(true);
@@ -45,16 +44,12 @@
     hasCoordinates: showOnlyWithoutGps ? false : undefined,
   });
 
-  const hasCityOrCountry = $derived(!!(selectedCity || selectedCountry));
-  const selectedLocationName = $derived.by(() => {
-    if (!point) {
-      return undefined;
-    }
-    if (selectedCity && selectedCountry) {
-      return `${selectedCity}, ${selectedCountry}`;
-    }
-    return selectedCity ?? selectedCountry ?? `${point.lat.toFixed(3)}, ${point.lng.toFixed(3)}`;
-  });
+  type Place = { city?: string | null; country?: string | null };
+
+  const formatPlace = ({ city, country }: Place) => [city, country].filter(Boolean).join(', ');
+  const formatPoint = ({ lat, lng }: LatLng) => `${lat.toFixed(3)}, ${lng.toFixed(3)}`;
+
+  const selectedPlaceName = $derived(selectedPlace ? formatPlace(selectedPlace) : '');
 
   const isOwnAsset = (asset: TimelineAsset) => asset.ownerId === authManager.user.id;
 
@@ -120,14 +115,10 @@
     }
 
     point = selected;
-    try {
-      const places = await reverseGeocode({ lat: selected.lat, lon: selected.lng });
-      selectedCity = places?.[0]?.city ?? undefined;
-      selectedCountry = places?.[0]?.country ?? undefined;
-    } catch (error) {
-      console.error('Failed to reverse geocode:', error);
-      selectedCity = undefined;
-      selectedCountry = undefined;
+    selectedPlace = undefined;
+    const [place] = await reverseGeocode({ lat: selected.lat, lon: selected.lng }).catch(() => []);
+    if (point === selected) {
+      selectedPlace = place;
     }
   };
   const handleEscape = () => {
@@ -163,8 +154,7 @@
         locationUpdated = false;
       }, 1500);
       point = { lat: asset.latitude, lng: asset.longitude };
-      selectedCity = asset.city ?? undefined;
-      selectedCountry = asset.country ?? undefined;
+      selectedPlace = asset;
       void setQueryValue('at', asset.id);
     } else if (isOwnAsset(asset)) {
       onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
@@ -202,15 +192,13 @@
           {$t('selected_gps_location')}
         </Text>
         <Text
-          title={hasCityOrCountry && point
-            ? `${point.lat.toFixed(3)}, ${point.lng.toFixed(3)}`
-            : $t('latitude_longitude')}
+          title={selectedPlaceName && point ? formatPoint(point) : $t('latitude_longitude')}
           class="rounded-3xl px-2 py-1 font-mono text-sm text-primary transition-all duration-100 ease-in-out {locationUpdated
             ? 'scale-105 bg-primary/90 font-semibold text-light'
             : ''}"
         >
           {#if point}
-            {selectedLocationName}
+            {selectedPlaceName || formatPoint(point)}
           {:else}
             {$t('none')}
           {/if}
@@ -275,15 +263,7 @@
       {/if}
       {#if hasGps(asset)}
         <div class="absolute inset-e-3 bottom-1 rounded-xl bg-success px-4 py-1 text-xs text-black transition-colors">
-          {#if asset.city && asset.country}
-            {asset.city}, {asset.country}
-          {:else if asset.city}
-            {asset.city}
-          {:else if asset.country}
-            {asset.country}
-          {:else}
-            {$t('gps')}
-          {/if}
+          {formatPlace(asset) || $t('gps')}
         </div>
       {:else}
         <div class="absolute inset-e-3 bottom-1 rounded-xl bg-danger px-4 py-1 text-xs text-light transition-colors">
