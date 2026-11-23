@@ -11,9 +11,15 @@ import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
-import { runAssetJobsMutation, updateAssetMutation, updateAssetsMutation } from '#lib/queries/asset.query.ts';
+import {
+  deleteAssetsMutation,
+  runAssetJobsMutation,
+  updateAssetMutation,
+  updateAssetsMutation,
+} from '#lib/queries/asset.query.ts';
 import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { restoreAssetsMutation } from '#lib/queries/trash.query.ts';
 import { Route } from '#lib/route.ts';
 import { showDeleteModal } from '#lib/stores/preferences.store.ts';
 import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
@@ -27,9 +33,7 @@ import {
   AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
-  deleteAssets,
   getAssetInfo,
-  restoreAssets,
   type AlbumResponseDto,
   type AssetJobsDto,
   type AssetResponseDto,
@@ -564,61 +568,50 @@ const handleTrash = async (asset: AssetResponseDto) => {
   assetViewerManager.emit('AssetLeave', { asset, reason: 'trash' });
   const $t = await getFormatter();
 
-  try {
-    await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: false } });
-    eventManager.emit('AssetsDelete', [asset.id]);
-    toastManager.primary(
-      {
-        description: $t('assets_trashed_count', { values: { count: 1 } }),
-        button: assetViewerManager.hasListeners('AssetReturn')
-          ? { label: $t('undo'), color: 'secondary', onclick: () => handleUndoTrash(asset) }
-          : undefined,
-      },
-      { timeout: 5000 },
-    );
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_delete_assets'));
-  }
+  await executeMutation(deleteAssetsMutation, [{ assetBulkDeleteDto: { ids: [asset.id], force: false } }], {
+    onSuccess: () =>
+      toastManager.primary(
+        {
+          description: $t('assets_trashed_count', { values: { count: 1 } }),
+          button: assetViewerManager.hasListeners('AssetReturn')
+            ? { label: $t('undo'), color: 'secondary', onclick: () => handleUndoTrash(asset) }
+            : undefined,
+        },
+        { timeout: 5000 },
+      ),
+  });
 };
 
-const handleUndoTrash = async (asset: AssetResponseDto) => {
-  const $t = await getFormatter();
-
-  try {
-    await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
-    assetViewerManager.emit('AssetReturn', asset);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_restore_assets'));
-  }
-};
+const handleUndoTrash = (asset: AssetResponseDto) =>
+  executeMutation(restoreAssetsMutation, [{ bulkIdsDto: { ids: [asset.id] } }], {
+    onSuccess: () => assetViewerManager.emit('AssetReturn', asset),
+  });
 
 const handlePermanentlyDelete = async (asset: AssetResponseDto) => {
-  const $t = await getFormatter();
-
   if (get(showDeleteModal) && !(await modalManager.show(AssetDeleteConfirmModal, { size: 1 }))) {
     return;
   }
 
-  try {
-    assetViewerManager.emit('AssetLeave', { asset, reason: 'delete' });
-    await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
-    eventManager.emit('AssetsDelete', [asset.id]);
-    toastManager.primary($t('permanently_deleted_asset'));
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_delete_asset'));
-  }
+  assetViewerManager.emit('AssetLeave', { asset, reason: 'delete' });
+  await executeMutation(
+    () =>
+      deleteAssetsMutation({
+        success: { toast: 'permanently_deleted_asset' },
+        error: { toast: 'errors.unable_to_delete_asset' },
+      }),
+    [{ assetBulkDeleteDto: { ids: [asset.id], force: true } }],
+  );
 };
 
 const handleRestore = async (asset: AssetResponseDto) => {
   const $t = await getFormatter();
 
-  try {
-    await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
-    eventManager.emit('AssetsRestore', [asset.id]);
-    toastManager.primary($t('restored_asset'));
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_restore_assets'));
-  }
+  await executeMutation(restoreAssetsMutation, [{ bulkIdsDto: { ids: [asset.id] } }], {
+    onSuccess: () => {
+      eventManager.emit('AssetsRestore', [asset.id]);
+      toastManager.primary($t('restored_asset'));
+    },
+  });
 };
 
 const handleArchive = async (asset: AssetResponseDto) => {
