@@ -553,6 +553,7 @@ const createViewer = (page: Page) => {
 
     openSlideshow: () => moreMenuItem('slideshow'),
     download: () => moreMenuItem('download'),
+    viewInTimeline: () => moreMenuItem('view_in_timeline'),
     archive: () => moreMenuItem('to_archive'),
     unarchive: () => moreMenuItem('unarchive'),
     unstack: () => moreMenuItem('unstack'),
