@@ -26,9 +26,13 @@ Future<String?> showDateTimePicker({
   );
 }
 
-String _getFormattedOffset(int offsetInMilli, tz.Location location) {
-  return "${location.name} (${Duration(milliseconds: offsetInMilli).formatAsOffset()})";
+String _getFormattedOffset(Duration offset, tz.Location location) {
+  return "${location.name} (${offset.formatAsOffset()})";
 }
+
+// this year's rules, like web: the server drops offsets no longer in use, e.g. +00:17 for Brussels in 1850
+tz.TZDateTime _atDate(tz.Location location, DateTime date) =>
+    tz.TZDateTime(location, DateTime.now().year, date.month, date.day, date.hour, date.minute);
 
 class _DateTimePicker extends HookWidget {
   final DateTime? initialDateTime;
@@ -37,10 +41,10 @@ class _DateTimePicker extends HookWidget {
 
   const _DateTimePicker({this.initialDateTime, this.initialTZ, this.initialTZOffset});
 
-  _TimeZoneOffset _getInitiationLocation() {
+  _TimeZoneOffset _getInitiationLocation(DateTime date) {
     if (initialTZ != null) {
       try {
-        return _TimeZoneOffset.fromLocation(tz.timeZoneDatabase.get(initialTZ!));
+        return _TimeZoneOffset.fromLocation(tz.timeZoneDatabase.get(initialTZ!), date);
       } on LocationNotFoundException {
         // no-op
       }
@@ -49,32 +53,30 @@ class _DateTimePicker extends HookWidget {
     final Duration? tzOffset = initialTZOffset ?? initialDateTime?.timeZoneOffset;
 
     if (tzOffset != null) {
-      final offsetInMilli = tzOffset.inMilliseconds;
       // get all locations with matching offset
-      final locations = tz.timeZoneDatabase.locations.values.where(
-        (location) => location.currentTimeZone.offset == offsetInMilli,
-      );
+      final dates = tz.timeZoneDatabase.locations.values
+          .map((location) => _atDate(location, date))
+          .where((dt) => dt.timeZoneOffset == tzOffset);
       // Prefer locations with abbreviation first
-      final location =
-          locations.firstWhereOrNull((e) => !e.currentTimeZone.abbreviation.contains("0")) ?? locations.firstOrNull;
-      if (location != null) {
-        return _TimeZoneOffset.fromLocation(location);
+      final match = dates.firstWhereOrNull((e) => !e.timeZoneName.contains("0")) ?? dates.firstOrNull;
+      if (match != null) {
+        return _TimeZoneOffset.fromLocation(match.location, date);
       }
     }
 
-    return _TimeZoneOffset.fromLocation(tz.getLocation("UTC"));
+    return _TimeZoneOffset.fromLocation(tz.getLocation("UTC"), date);
   }
 
   // returns a list of location<name> along with it's offset in duration
-  List<_TimeZoneOffset> getAllTimeZones() {
-    return tz.timeZoneDatabase.locations.values.map(_TimeZoneOffset.fromLocation).sorted().toList();
+  List<_TimeZoneOffset> getAllTimeZones(DateTime date) {
+    return tz.timeZoneDatabase.locations.values.map((l) => _TimeZoneOffset.fromLocation(l, date)).sorted().toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final date = useState<DateTime>(initialDateTime ?? DateTime.now());
-    final tzOffset = useState<_TimeZoneOffset>(_getInitiationLocation());
-    final timeZones = useMemoized(() => getAllTimeZones(), const []);
+    final tzOffset = useState<_TimeZoneOffset>(_getInitiationLocation(date.value));
+    final timeZones = useMemoized(() => getAllTimeZones(date.value), [date.value]);
     final menuEntries = timeZones
         .map(
           (timezone) => DropdownMenuEntry<_TimeZoneOffset>(
@@ -106,12 +108,12 @@ class _DateTimePicker extends HookWidget {
       }
 
       date.value = newDate.copyWith(hour: newTime.hour, minute: newTime.minute);
+      tzOffset.value = _TimeZoneOffset.fromLocation(tzOffset.value.location, date.value);
     }
 
     void popWithDateTime() {
       final formattedDateTime = DateFormat("yyyy-MM-dd'T'HH:mm:ss", 'en').format(date.value);
-      final dtWithOffset =
-          formattedDateTime + Duration(milliseconds: tzOffset.value.offsetInMilliseconds).formatAsOffset();
+      final dtWithOffset = formattedDateTime + tzOffset.value.offset.formatAsOffset();
       context.pop(dtWithOffset);
     }
 
@@ -176,16 +178,17 @@ class _DateTimePicker extends HookWidget {
 abstract class _TimeZoneOffset with _$TimeZoneOffset implements Comparable<_TimeZoneOffset> {
   const _TimeZoneOffset._();
 
-  const factory _TimeZoneOffset({required String display, required Location location}) = __TimeZoneOffset;
+  const factory _TimeZoneOffset({required String display, required Location location, required Duration offset}) =
+      __TimeZoneOffset;
 
-  factory _TimeZoneOffset.fromLocation(tz.Location l) =>
-      _TimeZoneOffset(display: _getFormattedOffset(l.currentTimeZone.offset, l), location: l);
-
-  int get offsetInMilliseconds => location.currentTimeZone.offset;
+  factory _TimeZoneOffset.fromLocation(tz.Location l, DateTime date) {
+    final offset = _atDate(l, date).timeZoneOffset;
+    return _TimeZoneOffset(display: _getFormattedOffset(offset, l), location: l, offset: offset);
+  }
 
   @override
   int compareTo(_TimeZoneOffset other) {
-    final offset = offsetInMilliseconds.compareTo(other.offsetInMilliseconds);
-    return offset != 0 ? offset : location.name.compareTo(other.location.name);
+    final byOffset = offset.compareTo(other.offset);
+    return byOffset != 0 ? byOffset : location.name.compareTo(other.location.name);
   }
 }
