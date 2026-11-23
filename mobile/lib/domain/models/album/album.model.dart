@@ -16,6 +16,8 @@ enum AlbumUserRole {
   owner,
 }
 
+enum AlbumAddFailureReason { duplicate, noPermission, notFound, unknown }
+
 // Model for an album stored in the server
 @freezed
 abstract class RemoteAlbum with _$RemoteAlbum {
