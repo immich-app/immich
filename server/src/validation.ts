@@ -237,6 +237,19 @@ export const hexColor = z
 
 export const sanitizeFilename = z.string().transform((val) => sanitize(val));
 
+// TODO(v5): remove these empty string mappers once the columns store null (#28832)
+export const nullAsEmptyString = z
+  .string()
+  .nullable()
+  .transform((value) => value ?? '');
+
+export const emptyStringToNull = z
+  .string()
+  .nullable()
+  .transform((value) => (value === '' ? null : value));
+
+export const nullToEmptyString = (value: string | null) => value ?? '';
+
 export const uniqueIds = z.array(z.uuid()).refine((ids) => ids.length === new Set(ids).size, 'Items must be unique');
 
 export const queryParamArray = <T extends z.ZodType>(schema: T) =>

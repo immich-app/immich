@@ -4,7 +4,14 @@ import { HistoryBuilder } from 'src/decorators.js';
 import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto.js';
 import { AssetType, AssetVisibilitySchema } from 'src/enum.js';
 import { AssetStats } from 'src/repositories/asset.repository.js';
-import { IsNotSiblingOf, isoDatetimeToDate, latitudeSchema, longitudeSchema, stringToBool } from 'src/validation.js';
+import {
+  IsNotSiblingOf,
+  isoDatetimeToDate,
+  latitudeSchema,
+  longitudeSchema,
+  nullAsEmptyString,
+  stringToBool,
+} from 'src/validation.js';
 
 const UpdateAssetBaseSchema = z
   .object({
@@ -29,7 +36,10 @@ const UpdateAssetBaseSchema = z
           .updated('v3', 'Using 0 as a rating is no longer valid.')
           .getExtensions(),
       }),
-    description: z.string().optional().describe('Asset description'),
+    description: nullAsEmptyString
+      .optional()
+      .describe('Asset description')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
   })
   .refine(
     (data) =>

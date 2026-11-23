@@ -9,6 +9,6 @@ test('lists only the users in the cluster group', async ({ data, app }) => {
   await render(ClusterGroupUsersModal, { clusterGroupId: data.user.clusterGroupId, onClose: vi.fn() });
 
   await expect.element(app.userPicker.user('Dana Scully')).toBeVisible();
-  await expect.element(app.userPicker.user(data.user.name)).toBeVisible();
+  await expect.element(app.userPicker.user(data.user.name ?? '')).toBeVisible();
   await expect.element(app.userPicker.user('Eve Adams')).not.toBeInTheDocument();
 });

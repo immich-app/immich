@@ -21,7 +21,8 @@
 
   const user = $derived(queries.user.data);
   const serverInfo = $derived(queries.storage.data);
-  let { isAdmin, name, email } = $derived(user);
+  let { isAdmin, email } = $derived(user);
+  let name = $derived(user.name ?? '');
   let storageLabel = $derived(user.storageLabel || '');
   const previousQuota = $derived(user.quotaSizeInBytes);
 

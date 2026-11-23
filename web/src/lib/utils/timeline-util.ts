@@ -138,7 +138,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   const ratio = getAssetRatio(assetResponse) ?? 1;
   const city = assetResponse.exifInfo?.city;
   const country = assetResponse.exifInfo?.country;
-  const people = assetResponse.people?.map((person) => person.name) || [];
+  const people = assetResponse.people?.map((person) => person.name ?? '') || [];
 
   const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
   // Keep this consistent with the bucket loader (getTimes), which stores fileCreatedAt as UTC

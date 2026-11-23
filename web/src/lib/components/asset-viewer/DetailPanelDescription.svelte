@@ -25,7 +25,7 @@
           success: { toast: 'asset_description_updated' },
           error: { toast: 'cannot_update_the_description' },
         }),
-      [{ id: asset.id, updateAssetDto: { description } }],
+      [{ id: asset.id, updateAssetDto: { description: description || null } }],
     );
   };
 </script>
