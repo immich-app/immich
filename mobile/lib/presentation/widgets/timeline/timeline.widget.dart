@@ -28,14 +28,12 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
-import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
 class Timeline extends ConsumerWidget {
   const Timeline({
     super.key,
     this.topSliverWidget,
-    this.topSliverWidgetHeight,
     this.bottomSliverWidget,
     this.showStorageIndicator = false,
     this.withStack = false,
@@ -50,7 +48,6 @@ class Timeline extends ConsumerWidget {
   });
 
   final Widget? topSliverWidget;
-  final double? topSliverWidgetHeight;
   final Widget? bottomSliverWidget;
   final bool showStorageIndicator;
   final Widget? appBar;
@@ -86,7 +83,6 @@ class Timeline extends ConsumerWidget {
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
-            topSliverWidgetHeight: topSliverWidgetHeight,
             bottomSliverWidget: bottomSliverWidget,
             appBar: appBar,
             bottomSheet: bottomSheet,
@@ -116,7 +112,6 @@ class _AlwaysReadOnlyNotifier extends ReadOnlyModeNotifier {
 class _SliverTimeline extends ConsumerStatefulWidget {
   const _SliverTimeline({
     this.topSliverWidget,
-    this.topSliverWidgetHeight,
     this.bottomSliverWidget,
     this.appBar,
     this.bottomSheet,
@@ -128,7 +123,6 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   });
 
   final Widget? topSliverWidget;
-  final double? topSliverWidgetHeight;
   final Widget? bottomSliverWidget;
   final Widget? appBar;
   final Widget? bottomSheet;
@@ -406,10 +400,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
               onLoading: widget.loadingWidget != null ? () => widget.loadingWidget! : null,
               onData: (segments) {
                 final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
-                final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
-                    ? 200
-                    : 0;
-                final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
+                final topPadding =
+                    (widget.appBar == null
+                        ? context.padding.top
+                        : math.max(context.padding.top + kToolbarHeight, _endSideStatusBarBottom(context))) +
+                    10;
 
                 const bottomSheetOpenModifier = 120.0;
                 final contentBottomPadding =
@@ -465,7 +460,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                           timelineHeight: maxHeight,
                           topPadding: topPadding,
                           bottomPadding: scrubberBottomPadding,
-                          monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+                          segmentedListKey: _segmentedListKey,
                           hasAppBar: widget.appBar != null,
                           child: grid,
                         );
@@ -501,5 +496,17 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         ),
       ),
     );
+  }
+
+  double _endSideStatusBarBottom(BuildContext context) {
+    final padding = context.padding;
+    final (startInset, endInset) = Directionality.of(context) == TextDirection.rtl
+        ? (padding.right, padding.left)
+        : (padding.left, padding.right);
+    if (padding.top > 0 || startInset > 0 || endInset == 0) {
+      return 0;
+    }
+
+    return context.orientation == Orientation.portrait ? 153 : 105;
   }
 }

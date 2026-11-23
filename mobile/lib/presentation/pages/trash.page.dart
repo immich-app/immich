@@ -42,7 +42,6 @@ class TrashPage extends StatelessWidget {
           elevation: 0,
           actions: const [_TrashKebabMenu()],
         ),
-        topSliverWidgetHeight: 24,
         topSliverWidget: Consumer(
           builder: (context, ref, child) {
             final trashDays = ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
