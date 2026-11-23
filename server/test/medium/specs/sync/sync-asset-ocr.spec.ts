@@ -434,4 +434,77 @@ describe(SyncEntityType.AssetOcrDeleteV1, () => {
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
   });
+
+  it('should set isPendingReset and clear it when mobile acks the reset', async () => {
+    const { auth, user, ctx } = await setup();
+
+    const ocrRepo = ctx.get(OcrRepository);
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+    const assets = [
+      {
+        assetId: asset.id,
+        x1: 0.1,
+        y1: 0.2,
+        x2: 0.9,
+        y2: 0.2,
+        x3: 0.9,
+        y3: 0.8,
+        x4: 0.1,
+        y4: 0.8,
+        boxScore: 0.95,
+        textScore: 0.92,
+        text: 'Hello World',
+        isVisible: true,
+      },
+      {
+        assetId: asset.id,
+        x1: 0.2,
+        y1: 0.1,
+        x2: 0.8,
+        y2: 0.3,
+        x3: 0.8,
+        y3: 0.9,
+        x4: 0.2,
+        y4: 0.9,
+        boxScore: 0.97,
+        textScore: 0.91,
+        text: 'still there?',
+        isVisible: true,
+      },
+    ];
+
+    await ocrRepo.upsert(asset.id, assets, 'Hello World still there?');
+
+    const responseUpsert = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1]);
+    await ctx.syncAckAll(auth, responseUpsert);
+
+    // remove assets Ocr so we can test both AssetOcrV1 and OcrDeleteAudit syncs
+    await ocrRepo.upsert(asset.id, [], '');
+    const responseDelete1 = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1]);
+    await ctx.syncAckAll(auth, responseDelete1);
+
+    // expect the pending reset event and no OCR events
+    await ocrRepo.deleteAll();
+    const responseTruncate = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1, SyncRequestType.PendingResetV1]);
+    expect(responseTruncate).toEqual([
+      {
+        ack: expect.any(String),
+        data: { types: expect.arrayContaining([SyncEntityType.AssetOcrV1, SyncEntityType.AssetOcrDeleteV1]) },
+        type: SyncEntityType.SyncPendingResetV1,
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.syncAckAll(auth, responseTruncate);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetOcrV1]);
+
+    // upsert new assets and check they sync properly
+    await ocrRepo.upsert(asset.id, assets, 'We are back!');
+    const responseUpsert2 = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1]);
+    expect(responseUpsert2).toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetOcrV1 }),
+      expect.objectContaining({ type: SyncEntityType.AssetOcrV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.syncAckAll(auth, responseUpsert2);
+  });
 });
