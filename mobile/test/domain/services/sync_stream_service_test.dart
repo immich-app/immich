@@ -111,9 +111,9 @@ void main() {
     when(() => mockSyncApiRepo.deleteSyncAck(any())).thenAnswer((_) async => {});
 
     when(() => mockApi.serverInfoApi).thenReturn(mockServerApi);
-    when(
-      () => mockServerApi.getServerVersion(),
-    ).thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0, prerelease: null, featureLevel: 1));
+    when(() => mockServerApi.getServerVersion()).thenAnswer(
+      (_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0, prerelease: null, featureLevel: 1),
+    );
 
     when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);
@@ -563,39 +563,11 @@ void main() {
   });
 
   group('SyncStreamService - Sync Migration', () {
-    test('ensure that <2.5.0 migrations run', () async {
+    test('ensure that asset payload migrations run', () async {
       await Store.put(StoreKey.syncMigrationStatus, "[]");
-      when(
-        () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null, featureLevel: 1));
-
-      await sut.sync();
-
-      verifyInOrder([
-        () => mockSyncApiRepo.deleteSyncAck([
-          SyncEntityType.assetExifV1,
-          SyncEntityType.partnerAssetExifV1,
-          SyncEntityType.albumAssetExifCreateV1,
-          SyncEntityType.albumAssetExifUpdateV1,
-        ]),
-        () => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset(),
-      ]);
-
-      // should only run on server >2.5.0
-      verifyNever(
-        () => mockSyncApiRepo.deleteSyncAck([
-          SyncEntityType.assetV1,
-          SyncEntityType.partnerAssetV1,
-          SyncEntityType.albumAssetCreateV1,
-          SyncEntityType.albumAssetUpdateV1,
-        ]),
+      when(() => mockServerApi.getServerVersion()).thenAnswer(
+        (_) async => ServerVersionResponseDto(major: 3, minor: 0, patch_: 0, prerelease: null, featureLevel: 1),
       );
-    });
-    test('ensure that >=2.5.0 migrations run', () async {
-      await Store.put(StoreKey.syncMigrationStatus, "[]");
-      when(
-        () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0, prerelease: null, featureLevel: 1));
       await sut.sync();
 
       verifyInOrder([
@@ -611,6 +583,7 @@ void main() {
           SyncEntityType.albumAssetCreateV1,
           SyncEntityType.albumAssetUpdateV1,
         ]),
+        () => mockSyncApiRepo.deleteSyncAck([SyncEntityType.assetV1, SyncEntityType.assetV2]),
       ]);
 
       // v20260128_ResetAssetV1 writes that v20260128_CopyExifWidthHeightToAsset has been completed
@@ -623,9 +596,9 @@ void main() {
         '["${SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name}"]',
       );
 
-      when(
-        () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null, featureLevel: 1));
+      when(() => mockServerApi.getServerVersion()).thenAnswer(
+        (_) async => ServerVersionResponseDto(major: 3, minor: 0, patch_: 0, prerelease: null, featureLevel: 1),
+      );
 
       await sut.sync();
 

@@ -7,10 +7,10 @@ abstract final class UserConverter {
   static UserDto fromSimpleUserDto(UserResponseDto dto) => UserDto(
     id: dto.id,
     email: dto.email,
-    name: dto.name,
+    name: dto.name ?? '',
     isAdmin: false,
     updatedAt: DateTime.now(),
-    hasProfileImage: dto.profileImagePath.isNotEmpty,
+    hasProfileImage: (dto.profileImagePath ?? '').isNotEmpty,
     profileChangedAt: dto.profileChangedAt,
     avatarColor: dto.avatarColor.toAvatarColor(),
   );
@@ -18,7 +18,7 @@ abstract final class UserConverter {
   static UserDto fromAdminDto(UserAdminResponseDto adminDto, [UserPreferencesResponseDto? preferenceDto]) => UserDto(
     id: adminDto.id,
     email: adminDto.email,
-    name: adminDto.name,
+    name: adminDto.name ?? '',
     isAdmin: adminDto.isAdmin,
     updatedAt: adminDto.updatedAt,
     avatarColor: adminDto.avatarColor.toAvatarColor(),
@@ -27,7 +27,7 @@ abstract final class UserConverter {
     isPartnerSharedBy: false,
     isPartnerSharedWith: false,
     profileChangedAt: adminDto.profileChangedAt,
-    hasProfileImage: adminDto.profileImagePath.isNotEmpty,
+    hasProfileImage: (adminDto.profileImagePath ?? '').isNotEmpty,
     quotaSizeInBytes: adminDto.quotaSizeInBytes ?? 0,
     quotaUsageInBytes: adminDto.quotaUsageInBytes ?? 0,
   );
@@ -35,7 +35,7 @@ abstract final class UserConverter {
   static UserDto fromPartnerDto(PartnerResponseDto dto) => UserDto(
     id: dto.id,
     email: dto.email,
-    name: dto.name,
+    name: dto.name ?? '',
     isAdmin: false,
     updatedAt: DateTime.now(),
     avatarColor: dto.avatarColor.toAvatarColor(),
@@ -44,7 +44,7 @@ abstract final class UserConverter {
     isPartnerSharedBy: false,
     isPartnerSharedWith: false,
     profileChangedAt: dto.profileChangedAt,
-    hasProfileImage: dto.profileImagePath.isNotEmpty,
+    hasProfileImage: (dto.profileImagePath ?? '').isNotEmpty,
   );
 }
 

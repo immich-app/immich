@@ -52,6 +52,12 @@ describe(AuthController.name, () => {
       );
     });
 
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const { status } = await request(ctx.getHttpServer()).post('/auth/admin-sign-up').send({ name, email, password });
+      expect(status).toEqual(201);
+      expect(service.adminSignUp).toHaveBeenCalledWith({ name: '', email, password });
+    });
+
     it('should require a valid email', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/auth/admin-sign-up')

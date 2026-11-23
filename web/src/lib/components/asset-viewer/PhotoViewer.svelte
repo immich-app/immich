@@ -166,7 +166,7 @@
       if (face.person.isHidden && !assetViewerManager.isShowingHiddenPeople) {
         continue;
       }
-      map.set(face, face.person.name);
+      map.set(face, face.person.name ?? '');
     }
     return map;
   });

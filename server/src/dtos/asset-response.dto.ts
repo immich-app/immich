@@ -104,11 +104,6 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
     checksum: z.string().describe('Base64 encoded SHA1 hash'),
     stack: AssetStackResponseSchema.nullish(),
     duplicateId: z.uuidv4().nullish().describe('Duplicate group ID'),
-    resized: z
-      .boolean()
-      .optional()
-      .describe('Is resized')
-      .meta(new HistoryBuilder().added('v1').deprecated('v1.113.0').getExtensions()),
     isEdited: z
       .boolean()
       .describe('Is edited')
@@ -237,7 +232,6 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
-    resized: true,
     width: entity.width,
     height: entity.height,
     isEdited: entity.isEdited,

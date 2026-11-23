@@ -107,12 +107,12 @@
 
         const ownerA = albumsA[0].albumUsers[0].user;
         const ownerB = albumsB[0].albumUsers[0].user;
-        return ownerA.name.localeCompare(ownerB.name, $locale) * sortSign;
+        return (ownerA.name ?? '').localeCompare(ownerB.name ?? '', $locale) * sortSign;
       });
 
       return sortedByOwnerNames.map(([ownerId, albums]) => ({
         id: ownerId,
-        name: ownerId === currentUserId ? $t('my_albums') : albums[0].albumUsers[0].user.name,
+        name: ownerId === currentUserId ? $t('my_albums') : (albums[0].albumUsers[0].user.name ?? ''),
         albums,
       }));
     },

@@ -1,21 +1,19 @@
 <script lang="ts">
+  import AssetViewerEvents from '#lib/components/AssetViewerEvents.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import type { AssetCursor } from '#lib/components/asset-viewer/AssetViewer.svelte';
-  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
-  import { AssetAction } from '#lib/constants.ts';
   import { assetCacheManager } from '#lib/managers/AssetCacheManager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
-  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import { websocketEvents } from '#lib/stores/websocket.ts';
   import { handlePromiseError } from '#lib/utils.ts';
   import { navigateToAsset } from '#lib/utils/asset-utils.ts';
   import { handleErrorAsync } from '#lib/utils/handle-error.ts';
   import { navigate } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
-  import { onDestroy, onMount } from 'svelte';
+  import { AssetVisibility, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -25,14 +23,12 @@
     isShared?: boolean;
     album?: AlbumResponseDto;
     person?: PersonResponseDto;
-    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
   }
 
   let {
     timelineManager,
 
     invisible = $bindable(false),
-    removeAction,
     withStacked = false,
     isShared = false,
     album,
@@ -70,19 +66,20 @@
 
   const loadCloseAssets = async (currentAsset: AssetResponseDto) => {
     const [nextAsset, previousAsset] = await Promise.all([getNextAsset(currentAsset), getPreviousAsset(currentAsset)]);
+    const hasLeftTimeline =
+      assetCursor.current.id === currentAsset.id && !timelineManager.getTimelineMonthByAssetId(currentAsset.id);
 
-    assetCursor = {
-      current: currentAsset,
-      nextAsset,
-      previousAsset,
-    };
+    assetCursor = hasLeftTimeline
+      ? { ...assetCursor, current: currentAsset }
+      : { current: currentAsset, nextAsset, previousAsset };
   };
 
   //TODO: replace this with async derived in svelte 6
   $effect(() => {
     const asset = assetViewerManager.asset;
+    void timelineManager.assetCount;
     if (asset) {
-      handlePromiseError(loadCloseAssets(asset));
+      untrack(() => handlePromiseError(loadCloseAssets(asset)));
     }
   });
 
@@ -106,59 +103,30 @@
     });
   };
 
-  const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
-    if (!!album && albumIds.includes(album.id) && assetIds.includes(assetCursor.current.id)) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      (await navigateToAsset(assetCursor?.nextAsset)) ||
-        (await navigateToAsset(assetCursor?.previousAsset)) ||
-        (await handleClose(assetCursor.current.id));
-    }
-  };
-
-  const handlePreAction = async (action: Action) => {
-    switch (action.type) {
-      case removeAction:
-      case AssetAction.TRASH:
-      case AssetAction.RESTORE:
-      case AssetAction.DELETE:
-      case AssetAction.ARCHIVE:
-      case AssetAction.SET_VISIBILITY_LOCKED:
-      case AssetAction.SET_VISIBILITY_TIMELINE: {
-        // must update manager before performing any navigation
-        timelineManager.removeAssets([action.asset.id]);
-
-        // find the next asset to show or close the viewer
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        (await navigateToAsset(assetCursor?.nextAsset)) ||
-          (await navigateToAsset(assetCursor?.previousAsset)) ||
-          (await handleClose(action.asset.id));
-
-        break;
-      }
-      // no default
-    }
-  };
-  const handleAction = (action: Action) => {
-    switch (action.type) {
-      case AssetAction.ARCHIVE:
-      case AssetAction.UNARCHIVE: {
-        timelineManager.upsertAssets([action.asset]);
-        break;
-      }
-      // no default
-    }
-  };
-  const handleUndoDelete = async (assets: TimelineAsset[]) => {
-    timelineManager.upsertAssets(assets);
-    if (assets.length === 0) {
+  const showNextOrClose = async (assetId: string) => {
+    if ((await navigateToAsset(assetCursor?.nextAsset)) || (await navigateToAsset(assetCursor?.previousAsset))) {
       return;
     }
 
-    const restoredAsset = assets[0];
-    const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
-    assetViewerManager.setAsset(asset);
-    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+    await handleClose(assetId);
   };
+
+  const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
+    if (!!album && albumIds.includes(album.id) && assetIds.includes(assetCursor.current.id)) {
+      await showNextOrClose(assetCursor.current.id);
+    }
+  };
+
+  const onAssetLeave = async ({ asset, reason }: { asset: AssetResponseDto; reason: string }) => {
+    if (reason === 'archive') {
+      timelineManager.update([asset.id], (timelineAsset) => (timelineAsset.visibility = AssetVisibility.Archive));
+    } else {
+      timelineManager.removeAssets([asset.id]);
+    }
+    await showNextOrClose(asset.id);
+  };
+
+  const invalidateAssetCache = () => assetCacheManager.invalidate();
 
   const handleUpdateOrUpload = (asset: AssetResponseDto) => {
     if (asset.id === assetCursor.current.id) {
@@ -183,7 +151,8 @@
   });
 </script>
 
-<OnEvents {onAlbumRemoveAssets} />
+<OnEvents {onAlbumRemoveAssets} onAssetsDelete={invalidateAssetCache} onAssetsRestore={invalidateAssetCache} />
+<AssetViewerEvents {onAssetLeave} />
 
 {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
   <AssetViewer
@@ -195,12 +164,6 @@
     onAssetChange={(asset) => {
       timelineManager?.upsertAssets([toTimelineAsset(asset)]);
     }}
-    preAction={handlePreAction}
-    onAction={(action) => {
-      handleAction(action);
-      assetCacheManager.invalidate();
-    }}
-    onUndoDelete={handleUndoDelete}
     onRandom={handleRandom}
     onClose={handleClose}
   />

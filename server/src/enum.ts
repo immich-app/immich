@@ -1062,16 +1062,11 @@ export enum ExitCode {
 }
 
 export enum SyncRequestType {
-  AlbumsV1 = 'AlbumsV1',
   AlbumsV2 = 'AlbumsV2',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
-  /** @deprecated */
-  AlbumAssetsV1 = 'AlbumAssetsV1',
   AlbumAssetsV2 = 'AlbumAssetsV2',
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
-  /** @deprecated */
-  AssetsV1 = 'AssetsV1',
   AssetsV2 = 'AssetsV2',
   AssetExifsV1 = 'AssetExifsV1',
   AssetEditsV1 = 'AssetEditsV1',
@@ -1084,16 +1079,12 @@ export enum SyncRequestType {
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
   MemoryToAssetsV2 = 'MemoryToAssetsV2',
   PartnersV1 = 'PartnersV1',
-  /** @deprecated */
-  PartnerAssetsV1 = 'PartnerAssetsV1',
   PartnerAssetsV2 = 'PartnerAssetsV2',
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
   PartnerStacksV1 = 'PartnerStacksV1',
   StacksV1 = 'StacksV1',
   UsersV1 = 'UsersV1',
   PeopleV1 = 'PeopleV1',
-  /** @deprecated */
-  AssetFacesV1 = 'AssetFacesV1',
   /** @deprecated */
   AssetFacesV2 = 'AssetFacesV2',
   AssetFacesV3 = 'AssetFacesV3',

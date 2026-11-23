@@ -3,7 +3,6 @@
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import { AssetAction } from '#lib/constants.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
@@ -11,12 +10,13 @@
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import GeolocationPointPickerModal from '#lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '#lib/modals/GeolocationUpdateConfirmModal.svelte';
+  import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
   import type { LatLng } from '#lib/types.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
   import { setQueryValue } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { AssetVisibility, getAssetInfo, updateAssets } from '@immich/sdk';
+  import { AssetVisibility, getAssetInfo } from '@immich/sdk';
   import { Button, LoadingSpinner, Text, modalManager } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -56,28 +56,30 @@
       return;
     }
 
-    try {
-      await updateAssets({
-        assetBulkUpdateDto: {
-          ids: assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
-          latitude: point.lat,
-          longitude: point.lng,
+    await executeMutation(
+      () => updateAssetsMutation({ error: { toast: 'errors.unable_to_change_location' } }),
+      [
+        {
+          assetBulkUpdateDto: {
+            ids: assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
+            latitude: point.lat,
+            longitude: point.lng,
+          },
         },
-      });
+      ],
+      { onSuccess: () => void refreshUpdatedAssets() },
+    );
+  };
 
-      const updatedAssets = await Promise.all(
-        assetMultiSelectManager.assets.map(async (asset) => {
-          const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
-          return toTimelineAsset(updatedAsset);
-        }),
-      );
+  const refreshUpdatedAssets = async () => {
+    const updatedAssets = await Promise.all(
+      assetMultiSelectManager.assets.map(async (asset) => {
+        const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
+        return toTimelineAsset(updatedAsset);
+      }),
+    );
 
-      timelineManager.upsertAssets(updatedAssets);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_location'));
-      return;
-    }
-
+    timelineManager.upsertAssets(updatedAssets);
     assetMultiSelectManager.clear();
   };
 
@@ -206,7 +208,6 @@
     bind:timelineManager
     {options}
     assetInteraction={assetMultiSelectManager}
-    removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked
     onThumbnailClick={handleThumbnailClick}

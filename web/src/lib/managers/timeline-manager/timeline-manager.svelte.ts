@@ -129,6 +129,7 @@ export class TimelineManager extends VirtualScrollManager {
             this.upsertAssets([timelineAsset]);
           }
         },
+        AssetsDelete: (assetIds) => this.removeAssets(assetIds),
         AssetsArchive: (assetIds) => this.update(assetIds, (asset) => (asset.visibility = AssetVisibility.Archive)),
         AssetsUnarchive: (assets) => {
           if (this.#options.visibility === AssetVisibility.Archive) {

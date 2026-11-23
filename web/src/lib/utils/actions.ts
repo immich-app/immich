@@ -1,10 +1,12 @@
 import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
-import { AssetVisibility, deleteAssets as deleteBulk, restoreAssets, type StackResponseDto } from '@immich/sdk';
+import { deleteAssetsMutation } from '#lib/queries/asset.query.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { restoreAssetsMutation } from '#lib/queries/trash.query.ts';
+import { AssetVisibility, type StackResponseDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import { handleError } from './handle-error';
 
 export type OnDelete = (assetIds: string[]) => void;
 export type OnUndoDelete = (assets: TimelineAsset[]) => void;
@@ -22,38 +24,30 @@ export const deleteAssets = async (
   onUndoDelete: OnUndoDelete | undefined = undefined,
 ) => {
   const $t = get(t);
-  try {
-    const ids = assets.map((a) => a.id);
-    await deleteBulk({ assetBulkDeleteDto: { ids, force } });
-    onAssetDelete(ids);
-
-    toastManager.primary(
-      {
-        description: force
-          ? $t('assets_permanently_deleted_count', { values: { count: ids.length } })
-          : $t('assets_trashed_count', { values: { count: ids.length } }),
-        button:
-          onUndoDelete && !force
-            ? { label: $t('undo'), color: 'secondary', onclick: () => undoDeleteAssets(onUndoDelete, assets) }
-            : undefined,
-      },
-      { timeout: 5000 },
-    );
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_delete_assets'));
-  }
+  const ids = assets.map((a) => a.id);
+  await executeMutation(deleteAssetsMutation, [{ assetBulkDeleteDto: { ids, force } }], {
+    onSuccess: () => {
+      onAssetDelete(ids);
+      toastManager.primary(
+        {
+          description: force
+            ? $t('assets_permanently_deleted_count', { values: { count: ids.length } })
+            : $t('assets_trashed_count', { values: { count: ids.length } }),
+          button:
+            onUndoDelete && !force
+              ? { label: $t('undo'), color: 'secondary', onclick: () => undoDeleteAssets(onUndoDelete, assets) }
+              : undefined,
+        },
+        { timeout: 5000 },
+      );
+    },
+  });
 };
 
-const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsset[]) => {
-  const $t = get(t);
-  try {
-    const ids = assets.map((a) => a.id);
-    await restoreAssets({ bulkIdsDto: { ids } });
-    onUndoDelete?.(assets);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_restore_assets'));
-  }
-};
+const undoDeleteAssets = (onUndoDelete: OnUndoDelete, assets: TimelineAsset[]) =>
+  executeMutation(restoreAssetsMutation, [{ bulkIdsDto: { ids: assets.map((a) => a.id) } }], {
+    onSuccess: () => onUndoDelete(assets),
+  });
 
 /**
 Update the asset stack state in the asset store based on the provided stack response.

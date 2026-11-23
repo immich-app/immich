@@ -110,6 +110,27 @@ test.describe('stack', () => {
     await expect(app.timeline.stackIcon(primary)).toHaveText('2');
   });
 
+  test('keeping one asset of a stack leaves it alone on the timeline', async ({ page, data, api, app }) => {
+    const stack = factory.stack({ assets: [factory.asset(), factory.asset(), factory.asset()] });
+    data.addStacks(stack);
+    const [primary, kept, other] = stack.assets;
+    await page.goto(Route.photos());
+    await app.timeline.thumbnail(primary).click();
+    await app.viewer.waitForAsset(primary);
+    await app.viewer.stackThumbnail(kept).click();
+    await app.viewer.waitForAsset(kept);
+
+    await app.viewer.keepThisDeleteOthers();
+
+    await expect(app.viewer.root).not.toBeVisible();
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [primary.id, other.id] } });
+    expect(api.deleteStacks).toHaveBeenCalledWith({ body: { ids: [stack.id] } });
+    await expect(app.timeline.thumbnail(kept)).toBeVisible();
+    await expect(app.timeline.stackIcon(kept)).toHaveCount(0);
+    await expect(app.timeline.thumbnail(primary)).toHaveCount(0);
+    await expect(app.timeline.thumbnail(other)).toHaveCount(0);
+  });
+
   test('setting the primary asset of a stack', async ({ page, data, api, app }) => {
     const stack = factory.stack({ assets: [factory.asset(), factory.asset()] });
     data.addStacks(stack);
@@ -122,5 +143,20 @@ test.describe('stack', () => {
     expect(api.updateStack).toHaveBeenCalledWith({ params: { id: stack.id }, body: { primaryAssetId: second.id } });
     await app.viewer.moreButton.click();
     await expect(page.getByRole('menuitem', { name: 'set_stack_primary_asset', exact: true })).toHaveCount(0);
+  });
+
+  test('keep this, delete others trashes the rest and closes the viewer', async ({ page, data, api, app }) => {
+    const stack = factory.stack({ assets: [factory.asset(), factory.asset(), factory.asset()] });
+    data.addStacks(stack);
+    const [primary, kept, other] = stack.assets;
+    await page.goto(Route.viewAsset({ id: kept.id }));
+    await app.viewer.waitForAsset(kept);
+
+    await app.viewer.keepThisDeleteOthers();
+
+    await expect(app.toast('kept_this_deleted_others')).toBeVisible();
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [primary.id, other.id] } });
+    expect(api.deleteStacks).toHaveBeenCalledWith({ body: { ids: [stack.id] } });
+    await expect(app.viewer.root).not.toBeVisible();
   });
 });

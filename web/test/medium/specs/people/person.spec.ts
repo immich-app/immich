@@ -1,6 +1,7 @@
 import { Route } from '#lib/route.ts';
 import { factory } from '#test/common/factories.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
+import { AssetVisibility } from '@immich/sdk';
 
 test('renaming a person to an existing name offers a merge', async ({ page, data, api, app }) => {
   const alice = factory.person({ name: 'Alice' });
@@ -162,4 +163,25 @@ test('refreshes the face once the new featured photo is ready', async ({ page, d
 
   await expect(app.viewer.personThumbnail('Alice')).not.toHaveAttribute('src', /updatedAt=2025-01-01/);
   expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: alice.id }, body: { featureFaceAssetId: asset.id } });
+});
+
+test('archiving from the viewer removes the asset from the person page', async ({ page, data, api, app }) => {
+  const alice = factory.person({ name: 'Alice' });
+  const asset = factory.personAsset(alice, { fileCreatedAt: '2026-06-20T12:00:00.000Z' });
+  const next = factory.personAsset(alice, { fileCreatedAt: '2026-06-10T12:00:00.000Z' });
+  data.addAssets([asset, next]).addPeople(alice);
+  await page.goto(Route.viewPerson(alice));
+  await app.timeline.thumbnail(asset).click();
+  await app.viewer.waitForAsset(asset);
+
+  await app.viewer.archive();
+
+  await app.viewer.waitForAsset(next);
+  await app.viewer.backButton.click();
+  await expect(app.timeline.thumbnail(next)).toBeVisible();
+  await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
+  expect(api.updateAsset).toHaveBeenCalledWith({
+    params: { id: asset.id },
+    body: { visibility: AssetVisibility.Archive },
+  });
 });

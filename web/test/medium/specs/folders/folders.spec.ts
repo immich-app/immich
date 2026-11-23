@@ -34,4 +34,19 @@ test.describe('folders', () => {
     await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
     expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
   });
+
+  test('back from the viewer restores the folder scroll position', async ({ page, data, app }) => {
+    const assets = data.addTimeline({ years: 1 });
+    const asset = assets[200];
+    await page.goto(Route.folders({ path: '/photos' }));
+    await app.timeline.thumbnail(asset).scrollIntoViewIfNeeded();
+    const scrollTopBefore = await app.folders.scrollTop();
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.waitForAsset(asset);
+
+    await app.viewer.backButton.click();
+
+    await expect(app.viewer.root).toBeHidden();
+    await expect.poll(app.folders.currentScrollTop).toBe(scrollTopBefore);
+  });
 });

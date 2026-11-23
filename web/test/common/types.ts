@@ -27,6 +27,7 @@ export type HandlerResult<K extends OperationId> =
   | { status?: 200 | 201; json: ResponseOf<K>; headers?: Headers }
   | { status: number; json?: unknown; headers?: Headers }
   | { status?: number; body: Uint8Array<ArrayBuffer> | string; contentType: string; headers?: Headers }
+  | { networkError: true }
   | undefined;
 
 export type Handler<K extends OperationId> = (call: Call<K>) => HandlerResult<K> | Promise<HandlerResult<K>>;

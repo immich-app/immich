@@ -269,10 +269,6 @@ export class AssetMediaService extends BaseService {
   ): Promise<ImmichFileResponse | AssetMediaRedirectResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 
-    if (dto.size === AssetMediaSize.Original) {
-      throw new BadRequestException('May not request original file');
-    }
-
     const edited = isEditedOnly(auth, dto.edited);
     const size = (dto.size ?? AssetMediaSize.THUMBNAIL) as unknown as AssetFileType;
     const { originalPath, originalFileName, path } = await this.assetRepository.getForThumbnail(id, size, edited);

@@ -170,6 +170,13 @@ export const createApp = () => {
         },
       },
     },
+    assetViewer: {
+      descriptionInput: page.getByTestId('autogrow-textarea'),
+    },
+    sharedLinkForm: {
+      descriptionInput: dialog.getByLabelText('description', { exact: true }),
+      passwordInput: dialog.getByLabelText('password', { exact: true }),
+    },
     albums: {
       createAlbumButton: button('create_album'),
       card: (name: string) => main.getByTestId('album-card').filter({ has: page.getByTitle(name, { exact: true }) }),
@@ -235,6 +242,8 @@ export const createApp = () => {
       emptyTrashButton: button('empty_trash'),
       restoreAllButton: button('restore_all'),
       restoreSelectedButton: button('restore'),
+      permanentlyDeleteButton: button('permanently_delete'),
+      emptyPlaceholder: page.getByText('trash_no_results_message', { exact: true }),
     },
     maintenanceMode: {
       title: page.getByRole('heading', { name: 'maintenance_title', exact: true }),
@@ -294,6 +303,7 @@ export const createApp = () => {
       menuButton: button('open'),
       openNameEditor: () => (page.getByTitle('edit_name', { exact: true }).element() as HTMLElement).click(),
       nameInput: page.getByPlaceholder('name_or_nickname', { exact: true }),
+      editNameInput: dialog.getByLabelText('name', { exact: true }),
       menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
       altNames: (names: string) => main.getByText(`also_known_as ${names}`, { exact: true }),
       birthDateSegments: dialog.getByRole('spinbutton'),

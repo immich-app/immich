@@ -2,10 +2,11 @@ import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import sanitize from 'sanitize-filename';
 import z from 'zod';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
 import { ImmichCookie, UserMetadataKey } from 'src/enum.js';
 import type { UserMetadataItem } from 'src/types.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
-import { toEmail } from 'src/validation.js';
+import { nullAsEmptyString, toEmail } from 'src/validation.js';
 
 export type CookieResponse = {
   isSecure: boolean;
@@ -109,7 +110,10 @@ export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginR
 }
 
 const SignUpSchema = LoginCredentialSchema.extend({
-  name: z.string().describe('User name').meta({ example: 'Admin' }),
+  name: nullAsEmptyString.describe('User name').meta({
+    example: 'Admin',
+    ...new HistoryBuilder().noMoreMrEmptyString().getExtensions(),
+  }),
 }).meta({ id: 'SignUpDto' });
 
 const PinCodeResetSchema = z.object({
@@ -133,8 +137,12 @@ export class LoginResponseDto extends createZodDto({
   accessToken: z.string().describe('Access token'),
   userId: z.uuidv4().describe('User ID'),
   userEmail: toEmail.describe('User email'),
-  name: z.string().describe('User name'),
-  profileImagePath: z.string().describe('Profile image path'),
+  name: z.string().nullable().describe('User name').meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
+  profileImagePath: z
+    .string()
+    .nullable()
+    .describe('Profile image path')
+    .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
   isAdmin: z.boolean().describe('Is admin user'),
   shouldChangePassword: z.boolean().describe('Should change password'),
   isOnboarded: z.boolean().describe('Is onboarded'),

@@ -8,10 +8,7 @@ export const fromChecksum = (checksum: string): Buffer => {
 export const fromMaybeArray = <T>(param: T | T[]) => (Array.isArray(param) ? param[0] : param);
 
 export const getAppVersionFromUA = (ua: string) =>
-  ua.match(/^immich-(?:android|ios|unknown)\/(?<appVersion>.+)$/)?.groups?.appVersion ??
-  // legacy format
-  ua.match(/^Immich_(?:Android|iOS|Unknown)_(?<appVersion>.+)$/)?.groups?.appVersion ??
-  null;
+  ua.match(/^immich-(?:android|ios|unknown)\/(?<appVersion>.+)$/)?.groups?.appVersion ?? null;
 
 export const getUserAgentDetails = (headers: IncomingHttpHeaders) => {
   const userAgent = UAParser(headers['user-agent']);

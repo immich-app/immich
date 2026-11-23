@@ -19,7 +19,7 @@ import { omitBy } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { fromStore } from 'svelte/store';
 import { goto } from '$app/navigation';
-import { page } from '$app/state';
+import { navigating, page } from '$app/state';
 
 type AdjacentMemory = {
   href: string;
@@ -213,8 +213,9 @@ class MemoryManager {
   }
 
   // navigate away before removing something, so the url never points at a deleted position
-  #leave({ nextHref, previousHref }: MemoryState) {
-    return this.#goto(nextHref ?? previousHref ?? this.memoriesHref);
+  async #leave({ nextHref, previousHref }: MemoryState) {
+    await this.#goto(nextHref ?? previousHref ?? this.memoriesHref);
+    await navigating.complete;
   }
 
   #goto(href: string) {
