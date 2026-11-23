@@ -52,6 +52,7 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
           showUploadButton: false,
         ),
         AlbumSelector(
+          showAlbumActions: true,
           onAlbumSelected: (album) {
             unawaited(context.router.push(RemoteAlbumRoute(album: album)));
           },
@@ -62,20 +63,18 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
     return RefreshIndicator(
       onRefresh: onRefresh,
       edgeOffset: 100,
-      child: showScrollbar
-          ? RawScrollbar(
-              controller: _scrollController,
-              interactive: true,
-              thickness: 8,
-              radius: const Radius.circular(4),
-              thumbVisibility: false,
-              thumbColor: context.colorScheme.primary,
-              crossAxisMargin: 4,
-              mainAxisMargin: 60,
-              minThumbLength: 40,
-              child: scrollView,
-            )
-          : scrollView,
+      child: RawScrollbar(
+        controller: _scrollController,
+        interactive: showScrollbar,
+        thickness: 8,
+        radius: const Radius.circular(4),
+        thumbVisibility: false,
+        thumbColor: showScrollbar ? context.colorScheme.primary : Colors.transparent,
+        crossAxisMargin: 4,
+        mainAxisMargin: 60,
+        minThumbLength: 40,
+        child: scrollView,
+      ),
     );
   }
 }
