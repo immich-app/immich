@@ -233,6 +233,12 @@
   // Browsers drop the scroll offset of a hidden element.
   let lastVisibleScrollTop = 0;
 
+  const setTopSectionHeight = (height: number) => {
+    if (!assetViewerManager.isViewing) {
+      timelineManager.topSectionHeight = height;
+    }
+  };
+
   // beforeNavigate is only called AFTER a svelte route has already been loaded
   // and a new route is being navigated to. It will never be called on direct
   // navigations by the browser.
@@ -622,7 +628,7 @@
 >
   <section id="virtual-timeline" class:invisible style:height={timelineManager.totalViewerHeight + 'px'}>
     <section
-      bind:clientHeight={timelineManager.topSectionHeight}
+      bind:clientHeight={null, setTopSectionHeight}
       class:invisible
       style:position="absolute"
       style:left="0"
