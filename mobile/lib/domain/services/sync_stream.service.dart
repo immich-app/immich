@@ -13,10 +13,10 @@ import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.da
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -57,13 +57,13 @@ class SyncStreamService {
 
   Future<bool> sync() async {
     _logger.info("Remote sync request for user");
-    final serverVersion = await _api.serverInfoApi.getServerVersion();
-    if (serverVersion == null) {
+    final serverVersionDto = await _api.serverInfoApi.getServerVersion();
+    if (serverVersionDto == null) {
       _logger.severe("Cannot perform sync: unable to determine server version");
       return false;
     }
 
-    final serverSemVer = SemVer(major: serverVersion.major, minor: serverVersion.minor, patch: serverVersion.patch_);
+    final serverVersion = ServerVersion.fromDto(serverVersionDto);
 
     final value = Store.get(StoreKey.syncMigrationStatus, "[]");
     final migrations = (jsonDecode(value) as List).cast<String>();
@@ -79,7 +79,7 @@ class SyncStreamService {
     bool shouldReset = false;
     await _syncApiRepository.streamChanges(
       _handleEvents,
-      serverVersion: serverSemVer,
+      serverVersion: serverVersion,
       onReset: () => shouldReset = true,
       abortSignal: _cancellation?.future,
     );
@@ -87,7 +87,7 @@ class SyncStreamService {
       _logger.info("Resetting sync state as requested by server");
       await _syncApiRepository.streamChanges(
         _handleEvents,
-        serverVersion: serverSemVer,
+        serverVersion: serverVersion,
         abortSignal: _cancellation?.future,
       );
     }
@@ -161,7 +161,7 @@ class SyncStreamService {
         return;
       }
 
-      if (event.type != items.firstOrNull?.type) {
+      if (event.type != items.firstOrNull?.type || event.type == SyncEntityType.syncPendingResetV1) {
         await _processBatch(items);
       }
 
@@ -292,6 +292,12 @@ class SyncStreamService {
       // Request to reset the client state. Clear everything related to remote entities
       case SyncEntityType.syncResetV1:
         return _syncStreamRepository.reset();
+      case SyncEntityType.syncPendingResetV1:
+        final requestType = data.cast<SyncPendingResetV1>().single.type;
+        return switch (requestType) {
+          SyncRequestType.assetOcrV1 => _syncStreamRepository.resetAssetOcrV1(),
+          _ => throw UnsupportedError("Cannot reset $requestType"),
+        };
       case SyncEntityType.memoryV1:
       case SyncEntityType.memoryV2:
         return _syncStreamRepository.updateMemoriesV2(data.cast());

@@ -29027,12 +29027,14 @@
         "description": "Server feature level",
         "enum": [
           1,
-          2
+          2,
+          3
         ],
         "type": "integer",
         "x-enum-varnames": [
           "FeatureLevel",
-          "Passkeys"
+          "Passkeys",
+          "SyncPendingReset"
         ]
       },
       "ServerFeaturesDto": {
@@ -33090,7 +33092,8 @@
           "UserMetadataDeleteV1",
           "SyncAckV1",
           "SyncResetV1",
-          "SyncCompleteV1"
+          "SyncCompleteV1",
+          "SyncPendingResetV1"
         ],
         "type": "string"
       },
@@ -33411,6 +33414,18 @@
         ],
         "type": "object"
       },
+      "SyncPendingResetV1": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/SyncRequestType",
+            "description": "Sync request type to reset"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
       "SyncPersonDeleteV1": {
         "properties": {
           "personId": {
@@ -33532,7 +33547,8 @@
           "PeopleV1",
           "AssetFacesV2",
           "AssetFacesV3",
-          "UserMetadataV1"
+          "UserMetadataV1",
+          "PendingResetV1"
         ],
         "type": "string"
       },

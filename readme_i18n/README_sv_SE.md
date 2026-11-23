@@ -9,9 +9,13 @@
 </p>
 
 <p align="center">
-  <a href="#">
-    <img src="../design/immich-logo-stacked-light.svg" width="300" alt="Immich Logo">
-  </a>
+  <picture>
+    <img
+      src="../design/immich-logo-stacked-light.svg"
+      alt="Immich Logo"
+      width="300"
+    />
+  </picture>
 </p>
 <h3 align="center">Högpresterande self-hostad lösning för hantering av foton och videor</h3>
 <br/>
