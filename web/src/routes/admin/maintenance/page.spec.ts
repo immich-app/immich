@@ -150,3 +150,16 @@ test('shows an error when a restore fails to start', async ({ data, render, sett
   });
   expect(logger.error).toHaveBeenCalledWith(/handleError/);
 });
+
+test('flags backups from a different server version', async ({ data, render, app }) => {
+  data.backups.backups.push(
+    { filename: 'immich-db-backup-20260324T110000-v2.2.3-snapshot.sql.gz', filesize: 1024, timezone: 'UTC' },
+    { filename: 'immich-db-backup-20260323T110000-v1.2.3-snapshot.sql.gz', filesize: 1024, timezone: 'UTC' },
+  );
+  await render(Page, load);
+
+  await app.admin.maintenance.restoreBackupButton.click();
+
+  await expect.element(app.admin.maintenance.differentVersionWarning).toBeVisible();
+  expect(app.admin.maintenance.differentVersionWarning.elements()).toHaveLength(1);
+});
