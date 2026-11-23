@@ -97,3 +97,37 @@ test('lists the database backups to restore from', async ({ data, render, settle
   expect(api.listDatabaseBackups).toHaveBeenCalled();
   await expect.element(app.admin.maintenance.backup(filename)).toBeVisible();
 });
+
+const currentBackup = 'immich-db-backup-20260324T110000-v2.2.3-snapshot.sql.gz';
+
+test('accepts backups from the current server version', async ({ data, render, settle, api, app }) => {
+  data.backups.backups.push({ filename: currentBackup, filesize: 1024, timezone: 'UTC' });
+  data.setMaintenanceStatus({ action: MaintenanceAction.SelectDatabaseRestore, active: true });
+  history.replaceState({}, '', '?token=secret');
+  await render(Page, load);
+  await app.maintenanceMode.databaseBackupButton.click();
+
+  await app.maintenanceMode.nextButton.click();
+  await settle();
+
+  expect(api.maintenanceLogin).toHaveBeenCalledWith({ body: { token: 'secret' } });
+  await expect.element(app.admin.maintenance.backup(currentBackup)).toBeVisible();
+  await expect.element(app.admin.maintenance.differentVersionWarning).not.toBeInTheDocument();
+});
+
+test('flags every backup when the server version is unknown', async ({ data, render, settle, api, app }) => {
+  api.on({ getServerVersion: () => ({ status: 500, json: { message: 'Server error', statusCode: 500 } }) });
+  data.backups.backups.push({ filename: currentBackup, filesize: 1024, timezone: 'UTC' });
+  data.setMaintenanceStatus({ action: MaintenanceAction.SelectDatabaseRestore, active: true });
+  history.replaceState({}, '', '?token=secret');
+  await render(Page, load);
+  await app.maintenanceMode.databaseBackupButton.click();
+
+  await app.maintenanceMode.nextButton.click();
+  await settle();
+
+  expect(api.maintenanceLogin).toHaveBeenCalledWith({ body: { token: 'secret' } });
+  expect(api.getServerVersion).toHaveBeenCalled();
+  await expect.element(app.admin.maintenance.backup(currentBackup)).toBeVisible();
+  await expect.element(app.admin.maintenance.differentVersionWarning).toBeVisible();
+});
