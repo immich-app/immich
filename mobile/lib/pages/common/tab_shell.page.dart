@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
+import 'package:immich_mobile/presentation/widgets/end_inset_bar.widget.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
@@ -85,18 +86,20 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
           onPopInvokedWithResult: (didPop, _) => !didPop ? tabsRouter.setActiveIndex(0) : null,
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            body: isScreenLandscape
-                ? Row(
-                    children: [
-                      navigationRail(tabsRouter),
-                      const VerticalDivider(),
-                      Expanded(child: child),
-                    ],
-                  )
-                : child,
-            bottomNavigationBar: _BottomNavigationBar(tabsRouter: tabsRouter, destinations: navigationDestinations),
+          child: EndInsetBar(
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              body: isScreenLandscape
+                  ? Row(
+                      children: [
+                        navigationRail(tabsRouter),
+                        const VerticalDivider(),
+                        Expanded(child: child),
+                      ],
+                    )
+                  : child,
+              bottomNavigationBar: _BottomNavigationBar(tabsRouter: tabsRouter, destinations: navigationDestinations),
+            ),
           ),
         );
       },
