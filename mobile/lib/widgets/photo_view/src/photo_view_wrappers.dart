@@ -146,6 +146,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
       }
 
       synchronousCall && !_didLoadSynchronously ? setupCB() : setState(setupCB);
+      info.dispose();
     }
 
     void handleError(dynamic error, StackTrace? stackTrace) {
