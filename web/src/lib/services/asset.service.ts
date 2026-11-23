@@ -20,7 +20,6 @@ import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import {
   AssetJobName,
-  AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
   getAssetInfo,
@@ -465,7 +464,7 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
 
     try {
       toastManager.primary($t('downloading_asset_filename', { values: { filename } }));
-      downloadUrl(getAssetMediaUrl({ id, size: AssetMediaSize.Original, edited, cacheKey }), filename);
+      downloadUrl(getAssetMediaUrl({ id, size: 'original', edited, cacheKey }), filename);
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
     }

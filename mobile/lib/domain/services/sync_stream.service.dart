@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -69,7 +68,7 @@ class SyncStreamService {
     final value = Store.get(StoreKey.syncMigrationStatus, "[]");
     final migrations = (jsonDecode(value) as List).cast<String>();
     int previousLength = migrations.length;
-    await _runPreSyncTasks(migrations, serverSemVer);
+    await _runPreSyncTasks(migrations);
 
     if (migrations.length != previousLength) {
       _logger.info("Updated pre-sync migration status: $migrations");
@@ -104,7 +103,7 @@ class SyncStreamService {
     return true;
   }
 
-  Future<void> _runPreSyncTasks(List<String> migrations, SemVer semVer) async {
+  Future<void> _runPreSyncTasks(List<String> migrations) async {
     if (!migrations.contains(SyncMigrationTask.v20260701_ResetAlbumsV1.name)) {
       _logger.info("Running pre-sync task: v20260701_ResetAlbumsV1");
       await _syncApiRepository.deleteSyncAck([SyncEntityType.albumV1]);
@@ -122,8 +121,7 @@ class SyncStreamService {
       migrations.add(SyncMigrationTask.v20260128_ResetExifV1.name);
     }
 
-    if (!migrations.contains(SyncMigrationTask.v20260128_ResetAssetV1.name) &&
-        semVer.supports(.assetPayloadChange20260128)) {
+    if (!migrations.contains(SyncMigrationTask.v20260128_ResetAssetV1.name)) {
       _logger.info("Running pre-sync task: v20260128_ResetAssetV1");
       await _syncApiRepository.deleteSyncAck([
         SyncEntityType.assetV1,
@@ -139,8 +137,7 @@ class SyncStreamService {
       }
     }
 
-    if (!migrations.contains(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name) &&
-        semVer.supports(.assetPayloadChange20260597)) {
+    if (!migrations.contains(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name)) {
       _logger.info("Running pre-sync task: v20260597_ResetAssetV1AssetV2");
       await _syncApiRepository.deleteSyncAck([SyncEntityType.assetV1, SyncEntityType.assetV2]);
       migrations.add(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name);

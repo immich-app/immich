@@ -3,7 +3,7 @@ import { sql, type Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { TransactionHandle, columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
-import { AlbumUserRole, MemoryType } from 'src/enum.js';
+import { MemoryType } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import type { SyncAck } from 'src/types.js';
 
@@ -181,31 +181,6 @@ class AlbumSync extends BaseSync {
 
   cleanupAuditTable(daysAgo: number) {
     return this.auditCleanup('album_audit', daysAgo);
-  }
-
-  // TODO(v5) drop when AlbumsV1 is removed
-  @GenerateSql({ params: [dummyQueryOptions], stream: true })
-  getUpsertsV1(options: SyncQueryOptions) {
-    return this.upsertQuery('album', options)
-      .innerJoin('album_user as album_users', (join) =>
-        join.onRef('album_users.albumId', '=', 'album.id').on('album_users.userId', '=', options.userId),
-      )
-      .innerJoin('album_user as album_owner', (join) =>
-        join.onRef('album_owner.albumId', '=', 'album.id').on('album_owner.role', '=', sql.lit(AlbumUserRole.Owner)),
-      )
-      .select([
-        'album.id',
-        'album_owner.userId as ownerId',
-        'album.albumName as name',
-        'album.description',
-        'album.createdAt',
-        'album.updatedAt',
-        'album.albumThumbnailAssetId as thumbnailAssetId',
-        'album.isActivityEnabled',
-        'album.order',
-        'album.updateId',
-      ])
-      .stream();
   }
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })

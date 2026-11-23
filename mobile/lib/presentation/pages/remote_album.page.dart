@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/album/pending_uploads_banner.widget.dart';
@@ -17,7 +16,6 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -189,9 +187,6 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
-    final editorCanUpdate = ref.watch(
-      serverInfoProvider.select((state) => state.serverVersion.supports(.albumEditorUpdate)),
-    );
 
     return ProviderScope(
       overrides: [
@@ -211,7 +206,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
               .then((role) => role == AlbumUserRole.editor),
           builder: (_, snapshot) {
             final isEditor = snapshot.data ?? false;
-            final canEdit = isOwner || (isEditor && editorCanUpdate);
+            final canEdit = isOwner || isEditor;
 
             return RemoteAlbumSliverAppBar(
               kebabMenu: _AlbumKebabMenu(
