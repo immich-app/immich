@@ -2394,6 +2394,7 @@
   "visual": "Visual",
   "waiting": "Waiting",
   "waiting_count": "Waiting: {count}",
+  "waiting_for_passkey": "Waiting for passkey…",
   "warning": "Warning",
   "week": "Week",
   "welcome": "Welcome",

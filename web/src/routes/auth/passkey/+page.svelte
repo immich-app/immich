@@ -1,6 +1,7 @@
 <script lang="ts">
+  import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
   import { isPasskeyCancelled } from '#lib/queries/passkey.query.ts';
-  import { Button } from '@immich/ui';
+  import { Button, Logo, Text } from '@immich/ui';
   import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -27,9 +28,14 @@
   });
 </script>
 
-<!-- Chrome Custom Tabs only open an app after a tap -->
-{#if callback}
-  <div class="flex h-dvh items-center justify-center">
-    <Button href={callback} size="large" shape="round">{$t('continue')}</Button>
+<AuthPageLayout withHeader={false}>
+  <div class="flex flex-col items-center gap-4">
+    <Logo variant="icon" size="giant" class={callback ? '' : 'animate-spin [animation-duration:8s]'} />
+    <!-- Chrome Custom Tabs only open an app after a tap -->
+    {#if callback}
+      <Button href={callback} size="large" shape="round">{$t('continue')}</Button>
+    {:else}
+      <Text role="status">{$t('waiting_for_passkey')}</Text>
+    {/if}
   </div>
-{/if}
+</AuthPageLayout>
