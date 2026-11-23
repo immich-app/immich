@@ -258,7 +258,8 @@ select
           "asset_video"."formatName",
           "asset_video"."formatLongName",
           "asset"."duration",
-          "asset_video"."bitrate"
+          "asset_video"."bitrate",
+          "asset_video"."isFragmented"
         from
           (
             select

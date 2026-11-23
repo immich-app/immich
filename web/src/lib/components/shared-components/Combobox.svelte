@@ -21,7 +21,7 @@
 
 <script lang="ts">
   import { focusOutside } from '#lib/actions/focus-outside.ts';
-  import { Icon, IconButton, Label, shortcuts } from '@immich/ui';
+  import { Icon, IconButton, Label, Text, shortcuts } from '@immich/ui';
   import { mdiChevronDown, mdiClose, mdiMagnify } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -30,6 +30,7 @@
 
   interface Props {
     label: string;
+    description?: string;
     disabled?: boolean;
     hideLabel?: boolean;
     options?: ComboBoxOption[];
@@ -45,6 +46,7 @@
 
   let {
     label,
+    description,
     hideLabel = false,
     disabled = false,
     options = [],
@@ -253,6 +255,9 @@
 <svelte:window onresize={onPositionChange} />
 {#if !hideLabel}
   <Label class="mb-1 block text-xs font-light text-neutral-500" for={inputId}>{label}</Label>
+  {#if description}
+    <Text color="muted" size="small">{description}</Text>
+  {/if}
 {/if}
 <div
   class="relative w-full text-base text-gray-700 dark:text-gray-300"

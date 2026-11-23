@@ -4,6 +4,7 @@ import { SALT_ROUNDS } from 'src/constants.js';
 import { UserAdmin } from 'src/database.js';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto.js';
 import { AuthType, Permission } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { AuthService } from 'src/services/auth.service.js';
 import type { UserMetadataItem } from 'src/types.js';
 import { ApiKeyFactory } from 'test/factories/api-key.factory.js';
@@ -15,7 +16,7 @@ import { sharedLinkStub } from 'test/fixtures/shared-link.stub.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const email = 'test@immich.com';
 const loginDetails = {
@@ -136,6 +137,7 @@ describe(AuthService.name, () => {
       mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should throw when user does not have a password', async () => {
@@ -146,6 +148,17 @@ describe(AuthService.name, () => {
       mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: '' });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell the user about the changed account and the removed sessions', async () => {
+      const user = UserFactory.create();
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.changePassword(AuthFactory.create(user), { password: 'old-password', newPassword: 'new-password' });
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser(), Resource.sessions()] });
     });
 
     it('should change the password and logout other sessions', async () => {
@@ -1534,6 +1547,21 @@ describe(AuthService.name, () => {
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: 'sub' });
     });
 
+    it('should tell the user about the linked account', async () => {
+      const user = UserFactory.create();
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ rawProfile: OAuthProfileFactory.create() });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.link(
+        AuthFactory.create(user),
+        { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+      );
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser()] });
+    });
+
     it('should not link an already linked oauth.sub', async () => {
       const authUser = UserFactory.create();
       const authApiKey = ApiKeyFactory.create({ permissions: [] });
@@ -1548,6 +1576,7 @@ describe(AuthService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -1578,6 +1607,15 @@ describe(AuthService.name, () => {
       expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: null, oauthBearerToken: null });
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: null });
     });
+
+    it('should tell the user about the unlinked account', async () => {
+      const user = UserFactory.create();
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.unlink(AuthFactory.create(user));
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.myUser()] });
+    });
   });
 
   describe('setupPinCode', () => {
@@ -1596,6 +1634,16 @@ describe(AuthService.name, () => {
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: expect.any(String) });
     });
 
+    it('should tell the user about the new PIN code', async () => {
+      const user = UserFactory.create();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: null, password: '' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.setupPinCode(AuthFactory.create(user), { pinCode: '123456' });
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.authStatus()] });
+    });
+
     it('should fail if the user already has a PIN code', async () => {
       const user = UserFactory.create();
       const auth = AuthFactory.create(user);
@@ -1603,6 +1651,7 @@ describe(AuthService.name, () => {
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
 
       await expect(sut.setupPinCode(auth, { pinCode: '123456' })).rejects.toThrow('User already has a PIN code');
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -1648,12 +1697,68 @@ describe(AuthService.name, () => {
       expect(mocks.session.lockAll).toHaveBeenCalledWith(user.id);
     });
 
+    it('should tell the user about the removed PIN code', async () => {
+      const user = UserFactory.create();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+      mocks.session.lockAll.mockResolvedValue(void 0);
+
+      await sut.resetPinCode(AuthFactory.create(user), { pinCode: '123456' });
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.authStatus()] });
+    });
+
     it('should throw if the PIN code does not match', async () => {
       const user = UserFactory.create();
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
       mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
 
       await expect(sut.resetPinCode(AuthFactory.create(user), { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('unlockSession', () => {
+    it('should tell the user about the unlocked session', async () => {
+      const user = UserFactory.create();
+      const session = SessionFactory.create({ userId: user.id });
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+      mocks.session.update.mockResolvedValue(session);
+
+      await sut.unlockSession(AuthFactory.from(user).session(session).build(), { pinCode: '123456' });
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.authStatus()] });
+    });
+
+    it('should not unlock with a wrong PIN code', async () => {
+      const auth = AuthFactory.from().session().build();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await expect(sut.unlockSession(auth, { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
+
+      expect(mocks.session.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('lockSession', () => {
+    it('should tell the user about the locked session', async () => {
+      const user = UserFactory.create();
+      const session = SessionFactory.create({ userId: user.id });
+      mocks.session.update.mockResolvedValue(session);
+
+      await sut.lockSession(AuthFactory.from(user).session(session).build());
+
+      expectResourceEvents(mocks, { userIds: [user.id], changed: [Resource.authStatus()] });
+    });
+
+    it('should require a session', async () => {
+      await expect(sut.lockSession(AuthFactory.create())).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.session.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 });

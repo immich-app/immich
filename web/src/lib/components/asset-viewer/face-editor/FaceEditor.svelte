@@ -2,15 +2,17 @@
   import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import FaceCreateTagModal from '#lib/modals/CreateFaceModal.svelte';
-  import { executeMutation } from '#lib/queries/client.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
   import { createFaceMutation } from '#lib/queries/face.query.ts';
+  import { getAllPeopleQuery } from '#lib/queries/person.query.ts';
   import { faceManager } from '#lib/stores/face.svelte.ts';
   import { getPeopleThumbnailUrl } from '#lib/utils.ts';
   import { getNaturalSize, scaleToFit } from '#lib/utils/container-utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
-  import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
+  import { type PersonResponseDto } from '@immich/sdk';
   import { Button, Input, modalManager, shortcut, toastManager } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { clamp } from 'lodash-es';
   import { onDestroy, onMount, tick } from 'svelte';
@@ -31,8 +33,11 @@
   let faceSelectorEl: HTMLDivElement | undefined = $state();
   let scrollableListEl: HTMLDivElement | undefined = $state();
   let searchInputEl: HTMLInputElement | null = $state(null);
-  let page = $state(1);
-  let candidates = $state<PersonResponseDto[]>([]);
+  const query = createQuery(
+    () => ({ ...getAllPeopleQuery({ page: 1, size: 1000, withHidden: false }), staleTime: 0 }),
+    () => queryClient,
+  );
+  const candidates = $derived(query.data?.people ?? []);
 
   let searchTerm = $state('');
   let faceBoxPosition = $state({ left: 0, top: 0, width: 0, height: 0 });
@@ -84,7 +89,6 @@
 
   onMount(async () => {
     setupCanvas();
-    await getPeople();
     await tick();
     searchInputEl?.focus();
   });
@@ -144,20 +148,6 @@
 
   const onClose = () => {
     assetViewerManager.closeFaceEditMode();
-  };
-
-  const getPeople = async () => {
-    const { hasNextPage, people, total } = await getAllPeople({ page, size: 1000, withHidden: false });
-
-    if (candidates.length === total) {
-      return;
-    }
-
-    candidates = [...candidates, ...people];
-
-    if (hasNextPage) {
-      page++;
-    }
   };
 
   const MAX_LIST_HEIGHT = 250;

@@ -1,6 +1,7 @@
 import { Route } from '#lib/route.ts';
 import { test } from '#test/unit/fixtures.ts';
 import { expect } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import Page from './+page.svelte';
 import { load } from './+page.ts';
 
@@ -77,5 +78,30 @@ test('restores the selected assets', async ({ data, router, render, settle, api,
 
   expect(api.restoreAssets).toHaveBeenCalledWith({ body: { ids: [asset.id] } });
   expect(api.restoreTrash).not.toHaveBeenCalled();
+  await expect.element(app.trash.restoreAllButton).not.toBeInTheDocument();
+});
+
+test('finishes restoring when the selection ends mid-request', async ({ data, router, render, settle, api, app }) => {
+  const [asset] = data.addTimeline({ years: 1 });
+  data.deleteAssets([asset.id]);
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  api.on({
+    restoreAssets: async ({ body }) => {
+      await gate;
+      return { json: { count: data.restoreAssets(body.ids) } };
+    },
+  });
+  await router.goto(Route.trash());
+  await render(Page, load);
+  await expect.element(app.trash.restoreAllButton).toBeVisible();
+
+  await app.gallery.selectAll();
+  await app.trash.restoreSelectedButton.click();
+  await userEvent.keyboard('{Escape}');
+  release();
+  await settle();
+
+  expect(api.restoreAssets).toHaveBeenCalledWith({ body: { ids: [asset.id] } });
   await expect.element(app.trash.restoreAllButton).not.toBeInTheDocument();
 });

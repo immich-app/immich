@@ -1,9 +1,9 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { Activity, AssetAddition } from 'src/database.js';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
 import { AssetTypeSchema } from 'src/enum.js';
 import { isoDatetimeToDate, stringToBool } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 export enum ReactionLevel {
   ALBUM = 'album',
@@ -19,29 +19,6 @@ export enum ReactionType {
 const ReactionTypeSchema = z.enum(ReactionType).describe('Reaction type').meta({ id: 'ReactionType' });
 
 export type MaybeDuplicate<T> = { duplicate: boolean; value: T };
-
-const ActivityResponseSchema = z
-  .object({
-    id: z.string().describe('Activity ID'),
-    createdAt: isoDatetimeToDate.describe('Creation date'),
-    user: UserResponseSchema,
-    assetId: z.uuidv4().nullable().describe('Asset ID (if activity is for an asset)'),
-    type: ReactionTypeSchema,
-    comment: z.string().nullish().describe('Comment text (for comment activities)'),
-    assetType: AssetTypeSchema.nullish().describe('Asset type (for asset_added activities)'),
-    groupId: z
-      .string()
-      .nullish()
-      .describe('Grouping key shared by additions made in one batch (for asset_added activities)'),
-  })
-  .meta({ id: 'ActivityResponseDto' });
-
-const ActivityStatisticsResponseSchema = z
-  .object({
-    comments: z.int().min(0).describe('Number of comments'),
-    likes: z.int().min(0).describe('Number of likes'),
-  })
-  .meta({ id: 'ActivityStatisticsResponseDto' });
 
 const ActivitySchema = z.object({
   albumId: z.uuidv4().describe('Album ID'),
@@ -103,8 +80,27 @@ export const mapAssetAddition = (row: AssetAddition): ActivityResponseDto => {
   };
 };
 
-export class ActivityResponseDto extends createZodDto(ActivityResponseSchema) {}
+export class ActivityResponseDto extends createZodDto({
+  id: z.string().describe('Activity ID'),
+  createdAt: isoDatetimeToDate.describe('Creation date'),
+  user: UserResponseSchema,
+  assetId: z.uuidv4().nullable().describe('Asset ID (if activity is for an asset)'),
+  type: ReactionTypeSchema,
+  comment: z.string().nullish().describe('Comment text (for comment activities)'),
+  assetType: AssetTypeSchema.nullish().describe('Asset type (for asset_added activities)'),
+  groupId: z
+    .string()
+    .nullish()
+    .describe('Grouping key shared by additions made in one batch (for asset_added activities)'),
+}) {}
+
 export class ActivityCreateDto extends createZodDto(ActivityCreateSchema) {}
+
 export class ActivityDto extends createZodDto(ActivitySchema) {}
+
 export class ActivitySearchDto extends createZodDto(ActivitySearchSchema) {}
-export class ActivityStatisticsResponseDto extends createZodDto(ActivityStatisticsResponseSchema) {}
+
+export class ActivityStatisticsResponseDto extends createZodDto({
+  comments: z.int().min(0).describe('Number of comments'),
+  likes: z.int().min(0).describe('Number of likes'),
+}) {}

@@ -4,6 +4,8 @@
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import Portal from '#lib/elements/Portal.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { searchLargeAssetsQuery } from '#lib/queries/search.query.ts';
   import { handlePromiseError } from '#lib/utils.ts';
   import { getNextAsset, getPreviousAsset, navigateToAsset } from '#lib/utils/asset-utils.ts';
   import { navigate } from '#lib/utils/navigation.ts';
@@ -18,7 +20,8 @@
 
   let { data }: Props = $props();
 
-  let assets = $state(data.assets);
+  const query = createPreloadedQuery(searchLargeAssetsQuery);
+  const assets = $derived(query.data);
   let asset = $derived(data.asset);
 
   $effect(() => {
@@ -47,7 +50,8 @@
   };
 
   const onAssetsDelete = (assetIds: string[]) => {
-    assets = assets.filter(({ id }) => !assetIds.includes(id));
+    const ids = new Set(assetIds);
+    queryClient.setQueryData(searchLargeAssetsQuery().queryKey, (assets) => assets?.filter(({ id }) => !ids.has(id)));
   };
 
   const onViewAsset = async (asset: AssetResponseDto) => {
@@ -65,7 +69,7 @@
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-    {#if assets && assets.length > 0}
+    {#if assets.length > 0}
       {#each assets as asset (asset.id)}
         <LargeAssetData {asset} {onViewAsset} />
       {/each}

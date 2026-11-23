@@ -6,7 +6,7 @@
     alwaysLoadOriginalFile,
     alwaysLoadOriginalVideo,
     autoPlayVideo,
-    locale,
+    localeSetting,
     loopVideo,
     playVideoThumbnailOnHover,
     showDeleteModal,
@@ -40,15 +40,15 @@
   };
 
   const handleToggleLocaleBrowser = () => {
-    $locale = $locale === 'default' ? fallbackLocale.code : 'default';
+    $localeSetting = $localeSetting === 'default' ? fallbackLocale.code : 'default';
   };
 
   const handleLocaleChange = (newLocale: string | undefined) => {
     if (newLocale) {
-      $locale = newLocale;
+      $localeSetting = newLocale;
     }
   };
-  let editedLocale = $derived(findLocale($locale).code);
+  let editedLocale = $derived(findLocale($localeSetting).code);
   let selectedDate: string = $derived(createDateFormatter(editedLocale).formatDateTime(time));
   let selectedOption = $derived({
     value: findLocale(editedLocale).code || fallbackLocale.code,
@@ -74,11 +74,11 @@
       <SettingsLanguageSelector showSettingDescription />
 
       <Field label={$t('use_browser_locale')} description={$t('use_browser_locale_description')}>
-        <Switch checked={$locale === 'default'} onCheckedChange={handleToggleLocaleBrowser} />
+        <Switch checked={$localeSetting === 'default'} onCheckedChange={handleToggleLocaleBrowser} />
         <Text size="small" class="mt-2 font-mono text-sm">{selectedDate}</Text>
       </Field>
 
-      {#if $locale !== 'default'}
+      {#if $localeSetting !== 'default'}
         <SettingCombobox
           comboboxPlaceholder={$t('searching_locales')}
           {selectedOption}

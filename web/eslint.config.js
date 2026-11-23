@@ -187,6 +187,7 @@ export default defineConfig(
     rules: {
       'better-tailwindcss/enforce-consistent-line-wrapping': 'off',
       'better-tailwindcss/no-unknown-classes': 'off',
+      'no-useless-assignment': 'off',
     },
 
     files: ['**/*.svelte'],

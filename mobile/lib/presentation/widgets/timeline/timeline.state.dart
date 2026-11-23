@@ -54,7 +54,9 @@ class TimelineState {
 
 class TimelineStateNotifier extends Notifier<TimelineState> {
   void setScrolling(bool isScrolling) {
-    state = state.copyWith(isScrolling: isScrolling);
+    if (state.isScrolling != isScrolling) {
+      state = state.copyWith(isScrolling: isScrolling);
+    }
   }
 
   void setRecommendDeferredLoading(bool recommendDeferredLoading) {

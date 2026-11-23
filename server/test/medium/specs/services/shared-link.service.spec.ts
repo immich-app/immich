@@ -5,6 +5,7 @@ import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AlbumRepository } from 'src/repositories/album.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository.js';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
@@ -21,7 +22,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(SharedLinkService, {
     database: db || defaultDatabase,
     real: [AccessRepository, AlbumRepository, DatabaseRepository, SharedLinkRepository, SharedLinkAssetRepository],
-    mock: [LoggingRepository, StorageRepository],
+    mock: [LoggingRepository, StorageRepository, ResourceRepository],
   });
 };
 

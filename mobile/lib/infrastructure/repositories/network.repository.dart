@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:cupertino_http/cupertino_http.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:ok_http/ok_http.dart';
@@ -57,4 +58,7 @@ class NetworkRepository {
   ///
   /// Must call [init] before using this method.
   static http.Client get client => _client!;
+
+  @visibleForTesting
+  static set client(http.Client client) => _client = client;
 }

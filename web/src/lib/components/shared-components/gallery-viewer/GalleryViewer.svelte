@@ -39,6 +39,8 @@
     showArchiveIcon?: boolean;
     viewport: Viewport;
     onEndReached?: (() => void) | undefined;
+    onAssetChange?: (asset: AssetResponseDto) => void;
+    onAssetRemove?: (assetId: string) => void;
     showAssetName?: boolean;
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
@@ -54,6 +56,8 @@
     showArchiveIcon = false,
     viewport,
     onEndReached = undefined,
+    onAssetChange,
+    onAssetRemove,
     showAssetName = false,
     onReload = undefined,
     slidingWindowOffset = 0,
@@ -98,6 +102,7 @@
   const updateCurrentAsset = (asset: AssetResponseDto) => {
     const index = assets.findIndex((oldAsset) => oldAsset.id === asset.id);
     assets[index] = asset;
+    onAssetChange?.(asset);
   };
 
   const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
@@ -281,11 +286,11 @@
           1,
         );
         if (assets.length === 0) {
-          return await goto(Route.photos());
-        }
-        if (nextAsset) {
+          await navigate({ targetRoute: 'current', assetId: null });
+        } else if (nextAsset) {
           await navigateToAsset(nextAsset);
         }
+        onAssetRemove?.(action.asset.id);
         break;
       }
       // no default

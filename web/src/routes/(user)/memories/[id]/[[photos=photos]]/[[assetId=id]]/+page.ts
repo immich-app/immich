@@ -14,15 +14,14 @@ export const load = (async ({ url, params }) => {
     redirect(307, Route.memories());
   }
 
-  await memoryManager.loading;
-
   const memory = await memoryManager.loadMemory(params.id);
   if (!memory) {
     redirect(307, memoryManager.memoriesHref);
   }
 
   if (params.assetId) {
-    const targetMemory = memoryManager.getMemoryWithAsset(params.assetId, memory.id);
+    const memories = await memoryManager.loadMemories();
+    const targetMemory = memoryManager.getMemoryWithAsset(memories, params.assetId, memory.id);
     if (targetMemory && targetMemory.id !== memory.id) {
       redirect(307, Route.viewMemoryAsset({ id: targetMemory.id, assetId: params.assetId }));
     }

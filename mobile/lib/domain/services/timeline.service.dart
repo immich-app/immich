@@ -231,6 +231,15 @@ class TimelineService {
     return index >= 0 ? _bufferOffset + index : null;
   }
 
+  Set<BaseAsset> refreshAssets(Set<BaseAsset> assets) {
+    final byId = {
+      for (final asset in assets) ?asset.remoteId: asset,
+      for (final asset in assets) ?asset.localId: asset,
+    };
+    final reloaded = {for (final asset in _buffer) ?(byId[asset.remoteId] ?? byId[asset.localId]): asset};
+    return {for (final asset in assets) reloaded[asset] ?? asset};
+  }
+
   Future<void> dispose() async {
     await _bucketSubscription?.cancel();
     _bucketSubscription = null;

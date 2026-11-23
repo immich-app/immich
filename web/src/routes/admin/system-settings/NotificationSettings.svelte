@@ -8,8 +8,7 @@
   import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getAdminConfigQuery, updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { sendTestEmailAdmin } from '@immich/sdk';
+  import { sendTestEmailAdminMutation } from '#lib/queries/notification-admin.query.ts';
   import { Button, toastManager } from '@immich/ui';
   import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -24,42 +23,20 @@
 
   let isSending = $state(false);
 
-  const handleSendTestEmail = async () => {
-    if (isSending) {
-      return;
-    }
-
+  const handleSendTestEmail = () => {
+    const { smtp } = configToEdit.notifications;
     isSending = true;
-
-    try {
-      await sendTestEmailAdmin({
-        adminConfigSmtpDto: {
-          enabled: configToEdit.notifications.smtp.enabled,
-          transport: {
-            host: configToEdit.notifications.smtp.transport.host,
-            port: configToEdit.notifications.smtp.transport.port,
-            secure: configToEdit.notifications.smtp.transport.secure,
-            username: configToEdit.notifications.smtp.transport.username,
-            password: configToEdit.notifications.smtp.transport.password,
-            ignoreCert: configToEdit.notifications.smtp.transport.ignoreCert,
-          },
-          from: configToEdit.notifications.smtp.from,
-          replyTo: configToEdit.notifications.smtp.from,
-        },
-      });
-
-      toastManager.primary(
-        $t('admin.notification_email_test_email_sent', { values: { email: authManager.user.email } }),
-      );
-
-      if (!disabled) {
-        await executeMutation(updateAdminConfigMutation, { notifications: configToEdit.notifications });
-      }
-    } catch (error) {
-      handleError(error, $t('admin.notification_email_test_email_failed'));
-    } finally {
-      isSending = false;
-    }
+    return executeMutation(sendTestEmailAdminMutation, [{ adminConfigSmtpDto: { ...smtp, replyTo: smtp.from } }], {
+      onSuccess: () => {
+        toastManager.primary(
+          $t('admin.notification_email_test_email_sent', { values: { email: authManager.user.email } }),
+        );
+        if (!disabled) {
+          void executeMutation(updateAdminConfigMutation, { notifications: configToEdit.notifications });
+        }
+      },
+      onSettled: () => (isSending = false),
+    });
   };
 </script>
 

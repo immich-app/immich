@@ -1,4 +1,3 @@
-import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { authenticate } from '#lib/utils/auth.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { activateProduct, getActivationKey } from '#lib/utils/license-utils.ts';
@@ -18,11 +17,8 @@ export const load = (async ({ url }) => {
     }
 
     if (licenseKey && activationKey) {
-      const response = await activateProduct(licenseKey, activationKey);
-      if (response.activatedAt !== '') {
-        isActivated = true;
-        authManager.isPurchased = true;
-      }
+      const license = await activateProduct(licenseKey, activationKey, { meta: { error: { toast: false } } });
+      isActivated = !!license?.activatedAt;
     }
   } catch (error) {
     isActivated = false;

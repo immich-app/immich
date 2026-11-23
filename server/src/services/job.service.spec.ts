@@ -44,6 +44,19 @@ describe(JobService.name, () => {
       expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
+    it('should emit JobError and rethrow when a job handler throws', async () => {
+      const error = new Error('Job execution failed');
+      mocks.job.run.mockRejectedValue(error);
+
+      const job: JobItem = { name: JobName.FileDelete, data: { files: ['path/to/file'] } };
+      await expect(sut.onJobRun(QueueName.BackgroundTask, job)).rejects.toThrow(error);
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobStart', QueueName.BackgroundTask, job);
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobError', { job, error });
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobComplete', QueueName.BackgroundTask, job);
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('JobSuccess', expect.anything());
+    });
+
     it.each([JobStatus.Success, JobStatus.Skipped])(
       'should queue metadata extraction after a %s sidecar check and preserve its source',
       async (status) => {

@@ -69,6 +69,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
   final AssetType assetType;
   final bool isAnimated;
   final bool edited;
+  final bool previewOnly;
 
   /// Physical size of the thumbnail shown before the preview.
   final Size? thumbnailSize;
@@ -79,6 +80,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
     required this.assetType,
     required this.isAnimated,
     this.edited = true,
+    this.previewOnly = false,
     this.thumbnailSize,
   });
 
@@ -108,14 +110,16 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
 
     return OneFramePlaceholderImageStreamCompleter(
       _codec(loader, key, decode),
-      initialImage: loader.getInitialImage(
-        RemoteImageProvider.thumbnail(
-          assetId: key.assetId,
-          thumbhash: key.thumbhash,
-          edited: key.edited,
-          decodeSize: key.thumbnailSize,
-        ),
-      ),
+      initialImage: key.previewOnly
+          ? null
+          : loader.getInitialImage(
+              RemoteImageProvider.thumbnail(
+                assetId: key.assetId,
+                thumbhash: key.thumbhash,
+                edited: key.edited,
+                decodeSize: key.thumbnailSize,
+              ),
+            ),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
@@ -132,11 +136,23 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
       return;
     }
 
-    final previewRequest = loader.request = _previewRequest(key);
     final loadOriginal = assetType == AssetType.image && SettingsRepository.instance.appConfig.image.loadOriginal;
-    yield* loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal);
+    final previewOnlyKey = RemoteFullImageProvider(
+      assetId: key.assetId,
+      thumbhash: key.thumbhash,
+      assetType: key.assetType,
+      isAnimated: key.isAnimated,
+      edited: key.edited,
+      previewOnly: true,
+    );
+    if (!key.previewOnly && PaintingBinding.instance.imageCache.statusForKey(previewOnlyKey).tracked) {
+      yield* loader.loadProvider(previewOnlyKey);
+    } else {
+      final previewRequest = loader.request = _previewRequest(key);
+      yield* loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal || key.previewOnly);
+    }
 
-    if (!loadOriginal) {
+    if (!loadOriginal || key.previewOnly) {
       return;
     }
 
@@ -195,12 +211,13 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
       return assetId == other.assetId &&
           thumbhash == other.thumbhash &&
           isAnimated == other.isAnimated &&
-          edited == other.edited;
+          edited == other.edited &&
+          previewOnly == other.previewOnly;
     }
 
     return false;
   }
 
   @override
-  int get hashCode => assetId.hashCode ^ thumbhash.hashCode ^ isAnimated.hashCode ^ edited.hashCode;
+  int get hashCode => Object.hash(assetId, thumbhash, isAnimated, edited, previewOnly);
 }

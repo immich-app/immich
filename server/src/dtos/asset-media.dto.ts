@@ -1,9 +1,9 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { HistoryBuilder } from 'src/decorators.js';
 import { AssetMetadataUpsertItemSchema } from 'src/dtos/asset.dto.js';
 import { ApiCustomExtension, AssetVisibilitySchema } from 'src/enum.js';
 import { JsonParsed, isoDatetimeToDate, stringToBool } from 'src/validation.js';
-import { createZodDto } from 'src/zod.js';
 
 export enum AssetMediaSize {
   Original = 'original',
@@ -17,17 +17,6 @@ export enum AssetMediaSize {
 }
 
 const AssetMediaSizeSchema = z.enum(AssetMediaSize).describe('Asset media size').meta({ id: 'AssetMediaSize' });
-
-const AssetMediaOptionsSchema = z
-  .object({
-    size: AssetMediaSizeSchema.optional().meta(
-      new HistoryBuilder()
-        .updated('v3', "Specifying 'original' is deprecated. Use the original endpoint directly instead")
-        .getExtensions(),
-    ),
-    edited: stringToBool.default(false).optional().describe('Return edited asset if available'),
-  })
-  .meta({ id: 'AssetMediaOptionsDto' });
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',
@@ -70,12 +59,17 @@ const AssetBulkUploadCheckItemSchema = z
   })
   .meta({ id: 'AssetBulkUploadCheckItem' });
 
-const AssetBulkUploadCheckSchema = z
-  .object({
-    assets: z.array(AssetBulkUploadCheckItemSchema).describe('Assets to check'),
-  })
-  .meta({ id: 'AssetBulkUploadCheckDto' });
+export class AssetMediaOptionsDto extends createZodDto({
+  size: AssetMediaSizeSchema.optional().meta(
+    new HistoryBuilder()
+      .updated('v3', "Specifying 'original' is deprecated. Use the original endpoint directly instead")
+      .getExtensions(),
+  ),
+  edited: stringToBool.default(false).optional().describe('Return edited asset if available'),
+}) {}
 
-export class AssetMediaOptionsDto extends createZodDto(AssetMediaOptionsSchema) {}
 export class AssetMediaCreateDto extends createZodDto(AssetMediaCreateSchema) {}
-export class AssetBulkUploadCheckDto extends createZodDto(AssetBulkUploadCheckSchema) {}
+
+export class AssetBulkUploadCheckDto extends createZodDto({
+  assets: z.array(AssetBulkUploadCheckItemSchema).describe('Assets to check'),
+}) {}

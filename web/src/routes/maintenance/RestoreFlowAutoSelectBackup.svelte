@@ -1,15 +1,10 @@
 <script lang="ts">
   import MaintenanceBackupCard from '#lib/components/maintenance/MaintenanceBackupCard.svelte';
-  import {
-    getLatestBackup,
-    handleRestoreDatabaseBackup,
-    loadDatabaseBackups,
-  } from '#lib/services/database-backups.service.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import type { DatabaseBackupDto } from '@immich/sdk';
+  import { getDatabaseBackupsQuery } from '#lib/queries/database-backup.query.ts';
+  import { getLatestBackup, handleRestoreDatabaseBackup } from '#lib/services/database-backups.service.ts';
   import { Alert, Button, HStack, Heading, Icon, Text } from '@immich/ui';
   import { mdiArrowRight, mdiRefresh } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -20,16 +15,8 @@
 
   const { selectAnother, end, expectedVersion }: Props = $props();
 
-  let backups: DatabaseBackupDto[] | undefined = $state();
-
-  onMount(async () => {
-    try {
-      backups = await loadDatabaseBackups();
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_load_database_backups'));
-      backups = [];
-    }
-  });
+  const backupsQuery = createQuery(getDatabaseBackupsQuery);
+  const backups = $derived(backupsQuery.isError ? [] : backupsQuery.data);
 
   const latest = $derived(backups ? getLatestBackup(backups) : undefined);
 </script>

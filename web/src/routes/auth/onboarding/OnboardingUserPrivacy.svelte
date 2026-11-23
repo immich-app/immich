@@ -1,21 +1,19 @@
 <script lang="ts">
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { updateMyPreferences } from '@immich/sdk';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { updateMyPreferencesMutation } from '#lib/queries/user.query.ts';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let gCastEnabled = $state(authManager.authenticated && authManager.preferences.cast.gCastEnabled);
 
-  onDestroy(async () => {
-    try {
-      const response = await updateMyPreferences({ userPreferencesUpdateDto: { cast: { gCastEnabled } } });
-      authManager.setPreferences(response);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_settings'));
-    }
-  });
+  onDestroy(() =>
+    executeMutation(
+      () => updateMyPreferencesMutation({ error: { toast: 'errors.unable_to_update_settings' } }),
+      [{ userPreferencesUpdateDto: { cast: { gCastEnabled } } }],
+    ),
+  );
 </script>
 
 <div class="flex flex-col gap-4">

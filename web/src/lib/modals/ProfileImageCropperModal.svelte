@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { createProfileImageMutation } from '#lib/queries/user.query.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { FormModal, toastManager } from '@immich/ui';
   import domtoimage from 'dom-to-image';
   import { onMount } from 'svelte';
@@ -68,12 +69,9 @@
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      await createProfileImage({ createProfileImageDto: { file } });
-      toastManager.primary($t('profile_picture_set'));
-
-      await authManager.refresh();
-
-      onClose();
+      await executeMutation(createProfileImageMutation, [{ createProfileImageDto: { file } }], {
+        onSuccess: () => onClose(),
+      });
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_profile_picture'));
     }

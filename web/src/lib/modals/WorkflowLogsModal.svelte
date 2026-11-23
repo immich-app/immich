@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { executeMutation } from '#lib/queries/client.ts';
-  import { updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { getWorkflowLogsQuery, updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
   import { Route } from '#lib/route.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
-  import { WorkflowResult, getWorkflowLogs, type WorkflowLogEntryDto, type WorkflowResponseDto } from '@immich/sdk';
+  import { WorkflowResult, type WorkflowResponseDto } from '@immich/sdk';
   import {
     Button,
     HStack,
@@ -21,6 +21,7 @@
     type SelectOption,
   } from '@immich/ui';
   import { mdiHistory, mdiOpenInNew } from '@mdi/js';
+  import { createInfiniteQuery } from '@tanstack/svelte-query';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -31,54 +32,27 @@
 
   let { workflow, onClose }: Props = $props();
 
-  let entries: WorkflowLogEntryDto[] = $state([]);
   let placeholder = $state<HTMLElement>();
   let filter = $state<WorkflowResult>();
-  let before = $state<string>();
-  let hasNext = $state(true);
-  let loading = $state(false);
+
+  const query = createInfiniteQuery(
+    () => ({ ...getWorkflowLogsQuery(workflow.id, filter), enabled: workflow.logging }),
+    () => queryClient,
+  );
+  const entries = $derived(query.data?.pages.flat() ?? []);
+  const hasNext = $derived(query.isPending || query.hasNextPage);
 
   const setLogging = (logging: boolean) =>
     executeMutation(updateWorkflowMutation, [{ id: workflow.id, workflowUpdateDto: { logging } }], {
-      onSuccess: () => {
-        workflow = { ...workflow, logging };
-        reset();
-      },
+      onSuccess: () => (workflow = { ...workflow, logging }),
     });
 
-  const reset = () => {
-    entries = [];
-    hasNext = true;
-    before = undefined;
-  };
-
-  const setFilter = (option: SelectOption<WorkflowResult>) => {
-    reset();
-    filter = option.value;
-    void getLogs();
-  };
-
-  const getLogs = async () => {
-    if (!hasNext || loading) {
-      return;
-    }
-
-    loading = true;
-    const limit = 50;
-    const results = await getWorkflowLogs({ id: workflow.id, result: filter, before, limit });
-    entries.push(...results);
-    if (results.length < limit) {
-      hasNext = false;
-    } else {
-      before = results.at(-1)?.at;
-    }
-    loading = false;
-  };
+  const setFilter = (option: SelectOption<WorkflowResult>) => (filter = option.value);
 
   const observer = new IntersectionObserver((entries) => {
     const entry = entries.find((entry) => entry.target === placeholder);
-    if (entry?.isIntersecting) {
-      void getLogs();
+    if (entry?.isIntersecting && query.hasNextPage && !query.isFetching) {
+      void query.fetchNextPage();
     }
   });
 

@@ -13,7 +13,8 @@
 
   const { data, itemLabel, totalLabel }: Props = $props();
 
-  const startDate = $derived(DateTime.fromISO(data.from, { zone: 'utc' }));
+  const startOfWeek = $derived(Info.getStartOfWeek({ locale: $locale }));
+  const startDate = $derived(DateTime.fromISO(data.from, { zone: 'utc', locale: $locale }));
   const padding = $derived(startDate.diff(startDate.startOf('week', { useLocaleWeeks: true })).as('days'));
 
   const maxCount = $derived(Math.max(...data.series.map((item) => item.count), 0));
@@ -58,13 +59,13 @@
     <div class="overflow-x-auto pb-1">
       <div class="grid grid-flow-col grid-rows-7 gap-0.5">
         <div class="row-span-7 grid grid-rows-subgrid">
-          {#if Info.getStartOfWeek({ locale: $locale }) === 7}
+          {#if startOfWeek === 7}
             <div></div>
           {/if}
           <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[0]}</Text></div>
           <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[1]}</Text></div>
           <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[2]}</Text></div>
-          {#if Info.getStartOfWeek({ locale: $locale }) === 1}
+          {#if startOfWeek === 1}
             <div class="-my-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[3]}</Text></div>
           {/if}
         </div>

@@ -77,6 +77,18 @@ export class UserRepository {
   }
 
   @GenerateSql()
+  async getAdminIds() {
+    const admins = await this.db
+      .selectFrom('user')
+      .select('user.id')
+      .where('user.isAdmin', '=', true)
+      .where('user.deletedAt', 'is', null)
+      .execute();
+
+    return admins.map(({ id }) => id);
+  }
+
+  @GenerateSql()
   getFileSamples() {
     return this.db
       .selectFrom('user')

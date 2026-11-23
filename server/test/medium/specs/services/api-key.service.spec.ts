@@ -3,6 +3,7 @@ import { Permission } from 'src/enum.js';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository.js';
 import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { DB } from 'src/schema/index.js';
 import { ApiKeyService } from 'src/services/api-key.service.js';
 import { newMediumService } from 'test/medium.factory.js';
@@ -16,7 +17,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(ApiKeyService, {
     database: db || defaultDatabase,
     real: [ApiKeyRepository, CryptoRepository],
-    mock: [LoggingRepository],
+    mock: [ResourceRepository, LoggingRepository],
   });
 };
 
