@@ -134,8 +134,10 @@ class _ImageWrapperState extends State<ImageWrapper> {
     }
 
     void handleImageFrame(ImageInfo info, bool synchronousCall) {
+      _imageSize = Size(info.image.width.toDouble(), info.image.height.toDouble());
+      info.dispose();
+
       void setupCB() {
-        _imageSize = Size(info.image.width.toDouble(), info.image.height.toDouble());
         _loading = false;
 
         _loadingProgress = null;
@@ -146,7 +148,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
       }
 
       synchronousCall && !_didLoadSynchronously ? setupCB() : setState(setupCB);
-      info.dispose();
     }
 
     void handleError(dynamic error, StackTrace? stackTrace) {

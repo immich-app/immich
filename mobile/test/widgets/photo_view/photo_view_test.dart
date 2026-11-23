@@ -35,6 +35,7 @@ void main() {
     await tester.pumpWidget(PhotoView(imageProvider: _UncachedImageProvider(original), index: 0));
     await tester.pumpWidget(const SizedBox());
 
+    // Only the test itself still holds the images
     expect(preview.debugGetOpenHandleStackTraces(), hasLength(1));
     expect(original.debugGetOpenHandleStackTraces(), hasLength(1));
   });
