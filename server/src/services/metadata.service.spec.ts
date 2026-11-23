@@ -1885,6 +1885,20 @@ describe(MetadataService.name, () => {
       },
       { exif: { LensID: ' Unknown 6-30mm' }, expected: null },
       { exif: { LensID: '' }, expected: null },
+      {
+        exif: {
+          LensID: 'Unknown (252) 98-280mm',
+          LensModel: 'EF70-200mm f/2.8L IS III USM +1.4x III',
+        },
+        expected: 'EF70-200mm f/2.8L IS III USM +1.4x III',
+      },
+      {
+        exif: {
+          LensID: '----',
+          LensSpec: '70-200mm f/2.8',
+        },
+        expected: '70-200mm f/2.8',
+      },
     ])('should read camera lens information $exif -> $expected', async ({ exif, expected }) => {
       const asset = AssetFactory.create();
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));

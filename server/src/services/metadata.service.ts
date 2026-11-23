@@ -115,16 +115,17 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 };
 
 const getLensModel = (exifTags: ImmichTags): string | null => {
-  const lensModel = String(
-    exifTags.LensID ?? exifTags.LensType ?? exifTags.LensSpec ?? exifTags.LensModel ?? '',
-  ).trim();
-  if (lensModel === '----') {
-    return null;
+  const candidates = [exifTags.LensID, exifTags.LensType, exifTags.LensSpec, exifTags.LensModel];
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+    const trimmed = String(candidate).trim();
+    if (trimmed && trimmed !== '----' && !trimmed.startsWith('Unknown')) {
+      return trimmed;
+    }
   }
-  if (lensModel.startsWith('Unknown')) {
-    return null;
-  }
-  return lensModel || null;
+  return null;
 };
 
 type ImmichTagsWithFaces = ImmichTags & { RegionInfo: NonNullable<ImmichTags['RegionInfo']> };
