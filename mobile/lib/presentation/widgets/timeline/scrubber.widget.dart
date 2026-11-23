@@ -221,7 +221,8 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       }
     }
 
-    if (_monthCount < kMinMonthsToEnableScrubberSnap || !widget.snapToMonth) {
+    final isAtTrackBottom = dragPosition >= _scrubberHeight;
+    if (_monthCount < kMinMonthsToEnableScrubberSnap || !widget.snapToMonth || isAtTrackBottom) {
       // If there are less than kMinMonthsToEnableScrubberSnap months, we don't need to snap to segments
       setState(() {
         _thumbTopOffset = dragPosition;
