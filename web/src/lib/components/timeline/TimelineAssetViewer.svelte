@@ -15,7 +15,7 @@
   import { navigate } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -70,19 +70,20 @@
 
   const loadCloseAssets = async (currentAsset: AssetResponseDto) => {
     const [nextAsset, previousAsset] = await Promise.all([getNextAsset(currentAsset), getPreviousAsset(currentAsset)]);
+    const hasLeftTimeline =
+      assetCursor.current.id === currentAsset.id && !timelineManager.getTimelineMonthByAssetId(currentAsset.id);
 
-    assetCursor = {
-      current: currentAsset,
-      nextAsset,
-      previousAsset,
-    };
+    assetCursor = hasLeftTimeline
+      ? { ...assetCursor, current: currentAsset }
+      : { current: currentAsset, nextAsset, previousAsset };
   };
 
   //TODO: replace this with async derived in svelte 6
   $effect(() => {
     const asset = assetViewerManager.asset;
+    void timelineManager.assetCount;
     if (asset) {
-      handlePromiseError(loadCloseAssets(asset));
+      untrack(() => handlePromiseError(loadCloseAssets(asset)));
     }
   });
 
