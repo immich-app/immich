@@ -29215,7 +29215,21 @@
         "properties": {
           "deviceOS": {
             "description": "Device OS",
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-immich-history": [
+              {
+                "state": "Added",
+                "version": "v1"
+              },
+              {
+                "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v5.",
+                "state": "Updated",
+                "version": "v4"
+              }
+            ]
           },
           "deviceType": {
             "description": "Device type",
@@ -29249,7 +29263,18 @@
           },
           "deviceOS": {
             "description": "Device OS",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "state": "Added",
+                "version": "v1"
+              },
+              {
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v5.",
+                "state": "Updated",
+                "version": "v4"
+              }
+            ]
           },
           "deviceType": {
             "description": "Device type",
@@ -29310,7 +29335,18 @@
           },
           "deviceOS": {
             "description": "Device OS",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "state": "Added",
+                "version": "v1"
+              },
+              {
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v5.",
+                "state": "Updated",
+                "version": "v4"
+              }
+            ]
           },
           "deviceType": {
             "description": "Device type",
