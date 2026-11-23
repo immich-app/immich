@@ -152,7 +152,7 @@ Redis (Sentinel) URL example JSON before encoding:
 
 </details>
 
-## Machine Learning
+## Machine learning
 
 | Variable                                                    | Description                                                                                         |           Default           | Containers       |
 | :---------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :-------------------------: | :--------------- |
