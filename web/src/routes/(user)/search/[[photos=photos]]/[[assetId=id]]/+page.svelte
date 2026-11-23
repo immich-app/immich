@@ -282,7 +282,7 @@
 {/if}
 
 <section
-  class="m-4 mb-12 max-h-screen bg-immich-bg dark:bg-immich-dark-bg"
+  class={['m-4 mb-12 max-h-screen bg-immich-bg dark:bg-immich-dark-bg', searchTermKeys.length === 0 && 'mt-24']}
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={searchResultsElement}
