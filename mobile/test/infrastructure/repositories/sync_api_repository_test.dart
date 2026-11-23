@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
-import 'package:immich_mobile/utils/semver.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
@@ -73,7 +73,7 @@ void main() {
 
   Future<void> streamChanges(
     Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onDataCallback,
-    SemVer serverVersion,
+    ServerVersion serverVersion,
   ) {
     return sut.streamChanges(
       onDataCallback,
@@ -101,7 +101,7 @@ void main() {
       }
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
+    final streamChangesFuture = streamChanges(onDataCallback, const ServerVersion(major: 3, minor: 0, patch: 0));
 
     // Give the stream subscription time to start (longer delay to account for mock delay)
     await Future.delayed(const Duration(milliseconds: 50));
@@ -151,7 +151,7 @@ void main() {
       }
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
+    final streamChangesFuture = streamChanges(onDataCallback, const ServerVersion(major: 3, minor: 0, patch: 0));
 
     await Future.delayed(const Duration(milliseconds: 50));
 
@@ -202,7 +202,7 @@ void main() {
       }
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
+    final streamChangesFuture = streamChanges(onDataCallback, const ServerVersion(major: 3, minor: 0, patch: 0));
 
     await Future.delayed(const Duration(milliseconds: 50));
 
@@ -248,7 +248,7 @@ void main() {
       onDataCallCount++;
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
+    final streamChangesFuture = streamChanges(onDataCallback, const ServerVersion(major: 3, minor: 0, patch: 0));
 
     await Future.delayed(const Duration(milliseconds: 50));
 
@@ -274,7 +274,7 @@ void main() {
       onDataCallCount++;
     }
 
-    final future = streamChanges(onDataCallback, const SemVer(major: 3, minor: 0, patch: 0));
+    final future = streamChanges(onDataCallback, const ServerVersion(major: 3, minor: 0, patch: 0));
 
     errorBodyController.add(utf8.encode('{"error":"Unauthorized"}'));
     await errorBodyController.close();
@@ -290,4 +290,18 @@ void main() {
 
     expect(onDataCallCount, 0);
   });
+
+  for (final (supported, matcher) in [(true, contains('PendingResetV1')), (false, isNot(contains('PendingResetV1')))]) {
+    test('streamChanges pending reset opt-in when supported is $supported', () async {
+      final future = streamChanges(
+        (_, _, _) async {},
+        ServerVersion(major: 2, minor: 5, patch: 0, supportsSyncPendingReset: supported),
+      );
+      await responseStreamController.close();
+      await future;
+
+      final request = verify(() => mockHttpClient.send(captureAny())).captured.single as http.Request;
+      expect((jsonDecode(request.body) as Map)['types'], matcher);
+    });
+  }
 }
