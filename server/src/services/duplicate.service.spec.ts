@@ -513,6 +513,83 @@ describe(DuplicateService.name, () => {
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset1.id, asset2.id], { duplicateId: null });
     });
 
+    it('should not queue SidecarWrite or update EXIF when kept asset already has the merged EXIF metadata', async () => {
+      const keeper = AssetFactory.from()
+        .exif({ latitude: 40.7128, longitude: -74.006, rating: 5, description: 'Already on keeper' })
+        .build();
+      const trashed = AssetFactory.from()
+        .exif({ latitude: null, longitude: null, rating: null, description: '' })
+        .build();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([trashed.id]));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [keeper as unknown as MapAsset, trashed as unknown as MapAsset],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [keeper.id], trashAssetIds: [trashed.id] }],
+      });
+
+      expect(result[0].success).toBe(true);
+      expect(mocks.asset.updateAllExif).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should merge GPS coordinates agreeing within 4 decimal places while ignoring Null Island (0, 0)', async () => {
+      const keeper = AssetFactory.from().exif({ latitude: null, longitude: null }).build();
+      const trashedRounded = AssetFactory.from().exif({ latitude: 40.71281, longitude: -74.00601 }).build();
+      const trashedNullIsland = AssetFactory.from().exif({ latitude: 0, longitude: 0 }).build();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([trashedRounded.id, trashedNullIsland.id]));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [
+          keeper as unknown as MapAsset,
+          trashedRounded as unknown as MapAsset,
+          trashedNullIsland as unknown as MapAsset,
+        ],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [
+          {
+            duplicateId: 'group-1',
+            keepAssetIds: [keeper.id],
+            trashAssetIds: [trashedRounded.id, trashedNullIsland.id],
+          },
+        ],
+      });
+
+      expect(result[0].success).toBe(true);
+      expect(mocks.asset.updateAllExif).toHaveBeenCalledWith([keeper.id], {
+        latitude: 40.71281,
+        longitude: -74.00601,
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: keeper.id } }]);
+    });
+
+    it('should preserve the kept asset description lines before lines merged from trashed duplicates', async () => {
+      const trashed = AssetFactory.from().exif({ description: 'Second line from trashed' }).build();
+      const keeper = AssetFactory.from().exif({ description: 'First line from keeper' }).build();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([trashed.id]));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        // Trashed appears before keeper in database order (e.g. earlier localDateTime)
+        assets: [trashed as unknown as MapAsset, keeper as unknown as MapAsset],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [keeper.id], trashAssetIds: [trashed.id] }],
+      });
+
+      expect(result[0].success).toBe(true);
+      expect(mocks.asset.updateAllExif).toHaveBeenCalledWith([keeper.id], {
+        description: 'First line from keeper\nSecond line from trashed',
+      });
+    });
+
     // NOTE: The following integration-style tests are covered by E2E tests instead
     // to avoid complex mock setup. The validation and error-handling logic above
     // is thoroughly unit tested.

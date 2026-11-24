@@ -51,17 +51,32 @@ const uniqueNonEmptyLines = (values: Array<string | null | undefined>): string[]
   return lines;
 };
 
-const getUniqueCoordinate = (assets: MapAsset[], key: 'latitude' | 'longitude'): number | null => {
-  const values = assets
-    .map((asset) => asset.exifInfo?.[key])
-    .filter((value): value is number => Number.isFinite(value));
+const hasValidGps = (latitude: number | null | undefined, longitude: number | null | undefined): latitude is number =>
+  typeof latitude === 'number' &&
+  typeof longitude === 'number' &&
+  Number.isFinite(latitude) &&
+  Number.isFinite(longitude) &&
+  (latitude !== 0 || longitude !== 0);
 
-  if (values.length === 0) {
+const getUniqueLocation = (assets: MapAsset[]): { latitude: number; longitude: number } | null => {
+  const locations = assets
+    .map((asset) => ({
+      latitude: asset.exifInfo?.latitude,
+      longitude: asset.exifInfo?.longitude,
+    }))
+    .filter((location): location is { latitude: number; longitude: number } =>
+      hasValidGps(location.latitude, location.longitude),
+    );
+
+  if (locations.length === 0) {
     return null;
   }
 
-  const unique = new Set(values);
-  return unique.size === 1 ? [...unique][0] : null;
+  const uniqueRounded = new Set(
+    locations.map(({ latitude, longitude }) => `${latitude.toFixed(4)},${longitude.toFixed(4)}`),
+  );
+
+  return uniqueRounded.size === 1 ? locations[0] : null;
 };
 
 @Injectable()
@@ -169,6 +184,7 @@ export class DuplicateService extends BaseService {
       const { assetUpdate, exifUpdate, mergedAlbumIds, mergedTagIds, mergedTagValues } = this.getSyncMergeResult(
         duplicateGroup.assets,
         assetAlbumMap,
+        idsToKeep[0],
       );
 
       if (mergedAlbumIds.length > 0) {
@@ -250,7 +266,11 @@ export class DuplicateService extends BaseService {
     return { id: duplicateId, success: true };
   }
 
-  private getSyncMergeResult(assets: MapAsset[], assetAlbumMap: Map<string, string[]> = new Map()): ResolveRequest {
+  private getSyncMergeResult(
+    assets: MapAsset[],
+    assetAlbumMap: Map<string, string[]> = new Map(),
+    keeperId?: string,
+  ): ResolveRequest {
     const response: ResolveRequest = {
       mergedAlbumIds: [],
       mergedTagIds: [],
@@ -259,11 +279,14 @@ export class DuplicateService extends BaseService {
       exifUpdate: {},
     };
 
-    response.assetUpdate.isFavorite = assets.some((asset) => asset.isFavorite);
+    const keeper = keeperId ? assets.find((asset) => asset.id === keeperId) : undefined;
+    const orderedAssets = keeper ? [keeper, ...assets.filter((asset) => asset.id !== keeper.id)] : assets;
+
+    response.assetUpdate.isFavorite = orderedAssets.some((asset) => asset.isFavorite);
 
     const visibilityOrder = [AssetVisibility.Locked, AssetVisibility.Archive, AssetVisibility.Timeline];
-    let visibility = visibilityOrder.find((level) => assets.some((asset) => asset.visibility === level));
-    if (!visibility && assets.some((asset) => asset.visibility === AssetVisibility.Hidden)) {
+    let visibility = visibilityOrder.find((level) => orderedAssets.some((asset) => asset.visibility === level));
+    if (!visibility && orderedAssets.some((asset) => asset.visibility === AssetVisibility.Hidden)) {
       visibility = AssetVisibility.Hidden;
     }
     if (visibility) {
@@ -271,27 +294,29 @@ export class DuplicateService extends BaseService {
     }
 
     let rating = 0;
-    for (const asset of assets) {
+    for (const asset of orderedAssets) {
       const assetRating = asset.exifInfo?.rating ?? 0;
       if (assetRating > rating) {
         rating = assetRating;
       }
     }
-    if (rating > 0) {
+    if (rating > 0 && rating !== (keeper?.exifInfo?.rating ?? 0)) {
       response.exifUpdate.rating = rating;
     }
 
-    const descriptionLines = uniqueNonEmptyLines(assets.map((asset) => asset.exifInfo?.description));
+    const descriptionLines = uniqueNonEmptyLines(orderedAssets.map((asset) => asset.exifInfo?.description));
     const description = descriptionLines.length > 0 ? descriptionLines.join('\n') : null;
-    if (description !== null) {
+    const keeperDescriptionLines = uniqueNonEmptyLines([keeper?.exifInfo?.description]);
+    const keeperDescription = keeperDescriptionLines.length > 0 ? keeperDescriptionLines.join('\n') : null;
+    if (description !== null && description !== keeperDescription) {
       response.exifUpdate.description = description;
     }
 
-    const latitude = getUniqueCoordinate(assets, 'latitude');
-    const longitude = getUniqueCoordinate(assets, 'longitude');
-    if (latitude !== null && longitude !== null) {
-      response.exifUpdate.latitude = latitude;
-      response.exifUpdate.longitude = longitude;
+    const keeperHasValidGps = hasValidGps(keeper?.exifInfo?.latitude, keeper?.exifInfo?.longitude);
+    const location = getUniqueLocation(orderedAssets);
+    if (location !== null && !keeperHasValidGps) {
+      response.exifUpdate.latitude = location.latitude;
+      response.exifUpdate.longitude = location.longitude;
     }
 
     const albumIdSet = new Set<string>();
@@ -302,7 +327,7 @@ export class DuplicateService extends BaseService {
     }
     response.mergedAlbumIds = [...albumIdSet];
 
-    const allTags = assets.flatMap((asset) => asset.tags ?? []);
+    const allTags = orderedAssets.flatMap((asset) => asset.tags ?? []);
     const tagIds = [...new Set(allTags.map((tag) => tag.id).filter((id): id is string => !!id))];
     const tagValues = [...new Set(allTags.map((tag) => tag.value).filter((v): v is string => !!v))];
     if (tagIds.length > 0) {
