@@ -414,18 +414,35 @@ export class AssetService extends BaseService {
     const { ids, force } = dto;
 
     await this.requireAccess({ auth, permission: Permission.AssetDelete, ids });
-    await this.assetRepository.updateAll(ids, {
-      deletedAt: new Date(),
-      status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
-    });
+
+    // locked assets bypass the trash and are always deleted permanently
+    const lockedIds = new Set<string>();
+    if (!force) {
+      const assets = await this.assetRepository.getByIds(ids);
+      for (const asset of assets) {
+        if (asset.visibility === AssetVisibility.Locked) {
+          lockedIds.add(asset.id);
+        }
+      }
+    }
+
+    const deleteIds = force ? ids : ids.filter((id) => lockedIds.has(id));
+    const trashIds = force ? [] : ids.filter((id) => !lockedIds.has(id));
+    const deletedAt = new Date();
+
+    await this.assetRepository.updateAll(deleteIds, { deletedAt, status: AssetStatus.Deleted });
+    await this.assetRepository.updateAll(trashIds, { deletedAt, status: AssetStatus.Trashed });
     this.resourceRepository.send({
       userIds: [auth.user.id],
       changed: [Resource.assets(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
     });
-    await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
-      assetIds: ids,
-      userId: auth.user.id,
-    });
+
+    if (deleteIds.length > 0) {
+      await this.eventRepository.emit('AssetDeleteAll', { assetIds: deleteIds, userId: auth.user.id });
+    }
+    if (trashIds.length > 0) {
+      await this.eventRepository.emit('AssetTrashAll', { assetIds: trashIds, userId: auth.user.id });
+    }
   }
 
   async getMetadata(auth: AuthDto, id: string): Promise<AssetMetadataResponseDto[]> {

@@ -587,6 +587,7 @@ describe(AssetService.name, () => {
       const auth = AuthFactory.create();
       const [asset1, asset2] = [AssetFactory.create(), AssetFactory.create()];
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
 
       await sut.deleteAll(auth, { ids: [asset1.id, asset2.id] });
 
@@ -605,15 +606,60 @@ describe(AssetService.name, () => {
     });
 
     it('should soft delete a batch of assets', async () => {
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset1', 'asset2']));
+      const [asset1, asset2] = [AssetFactory.create(), AssetFactory.create()];
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
 
-      await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: false });
+      await sut.deleteAll(authStub.user1, { ids: [asset1.id, asset2.id], force: false });
 
-      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset1', 'asset2'], {
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset1.id, asset2.id], {
         deletedAt: expect.any(Date),
         status: AssetStatus.Trashed,
       });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetTrashAll', {
+        assetIds: [asset1.id, asset2.id],
+        userId: 'user-id',
+      });
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetDeleteAll', expect.anything());
       expect(mocks.job.queue.mock.calls).toEqual([]);
+    });
+
+    it('should permanently delete locked assets even when force is false', async () => {
+      const asset = AssetFactory.create({ visibility: AssetVisibility.Locked });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getByIds.mockResolvedValue([asset]);
+
+      await sut.deleteAll(authStub.user1, { ids: [asset.id], force: false });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset.id], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.Deleted,
+      });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetDeleteAll', {
+        assetIds: [asset.id],
+        userId: 'user-id',
+      });
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetTrashAll', expect.anything());
+    });
+
+    it('should only permanently delete the locked assets in a mixed batch', async () => {
+      const locked = AssetFactory.create({ visibility: AssetVisibility.Locked });
+      const timeline = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([locked.id, timeline.id]));
+      mocks.asset.getByIds.mockResolvedValue([locked, timeline]);
+
+      await sut.deleteAll(authStub.user1, { ids: [locked.id, timeline.id], force: false });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([locked.id], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.Deleted,
+      });
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([timeline.id], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.Trashed,
+      });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetDeleteAll', { assetIds: [locked.id], userId: 'user-id' });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetTrashAll', { assetIds: [timeline.id], userId: 'user-id' });
     });
   });
 
