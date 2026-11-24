@@ -3,6 +3,7 @@ import {
   AdminConfigDto,
   PublicConfigDto,
   UserConfigDto,
+  configFields,
   defaults,
   mapPublicConfig,
   mapUserConfig,
@@ -21,6 +22,12 @@ const PUBLIC_PROPERTIES = [
   'passwordLogin.enabled',
   'server.loginPageMessage',
 ];
+
+describe('configFields', () => {
+  it('should list every property with a default', () => {
+    expect(configFields.map(({ key }) => key).sort()).toEqual(getKeysDeep(defaults).sort());
+  });
+});
 
 describe('config visibility', () => {
   it('should expose every property to admins', () => {
