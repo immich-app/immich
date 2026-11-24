@@ -3,6 +3,7 @@ packages:
   - docs
   - e2e
   - i18n
+  - native/crates/native_core_node
   - server
   - plugins
   - web

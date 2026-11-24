@@ -11,12 +11,16 @@ RUN echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc && \
   echo "# Retry configuration - default is 2" >> /usr/local/etc/npmrc && \
   echo "fetch-retries=5" >> /usr/local/etc/npmrc && \
   mkdir -p /buildcache/pnpm-store /buildcache/pnpm-cache /buildcache/node-gyp && \
-  chmod -R o+rw /buildcache
+  chmod -R o+rw /buildcache && \
+  cat /proc/sys/kernel/random/uuid | tr -d - > /etc/machine-id
 
 ENV CI=1
 ENV PNPM_HOME=/buildcache/pnpm-store
 ENV MISE_DATA_DIR=/buildcache/mise
-ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml:/usr/src/app/native/mise.toml
+ENV RUSTUP_HOME=/buildcache/rustup
+ENV CARGO_HOME=/buildcache/cargo
+ENV CARGO_TARGET_DIR=/buildcache/native-target
 ENV PATH="${MISE_DATA_DIR}/shims:${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin"
 ENV IMMICH_ENV=development
 ENV NVIDIA_DRIVER_CAPABILITIES=all

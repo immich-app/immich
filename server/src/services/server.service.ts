@@ -38,6 +38,7 @@ export class ServerService extends BaseService {
       });
     }
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.getFeatures())}`);
+    this.logger.log(`Native Core: v${this.serverInfoRepository.getNativeCoreVersion()}`);
   }
 
   async getAboutInfo(): Promise<ServerAboutResponseDto> {
