@@ -180,8 +180,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -1078,8 +1076,8 @@ importers:
         specifier: ^3.5.0
         version: 3.7.0
       tailwind-variants:
-        specifier: ^3.2.2
-        version: 3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.5)
+        specifier: ^4.0.0
+        version: 4.0.1
       thumbhash:
         specifier: ^0.1.1
         version: 0.1.1
@@ -16031,7 +16029,7 @@ snapshots:
       svelte: 5.57.3(@typescript-eslint/types@8.72.2)
       svelte-highlight: 7.11.0
       tailwind-merge: 3.7.0
-      tailwind-variants: 3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.5)
+      tailwind-variants: 3.3.1(tailwind-merge@3.7.0)
       tailwindcss: 4.3.5
 
   '@immich/ui@0.93.0(@sveltejs/kit@3.2.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.2))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.57.3(@typescript-eslint/types@8.72.2))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.2))':
@@ -18345,7 +18343,7 @@ snapshots:
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 17.0.45
+      '@types/node': 26.6.6
 
   '@types/semver@7.8.0': {}
 
@@ -18360,7 +18358,7 @@ snapshots:
 
   '@types/serve-index@1.9.4':
     dependencies:
-      '@types/express': 4.17.25
+      '@types/express': 5.0.6
 
   '@types/serve-static@1.15.10':
     dependencies:
@@ -21374,18 +21372,19 @@ snapshots:
   exiftool-vendored.exe@13.61.0:
     optional: true
 
-  exiftool-vendored.pl@13.61.0: {}
+  exiftool-vendored.pl@13.61.0:
+    optional: true
 
   exiftool-vendored@39.2.0:
     dependencies:
       '@photostructure/tz-lookup': 11.8.0
       '@types/luxon': 3.7.6
       batch-cluster: 19.6.0
-      exiftool-vendored.pl: 13.61.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.61.0
+      exiftool-vendored.pl: 13.61.0
 
   expand-template@2.0.3: {}
 
@@ -26269,10 +26268,11 @@ snapshots:
 
   tailwind-merge@3.7.0: {}
 
-  tailwind-variants@3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.5):
+  tailwind-variants@3.3.1(tailwind-merge@3.7.0):
+    dependencies:
+      tailwindcss: 4.3.5
     optionalDependencies:
       tailwind-merge: 3.7.0
-      tailwindcss: 4.3.5
 
   tailwind-variants@4.0.1:
     dependencies:
