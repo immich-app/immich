@@ -298,7 +298,7 @@ describe(`/oauth`, () => {
       });
 
       const user = await getMyUser({ headers: asBearerAuth(body.accessToken) });
-      expect(user.profileImagePath.length).toBeGreaterThan(0);
+      expect(user.profileImagePath?.length).toBeGreaterThan(0);
     });
 
     it('should work with RS256 signed user profiles', async () => {
