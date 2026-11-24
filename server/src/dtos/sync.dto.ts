@@ -268,6 +268,10 @@ const SyncAssetFaceV3Schema = SyncAssetFaceV1Schema.extend({
   isVisible: z.boolean().describe('Is the face visible in the asset'),
 }).meta({ id: 'SyncAssetFaceV3' });
 
+const SyncPendingResetV1Schema = z
+  .object({ type: SyncRequestTypeSchema.describe('Sync request type to reset') })
+  .meta({ id: 'SyncPendingResetV1' });
+
 @ExtraModel()
 class SyncMemoryV1 extends createZodDto(SyncMemoryV1Schema) {}
 
@@ -376,6 +380,9 @@ class SyncResetV1 extends createZodDto({}) {}
 @ExtraModel()
 class SyncCompleteV1 extends createZodDto({}) {}
 
+@ExtraModel()
+class SyncPendingResetV1 extends createZodDto(SyncPendingResetV1Schema) {}
+
 export type SyncItem = {
   [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
   [SyncEntityType.AuthUserV2]: SyncAuthUserV2;
@@ -434,6 +441,7 @@ export type SyncItem = {
   [SyncEntityType.SyncAckV1]: SyncAckV1;
   [SyncEntityType.SyncCompleteV1]: SyncCompleteV1;
   [SyncEntityType.SyncResetV1]: SyncResetV1;
+  [SyncEntityType.SyncPendingResetV1]: SyncPendingResetV1;
 };
 
 export class SyncStreamDto extends createZodDto({

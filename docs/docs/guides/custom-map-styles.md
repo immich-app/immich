@@ -1,4 +1,4 @@
-# Custom Map Styles
+# Custom map styles
 
 You may decide that you'd like to modify the style document which is used to
 draw the maps in Immich. In addition to visual customization, this also allows

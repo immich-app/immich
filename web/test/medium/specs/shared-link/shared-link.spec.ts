@@ -178,6 +178,60 @@ test.describe('shared link', () => {
     });
   });
 
+  test('a link to a single asset opens it in the viewer', async ({ page, context, data, api, app }) => {
+    const asset = factory.asset();
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset] });
+    data.addSharedLinks(link);
+    await context.clearCookies();
+
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+
+    await app.viewer.waitForAsset(asset);
+    expect(api.getAssetInfo).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id, key: link.key }) });
+  });
+
+  test('the owner trashing the asset of a single asset link goes to the timeline', async ({ page, data, api, app }) => {
+    const asset = factory.asset();
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset] });
+    data.addSharedLinks(link);
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+    await app.viewer.waitForAsset(asset);
+
+    await app.viewer.deleteButton.click();
+
+    await expect(page).toHaveURL(Route.photos());
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
+  });
+
+  test('the owner sees full metadata after opening the asset from a link without it', async ({ page, data, app }) => {
+    const asset = factory.asset({ exifInfo: { make: 'Canon', model: 'EOS R5' } });
+    const other = factory.asset();
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset, other], showMetadata: false });
+    data.addSharedLinks(link);
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.backButton.click();
+    await expect(app.viewer.root).toHaveCount(0);
+    await app.sharedLink.homeLink.click();
+    await page.waitForURL(Route.photos());
+
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.openDetailPanel();
+
+    await expect(app.viewer.detailPanel.getByText('Canon EOS R5')).toBeVisible();
+  });
+
+  test('individual link renders only the thumbnails near the viewport', async ({ page, data, app }) => {
+    const assets = Array.from({ length: 200 }, () => factory.asset());
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets });
+    data.addSharedLinks(link);
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+    await expect(app.timeline.thumbnail(assets[0])).toBeVisible();
+
+    await expect(app.timeline.thumbnail(assets.at(-1)!)).toHaveCount(0);
+  });
+
   test('deletes a shared link', async ({ page, data, api, app }) => {
     const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [factory.asset()] });
     data.addSharedLinks(link);

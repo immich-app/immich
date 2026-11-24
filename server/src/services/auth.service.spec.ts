@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { SALT_ROUNDS } from 'src/constants.js';
 import { UserAdmin } from 'src/database.js';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto.js';
-import { AuthType, Permission } from 'src/enum.js';
+import { AuthChallengeType, AuthType, Permission } from 'src/enum.js';
 import { Resource } from 'src/resource-paths.js';
 import { AuthService } from 'src/services/auth.service.js';
 import type { UserMetadataItem } from 'src/types.js';
@@ -561,6 +561,79 @@ describe(AuthService.name, () => {
           id: session.id,
           hasElevatedPermission: false,
         },
+      });
+    });
+
+    describe('cross-origin requests', () => {
+      const cookie = 'immich_access_token=auth_token';
+      const metadata = { adminRoute: false, sharedLinkRoute: false, uri: 'test' };
+
+      beforeEach(() => {
+        const session = SessionFactory.create();
+        mocks.session.getByToken.mockResolvedValue({
+          id: session.id,
+          updatedAt: session.updatedAt,
+          user: UserFactory.create(),
+          pinExpiresAt: null,
+          appVersion: null,
+        });
+      });
+
+      it.each([
+        { name: 'a same-site request', headers: { cookie, 'sec-fetch-site': 'same-site' }, method: 'POST' },
+        { name: 'a cross-site request', headers: { cookie, 'sec-fetch-site': 'cross-site' }, method: 'DELETE' },
+        {
+          name: 'a mismatched origin without fetch metadata',
+          headers: { cookie, origin: 'https://blog.immich.cloud', host: 'immich.cloud' },
+          method: 'POST',
+        },
+        {
+          name: 'another port on the same host',
+          headers: { cookie, origin: 'https://immich.cloud:8080', host: 'immich.cloud:2283' },
+          method: 'POST',
+        },
+        { name: 'an opaque origin', headers: { cookie, origin: 'null', host: 'immich.cloud' }, method: 'POST' },
+        {
+          name: 'a request without a known method',
+          headers: { cookie, 'sec-fetch-site': 'same-site' },
+          method: undefined,
+        },
+        {
+          name: 'a websocket handshake from another origin',
+          headers: { cookie, upgrade: 'websocket', origin: 'https://blog.immich.cloud', host: 'immich.cloud' },
+          method: 'GET',
+        },
+      ])('should block $name', async ({ headers, method }) => {
+        await expect(
+          sut.authenticate({ headers, queryParams: {}, metadata: { ...metadata, method } }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        expect(mocks.session.getByToken).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        { name: 'a same-origin request', headers: { cookie, 'sec-fetch-site': 'same-origin' }, method: 'POST' },
+        { name: 'a user-initiated request', headers: { cookie, 'sec-fetch-site': 'none' }, method: 'POST' },
+        { name: 'a cross-site navigation', headers: { cookie, 'sec-fetch-site': 'cross-site' }, method: 'GET' },
+        {
+          name: 'a matching origin without fetch metadata',
+          headers: { cookie, origin: 'https://immich.cloud', host: 'immich.cloud' },
+          method: 'POST',
+        },
+        { name: 'a request without browser headers', headers: { cookie }, method: 'POST' },
+        {
+          name: 'a cross-site request that does not use the cookie',
+          headers: { cookie, authorization: 'Bearer auth_token', 'sec-fetch-site': 'cross-site' },
+          method: 'POST',
+        },
+        {
+          name: 'a websocket handshake from the same origin',
+          headers: { cookie, upgrade: 'websocket', origin: 'https://immich.cloud', host: 'immich.cloud' },
+          method: 'GET',
+        },
+      ])('should allow $name', async ({ headers, method }) => {
+        await expect(
+          sut.authenticate({ headers, queryParams: {}, metadata: { ...metadata, method } }),
+        ).resolves.toBeDefined();
       });
     });
 
@@ -1759,6 +1832,63 @@ describe(AuthService.name, () => {
 
       expect(mocks.session.update).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('createCode', () => {
+    const codeChallenge = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
+
+    it('should reject an api key', async () => {
+      const auth = AuthFactory.from().apiKey().build();
+
+      await expect(sut.createCode(auth, { codeChallenge })).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.authChallenge.create).not.toHaveBeenCalled();
+    });
+
+    it('should store the hashed code for the user', async () => {
+      const auth = AuthFactory.from().session().build();
+      mocks.authChallenge.create.mockResolvedValue({} as any);
+
+      await expect(sut.createCode(auth, { codeChallenge })).resolves.toEqual({ code: 'cmFuZG9tLWJ5dGVz' });
+
+      expect(mocks.authChallenge.create).toHaveBeenCalledWith({
+        type: AuthChallengeType.AppLogin,
+        challenge: 'Y21GdVpHOXRMV0o1ZEdWeiAoaGFzaGVkKQ',
+        userId: auth.user.id,
+        codeChallenge,
+        expiresAt: expect.any(Date),
+      });
+    });
+  });
+
+  describe('exchangeCode', () => {
+    const dto = { code: 'the-code', codeVerifier: 'v'.repeat(43) };
+
+    it('should create a session for the user of the code', async () => {
+      const user = UserFactory.create();
+      mocks.authChallenge.consume.mockResolvedValue({ id: newUuid(), userId: user.id });
+      mocks.user.get.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await expect(sut.exchangeCode(dto, loginDetails)).resolves.toEqual(
+        expect.objectContaining({ accessToken: 'cmFuZG9tLWJ5dGVz', userId: user.id }),
+      );
+
+      expect(mocks.authChallenge.consume).toHaveBeenCalledWith({
+        type: AuthChallengeType.AppLogin,
+        challenge: 'dGhlLWNvZGUgKGhhc2hlZCk',
+        codeChallenge: 'dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2diAoaGFzaGVkKQ',
+      });
+      expect(mocks.session.create).toHaveBeenCalledWith(expect.objectContaining({ userId: user.id }));
+    });
+
+    it('should reject an unknown code', async () => {
+      mocks.authChallenge.consume.mockResolvedValue(void 0);
+
+      await expect(sut.exchangeCode(dto, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
+
+      expect(mocks.session.create).not.toHaveBeenCalled();
     });
   });
 });

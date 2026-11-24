@@ -24,6 +24,30 @@ test('deletes a face', async ({ page, data, api, app }) => {
   expect(api.deleteFace).toHaveBeenCalledWith({ params: { id: face.id }, body: { force: false } });
 });
 
+test('a deleted face is no longer listed in the detail panel', async ({ page, data, api, app }) => {
+  const asset = factory.asset({ width: 4000, height: 3000 });
+  const alice = factory.person({ name: 'Alice Johnson' });
+  const bob = factory.person({ name: 'Bob Smith' });
+  const face = factory.face({ person: alice });
+  data
+    .addAssets(asset)
+    .addPeople([alice, bob])
+    .addFaces(asset.id, [face, factory.face({ person: bob })]);
+  await page.goto(Route.viewAsset({ id: asset.id }));
+  await app.viewer.waitForAsset(asset);
+  await app.viewer.openDetailPanel();
+  await expect(app.viewer.personThumbnail(alice.name)).toBeVisible();
+  await app.viewer.editPeopleButton.click();
+
+  await app.viewer.deleteFaceButton.first().click();
+  await app.dialogButton('confirm').click();
+  await app.viewer.editFacesDoneButton.click();
+
+  await expect(app.viewer.personThumbnail(bob.name)).toBeVisible();
+  await expect(app.viewer.personThumbnail(alice.name)).toHaveCount(0);
+  expect(api.deleteFace).toHaveBeenCalledWith({ params: { id: face.id }, body: { force: false } });
+});
+
 test('reassigns a face to another person', async ({ page, data, api, app }) => {
   const asset = factory.asset({ width: 4000, height: 3000 });
   const alice = factory.person({ name: 'Alice Johnson' });

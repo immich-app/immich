@@ -19,7 +19,6 @@ import { LoginResponseDto, type AuthDto } from 'src/dtos/auth.dto.js';
 import {
   PasskeyAuthenticationFinishDto,
   PasskeyAuthenticationOptionsDto,
-  PasskeyAuthenticationStartDto,
   PasskeyRegistrationFinishDto,
   PasskeyRegistrationOptionsDto,
   PasskeyResponseDto,
@@ -74,11 +73,8 @@ export class PasskeyController {
     description: 'Generate the options used by the browser to sign in with a passkey.',
     history: HistoryBuilder.v4().alpha('v4.0.0'),
   })
-  startAuthentication(
-    @Req() request: Request,
-    @Query() dto: PasskeyAuthenticationStartDto,
-  ): Promise<PasskeyAuthenticationOptionsDto> {
-    return this.service.startAuthentication(dto, request.headers);
+  startAuthentication(@Req() request: Request): Promise<PasskeyAuthenticationOptionsDto> {
+    return this.service.startAuthentication(request.headers);
   }
 
   @Post('authentication/finish')

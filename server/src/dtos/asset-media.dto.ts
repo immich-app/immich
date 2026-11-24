@@ -6,7 +6,6 @@ import { ApiCustomExtension, AssetVisibilitySchema } from 'src/enum.js';
 import { JsonParsed, isoDatetimeToDate, stringToBool } from 'src/validation.js';
 
 export enum AssetMediaSize {
-  Original = 'original',
   /**
   An full-sized image extracted/converted from non-web-friendly formats like RAW/HIF.
   or otherwise the original image itself.

@@ -3,8 +3,8 @@
   import DateInput from '#lib/elements/DateInput.svelte';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import { getPreferredTimeZone, getTimezones, toIsoDate } from '#lib/modals/timezone-utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { updateAsset } from '@immich/sdk';
+  import { updateAssetMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import { FormModal, Label } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -33,13 +33,11 @@
 
     // Get the local date/time components from the selected string using neutral timezone
     const isoDate = toIsoDate(selectedDate, selectedOption);
-    try {
-      await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal: isoDate } });
-      onClose(true);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_date'));
-      onClose(false);
-    }
+    await executeMutation(
+      () => updateAssetMutation({ error: { toast: 'errors.unable_to_change_date' } }),
+      [{ id: asset.id, updateAssetDto: { dateTimeOriginal: isoDate } }],
+      { onSuccess: () => onClose(true), onError: () => onClose(false) },
+    );
   };
 
   const updateSelectedDate = (value: string) => {

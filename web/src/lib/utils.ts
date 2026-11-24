@@ -185,7 +185,7 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize };
+type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize | 'original' };
 
 export const getAssetUrl = ({
   asset,
@@ -222,16 +222,14 @@ const forceUseOriginal = (asset: AssetResponseDto) => {
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset)
-      ? AssetMediaSize.Original
-      : AssetMediaSize.Fullsize;
+    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
   }
   return AssetMediaSize.Preview;
 };
 
 export const getAssetMediaUrl = (options: AssetUrlOptions) => {
   const { id, size, cacheKey: c, edited = true } = options;
-  const isOriginal = size === AssetMediaSize.Original;
+  const isOriginal = size === 'original';
   const path = isOriginal ? getAssetOriginalPath(id) : getAssetThumbnailPath(id);
   return createUrl(path, { ...authManager.params, size: isOriginal ? undefined : size, c, edited });
 };

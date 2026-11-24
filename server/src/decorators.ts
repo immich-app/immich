@@ -274,6 +274,13 @@ export class HistoryBuilder {
     });
   }
 
+  noMoreMrEmptyString() {
+    return this.updated(
+      'v4.0.0',
+      'Empty strings are deprecated; use null instead. In v5, null will be returned instead of an empty string, and empty strings will be rejected.',
+    );
+  }
+
   isDeprecated(): boolean {
     return this.hasDeprecated;
   }

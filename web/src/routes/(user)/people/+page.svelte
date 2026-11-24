@@ -159,7 +159,7 @@
       }
 
       if (name === '') {
-        await updateName(targetPerson.id, '');
+        await updateName(targetPerson.id, null);
         return;
       }
 
@@ -191,7 +191,7 @@
     }
   };
 
-  const updateName = async (id: string, name: string, meta?: MutationMeta) => {
+  const updateName = async (id: string, name: string | null, meta?: MutationMeta) => {
     await executeMutation(() => updatePersonMutation(meta), [{ id, personUpdateDto: withUpdateStrategy({ name }) }], {
       onSuccess: () => newName.reset(),
     });

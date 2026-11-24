@@ -1,9 +1,10 @@
 <script lang="ts">
   import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import type { OnSetVisibility } from '#lib/utils/actions.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { AssetVisibility, updateAssets } from '@immich/sdk';
+  import { AssetVisibility } from '@immich/sdk';
   import { Button, modalManager } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -30,23 +31,14 @@
       return;
     }
 
-    try {
-      loading = true;
-      const assetIds = assetMultiSelectManager.assets.map(({ id }) => id);
-
-      await updateAssets({
-        assetBulkUpdateDto: {
-          ids: assetIds,
-          visibility: unlock ? AssetVisibility.Timeline : AssetVisibility.Locked,
-        },
-      });
-
-      onVisibilitySet(assetIds);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_settings'));
-    } finally {
-      loading = false;
-    }
+    loading = true;
+    const ids = assetMultiSelectManager.assets.map(({ id }) => id);
+    await executeMutation(
+      () => updateAssetsMutation({ error: { toast: 'errors.unable_to_save_settings' } }),
+      [{ assetBulkUpdateDto: { ids, visibility: unlock ? AssetVisibility.Timeline : AssetVisibility.Locked } }],
+      { onSuccess: () => onVisibilitySet(ids) },
+    );
+    loading = false;
   };
 </script>
 

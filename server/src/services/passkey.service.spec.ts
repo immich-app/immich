@@ -475,13 +475,13 @@ describe(PasskeyService.name, () => {
     it('should throw an error if passkeys are disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ passkey: { enabled: false } });
 
-      await expect(sut.startAuthentication({}, headers)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.startAuthentication(headers)).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should generate authentication options', async () => {
       mocks.webAuthn.generateAuthenticationOptions.mockResolvedValue(authenticationOptions);
 
-      await expect(sut.startAuthentication({}, headers)).resolves.toEqual(authenticationOptions);
+      await expect(sut.startAuthentication(headers)).resolves.toEqual(authenticationOptions);
 
       expect(mocks.authChallenge.create).toHaveBeenCalledWith({
         type: AuthChallengeType.PasskeyAuthentication,
@@ -494,16 +494,6 @@ describe(PasskeyService.name, () => {
         rpID: 'immich.example',
         userVerification: 'required',
       });
-    });
-
-    it('should store the code challenge with the challenge', async () => {
-      mocks.webAuthn.generateAuthenticationOptions.mockResolvedValue(authenticationOptions);
-
-      await sut.startAuthentication({ codeChallenge: 'code-challenge' }, headers);
-
-      expect(mocks.authChallenge.create).toHaveBeenCalledWith(
-        expect.objectContaining({ challenge: authenticationOptions.challenge, codeChallenge: 'code-challenge' }),
-      );
     });
   });
 
@@ -568,32 +558,6 @@ describe(PasskeyService.name, () => {
       ).rejects.toBeInstanceOf(UnauthorizedException);
 
       expect(mocks.session.create).not.toHaveBeenCalled();
-    });
-
-    it.each([
-      { login: 'a web login', codeVerifier: undefined, codeChallenge: undefined },
-      {
-        login: 'an app login',
-        codeVerifier: 'verifier',
-        codeChallenge: Buffer.from('verifier (hashed)').toString('base64url'),
-      },
-    ])('should consume the challenge of $login', async ({ codeVerifier, codeChallenge }) => {
-      const passkey = PasskeyFactory.create();
-      mocks.passkey.getByCredentialId.mockResolvedValue(passkey);
-      mocks.webAuthn.verifyAuthenticationResponse.mockResolvedValue(authenticationResult);
-      mocks.user.get.mockResolvedValue(UserFactory.create({ id: passkey.userId }));
-      mocks.passkey.update.mockResolvedValue(passkey);
-      mocks.session.create.mockResolvedValue(SessionFactory.create({ userId: passkey.userId }));
-
-      await sut.finishAuthentication({ response: newAuthenticationResponse(), codeVerifier }, headers, loginDetails);
-
-      const { expectedChallenge } = mocks.webAuthn.verifyAuthenticationResponse.mock.calls[0][0];
-      await expect((expectedChallenge as (challenge: string) => Promise<boolean>)('challenge')).resolves.toBe(true);
-      expect(mocks.authChallenge.consume).toHaveBeenCalledWith({
-        type: AuthChallengeType.PasskeyAuthentication,
-        challenge: 'challenge',
-        codeChallenge,
-      });
     });
 
     it('should log the user in', async () => {

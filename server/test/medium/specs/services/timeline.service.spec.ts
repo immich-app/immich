@@ -46,6 +46,22 @@ describe(TimelineService.name, () => {
       ]);
     });
 
+    it.each([
+      { hasCoordinates: true, count: 1 },
+      { hasCoordinates: false, count: 2 },
+    ])('should filter time buckets by hasCoordinates=$hasCoordinates', async ({ hasCoordinates, count }) => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      for (const coordinates of [{ latitude: 10, longitude: 20 }, { latitude: 10 }, {}]) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime: new Date('1970-01-01') });
+        await ctx.newExif({ assetId: asset.id, make: 'Canon', ...coordinates });
+      }
+
+      const response = sut.getTimeBuckets(auth, { hasCoordinates });
+      await expect(response).resolves.toEqual([{ count, timeBucket: '1970-01-01' }]);
+    });
+
     it('should return error if time bucket is requested with partners asset and archived', async () => {
       const { sut } = setup();
       const auth = factory.auth();
@@ -118,6 +134,29 @@ describe(TimelineService.name, () => {
   });
 
   describe('getTimeBucket', () => {
+    it.each([
+      { hasCoordinates: true, expected: ['both'] },
+      { hasCoordinates: false, expected: ['latitude', 'none'] },
+    ])('should filter time bucket by hasCoordinates=$hasCoordinates', async ({ hasCoordinates, expected }) => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const assets = {
+        both: { latitude: 10, longitude: 20 },
+        latitude: { latitude: 10 },
+        none: {},
+      };
+      const ids: Record<string, string> = {};
+      for (const [name, coordinates] of Object.entries(assets)) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime: new Date('1970-01-01') });
+        await ctx.newExif({ assetId: asset.id, make: 'Canon', ...coordinates });
+        ids[name] = asset.id;
+      }
+
+      const response = JSON.parse(await sut.getTimeBucket(auth, { timeBucket: '1970-01-01', hasCoordinates }));
+      expect(response.id.toSorted()).toEqual(expected.map((name) => ids[name]).toSorted());
+    });
+
     it('should return time bucket', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
@@ -285,5 +324,28 @@ describe(TimelineService.name, () => {
     const rawResponse = await sut.getTimeBucket(auth, { albumId: album.id, timeBucket: '1970-02-01', isTrashed: true });
     const response = JSON.parse(rawResponse);
     expect(response).not.toEqual(expect.objectContaining({ city: expect.any(Array), country: expect.any(Array) }));
+  });
+
+  it('should ignore hasCoordinates if shared link without exif', async () => {
+    const { sut, ctx } = setup();
+    const sharedLinkRepo = ctx.get(SharedLinkRepository);
+    const { user } = await ctx.newUser();
+    const { album } = await ctx.newAlbum({ ownerId: user.id });
+    for (const coordinates of [{ latitude: 10, longitude: 20 }, {}]) {
+      const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime: new Date('1970-01-01') });
+      await ctx.newExif({ assetId: asset.id, make: 'Canon', ...coordinates });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    }
+    const { id: sharedLinkId } = await sharedLinkRepo.create({
+      allowUpload: false,
+      key: Buffer.from('456'),
+      type: SharedLinkType.Album,
+      userId: user.id,
+      albumId: album.id,
+    });
+    const auth = factory.auth({ sharedLink: { id: sharedLinkId, showExif: false } });
+
+    const response = sut.getTimeBuckets(auth, { albumId: album.id, hasCoordinates: true });
+    await expect(response).resolves.toEqual([{ count: 2, timeBucket: '1970-01-01' }]);
   });
 });

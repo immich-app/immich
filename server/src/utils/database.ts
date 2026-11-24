@@ -384,6 +384,21 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: stri
   );
 }
 
+export function withCoordinatesFilter<O>(qb: SelectQueryBuilder<DB, 'asset', O>, hasCoordinates: boolean) {
+  return qb.where((eb) =>
+    eb.exists(
+      eb
+        .selectFrom('asset_exif')
+        .whereRef('asset_exif.assetId', '=', 'asset.id')
+        .where((eb) =>
+          hasCoordinates
+            ? eb.and([eb('asset_exif.latitude', 'is not', null), eb('asset_exif.longitude', 'is not', null)])
+            : eb.or([eb('asset_exif.latitude', 'is', null), eb('asset_exif.longitude', 'is', null)]),
+        ),
+    ),
+  );
+}
+
 const isCJK = (c: number): boolean =>
   (c >= 0x4e_00 && c <= 0x9f_ff) ||
   (c >= 0xac_00 && c <= 0xd7_af) ||

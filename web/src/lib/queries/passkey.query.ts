@@ -50,7 +50,7 @@ export const loginWithPasskeyMutation = () =>
   mutationOptions({
     mutationFn: () =>
       withPasskeyPrompt(async () => {
-        const options = await startAuthentication({});
+        const options = await startAuthentication();
         const response = await startBrowserAuthentication({
           optionsJSON: options as PublicKeyCredentialRequestOptionsJSON,
         });

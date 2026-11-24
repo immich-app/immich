@@ -9,9 +9,13 @@
 </p>
 
 <p align="center">
-  <a href="#">
-    <img src="../design/immich-logo-stacked-light.svg" width="300" alt="Immich Logo">
-  </a>
+  <picture>
+    <img
+      src="../design/immich-logo-stacked-light.svg"
+      alt="Immich Logo"
+      width="300"
+    />
+  </picture>
 </p>
 <h3 align="center">高效能的自架照片和影片管理解決方案</h3>
 <br/>

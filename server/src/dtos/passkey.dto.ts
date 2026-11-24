@@ -22,10 +22,6 @@ export class PasskeyRegistrationFinishDto extends createZodDto({
   response: z.unknown().describe("Response returned by @simplewebauthn/browser's `startAuthentication()`"),
 }) {}
 
-export class PasskeyAuthenticationStartDto extends createZodDto({
-  codeChallenge: z.string().min(1).optional().describe('Code challenge (PKCE)'),
-}) {}
-
 export class PasskeyAuthenticationFinishDto extends createZodDto({
   response: z
     .looseObject({
@@ -33,7 +29,6 @@ export class PasskeyAuthenticationFinishDto extends createZodDto({
       response: z.looseObject({ userHandle: z.base64url().optional().describe('User handle') }),
     })
     .describe("Response returned by @simplewebauthn/browser's `startAuthentication()`"),
-  codeVerifier: z.string().min(1).optional().describe('Code verifier (PKCE)'),
 }) {}
 
 export class PasskeySearchDto extends createZodDto({

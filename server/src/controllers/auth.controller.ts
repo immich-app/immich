@@ -3,6 +3,9 @@ import { ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
+  AuthCodeCreateDto,
+  AuthCodeExchangeDto,
+  AuthCodeResponseDto,
   AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
@@ -48,6 +51,31 @@ export class AuthController {
         { key: ImmichCookie.IsAuthenticated, value: 'true' },
       ],
     });
+  }
+
+  @Post('code')
+  @Authenticated({ permission: Permission.SessionCreate })
+  @Endpoint({
+    summary: 'Create app login code',
+    description: 'Create a one-time code that the mobile app exchanges for a session.',
+    history: HistoryBuilder.v4().alpha('v4.0.0'),
+  })
+  createAuthCode(@Auth() auth: AuthDto, @Body() dto: AuthCodeCreateDto): Promise<AuthCodeResponseDto> {
+    return this.service.createCode(auth, dto);
+  }
+
+  @Post('exchange')
+  @Authenticated({ public: true })
+  @Endpoint({
+    summary: 'Exchange app login code',
+    description: 'Exchange a one-time code and its code verifier for a session.',
+    history: HistoryBuilder.v4().alpha('v4.0.0'),
+  })
+  exchangeAuthCode(
+    @Body() dto: AuthCodeExchangeDto,
+    @GetLoginDetails() loginDetails: LoginDetails,
+  ): Promise<LoginResponseDto> {
+    return this.service.exchangeCode(dto, loginDetails);
   }
 
   @Post('admin-sign-up')

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/repositories/album_api_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
@@ -11,6 +12,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(BulkIdsDto(ids: const []));
+    registerFallbackValue(UpdateAlbumDto());
   });
 
   setUp(() {
@@ -78,5 +80,27 @@ void main() {
 
     expect(result.added, ['ok']);
     expect(result.failed, ['perm']);
+  });
+
+  test('updateAlbum stores a null description as an empty string', () async {
+    final owner = UserDto(id: 'user1', email: 'user1@immich.app', name: 'User 1', profileChangedAt: DateTime(2026));
+    when(() => api.updateAlbumInfo(any(), any())).thenAnswer(
+      (_) async => AlbumResponseDto(
+        albumName: 'Album',
+        albumThumbnailAssetId: null,
+        assetCount: 0,
+        createdAt: DateTime.utc(2026),
+        description: null,
+        hasSharedLink: false,
+        id: 'album1',
+        isActivityEnabled: true,
+        shared: false,
+        updatedAt: DateTime.utc(2026),
+      ),
+    );
+
+    final album = await repo.updateAlbum('album1', owner, name: 'Album');
+
+    expect(album.description, '');
   });
 }
