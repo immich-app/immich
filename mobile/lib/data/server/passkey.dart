@@ -1,6 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/api_repository.dart';
 import 'package:immich_mobile/domain/models/passkey.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:openapi/api.dart';
@@ -22,7 +24,8 @@ class PasskeyApiRepository extends ApiRepository {
       ApiClient(basePath: _api.apiClient.basePath)
         ..client = _api.apiClient.client
         ..defaultHeaderMap.addAll(_api.apiClient.defaultHeaderMap)
-        ..addDefaultHeader('Origin', origin),
+        ..addDefaultHeader('Origin', origin)
+        ..addDefaultHeader('x-immich-user-token', Store.get(StoreKey.accessToken)),
     );
   }
 
