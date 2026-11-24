@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -34,7 +32,7 @@ class Scrubber extends ConsumerStatefulWidget {
 
   final double bottomPadding;
 
-  final GlobalKey segmentedListKey;
+  final ValueChanged<Segment> scrollSegmentToTop;
 
   final bool snapToMonth;
 
@@ -47,7 +45,7 @@ class Scrubber extends ConsumerStatefulWidget {
     required this.timelineHeight,
     this.topPadding = 0,
     this.bottomPadding = 0,
-    required this.segmentedListKey,
+    required this.scrollSegmentToTop,
     this.snapToMonth = true,
     this.hasAppBar = true,
     required this.child,
@@ -294,7 +292,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       final layoutSegmentIndex = _findLayoutSegmentIndex(segment);
 
       if (layoutSegmentIndex >= 0) {
-        _scrollToLayoutSegment(layoutSegmentIndex);
+        widget.scrollSegmentToTop(widget.layoutSegments[layoutSegmentIndex]);
       }
     });
   }
@@ -304,20 +302,6 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       final bucket = layoutSegment.bucket as TimeBucket;
       return bucket.date.year == segment.date.year && bucket.date.month == segment.date.month;
     });
-  }
-
-  void _scrollToLayoutSegment(int layoutSegmentIndex) {
-    final list = widget.segmentedListKey.currentContext?.findRenderObject() as RenderSliver?;
-    if (list == null) {
-      return;
-    }
-
-    final headerOffset = widget.layoutSegments[layoutSegmentIndex].startOffset;
-    final header = Rect.fromLTWH(0, headerOffset, 0, 0);
-    final headerBelowPinnedBars = RenderAbstractViewport.of(list).getOffsetToReveal(list, 0, rect: header).offset;
-    final headerBelowStatusBar = list.constraints.precedingScrollExtent + headerOffset - context.padding.top;
-    final target = math.min(headerBelowPinnedBars, headerBelowStatusBar);
-    _scrollController.jumpTo(target.clamp(0.0, _scrollController.position.maxScrollExtent));
   }
 
   void _onDragEnd(DragEndDetails _) {

@@ -268,6 +268,19 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     _scrollController.jumpTo(target.clamp(0.0, position.maxScrollExtent));
   }
 
+  void _scrollSegmentToTop(Segment segment) {
+    final list = _segmentedListKey.currentContext?.findRenderObject() as RenderSliver?;
+    if (list == null) {
+      return;
+    }
+
+    final header = Rect.fromLTWH(0, segment.startOffset, 0, 0);
+    final headerBelowPinnedBars = RenderAbstractViewport.of(list).getOffsetToReveal(list, 0, rect: header).offset;
+    final headerBelowStatusBar = list.constraints.precedingScrollExtent + segment.startOffset - context.padding.top;
+    final target = math.min(headerBelowPinnedBars, headerBelowStatusBar);
+    _scrollController.jumpTo(target.clamp(0.0, _scrollController.position.maxScrollExtent));
+  }
+
   void _onMultiSelectionToggled(_, bool isEnabled) {
     EventStream.shared.emit(MultiSelectToggleEvent(isEnabled));
   }
@@ -460,7 +473,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                           timelineHeight: maxHeight,
                           topPadding: topPadding,
                           bottomPadding: scrubberBottomPadding,
-                          segmentedListKey: _segmentedListKey,
+                          scrollSegmentToTop: _scrollSegmentToTop,
                           hasAppBar: widget.appBar != null,
                           child: grid,
                         );
