@@ -52,6 +52,53 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 \*2: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
 
+## System config
+
+Every setting from the [config file](/install/config-file.md) can also be set with an environment variable. The name is `IMMICH_CONFIG_` followed by the path of the property in upper snake case:
+
+| Property                                     | Variable                                                      |
+| :------------------------------------------- | :------------------------------------------------------------ |
+| `ffmpeg.crf`                                 | `IMMICH_CONFIG_FFMPEG_CRF`                                    |
+| `trash.enabled`                              | `IMMICH_CONFIG_TRASH_ENABLED`                                 |
+| `oauth.clientSecret`                         | `IMMICH_CONFIG_OAUTH_CLIENT_SECRET`                           |
+| `machineLearning.urls`                       | `IMMICH_CONFIG_MACHINE_LEARNING_URLS`                         |
+| `machineLearning.facialRecognition.minScore` | `IMMICH_CONFIG_MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_SCORE` |
+
+| Type    | Example                                                                                            |
+| :------ | :------------------------------------------------------------------------------------------------- |
+| Text    | `IMMICH_CONFIG_FFMPEG_PRESET=ultrafast`                                                            |
+| Number  | `IMMICH_CONFIG_FFMPEG_CRF=28`                                                                      |
+| Boolean | `IMMICH_CONFIG_TRASH_ENABLED=false`                                                                |
+| List    | `IMMICH_CONFIG_FFMPEG_ACCEPTED_VIDEO_CODECS=h264,hevc` or a JSON array such as `["h264","hevc"]`   |
+| Empty   | `IMMICH_CONFIG_OAUTH_DEFAULT_STORAGE_QUOTA=null` for a property that can be empty, `[]` for a list |
+
+- Environment variables override the config file, which overrides settings saved from the web UI.
+- A property set this way cannot be changed from the web UI. It is shown as locked, with the name of the variable.
+- A variable with an empty value is ignored.
+- A list of numbers must be a JSON array, for example `[480,720]`.
+- An invalid value stops the server from starting. A variable that matches no property is logged as a warning.
+
+```
+Invalid config environment variables:
+  IMMICH_CONFIG_FFMPEG_CRF=99: Too big: expected number to be <=51
+```
+
+:::info
+If you have any `microservices` workers, set the same variables on those containers.
+:::
+
+### Deprecated variables
+
+These variables still work on the server, and log a warning at startup. Use the new name instead.
+
+| Deprecated                        | Use instead                              |
+| :-------------------------------- | :--------------------------------------- |
+| `IMMICH_LOG_LEVEL`                | `IMMICH_CONFIG_LOGGING_LEVEL`            |
+| `IMMICH_MACHINE_LEARNING_ENABLED` | `IMMICH_CONFIG_MACHINE_LEARNING_ENABLED` |
+| `IMMICH_MACHINE_LEARNING_URL`     | `IMMICH_CONFIG_MACHINE_LEARNING_URLS`    |
+
+`IMMICH_LOG_LEVEL` is still the way to set the log level of the machine learning container.
+
 ## Workers
 
 | Variable                 | Description                                                                                          | Default | Containers |
