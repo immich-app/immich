@@ -1,6 +1,8 @@
 import TransformTool from '#lib/components/asset-viewer/editor/transform-tool/TransformTool.svelte';
 import { transformManager } from '#lib/managers/edit/transform-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { waitForWebsocketEvent } from '#lib/stores/websocket.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { editAsset, removeAssetEdits, type AssetEditsCreateDto, type AssetResponseDto } from '@immich/sdk';
@@ -141,6 +143,7 @@ export class EditManager {
       await editCompleted;
 
       eventManager.emit('AssetEditsApplied', assetId);
+      void queryClient.invalidateQueries({ queryKey: QueryKeys.assetOcr({ id: assetId }) });
 
       toastManager.primary(t('editor_edits_applied_success'));
       this.hasAppliedEdits = true;

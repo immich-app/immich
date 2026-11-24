@@ -1,5 +1,5 @@
-import type { OcrBoundingBox } from '#lib/stores/ocr.svelte.ts';
 import { mapNormalizedToContent, type Point, type Size } from '#lib/utils/container-utils.ts';
+import type { AssetOcrResponseDto } from '@immich/sdk';
 import { clamp } from 'lodash-es';
 
 export type { Point } from '#lib/utils/container-utils.ts';
@@ -158,7 +158,7 @@ export const calculateFittedFontSize = (
   return clamp(Math.min(scaleFromWidth, scaleFromHeight), MIN_FONT_SIZE, MAX_FONT_SIZE);
 };
 
-export const getOcrBoundingBoxes = (ocrData: OcrBoundingBox[], imageSize: Size): OcrBox[] => {
+export const getOcrBoundingBoxes = (ocrData: AssetOcrResponseDto[], imageSize: Size): OcrBox[] => {
   const boxes: OcrBox[] = [];
   for (const ocr of ocrData) {
     const points = [

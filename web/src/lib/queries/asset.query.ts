@@ -4,6 +4,7 @@ import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   checkBulkUpload,
   deleteAssets,
+  getAssetOcr,
   getAssetStatistics,
   runAssetJobs,
   updateAsset,
@@ -17,6 +18,13 @@ export const getAssetStatisticsQuery = (filter: AssetStatisticsFilter) =>
   queryOptions({
     queryKey: QueryKeys.assetStatistics(filter),
     queryFn: ({ signal }) => getAssetStatistics(filter, { signal }),
+    staleTime: 0,
+  });
+
+export const getAssetOcrQuery = (id: string) =>
+  queryOptions({
+    queryKey: QueryKeys.assetOcr({ id }),
+    queryFn: ({ signal }) => getAssetOcr({ id }, { signal }),
     staleTime: 0,
   });
 
