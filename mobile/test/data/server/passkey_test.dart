@@ -26,7 +26,7 @@ void main() {
           200,
         ),
       );
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient), AuthenticationApi(apiClient));
 
     passkey = {'enabled': true, 'domain': 'https://photos.example.com:8443/'};
     expect(await sut.getConfig(), (enabled: true, origin: 'https://photos.example.com:8443'));
@@ -48,7 +48,7 @@ void main() {
         sent = request;
         return http.Response(jsonEncode(options), 200);
       });
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient), AuthenticationApi(apiClient));
 
     expect(await sut.startRegistration('https://photos.example.com'), options);
     expect(sent.url.origin, 'https://demo.immich.app');
@@ -62,41 +62,14 @@ void main() {
         sent = request;
         return http.Response('', 201);
       });
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient), AuthenticationApi(apiClient));
 
     await sut.finishRegistration('https://demo.immich.app', {'id': 'credential'});
 
     expect(sent.headers['Origin'], 'https://demo.immich.app');
   });
 
-  test('startAuthentication sends the code challenge and the server origin, and decodes the options', () async {
-    const options = {
-      'challenge': 'challenge',
-      'rpId': 'demo.immich.app',
-      'timeout': 60000,
-      'userVerification': 'required',
-    };
-    late http.Request sent;
-    final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
-      ..client = MockClient((request) async {
-        sent = request;
-        return http.Response(jsonEncode(options), 200);
-      });
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
-
-    expect(await sut.startAuthentication('https://demo.immich.app', 'code-challenge'), options);
-    expect(sent.url.queryParameters, {'codeChallenge': 'code-challenge'});
-    expect(sent.headers['Origin'], 'https://demo.immich.app');
-  });
-
-  test('finishAuthentication sends the whole credential to the server', () async {
-    const credential = {
-      'id': 'credential',
-      'rawId': 'credential',
-      'type': 'public-key',
-      'response': {'clientDataJSON': 'data', 'authenticatorData': 'authenticator', 'signature': 'signature'},
-      'clientExtensionResults': <String, dynamic>{},
-    };
+  test('exchangeCode sends the code and its verifier to the server', () async {
     const login = {
       'accessToken': 'token',
       'isAdmin': false,
@@ -113,11 +86,11 @@ void main() {
         sent = request;
         return http.Response(jsonEncode(login), 201);
       });
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient), AuthenticationApi(apiClient));
 
-    expect((await sut.finishAuthentication('https://demo.immich.app', credential, 'verifier')).accessToken, 'token');
-    expect(jsonDecode(sent.body), {'response': credential, 'codeVerifier': 'verifier'});
-    expect(sent.headers['Origin'], 'https://demo.immich.app');
+    expect((await sut.exchangeCode('code', 'verifier')).accessToken, 'token');
+    expect(sent.url.path, '/api/auth/exchange');
+    expect(jsonDecode(sent.body), {'code': 'code', 'codeVerifier': 'verifier'});
   });
 
   test('getAll maps passkeys with and without a name and a last use', () async {
@@ -139,7 +112,7 @@ void main() {
     ];
     final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
       ..client = MockClient((_) async => http.Response(jsonEncode(passkeys), 200));
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient), AuthenticationApi(apiClient));
 
     expect(await sut.getAll(), [
       Passkey(
@@ -168,7 +141,7 @@ void main() {
           200,
         );
       });
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient), AuthenticationApi(apiClient));
 
     await sut.update('passkey-id', 'Laptop');
     await sut.update('passkey-id', null);
@@ -186,7 +159,7 @@ void main() {
         sent = request;
         return http.Response('', 204);
       });
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient));
+    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient), AuthenticationApi(apiClient));
 
     await sut.delete('passkey-id');
 

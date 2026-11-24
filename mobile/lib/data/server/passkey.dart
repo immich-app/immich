@@ -7,22 +7,21 @@ import 'package:openapi/api.dart';
 
 final passkeyApiRepositoryProvider = Provider((ref) {
   final apiService = ref.watch(apiServiceProvider);
-  return PasskeyApiRepository(apiService.passkeysApi, apiService.configPublicApi);
+  return PasskeyApiRepository(apiService.passkeysApi, apiService.configPublicApi, apiService.authenticationApi);
 });
 
 class PasskeyApiRepository extends ApiRepository {
   final PasskeysApi _api;
   final ConfigPublicApi _configApi;
+  final AuthenticationApi _authApi;
 
-  const PasskeyApiRepository(this._api, this._configApi);
+  const PasskeyApiRepository(this._api, this._configApi, this._authApi);
 
-  // The server makes passkeys for the domain in the Origin header, like for its web client
   PasskeysApi _webApi(String origin) {
-    final apiClient = _api.apiClient;
     return PasskeysApi(
-      ApiClient(basePath: apiClient.basePath)
-        ..client = apiClient.client
-        ..defaultHeaderMap.addAll(apiClient.defaultHeaderMap)
+      ApiClient(basePath: _api.apiClient.basePath)
+        ..client = _api.apiClient.client
+        ..defaultHeaderMap.addAll(_api.apiClient.defaultHeaderMap)
         ..addDefaultHeader('Origin', origin),
     );
   }
@@ -41,18 +40,10 @@ class PasskeyApiRepository extends ApiRepository {
     await _webApi(origin).finishRegistration(PasskeyRegistrationFinishDto(response: credential));
   }
 
-  /// The WebAuthn options for logging in with a passkey
-  Future<Map<String, Object?>> startAuthentication(String origin, String codeChallenge) =>
-      checkNull(_webApi(origin).startAuthentication(codeChallenge: codeChallenge));
-
-  /// Log in with the WebAuthn [credential] signed with the [startAuthentication] options
-  Future<LoginResponse> finishAuthentication(
-    String origin,
-    Map<String, dynamic> credential,
-    String codeVerifier,
-  ) async {
-    final dto = PasskeyAuthenticationFinishDto(response: credential, codeVerifier: Optional.present(codeVerifier));
-    return LoginResponse.fromDto(await checkNull(_webApi(origin).finishAuthentication(dto)));
+  /// Log in with the one-time code from the passkey page and the verifier of its code challenge
+  Future<LoginResponse> exchangeCode(String code, String codeVerifier) async {
+    final dto = AuthCodeExchangeDto(code: code, codeVerifier: codeVerifier);
+    return LoginResponse.fromDto(await checkNull(_authApi.exchangeAuthCode(dto)));
   }
 
   /// Every passkey of the current user

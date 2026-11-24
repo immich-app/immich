@@ -42,7 +42,6 @@ final _enabledProvider = FutureProvider.autoDispose<bool>((ref) async {
     }
 
     final config = await ref.watch(passkeyApiRepositoryProvider).getConfig();
-    // browsers only offer passkeys to https pages
     return config.enabled && config.origin.startsWith('https:');
   } catch (error, stack) {
     _log.warning("Failed to get the passkey config", error, stack);
@@ -69,12 +68,12 @@ class PasskeyMutations extends StoreMutations {
     try {
       final origin = (await apiRepository.getConfig()).origin;
       final options = await apiRepository.startRegistration(origin);
-      final credential = await _prompt(origin, 'registration', options);
+      final credential = await _prompt(origin, {'registration': jsonEncode(options)}, 'credential');
       if (credential == null) {
         return false;
       }
 
-      await apiRepository.finishRegistration(origin, credential);
+      await apiRepository.finishRegistration(origin, jsonDecode(credential));
       invalidate(_allProvider);
       return true;
     } catch (error, stack) {
@@ -91,24 +90,23 @@ class PasskeyMutations extends StoreMutations {
 
     try {
       final origin = (await apiRepository.getConfig()).origin;
-      final options = await apiRepository.startAuthentication(origin, codeChallenge);
-      final credential = await _prompt(origin, 'authentication', options);
-      if (credential == null) {
+      final code = await _prompt(origin, {'codeChallenge': codeChallenge}, 'code');
+      if (code == null) {
         return null;
       }
 
-      return await apiRepository.finishAuthentication(origin, credential, codeVerifier);
+      return await apiRepository.exchangeCode(code, codeVerifier);
     } catch (error, stack) {
       _log.severe("Failed to log in with a passkey", error, stack);
       rethrow;
     }
   }
 
-  Future<Map<String, dynamic>?> _prompt(String origin, String ceremony, Map<String, Object?> options) async {
+  Future<String?> _prompt(String origin, Map<String, String> input, String output) async {
     final String callback;
     try {
       callback = await FlutterWebAuth2.authenticate(
-        url: '$origin/auth/passkey#${Uri(queryParameters: {ceremony: jsonEncode(options)}).query}',
+        url: '$origin/auth/passkey#${Uri(queryParameters: input).query}',
         callbackUrlScheme: 'app.immich',
         options: const FlutterWebAuth2Options(preferEphemeral: true),
       );
@@ -125,8 +123,7 @@ class PasskeyMutations extends StoreMutations {
       throw Exception(error);
     }
 
-    final credential = result['credential'];
-    return credential == null ? null : jsonDecode(credential);
+    return result[output];
   }
 
   /// Rename the passkey [id], or clear its name with `null`

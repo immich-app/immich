@@ -129,37 +129,30 @@ void main() {
     );
 
     setUp(() {
-      when(() => api.startAuthentication(any(), any())).thenAnswer((_) async => {'challenge': 'abc'});
-      when(() => api.finishAuthentication(any(), any(), any())).thenAnswer((_) async => login);
+      when(() => api.exchangeCode(any(), any())).thenAnswer((_) async => login);
     });
 
-    test("returns the server's login for the credential and the verifier of the code challenge", () async {
-      page = () async => 'app.immich:///passkey-callback?credential=%7B%22id%22%3A%22credential%22%7D';
+    test("returns the server's login for the code and the verifier of the code challenge", () async {
+      page = () async => 'app.immich:///passkey-callback?code=abc';
 
       expect(await createContainer().read(Store.passkeys).login(), login);
-      expect(opened, ['https://demo.immich.app/auth/passkey#authentication=%7B%22challenge%22%3A%22abc%22%7D']);
-      final codeChallenge = verify(
-        () => api.startAuthentication('https://demo.immich.app', captureAny()),
-      ).captured.single;
-      final [credential, codeVerifier] = verify(
-        () => api.finishAuthentication('https://demo.immich.app', captureAny(), captureAny()),
-      ).captured;
-      expect(credential, {'id': 'credential'});
-      expect(codeChallenge, base64Url.encode(sha256.convert(utf8.encode(codeVerifier)).bytes).replaceAll('=', ''));
+      final codeVerifier = verify(() => api.exchangeCode('abc', captureAny())).captured.single;
+      final codeChallenge = base64Url.encode(sha256.convert(utf8.encode(codeVerifier)).bytes).replaceAll('=', '');
+      expect(opened, ['https://demo.immich.app/auth/passkey#codeChallenge=$codeChallenge']);
     });
 
     test('does not finish when the user closes the browser', () async {
       page = () => throw PlatformException(code: 'CANCELED');
 
       expect(await createContainer().read(Store.passkeys).login(), isNull);
-      verifyNever(() => api.finishAuthentication(any(), any(), any()));
+      verifyNever(() => api.exchangeCode(any(), any()));
     });
 
     test('throws the error the page hands back', () async {
       page = () async => 'app.immich:///passkey-callback?error=NotSupportedError';
 
       await expectLater(createContainer().read(Store.passkeys).login(), throwsA(isA<Exception>()));
-      verifyNever(() => api.finishAuthentication(any(), any(), any()));
+      verifyNever(() => api.exchangeCode(any(), any()));
     });
   });
 }
