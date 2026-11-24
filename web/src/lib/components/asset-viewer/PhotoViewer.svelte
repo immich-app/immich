@@ -16,7 +16,7 @@
   import { handleError } from '#lib/utils/handle-error.ts';
   import { getOcrBoundingBoxes } from '#lib/utils/ocr-utils.ts';
   import { getBoundingBox, type BoundingBox } from '#lib/utils/people-utils.ts';
-  import { type SharedLinkResponseDto } from '@immich/sdk';
+  import { type AssetOcrResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { shortcuts, toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
@@ -27,12 +27,13 @@
     cursor: AssetCursor;
     element?: HTMLDivElement;
     sharedLink?: SharedLinkResponseDto;
+    ocrData?: AssetOcrResponseDto[];
     onReady?: () => void;
     onError?: () => void;
     onSwipe?: (event: SwipeCustomEvent) => void;
   };
 
-  let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
+  let { cursor, element = $bindable(), sharedLink, ocrData = [], onReady, onError, onSwipe }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
   const asset = $derived(cursor.current);
@@ -85,7 +86,7 @@
     }
   });
 
-  const ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlaySize) : []);
+  const ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrData, overlaySize) : []);
 
   const onCopy = async () => {
     if (!canCopyImageToClipboard() || !assetViewerManager.imgRef) {

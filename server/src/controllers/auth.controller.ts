@@ -71,11 +71,20 @@ export class AuthController {
     description: 'Exchange a one-time code and its code verifier for a session.',
     history: HistoryBuilder.v4().alpha('v4.0.0'),
   })
-  exchangeAuthCode(
+  async exchangeAuthCode(
+    @Res({ passthrough: true }) res: Response,
     @Body() dto: AuthCodeExchangeDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    return this.service.exchangeCode(dto, loginDetails);
+    const body = await this.service.exchangeCode(dto, loginDetails);
+    return respondWithCookie(res, body, {
+      isSecure: loginDetails.isSecure,
+      values: [
+        { key: ImmichCookie.AccessToken, value: body.accessToken },
+        { key: ImmichCookie.AuthType, value: AuthType.Code },
+        { key: ImmichCookie.IsAuthenticated, value: 'true' },
+      ],
+    });
   }
 
   @Post('admin-sign-up')

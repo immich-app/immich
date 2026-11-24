@@ -287,13 +287,17 @@ describe(AuthController.name, () => {
       expect(service.exchangeCode).not.toHaveBeenCalled();
     });
 
-    it('should respond with 201 without setting cookies', async () => {
+    it('should respond with 201 and set the auth cookies', async () => {
       service.exchangeCode.mockResolvedValue({ accessToken: 'token' } as LoginResponseDto);
       const { status, headers } = await request(ctx.getHttpServer())
         .post('/auth/exchange')
         .send({ code: 'code', codeVerifier });
       expect(status).toEqual(201);
-      expect(headers['set-cookie']).toBeUndefined();
+      expect(headers['set-cookie']).toEqual([
+        expect.stringContaining('immich_access_token=token; Max-Age=34560000; Path=/; Expires='),
+        expect.stringContaining('immich_auth_type=code; Max-Age=34560000; Path=/; Expires='),
+        expect.stringContaining('immich_is_authenticated=true; Max-Age=34560000; Path=/; Expires='),
+      ]);
       expect(service.exchangeCode).toHaveBeenCalledWith({ code: 'code', codeVerifier }, expect.anything());
     });
   });

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
+import { BinaryField, DefaultReadTaskOptions, ExifDateTime, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -11,23 +11,9 @@ interface ExifDuration {
 
 type StringOrNumber = string | number;
 
-type TagsWithWrongTypes =
-  | 'FocalLength'
-  | 'Duration'
-  | 'Description'
-  | 'ImageDescription'
-  | 'RegionInfo'
-  | 'TagsList'
-  | 'Keywords'
-  | 'HierarchicalSubject'
-  | 'ISO'
-  | 'LensModel';
-
-export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
+interface ImmichTagOverrides {
   ContentIdentifier?: string;
   MotionPhoto?: number;
-  MotionPhotoVersion?: number;
-  MotionPhotoPresentationTimestampUs?: number;
   MediaGroupUUID?: string;
   ImagePixelDepth?: string;
   FocalLength?: number;
@@ -39,6 +25,7 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   HierarchicalSubject?: StringOrNumber[];
   Keywords?: StringOrNumber | StringOrNumber[];
   ISO?: number | number[];
+  SourceImageCreateTime?: ExifDateTime | string;
 
   // Type is wrong, can also be number.
   Description?: StringOrNumber;
@@ -83,6 +70,86 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   Author?: string;
   SamsungModel?: string;
 }
+
+export const IMMICH_TAGS = [
+  'AndroidMake',
+  'AndroidModel',
+  'Author',
+  'BitDepth',
+  'BitsPerSample',
+  'BurstID',
+  'BurstUUID',
+  'CameraBurstID',
+  'ColorBitDepth',
+  'ColorSpace',
+  'ComponentBitDepth',
+  'ContainerDirectory',
+  'ContentIdentifier',
+  'CreateDate',
+  'CreationDate',
+  'DateTimeCreated',
+  'DateTimeOriginal',
+  'DateTimeUTC',
+  'Description',
+  'Device',
+  'DeviceManufacturer',
+  'DeviceModelName',
+  'Duration',
+  'EmbeddedVideoFile',
+  'EmbeddedVideoType',
+  'ExposureTime',
+  'FNumber',
+  'FocalLength',
+  'GPSDateTime',
+  'GPSLatitude',
+  'GPSLongitude',
+  'HierarchicalSubject',
+  'ImageDescription',
+  'ImageHeight',
+  'ImagePixelDepth',
+  'ImageSize',
+  'ImageWidth',
+  'ISO',
+  'Keywords',
+  'LensID',
+  'LensModel',
+  'LensSpec',
+  'LensType',
+  'Make',
+  'MediaCreateDate',
+  'MediaGroupUUID',
+  'MediaUniqueID',
+  'MicroVideo',
+  'MicroVideoOffset',
+  'Model',
+  'MotionPhoto',
+  'MotionPhotoVideo',
+  'Orientation',
+  'ProfileDescription',
+  'ProjectionType',
+  'Rating',
+  'RecommendedExposureIndex',
+  'RegionInfo',
+  'Rotation',
+  'SamsungModel',
+  'SonyDateTime2',
+  'SourceImageCreateTime',
+  'StandardOutputSensitivity',
+  'SubSecCreateDate',
+  'SubSecDateTimeOriginal',
+  'TagsList',
+  'tz',
+  'VideoFrameRate',
+  'zone',
+  'zoneSource',
+] as const satisfies readonly (keyof Tags | keyof ImmichTagOverrides)[];
+
+type ImmichTag = (typeof IMMICH_TAGS)[number];
+
+export interface ImmichTags
+  extends
+    Omit<Pick<Tags, Extract<ImmichTag, keyof Tags>>, keyof ImmichTagOverrides>,
+    Pick<ImmichTagOverrides, Extract<ImmichTag, keyof ImmichTagOverrides>> {}
 
 @Injectable()
 export class MetadataRepository {

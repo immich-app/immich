@@ -6,6 +6,7 @@ import { UploadState } from '#lib/types.ts';
 import { uploadRequest } from '#lib/utils.ts';
 import { factory } from '#test/unit/factories.ts';
 import { test } from '#test/unit/fixtures.ts';
+import { setPage } from '#test/unit/mocks/app-state.svelte.ts';
 import { AssetMediaStatus, AssetUploadAction, type AssetMediaResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, vi } from 'vitest';
@@ -65,7 +66,9 @@ describe('fileUploader error handling', () => {
     const file = newFile();
     api.on({
       checkBulkUpload: () => ({
-        json: { results: [{ id: file.name, action: AssetUploadAction.Reject, assetId: 'existing-id' }] },
+        json: {
+          results: [{ id: file.name, action: AssetUploadAction.Reject, assetId: 'existing-id', isTrashed: true }],
+        },
       }),
     });
 
@@ -74,6 +77,7 @@ describe('fileUploader error handling', () => {
     const [item] = get(uploadAssetsStore);
     expect(item.state).toBe(UploadState.DUPLICATED);
     expect(item.assetId).toBe('existing-id');
+    expect(item.isTrashed).toBe(true);
     expect(api.checkBulkUpload).toHaveBeenCalledWith({
       body: { assets: [{ id: file.name, checksum: expect.any(String) }] },
     });
@@ -93,6 +97,17 @@ describe('fileUploader error handling', () => {
     expect(api.checkBulkUpload).toHaveBeenCalled();
     expect(logger.error).toHaveBeenCalledWith(/Error calculating sha1/);
     expect(logger.error).not.toHaveBeenCalledWith(/handleError/);
+  });
+
+  test('skips the duplicate check for shared links', async ({ api }) => {
+    setPage({ route: { id: '/(user)/share/[key]/[[photos=photos]]/[[assetId=id]]' }, params: { key: 'shared-key' } });
+    vi.mocked(uploadRequest).mockResolvedValue({ status: 201, data: mockUploadResponse });
+
+    await fileUploadHandler({ files: [newFile()] });
+
+    const [item] = get(uploadAssetsStore);
+    expect(item.state).toBe(UploadState.DONE);
+    expect(api.checkBulkUpload).not.toHaveBeenCalled();
   });
 
   test('should suppress errors on logout', async () => {
