@@ -1,10 +1,10 @@
-import type { OcrBoundingBox } from '#lib/stores/ocr.svelte.ts';
 import type { Size } from '#lib/utils/container-utils.ts';
 import { getOcrBoundingBoxes } from '#lib/utils/ocr-utils.ts';
+import type { AssetOcrResponseDto } from '@immich/sdk';
 
 describe('getOcrBoundingBoxes', () => {
   it('should scale normalized coordinates by display dimensions', () => {
-    const ocrData: OcrBoundingBox[] = [
+    const ocrData: AssetOcrResponseDto[] = [
       {
         id: 'box1',
         assetId: 'asset1',
@@ -38,7 +38,7 @@ describe('getOcrBoundingBoxes', () => {
   });
 
   it('should map full-image box to full display area', () => {
-    const ocrData: OcrBoundingBox[] = [
+    const ocrData: AssetOcrResponseDto[] = [
       {
         id: 'box1',
         assetId: 'asset1',
@@ -72,7 +72,7 @@ describe('getOcrBoundingBoxes', () => {
   });
 
   it('should handle multiple boxes', () => {
-    const ocrData: OcrBoundingBox[] = [
+    const ocrData: AssetOcrResponseDto[] = [
       {
         id: 'a',
         assetId: 'asset1',
