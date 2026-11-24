@@ -1,7 +1,14 @@
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { asMutation } from '#lib/queries/client.ts';
 import { QueryKeys } from '#lib/queries/query-keys.ts';
-import { deleteAssets, getAssetStatistics, runAssetJobs, updateAsset, updateAssets } from '@immich/sdk';
+import {
+  checkBulkUpload,
+  deleteAssets,
+  getAssetStatistics,
+  runAssetJobs,
+  updateAsset,
+  updateAssets,
+} from '@immich/sdk';
 import { queryOptions, type MutationMeta } from '@tanstack/svelte-query';
 
 type AssetStatisticsFilter = Parameters<typeof getAssetStatistics>[0];
@@ -12,6 +19,8 @@ export const getAssetStatisticsQuery = (filter: AssetStatisticsFilter) =>
     queryFn: ({ signal }) => getAssetStatistics(filter, { signal }),
     staleTime: 0,
   });
+
+export const checkBulkUploadMutation = () => asMutation(checkBulkUpload, { meta: { error: { toast: false } } });
 
 export const runAssetJobsMutation = () =>
   asMutation(runAssetJobs, { meta: { error: { toast: 'errors.unable_to_submit_job' } } });
