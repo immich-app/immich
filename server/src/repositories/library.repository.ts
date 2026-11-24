@@ -121,16 +121,4 @@ export class LibraryRepository {
   streamAssetIds(libraryId: string) {
     return this.db.selectFrom('asset').select(['id']).where('libraryId', '=', libraryId).stream();
   }
-
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  streamAssets(libraryId: string) {
-    return this.db
-      .selectFrom('asset')
-      .select(['id', 'originalPath', 'isOffline', 'status', 'fileModifiedAt'])
-      .where('libraryId', '=', libraryId)
-      .orderBy(sql`"originalPath" collate "C"`)
-      .stream();
-  }
 }
-
-export type LibraryScanAsset = ReturnType<LibraryRepository['streamAssets']> extends AsyncIterable<infer T> ? T : never;

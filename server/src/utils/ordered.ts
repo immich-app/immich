@@ -1,8 +1,14 @@
+import { UTF16_SURROGATE_OR_ABOVE } from 'src/constants.js';
+
 export type OrderedFiles = { paths: string[]; modified: number[] };
 
 export const compareUtf8 = (a: string, b: string) => {
   if (a === b) {
     return 0;
+  }
+
+  if (!UTF16_SURROGATE_OR_ABOVE.test(a) || !UTF16_SURROGATE_OR_ABOVE.test(b)) {
+    return a < b ? -1 : 1;
   }
 
   const length = Math.min(a.length, b.length);

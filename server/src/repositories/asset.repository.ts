@@ -174,6 +174,20 @@ const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T
   );
 };
 
+export type LibraryScanAsset = {
+  id: string;
+  originalPath: string;
+  isOffline: boolean;
+  isExternal: boolean;
+  status: AssetStatus;
+  fileModifiedAt: Date;
+};
+
+export type LibraryScan = {
+  assets: AsyncIterable<LibraryScanAsset[]>;
+  setOffline: (ids: string[]) => Promise<number>;
+};
+
 @Injectable()
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -1091,44 +1105,59 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, () => true] })
-  detectOfflineExternalAssets(libraryId: string, isInLibrary: (originalPath: string) => boolean): Promise<number> {
+  @GenerateSql({
+    params: [
+      DummyValue.UUID,
+      async ({ assets, setOffline }: LibraryScan) => {
+        for await (const _ of assets) {
+          await setOffline([DummyValue.UUID]);
+        }
+      },
+    ],
+  })
+  scanLibraryAssets<T>(libraryId: string, onScan: (scan: LibraryScan) => Promise<T>): Promise<T> {
     // read and write on one connection, so concurrent library scans can't deadlock on the pool
     return this.db.transaction().execute(async (trx) => {
       const query = trx
         .selectFrom('asset')
-        .select(['asset.id', 'asset.originalPath'])
+        .select([
+          'asset.id',
+          'asset.originalPath',
+          'asset.isOffline',
+          'asset.isExternal',
+          'asset.status',
+          'asset.fileModifiedAt',
+        ])
         .where('asset.libraryId', '=', asUuid(libraryId))
-        .where('asset.isOffline', '=', false)
-        .where('asset.isExternal', '=', true);
-      await sql`declare offline_check no scroll cursor for ${query}`.execute(trx);
+        .orderBy(sql`"originalPath" collate "C"`);
+      await sql`declare library_scan no scroll cursor for ${query}`.execute(trx);
 
-      const fetchBatch = async () => {
-        const { rows } = await sql<{ id: string; originalPath: string }>`
-          fetch ${sql.lit(JOBS_LIBRARY_PAGINATION_SIZE)} from offline_check
-        `.execute(trx);
-        return rows;
-      };
+      async function* fetchBatches() {
+        for (;;) {
+          const { rows } = await sql<LibraryScanAsset>`
+            fetch ${sql.lit(JOBS_LIBRARY_PAGINATION_SIZE)} from library_scan
+          `.execute(trx);
+          if (rows.length === 0) {
+            return;
+          }
+
+          yield rows;
+        }
+      }
 
       const deletedAt = new Date();
-      let count = 0;
-      for (let rows = await fetchBatch(); rows.length > 0; rows = await fetchBatch()) {
-        const ids = rows.filter(({ originalPath }) => !isInLibrary(originalPath)).map(({ id }) => id);
-        if (ids.length === 0) {
-          continue;
-        }
-
-        // a concurrent check of the same library may have offlined these rows after the cursor was declared
+      const setOffline = async (ids: string[]) => {
+        // a concurrent scan of the same library may have offlined these rows after the cursor was declared
         const { numUpdatedRows } = await trx
           .updateTable('asset')
           .set({ isOffline: true, deletedAt })
           .where('id', '=', anyUuid(ids))
           .where('isOffline', '=', false)
           .executeTakeFirst();
-        count += Number(numUpdatedRows);
-      }
+        return Number(numUpdatedRows);
+      };
 
-      return count;
+      return onScan({ assets: fetchBatches(), setOffline });
     });
   }
 

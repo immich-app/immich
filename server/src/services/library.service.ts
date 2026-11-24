@@ -28,8 +28,9 @@ import {
   JobStatus,
   QueueName,
 } from 'src/enum.js';
+import type { LibraryScanAsset } from 'src/repositories/asset.repository.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
-import { AssetSyncResult, LibraryScanAsset } from 'src/repositories/library.repository.js';
+import { AssetSyncResult } from 'src/repositories/library.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
@@ -38,7 +39,10 @@ import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, createLibraryMatcher, findOrFail, handlePromiseError } from 'src/utils/misc.js';
 import { OrderedCursor, OrderedFiles, compareUtf8 } from 'src/utils/ordered.js';
 
-type LibraryDiff = { paths: string[]; progress: number } | { assetIds: string[]; progress: number };
+type LibraryDiff =
+  | { paths: string[]; progress: number }
+  | { assetIds: string[]; progress: number }
+  | { offlineIds: string[]; progress: number };
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -461,8 +465,6 @@ export class LibraryService extends BaseService {
         id,
       },
     });
-
-    await this.jobRepository.queue({ name: JobName.LibrarySyncAssetsQueueAll, data: { id } });
   }
 
   @OnJob({ name: JobName.LibraryScanQueueAll, queue: QueueName.Library })
@@ -476,14 +478,6 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queueAll(
       libraries.map((library) => ({
         name: JobName.LibrarySyncFilesQueueAll,
-        data: {
-          id: library.id,
-        },
-      })),
-    );
-    await this.jobRepository.queueAll(
-      libraries.map((library) => ({
-        name: JobName.LibrarySyncAssetsQueueAll,
         data: {
           id: library.id,
         },
@@ -651,43 +645,54 @@ export class LibraryService extends BaseService {
       includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
     });
-    const assets = batched(this.libraryRepository.streamAssets(library.id), JOBS_LIBRARY_PAGINATION_SIZE);
-
-    let importCount = 0;
-    let checkCount = 0;
+    const isInLibrary = createLibraryMatcher(library);
 
     this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
-    for await (const diff of this.diffLibrary(files, assets, createLibraryMatcher(library))) {
-      if ('paths' in diff) {
-        importCount += diff.paths.length;
-        await this.jobRepository.queue({
-          name: JobName.LibrarySyncFiles,
-          data: { libraryId: library.id, paths: diff.paths, progressCounter: diff.progress },
-        });
-        this.logger.log(`Crawled ${diff.progress} file(s) so far, queued ${importCount} for import into ${library.id}`);
-        continue;
-      }
+    const { importCount, checkCount, offlineCount } = await this.assetRepository.scanLibraryAssets(
+      library.id,
+      async ({ assets, setOffline }) => {
+        const counts = { importCount: 0, checkCount: 0, offlineCount: 0 };
+        for await (const diff of this.diffLibrary(files, assets, isInLibrary)) {
+          if ('offlineIds' in diff) {
+            counts.offlineCount += await setOffline(diff.offlineIds);
+            continue;
+          }
 
-      checkCount += diff.assetIds.length;
-      await this.jobRepository.queue({
-        name: JobName.LibrarySyncAssets,
-        data: {
-          libraryId: library.id,
-          importPaths: library.importPaths,
-          exclusionPatterns: library.exclusionPatterns,
-          assetIds: diff.assetIds,
-          progressCounter: diff.progress,
-          totalAssets,
-        },
-      });
-      this.logger.log(
-        `Compared ${diff.progress} of ${totalAssets} existing asset(s) so far, queued ${checkCount} for a check in library ${library.id}`,
-      );
-    }
+          if ('paths' in diff) {
+            counts.importCount += diff.paths.length;
+            await this.jobRepository.queue({
+              name: JobName.LibrarySyncFiles,
+              data: { libraryId: library.id, paths: diff.paths, progressCounter: diff.progress },
+            });
+            this.logger.log(
+              `Crawled ${diff.progress} file(s) so far, queued ${counts.importCount} for import into ${library.id}`,
+            );
+            continue;
+          }
+
+          counts.checkCount += diff.assetIds.length;
+          await this.jobRepository.queue({
+            name: JobName.LibrarySyncAssets,
+            data: {
+              libraryId: library.id,
+              importPaths: library.importPaths,
+              exclusionPatterns: library.exclusionPatterns,
+              assetIds: diff.assetIds,
+              progressCounter: diff.progress,
+              totalAssets,
+            },
+          });
+          this.logger.log(
+            `Compared ${diff.progress} of ${totalAssets} existing asset(s) so far, queued ${counts.checkCount} for a check in library ${library.id}`,
+          );
+        }
+        return counts;
+      },
+    );
 
     this.logger.log(
-      `Finished disk crawl of library ${library.id}: queued ${importCount} file(s) for import and ${checkCount} existing asset(s) for a check`,
+      `Finished disk crawl of library ${library.id}: queued ${importCount} file(s) for import and ${checkCount} existing asset(s) for a check, offlined ${offlineCount} asset(s) outside the import paths or covered by an exclusion pattern`,
     );
 
     await this.libraryRepository.update(job.id, { refreshedAt: new Date() });
@@ -722,6 +727,7 @@ export class LibraryService extends BaseService {
   ): AsyncGenerator<LibraryDiff> {
     let paths: string[] = [];
     let assetIds: string[] = [];
+    let offlineIds: string[] = [];
 
     while (disk.key !== undefined || database.key !== undefined) {
       const order = disk.key === undefined ? 1 : database.key === undefined ? -1 : compareUtf8(disk.key, database.key);
@@ -731,7 +737,9 @@ export class LibraryService extends BaseService {
       } else {
         const asset = database.batch![database.index];
         const modifiedOnDisk = order === 0 ? disk.batch!.modified[disk.index] : undefined;
-        if (this.isCheckNeeded(asset, modifiedOnDisk, isInLibrary)) {
+        if (modifiedOnDisk === undefined && this.isOutsideLibrary(asset, isInLibrary)) {
+          offlineIds.push(asset.id);
+        } else if (this.isCheckNeeded(asset, modifiedOnDisk, isInLibrary)) {
           assetIds.push(asset.id);
         }
 
@@ -749,6 +757,11 @@ export class LibraryService extends BaseService {
         paths = [];
       }
 
+      if (offlineIds.length === JOBS_LIBRARY_PAGINATION_SIZE) {
+        yield { offlineIds, progress: database.count };
+        offlineIds = [];
+      }
+
       if (assetIds.length < JOBS_LIBRARY_PAGINATION_SIZE) {
         continue;
       }
@@ -764,6 +777,14 @@ export class LibraryService extends BaseService {
     if (assetIds.length > 0) {
       yield { assetIds, progress: database.count };
     }
+
+    if (offlineIds.length > 0) {
+      yield { offlineIds, progress: database.count };
+    }
+  }
+
+  private isOutsideLibrary(asset: LibraryScanAsset, isInLibrary: (originalPath: string) => boolean) {
+    return !asset.isOffline && asset.isExternal && !isInLibrary(asset.originalPath);
   }
 
   private isCheckNeeded(
@@ -793,32 +814,8 @@ export class LibraryService extends BaseService {
   }
 
   @OnJob({ name: JobName.LibrarySyncAssetsQueueAll, queue: QueueName.Library })
-  async handleQueueSyncAssets(job: JobOf<JobName.LibrarySyncAssetsQueueAll>): Promise<JobStatus> {
-    const library = await this.libraryRepository.get(job.id);
-    if (!library) {
-      return JobStatus.Skipped;
-    }
-
-    const assetCount = await this.assetRepository.getLibraryAssetCount(job.id);
-    if (!assetCount) {
-      this.logger.log(`Library ${library.id} is empty, no need to check assets`);
-      return JobStatus.Success;
-    }
-
-    this.logger.log(
-      `Checking ${assetCount} asset(s) against import paths and exclusion patterns in library ${library.id}...`,
-    );
-
-    const affectedAssetCount = await this.assetRepository.detectOfflineExternalAssets(
-      library.id,
-      createLibraryMatcher(library),
-    );
-
-    this.logger.log(
-      `${affectedAssetCount} asset(s) out of ${assetCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,
-    );
-
-    return JobStatus.Success;
+  handleQueueSyncAssets(): Promise<JobStatus> {
+    return Promise.resolve(JobStatus.Skipped);
   }
 
   private findOrFail(id: string) {

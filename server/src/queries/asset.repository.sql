@@ -521,22 +521,26 @@ order by
 limit
   $4
 
--- AssetRepository.detectOfflineExternalAssets
+-- AssetRepository.scanLibraryAssets
 begin
-declare offline_check no scroll cursor for (
+declare library_scan no scroll cursor for (
   select
     "asset"."id",
-    "asset"."originalPath"
+    "asset"."originalPath",
+    "asset"."isOffline",
+    "asset"."isExternal",
+    "asset"."status",
+    "asset"."fileModifiedAt"
   from
     "asset"
   where
     "asset"."libraryId" = $1::uuid
-    and "asset"."isOffline" = $2
-    and "asset"."isExternal" = $3
+  order by
+    "originalPath" collate "C"
 )
 fetch 10000
 from
-  offline_check
+  library_scan
 commit
 
 -- AssetRepository.getForOriginal

@@ -147,9 +147,6 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
       case JobName.LibrarySyncFiles: {
         return this.sut.handleSyncFiles(job.data);
       }
-      case JobName.LibrarySyncAssetsQueueAll: {
-        return this.sut.handleQueueSyncAssets(job.data);
-      }
       case JobName.LibrarySyncAssets: {
         return this.sut.handleSyncAssets(job.data);
       }
@@ -626,6 +623,19 @@ describe(LibraryService.name, () => {
     );
 
     // https://github.com/immich-app/immich/issues/17121
+    it('should keep an asset online when the walk accepts a path its exclusion pattern rejects in picomatch', async () => {
+      const { ctx } = setup();
+      const walked = await createFile(join(importPath, '2/asset.png'));
+      const kept = await createFile(join(importPath, 'kept.png'));
+      const library = await ctx.createLibrary({ importPaths: [importPath], exclusionPatterns: ['**/{1..3}/**'] });
+
+      await ctx.scan(library.id);
+      const { imports, checks } = await ctx.scan(library.id);
+
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([walked, kept]);
+      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
+    });
+
     it('should respect exclusion patterns when using multiple import paths', async () => {
       const { sut, ctx } = setup();
 
@@ -673,7 +683,7 @@ describe(LibraryService.name, () => {
     // Postgres case folding disagreed with picomatch on these: `İ` folds to `i`, but `Σ` does not fold to `ς`
     it.each([
       { pattern: '**/İstanbul/**', folder: 'istanbul', isExcluded: false },
-      { pattern: '**/ΚΎΠΡΟΣ/**', folder: 'Κύπρος', isExcluded: true },
+      { pattern: '**/ΚΎΠΡΟΣ/**', folder: 'Κύπρος', isExcluded: false },
     ])('should apply $pattern to $folder the same way on every scan', async ({ pattern, folder, isExcluded }) => {
       const { sut, ctx } = setup();
 
@@ -1098,8 +1108,8 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('handleQueueSyncAssets', () => {
-    it('should not exhaust the database pool when more libraries are checked at once than it has connections', async () => {
+  describe('handleQueueSyncFiles', () => {
+    it('should not exhaust the database pool when more libraries are scanned at once than it has connections', async () => {
       const { sut, ctx } = setup();
       const assetRepo = ctx.get(AssetRepository);
       // the pool has 10 connections, and each library spans more than one batch so it offlines assets mid-read
@@ -1120,7 +1130,7 @@ describe(LibraryService.name, () => {
         }
       }
 
-      await expect(Promise.all(libraries.map(({ id }) => sut.handleQueueSyncAssets({ id })))).resolves.toEqual(
+      await expect(Promise.all(libraries.map(({ id }) => sut.handleQueueSyncFiles({ id })))).resolves.toEqual(
         libraries.map(() => JobStatus.Success),
       );
       for (const { id } of libraries) {

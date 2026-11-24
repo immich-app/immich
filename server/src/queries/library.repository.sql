@@ -64,17 +64,3 @@ from
   "library"
 where
   "library"."id" = $1
-
--- LibraryRepository.streamAssets
-select
-  "id",
-  "originalPath",
-  "isOffline",
-  "status",
-  "fileModifiedAt"
-from
-  "asset"
-where
-  "libraryId" = $1
-order by
-  "originalPath" collate "C"

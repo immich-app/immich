@@ -1,10 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
+import { chunk } from 'lodash-es';
 import { Stats } from 'node:fs';
 import { vitest } from 'vitest';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { mapLibrary } from 'src/dtos/library.dto.js';
 import { AssetStatus, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
-import type { LibraryScanAsset } from 'src/repositories/library.repository.js';
+import type { LibraryScanAsset } from 'src/repositories/asset.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { LibraryService } from 'src/services/library.service.js';
 import type { ILibraryFileJob } from 'src/types.js';
@@ -174,19 +175,26 @@ describe(LibraryService.name, () => {
       id: newUuid(),
       originalPath,
       isOffline: false,
+      isExternal: true,
       status: AssetStatus.Active,
       fileModifiedAt: modifiedAt,
       ...asset,
     });
+    const setOffline = vitest.fn();
 
     const setup = ({ files = [], assets = [] }: { files?: OrderedFiles[]; assets?: LibraryScanAsset[] }) => {
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.storage.walkOrdered.mockReturnValue(makeStream(files));
-      mocks.library.streamAssets.mockReturnValue(makeStream(assets));
+      mocks.asset.scanLibraryAssets.mockImplementation((_libraryId, onAssets) =>
+        onAssets({ assets: makeStream(chunk(assets, 10_000)), setOffline }),
+      );
       mocks.asset.getLibraryAssetCount.mockResolvedValue(assets.length);
+      setOffline.mockReset().mockImplementation((ids: string[]) => Promise.resolve(ids.length));
     };
+
+    const getOfflines = () => setOffline.mock.calls.flatMap(([ids]) => ids);
 
     it("should fail when library can't be found", async () => {
       await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.Skipped);
@@ -235,13 +243,47 @@ describe(LibraryService.name, () => {
       ]);
     });
 
-    it('should queue a check for an online asset outside the library', async () => {
-      const asset = newLibraryAsset('/other/a.jpg');
+    it.each([
+      { name: 'outside the import paths', originalPath: '/other/a.jpg' },
+      { name: 'covered by an exclusion pattern', originalPath: '/lib/raw/a.jpg' },
+    ])('should offline an online asset $name without a check', async ({ originalPath }) => {
+      const asset = newLibraryAsset(originalPath);
       setup({ assets: [asset] });
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
+      expect(getOfflines()).toEqual([asset.id]);
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should queue a check for an online asset outside the library that is not external', async () => {
+      const asset = newLibraryAsset('/other/a.jpg', { isExternal: false });
+      setup({ assets: [asset] });
+
+      await sut.handleQueueSyncFiles({ id: library.id });
+
+      expect(getOfflines()).toEqual([]);
       expect(getChecks()).toEqual([asset.id]);
+    });
+
+    it('should not offline an asset on disk that an exclusion pattern matches', async () => {
+      setup({ files: [onDisk('/lib/raw/a.jpg')], assets: [newLibraryAsset('/lib/raw/a.jpg')] });
+
+      await sut.handleQueueSyncFiles({ id: library.id });
+
+      expect(getOfflines()).toEqual([]);
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should offline assets in batches of 10000', async () => {
+      const assets = Array.from({ length: 10_001 }, (_, index) =>
+        newLibraryAsset(`/other/${String(index).padStart(5, '0')}.jpg`),
+      );
+      setup({ assets });
+
+      await sut.handleQueueSyncFiles({ id: library.id });
+
+      expect(setOffline.mock.calls).toEqual([[assets.slice(0, 10_000).map(({ id }) => id)], [[assets[10_000].id]]]);
     });
 
     it.each([
@@ -377,18 +419,17 @@ describe(LibraryService.name, () => {
     it('should close the asset stream when the walk fails', async () => {
       const closed = vitest.fn();
       setup({ files: [onDisk('/lib/b.jpg', '/lib/a.jpg')] });
-      mocks.library.streamAssets.mockReturnValue(
-        (async function* () {
-          try {
-            yield* makeStream(
-              Array.from({ length: 10_001 }, (_, index) =>
-                newLibraryAsset(`/lib/c/${String(index).padStart(5, '0')}.jpg`),
-              ),
-            );
-          } finally {
-            closed();
-          }
-        })(),
+      mocks.asset.scanLibraryAssets.mockImplementation((_libraryId, onAssets) =>
+        onAssets({
+          setOffline,
+          assets: (async function* () {
+            try {
+              yield* makeStream([[newLibraryAsset('/lib/c/1.jpg')], [newLibraryAsset('/lib/c/2.jpg')]]);
+            } finally {
+              closed();
+            }
+          })(),
+        }),
       );
 
       await expect(sut.handleQueueSyncFiles({ id: library.id })).rejects.toThrow('File walk is not in ascending order');
@@ -435,19 +476,9 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleQueueSyncAssets', () => {
-    it("should fail if library can't be found", async () => {
-      await expect(sut.handleQueueSyncAssets({ id: newUuid() })).resolves.toBe(JobStatus.Skipped);
-    });
+    it('should skip a job queued by an older version', async () => {
+      await expect(sut.handleQueueSyncAssets()).resolves.toBe(JobStatus.Skipped);
 
-    it('should offline assets outside the library without queuing a check of every asset', async () => {
-      const library = factory.library({ importPaths: ['/lib'] });
-      mocks.library.get.mockResolvedValue(library);
-      mocks.asset.getLibraryAssetCount.mockResolvedValue(2);
-      mocks.asset.detectOfflineExternalAssets.mockResolvedValue(1);
-
-      await expect(sut.handleQueueSyncAssets({ id: library.id })).resolves.toBe(JobStatus.Success);
-
-      expect(mocks.asset.detectOfflineExternalAssets).toHaveBeenCalledWith(library.id, expect.any(Function));
       expect(mocks.job.queue).not.toHaveBeenCalled();
     });
   });
@@ -1054,15 +1085,9 @@ describe(LibraryService.name, () => {
 
       await sut.queueScan(library.id);
 
-      expect(mocks.job.queue).toHaveBeenCalledTimes(2);
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibrarySyncFilesQueueAll,
-        data: { id: library.id },
-      });
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibrarySyncAssetsQueueAll,
-        data: { id: library.id },
-      });
+      expect(mocks.job.queue.mock.calls).toEqual([
+        [{ name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } }],
+      ]);
     });
   });
 
@@ -1078,8 +1103,8 @@ describe(LibraryService.name, () => {
         name: JobName.LibraryDeleteCheck,
         data: {},
       });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } },
+      expect(mocks.job.queueAll.mock.calls).toEqual([
+        [[{ name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } }]],
       ]);
     });
   });
