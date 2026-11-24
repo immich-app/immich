@@ -214,6 +214,50 @@ describe('TimelineManager', () => {
     });
   });
 
+  describe('concurrent timelines', () => {
+    const [first, second] = ['2024-01-05T00:00:00.000Z', '2024-01-06T00:00:00.000Z'].map((date) =>
+      factory.timelineAsset({ isFavorite: true, fileCreatedAt: fromISODateTimeUTCToObject(date) }),
+    );
+
+    beforeEach<Context>(({ api }) => {
+      api.on({
+        getTimeBuckets: ({ params = {} }) => ({
+          json: params.isFavorite
+            ? [{ count: 1, timeBucket: '2024-01-01T00:00:00.000Z' }]
+            : [
+                { count: 1, timeBucket: '2024-02-01T00:00:00.000Z' },
+                { count: 2, timeBucket: '2024-01-01T00:00:00.000Z' },
+              ],
+        }),
+        getTimeBucket: ({ params }) => ({
+          json: params.isFavorite ? toResponseDto(first) : toResponseDto(first, second),
+        }),
+      });
+    });
+
+    test('loads months for each timeline options', async () => {
+      const [all, favorites] = [new TimelineManager(), new TimelineManager()];
+
+      await Promise.all([all.updateOptions({}), favorites.updateOptions({ isFavorite: true })]);
+
+      expect(all.months).toHaveLength(2);
+      expect(favorites.months).toHaveLength(1);
+    });
+
+    test('loads month assets for each timeline options', async () => {
+      const [all, favorites] = [new TimelineManager(), new TimelineManager()];
+      await Promise.all([all.updateOptions({}), favorites.updateOptions({ isFavorite: true })]);
+
+      await Promise.all([
+        all.loadTimelineMonth({ year: 2024, month: 1 }),
+        favorites.loadTimelineMonth({ year: 2024, month: 1 }),
+      ]);
+
+      expect(getTimelineMonthByDate(all, { year: 2024, month: 1 })?.getAssets()).toHaveLength(2);
+      expect(getTimelineMonthByDate(favorites, { year: 2024, month: 1 })?.getAssets()).toHaveLength(1);
+    });
+  });
+
   describe('loadTimelineMonth ordered by upload date', () => {
     afterEach(() => {
       Settings.defaultZone = 'system';

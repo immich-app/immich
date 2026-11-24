@@ -54,6 +54,18 @@ test.describe('shared link', () => {
     });
   });
 
+  test('guest loads the album timeline with the link key', async ({ page, context, data, api, app }) => {
+    const { link, album, assets } = setup(data);
+    await context.clearCookies();
+
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+
+    await expect(app.timeline.thumbnail(assets[0])).toBeVisible();
+    const params = expect.objectContaining({ albumId: album.id, key: link.key });
+    expect(api.getTimeBuckets).toHaveBeenCalledWith({ params });
+    expect(api.getTimeBucket).toHaveBeenCalledWith({ params });
+  });
+
   test('password link asks for it and can show or hide it', async ({ page, context, data, api, logger, app }) => {
     const { link } = setup(data, { password: 'test-password' });
     await context.clearCookies();
