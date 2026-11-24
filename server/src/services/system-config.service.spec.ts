@@ -305,6 +305,47 @@ describe(SystemConfigService.name, () => {
       await expect(sut.getAdminConfig()).resolves.toEqual(updatedConfig);
     });
 
+    it('should layer the config file over the database', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { crf: 25 }, trash: { days: 10 } });
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 30 } }));
+
+      const config = await sut.getAdminConfig();
+
+      expect(config.ffmpeg.crf).toBe(30);
+      expect(config.trash.days).toBe(10);
+    });
+
+    it('should drop and log an invalid database value', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ user: { deleteDelay: 0 }, trash: { days: 10 } });
+
+      const config = await sut.getAdminConfig();
+
+      expect(config.user.deleteDelay).toBe(7);
+      expect(config.trash.days).toBe(10);
+      expect(mocks.logger.warn).toHaveBeenCalledWith(expect.stringContaining('[user.deleteDelay]'));
+      expect(mocks.logger.error).not.toHaveBeenCalled();
+    });
+
+    it('should drop an invalid database value with a config file', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.get.mockResolvedValue({ user: { deleteDelay: 0 } });
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ trash: { days: 10 } }));
+
+      const config = await sut.getAdminConfig();
+
+      expect(config.user.deleteDelay).toBe(7);
+      expect(config.trash.days).toBe(10);
+    });
+
+    it('should throw for an invalid config file value', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.get.mockResolvedValue({ user: { deleteDelay: 15 } });
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ user: { deleteDelay: 0 } }));
+
+      await expect(sut.getAdminConfig()).rejects.toThrow('Invalid system config: \n  - [user.deleteDelay] Too small');
+    });
+
     it('should load the config from a json file', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify(partialConfig));
@@ -446,7 +487,16 @@ describe(SystemConfigService.name, () => {
       mocks.systemMetadata.readFile.mockResolvedValue(partialConfig);
 
       await sut.getAdminConfig();
-      expect(mocks.logger.warn).toHaveBeenCalled();
+      expect(mocks.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Unknown keys found in file config: '));
+    });
+
+    it('should warn for unknown options in the database', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ unknownOption: true } as never);
+
+      await sut.getAdminConfig();
+      expect(mocks.logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Unknown keys found in database config: '),
+      );
     });
 
     const tests = [
@@ -483,7 +533,9 @@ describe(SystemConfigService.name, () => {
           await expect(sut.getAdminConfig()).rejects.toThrow(test.throws);
         } else if (test.warn) {
           await sut.getAdminConfig();
-          expect(mocks.logger.warn).toHaveBeenCalled();
+          expect(mocks.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('Unknown keys found in file config: '),
+          );
         } else {
           const config = await sut.getAdminConfig();
           test.check!(config);

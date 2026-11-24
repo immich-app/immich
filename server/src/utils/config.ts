@@ -1,13 +1,13 @@
 import AsyncLock from 'async-lock';
 import { load as loadYaml } from 'js-yaml';
 import { cloneDeep, get, isEmpty, isEqual, set } from 'lodash-es';
-import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto.js';
+import { AdminConfigDto, SystemConfig, configFields, defaults } from 'src/dtos/config.dto.js';
 import { DatabaseLock, SystemMetadataKey } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
 import type { DeepPartial } from 'src/types.js';
-import { getKeysDeep, unsetDeep } from 'src/utils/misc.js';
+import { unsetDeep } from 'src/utils/misc.js';
 
 type RepoDeps = {
   configRepo: ConfigRepository;
@@ -44,7 +44,7 @@ export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Pr
   const { metadataRepo } = repos;
   // get the difference between the new config and the default config
   const partialConfig: DeepPartial<SystemConfig> = {};
-  for (const property of getKeysDeep(defaults)) {
+  for (const { key: property } of configFields) {
     const newValue = get(newConfig, property);
     const isEmpty = [undefined, null, ''].includes(newValue);
     const defaultValue = get(defaults, property);
@@ -77,38 +77,29 @@ const buildConfig = async (repos: RepoDeps) => {
   const { configRepo, metadataRepo, logger } = repos;
   const { configFile } = configRepo.getEnv();
 
-  // load partial
-  const partial = configFile
-    ? await loadFromFile(repos, configFile)
-    : await metadataRepo.get(SystemMetadataKey.SystemConfig);
-
-  // merge with defaults
   const rawConfig = cloneDeep(defaults);
-  for (const property of getKeysDeep(partial)) {
-    set(rawConfig, property, get(partial, property));
+
+  const databaseConfig = await metadataRepo.get(SystemMetadataKey.SystemConfig);
+  const databaseErrors = mergeLayer(repos, rawConfig, databaseConfig, 'database');
+  if (databaseErrors.length > 0) {
+    logger.warn(['Ignoring invalid database config: ', ...databaseErrors].join('\n'));
   }
 
-  // check for extra properties
-  const unknownKeys = cloneDeep(rawConfig);
-  for (const property of getKeysDeep(defaults)) {
-    unsetDeep(unknownKeys, property);
+  if (configFile) {
+    const fileConfig = await loadFromFile(repos, configFile);
+    const fileErrors = mergeLayer(repos, rawConfig, fileConfig, 'file');
+    if (fileErrors.length > 0) {
+      throw new Error(['Invalid system config: ', ...fileErrors].join('\n'));
+    }
   }
 
-  if (!isEmpty(unknownKeys)) {
-    logger.warn(`Unknown keys found: ${JSON.stringify(unknownKeys, null, 2)}`);
-  }
-
-  // validate with Zod schema
   const result = AdminConfigDto.schema.safeParse(rawConfig);
   if (!result.success) {
-    const messages = ['Invalid system config: '];
-    for (const issue of result.error.issues) {
-      const path = issue.path.join('.');
-      messages.push(`  - [${path}] ${issue.message}`);
-    }
+    const messages = ['Invalid system config: ', ...formatIssues(result.error.issues)];
     if (configFile) {
       throw new Error(messages.join('\n'));
     }
+
     logger.error('Validation error', messages);
   }
 
@@ -135,3 +126,34 @@ const buildConfig = async (repos: RepoDeps) => {
 
   return config;
 };
+
+const mergeLayer = ({ logger }: RepoDeps, target: SystemConfig, partial: unknown, layer: string) => {
+  const unknownKeys = cloneDeep(partial);
+  for (const { key } of configFields) {
+    unsetDeep(unknownKeys, key);
+  }
+
+  if (!isEmpty(unknownKeys)) {
+    logger.warn(`Unknown keys found in ${layer} config: ${JSON.stringify(unknownKeys, null, 2)}`);
+  }
+
+  const errors: string[] = [];
+  for (const { key, schema } of configFields) {
+    const value = get(partial, key);
+    if (value === undefined) {
+      continue;
+    }
+
+    const result = schema.safeParse(value);
+    if (result.success) {
+      set(target, key, result.data);
+    } else {
+      errors.push(...formatIssues(result.error.issues, [key]));
+    }
+  }
+
+  return errors;
+};
+
+const formatIssues = (issues: { path: PropertyKey[]; message: string }[], prefix: PropertyKey[] = []) =>
+  issues.map(({ path, message }) => `  - [${[...prefix, ...path].join('.')}] ${message}`);

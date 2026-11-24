@@ -550,6 +550,19 @@ const PublicConfigSchema = applyVisibility(Public)! as z.ZodType<DeepPartial<Sys
 // prevent visibility metadata from leaking to openapi spec
 stripVisibilityMetadata(AdminConfigSchemaWithVisibility);
 
+const getConfigFields = (schema: z.ZodType, path: string[] = []): { key: string; schema: z.ZodType }[] => {
+  const object = unwrap(schema);
+  if (!(object instanceof z.ZodObject)) {
+    return [{ key: path.join('.'), schema }];
+  }
+
+  return Object.entries(object.shape as Record<string, z.ZodType>).flatMap(([key, value]) =>
+    getConfigFields(value, [...path, key]),
+  );
+};
+
+export const configFields = getConfigFields(AdminConfigSchemaWithVisibility);
+
 const ConfigTemplateStorageOptionSchema = z
   .object({
     yearOptions: z.array(z.string()).describe('Available year format options for storage template'),
