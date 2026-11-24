@@ -5,7 +5,7 @@ import { queryClient } from '#lib/queries/client.ts';
 import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { waitForWebsocketEvent } from '#lib/stores/websocket.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
-import { editAsset, removeAssetEdits, type AssetEditsCreateDto, type AssetResponseDto } from '@immich/sdk';
+import type { AssetEditsCreateDto, AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
 import { mdiCropRotate } from '@mdi/js';
 import type { Component } from 'svelte';
@@ -116,7 +116,7 @@ export class EditManager {
     }
   }
 
-  async applyEdits(): Promise<boolean> {
+  async applyEdits(save: (id: string, edits: EditActions) => Promise<unknown>): Promise<boolean> {
     this.isApplyingEdits = true;
 
     const edits = this.tools.flatMap((tool) => tool.manager.edits);
@@ -131,14 +131,7 @@ export class EditManager {
       // Setup the websocket listener before sending the edit request
       const editCompleted = waitForWebsocketEvent('AssetEditReadyV2', (event) => event.asset.id === assetId, 10_000);
 
-      await (edits.length === 0
-        ? removeAssetEdits({ id: assetId })
-        : editAsset({
-            id: assetId,
-            assetEditsCreateDto: {
-              edits,
-            },
-          }));
+      await save(assetId, edits);
 
       await editCompleted;
 
