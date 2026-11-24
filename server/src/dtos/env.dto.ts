@@ -43,6 +43,7 @@ export const EnvSchema = z
     IMMICH_BUILD_IMAGE: z.string().optional(),
     IMMICH_BUILD_IMAGE_URL: z.string().optional(),
     IMMICH_CONFIG_FILE: z.string().optional(),
+    IMMICH_CONFIG_LOGGING_LEVEL: LogLevelSchema.optional(),
     IMMICH_HELMET_FILE: z.string().optional(),
     IMMICH_ENV: ImmichEnvironmentSchema.optional(),
     IMMICH_HOST: z.string().optional(),

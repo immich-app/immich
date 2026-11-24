@@ -24,7 +24,7 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       DB_DATABASE_NAME: immich
-      IMMICH_MACHINE_LEARNING_ENABLED: 'false'
+      IMMICH_CONFIG_MACHINE_LEARNING_ENABLED: 'false'
       IMMICH_TELEMETRY_INCLUDE: all
       IMMICH_ENV: testing
       IMMICH_PORT: '2285'

@@ -61,6 +61,16 @@ export const LOGIN_DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQR
 
 export const IWorker = 'IWorker';
 
+export const CONFIG_ENV_PREFIX = 'IMMICH_CONFIG_';
+export const CONFIG_FILE_ENV = 'IMMICH_CONFIG_FILE';
+export const CONFIG_SECRET_KEYS = new Set(['oauth.clientSecret', 'notifications.smtp.transport.password']);
+export const CONFIG_ERROR_VALUE_MAX_LENGTH = 100;
+export const DEPRECATED_CONFIG_VARIABLES: Record<string, string> = {
+  IMMICH_LOG_LEVEL: 'IMMICH_CONFIG_LOGGING_LEVEL',
+  IMMICH_MACHINE_LEARNING_ENABLED: 'IMMICH_CONFIG_MACHINE_LEARNING_ENABLED',
+  IMMICH_MACHINE_LEARNING_URL: 'IMMICH_CONFIG_MACHINE_LEARNING_URLS',
+};
+
 const basePath = dirname(import.meta.filename);
 const packageFile = join(basePath, '..', 'package.json');
 const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));

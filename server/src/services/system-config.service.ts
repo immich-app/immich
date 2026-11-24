@@ -22,6 +22,11 @@ import { toPlainObject } from 'src/utils/object.js';
 export class SystemConfigService extends BaseService {
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.SystemConfig })
   async onBootstrap() {
+    const { deprecatedConfigVariables } = this.configRepository.getEnv();
+    for (const { name, replacement } of deprecatedConfigVariables) {
+      this.logger.warn(`${name} is deprecated, use ${replacement} instead`);
+    }
+
     const config = await this.getConfig({ withCache: false });
     await this.eventRepository.emit('ConfigInit', { newConfig: config });
   }
@@ -61,10 +66,11 @@ export class SystemConfigService extends BaseService {
   @OnEvent({ name: 'ConfigInit', priority: -100 })
   onConfigInit({ newConfig: { logging, machineLearning } }: ArgOf<'ConfigInit'>) {
     const { logLevel: envLevel } = this.configRepository.getEnv();
-    const configLevel = logging.enabled && logging.level;
-    const level = envLevel ?? configLevel;
+    const level = logging.enabled && logging.level;
     this.logger.setLogLevel(level);
-    this.logger.log(`LogLevel=${level} ${envLevel ? '(set via IMMICH_LOG_LEVEL)' : '(set via system config)'}`);
+    this.logger.log(
+      `LogLevel=${level} ${envLevel ? '(set via IMMICH_CONFIG_LOGGING_LEVEL)' : '(set via system config)'}`,
+    );
 
     this.machineLearningRepository.setup(machineLearning);
   }
@@ -75,14 +81,6 @@ export class SystemConfigService extends BaseService {
     clearConfigCache();
   }
 
-  @OnEvent({ name: 'ConfigValidate' })
-  onConfigValidate({ newConfig, oldConfig }: ArgOf<'ConfigValidate'>) {
-    const { logLevel } = this.configRepository.getEnv();
-    if (logLevel && !isEqual(toPlainObject(newConfig.logging), oldConfig.logging)) {
-      throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
-    }
-  }
-
   async updateAdminConfig(dto: AdminConfigDto): Promise<AdminConfigDto> {
     const { config: oldConfig, fields } = await this.getResolvedConfig({ withCache: false });
 
@@ -90,7 +88,9 @@ export class SystemConfigService extends BaseService {
       .filter(({ key }) => isLocked(fields[key]) && !isEqual(get(dto, key), get(oldConfig, key)))
       .map(({ key }) => key);
     if (lockedChanges.length > 0) {
-      throw new BadRequestException(`Cannot update properties set by the config file: ${lockedChanges.join(', ')}`);
+      throw new BadRequestException(
+        `Cannot update properties set by the config file or an environment variable: ${lockedChanges.join(', ')}`,
+      );
     }
 
     try {

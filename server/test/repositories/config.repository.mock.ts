@@ -7,6 +7,8 @@ export const envData: EnvData = {
   port: 2283,
   environment: ImmichEnvironment.Production,
   logFormat: LogFormat.Console,
+  configOverrides: {},
+  deprecatedConfigVariables: [],
 
   buildMetadata: {},
   bull: {
