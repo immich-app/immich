@@ -1,5 +1,5 @@
 import { R_OK } from 'node:constants';
-import { mkdir, mkdtemp, mkdtempDisposable, rename, rm, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, mkdtempDisposable, rename, rm, symlink, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
@@ -168,13 +168,15 @@ const inRoot = (root: string, options: CrawlOptionsDto): CrawlOptionsDto => ({
 describe(StorageRepository.name, () => {
   const annoyingExclusionPatterns = ['@', '#', '$', '%', '^', '&', '='];
   let sut: StorageRepository;
+  let logger: LoggingRepository;
   let tempDir: string;
   let includedFile: string;
   let excludedFile: string;
 
   beforeEach(async () => {
     // eslint-disable-next-line no-sparse-arrays
-    sut = new StorageRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
+    logger = automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false });
+    sut = new StorageRepository(logger);
     tempDir = await mkdtemp(join(tmpdir(), 'immich-storage-watch-'));
     includedFile = join(tempDir, 'included/photo.jpg');
     excludedFile = join(tempDir, 'excluded/photo.jpg');
@@ -407,6 +409,81 @@ describe(StorageRepository.name, () => {
         `${root.path}/photos/2.jpg`,
         `${root.path}/photos/3.jpg`,
       ]);
+    });
+  });
+
+  const walkOrdered = async (root: string, pathsToCrawl: string[]) => {
+    const batches = await Array.fromAsync(
+      sut.walkOrdered({ pathsToCrawl: pathsToCrawl.map((path) => root + path), includeHidden: false }),
+    );
+    return batches.flatMap(({ paths }) => paths.map((path) => path.slice(root.length)));
+  };
+
+  describe('walkOrdered', () => {
+    it('should walk disjoint import paths one after another in byte order', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/a/x.jpg', '/a-b/x.jpg', '/b/x.jpg']);
+
+      await expect(walkOrdered(root.path, ['/b', '/a', '/a-b'])).resolves.toEqual([
+        '/a-b/x.jpg',
+        '/a/x.jpg',
+        '/b/x.jpg',
+      ]);
+    });
+
+    it('should yield a file of nested import paths once', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/a.jpg', '/lib/sub/b.jpg', '/lib/z.jpg']);
+
+      await expect(walkOrdered(root.path, ['/lib', '/lib/sub'])).resolves.toEqual([
+        '/lib/a.jpg',
+        '/lib/sub/b.jpg',
+        '/lib/z.jpg',
+      ]);
+    });
+
+    it('should keep the files of a nested import path the outer walk skips', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/.hidden/b.jpg', '/lib/a.jpg', '/lib/z.jpg']);
+
+      await expect(walkOrdered(root.path, ['/lib/.hidden', '/lib'])).resolves.toEqual([
+        '/lib/.hidden/b.jpg',
+        '/lib/a.jpg',
+        '/lib/z.jpg',
+      ]);
+    });
+
+    it.each(['/lib/', '/lib//', '/lib/sub/..', '/lib/.'])('should walk %s as the same folder as /lib', async (path) => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/a.jpg', '/lib/sub/b.jpg']);
+
+      await expect(walkOrdered(root.path, [path, '/lib'])).resolves.toEqual(['/lib/a.jpg', '/lib/sub/b.jpg']);
+    });
+
+    it('should yield nothing without import paths', async () => {
+      await expect(Array.fromAsync(sut.walkOrdered({ pathsToCrawl: [] }))).resolves.toEqual([]);
+    });
+
+    it('should report the modification time of each file', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/a.jpg', '/lib/b.jpg']);
+      await utimes(`${root.path}/lib/a.jpg`, new Date(1_700_000_000_000), new Date(1_700_000_000_000));
+      await utimes(`${root.path}/lib/b.jpg`, new Date(1_800_000_000_123), new Date(1_800_000_000_123));
+
+      const batches = await Array.fromAsync(sut.walkOrdered({ pathsToCrawl: [`${root.path}/lib`] }));
+
+      expect(batches.flatMap(({ modified }) => modified)).toEqual([1_700_000_000_000, 1_800_000_000_123]);
+    });
+
+    it.skipIf(process.getuid?.() === 0)('should log a folder that cannot be read and keep walking', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/a.jpg', '/lib/locked/b.jpg', '/lib/z.jpg']);
+      await chmod(`${root.path}/lib/locked`, 0o000);
+
+      const paths = await walkOrdered(root.path, ['/lib']).finally(() => chmod(`${root.path}/lib/locked`, 0o755));
+
+      expect(paths).toEqual(['/lib/a.jpg', '/lib/z.jpg']);
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringMatching(/^Unable to walk: .*Permission denied/));
     });
   });
 
