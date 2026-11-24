@@ -95,6 +95,7 @@ export type TimelineFilter = {
   order?: AssetOrder;
   withStacked?: boolean;
   withCoordinates?: boolean;
+  hasCoordinates?: boolean;
   personId?: string;
 };
 
@@ -141,6 +142,9 @@ const toWorkflowSteps = (steps: WorkflowStepDto[]) =>
   steps.map(({ method, config, enabled }) => ({ method, config, enabled }));
 
 const hiddenVisibilities = new Set<AssetVisibility>([AssetVisibility.Hidden, AssetVisibility.Locked]);
+
+const hasCoordinates = ({ exifInfo }: AssetResponseDto) =>
+  typeof exifInfo?.latitude === 'number' && typeof exifInfo.longitude === 'number';
 
 const suggestionFields: Record<SearchSuggestionType, keyof ExifResponseDto> = {
   [SearchSuggestionType.Country]: 'country',
@@ -546,6 +550,7 @@ export class MockData {
             : asset.visibility === filter.visibility) &&
           asset.isTrashed === isTrashed &&
           (filter.isFavorite === undefined || asset.isFavorite === filter.isFavorite) &&
+          (filter.hasCoordinates === undefined || hasCoordinates(asset) === filter.hasCoordinates) &&
           (filter.personId === undefined || !!asset.people?.some((person) => person.id === filter.personId)) &&
           (!filter.withStacked || !asset.stack || asset.stack.primaryAssetId === asset.id),
       )
@@ -1326,7 +1331,7 @@ export class MockData {
 
   mapMarkers(albumId?: string): MapMarkerResponseDto[] {
     return this.timelineAssets({ albumId })
-      .filter((asset) => typeof asset.exifInfo?.latitude === 'number' && typeof asset.exifInfo.longitude === 'number')
+      .filter((asset) => hasCoordinates(asset))
       .map((asset) => ({
         id: asset.id,
         lat: asset.exifInfo!.latitude!,

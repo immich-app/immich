@@ -1,5 +1,6 @@
 import { Route } from '#lib/route.ts';
 import { factory } from '#test/common/factories.ts';
+import type { App } from '#test/medium/app.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
 
 const atNoon = (second: number) => `2025-06-01T12:00:0${second}.000Z`;
@@ -45,6 +46,7 @@ test.describe('geolocation', () => {
     const located = factory.asset({ fileCreatedAt: atNoon(0), exifInfo: { latitude: 48.8566, longitude: 2.3522 } });
     data.addAssets([first, middle, located]);
     await page.goto(Route.geolocationUtility());
+    await app.geolocation.allButton.click();
     await app.timeline.thumbnail(first).click();
 
     await page.keyboard.down('Shift');
@@ -60,6 +62,7 @@ test.describe('geolocation', () => {
     data.addAssets([located, missing]);
     api.on({ updateAssets: () => ({ status: 500, json: { message: 'Server error', statusCode: 500 } }) });
     await page.goto(Route.geolocationUtility());
+    await app.geolocation.allButton.click();
     await app.timeline.thumbnail(located).click();
     await app.timeline.thumbnail(missing).click();
     await app.geolocation.applyButton.click();
@@ -73,4 +76,78 @@ test.describe('geolocation', () => {
       body: { ids: [missing.id], latitude: 48.85, longitude: 2.35 },
     });
   });
+
+  test('shows only assets without a location by default', async ({ page, data, app }) => {
+    const located = factory.asset({ fileCreatedAt: atNoon(1), exifInfo: { latitude: 48.85, longitude: 2.35 } });
+    const missing = factory.asset({ fileCreatedAt: atNoon(0) });
+    data.addAssets([located, missing]);
+
+    await page.goto(Route.geolocationUtility());
+
+    await expect(app.timeline.thumbnail(missing)).toBeVisible();
+    await expect(app.timeline.thumbnail(located)).toHaveCount(0);
+  });
+
+  test('all shows assets with a location too', async ({ page, data, app }) => {
+    const located = factory.asset({ fileCreatedAt: atNoon(1), exifInfo: { latitude: 48.85, longitude: 2.35 } });
+    const missing = factory.asset({ fileCreatedAt: atNoon(0) });
+    data.addAssets([located, missing]);
+    await page.goto(Route.geolocationUtility());
+
+    await app.geolocation.allButton.click();
+
+    await expect(app.timeline.thumbnail(located)).toBeVisible();
+    await expect(app.timeline.thumbnail(missing)).toBeVisible();
+  });
+
+  test('shows the place of a location picked on the map', async ({ page, api, app }) => {
+    api.on({ reverseGeocode: () => ({ json: [{ city: 'Paris', country: 'France', state: null }] }) });
+    await page.goto(Route.geolocationUtility());
+
+    await pickLocation(app, '48.8566', '2.3522');
+
+    await expect(app.geolocation.selectedLocation).toContainText('Paris, France');
+    expect(api.reverseGeocode).toHaveBeenCalledWith({ params: { lat: 48.8566, lon: 2.3522 } });
+  });
+
+  test('shows the coordinates when the place lookup fails', async ({ page, api, logger, app }) => {
+    api.on({ reverseGeocode: () => ({ status: 500, json: { message: 'Server error', statusCode: 500 } }) });
+    await page.goto(Route.geolocationUtility());
+
+    await pickLocation(app, '48.8566', '2.3522');
+
+    await expect(app.geolocation.selectedLocation).toContainText('48.857, 2.352');
+    expect(logger.error).toHaveBeenCalledWith(/500/);
+  });
+
+  test('keeps the latest picked place when an earlier lookup finishes last', async ({ page, api, app }) => {
+    const { promise: parisLookup, resolve: finishParisLookup } = Promise.withResolvers<void>();
+    api.on({
+      reverseGeocode: async ({ params }) => {
+        if (params.lat === 48.8566) {
+          await parisLookup;
+          return { json: [{ city: 'Paris', country: 'France', state: null }] };
+        }
+        return { json: [{ city: 'Tokyo', country: 'Japan', state: null }] };
+      },
+    });
+    await page.goto(Route.geolocationUtility());
+    await pickLocation(app, '48.8566', '2.3522');
+    await pickLocation(app, '35.6762', '139.6503');
+    await expect(app.geolocation.selectedLocation).toContainText('Tokyo, Japan');
+
+    const parisResponse = page.waitForResponse(/reverse-geocode\?lat=48\.8566/);
+    finishParisLookup();
+    await parisResponse;
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+
+    await expect(app.geolocation.selectedLocation).toContainText('Tokyo, Japan');
+  });
 });
+
+const pickLocation = async (app: App, latitude: string, longitude: string) => {
+  await app.geolocation.chooseOnMapButton.click();
+  await app.geolocation.locationPicker.latitudeInput.fill(latitude);
+  await app.geolocation.locationPicker.longitudeInput.fill(longitude);
+  await app.geolocation.locationPicker.confirmButton.click();
+};

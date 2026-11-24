@@ -8,6 +8,7 @@
   import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import GeolocationHelpModal from '#lib/modals/GeolocationHelpModal.svelte';
   import GeolocationPointPickerModal from '#lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '#lib/modals/GeolocationUpdateConfirmModal.svelte';
   import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
@@ -16,9 +17,9 @@
   import type { LatLng } from '#lib/types.ts';
   import { setQueryValue } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { AssetVisibility, getAssetInfo } from '@immich/sdk';
-  import { Button, LoadingSpinner, Text, modalManager } from '@immich/ui';
-  import { mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
+  import { AssetVisibility, getAssetInfo, reverseGeocode } from '@immich/sdk';
+  import { Button, IconButton, LoadingSpinner, Text, modalManager } from '@immich/ui';
+  import { mdiInformationOutline, mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -29,16 +30,26 @@
   let { data }: Props = $props();
 
   let isLoading = $state(false);
-  let point = $state<LatLng>();
+  let point = $state.raw<LatLng>();
   let locationUpdated = $state(false);
+  let selectedPlace = $state.raw<Place>();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = {
+  let showOnlyWithoutGps = $state(true);
+  const options = $derived({
     visibility: AssetVisibility.Timeline,
     withStacked: true,
     withPartners: true,
     withCoordinates: true,
-  };
+    hasCoordinates: showOnlyWithoutGps ? false : undefined,
+  });
+
+  type Place = { city?: string | null; country?: string | null };
+
+  const formatPlace = ({ city, country }: Place) => [city, country].filter(Boolean).join(', ');
+  const formatPoint = ({ lat, lng }: LatLng) => `${lat.toFixed(3)}, ${lng.toFixed(3)}`;
+
+  const selectedPlaceName = $derived(selectedPlace ? formatPlace(selectedPlace) : '');
 
   const isOwnAsset = (asset: TimelineAsset) => asset.ownerId === authManager.user.id;
 
@@ -104,6 +115,11 @@
     }
 
     point = selected;
+    selectedPlace = undefined;
+    const [place] = await reverseGeocode({ lat: selected.lat, lon: selected.lng }).catch(() => []);
+    if (point === selected) {
+      selectedPlace = place;
+    }
   };
   const handleEscape = () => {
     if (!assetMultiSelectManager.selectionActive) {
@@ -138,6 +154,7 @@
         locationUpdated = false;
       }, 1500);
       point = { lat: asset.latitude, lng: asset.longitude };
+      selectedPlace = asset;
       void setQueryValue('at', asset.id);
     } else if (isOwnAsset(asset)) {
       onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
@@ -150,19 +167,38 @@
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   {#snippet buttons()}
     <div class="flex place-items-center justify-end gap-2">
-      <Text class="mr-4 hidden md:block" size="tiny" color="muted">{$t('geolocation_instruction_location')}</Text>
+      <div class="flex overflow-hidden rounded-full bg-gray-200 p-1 text-sm font-medium dark:bg-gray-700">
+        <Button
+          size="small"
+          shape="round"
+          variant={showOnlyWithoutGps ? 'ghost' : 'filled'}
+          color={showOnlyWithoutGps ? 'secondary' : 'primary'}
+          onclick={() => (showOnlyWithoutGps = false)}
+        >
+          {$t('all')}
+        </Button>
+        <Button
+          size="small"
+          shape="round"
+          variant={showOnlyWithoutGps ? 'filled' : 'ghost'}
+          color={showOnlyWithoutGps ? 'primary' : 'secondary'}
+          onclick={() => (showOnlyWithoutGps = true)}
+        >
+          {$t('no_gps')}
+        </Button>
+      </div>
       <div class="flex place-content-center place-items-center rounded-2xl border bg-primary/10 px-2 py-1">
         <Text class="mr-5 ml-2 hidden font-mono md:inline-block" color="muted" size="tiny">
-          {$t('selected_gps_coordinates')}
+          {$t('selected_gps_location')}
         </Text>
         <Text
-          title="latitude, longitude"
+          title={selectedPlaceName && point ? formatPoint(point) : $t('latitude_longitude')}
           class="rounded-3xl px-2 py-1 font-mono text-sm text-primary transition-all duration-100 ease-in-out {locationUpdated
             ? 'scale-105 bg-primary/90 font-semibold text-light'
             : ''}"
         >
           {#if point}
-            {point.lat.toFixed(3)}, {point.lng.toFixed(3)}
+            {selectedPlaceName || formatPoint(point)}
           {:else}
             {$t('none')}
           {/if}
@@ -193,6 +229,15 @@
           {$t('apply_count', { values: { count: assetMultiSelectManager.assets.length } })}
         </Text>
       </Button>
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        size="small"
+        icon={mdiInformationOutline}
+        aria-label={$t('about')}
+        onclick={() => modalManager.show(GeolocationHelpModal)}
+      />
     </div>
   {/snippet}
 
@@ -218,7 +263,7 @@
       {/if}
       {#if hasGps(asset)}
         <div class="absolute inset-e-3 bottom-1 rounded-xl bg-success px-4 py-1 text-xs text-black transition-colors">
-          {asset.city || $t('gps')}
+          {formatPlace(asset) || $t('gps')}
         </div>
       {:else}
         <div class="absolute inset-e-3 bottom-1 rounded-xl bg-danger px-4 py-1 text-xs text-light transition-colors">
