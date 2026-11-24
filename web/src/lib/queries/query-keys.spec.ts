@@ -75,6 +75,7 @@ import { getSessionsQuery } from '#lib/queries/session.query.ts';
 import { getAllSharedLinksQuery, getMySharedLinkQuery, getSharedLinkQuery } from '#lib/queries/shared-link.query.ts';
 import { getStackQuery } from '#lib/queries/stack.query.ts';
 import { getAllTagsQuery, getTagByIdQuery } from '#lib/queries/tag.query.ts';
+import { getTimeBucketQuery, getTimeBucketsQuery } from '#lib/queries/timeline.query.ts';
 import {
   getUserAdminQuery,
   getUserCalendarHeatmapAdminQuery,
@@ -189,6 +190,8 @@ const queries: Record<string, QueryFactory> = {
   getStackQuery: () => getStackQuery(id),
   getAllTagsQuery: () => getAllTagsQuery(),
   getTagByIdQuery: () => getTagByIdQuery(id),
+  getTimeBucketsQuery: () => getTimeBucketsQuery({ isFavorite: true }),
+  getTimeBucketQuery: () => getTimeBucketQuery({ timeBucket: '2024-01-01' }),
   searchUsersAdminQuery: () => searchUsersAdminQuery({ withDeleted: true }),
   getUserAdminQuery: () => getUserAdminQuery(id),
   getUserPreferencesAdminQuery: () => getUserPreferencesAdminQuery(id),

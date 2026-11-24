@@ -11,6 +11,8 @@ import type {
   getMapMarkers,
   getMySharedLink,
   getSearchSuggestions,
+  getTimeBucket,
+  getTimeBuckets,
   getUsersForPeople,
   searchMemories,
   searchPerson,
@@ -161,6 +163,10 @@ export const QueryKeys = {
 
   // tags
   tags: () => ['tags'],
+
+  // timeline
+  timeBuckets: (params: Parameters<typeof getTimeBuckets>[0]) => ['timeline', 'buckets', params],
+  timeBucket: (params: Parameters<typeof getTimeBucket>[0]) => ['timeline', 'bucket', params],
 
   // users
   users: () => ['users'],
