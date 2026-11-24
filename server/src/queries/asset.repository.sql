@@ -522,26 +522,34 @@ limit
   $4
 
 -- AssetRepository.scanLibraryAssets
-begin
-declare library_scan no scroll cursor for (
-  select
-    "asset"."id",
-    "asset"."originalPath",
-    "asset"."isOffline",
-    "asset"."isExternal",
-    "asset"."status",
-    "asset"."fileModifiedAt"
-  from
-    "asset"
-  where
-    "asset"."libraryId" = $1::uuid
-  order by
-    "originalPath" collate "C"
-)
+declare library_scan no scroll cursor
+with
+  hold for (
+    select
+      "asset"."id",
+      "asset"."originalPath",
+      "asset"."isOffline",
+      "asset"."isExternal",
+      "asset"."status",
+      "asset"."fileModifiedAt"
+    from
+      "asset"
+    where
+      "asset"."libraryId" = $1::uuid
+    order by
+      "originalPath" collate "C"
+  )
 fetch 10000
 from
   library_scan
-commit
+update "asset"
+set
+  "isOffline" = $1,
+  "deletedAt" = $2
+where
+  "id" = any ($3::uuid[])
+  and "isOffline" = false
+close library_scan
 
 -- AssetRepository.getForOriginal
 select

@@ -1,4 +1,4 @@
-import { Insertable, Kysely } from 'kysely';
+import { Insertable, Kysely, sql } from 'kysely';
 import { chunk } from 'lodash-es';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { AssetFileType, AssetOrder, AssetOrderBy, AssetStatus, AssetType, AssetVisibility } from 'src/enum.js';
@@ -10,11 +10,10 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
-import { getKyselyDB } from 'test/utils.js';
+import { getKyselyDB, getSingleConnectionKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
-// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   const { ctx } = newMediumService(BaseService, {
     database: db || defaultDatabase,
@@ -681,8 +680,34 @@ describe(AssetRepository.name, () => {
       await expect(sut.getById(alreadyOffline.id)).resolves.toMatchObject({ isOffline: true, deletedAt });
     });
 
-    it('should keep assets online when the scan fails', async () => {
+    it('should commit an offline mark without locking the asset while the scan runs', async () => {
       const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        isExternal: true,
+        originalPath: '/reject/a.jpg',
+      });
+
+      const seen = await sut.scanLibraryAssets(library.id, async ({ setOffline }) => {
+        await setOffline([asset.id]);
+        return ctx.database
+          .selectFrom('asset')
+          .select('isOffline')
+          .where('id', '=', asset.id)
+          .forUpdate()
+          .noWait()
+          .executeTakeFirst();
+      });
+
+      expect(seen).toEqual({ isOffline: true });
+    });
+
+    it('should keep offline marks and close the cursor when the scan fails', async () => {
+      const database = await getSingleConnectionKyselyDB();
+      onTestFinished(() => database.destroy());
+      const { ctx, sut } = setup(database);
       const library = await newExternalLibrary(ctx);
       const { asset } = await ctx.newAsset({
         ownerId: library.ownerId,
@@ -698,7 +723,23 @@ describe(AssetRepository.name, () => {
         }),
       ).rejects.toThrow('Scan failed');
 
-      await expect(sut.getById(asset.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
+      await expect(sql`select name from pg_cursors where is_holdable`.execute(database)).resolves.toEqual({ rows: [] });
+      await expect(sut.getById(asset.id)).resolves.toMatchObject({ isOffline: true, deletedAt: expect.any(Date) });
+    });
+
+    it('should not stream assets inserted after the scan started', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const newExternalAsset = (originalPath: string) =>
+        ctx.newAsset({ ownerId: library.ownerId, libraryId: library.id, isExternal: true, originalPath });
+      await newExternalAsset('/lib/a.jpg');
+
+      const batches = await sut.scanLibraryAssets(library.id, async ({ assets }) => {
+        await newExternalAsset('/lib/b.jpg');
+        return collectPaths(assets);
+      });
+
+      expect(batches).toEqual([['/lib/a.jpg']]);
     });
 
     it('should offline each asset once when the same library is scanned concurrently', async () => {

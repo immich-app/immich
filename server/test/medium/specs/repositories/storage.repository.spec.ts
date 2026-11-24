@@ -483,7 +483,9 @@ describe(StorageRepository.name, () => {
       const paths = await walkOrdered(root.path, ['/lib']).finally(() => chmod(`${root.path}/lib/locked`, 0o755));
 
       expect(paths).toEqual(['/lib/a.jpg', '/lib/z.jpg']);
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringMatching(/^Unable to walk: .*Permission denied/));
+      expect(vitest.mocked(logger.warn).mock.calls).toEqual([
+        [`Unable to walk ${root.path}/lib/locked: Permission denied (os error 13)`],
+      ]);
     });
   });
 

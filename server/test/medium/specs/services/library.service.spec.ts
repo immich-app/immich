@@ -1,4 +1,4 @@
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { chunk } from 'lodash-es';
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
@@ -25,11 +25,11 @@ import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryService } from 'src/services/library.service.js';
 import { MetadataService } from 'src/services/metadata.service.js';
-import { JobItem } from 'src/types.js';
+import { JobItem, JobOf } from 'src/types.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { MediumTestContext, mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { newUuid } from 'test/small.factory.js';
-import { getKyselyDB } from 'test/utils.js';
+import { getKyselyDB, getSingleConnectionKyselyDB } from 'test/utils.js';
 
 // `validateImportPath` checks candidate paths against the media location
 StorageCore.setMediaLocation('/photos');
@@ -236,7 +236,6 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
   }
 }
 
-// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   const ctx = new LibraryTestContext(db || defaultDatabase);
   return { sut: ctx.sut, ctx };
@@ -1304,6 +1303,22 @@ describe(LibraryService.name, () => {
       ]);
     });
 
+    it('should fail without leaving a cursor open when the library has a path twice', async () => {
+      const database = await getSingleConnectionKyselyDB();
+      onTestFinished(() => database.destroy());
+      const { sut, ctx } = setup(database);
+      await mkdir(importPath, { recursive: true });
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      const duplicate = join(importPath, 'asset.png');
+      await ctx.createAssets(library, [duplicate, duplicate]);
+
+      await expect(sut.handleQueueSyncFiles({ id: library.id })).rejects.toThrow(
+        `Library asset stream is not in ascending order: ${JSON.stringify(duplicate)} after ${JSON.stringify(duplicate)}`,
+      );
+
+      await expect(sql`select name from pg_cursors where is_holdable`.execute(database)).resolves.toEqual({ rows: [] });
+    });
+
     it('should not queue anything for unchanged files spanning several batches', async () => {
       const { sut, ctx } = setup();
       const library = await ctx.createLibrary({ importPaths: [importPath] });
@@ -1312,6 +1327,30 @@ describe(LibraryService.name, () => {
       await sut.handleQueueSyncFiles({ id: library.id });
 
       expect(ctx.getQueued()).toEqual([]);
+    });
+  });
+
+  describe('handleSyncFiles', () => {
+    it('should import the rest of a queued batch when one of its files was imported first', async () => {
+      const { sut, ctx } = setup();
+      const [first, second] = await Promise.all(['a.png', 'b.png'].map((file) => createFile(join(importPath, file))));
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      await sut.handleQueueSyncFiles({ id: library.id });
+      const [queued] = ctx.getQueued();
+      await sut.handleSyncFiles({ libraryId: library.id, paths: [first] });
+      const jobs = ctx.getMock(JobRepository);
+      const emit = ctx.getMock(EventRepository).emit;
+      jobs.queueAll.mockClear();
+      emit.mockClear();
+
+      await expect(sut.handleSyncFiles(queued.data as JobOf<JobName.LibrarySyncFiles>)).resolves.toBe(
+        JobStatus.Success,
+      );
+
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([first, second]);
+      const { id } = await ctx.getAsset(second);
+      expect(jobs.queueAll.mock.calls).toEqual([[[{ name: JobName.SidecarCheck, data: { id, source: 'upload' } }]]]);
+      expect(emit.mock.calls).toEqual([['AssetCreate', { asset: { id, ownerId: library.ownerId } }]]);
     });
   });
 

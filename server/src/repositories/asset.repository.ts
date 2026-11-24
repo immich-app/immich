@@ -468,7 +468,14 @@ export class AssetRepository {
     if (assets.length === 0) {
       return [];
     }
-    const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
+    const ids = await this.db
+      .insertInto('asset')
+      .values(assets)
+      .onConflict((oc) =>
+        oc.columns(['ownerId', 'libraryId', 'checksum']).where('libraryId', 'is not', null).doNothing(),
+      )
+      .returning('id')
+      .execute();
     return ids.map(({ id }) => id);
   }
 
@@ -1109,16 +1116,14 @@ export class AssetRepository {
     params: [
       DummyValue.UUID,
       async ({ assets, setOffline }: LibraryScan) => {
-        for await (const _ of assets) {
-          await setOffline([DummyValue.UUID]);
-        }
+        await Array.fromAsync(assets);
+        await setOffline([DummyValue.UUID]);
       },
     ],
   })
   scanLibraryAssets<T>(libraryId: string, onScan: (scan: LibraryScan) => Promise<T>): Promise<T> {
-    // read and write on one connection, so concurrent library scans can't deadlock on the pool
-    return this.db.transaction().execute(async (trx) => {
-      const query = trx
+    return this.db.connection().execute(async (connection) => {
+      const query = connection
         .selectFrom('asset')
         .select([
           'asset.id',
@@ -1130,13 +1135,13 @@ export class AssetRepository {
         ])
         .where('asset.libraryId', '=', asUuid(libraryId))
         .orderBy(sql`"originalPath" collate "C"`);
-      await sql`declare library_scan no scroll cursor for ${query}`.execute(trx);
+      await sql`declare library_scan no scroll cursor with hold for ${query}`.execute(connection);
 
       async function* fetchBatches() {
         for (;;) {
           const { rows } = await sql<LibraryScanAsset>`
             fetch ${sql.lit(JOBS_LIBRARY_PAGINATION_SIZE)} from library_scan
-          `.execute(trx);
+          `.execute(connection);
           if (rows.length === 0) {
             return;
           }
@@ -1147,17 +1152,20 @@ export class AssetRepository {
 
       const deletedAt = new Date();
       const setOffline = async (ids: string[]) => {
-        // a concurrent scan of the same library may have offlined these rows after the cursor was declared
-        const { numUpdatedRows } = await trx
+        const { numUpdatedRows } = await connection
           .updateTable('asset')
           .set({ isOffline: true, deletedAt })
           .where('id', '=', anyUuid(ids))
-          .where('isOffline', '=', false)
+          .where('isOffline', '=', sql.lit(false))
           .executeTakeFirst();
         return Number(numUpdatedRows);
       };
 
-      return onScan({ assets: fetchBatches(), setOffline });
+      try {
+        return await onScan({ assets: fetchBatches(), setOffline });
+      } finally {
+        await sql`close library_scan`.execute(connection);
+      }
     });
   }
 

@@ -301,8 +301,8 @@ export class StorageRepository {
       includeHidden,
       extensions: mimeTypes.getSupportedFileExtensions(),
     })) {
-      for (const error of errors) {
-        this.logger.warn(`Unable to walk: ${error.message}`);
+      for (const { path, message } of errors) {
+        this.logger.warn(path ? `Unable to walk ${path}: ${message}` : `Unable to walk: ${message}`);
       }
 
       yield { paths: files, modified };
