@@ -134,7 +134,12 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   void didUpdateWidget(covariant Scrubber oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.layoutSegments.lastOrNull?.endOffset != widget.layoutSegments.lastOrNull?.endOffset) {
+    final trackChanged =
+        oldWidget.timelineHeight != widget.timelineHeight ||
+        oldWidget.topPadding != widget.topPadding ||
+        oldWidget.bottomPadding != widget.bottomPadding;
+
+    if (trackChanged || oldWidget.layoutSegments.lastOrNull?.endOffset != widget.layoutSegments.lastOrNull?.endOffset) {
       _segments = _buildSegments(layoutSegments: widget.layoutSegments, timelineHeight: _scrubberHeight);
       _monthCount = getMonthCount();
     }

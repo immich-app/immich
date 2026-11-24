@@ -24,6 +24,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline_pinch_zoom.
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/system_occlusions.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/utils/debounce.dart';
@@ -388,6 +389,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final systemOcclusions = ref.watch(systemOcclusionsProvider);
     final isMultiSelectStatusVisible = !isSelectionMode && isMultiSelectEnabled;
     final isBottomWidgetVisible =
         widget.bottomSheet != null && (isMultiSelectStatusVisible || widget.persistentBottomBar);
@@ -421,16 +423,17 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
               onLoading: widget.loadingWidget != null ? () => widget.loadingWidget! : null,
               onData: (segments) {
                 final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
-                final topPadding =
-                    (widget.appBar == null
-                        ? context.padding.top
-                        : math.max(context.padding.top + kToolbarHeight, _endSideStatusBarBottom(context))) +
-                    10;
+                final systemUiOverScrubber = _systemUiOverScrubber(context, systemOcclusions, maxHeight);
+                final topPadding = math.max(
+                  context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10,
+                  systemUiOverScrubber.top,
+                );
 
                 const bottomSheetOpenModifier = 120.0;
                 final contentBottomPadding =
                     context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
-                final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;
+                final scrubberBottomPadding =
+                    math.max(contentBottomPadding, systemUiOverScrubber.bottom) + kScrubberThumbHeight;
 
                 return TimelinePinchZoom(
                   onColumnCountWillChange: () {
@@ -519,15 +522,30 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     );
   }
 
-  double _endSideStatusBarBottom(BuildContext context) {
-    final padding = context.padding;
-    final (startInset, endInset) = Directionality.of(context) == TextDirection.rtl
-        ? (padding.right, padding.left)
-        : (padding.left, padding.right);
-    if (padding.top > 0 || startInset > 0 || endInset == 0) {
-      return 0;
-    }
+  /// An offset of system UI separate from safe area
+  ///
+  /// iPhone Duo puts the status bar and cameras outside of Flutter 3.47.9 safe area
+  ({double top, double bottom}) _systemUiOverScrubber(
+    BuildContext context,
+    List<Rect> systemOcclusions,
+    double timelineHeight,
+  ) {
+    final screen = MediaQuery.sizeOf(context);
+    final isScrubberOnLeft = Directionality.of(context) == TextDirection.rtl;
 
-    return context.orientation == Orientation.portrait ? 153 : 105;
+    // Connected to the side
+    final onScrubberEdge = systemOcclusions.where(
+      (occlusion) => isScrubberOnLeft ? occlusion.left <= 0 : occlusion.right >= screen.width,
+    );
+
+    return (
+      top: onScrubberEdge
+          .where((occlusion) => occlusion.top <= 0)
+          .fold(0.0, (inset, occlusion) => math.max(inset, occlusion.bottom)),
+
+      bottom: onScrubberEdge
+          .where((occlusion) => occlusion.bottom >= screen.height)
+          .fold(0.0, (inset, occlusion) => math.max(inset, timelineHeight - occlusion.top)),
+    );
   }
 }
