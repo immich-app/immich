@@ -1,4 +1,4 @@
-# Backup and Restore
+# Backup and restore
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -15,7 +15,7 @@ The instructions on this page show you how to prepare your Immich instance to be
 
 Immich stores [file paths](https://github.com/immich-app/immich/discussions/3299) and user metadata in the database. It does not scan the library folder, so database backups are essential.
 
-### Automatic Database Backups
+### Automatic database backups
 
 Immich automatically creates database backups for disaster-recovery purposes. These backups are stored in `UPLOAD_LOCATION/backups` and can be managed through the web interface.
 
@@ -25,7 +25,7 @@ You can adjust the backup schedule and retention settings in **Administration > 
 Database backups do **not** contain photos or videos — only metadata. They must be used together with a copy of the files in `UPLOAD_LOCATION` as outlined below.
 :::
 
-#### Creating a Backup
+#### Creating a backup
 
 You can trigger a database backup manually:
 
@@ -35,11 +35,11 @@ You can trigger a database backup manually:
 
 The backup will appear in `UPLOAD_LOCATION/backups` and counts toward your retention limit.
 
-### Restoring a Database Backup
+### Restoring a database backup
 
 Immich provides two ways to restore a database backup: through the web interface or via the command line. The web interface is the recommended method for most users.
 
-#### Restore from Settings {#restore-from-settings}
+#### Restore from settings {#restore-from-settings}
 
 If you have an existing Immich installation:
 
@@ -58,7 +58,7 @@ title="Restore from settings"
 Restoring a backup will wipe the current database and replace it with the backup. A restore point is automatically created before the operation begins, allowing rollback if the restore fails.
 :::
 
-#### Restore from Onboarding {#restore-from-onboarding}
+#### Restore from onboarding {#restore-from-onboarding}
 
 If you're setting up Immich on a fresh installation and want to restore from an existing backup:
 
@@ -99,7 +99,7 @@ title="Restore from onboarding"
 Before restoring, ensure your `UPLOAD_LOCATION` folders contain the same files that existed when the backup was created. The integrity check will show you which folders are readable/writable and how many files they contain.
 :::
 
-### Uploading a Backup File {#uploading-backup}
+### Uploading a backup file {#uploading-backup}
 
 You can upload a database backup file directly:
 
@@ -108,7 +108,7 @@ You can upload a database backup file directly:
 3. The uploaded backup will appear in the list with an `uploaded-` prefix
 4. Click **Restore** to restore from the uploaded file
 
-### Backup Version Compatibility {#backup-compatibility}
+### Backup version compatibility {#backup-compatibility}
 
 When viewing backups, Immich displays compatibility indicators based on the current version and the information from the filename:
 
@@ -120,7 +120,7 @@ When viewing backups, Immich displays compatibility indicators based on the curr
 Restoring a backup from a different Immich version may require database migrations. The restore process will attempt to run migrations automatically, but you should ensure you're restoring to a compatible version when possible.
 :::
 
-### Restore Process {#restore-process}
+### Restore process {#restore-process}
 
 During restoration, Immich will:
 
@@ -131,7 +131,7 @@ During restoration, Immich will:
 
 If the restore fails (e.g., corrupted backup or missing admin user), Immich will automatically roll back to the restore point.
 
-### Restore via Command Line {#restore-cli}
+### Restore via command line {#restore-cli}
 
 For advanced users or automated recovery scenarios, you can restore a database backup using the command line.
 
@@ -222,7 +222,7 @@ If you choose to back up only those folders, you will need to rerun the transcod
 If you moved some of these folders onto a different storage device, such as `profile/`, make sure to adjust the backup path to match your setup
 :::
 
-### Asset Types and Storage Locations
+### Asset types and storage locations
 
 Some storage locations are impacted by the Storage Template. See below for more details.
 
@@ -234,12 +234,12 @@ The `UPLOAD_LOCATION/library` folder is not used by default on new machines runn
 for more info read the [release notes](https://github.com/immich-app/immich/releases/tag/v1.92.0#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template).
 :::
 
-**1. User-Specific Folders:**
+**1. User-specific folders:**
 
 - Each user has a unique string representing them.
 - You can find your user ID in Account Account Settings -> Account -> User ID.
 
-**2. Asset Types and Storage Locations:**
+**2. Asset types and storage locations:**
 
 - **Source Assets:**
   - Original assets uploaded through the browser interface & mobile & CLI.
@@ -271,32 +271,32 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
 **New assets** will be saved to `UPLOAD_LOCATION/upload`.
 :::
 
-**1. User-Specific Folders:**
+**1. User-specific folders:**
 
 - Each user has a unique string representing them.
   - The administrator can set a Storage Label for a user, which will be used instead of `<userID>` for the `library/` folder.
   - The Admin has a default storage label of `admin`.
 - You can find your user ID and Storage Label in Account Account Settings -> Account -> User ID.
 
-**2. Asset Types and Storage Locations:**
+**2. Asset types and storage locations:**
 
-- **Source Assets:**
+- **Source assets:**
   - Original assets uploaded through the browser interface, mobile, and CLI.
   - Stored in `UPLOAD_LOCATION/library/<userID>`.
-- **Avatar Images:**
+- **Avatar images:**
   - User profile images.
   - Stored in `UPLOAD_LOCATION/profile/<userID>`.
-- **Thumbs Images:**
+- **Thumbs images:**
   - Preview images (blurred, small, large) for each asset and thumbnails for recognized faces.
   - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
-- **Encoded Assets:**
+- **Encoded assets:**
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
-- **Files in Upload Queue (Mobile):**
+- **Files in upload queue (mobile):**
   - Files uploaded through mobile apps.
   - Temporarily located in `UPLOAD_LOCATION/upload/<userID>`.
   - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
-- **Database Dump Backups:**
+- **Database dump backups:**
   - Automatic database backups created by Immich for disaster recovery.
   - Stored in `UPLOAD_LOCATION/backups/`.
 - **Postgres**

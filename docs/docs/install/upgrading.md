@@ -26,7 +26,7 @@ docker image prune
 [breaking]: https://github.com/immich-app/immich/discussions?discussions_q=label%3Achangelog%3Abreaking-change+sort%3Adate_created
 [releases]: https://github.com/immich-app/immich/releases
 
-## Versioning Policy
+## Versioning policy
 
 Immich follows [semantic versioning][semver], which tags releases in the format `<major>.<minor>.<patch>`.
 We intend for breaking changes, including those to the API or deployment, to be limited to major version releases.
