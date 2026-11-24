@@ -9982,18 +9982,7 @@
       "post": {
         "description": "Generate the options used by the browser to sign in with a passkey.",
         "operationId": "startAuthentication",
-        "parameters": [
-          {
-            "description": "Code challenge (PKCE)",
-            "in": "query",
-            "name": "codeChallenge",
-            "required": false,
-            "schema": {
-              "minLength": 1,
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "content": {
@@ -25721,11 +25710,6 @@
       },
       "PasskeyAuthenticationFinishDto": {
         "properties": {
-          "codeVerifier": {
-            "description": "Code verifier (PKCE)",
-            "minLength": 1,
-            "type": "string"
-          },
           "response": {
             "additionalProperties": {},
             "description": "Response returned by @simplewebauthn/browser's `startAuthentication()`",

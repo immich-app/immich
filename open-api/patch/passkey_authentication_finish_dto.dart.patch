@@ -1,16 +1,16 @@
-@@ -26,7 +26,7 @@ class PasskeyAuthenticationFinishDto {
-   ///
-   Optional<String?> codeVerifier;
+@@ -16,7 +16,7 @@ class PasskeyAuthenticationFinishDto {
+     required this.response,
+   });
  
 -  PasskeyAuthenticationFinishDtoResponse response;
 +  Map<String, dynamic> response;
  
    @override
    bool operator ==(Object other) => identical(this, other) || other is PasskeyAuthenticationFinishDto &&
-@@ -62,7 +62,7 @@ class PasskeyAuthenticationFinishDto {
+@@ -45,7 +45,7 @@ class PasskeyAuthenticationFinishDto {
+       final json = value.cast<String, dynamic>();
  
        return PasskeyAuthenticationFinishDto(
-         codeVerifier: json.containsKey(r'codeVerifier') ? Optional.present(mapValueOfType<String>(json, r'codeVerifier')) : const Optional.absent(),
 -        response: PasskeyAuthenticationFinishDtoResponse.fromJson(json[r'response'])!,
 +        response: json[r'response'],
        );

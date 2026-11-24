@@ -14,7 +14,6 @@ import { SystemConfig } from 'src/dtos/config.dto.js';
 import {
   PasskeyAuthenticationFinishDto,
   PasskeyAuthenticationOptionsDto,
-  PasskeyAuthenticationStartDto,
   PasskeyRegistrationFinishDto,
   PasskeyRegistrationOptionsDto,
   PasskeyResponseDto,
@@ -136,10 +135,7 @@ export class PasskeyService extends BaseService {
     return mapPasskey(passkey);
   }
 
-  async startAuthentication(
-    dto: PasskeyAuthenticationStartDto,
-    headers: IncomingHttpHeaders,
-  ): Promise<PasskeyAuthenticationOptionsDto> {
+  async startAuthentication(headers: IncomingHttpHeaders): Promise<PasskeyAuthenticationOptionsDto> {
     const config = await this.requireEnabled();
 
     const { rpId } = this.getRelyingParty(config, headers);
@@ -153,7 +149,6 @@ export class PasskeyService extends BaseService {
       type: AuthChallengeType.PasskeyAuthentication,
       challenge: options.challenge,
       userId: null,
-      codeChallenge: dto.codeChallenge,
       expiresAt: DateTime.now().plus(CHALLENGE_TTL).toJSDate(),
     });
 
@@ -185,7 +180,6 @@ export class PasskeyService extends BaseService {
           const record = await this.authChallengeRepository.consume({
             type: AuthChallengeType.PasskeyAuthentication,
             challenge,
-            codeChallenge: dto.codeVerifier && this.cryptoRepository.hashSha256(dto.codeVerifier).toString('base64url'),
           });
           return !!record;
         },

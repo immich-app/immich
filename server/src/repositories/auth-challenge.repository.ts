@@ -15,12 +15,11 @@ export class AuthChallengeRepository {
   }
 
   @GenerateSql({ params: [{ type: AuthChallengeType.PasskeyRegistration, challenge: DummyValue.STRING }] })
-  consume({ type, challenge, codeChallenge }: { type: AuthChallengeType; challenge: string; codeChallenge?: string }) {
+  consume({ type, challenge }: { type: AuthChallengeType; challenge: string }) {
     return this.db
       .deleteFrom('auth_challenge')
       .where('challenge', '=', challenge)
       .where('type', '=', type)
-      .where('codeChallenge', 'is not distinct from', codeChallenge ?? null)
       .where('expiresAt', '>', new Date())
       .returning(['id', 'userId'])
       .executeTakeFirst();
