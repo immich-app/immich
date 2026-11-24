@@ -582,6 +582,7 @@ const createViewer = (page: Page) => {
     ocr: {
       button: page.getByLabel('text_recognition', { exact: true }),
       boxes: content.getByTestId('ocr-box'),
+      panoramaBoxes: root.locator('[id^="psv-marker-box_"]'),
       image: ocrImage,
       imageTransform: () =>
         ocrImage.evaluate((element) => getComputedStyle(element.closest('[style*="transform"]') ?? element).transform),
