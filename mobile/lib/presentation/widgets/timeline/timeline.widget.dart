@@ -269,6 +269,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
   }
 
   void _scrollSegmentToTop(Segment segment) {
+    if (segment.firstIndex == 0) {
+      _scrollController.jumpTo(0);
+      return;
+    }
+
     final list = _segmentedListKey.currentContext?.findRenderObject() as RenderSliver?;
     if (list == null) {
       return;
@@ -276,8 +281,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
     final header = Rect.fromLTWH(0, segment.startOffset, 0, 0);
     final headerBelowPinnedBars = RenderAbstractViewport.of(list).getOffsetToReveal(list, 0, rect: header).offset;
-    final headerBelowStatusBar = list.constraints.precedingScrollExtent + segment.startOffset - context.padding.top;
-    final target = math.min(headerBelowPinnedBars, headerBelowStatusBar);
+    final headerTop = list.constraints.precedingScrollExtent + segment.startOffset;
+    final headerBelowTopBars = headerTop - math.max(list.constraints.overlap, context.padding.top);
+    final headerBelowStatusBar = headerTop - context.padding.top;
+    final scrollsUp = headerBelowTopBars < _scrollController.position.pixels;
+    final target = math.min(headerBelowPinnedBars, scrollsUp ? headerBelowTopBars : headerBelowStatusBar);
     _scrollController.jumpTo(target.clamp(0.0, _scrollController.position.maxScrollExtent));
   }
 
