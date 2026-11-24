@@ -9,7 +9,7 @@ const MIN_VALID_CAPTURE_DATE_MS = Date.UTC(1970, 0, 2);
 const RAW_MIME_REGEX = /dng|raw/i;
 const HEIC_MIME_REGEX = /heic|heif|avif/i;
 const STORAGE_COLLISION_SUFFIX_REGEX = /\+\d+\.[^.]+$/;
-const COPY_MARKER_REGEX = /(\(1\)|_copy| copy|-wa\d+)/i;
+const COPY_MARKER_REGEX = /(\(\d+\)|[ _-]copy\b|-wa\d+)/i;
 
 type FormatTier = 'raw' | 'heic' | 'standard';
 
@@ -61,14 +61,18 @@ export const getExifCount = (asset: AssetResponseDto): number => {
 };
 
 const resolveDimensions = (asset: AssetResponseDto): { width: number; height: number } => {
+  const assetWidth = asset.width ?? 0;
+  const assetHeight = asset.height ?? 0;
+  if (asset.isEdited && assetWidth > 0 && assetHeight > 0) {
+    return { width: assetWidth, height: assetHeight };
+  }
+
   const exifWidth = asset.exifInfo?.exifImageWidth ?? 0;
   const exifHeight = asset.exifInfo?.exifImageHeight ?? 0;
   if (exifWidth > 0 && exifHeight > 0) {
     return { width: exifWidth, height: exifHeight };
   }
 
-  const assetWidth = asset.width ?? 0;
-  const assetHeight = asset.height ?? 0;
   if (assetWidth > 0 && assetHeight > 0) {
     return { width: assetWidth, height: assetHeight };
   }

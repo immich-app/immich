@@ -161,6 +161,20 @@ describe('duplicate utils', () => {
 
       const anotherZero = createAsset('zero-dims-2', 3_000_000, {}, { width: 0, height: 0 });
       expect(suggestDuplicate([zeroDimensions, anotherZero])?.id).toBe('zero-dims-2');
+
+      const croppedEdited = createAsset(
+        'cropped-edited',
+        4_000_000,
+        { exifImageWidth: 4032, exifImageHeight: 3024 },
+        { width: 1200, height: 900, isEdited: true },
+      );
+      const uneditedFullRes = createAsset(
+        'unedited-full-res',
+        3_500_000,
+        { exifImageWidth: 4032, exifImageHeight: 3024 },
+        { width: 4032, height: 3024, isEdited: false },
+      );
+      expect(suggestDuplicate([croppedEdited, uneditedFullRes])?.id).toBe('unedited-full-res');
     });
 
     it('should prioritize higher pixel resolution and penalize 2048px iCloud Shared Album downscales', () => {
@@ -416,6 +430,27 @@ describe('duplicate utils', () => {
 
       expect(suggestDuplicate([messagingCopy, cleanOriginal])?.id).toBe('clean-original');
       expect(suggestDuplicate([cleanOriginal, messagingCopy])?.id).toBe('clean-original');
+
+      const numberedCopy = createAsset(
+        'numbered-copy',
+        72_000,
+        { dateTimeOriginal: '2023-08-01T08:00:00.000Z' },
+        {
+          originalFileName: 'IMG_20230801_080000 (2).jpg',
+          originalPath: '/library/20230801_080000.jpg',
+        },
+      );
+      const legitimateCopyrightName = createAsset(
+        'legitimate-copyright',
+        70_000,
+        { dateTimeOriginal: '2023-08-01T08:00:00.000Z' },
+        {
+          originalFileName: 'studio_copyright_photo.jpg',
+          originalPath: '/library/studio_copyright_photo.jpg',
+        },
+      );
+
+      expect(suggestDuplicate([numberedCopy, legitimateCopyrightName])?.id).toBe('legitimate-copyright');
     });
   });
 
