@@ -1,0 +1,37 @@
+name: Restore verification (optional)
+
+# Opt-in demo gate: scheduled and manually runnable. It creates a synthetic
+# plain-format pg_dump in the runner, restores it into a throwaway Postgres
+# container, and fails on ERROR/FATAL or row/column drift. Nothing here is a
+# mandatory check and no repository secrets are used.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  restore-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create synthetic PostgreSQL dump
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/restore-verify-dump.sql" <<'SQL'
+          SET transaction_timeout = 0;
+          CREATE TABLE public.users (id integer PRIMARY KEY, email text);
+          COPY public.users (id, email) FROM stdin;
+          1	alice@example.com
+          2	bob@example.com
+          \.
+          SQL
+      - name: Verify dump restores cleanly
+        uses: DawnofGenX/restore-verify-action@v0.2
+        with:
+          dump-path: ${{ runner.temp }}/restore-verify-dump.sql
+          postgres-image: postgres:17
+          min-tables: '1'
+          expected-tables: public.users
+          fail-on-stderr: 'true'
