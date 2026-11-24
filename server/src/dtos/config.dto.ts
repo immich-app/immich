@@ -701,8 +701,8 @@ export const defaults = Object.freeze<SystemConfig>({
     level: LogLevel.Log,
   },
   machineLearning: {
-    enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
-    urls: [process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003'],
+    enabled: true,
+    urls: ['http://immich-machine-learning:3003'],
     availabilityChecks: {
       enabled: true,
       timeout: 2000,

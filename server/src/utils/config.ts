@@ -1,6 +1,7 @@
 import AsyncLock from 'async-lock';
 import { load as loadYaml } from 'js-yaml';
-import { cloneDeep, get, isEmpty, isEqual, set } from 'lodash-es';
+import { cloneDeep, get, isEmpty, isEqual, set, snakeCase } from 'lodash-es';
+import { CONFIG_ENV_PREFIX } from 'src/constants.js';
 import { AdminConfigDto, SystemConfig, configFields, defaults } from 'src/dtos/config.dto.js';
 import { ConfigSource, DatabaseLock, SystemMetadataKey } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -100,7 +101,7 @@ const loadFromFile = async ({ metadataRepo, logger }: RepoDeps, filepath: string
 
 const buildConfig = async (repos: RepoDeps) => {
   const { configRepo, metadataRepo, logger } = repos;
-  const { configFile } = configRepo.getEnv();
+  const { configFile, configOverrides } = configRepo.getEnv();
 
   const rawConfig = cloneDeep(defaults);
   const fields = Object.fromEntries(
@@ -120,6 +121,13 @@ const buildConfig = async (repos: RepoDeps) => {
       throw new Error(['Invalid system config: ', ...fileErrors].join('\n'));
     }
   }
+
+  const { envConfig, envErrors } = decodeEnv(repos, configOverrides);
+  if (envErrors.length > 0) {
+    throw new Error(['Invalid system config: ', ...envErrors].join('\n'));
+  }
+
+  mergeLayer(repos, rawConfig, fields, envConfig, ConfigSource.Env);
 
   const result = AdminConfigDto.schema.safeParse(rawConfig);
   if (!result.success) {
@@ -188,6 +196,52 @@ const mergeLayer = (
   }
 
   return errors;
+};
+
+const decodeEnv = ({ logger }: RepoDeps, configOverrides: Record<string, string>) => {
+  const envConfig = {};
+  const envErrors: string[] = [];
+  const unknownVariables = new Set(Object.keys(configOverrides));
+
+  for (const { key, schema } of configFields) {
+    const variable = `${CONFIG_ENV_PREFIX}${snakeCase(key).toUpperCase()}`;
+    const value = configOverrides[variable];
+    unknownVariables.delete(variable);
+    if (value === undefined) {
+      continue;
+    }
+
+    const candidate = getEnvCandidates(value).find((candidate) => schema.safeParse(candidate).success);
+    if (candidate === undefined) {
+      envErrors.push(...formatIssues(schema.safeParse(value).error!.issues, [variable]));
+      continue;
+    }
+
+    set(envConfig, key, candidate);
+  }
+
+  for (const variable of unknownVariables) {
+    logger.warn(`Unknown configuration environment variable: ${variable}`);
+  }
+
+  return { envConfig, envErrors };
+};
+
+const getEnvCandidates = (value: string): unknown[] => [
+  value,
+  ...parseJson(value),
+  value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean),
+];
+
+const parseJson = (value: string) => {
+  try {
+    return [JSON.parse(value)];
+  } catch {
+    return [];
+  }
 };
 
 const formatIssues = (issues: { path: PropertyKey[]; message: string }[], prefix: PropertyKey[] = []) =>

@@ -384,6 +384,7 @@ export enum ConfigSource {
   Default = 'default',
   Database = 'database',
   File = 'file',
+  Env = 'env',
 }
 
 export enum SystemMetadataKey {

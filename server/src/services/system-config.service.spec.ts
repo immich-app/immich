@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
-import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
+import { get, snakeCase } from 'lodash-es';
+import { SystemConfig, configFields, defaults } from 'src/dtos/config.dto.js';
 import {
   AudioCodec,
   CQMode,
@@ -317,6 +318,92 @@ describe(SystemConfigService.name, () => {
       expect(config.trash.days).toBe(10);
     });
 
+    it('applies an environment variable override', async () => {
+      mocks.config.getEnv.mockReturnValue(
+        mockEnvData({ configOverrides: { IMMICH_CONFIG_FFMPEG_CRF: '30', IMMICH_CONFIG_TRASH_ENABLED: 'false' } }),
+      );
+
+      const config = await sut.getAdminConfig();
+
+      expect(config.ffmpeg.crf).toBe(30);
+      expect(config.trash.enabled).toBe(false);
+    });
+
+    it('lets an environment variable win over the config file and the database', async () => {
+      mocks.config.getEnv.mockReturnValue(
+        mockEnvData({ configFile: 'immich-config.json', configOverrides: { IMMICH_CONFIG_FFMPEG_CRF: '35' } }),
+      );
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { crf: 25 } });
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 30 } }));
+
+      const config = await sut.getAdminConfig();
+
+      expect(config.ffmpeg.crf).toBe(35);
+    });
+
+    it('sets every property from its environment variable', async () => {
+      const configOverrides = Object.fromEntries(
+        configFields.map(({ key }) => {
+          const value = get(defaults, key);
+          const serialized = Array.isArray(value) || value === null ? JSON.stringify(value) : String(value);
+          return [`IMMICH_CONFIG_${snakeCase(key).toUpperCase()}`, serialized];
+        }),
+      );
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides }));
+      mocks.systemMetadata.get.mockResolvedValue(partialConfig);
+
+      const config = await sut.getAdminConfig();
+
+      expect(Object.keys(configOverrides)).toHaveLength(configFields.length);
+      expect(config).toEqual(defaults);
+      expect(mocks.logger.warn).not.toHaveBeenCalled();
+    });
+
+    const codecs = { variable: 'IMMICH_CONFIG_FFMPEG_ACCEPTED_VIDEO_CODECS', path: 'ffmpeg.acceptedVideoCodecs' };
+    const urls = { variable: 'IMMICH_CONFIG_MACHINE_LEARNING_URLS', path: 'machineLearning.urls' };
+    it.each([
+      { ...codecs, value: 'h264, hevc,', expected: ['h264', 'hevc'] },
+      { ...codecs, value: '["h264","hevc"]', expected: ['h264', 'hevc'] },
+      { ...urls, value: 'http://ml:3003', expected: ['http://ml:3003'] },
+    ])('decodes $variable=$value as an array', async ({ variable, path, value, expected }) => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides: { [variable]: value } }));
+
+      const config = await sut.getAdminConfig();
+
+      expect(get(config, path)).toEqual(expected);
+    });
+
+    it.each(['123', '"123"'])('keeps %s as is for a string property', async (value) => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides: { IMMICH_CONFIG_OAUTH_CLIENT_ID: value } }));
+
+      const config = await sut.getAdminConfig();
+
+      expect(config.oauth.clientId).toBe(value);
+    });
+
+    it('throws for an invalid environment variable value', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides: { IMMICH_CONFIG_FFMPEG_CRF: 'abc' } }));
+
+      await expect(sut.getAdminConfig()).rejects.toThrow('Invalid system config: \n  - [IMMICH_CONFIG_FFMPEG_CRF] ');
+    });
+
+    it('decodes environment variables when a database value is invalid', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides: { IMMICH_CONFIG_TRASH_ENABLED: 'false' } }));
+      mocks.systemMetadata.get.mockResolvedValue({ user: { deleteDelay: 0 } });
+
+      const config = await sut.getAdminConfig();
+
+      expect(config.trash.enabled).toBe(false);
+    });
+
+    it('warns for an unknown environment variable', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides: { IMMICH_CONFIG_NOPE: '1' } }));
+
+      await sut.getAdminConfig();
+
+      expect(mocks.logger.warn).toHaveBeenCalledWith('Unknown configuration environment variable: IMMICH_CONFIG_NOPE');
+    });
+
     it('should drop and log an invalid database value', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ user: { deleteDelay: 0 }, trash: { days: 10 } });
 
@@ -577,12 +664,25 @@ describe(SystemConfigService.name, () => {
     });
 
     it('names every locked property that changed', async () => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
-      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 30 }, trash: { days: 10 } }));
+      mocks.config.getEnv.mockReturnValue(
+        mockEnvData({ configFile: 'immich-config.json', configOverrides: { IMMICH_CONFIG_TRASH_DAYS: '10' } }),
+      );
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 30 } }));
 
       await expect(sut.updateAdminConfig(defaults)).rejects.toThrow(
-        'Cannot update properties set by the config file: ffmpeg.crf, trash.days',
+        'Cannot update properties set by the config file or an environment variable: ffmpeg.crf, trash.days',
       );
+    });
+
+    it('rejects a logging change while IMMICH_CONFIG_LOGGING_LEVEL is set', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides: { IMMICH_CONFIG_LOGGING_LEVEL: 'verbose' } }));
+      const config = await sut.getAdminConfig();
+
+      const promise = sut.updateAdminConfig({ ...config, logging: { ...config.logging, level: LogLevel.Debug } });
+
+      await expect(promise).rejects.toBeInstanceOf(BadRequestException);
+      await expect(promise).rejects.toThrow('logging.level');
+      expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
     });
 
     it('saves other properties while a config file is in use', async () => {
@@ -595,8 +695,11 @@ describe(SystemConfigService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SystemConfig, { trash: { days: 10 } });
     });
 
-    it('keeps a database value shadowed by the config file', async () => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+    it.each([
+      { source: 'the config file', env: { configFile: 'immich-config.json' } },
+      { source: 'an environment variable', env: { configOverrides: { IMMICH_CONFIG_FFMPEG_CRF: '30' } } },
+    ])('keeps a database value shadowed by $source', async ({ env }) => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData(env));
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { crf: 25 } });
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 30 } }));
       const config = await sut.getAdminConfig();
@@ -607,6 +710,28 @@ describe(SystemConfigService.name, () => {
         ffmpeg: { crf: 25 },
         trash: { days: 10 },
       });
+    });
+  });
+
+  describe('onBootstrap', () => {
+    it('warns about a deprecated environment variable', async () => {
+      mocks.config.getEnv.mockReturnValue(
+        mockEnvData({
+          deprecatedConfigVariables: [{ name: 'IMMICH_LOG_LEVEL', replacement: 'IMMICH_CONFIG_LOGGING_LEVEL' }],
+        }),
+      );
+
+      await sut.onBootstrap();
+
+      expect(mocks.logger.warn).toHaveBeenCalledWith(
+        'IMMICH_LOG_LEVEL is deprecated, use IMMICH_CONFIG_LOGGING_LEVEL instead',
+      );
+    });
+
+    it('does not warn without deprecated environment variables', async () => {
+      await sut.onBootstrap();
+
+      expect(mocks.logger.warn).not.toHaveBeenCalled();
     });
   });
 

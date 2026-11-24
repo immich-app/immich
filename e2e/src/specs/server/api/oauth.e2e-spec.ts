@@ -2,6 +2,7 @@ import { OAuthClient, OAuthUser, generateLogoutToken } from '@immich/e2e-auth-se
 import {
   AdminConfigOAuthDto,
   LoginResponseDto,
+  getConfig,
   getConfigDefaults,
   getMyUser,
   getSessions,
@@ -72,7 +73,7 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
 
 const setupOAuth = async (token: string, dto: Partial<AdminConfigOAuthDto>) => {
   const options = { headers: asBearerAuth(token) };
-  const defaults = await getConfigDefaults(options);
+  const [defaults, { machineLearning }] = await Promise.all([getConfigDefaults(options), getConfig(options)]);
   const merged = {
     ...defaults.oauth,
     buttonText: 'Login with Immich',
@@ -81,7 +82,12 @@ const setupOAuth = async (token: string, dto: Partial<AdminConfigOAuthDto>) => {
     allowInsecureRequests: true,
     ...dto,
   };
-  await updateConfig({ adminConfigDto: { ...defaults, oauth: merged } }, options);
+  const adminConfigDto = {
+    ...defaults,
+    machineLearning: { ...defaults.machineLearning, enabled: machineLearning.enabled },
+    oauth: merged,
+  };
+  await updateConfig({ adminConfigDto }, options);
 };
 
 describe(`/oauth`, () => {

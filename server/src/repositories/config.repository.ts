@@ -9,7 +9,7 @@ import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces/index.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { IWorker, citiesFile } from 'src/constants.js';
+import { CONFIG_ENV_PREFIX, CONFIG_FILE_ENV, DEPRECATED_CONFIG_VARIABLES, IWorker, citiesFile } from 'src/constants.js';
 import { Telemetry } from 'src/decorators.js';
 import { EnvSchema } from 'src/dtos/env.dto.js';
 import {
@@ -30,6 +30,8 @@ export interface EnvData {
   port: number;
   environment: ImmichEnvironment;
   configFile?: string;
+  configOverrides: Record<string, string>;
+  deprecatedConfigVariables: { name: string; replacement: string }[];
   logLevel?: LogLevel;
   logFormat?: LogFormat;
 
@@ -192,7 +194,11 @@ const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined, we
 };
 
 const getEnv = (): EnvData => {
-  const parseResult = EnvSchema.safeParse(process.env);
+  const { configOverrides, deprecatedConfigVariables } = getConfigOverrides();
+  const parseResult = EnvSchema.safeParse({
+    ...process.env,
+    IMMICH_CONFIG_LOGGING_LEVEL: configOverrides.IMMICH_CONFIG_LOGGING_LEVEL,
+  });
   if (!parseResult.success) {
     const messages = ['Invalid environment variables: '];
     for (const issue of parseResult.error.issues) {
@@ -282,7 +288,9 @@ const getEnv = (): EnvData => {
     port: dto.IMMICH_PORT || 2283,
     environment,
     configFile: dto.IMMICH_CONFIG_FILE,
-    logLevel: dto.IMMICH_LOG_LEVEL,
+    configOverrides,
+    deprecatedConfigVariables,
+    logLevel: dto.IMMICH_CONFIG_LOGGING_LEVEL,
     logFormat: dto.IMMICH_LOG_FORMAT || LogFormat.Console,
 
     buildMetadata: {
@@ -399,6 +407,29 @@ const getEnv = (): EnvData => {
 
     noColor: !!dto.NO_COLOR,
   };
+};
+
+const getConfigOverrides = () => {
+  const configOverrides: Record<string, string> = {};
+  const deprecatedConfigVariables = Object.entries(DEPRECATED_CONFIG_VARIABLES)
+    .filter(([name]) => process.env[name])
+    .map(([name, replacement]) => ({ name, replacement }));
+
+  for (const { name, replacement } of deprecatedConfigVariables) {
+    configOverrides[replacement] = process.env[name]!;
+  }
+
+  if (process.env.IMMICH_LOG_LEVEL) {
+    configOverrides.IMMICH_CONFIG_LOGGING_ENABLED = 'true';
+  }
+
+  for (const [name, value] of Object.entries(process.env)) {
+    if (name.startsWith(CONFIG_ENV_PREFIX) && name !== CONFIG_FILE_ENV && value) {
+      configOverrides[name] = value;
+    }
+  }
+
+  return { configOverrides, deprecatedConfigVariables };
 };
 
 let cached: EnvData | undefined;
