@@ -29,13 +29,16 @@ import {
   QueueName,
 } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
-import { AssetSyncResult } from 'src/repositories/library.repository.js';
+import { AssetSyncResult, LibraryScanAsset } from 'src/repositories/library.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { JobOf } from 'src/types.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, createLibraryMatcher, findOrFail, handlePromiseError } from 'src/utils/misc.js';
+import { OrderedCursor, OrderedFiles, compareUtf8 } from 'src/utils/ordered.js';
+
+type LibraryDiff = { paths: string[]; progress: number } | { assetIds: string[]; progress: number };
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -640,51 +643,139 @@ export class LibraryService extends BaseService {
 
     if (validImportPaths.length === 0) {
       this.logger.warn(`No valid import paths found for library ${library.id}`);
-
-      return JobStatus.Skipped;
     }
 
-    const pathsOnDisk = this.storageRepository.walk({
+    const totalAssets = await this.assetRepository.getLibraryAssetCount(library.id);
+    const files = this.storageRepository.walkOrdered({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
-      take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
+    const assets = batched(this.libraryRepository.streamAssets(library.id), JOBS_LIBRARY_PAGINATION_SIZE);
 
     let importCount = 0;
-    let crawlCount = 0;
+    let checkCount = 0;
 
     this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
-    for await (const pathBatch of pathsOnDisk) {
-      crawlCount += pathBatch.length;
-      const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch);
-
-      if (paths.length > 0) {
-        importCount += paths.length;
-
+    for await (const diff of this.diffLibrary(files, assets, createLibraryMatcher(library))) {
+      if ('paths' in diff) {
+        importCount += diff.paths.length;
         await this.jobRepository.queue({
           name: JobName.LibrarySyncFiles,
-          data: {
-            libraryId: library.id,
-            paths,
-            progressCounter: crawlCount,
-          },
+          data: { libraryId: library.id, paths: diff.paths, progressCounter: diff.progress },
         });
+        this.logger.log(`Crawled ${diff.progress} file(s) so far, queued ${importCount} for import into ${library.id}`);
+        continue;
       }
 
+      checkCount += diff.assetIds.length;
+      await this.jobRepository.queue({
+        name: JobName.LibrarySyncAssets,
+        data: {
+          libraryId: library.id,
+          importPaths: library.importPaths,
+          exclusionPatterns: library.exclusionPatterns,
+          assetIds: diff.assetIds,
+          progressCounter: diff.progress,
+          totalAssets,
+        },
+      });
       this.logger.log(
-        `Crawled ${crawlCount} file(s) so far: ${paths.length} of current batch of ${pathBatch.length} will be imported to library ${library.id}...`,
+        `Compared ${diff.progress} of ${totalAssets} existing asset(s) so far, queued ${checkCount} for a check in library ${library.id}`,
       );
     }
 
     this.logger.log(
-      `Finished disk crawl, ${crawlCount} file(s) found on disk and queued ${importCount} file(s) for import into ${library.id}`,
+      `Finished disk crawl of library ${library.id}: queued ${importCount} file(s) for import and ${checkCount} existing asset(s) for a check`,
     );
 
     await this.libraryRepository.update(job.id, { refreshedAt: new Date() });
 
     return JobStatus.Success;
+  }
+
+  private async *diffLibrary(
+    files: AsyncIterable<OrderedFiles>,
+    assets: AsyncIterable<LibraryScanAsset[]>,
+    isInLibrary: (originalPath: string) => boolean,
+  ): AsyncGenerator<LibraryDiff> {
+    const disk = new OrderedCursor(files, ({ paths }) => paths, 'File walk');
+    const database = new OrderedCursor(
+      assets,
+      (rows) => rows.map(({ originalPath }) => originalPath),
+      'Library asset stream',
+    );
+
+    try {
+      await Promise.all([disk.fill(), database.fill()]);
+      yield* this.diffCursors(disk, database, isInLibrary);
+    } finally {
+      await Promise.all([disk.close(), database.close()]);
+    }
+  }
+
+  private async *diffCursors(
+    disk: OrderedCursor<OrderedFiles>,
+    database: OrderedCursor<LibraryScanAsset[]>,
+    isInLibrary: (originalPath: string) => boolean,
+  ): AsyncGenerator<LibraryDiff> {
+    let paths: string[] = [];
+    let assetIds: string[] = [];
+
+    while (disk.key !== undefined || database.key !== undefined) {
+      const order = disk.key === undefined ? 1 : database.key === undefined ? -1 : compareUtf8(disk.key, database.key);
+
+      if (order < 0) {
+        paths.push(disk.key!);
+      } else {
+        const asset = database.batch![database.index];
+        const modifiedOnDisk = order === 0 ? disk.batch!.modified[disk.index] : undefined;
+        if (this.isCheckNeeded(asset, modifiedOnDisk, isInLibrary)) {
+          assetIds.push(asset.id);
+        }
+
+        if (!database.advance()) {
+          await database.fill();
+        }
+      }
+
+      if (order <= 0 && !disk.advance()) {
+        await disk.fill();
+      }
+
+      if (paths.length === JOBS_LIBRARY_PAGINATION_SIZE) {
+        yield { paths, progress: disk.count };
+        paths = [];
+      }
+
+      if (assetIds.length < JOBS_LIBRARY_PAGINATION_SIZE) {
+        continue;
+      }
+
+      yield { assetIds, progress: database.count };
+      assetIds = [];
+    }
+
+    if (paths.length > 0) {
+      yield { paths, progress: disk.count };
+    }
+
+    if (assetIds.length > 0) {
+      yield { assetIds, progress: database.count };
+    }
+  }
+
+  private isCheckNeeded(
+    asset: LibraryScanAsset,
+    modifiedOnDisk: number | undefined,
+    isInLibrary: (originalPath: string) => boolean,
+  ) {
+    if (modifiedOnDisk === undefined) {
+      return !asset.isOffline || asset.status === AssetStatus.Deleted || isInLibrary(asset.originalPath);
+    }
+
+    return asset.isOffline || asset.fileModifiedAt.valueOf() !== modifiedOnDisk;
   }
 
   @OnJob({ name: JobName.LibraryRemoveAsset, queue: QueueName.Library })
@@ -726,38 +817,6 @@ export class LibraryService extends BaseService {
     this.logger.log(
       `${affectedAssetCount} asset(s) out of ${assetCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,
     );
-
-    if (affectedAssetCount === assetCount) {
-      return JobStatus.Success;
-    }
-
-    this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
-
-    let count = 0;
-    const existingAssets = this.libraryRepository.streamAssetIds(library.id);
-    for await (const assets of batched(existingAssets, JOBS_LIBRARY_PAGINATION_SIZE)) {
-      count += assets.length;
-
-      await this.jobRepository.queue({
-        name: JobName.LibrarySyncAssets,
-        data: {
-          libraryId: library.id,
-          importPaths: library.importPaths,
-          exclusionPatterns: library.exclusionPatterns,
-          assetIds: assets.map(({ id }) => id),
-          progressCounter: count,
-          totalAssets: assetCount,
-        },
-      });
-
-      const completePercentage = ((100 * count) / assetCount).toFixed(1);
-
-      this.logger.log(
-        `Queued check of ${count} of ${assetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
-      );
-    }
-
-    this.logger.log(`Finished queuing ${count} asset check(s) for library ${library.id}`);
 
     return JobStatus.Success;
   }

@@ -539,23 +539,6 @@ from
   offline_check
 commit
 
--- AssetRepository.filterNewExternalAssetPaths
-select
-  "path"
-from
-  unnest(array[$1]::text[]) as "path"
-where
-  not exists (
-    select
-      "originalPath"
-    from
-      "asset"
-    where
-      "asset"."originalPath" = "path"
-      and "libraryId" = $2::uuid
-      and "isExternal" = $3
-  )
-
 -- AssetRepository.getForOriginal
 select
   "asset"."id",

@@ -111,8 +111,16 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
 
     const jobs: JobItem[] = [];
     const failed: JobName[] = [];
+    const imports: string[] = [];
+    const checks: string[] = [];
     for (let index = 0; index < this.queued.length; index++) {
       const job = this.queued[index];
+      if (job.name === JobName.LibrarySyncFiles) {
+        imports.push(...job.data.paths);
+      }
+      if (job.name === JobName.LibrarySyncAssets) {
+        checks.push(...job.data.assetIds);
+      }
       const status = await this.runLibraryJob(job)?.catch(() => JobStatus.Failed);
       if (status === undefined) {
         jobs.push(job);
@@ -128,7 +136,7 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
       }
     }
 
-    return { jobs, events: emit.mock.calls, failed };
+    return { jobs, events: emit.mock.calls, failed, imports, checks };
   }
 
   private runLibraryJob(job: JobItem) {
@@ -749,7 +757,51 @@ describe(LibraryService.name, () => {
       const library = await ctx.createLibrary({ importPaths: [importPath] });
       await ctx.scan(library.id);
 
-      await expect(ctx.scan(library.id)).resolves.toEqual({ jobs: [], events: [], failed: [] });
+      await expect(ctx.scan(library.id)).resolves.toEqual({
+        jobs: [],
+        events: [],
+        failed: [],
+        imports: [],
+        checks: [],
+      });
+    });
+
+    it('should not check an unchanged asset whose file has a sub-millisecond modification time', async () => {
+      const { ctx } = setup();
+      const assetPath = await createFile(join(importPath, 'asset.png'));
+      await utimes(assetPath, 1_700_000_000.0006, 1_700_000_000.0006);
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      await ctx.scan(library.id);
+
+      const { imports, checks } = await ctx.scan(library.id);
+
+      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
+    });
+
+    it('should import, check and offline new, modified and deleted files in one scan', async () => {
+      const { ctx } = setup();
+      const kept = await createFile(join(importPath, 'kept.png'));
+      const modified = await createFile(join(importPath, 'modified.png'));
+      const deleted = await createFile(join(importPath, 'deleted.png'));
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      await ctx.scan(library.id);
+      const modifiedAsset = await ctx.getAsset(modified);
+      const deletedAsset = await ctx.getAsset(deleted);
+
+      const added = await createFile(join(importPath, 'added.png'));
+      await utimes(modified, new Date(1_800_000_000_000), new Date(1_800_000_000_000));
+      await rm(deleted);
+      const { jobs, imports, checks } = await ctx.scan(library.id);
+
+      expect(imports).toEqual([added]);
+      expect(checks).toEqual([deletedAsset.id, modifiedAsset.id]);
+      const addedAsset = await ctx.getAsset(added);
+      expect(jobs).toEqual([
+        { name: JobName.SidecarCheck, data: { id: addedAsset.id, source: 'upload' } },
+        { name: JobName.SidecarCheck, data: { id: modifiedAsset.id, source: 'upload' } },
+      ]);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([added, kept, modified]);
+      await expect(ctx.getAsset(deleted)).resolves.toEqual(expect.objectContaining({ isOffline: true }));
     });
 
     it('should queue a sidecar check for a modified asset', async () => {
@@ -825,6 +877,47 @@ describe(LibraryService.name, () => {
       await ctx.scan(library.id);
 
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([inner, outer]);
+    });
+
+    it('should import a file beside a folder of the same name once', async () => {
+      const { ctx } = setup();
+      const assetPaths = await Promise.all(
+        ['a.jpg', 'a/b.jpg', 'a-b.jpg', 'a/b/c.jpg', 'a0.jpg'].map((file) => createFile(join(importPath, file))),
+      );
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      await ctx.scan(library.id);
+
+      const { imports, checks } = await ctx.scan(library.id);
+
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual(assetPaths.toSorted());
+      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
+    });
+
+    it('should import the files of nested import paths once', async () => {
+      const { ctx } = setup();
+      const hiddenPath = join(importRoot, '.hidden');
+      const outer = await createFile(join(importRoot, 'outer.png'));
+      const inner = await createFile(join(importPath, 'inner.png'));
+      const hidden = await createFile(join(hiddenPath, 'hidden.png'));
+      const library = await ctx.createLibrary({ importPaths: [importPath, importRoot, hiddenPath] });
+      await ctx.scan(library.id);
+
+      const { imports, checks } = await ctx.scan(library.id);
+
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([hidden, inner, outer]);
+      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
+    });
+
+    it('should import through an import path with a trailing slash', async () => {
+      const { ctx } = setup();
+      const assetPath = await createFile(join(importPath, 'asset.png'));
+      const library = await ctx.createLibrary({ importPaths: [`${importPath}/`] });
+      await ctx.scan(library.id);
+
+      const { imports, checks } = await ctx.scan(library.id);
+
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([assetPath]);
+      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
     });
 
     it('should import through an import path that is a symbolic link', async () => {
@@ -1037,7 +1130,7 @@ describe(LibraryService.name, () => {
   });
 
   describe('sidecar discovery during library scans', () => {
-    it('should only associate with sidecars in the same directory across multiple scan batches and import paths', async () => {
+    it('should only associate with sidecars in the same directory across import paths', async () => {
       const { ctx } = setup();
       const secondImportPath = join(importRoot, 'second');
       const library = await ctx.createLibrary({
@@ -1051,18 +1144,9 @@ describe(LibraryService.name, () => {
           expected.push({ originalPath, sidecarPath });
         }
       }
-      const storage = ctx.get(StorageRepository);
-      const walk = storage.walk.bind(storage);
-      const walker = vi.spyOn(storage, 'walk').mockImplementation((options) => walk({ ...options, take: 2 }));
-      const syncFiles = vi.spyOn(ctx.sut, 'handleSyncFiles');
 
-      try {
-        await ctx.scan(library.id);
-        expect(syncFiles.mock.calls.length).toBeGreaterThan(1);
-      } finally {
-        walker.mockRestore();
-        syncFiles.mockRestore();
-      }
+      await ctx.scan(library.id);
+
       await expect(ctx.getSidecarPaths(library.id)).resolves.toEqual(
         expected.toSorted((a, b) => a.originalPath.localeCompare(b.originalPath)),
       );

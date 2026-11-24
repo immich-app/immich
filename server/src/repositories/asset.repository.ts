@@ -40,7 +40,6 @@ import {
   inSharedAlbum,
   removeUndefinedKeys,
   truncatedDate,
-  unnest,
   withCoordinatesFilter,
   withDefaultVisibility,
   withEdits,
@@ -1131,28 +1130,6 @@ export class AssetRepository {
 
       return count;
     });
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
-  async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
-    const result = await this.db
-      .selectFrom(unnest(paths).as('path'))
-      .select('path')
-      .where((eb) =>
-        eb.not(
-          eb.exists(
-            this.db
-              .selectFrom('asset')
-              .select('originalPath')
-              .whereRef('asset.originalPath', '=', eb.ref('path'))
-              .where('libraryId', '=', asUuid(libraryId))
-              .where('isExternal', '=', true),
-          ),
-        ),
-      )
-      .execute();
-
-    return result.map((row) => row.path as string);
   }
 
   async getLibraryAssetCount(libraryId: string): Promise<number> {
