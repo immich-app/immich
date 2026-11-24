@@ -655,20 +655,6 @@ describe(LibraryService.name, () => {
       },
     );
 
-    // https://github.com/immich-app/immich/issues/17121
-    it('should keep an asset online when the walk accepts a path its exclusion pattern rejects in picomatch', async () => {
-      const { ctx } = setup();
-      const walked = await createFile(join(importPath, '2/asset.png'));
-      const kept = await createFile(join(importPath, 'kept.png'));
-      const library = await ctx.createLibrary({ importPaths: [importPath], exclusionPatterns: ['**/{1..3}/**'] });
-
-      await ctx.scan(library.id);
-      const { imports, checks } = await ctx.scan(library.id);
-
-      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([walked, kept]);
-      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
-    });
-
     it('should respect exclusion patterns when using multiple import paths', async () => {
       const { sut, ctx } = setup();
 
@@ -695,29 +681,43 @@ describe(LibraryService.name, () => {
 
     const annoyingExclusionPatterns = ['@', '#', '$', '%', '^', '&', '='];
 
-    it.each(annoyingExclusionPatterns)('should support exclusion patterns with %s', async (char) => {
+    it.each([
+      ...annoyingExclusionPatterns.map((char) => ({
+        pattern: `**/${char}folder/**`,
+        kept: ['asset1.png'],
+        excluded: [`${char}folder/asset2.png`],
+      })),
+      { pattern: '/*.*', kept: ['sub/asset2.png'], excluded: ['asset1.png'] },
+      { pattern: '**/Raw', kept: ['Rawr/asset1.png'], excluded: ['Raw/asset2.png', 'sub/raw/asset3.png'] },
+      { pattern: '**/{1..3}/**', kept: ['4/asset1.png'], excluded: ['2/asset2.png'] },
+      { pattern: '**/{8..11}/**', kept: ['1/asset1.png'], excluded: ['10/asset2.png'] },
+      { pattern: '**/*(1).jpg', kept: ['IMG1.jpg'], excluded: ['IMG(1).jpg'] },
+      { pattern: '**/ΚΎΠΡΟΣ/**', kept: ['asset1.png'], excluded: ['Κύπρος/asset2.png'] },
+    ])('should exclude the same files of $pattern on import and on rescan', async ({ pattern, kept, excluded }) => {
       const { sut, ctx } = setup();
+      const exclusionPattern = pattern.startsWith('/') ? `${importRoot}${pattern}` : pattern;
+      const keptPaths = await Promise.all(kept.map((file) => createFile(join(importRoot, file))));
+      await Promise.all(excluded.map((file) => createFile(join(importRoot, file))));
+      const excludedFirst = await ctx.createLibrary({
+        importPaths: [importRoot],
+        exclusionPatterns: [exclusionPattern],
+      });
+      const excludedLater = await ctx.createLibrary({ importPaths: [importRoot] });
+      await ctx.scan(excludedLater.id);
+      await sut.update(excludedLater.id, { exclusionPatterns: [exclusionPattern] });
 
-      const inPath = join(importRoot, 'exclusion');
-      const excludedFolder = `${char}folder`;
-      const asset1 = await createFile(join(inPath, 'asset1.png'));
-      const asset2 = await createFile(join(inPath, excludedFolder, 'asset2.png'));
-      const library = await ctx.createLibrary({ importPaths: [inPath] });
+      await ctx.scan(excludedFirst.id);
+      const { checks } = await ctx.scan(excludedLater.id);
 
-      await ctx.scan(library.id);
-      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([asset1, asset2].sort());
-
-      await sut.update(library.id, { exclusionPatterns: [`**/${excludedFolder}/**`] });
-
-      await ctx.scan(library.id);
-      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([asset1]);
+      await expect(ctx.getAssetPaths(excludedFirst.id)).resolves.toEqual(keptPaths.sort());
+      await expect(ctx.getAssetPaths(excludedLater.id)).resolves.toEqual(keptPaths.sort());
+      expect(checks).toEqual([]);
     });
 
-    // Postgres case folding disagreed with picomatch on these: `İ` folds to `i`, but `Σ` does not fold to `ς`
     it.each([
       { pattern: '**/İstanbul/**', folder: 'istanbul', isExcluded: false },
-      { pattern: '**/ΚΎΠΡΟΣ/**', folder: 'Κύπρος', isExcluded: false },
-    ])('should apply $pattern to $folder the same way on every scan', async ({ pattern, folder, isExcluded }) => {
+      { pattern: '**/ΚΎΠΡΟΣ/**', folder: 'Κύπρος', isExcluded: true },
+    ])('should apply $pattern to $folder until it is removed', async ({ pattern, folder, isExcluded }) => {
       const { sut, ctx } = setup();
 
       const asset = await createFile(join(importRoot, folder, 'asset.png'));
@@ -731,6 +731,10 @@ describe(LibraryService.name, () => {
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual(expected);
       await ctx.scan(library.id);
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual(expected);
+
+      await sut.update(library.id, { exclusionPatterns: [] });
+      await ctx.scan(library.id);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([asset]);
     });
 
     it('should offline a missing asset when an exclusion pattern is not a valid Postgres regex', async () => {
@@ -1118,29 +1122,73 @@ describe(LibraryService.name, () => {
       expect(checks).toEqual([asset.id]);
     });
 
-    it.each([
-      { name: 'in a hidden folder', folder: () => join(importPath, '.hidden'), status: AssetStatus.Active },
-      {
-        name: 'that is being deleted outside the import paths',
-        folder: () => outsidePath,
-        status: AssetStatus.Deleted,
-      },
-    ])('should check an offline asset $name', async ({ folder, status }) => {
+    it('should check an offline asset that is being deleted outside the import paths', async () => {
       const { ctx } = setup();
       await mkdir(importPath, { recursive: true });
       const library = await ctx.createLibrary({ importPaths: [importPath] });
       const { asset } = await ctx.newAsset({
         ownerId: library.ownerId,
         libraryId: library.id,
-        originalPath: join(folder(), 'asset.png'),
+        originalPath: join(outsidePath, 'asset.png'),
         isExternal: true,
         isOffline: true,
-        status,
+        status: AssetStatus.Deleted,
       });
 
       const { checks } = await ctx.scan(library.id);
 
       expect(checks).toEqual([asset.id]);
+    });
+
+    it('should keep an asset with an unsupported extension online through a check', async () => {
+      const { ctx } = setup();
+      const assetPath = await createFile(join(importPath, 'asset.xyz'));
+      const library = await ctx.createLibrary({ importPaths: [importPath] });
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        originalPath: assetPath,
+        isExternal: true,
+        fileModifiedAt,
+      });
+
+      const { checks } = await ctx.scan(library.id);
+
+      expect(checks).toEqual([asset.id]);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([assetPath]);
+    });
+
+    it('should offline an asset in a hidden folder once its import path is removed', async () => {
+      const { sut, ctx } = setup();
+      const hiddenPath = join(importPath, '.hidden');
+      const kept = await createFile(join(importPath, 'kept.png'));
+      const hidden = await createFile(join(hiddenPath, 'asset.png'));
+      const library = await ctx.createLibrary({ importPaths: [importPath, hiddenPath] });
+      await ctx.scan(library.id);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([hidden, kept]);
+      await sut.update(library.id, { importPaths: [importPath] });
+
+      const offlining = await ctx.scan(library.id);
+      const rescan = await ctx.scan(library.id);
+
+      expect([offlining.checks, rescan.checks]).toEqual([[], []]);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([kept]);
+    });
+
+    it('should offline an asset under an import path that only shares a prefix with a kept one', async () => {
+      const { sut, ctx } = setup();
+      const lib = join(importRoot, 'lib');
+      const library = join(importRoot, 'library');
+      const kept = await createFile(join(lib, 'kept.png'));
+      await createFile(join(library, 'removed.png'));
+      const { id } = await ctx.createLibrary({ importPaths: [lib, library] });
+      await ctx.scan(id);
+      await sut.update(id, { importPaths: [lib] });
+
+      const { checks } = await ctx.scan(id);
+
+      expect(checks).toEqual([]);
+      await expect(ctx.getAssetPaths(id)).resolves.toEqual([kept]);
     });
 
     it('should offline assets when no import path is valid', async () => {
@@ -1224,6 +1272,55 @@ describe(LibraryService.name, () => {
         expect(watch).toHaveBeenCalledWith(
           library.importPaths,
           expect.objectContaining({ ignored: library.exclusionPatterns }),
+          expect.anything(),
+        );
+      } finally {
+        await sut.onShutdown();
+      }
+    });
+
+    it('should queue only the files a scan would import', { timeout: 30_000 }, async () => {
+      const { sut, ctx } = setup();
+      await mkdir(importRoot, { recursive: true });
+      await ctx.createLibrary({ importPaths: [importRoot], exclusionPatterns: ['**/excluded/**'] });
+      ctx.getMock(DatabaseRepository).tryLock.mockResolvedValue(true);
+
+      try {
+        await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
+        await createFile(join(excludedPath, 'asset.png'));
+        await createFile(join(importRoot, '.hidden/asset.png'));
+        await createFile(join(importRoot, 'asset.xyz'));
+        const nested = await createFile(join(importRoot, 'nested/2020/asset.png'));
+
+        const queuedPaths = () =>
+          ctx.getQueued().flatMap((job) => (job.name === JobName.LibrarySyncFiles ? job.data.paths : []));
+        await vitest.waitFor(() => expect(queuedPaths()).toContain(nested), { timeout: 20_000, interval: 100 });
+
+        expect(queuedPaths()).toEqual([nested]);
+      } finally {
+        await sut.onShutdown();
+      }
+    });
+
+    it('should watch other libraries when one has an invalid pattern', { timeout: 30_000 }, async () => {
+      const { sut, ctx } = setup();
+      const invalidPath = join(importRoot, 'invalid');
+      await mkdir(invalidPath, { recursive: true });
+      await mkdir(importPath, { recursive: true });
+      const invalid = await ctx.createLibrary({ importPaths: [invalidPath], exclusionPatterns: ['**/\\'] });
+      await ctx.createLibrary({ importPaths: [importPath] });
+      ctx.getMock(DatabaseRepository).tryLock.mockResolvedValue(true);
+
+      try {
+        await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
+        const asset = await createFile(join(importPath, 'asset.png'));
+
+        const queuedPaths = () =>
+          ctx.getQueued().flatMap((job) => (job.name === JobName.LibrarySyncFiles ? job.data.paths : []));
+        await vitest.waitFor(() => expect(queuedPaths()).toContain(asset), { timeout: 20_000, interval: 100 });
+
+        expect(ctx.getMock(LoggingRepository).error).toHaveBeenCalledWith(
+          expect.stringContaining(`Unable to watch library ${invalid.id}`),
           expect.anything(),
         );
       } finally {
@@ -1351,6 +1448,29 @@ describe(LibraryService.name, () => {
       const { id } = await ctx.getAsset(second);
       expect(jobs.queueAll.mock.calls).toEqual([[[{ name: JobName.SidecarCheck, data: { id, source: 'upload' } }]]]);
       expect(emit.mock.calls).toEqual([['AssetCreate', { asset: { id, ownerId: library.ownerId } }]]);
+    });
+  });
+
+  describe('handleSyncAssets', () => {
+    it('should keep an excluded asset offline when a job queued by an older version checks it', async () => {
+      const { sut, ctx } = setup();
+      const assetPath = await createFile(join(excludedPath, 'asset.png'));
+      const library = await ctx.createLibrary({ importPaths: [importRoot] });
+      await ctx.scan(library.id);
+      await sut.update(library.id, { exclusionPatterns: ['**/excluded/**'] });
+      await ctx.scan(library.id);
+      const { id } = await ctx.getAsset(assetPath);
+
+      await sut.handleSyncAssets({
+        libraryId: library.id,
+        importPaths: [importRoot],
+        exclusionPatterns: ['**/excluded/**'],
+        assetIds: [id],
+        progressCounter: 1,
+        totalAssets: 1,
+      });
+
+      await expect(ctx.getAsset(assetPath)).resolves.toEqual(expect.objectContaining({ isOffline: true }));
     });
   });
 

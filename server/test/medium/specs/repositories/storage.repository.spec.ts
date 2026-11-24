@@ -192,14 +192,14 @@ describe(StorageRepository.name, () => {
     await rm(tempDir, { recursive: true, force: true });
   });
 
-  const startWatching = (options: WatchOptions) => {
+  const startWatching = (options: WatchOptions, root = tempDir) => {
     const paths: string[] = [];
     const changedPaths: string[] = [];
     const unlinkedPaths: string[] = [];
     let resolveReady!: () => void;
 
     const ready = new Promise<void>((resolve) => (resolveReady = resolve));
-    const close = sut.watch([tempDir], options, {
+    const close = sut.watch([root], options, {
       onAdd: (path) => {
         paths.push(path);
       },
@@ -337,6 +337,38 @@ describe(StorageRepository.name, () => {
       await watcher.ready;
 
       expect(watcher.paths.toSorted()).toEqual([includedFile, excludedFile].toSorted());
+    } finally {
+      await watcher.close();
+    }
+  });
+
+  it.each(['', '/'])('should emit events in new folders but not excluded ones, root suffix %j', async (suffix) => {
+    const watcher = startWatching(
+      { ignoreInitial: true, usePolling: true, interval: 50, ignored: ['**/excluded/**', '**/Raw', '**/*.tif'] },
+      tempDir + suffix,
+    );
+
+    try {
+      await watcher.ready;
+      await writeFile(excludedFile, 'changed');
+      await mkdir(join(tempDir, 'Raw/sub'), { recursive: true });
+      await writeFile(join(tempDir, 'Raw/sub/photo.jpg'), 'excluded');
+      await writeFile(join(tempDir, 'included/photo.tif'), 'excluded');
+      const nestedFile = join(tempDir, 'included/2020/01/photo.jpg');
+      await mkdir(dirname(nestedFile), { recursive: true });
+      await writeFile(nestedFile, 'nested');
+      await writeFile(includedFile, 'changed');
+
+      await vitest.waitFor(
+        () => {
+          expect(watcher.paths).toContain(nestedFile);
+          expect(watcher.changedPaths).toContain(includedFile);
+        },
+        { timeout: 3000 },
+      );
+
+      expect(watcher.paths).toEqual([nestedFile]);
+      expect(watcher.changedPaths).toEqual([includedFile]);
     } finally {
       await watcher.close();
     }

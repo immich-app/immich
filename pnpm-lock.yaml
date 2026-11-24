@@ -760,9 +760,6 @@ importers:
       pg:
         specifier: ^8.11.3
         version: 8.23.1
-      picomatch:
-        specifier: ^4.0.2
-        version: 4.0.7
       postgres:
         specifier: 3.4.9
         version: 3.4.9
@@ -878,9 +875,6 @@ importers:
       '@types/nodemailer':
         specifier: ^8.0.0
         version: 8.0.2
-      '@types/picomatch':
-        specifier: ^4.0.0
-        version: 4.0.3
       '@types/pngjs':
         specifier: ^6.0.5
         version: 6.0.5
@@ -5782,9 +5776,6 @@ packages:
 
   '@types/pg@8.23.1':
     resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
-
-  '@types/picomatch@4.0.3':
-    resolution: {integrity: sha512-iG0T6+nYJ9FAPmx9SsUlnwcq1ZVRuCXcVEvWnntoPlrOpwtSTKNDC9uVAxTsC3PUvJ+99n4RpAcNgBbHX3JSnQ==}
 
   '@types/pngjs@6.0.5':
     resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
@@ -19184,8 +19175,6 @@ snapshots:
       '@types/node': 26.6.6
       pg-protocol: 1.16.1
       pg-types: 2.2.0
-
-  '@types/picomatch@4.0.3': {}
 
   '@types/pngjs@6.0.5':
     dependencies:

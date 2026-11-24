@@ -3,7 +3,6 @@ import { Insertable } from 'kysely';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { isAbsolute, parse } from 'node:path';
-import picomatch from 'picomatch';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
@@ -36,7 +35,7 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { JobOf } from 'src/types.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { batched, createLibraryMatcher, findOrFail, handlePromiseError } from 'src/utils/misc.js';
+import { batched, findOrFail, handlePromiseError } from 'src/utils/misc.js';
 import { OrderedCursor, OrderedFiles, compareUtf8 } from 'src/utils/ordered.js';
 
 type LibraryDiff =
@@ -110,16 +109,18 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting to watch library ${library.id} with import path(s) ${library.importPaths}`);
 
-    const matcher = picomatch(`**/*{${mimeTypes.getSupportedFileExtensions().join(',')}}`, {
-      nocase: true,
-      ignore: library.exclusionPatterns,
+    const matcher = this.storageRepository.createMatcher({
+      pathsToCrawl: library.importPaths,
+      exclusionPatterns: library.exclusionPatterns,
+      includeHidden: false,
+      extensions: mimeTypes.getSupportedFileExtensions(),
     });
 
     let _resolve: () => void;
     const ready$ = new Promise<void>((resolve) => (_resolve = resolve));
 
     const handler = async (event: string, path: string) => {
-      if (matcher(path)) {
+      if (matcher.includes(path)) {
         this.logger.debug(`File ${event} event received for ${path} in library ${library.id}`);
         await this.jobRepository.queue({
           name: JobName.LibrarySyncFiles,
@@ -203,7 +204,9 @@ export class LibraryService extends BaseService {
 
     const libraries = await this.libraryRepository.getAll(false);
     for (const library of libraries) {
-      await this.watch(library.id);
+      await this.watch(library.id).catch((error: Error) =>
+        this.logger.error(`Unable to watch library ${library.id}: ${error}`, error?.stack),
+      );
     }
   }
 
@@ -490,7 +493,9 @@ export class LibraryService extends BaseService {
   @OnJob({ name: JobName.LibrarySyncAssets, queue: QueueName.Library })
   async handleSyncAssets(job: JobOf<JobName.LibrarySyncAssets>): Promise<JobStatus> {
     const assets = await this.assetJobRepository.getForSyncAssets(job.assetIds);
-    const isInLibrary = createLibraryMatcher(job);
+    const isInLibrary = this.storageRepository
+      .createMatcher({ pathsToCrawl: job.importPaths, exclusionPatterns: job.exclusionPatterns, includeHidden: false })
+      .includesAll(assets.map(({ originalPath }) => originalPath));
 
     const assetIdsToOffline: string[] = [];
     const trashedAssetIdsToOffline: string[] = [];
@@ -525,7 +530,7 @@ export class LibraryService extends BaseService {
           break;
         }
         case AssetSyncResult.CHECK_OFFLINE: {
-          if (!isInLibrary(asset.originalPath)) {
+          if (!isInLibrary[i]) {
             this.logger.verbose(
               `Offline asset ${asset.originalPath} is still not in any import path or covered by an exclusion pattern, keeping offline in library ${job.libraryId}`,
             );
@@ -645,7 +650,12 @@ export class LibraryService extends BaseService {
       includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
     });
-    const isInLibrary = createLibraryMatcher(library);
+    const matcher = this.storageRepository.createMatcher({
+      pathsToCrawl: library.importPaths,
+      exclusionPatterns: library.exclusionPatterns,
+      includeHidden: false,
+    });
+    const isInLibrary = (originalPath: string) => matcher.includes(originalPath);
 
     this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 

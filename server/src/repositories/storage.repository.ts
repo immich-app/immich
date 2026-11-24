@@ -1,4 +1,4 @@
-import { walk, walkOrdered } from '@immich/walkrs';
+import { Matcher, walk, walkOrdered } from '@immich/walkrs';
 import { Injectable } from '@nestjs/common';
 import { ZipArchive } from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
@@ -17,8 +17,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
-import picomatch from 'picomatch';
-import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
+import { CrawlOptionsDto, MatchOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { OrderedFiles } from 'src/utils/ordered.js';
@@ -32,6 +31,8 @@ export interface WatchEvents {
 }
 
 export type WatchOptions = Omit<ChokidarOptions, 'ignored'> & { ignored?: string[] };
+
+export type PathMatcher = Pick<Matcher, 'includes' | 'includesAll'>;
 
 export interface ImmichReadStream {
   stream: Readable;
@@ -309,19 +310,28 @@ export class StorageRepository {
     }
   }
 
+  createMatcher({ pathsToCrawl, exclusionPatterns, includeHidden, extensions }: MatchOptionsDto): PathMatcher {
+    return new Matcher({
+      paths: pathsToCrawl.filter((pathToCrawl) => path.isAbsolute(pathToCrawl)),
+      exclusionPatterns,
+      includeHidden,
+      extensions,
+    });
+  }
+
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
-    const matchesIgnoredPath = picomatch(options.ignored ?? [], {
-      dot: true, // Match the behavior of fast-glob's micromatch by using these settings
-      nocase: true,
-      posix: true,
-      strictSlashes: false,
+    const roots = paths.map((root) => path.resolve(root));
+    const matcher = this.createMatcher({
+      pathsToCrawl: roots,
+      exclusionPatterns: options.ignored,
+      includeHidden: true,
     });
 
-    const watcher = chokidarWatch(paths, {
+    const watcher = chokidarWatch(roots, {
       ...options,
       followSymlinks: false,
       // Chokidar still emits events for symlinks when followSymlinks is false.
-      ignored: (path, stats) => !!stats?.isSymbolicLink() || matchesIgnoredPath(path),
+      ignored: (path, stats) => !!stats?.isSymbolicLink() || !matcher.includes(path),
     });
 
     watcher.on('ready', () => events.onReady?.());

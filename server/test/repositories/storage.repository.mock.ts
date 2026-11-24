@@ -70,6 +70,7 @@ export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRe
     realpath: vitest.fn().mockImplementation((filepath: string) => Promise.resolve(filepath)),
     stat: vitest.fn(),
     crawl: vitest.fn(),
+    createMatcher: vitest.fn().mockImplementation(StorageRepository.prototype.createMatcher),
     walk: vitest.fn().mockImplementation(async function* () {}),
     walkOrdered: vitest.fn().mockImplementation(async function* () {}),
     rename: vitest.fn(),
