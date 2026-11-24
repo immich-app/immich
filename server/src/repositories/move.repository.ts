@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { sql, type Insertable, type Kysely, type Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
-import { AssetPathType, type PathType } from 'src/enum.js';
+import { AssetFileType, type PathType } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { MoveTable } from 'src/schema/tables/move.table.js';
 
@@ -48,7 +48,7 @@ export class MoveRepository {
           eb.selectFrom('asset').select('id').whereRef('asset.id', '=', 'move_history.entityId'),
         ),
       )
-      .where('move_history.pathType', '=', sql.lit(AssetPathType.Original))
+      .where('move_history.pathType', '=', sql.lit(AssetFileType.Original))
       .execute();
   }
 
@@ -56,7 +56,7 @@ export class MoveRepository {
   async cleanMoveHistorySingle(assetId: string): Promise<void> {
     await this.db
       .deleteFrom('move_history')
-      .where('move_history.pathType', '=', sql.lit(AssetPathType.Original))
+      .where('move_history.pathType', '=', sql.lit(AssetFileType.Original))
       .where('entityId', '=', assetId)
       .execute();
   }

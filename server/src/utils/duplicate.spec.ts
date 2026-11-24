@@ -22,7 +22,6 @@ const createAsset = (
   height: 1080,
   createdAt: new Date().toISOString(),
   ownerId: 'owner-1',
-  originalPath: '/path/to/asset',
   originalFileName: 'asset.jpg',
   fileCreatedAt: new Date().toISOString(),
   fileModifiedAt: new Date().toISOString(),

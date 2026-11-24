@@ -15,8 +15,8 @@ describe(AssetFileService.name, () => {
   });
 
   describe('delete', () => {
-    it('should not delete a sidecar file', async () => {
-      const file = AssetFileFactory.create({ type: AssetFileType.Sidecar });
+    it.each([AssetFileType.Sidecar, AssetFileType.Original])('should not delete a %s file', async (type) => {
+      const file = AssetFileFactory.create({ type });
       mocks.access.assetFile.checkOwnerAccess.mockResolvedValue(new Set([file.id]));
       mocks.assetFile.get.mockResolvedValue(file);
 

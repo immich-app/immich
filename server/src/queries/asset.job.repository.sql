@@ -20,7 +20,16 @@ limit
 -- AssetJobRepository.getForSidecarWriteJob
 select
   "id",
-  "originalPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -91,7 +100,16 @@ limit
 -- AssetJobRepository.getForSidecarCheckJob
 select
   "id",
-  "originalPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -240,10 +258,19 @@ where
 
 -- AssetJobRepository.getForGenerateThumbnailJob
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset"."id",
   "asset"."visibility",
   "asset"."originalFileName",
-  "asset"."originalPath",
   "asset"."ownerId",
   "asset"."thumbhash",
   "asset"."type",
@@ -389,6 +416,16 @@ where
 
 -- AssetJobRepository.getForMetadataExtraction
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset"."id",
   "asset"."checksum",
   "asset"."checksumAlgorithm",
@@ -400,7 +437,6 @@ select
   "asset"."livePhotoVideoId",
   "asset"."localDateTime",
   "asset"."originalFileName",
-  "asset"."originalPath",
   "asset"."ownerId",
   "asset"."type",
   "asset"."width",
@@ -635,10 +671,19 @@ where
 
 -- AssetJobRepository.getForSyncAssets
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset"."id",
   "asset"."isOffline",
   "asset"."libraryId",
-  "asset"."originalPath",
   "asset"."status",
   "asset"."fileModifiedAt"
 from
@@ -648,12 +693,21 @@ where
 
 -- AssetJobRepository.getForAssetDeletion
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset"."id",
   "asset"."visibility",
   "asset"."libraryId",
   "asset"."ownerId",
   "asset"."livePhotoVideoId",
-  "asset"."originalPath",
   "asset"."isOffline",
   to_json("asset_exif") as "exifInfo",
   (
@@ -724,9 +778,18 @@ where
 
 -- AssetJobRepository.getForVideoConversion
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset"."id",
   "asset"."ownerId",
-  "asset"."originalPath",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -844,11 +907,20 @@ where
 
 -- AssetJobRepository.getForStorageTemplateJob
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset"."id",
   "asset"."ownerId",
   "asset"."type",
   "asset"."checksum",
-  "asset"."originalPath",
   "asset"."isExternal",
   "asset"."visibility",
   "asset"."originalFileName",
@@ -886,11 +958,20 @@ where
 
 -- AssetJobRepository.streamForStorageTemplateJob
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset"."id",
   "asset"."ownerId",
   "asset"."type",
   "asset"."checksum",
-  "asset"."originalPath",
   "asset"."isExternal",
   "asset"."visibility",
   "asset"."originalFileName",

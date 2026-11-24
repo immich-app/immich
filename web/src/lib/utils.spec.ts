@@ -8,16 +8,15 @@ import { get } from 'svelte/store';
 
 describe('utils', () => {
   describe(getAssetUrl.name, () => {
-    const image = { originalPath: 'image.jpg', originalMimeType: 'image/jpeg', type: AssetTypeEnum.Image };
-    const gif = { originalPath: 'image.gif', originalMimeType: 'image/gif', type: AssetTypeEnum.Image };
+    const image = { originalMimeType: 'image/jpeg', type: AssetTypeEnum.Image };
+    const gif = { originalMimeType: 'image/gif', type: AssetTypeEnum.Image };
     const animatedGif = { ...gif, duration: 2000 };
     const animatedWebp = {
-      originalPath: 'image.webp',
       originalMimeType: 'image/webp',
       type: AssetTypeEnum.Image,
       duration: 2000,
     };
-    const video = { originalPath: 'video.mp4', originalMimeType: 'video/mp4', type: AssetTypeEnum.Video };
+    const video = { originalMimeType: 'video/mp4', type: AssetTypeEnum.Video };
     const preview = (id: string) => `/api/assets/${id}/thumbnail?size=preview&c=${validThumbhash}&edited=true`;
     const original = (id: string) => `/api/assets/${id}/original?c=${validThumbhash}&edited=true`;
 

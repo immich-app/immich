@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
 import {
   ApiTag,
+  AssetFileType,
   AudioCodec,
   DatabaseExtension,
   ExifOrientation,
@@ -25,6 +26,8 @@ export const ErrorMessages = {
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORCHORD_VERSION_RANGE = '>=0.3 <2';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
+
+export const MEDIA_FILE_TYPES = [AssetFileType.Original, AssetFileType.EncodedVideo] as const;
 
 export const ASSET_VISIBILITY_DEPENDENT_PATHS = [
   Resource.albums(),

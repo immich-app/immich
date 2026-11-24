@@ -72,7 +72,6 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
       .nullish()
       .describe('Library ID')
       .meta(new HistoryBuilder().added('v1').deprecated('v1').getExtensions()),
-    originalPath: z.string().describe('Original file path'),
     originalFileName: z.string().describe('Original file name'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     fileCreatedAt: z
@@ -138,7 +137,6 @@ export type MapAsset = {
   livePhotoVideoId: string | null;
   localDateTime: Date;
   originalFileName: string;
-  originalPath: string;
   owner?: ShallowDehydrateObject<User> | null;
   ownerId: string;
   stack?: (ShallowDehydrateObject<Stack> & { assets: Stack['assets'] }) | null;
@@ -210,7 +208,6 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     owner: entity.owner && !auth?.sharedLink ? mapUser(entity.owner) : undefined,
     libraryId: entity.libraryId,
     type: entity.type,
-    originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
     thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,

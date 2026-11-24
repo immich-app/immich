@@ -3,7 +3,7 @@ import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
-import { anyUuid } from 'src/utils/database.js';
+import { anyUuid, withOriginalPath } from 'src/utils/database.js';
 
 const builder = (db: Kysely<DB>) =>
   db
@@ -21,7 +21,7 @@ export class DownloadRepository {
   }
 
   downloadMotionAssetIds(ids: string[]) {
-    return builder(this.db).select(['asset.originalPath']).where('asset.id', '=', anyUuid(ids)).stream();
+    return builder(this.db).select(withOriginalPath).where('asset.id', '=', anyUuid(ids)).stream();
   }
 
   downloadAlbumId(albumId: string) {

@@ -3682,6 +3682,22 @@
             }
           },
           {
+            "in": "query",
+            "name": "key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "slug",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Filter by type of file",
             "in": "query",
             "name": "type",
@@ -3797,6 +3813,22 @@
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "slug",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3852,6 +3884,22 @@
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "slug",
+            "required": false,
+            "schema": {
               "type": "string"
             }
           }
@@ -21441,7 +21489,8 @@
           "preview",
           "thumbnail",
           "sidecar",
-          "encoded_video"
+          "encoded_video",
+          "original"
         ],
         "type": "string"
       },
@@ -22041,10 +22090,6 @@
             "description": "Original MIME type",
             "type": "string"
           },
-          "originalPath": {
-            "description": "Original file path",
-            "type": "string"
-          },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
           },
@@ -22120,7 +22165,6 @@
           "isTrashed",
           "localDateTime",
           "originalFileName",
-          "originalPath",
           "ownerId",
           "thumbhash",
           "type",

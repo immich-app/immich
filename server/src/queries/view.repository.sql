@@ -2,34 +2,40 @@
 
 -- ViewRepository.getUniqueOriginalPaths
 select distinct
-  substring("asset"."originalPath", $1) as "directoryPath"
+  substring("asset_original"."path", $1) as "directoryPath"
 from
   "asset"
+  inner join "asset_file" as "asset_original" on "asset_original"."assetId" = "asset"."id"
+  and "asset_original"."type" = 'original'
+  and "asset_original"."isEdited" = false
 where
-  "ownerId" = $2::uuid
-  and "visibility" = $3
-  and "deletedAt" is null
-  and "fileCreatedAt" is not null
-  and "fileModifiedAt" is not null
-  and "localDateTime" is not null
+  "asset"."ownerId" = $2::uuid
+  and "asset"."visibility" = $3
+  and "asset"."deletedAt" is null
+  and "asset"."fileCreatedAt" is not null
+  and "asset"."fileModifiedAt" is not null
+  and "asset"."localDateTime" is not null
 order by
   "directoryPath" asc
 
 -- ViewRepository.getAssetsByOriginalPath
 select
-  "asset".*,
-  to_json("asset_exif") as "exifInfo"
+  to_json("asset_exif") as "exifInfo",
+  "asset".*
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "asset_file" as "asset_original" on "asset_original"."assetId" = "asset"."id"
+  and "asset_original"."type" = 'original'
+  and "asset_original"."isEdited" = false
 where
-  "ownerId" = $1::uuid
-  and "visibility" = $2
-  and "deletedAt" is null
-  and "fileCreatedAt" is not null
-  and "fileModifiedAt" is not null
-  and "localDateTime" is not null
-  and "originalPath" like $3
-  and "originalPath" not like $4
+  "asset"."ownerId" = $1::uuid
+  and "asset"."visibility" = $2
+  and "asset"."deletedAt" is null
+  and "asset"."fileCreatedAt" is not null
+  and "asset"."fileModifiedAt" is not null
+  and "asset"."localDateTime" is not null
+  and "asset_original"."path" like $3
+  and "asset_original"."path" not like $4
 order by
-  regexp_replace("asset"."originalPath", $5, $6) asc
+  regexp_replace("asset_original"."path", $5, $6) asc

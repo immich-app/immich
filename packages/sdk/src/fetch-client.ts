@@ -1377,8 +1377,6 @@ export type AssetResponseDto = {
     originalFileName: string;
     /** Original MIME type */
     originalMimeType?: string;
-    /** Original file path */
-    originalPath: string;
     owner?: UserResponseDto;
     /** Owner user ID */
     ownerId: string;
@@ -4834,11 +4832,13 @@ export function rotateApiKey({ id }: {
 /**
  * Search asset files
  */
-export function searchAssetFiles({ assetId, isEdited, isProgressive, isTransparent, $type }: {
+export function searchAssetFiles({ assetId, isEdited, isProgressive, isTransparent, key, slug, $type }: {
     assetId: string;
     isEdited?: boolean;
     isProgressive?: boolean;
     isTransparent?: boolean;
+    key?: string;
+    slug?: string;
     $type?: AssetFileType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4849,6 +4849,8 @@ export function searchAssetFiles({ assetId, isEdited, isProgressive, isTranspare
         isEdited,
         isProgressive,
         isTransparent,
+        key,
+        slug,
         "type": $type
     }))}`, {
         ...opts
@@ -4868,26 +4870,36 @@ export function deleteAssetFile({ id }: {
 /**
  * Retrieve an asset file
  */
-export function getAssetFile({ id }: {
+export function getAssetFile({ id, key, slug }: {
     id: string;
+    key?: string;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetFileResponseDto;
-    }>(`/asset-files/${encodeURIComponent(id)}`, {
+    }>(`/asset-files/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
         ...opts
     }));
 }
 /**
  * Download an asset file
  */
-export function downloadAssetFile({ id }: {
+export function downloadAssetFile({ id, key, slug }: {
     id: string;
+    key?: string;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
-    }>(`/asset-files/${encodeURIComponent(id)}/download`, {
+    }>(`/asset-files/${encodeURIComponent(id)}/download${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
         ...opts
     }));
 }
@@ -8612,7 +8624,8 @@ export enum AssetFileType {
     Preview = "preview",
     Thumbnail = "thumbnail",
     Sidecar = "sidecar",
-    EncodedVideo = "encoded_video"
+    EncodedVideo = "encoded_video",
+    Original = "original"
 }
 export enum AssetMediaStatus {
     Created = "created",

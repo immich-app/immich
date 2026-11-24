@@ -1,6 +1,5 @@
 import { Selectable } from 'kysely';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum.js';
-import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { StackTable } from 'src/schema/tables/stack.table.js';
 import { AssetEditFactory } from 'test/factories/asset-edit.factory.js';
 import { AssetExifFactory } from 'test/factories/asset-exif.factory.js';
@@ -14,6 +13,7 @@ import {
   AssetFaceLike,
   AssetFileLike,
   AssetLike,
+  AssetRow,
   FactoryBuilder,
   StackLike,
   UserLike,
@@ -27,9 +27,9 @@ export class AssetFactory {
   #files: AssetFileFactory[] = [];
   #edits: AssetEditFactory[] = [];
   #faces: AssetFaceFactory[] = [];
-  #stack?: Selectable<StackTable> & { assets: Selectable<AssetTable>[]; primaryAsset: Selectable<AssetTable> };
+  #stack?: Selectable<StackTable> & { assets: AssetRow[]; primaryAsset: AssetRow };
 
-  private constructor(private readonly value: Selectable<AssetTable>) {
+  private constructor(private readonly value: AssetRow) {
     value.ownerId ??= newUuid();
     this.#owner = UserFactory.from({ id: value.ownerId });
   }
@@ -112,10 +112,11 @@ export class AssetFactory {
     const items: AssetFileLike[] = [];
 
     if (dto === undefined || dto === 'edits') {
-      items.push(...Object.values(AssetFileType).map((type) => ({ type })));
+      const types = Object.values(AssetFileType).filter((type) => type !== AssetFileType.Original);
+      items.push(...types.map((type) => ({ type })));
 
       if (dto === 'edits') {
-        items.push(...Object.values(AssetFileType).map((type) => ({ type, isEdited: true })));
+        items.push(...types.map((type) => ({ type, isEdited: true })));
       }
     } else {
       for (const item of dto) {

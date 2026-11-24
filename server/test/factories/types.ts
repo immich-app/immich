@@ -25,7 +25,8 @@ import { UserTable } from 'src/schema/tables/user.table.js';
 
 export type FactoryBuilder<T, R extends T = T> = (builder: T) => R;
 
-export type AssetLike = Partial<Selectable<AssetTable>>;
+export type AssetRow = Selectable<AssetTable> & { originalPath: string };
+export type AssetLike = Partial<AssetRow>;
 export type AssetExifLike = Partial<Selectable<AssetExifTable>>;
 export type AssetEditLike = Partial<Selectable<AssetEditTable>>;
 export type AssetFileLike = Partial<Selectable<AssetFileTable>>;

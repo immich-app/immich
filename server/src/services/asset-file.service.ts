@@ -13,6 +13,7 @@ export class AssetFileService extends BaseService {
   async search(auth: AuthDto, dto: AssetFileSearchDto): Promise<AssetFileResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.assetId] });
     const files = await this.assetFileRepository.search(dto);
+    await this.requireAccess({ auth, permission: Permission.AssetFileRead, ids: files.map(({ id }) => id) });
     return files.map((file) => mapAssetFile(file));
   }
 
@@ -41,6 +42,10 @@ export class AssetFileService extends BaseService {
     // TODO consider implications of allowing sidecar files to be deleted
     if (file.type === AssetFileType.Sidecar) {
       throw new BadRequestException('Sidecar files cannot be deleted');
+    }
+
+    if (file.type === AssetFileType.Original) {
+      throw new BadRequestException('Original files cannot be deleted');
     }
 
     await this.assetFileRepository.delete(id);

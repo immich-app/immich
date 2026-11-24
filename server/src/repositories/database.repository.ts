@@ -436,13 +436,6 @@ export class DatabaseRepository {
 
     await this.db.transaction().execute(async (tx) => {
       await tx
-        .updateTable('asset')
-        .set((eb) => ({
-          originalPath: eb.fn('REGEXP_REPLACE', ['originalPath', source, target]),
-        }))
-        .execute();
-
-      await tx
         .updateTable('asset_file')
         .set((eb) => ({ path: eb.fn('REGEXP_REPLACE', ['path', source, target]) }))
         .execute();

@@ -173,6 +173,26 @@ where
     or "asset"."livePhotoVideoId" = any ("target"."ids")
   )
 
+-- AccessRepository.assetFile.checkAlbumAccess
+select distinct
+  "asset_file"."id"
+from
+  "asset_file"
+  inner join "asset" on (
+    "asset"."id" = "asset_file"."assetId"
+    or "asset"."livePhotoVideoId" = "asset_file"."assetId"
+  )
+  and "asset"."deletedAt" is null
+  inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
+  inner join "album" on "album"."id" = "album_asset"."albumId"
+  and "album"."deletedAt" is null
+  inner join "album_user" on "album_user"."albumId" = "album"."id"
+  inner join "user" on "user"."id" = "album_user"."userId"
+  and "user"."deletedAt" is null
+where
+  "user"."id" = $1
+  and "asset_file"."id" in ($2)
+
 -- AccessRepository.assetFile.checkOwnerAccess
 select
   "asset_file"."id"
@@ -183,6 +203,68 @@ where
   "asset"."visibility" != $1
   and "asset"."ownerId" = $2
   and "asset_file"."id" in ($3)
+
+-- AccessRepository.assetFile.checkPartnerAccess
+select
+  "asset_file"."id"
+from
+  "partner"
+  inner join "user" as "sharedBy" on "sharedBy"."id" = "partner"."sharedById"
+  and "sharedBy"."deletedAt" is null
+  inner join "asset" on "asset"."ownerId" = "sharedBy"."id"
+  and "asset"."deletedAt" is null
+  inner join "asset_file" on "asset_file"."assetId" = "asset"."id"
+where
+  "partner"."sharedWithId" = $1
+  and (
+    "asset"."visibility" = 'timeline'
+    or "asset"."visibility" = 'hidden'
+  )
+  and "asset_file"."id" in ($2)
+
+-- AccessRepository.assetFile.checkSharedLinkAccess
+with
+  "link" as (
+    select
+      "shared_link"."id",
+      "shared_link"."albumId"
+    from
+      "shared_link"
+    where
+      "shared_link"."id" = $1
+  )
+select distinct
+  "asset_file"."id"
+from
+  "asset_file"
+  inner join "asset" on (
+    "asset"."id" = "asset_file"."assetId"
+    or "asset"."livePhotoVideoId" = "asset_file"."assetId"
+  )
+  and "asset"."deletedAt" is null
+  inner join lateral (
+    select
+      1 as "match"
+    from
+      "link"
+      inner join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "link"."id"
+    where
+      "shared_link_asset"."assetId" = "asset"."id"
+    union all
+    select
+      1 as "match"
+    from
+      "link"
+      inner join "album" on "album"."id" = "link"."albumId"
+      and "album"."deletedAt" is null
+      inner join "album_asset" on "album_asset"."albumId" = "album"."id"
+    where
+      "album_asset"."assetId" = "asset"."id"
+    limit
+      $2
+  ) as "membership" on true
+where
+  "asset_file"."id" in ($3)
 
 -- AccessRepository.authDevice.checkOwnerAccess
 select

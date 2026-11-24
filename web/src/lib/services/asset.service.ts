@@ -11,13 +11,14 @@ import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
+import { getOriginalFileQuery } from '#lib/queries/asset-file.query.ts';
 import {
   deleteAssetsMutation,
   runAssetJobsMutation,
   updateAssetMutation,
   updateAssetsMutation,
 } from '#lib/queries/asset.query.ts';
-import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
+import { executeMutation, queryClient, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { restoreAssetsMutation } from '#lib/queries/trash.query.ts';
 import { Route } from '#lib/route.ts';
@@ -346,9 +347,9 @@ export const getAssetActions = (
       asset.type === AssetTypeEnum.Image &&
       !asset.livePhotoVideoId &&
       asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&
-      !asset.originalPath.toLowerCase().endsWith('.insp') &&
-      !asset.originalPath.toLowerCase().endsWith('.gif') &&
-      !asset.originalPath.toLowerCase().endsWith('.svg'),
+      !asset.originalFileName.toLowerCase().endsWith('.insp') &&
+      !asset.originalFileName.toLowerCase().endsWith('.gif') &&
+      !asset.originalFileName.toLowerCase().endsWith('.svg'),
     onAction: () => assetViewerManager.openEditor(),
     shortcuts: [{ key: 'e' }],
   };
@@ -502,14 +503,15 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
     },
   ];
 
-  const isAndroidMotionVideo = (asset: AssetResponseDto) => {
-    return asset.originalPath.includes('encoded-video');
+  const isAndroidMotionVideo = async (asset: AssetResponseDto) => {
+    const [originalFile] = await queryClient.fetchQuery(getOriginalFileQuery(asset.id));
+    return originalFile.path.includes('encoded-video');
   };
 
   if (asset.livePhotoVideoId) {
     const motionAsset = await getAssetInfo({ ...authManager.params, id: asset.livePhotoVideoId });
     if (
-      !isAndroidMotionVideo(motionAsset) ||
+      !(await isAndroidMotionVideo(motionAsset)) ||
       (authManager.authenticated && authManager.preferences.download.includeEmbeddedVideos)
     ) {
       const motionFilename = motionAsset.originalFileName;

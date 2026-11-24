@@ -20,7 +20,7 @@ export class AssetFilesController {
   ) {}
 
   @Get()
-  @Authenticated({ permission: Permission.AssetFileRead })
+  @Authenticated({ permission: Permission.AssetFileRead, sharedLink: true })
   @Endpoint({
     summary: 'Search asset files',
     description: 'Returns all matching asset files.',
@@ -31,7 +31,7 @@ export class AssetFilesController {
   }
 
   @Get(':id')
-  @Authenticated({ permission: Permission.AssetFileRead })
+  @Authenticated({ permission: Permission.AssetFileRead, sharedLink: true })
   @Endpoint({
     summary: 'Retrieve an asset file',
     description: 'Returns metadata about a specific asset file.',
@@ -55,7 +55,7 @@ export class AssetFilesController {
 
   @Get(':id/download')
   @FileResponse()
-  @Authenticated({ permission: Permission.AssetFileDownload })
+  @Authenticated({ permission: Permission.AssetFileDownload, sharedLink: true })
   @Endpoint({
     summary: 'Download an asset file',
     description: 'Serve the contents of a specific asset file.',

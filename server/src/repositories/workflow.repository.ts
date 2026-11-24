@@ -10,7 +10,7 @@ import { DB } from 'src/schema/index.js';
 import { WorkflowLogTable } from 'src/schema/tables/workflow-log.table.js';
 import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table.js';
 import { WorkflowTable } from 'src/schema/tables/workflow.table.js';
-import { withTags } from 'src/utils/database.js';
+import { withOriginalPath, withTags } from 'src/utils/database.js';
 
 export type WorkflowStepUpsert = Omit<Insertable<WorkflowStepTable>, 'workflowId' | 'order'>;
 
@@ -181,6 +181,7 @@ export class WorkflowRepository {
   getForAssetV1(assetId: string, trigger: WorkflowTrigger) {
     return this.db
       .selectFrom('asset')
+      .select(withOriginalPath)
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
       .select((eb) => [
         ...columns.workflowAssetV1,

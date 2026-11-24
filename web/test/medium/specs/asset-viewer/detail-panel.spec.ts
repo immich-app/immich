@@ -4,6 +4,18 @@ import { expect, test } from '#test/medium/fixtures.ts';
 import { SharedLinkType } from '@immich/sdk';
 
 test.describe('detail panel', () => {
+  test('file location shows the original path', async ({ page, data, app }) => {
+    const asset = factory.asset({ originalFileName: 'beach.jpg' });
+    data.addAssets(asset).setOriginalPath(asset, '/library/trip/beach.jpg');
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+
+    await app.viewer.openDetailPanel();
+    await page.getByLabel('show_file_location').click();
+
+    await expect(page.getByRole('link', { name: '/library/trip/beach.jpg' })).toBeVisible();
+  });
+
   test('description edits persist after closing and reopening the panel', async ({ page, data, api, app }) => {
     const asset = factory.asset();
     data.addAssets(asset);

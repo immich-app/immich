@@ -2,17 +2,20 @@
   import Portal from '#lib/elements/Portal.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getOriginalFileQuery } from '#lib/queries/asset-file.query.ts';
   import { handlePromiseError } from '#lib/utils.ts';
   import { getNextAsset, getPreviousAsset } from '#lib/utils/asset-utils.ts';
   import {
     computeDifferingMetadataFields,
     countDifferingMetadataItems,
+    type ComparedAsset,
     type DifferingMetadataFields,
   } from '#lib/utils/duplicate-utils.ts';
   import { navigate } from '#lib/utils/navigation.ts';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button, Icon, shortcuts } from '@immich/ui';
   import { mdiCheck, mdiChevronDown, mdiChevronUp, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { createQueries } from '@tanstack/svelte-query';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -33,7 +36,12 @@
 
   const InitialVisibleCount = 5;
 
-  const differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
+  const originalFiles = createQueries(() => ({ queries: assets.map(({ id }) => getOriginalFileQuery(id)) }));
+  const comparedAssets: ComparedAsset[] = $derived(
+    assets.map((asset, index) => ({ ...asset, originalPath: originalFiles[index]?.data?.path })),
+  );
+
+  const differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(comparedAssets));
   const differingCount = $derived(countDifferingMetadataItems(differingMetadataFields));
   const hasMore = $derived(differingCount > InitialVisibleCount);
 
@@ -174,7 +182,7 @@
 
   <div class="overflow-x-auto p-2">
     <div class="mx-auto flex w-fit min-w-full flex-nowrap place-items-start justify-center gap-1">
-      {#each assets as asset (asset.id)}
+      {#each comparedAssets as asset (asset.id)}
         <DuplicateAsset
           {asset}
           {onSelectAsset}

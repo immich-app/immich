@@ -11,16 +11,7 @@ import {
   StorageTemplatePreviewDto,
   StorageTemplatePreviewResponseDto,
 } from 'src/dtos/config.dto.js';
-import {
-  AssetFileType,
-  AssetPathType,
-  AssetType,
-  DatabaseLock,
-  JobName,
-  JobStatus,
-  QueueName,
-  StorageFolder,
-} from 'src/enum.js';
+import { AssetFileType, AssetType, DatabaseLock, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import type { JobOf, StorageAsset } from 'src/types.js';
@@ -265,7 +256,7 @@ export class StorageTemplateService extends BaseService {
       try {
         await this.storageCore.moveFile({
           entityId: id,
-          pathType: AssetPathType.Original,
+          pathType: AssetFileType.Original,
           oldPath,
           newPath,
           assetInfo: { sizeInBytes: fileSizeInByte, checksum },

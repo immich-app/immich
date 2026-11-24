@@ -1,4 +1,4 @@
-import { LoginResponseDto, getAssetInfo, getAssetStatistics } from '@immich/sdk';
+import { AssetFileType, LoginResponseDto, getAssetInfo, getAssetStatistics, searchAssetFiles } from '@immich/sdk';
 import { existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'src/utils.js';
@@ -26,6 +26,10 @@ describe('/trash', () => {
 
       const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
       expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true }));
+      const [original] = await searchAssetFiles(
+        { assetId, $type: AssetFileType.Original },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
 
       const { status, body } = await request(app)
         .post('/trash/empty')
@@ -38,7 +42,7 @@ describe('/trash', () => {
       const after = await getAssetStatistics({ isTrashed: true }, { headers: asBearerAuth(admin.accessToken) });
       expect(after.total).toBe(0);
 
-      expect(existsSync(before.originalPath)).toBe(false);
+      expect(existsSync(original.path)).toBe(false);
     });
 
     it('should empty the trash with archived assets', async () => {
@@ -48,6 +52,10 @@ describe('/trash', () => {
 
       const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
       expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true, isArchived: true }));
+      const [original] = await searchAssetFiles(
+        { assetId, $type: AssetFileType.Original },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
 
       const { status, body } = await request(app)
         .post('/trash/empty')
@@ -60,7 +68,7 @@ describe('/trash', () => {
       const after = await getAssetStatistics({ isTrashed: true }, { headers: asBearerAuth(admin.accessToken) });
       expect(after.total).toBe(0);
 
-      expect(existsSync(before.originalPath)).toBe(false);
+      expect(existsSync(original.path)).toBe(false);
     });
 
     it('should remove offline assets', async () => {

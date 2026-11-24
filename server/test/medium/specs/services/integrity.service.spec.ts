@@ -435,6 +435,32 @@ describe(IntegrityService.name, () => {
       );
     });
 
+    it('should queue the original against its asset, not as a deletable file', async () => {
+      const { sut, ctx } = setup();
+      const job = ctx.getMock(JobRepository);
+      job.queue.mockResolvedValue(void 0);
+      const { user } = await ctx.newUser();
+      const { result: asset } = await ctx.newAsset({ ownerId: user.id, originalPath: '/path/to/original.jpg' });
+      await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: '/path/to/preview.jpg' });
+      await ctx.newAsset({ ownerId: user.id, originalPath: '/path/to/trashed.jpg', deletedAt: new Date() });
+
+      await sut.handleMissingFilesQueueAll({ refreshOnly: false });
+
+      expect(job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityMissingFiles,
+        data: {
+          items: expect.arrayContaining([
+            { path: '/path/to/original.jpg', assetId: asset.id, fileAssetId: null, reportId: null },
+            { path: '/path/to/preview.jpg', assetId: null, fileAssetId: expect.any(String), reportId: null },
+          ]),
+        },
+      });
+      expect(job.queue).not.toHaveBeenCalledWith({
+        name: JobName.IntegrityMissingFiles,
+        data: { items: expect.arrayContaining([expect.objectContaining({ path: '/path/to/trashed.jpg' })]) },
+      });
+    });
+
     it('should queue refresh jobs when refreshOnly is set', async () => {
       const { sut, ctx } = setup();
       const job = ctx.getMock(JobRepository);
@@ -1037,7 +1063,9 @@ describe(IntegrityService.name, () => {
         ]),
       );
 
-      await expect(defaultDatabase.selectFrom('asset_file').execute()).resolves.toEqual([]);
+      await expect(defaultDatabase.selectFrom('asset_file').where('id', '=', fileAssetId).execute()).resolves.toEqual(
+        [],
+      );
       await expect(defaultDatabase.selectFrom('integrity_report').execute()).resolves.toEqual([]);
     });
   });

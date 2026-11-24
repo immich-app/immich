@@ -40,10 +40,11 @@ export const filteredPages = {
     return { route: Route.tags({ path: travel.value }), assets: pair(data, { tags: [travel] }) };
   },
   folder: (data: MockData) => {
-    const assets = ['a.jpg', 'b.jpg'].map((name) =>
-      factory.asset({ originalPath: `/library/trip/${name}`, originalFileName: name }),
-    );
+    const assets = ['a.jpg', 'b.jpg'].map((name) => factory.asset({ originalFileName: name }));
     data.addAssets(assets);
+    for (const asset of assets) {
+      data.setOriginalPath(asset, `/library/trip/${asset.originalFileName}`);
+    }
     return { route: Route.folders({ path: '/library/trip' }), assets };
   },
   trash: (data: MockData) => {

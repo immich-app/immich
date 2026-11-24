@@ -80,12 +80,6 @@ export function getFilenameExtension(filename: string): string {
   return filename.slice(startIndex).toLowerCase();
 }
 
-/** Returns the filename of an asset including file extension */
-export function getAssetFilename(asset: AssetResponseDto): string {
-  const fileExtension = getFilenameExtension(asset.originalPath);
-  return `${asset.originalFileName}.${fileExtension}`;
-}
-
 function isRotated90CW(orientation: number) {
   return [5, 6, 90].includes(orientation);
 }

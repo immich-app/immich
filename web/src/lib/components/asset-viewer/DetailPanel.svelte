@@ -9,6 +9,7 @@
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { getAlbumsByAssetQuery } from '#lib/queries/album.query.ts';
+  import { getOriginalFileQuery } from '#lib/queries/asset-file.query.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
   import { Route } from '#lib/route.ts';
@@ -61,6 +62,12 @@
   }));
   const albums = $derived(albumsQuery.data ?? []);
 
+  const originalFileQuery = createQuery(() => ({
+    ...getOriginalFileQuery(asset.id),
+    enabled: asset.isOffline || assetViewerManager.isShowAssetPath,
+  }));
+  const originalPath = $derived(originalFileQuery.data?.path);
+
   $effect(() => {
     if (!previousId) {
       previousId = asset.id;
@@ -92,9 +99,9 @@
     await faceManager.getAssetFaces(asset.id);
   };
 
-  const getAssetFolderHref = (asset: AssetResponseDto) => {
+  const getFolderHref = (path: string) => {
     // Remove the last part of the path to get the parent path
-    return Route.folders({ path: getParentPath(asset.originalPath) });
+    return Route.folders({ path: getParentPath(path) });
   };
 
   onDestroy(() => {
@@ -132,7 +139,7 @@
             </p>
           </div>
           <div class="rounded-b bg-red-500 px-4 py-2 text-sm text-white">
-            <p>{asset.originalPath}</p>
+            <p>{originalPath}</p>
           </div>
         </div>
       </section>
@@ -172,11 +179,11 @@
               />
             {/if}
           </div>
-          {#if assetViewerManager.isShowAssetPath}
+          {#if assetViewerManager.isShowAssetPath && originalPath}
             <p class="pb-2 text-xs break-all opacity-50 hover:text-primary" transition:slide={{ duration: 250 }}>
               <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
-              <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
-                {asset.originalPath}
+              <a href={getFolderHref(originalPath)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
+                {originalPath}
               </a>
             </p>
           {/if}

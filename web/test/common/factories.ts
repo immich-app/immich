@@ -112,7 +112,6 @@ const asset = (overrides: Partial<AssetResponseDto> = {}): AssetResponseDto => {
     ownerId: adminUserId,
     libraryId: null,
     type: AssetTypeEnum.Image,
-    originalPath: `/photos/${originalFileName}`,
     originalFileName,
     originalMimeType: isVideo ? 'video/mp4' : 'image/jpeg',
     thumbhash: validThumbhash,

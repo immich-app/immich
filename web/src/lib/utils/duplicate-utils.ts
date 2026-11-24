@@ -38,12 +38,14 @@ const getDateTime = (asset: AssetResponseDto) => {
     : fromISODateTimeUTC(asset.localDateTime);
 };
 
+export type ComparedAsset = AssetResponseDto & { originalPath?: string };
+
 type MetadataFieldDefinition = {
   icon: string;
   titleKey: string;
   keys: readonly string[];
-  render: (asset: AssetResponseDto, $t: MessageFormatter, locale: string | undefined) => string;
-  tooltip?: (asset: AssetResponseDto, $t: MessageFormatter) => string;
+  render: (asset: ComparedAsset, $t: MessageFormatter, locale: string | undefined) => string;
+  tooltip?: (asset: ComparedAsset, $t: MessageFormatter) => string;
 };
 
 const metadataFields = [
@@ -57,8 +59,8 @@ const metadataFields = [
     icon: mdiFolderOutline,
     titleKey: 'path',
     keys: ['originalPath'],
-    render: (asset, $t) => truncateMiddle(asset.originalPath) || $t('unknown'),
-    tooltip: (asset, $t) => $t('full_path', { values: { path: asset.originalPath } }),
+    render: (asset, $t) => (asset.originalPath ? truncateMiddle(asset.originalPath) : $t('unknown')),
+    tooltip: (asset, $t) => $t('full_path', { values: { path: asset.originalPath ?? '' } }),
   },
   {
     icon: mdiWeightKilogram,
@@ -218,7 +220,7 @@ export const metadataKeys: readonly MetadataFieldKey[] = metadataFields.flatMap(
 export const countDifferingMetadataItems = (differing: DifferingMetadataFields): number =>
   metadataFields.filter(({ keys }) => keys.some((k) => differing[k as MetadataFieldKey])).length;
 
-export const getAllMetadataItems = (asset: AssetResponseDto, $t: MessageFormatter, locale: string | undefined) =>
+export const getAllMetadataItems = (asset: ComparedAsset, $t: MessageFormatter, locale: string | undefined) =>
   metadataFields.map((field) => ({
     icon: field.icon,
     title: $t(field.titleKey),
@@ -250,7 +252,7 @@ const normalizeForComparison = (key: MetadataFieldKey, value: unknown): unknown 
   return value;
 };
 
-const getValueForAsset = (asset: AssetResponseDto, key: MetadataFieldKey): unknown => {
+const getValueForAsset = (asset: ComparedAsset, key: MetadataFieldKey): unknown => {
   switch (key) {
     case 'fileCreatedAt':
     case 'fileModifiedAt':
@@ -273,7 +275,7 @@ const getValueForAsset = (asset: AssetResponseDto, key: MetadataFieldKey): unkno
   }
 };
 
-export const computeDifferingMetadataFields = (assets: AssetResponseDto[]): DifferingMetadataFields => {
+export const computeDifferingMetadataFields = (assets: ComparedAsset[]): DifferingMetadataFields => {
   const diffs: DifferingMetadataFields = {};
 
   for (const key of metadataKeys) {

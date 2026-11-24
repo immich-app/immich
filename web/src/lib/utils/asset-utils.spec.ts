@@ -1,5 +1,4 @@
-import type { AssetResponseDto } from '@immich/sdk';
-import { canCopyImageToClipboard, getAssetFilename, getFilenameExtension } from './asset-utils';
+import { canCopyImageToClipboard, getFilenameExtension } from './asset-utils';
 
 describe('get file extension from filename', () => {
   it('returns the extension without including the dot', () => {
@@ -24,36 +23,6 @@ describe('get file extension from filename', () => {
     expect(getFilenameExtension('~/folder/file.txt')).toEqual('txt');
     expect(getFilenameExtension('./folder/.file.txt')).toEqual('txt');
     expect(getFilenameExtension('/folder.with.dots/file.txt')).toEqual('txt');
-  });
-});
-
-describe('get asset filename', () => {
-  it('returns the filename including file extension', () => {
-    for (const { asset, result } of [
-      {
-        asset: {
-          originalFileName: 'filename',
-          originalPath: '/data/library/test/2016/2016-08-30/filename.jpg',
-        },
-        result: 'filename.jpg',
-      },
-      {
-        asset: {
-          originalFileName: 'new-filename',
-          originalPath: '/data/library/89d14e47-a40d-4cae-a347-a914cdef1f22/2016/2016-08-30/filename.jpg',
-        },
-        result: 'new-filename.jpg',
-      },
-      {
-        asset: {
-          originalFileName: 'new-filename.txt',
-          originalPath: '/data/library/test/2016/2016-08-30/filename.txt.jpg',
-        },
-        result: 'new-filename.txt.jpg',
-      },
-    ]) {
-      expect(getAssetFilename(asset as AssetResponseDto)).toEqual(result);
-    }
   });
 });
 

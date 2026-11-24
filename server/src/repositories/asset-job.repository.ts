@@ -17,6 +17,7 @@ import {
   withFaces,
   withFilePath,
   withFiles,
+  withOriginalPath,
   withVideoFormat,
   withVideoStream,
 } from 'src/utils/database.js';
@@ -42,7 +43,8 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select(['id', 'originalPath'])
+      .select('id')
+      .select(withOriginalPath)
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .$call(withExifInner)
       .limit(1)
@@ -54,7 +56,8 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select(['id', 'originalPath'])
+      .select('id')
+      .select(withOriginalPath)
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .limit(1)
       .executeTakeFirst();
@@ -117,11 +120,11 @@ export class AssetJobRepository {
   getForGenerateThumbnailJob(id: string) {
     return this.db
       .selectFrom('asset')
+      .select(withOriginalPath)
       .select([
         'asset.id',
         'asset.visibility',
         'asset.originalFileName',
-        'asset.originalPath',
         'asset.ownerId',
         'asset.thumbhash',
         'asset.type',
@@ -148,6 +151,7 @@ export class AssetJobRepository {
   getForMetadataExtraction(id: string) {
     return this.db
       .selectFrom('asset')
+      .select(withOriginalPath)
       .select(columns.asset)
       .select(withFaces)
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
@@ -264,14 +268,8 @@ export class AssetJobRepository {
   getForSyncAssets(ids: string[]) {
     return this.db
       .selectFrom('asset')
-      .select([
-        'asset.id',
-        'asset.isOffline',
-        'asset.libraryId',
-        'asset.originalPath',
-        'asset.status',
-        'asset.fileModifiedAt',
-      ])
+      .select(withOriginalPath)
+      .select(['asset.id', 'asset.isOffline', 'asset.libraryId', 'asset.status', 'asset.fileModifiedAt'])
       .where('asset.id', '=', anyUuid(ids))
       .execute();
   }
@@ -280,13 +278,13 @@ export class AssetJobRepository {
   getForAssetDeletion(id: string) {
     return this.db
       .selectFrom('asset')
+      .select(withOriginalPath)
       .select([
         'asset.id',
         'asset.visibility',
         'asset.libraryId',
         'asset.ownerId',
         'asset.livePhotoVideoId',
-        'asset.originalPath',
         'asset.isOffline',
       ])
       .$call(withExif)
@@ -349,10 +347,11 @@ export class AssetJobRepository {
   getForVideoConversion(id: string) {
     return this.db
       .selectFrom('asset')
+      .select(withOriginalPath)
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .innerJoin('asset_video', 'asset_video.assetId', 'asset.id')
       .leftJoin('asset_audio', 'asset_audio.assetId', 'asset.id')
-      .select(['asset.id', 'asset.ownerId', 'asset.originalPath'])
+      .select(['asset.id', 'asset.ownerId'])
       .select(withFiles)
       .select((eb) => withAudioStream(eb).as('audioStream'))
       .select((eb) => withVideoStream(eb).$notNull().as('videoStream'))
@@ -381,13 +380,13 @@ export class AssetJobRepository {
   private storageTemplateAssetQuery() {
     return this.db
       .selectFrom('asset')
+      .select(withOriginalPath)
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .select([
         'asset.id',
         'asset.ownerId',
         'asset.type',
         'asset.checksum',
-        'asset.originalPath',
         'asset.isExternal',
         'asset.visibility',
         'asset.originalFileName',
