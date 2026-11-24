@@ -26,6 +26,8 @@ class GeneralBottomSheet extends ConsumerStatefulWidget {
   final double? minChildSize;
   const GeneralBottomSheet({super.key, this.minChildSize});
 
+  double get extent => minChildSize ?? 0.15;
+
   @override
   ConsumerState<GeneralBottomSheet> createState() => _GeneralBottomSheetState();
 }
@@ -71,7 +73,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
 
     return BaseBottomSheet(
       controller: sheetController,
-      initialChildSize: widget.minChildSize ?? 0.15,
+      initialChildSize: widget.extent,
       minChildSize: widget.minChildSize,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
