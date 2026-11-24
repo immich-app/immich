@@ -11,6 +11,7 @@ import {
   OAuthTokenEndpointAuthMethod,
   QueueName,
   ReleaseChannel,
+  SystemMetadataKey,
   ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
@@ -563,12 +564,49 @@ describe(SystemConfigService.name, () => {
       expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.adminConfig()] });
     });
 
-    it('should throw an error if a config file is in use', async () => {
+    it('rejects a change to a property set by the config file', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
-      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({}));
-      await expect(sut.updateAdminConfig(defaults)).rejects.toBeInstanceOf(BadRequestException);
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 30 } }));
+
+      const promise = sut.updateAdminConfig(defaults);
+
+      await expect(promise).rejects.toBeInstanceOf(BadRequestException);
+      await expect(promise).rejects.toThrow('ffmpeg.crf');
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
       expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('names every locked property that changed', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 30 }, trash: { days: 10 } }));
+
+      await expect(sut.updateAdminConfig(defaults)).rejects.toThrow(
+        'Cannot update properties set by the config file: ffmpeg.crf, trash.days',
+      );
+    });
+
+    it('saves other properties while a config file is in use', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 30 } }));
+      const config = await sut.getAdminConfig();
+
+      await sut.updateAdminConfig({ ...config, trash: { ...config.trash, days: 10 } });
+
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SystemConfig, { trash: { days: 10 } });
+    });
+
+    it('keeps a database value shadowed by the config file', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { crf: 25 } });
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 30 } }));
+      const config = await sut.getAdminConfig();
+
+      await sut.updateAdminConfig({ ...config, trash: { ...config.trash, days: 10 } });
+
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SystemConfig, {
+        ffmpeg: { crf: 25 },
+        trash: { days: 10 },
+      });
     });
   });
 

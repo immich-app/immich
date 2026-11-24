@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { isEqual } from 'lodash-es';
+import { get, isEqual } from 'lodash-es';
 import { OnEvent } from 'src/decorators.js';
 import {
   AdminConfigDto,
   PublicConfigDto,
   UserConfigDto,
+  configFields,
   defaults,
   mapAdminConfig,
   mapPublicConfig,
@@ -14,7 +15,7 @@ import { BootstrapEventPriority } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
-import { clearConfigCache } from 'src/utils/config.js';
+import { clearConfigCache, isLocked } from 'src/utils/config.js';
 import { toPlainObject } from 'src/utils/object.js';
 
 @Injectable()
@@ -83,12 +84,14 @@ export class SystemConfigService extends BaseService {
   }
 
   async updateAdminConfig(dto: AdminConfigDto): Promise<AdminConfigDto> {
-    const { configFile } = this.configRepository.getEnv();
-    if (configFile) {
-      throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
-    }
+    const { config: oldConfig, fields } = await this.getResolvedConfig({ withCache: false });
 
-    const oldConfig = await this.getConfig({ withCache: false });
+    const lockedChanges = configFields
+      .filter(({ key }) => isLocked(fields[key]) && !isEqual(get(dto, key), get(oldConfig, key)))
+      .map(({ key }) => key);
+    if (lockedChanges.length > 0) {
+      throw new BadRequestException(`Cannot update properties set by the config file: ${lockedChanges.join(', ')}`);
+    }
 
     try {
       await this.eventRepository.emit('ConfigValidate', { newConfig: toPlainObject(dto), oldConfig });
