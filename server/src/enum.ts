@@ -6,11 +6,13 @@ export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
   Passkey = 'passkey',
+  Code = 'code',
 }
 
 export enum AuthChallengeType {
   PasskeyRegistration = 'PasskeyRegistration',
   PasskeyAuthentication = 'PasskeyAuthentication',
+  AppLogin = 'AppLogin',
 }
 
 export enum ImmichCookie {

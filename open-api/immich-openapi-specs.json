@@ -5844,6 +5844,106 @@
         "x-immich-state": "Stable"
       }
     },
+    "/auth/code": {
+      "post": {
+        "description": "Create a one-time code that the mobile app exchanges for a session.",
+        "operationId": "createAuthCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthCodeCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthCodeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create app login code",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "state": "Added",
+            "version": "v4.0.0"
+          },
+          {
+            "state": "Alpha",
+            "version": "v4.0.0"
+          }
+        ],
+        "x-immich-permission": "session.create",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/auth/exchange": {
+      "post": {
+        "description": "Exchange a one-time code and its code verifier for a session.",
+        "operationId": "exchangeAuthCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthCodeExchangeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Exchange app login code",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "state": "Added",
+            "version": "v4.0.0"
+          },
+          {
+            "state": "Alpha",
+            "version": "v4.0.0"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
     "/auth/login": {
       "post": {
         "description": "Login with username and password and receive a session token.",
@@ -22123,6 +22223,55 @@
           "pcm_s16le"
         ],
         "type": "string"
+      },
+      "AuthCodeCreateDto": {
+        "properties": {
+          "codeChallenge": {
+            "description": "PKCE code challenge (S256, base64url)",
+            "format": "sha256_base64url",
+            "pattern": "^[A-Za-z0-9_-]{43}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "codeChallenge"
+        ],
+        "type": "object"
+      },
+      "AuthCodeExchangeDto": {
+        "properties": {
+          "code": {
+            "description": "One-time code",
+            "minLength": 1,
+            "type": "string"
+          },
+          "codeVerifier": {
+            "contentEncoding": "base64url",
+            "description": "PKCE code verifier (base64url)",
+            "format": "base64url",
+            "maxLength": 128,
+            "minLength": 43,
+            "pattern": "^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2,3})?$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "codeVerifier"
+        ],
+        "type": "object"
+      },
+      "AuthCodeResponseDto": {
+        "properties": {
+          "code": {
+            "description": "One-time code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
       },
       "AuthStatusResponseDto": {
         "properties": {
