@@ -381,10 +381,26 @@ describe(SystemConfigService.name, () => {
       expect(config.oauth.clientId).toBe(value);
     });
 
-    it('throws for an invalid environment variable value', async () => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides: { IMMICH_CONFIG_FFMPEG_CRF: 'abc' } }));
+    it.each([
+      { variable: 'IMMICH_CONFIG_USER_DELETE_DELAY', value: '0', reason: 'Too small: expected number to be >=1' },
+      { variable: 'IMMICH_CONFIG_FFMPEG_CRF', value: '99', reason: 'Too big: expected number to be <=51' },
+      { variable: 'IMMICH_CONFIG_FFMPEG_CRF', value: 'abc', reason: 'Invalid input: expected number, received NaN' },
+      {
+        variable: 'IMMICH_CONFIG_FFMPEG_ACCEPTED_VIDEO_CODECS',
+        value: 'h264,nope',
+        reason: '[1] Invalid option: expected one of "h264"|"hevc"|"vp9"|"av1"',
+      },
+      {
+        variable: 'IMMICH_CONFIG_TRASH_ENABLED',
+        value: 'yes',
+        reason: 'Invalid input: expected boolean, received string',
+      },
+    ])('throws for an invalid $variable=$value', async ({ variable, value, reason }) => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides: { [variable]: value } }));
 
-      await expect(sut.getAdminConfig()).rejects.toThrow('Invalid system config: \n  - [IMMICH_CONFIG_FFMPEG_CRF] ');
+      await expect(sut.getAdminConfig()).rejects.toThrow(
+        new Error(`Invalid config environment variables:\n  ${variable}=${value}: ${reason}`),
+      );
     });
 
     it('decodes environment variables when a database value is invalid', async () => {
@@ -411,7 +427,9 @@ describe(SystemConfigService.name, () => {
 
       expect(config.user.deleteDelay).toBe(7);
       expect(config.trash.days).toBe(10);
-      expect(mocks.logger.warn).toHaveBeenCalledWith(expect.stringContaining('[user.deleteDelay]'));
+      expect(mocks.logger.warn).toHaveBeenCalledWith(
+        'Ignoring invalid database config:\n  user.deleteDelay=0: Too small: expected number to be >=1',
+      );
       expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
@@ -429,9 +447,50 @@ describe(SystemConfigService.name, () => {
     it('should throw for an invalid config file value', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.get.mockResolvedValue({ user: { deleteDelay: 15 } });
-      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ user: { deleteDelay: 0 } }));
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 99 } }));
 
-      await expect(sut.getAdminConfig()).rejects.toThrow('Invalid system config: \n  - [user.deleteDelay] Too small');
+      await expect(sut.getAdminConfig()).rejects.toThrow(
+        new Error('Invalid config file immich-config.json:\n  ffmpeg.crf=99: Too big: expected number to be <=51'),
+      );
+    });
+
+    it('masks a secret in a config file error', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(
+        JSON.stringify({ notifications: { smtp: { transport: { password: 5 } } } }),
+      );
+
+      await expect(sut.getAdminConfig()).rejects.toThrow(
+        new Error(
+          'Invalid config file immich-config.json:\n  notifications.smtp.transport.password=****: Invalid input: expected string, received number',
+        ),
+      );
+    });
+
+    it('truncates a long value in a config file error', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { crf: 'x'.repeat(200) } }));
+
+      await expect(sut.getAdminConfig()).rejects.toThrow(
+        new Error(
+          `Invalid config file immich-config.json:\n  ffmpeg.crf="${'x'.repeat(99)}…: Invalid input: expected number, received NaN`,
+        ),
+      );
+    });
+
+    it('throws for an invalid combination of config file values', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(
+        JSON.stringify({
+          passkey: { domain: 'https://immich.example', additionalDomains: ['https://immich.example'] },
+        }),
+      );
+
+      await expect(sut.getAdminConfig()).rejects.toThrow(
+        new Error(
+          'Invalid config:\n  passkey: The passkey domain is always allowed and must not be listed as an additional domain',
+        ),
+      );
     });
 
     it('should load the config from a json file', async () => {
@@ -482,7 +541,7 @@ describe(SystemConfigService.name, () => {
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ oauth: { issuerUrl: 'accounts.google.com' } }));
 
       await expect(sut.getAdminConfig()).rejects.toThrow(
-        '[oauth.issuerUrl] Issuer URL must be an empty string or a valid URL',
+        'oauth.issuerUrl="accounts.google.com": Issuer URL must be an empty string or a valid URL',
       );
     });
 
@@ -490,7 +549,7 @@ describe(SystemConfigService.name, () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ library: { scan: { cronExpression: 'foo' } } }));
 
-      await expect(sut.getAdminConfig()).rejects.toThrow('[library.scan.cronExpression] Invalid cron expression');
+      await expect(sut.getAdminConfig()).rejects.toThrow('library.scan.cronExpression="foo": Invalid cron expression');
     });
 
     it('should log errors with the config file', async () => {
@@ -591,17 +650,17 @@ describe(SystemConfigService.name, () => {
       {
         should: 'validate numbers',
         config: { ffmpeg: { crf: 'not-a-number' } },
-        throws: '[ffmpeg.crf] Invalid input: expected number, received NaN',
+        throws: 'ffmpeg.crf="not-a-number": Invalid input: expected number, received NaN',
       },
       {
         should: 'validate booleans',
         config: { oauth: { enabled: 'invalid' } },
-        throws: '[oauth.enabled] Invalid input: expected boolean, received string',
+        throws: 'oauth.enabled="invalid": Invalid input: expected boolean, received string',
       },
       {
         should: 'validate enums',
         config: { ffmpeg: { transcode: 'unknown' } },
-        throws: '[ffmpeg.transcode] Invalid option: expected one of',
+        throws: 'ffmpeg.transcode="unknown": Invalid option: expected one of',
       },
       {
         should: 'validate required oauth fields',
