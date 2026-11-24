@@ -2,13 +2,17 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { parseCookie } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import { LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants.js';
+import { AUTH_CODE_TTL, LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants.js';
 import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
 import {
+  AuthCodeCreateDto,
+  AuthCodeExchangeDto,
+  AuthCodeResponseDto,
   AuthDto,
   AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
+  LoginResponseDto,
   LogoutResponseDto,
   OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
@@ -23,7 +27,7 @@ import {
 } from 'src/dtos/auth.dto.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
+import { AuthChallengeType, AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
 import { OAuthConfig, OAuthRawProfile } from 'src/repositories/oauth.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
@@ -76,6 +80,41 @@ export class AuthService extends BaseService {
     }
 
     return this.createLoginResponse(user, details);
+  }
+
+  async createCode(auth: AuthDto, dto: AuthCodeCreateDto): Promise<AuthCodeResponseDto> {
+    if (!auth.session) {
+      throw new BadRequestException('This endpoint can only be used with a session token');
+    }
+
+    const code = this.cryptoRepository.randomBytesAsText(32);
+    await this.authChallengeRepository.create({
+      type: AuthChallengeType.AppLogin,
+      challenge: this.hashCode(code),
+      userId: auth.user.id,
+      codeChallenge: dto.codeChallenge,
+      expiresAt: DateTime.now().plus(AUTH_CODE_TTL).toJSDate(),
+    });
+
+    return { code };
+  }
+
+  async exchangeCode(dto: AuthCodeExchangeDto, loginDetails: LoginDetails): Promise<LoginResponseDto> {
+    const record = await this.authChallengeRepository.consume({
+      type: AuthChallengeType.AppLogin,
+      challenge: this.hashCode(dto.code),
+      codeChallenge: this.hashCode(dto.codeVerifier),
+    });
+    const user = record?.userId ? await this.userRepository.get(record.userId, {}) : undefined;
+    if (!user) {
+      throw new UnauthorizedException('Invalid code');
+    }
+
+    return this.createLoginResponse(user, loginDetails);
+  }
+
+  private hashCode(value: string) {
+    return this.cryptoRepository.hashSha256(value).toString('base64url');
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {

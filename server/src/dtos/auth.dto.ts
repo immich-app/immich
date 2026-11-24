@@ -195,6 +195,19 @@ export class OAuthBackchannelLogoutDto extends createZodDto({
   logout_token: z.string().describe('OAuth logout token'),
 }) {}
 
+export class AuthCodeCreateDto extends createZodDto({
+  codeChallenge: z.hash('sha256', { enc: 'base64url' }).describe('PKCE code challenge (S256, base64url)'),
+}) {}
+
+export class AuthCodeResponseDto extends createZodDto({
+  code: z.string().describe('One-time code'),
+}) {}
+
+export class AuthCodeExchangeDto extends createZodDto({
+  code: z.string().min(1).describe('One-time code'),
+  codeVerifier: z.base64url().min(43).max(128).describe('PKCE code verifier (base64url)'),
+}) {}
+
 export class AuthStatusResponseDto extends createZodDto({
   pinCode: z.boolean().describe('Has PIN code set'),
   password: z.boolean().describe('Has password set'),

@@ -104,3 +104,4 @@
 1792568637987-AddAssetOwnerIdUpdateIdIndex
 1795125596774-AddAssetVideoIsFragmented
 1795460399401-AddSessionSyncCheckpointIsPendingReset
+1795463242422-AddAuthChallengeCodeChallenge
