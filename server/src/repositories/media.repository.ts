@@ -98,14 +98,13 @@ export class MediaRepository {
       { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
       { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg },
       { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl },
-      // SubIFD1:PreviewImage must be tried before PreviewImage because Ricoh GR III/IV cameras
-      // store the full-resolution camera-rendered JPEG in SubIFD1, while the bare PreviewImage
-      // tag resolves to the much smaller Pentax-namespace preview (720×480) first.
-      { tag: 'SubIFD1:PreviewImage', format: RawExtractedFormat.Jpeg },
       { tag: 'PreviewImage', format: RawExtractedFormat.Jpeg },
     ]) {
       try {
-        const buffer = await this.extractBinaryTagToBuffer(tag, input);
+        const buffer =
+          tag === 'PreviewImage'
+            ? await this.extractLargestPreviewImage(input)
+            : await exiftool.extractBinaryTagToBuffer(tag, input);
         this.logger.debug(`Successfully extracted ${tag} buffer from image`);
         return { buffer, format };
       } catch (error: any) {
@@ -115,16 +114,28 @@ export class MediaRepository {
     return null;
   }
 
-  private async extractBinaryTagToBuffer(tag: string, input: string): Promise<Buffer> {
-    if (!tag.includes(':')) {
-      return exiftool.extractBinaryTagToBuffer(tag, input);
+  private async extractLargestPreviewImage(input: string): Promise<Buffer> {
+    const previewSizes = await exiftool.readRaw(input, { readArgs: ['-a', '-G1', '-PreviewImage'] });
+
+    let largestTag: string | undefined;
+    let largestSize = 0;
+    for (const [tag, value] of Object.entries(previewSizes as Record<string, unknown>)) {
+      const size = typeof value === 'string' ? Number(/^\(Binary data (\d+) bytes/.exec(value)?.[1] ?? 0) : 0;
+      if (!tag.endsWith(':PreviewImage') || size <= largestSize) {
+        continue;
+      }
+      largestTag = tag;
+      largestSize = size;
     }
 
-    // exiftool omits the group from JSON keys unless -G1 is passed, which extractBinaryTagToBuffer doesn't do
-    const tags = await exiftool.readRaw(input, { readArgs: ['-G1', '-b', `-${tag}`] });
-    const value = (tags as Record<string, unknown>)[tag];
+    if (!largestTag) {
+      throw new Error('PreviewImage not found');
+    }
+
+    const extracted = await exiftool.readRaw(input, { readArgs: ['-G1', '-b', `-${largestTag}`] });
+    const value = (extracted as Record<string, unknown>)[largestTag];
     if (typeof value !== 'string' || !value.startsWith('base64:')) {
-      throw new Error(`${tag} not found`);
+      throw new Error(`${largestTag} could not be extracted`);
     }
     return Buffer.from(value.slice('base64:'.length), 'base64');
   }
