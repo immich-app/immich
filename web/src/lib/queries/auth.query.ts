@@ -4,6 +4,7 @@ import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   changePassword,
   changePinCode,
+  createAuthCode,
   getAuthStatus,
   lockAuthSession,
   login,
@@ -26,6 +27,8 @@ export const getAuthStatusQuery = () =>
 export const loginMutation = () => asMutation(login, { meta: { error: { toast: false } } });
 
 export const logoutMutation = () => asMutation(logout, { meta: { error: { toast: false } } });
+
+export const createAuthCodeMutation = () => asMutation(createAuthCode, { meta: { error: { toast: false } } });
 
 export const signUpAdminMutation = () =>
   asMutation(signUpAdmin, {
