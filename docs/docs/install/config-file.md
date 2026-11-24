@@ -6,9 +6,27 @@ sidebar_position: 100
 
 A config file can be provided as an alternative to the UI configuration.
 
+The config file does not need to include all keys from the below example. Immich builds its configuration in layers, and each layer overrides the ones before it, one property at a time:
+
+1. Default values
+2. Settings saved from the web UI (stored in the database)
+3. The config file
+4. [`IMMICH_CONFIG_*` environment variables](/install/environment-variables.md#system-config)
+
 :::note Interaction with the web UI
-While the config file does not need to include all keys from the below example, specifying `IMMICH_CONFIG_FILE` will disable the ability to edit other properties from the Immich web UI.
+A property set in the config file cannot be changed from the web UI. It is shown as locked, with a note that it is set via a config file. Every other property can still be edited and saved as usual.
 :::
+
+:::caution Changed in v4
+Before v4, settings saved from the web UI were ignored while a config file was in use. They now apply to every property the config file does not set. If you used the web UI before switching to a config file, check the admin settings for old values, or set those properties in the config file.
+:::
+
+An invalid value in the config file stops the server from starting, and the error names the property:
+
+```
+Invalid config file immich-config.json:
+  ffmpeg.crf=99: Too big: expected number to be <=51
+```
 
 ### Step 1 - Create a new config file
 
