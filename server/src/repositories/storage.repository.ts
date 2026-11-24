@@ -1,4 +1,4 @@
-import { WalkOrderedOptions, walk, walkOrdered } from '@immich/walkrs';
+import { walk, walkOrdered } from '@immich/walkrs';
 import { Injectable } from '@nestjs/common';
 import { ZipArchive } from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
@@ -21,7 +21,7 @@ import picomatch from 'picomatch';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { OrderedFiles, compareUtf8, mergeOrdered } from 'src/utils/ordered.js';
+import { OrderedFiles } from 'src/utils/ordered.js';
 
 export interface WatchEvents {
   onReady(): void;
@@ -295,9 +295,17 @@ export class StorageRepository {
     exclusionPatterns,
     includeHidden,
   }: CrawlOptionsDto): AsyncGenerator<OrderedFiles> {
-    for (const roots of this.asNestedRoots(pathsToCrawl)) {
-      const walks = roots.map((root) => this.walkRoot({ path: root, exclusionPatterns, includeHidden }));
-      yield* walks.length === 1 ? walks[0] : mergeOrdered(walks);
+    for await (const { files, modified, errors } of walkOrdered({
+      paths: pathsToCrawl,
+      exclusionPatterns,
+      includeHidden,
+      extensions: mimeTypes.getSupportedFileExtensions(),
+    })) {
+      for (const error of errors) {
+        this.logger.warn(`Unable to walk: ${error.message}`);
+      }
+
+      yield { paths: files, modified };
     }
   }
 
@@ -334,39 +342,6 @@ export class StorageRepository {
     );
 
     return (filePath: string) => overlappingFolders.some((folder) => filePath.startsWith(folder));
-  }
-
-  private asNestedRoots(pathsToCrawl: string[]) {
-    const folders = [...new Set(pathsToCrawl.map((pathToCrawl) => this.asFolder(pathToCrawl)))].toSorted(compareUtf8);
-    const groups: string[][] = [];
-    for (const folder of folders) {
-      const group = groups.at(-1);
-      if (group && folder.startsWith(group[0])) {
-        group.push(folder);
-      } else {
-        groups.push([folder]);
-      }
-    }
-
-    return groups.map((group) => group.map((folder) => (folder === path.sep ? folder : folder.slice(0, -1))));
-  }
-
-  private asFolder(pathToCrawl: string) {
-    const normalized = path.normalize(pathToCrawl);
-    return normalized.endsWith(path.sep) ? normalized : `${normalized}${path.sep}`;
-  }
-
-  private async *walkRoot(options: Omit<WalkOrderedOptions, 'extensions'>): AsyncGenerator<OrderedFiles> {
-    for await (const { files, modified, errors } of walkOrdered({
-      ...options,
-      extensions: mimeTypes.getSupportedFileExtensions(),
-    })) {
-      for (const error of errors) {
-        this.logger.warn(`Unable to walk: ${error.message}`);
-      }
-
-      yield { paths: files, modified };
-    }
   }
 
   private asGlob(pathToCrawl: string): string {
