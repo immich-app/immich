@@ -11,6 +11,7 @@ export enum AuthType {
 export enum AuthChallengeType {
   PasskeyRegistration = 'PasskeyRegistration',
   PasskeyAuthentication = 'PasskeyAuthentication',
+  AppLogin = 'AppLogin',
 }
 
 export enum ImmichCookie {

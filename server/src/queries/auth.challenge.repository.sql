@@ -5,7 +5,8 @@ delete from "auth_challenge"
 where
   "challenge" = $1
   and "type" = $2
-  and "expiresAt" > $3
+  and "codeChallenge" is not distinct from $3
+  and "expiresAt" > $4
 returning
   "id",
   "userId"
