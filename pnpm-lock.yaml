@@ -691,9 +691,6 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.3.0(supports-color@7.2.0)
-      fast-glob:
-        specifier: ^3.3.2
-        version: 3.3.3
       fluent-ffmpeg:
         specifier: ^2.1.2
         version: 2.1.3

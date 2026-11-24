@@ -49,7 +49,7 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should crawl multiple paths',
+    test: 'should walk multiple paths',
     options: {
       pathsToCrawl: ['/photos/', '/images/', '/albums/'],
     },
@@ -60,7 +60,7 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should crawl a single path without trailing slash',
+    test: 'should walk a single path without trailing slash',
     options: {
       pathsToCrawl: ['/photos'],
     },
@@ -69,7 +69,7 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should crawl a single path',
+    test: 'should walk a single path',
     options: {
       pathsToCrawl: ['/photos/'],
     },
@@ -374,7 +374,7 @@ describe(StorageRepository.name, () => {
     }
   });
 
-  it.each(['crawl', 'walk'] as const)('%s should skip symbolic links to files and directories', async (method) => {
+  it('should skip symbolic links to files and directories', async () => {
     await using root = await newRoot();
     await writeFiles(root.path, [
       '/photos/image.jpg',
@@ -388,44 +388,12 @@ describe(StorageRepository.name, () => {
     await symlink(`${root.path}/photos/subfolder`, `${root.path}/photos/internal-directory-link`);
     await symlink(`${root.path}/outside/missing.jpg`, `${root.path}/photos/broken-link.jpg`);
 
-    const options = { pathsToCrawl: [`${root.path}/photos`], take: 1 };
-    const batches = method === 'crawl' ? [await sut.crawl(options)] : await Array.fromAsync(sut.walk(options));
+    const batches = await Array.fromAsync(sut.walk({ pathsToCrawl: [`${root.path}/photos`], take: 1 }));
 
     expect(batches.flat().toSorted()).toEqual([
       `${root.path}/photos/image.jpg`,
       `${root.path}/photos/subfolder/image.jpg`,
     ]);
-  });
-
-  describe('crawl', () => {
-    for (const { test, options, files } of tests) {
-      it(test, async () => {
-        await using root = await newRoot();
-        await writeFiles(root.path, Object.keys(files));
-
-        const actual = await sut.crawl(inRoot(root.path, options));
-        const expected = Object.entries(files)
-          .filter((entry) => entry[1])
-          .map(([file]) => root.path + file);
-
-        expect(actual.toSorted()).toEqual(expected.toSorted());
-      });
-    }
-
-    it('should return absolute paths', async () => {
-      await using root = await newRoot();
-      await writeFiles(root.path, ['/photos/1.jpg', '/photos/2.jpg']);
-      const cwd = process.cwd();
-      process.chdir(root.path);
-
-      try {
-        const actual = await sut.crawl({ pathsToCrawl: ['photos'] });
-
-        expect(actual.toSorted()).toEqual([`${root.path}/photos/1.jpg`, `${root.path}/photos/2.jpg`]);
-      } finally {
-        process.chdir(cwd);
-      }
-    });
   });
 
   describe('walk', () => {
@@ -452,6 +420,20 @@ describe(StorageRepository.name, () => {
   };
 
   describe('walkOrdered', () => {
+    for (const { test, options, files } of tests) {
+      it(test, async () => {
+        await using root = await newRoot();
+        await writeFiles(root.path, Object.keys(files));
+
+        const batches = await Array.fromAsync(sut.walkOrdered(inRoot(root.path, options)));
+        const expected = Object.entries(files)
+          .filter((entry) => entry[1])
+          .map(([file]) => root.path + file);
+
+        expect(batches.flatMap(({ paths }) => paths).toSorted()).toEqual(expected.toSorted());
+      });
+    }
+
     it('should walk disjoint import paths one after another in byte order', async () => {
       await using root = await newRoot();
       await writeFiles(root.path, ['/a/x.jpg', '/a-b/x.jpg', '/b/x.jpg']);

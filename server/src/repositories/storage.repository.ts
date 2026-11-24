@@ -2,7 +2,6 @@ import { Matcher, walk, walkOrdered } from '@immich/walkrs';
 import { Injectable } from '@nestjs/common';
 import { ZipArchive } from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
-import fastGlob from 'fast-glob';
 import {
   Dirent,
   ReadOptionsWithBuffer,
@@ -227,24 +226,6 @@ export class StorageRepository {
     };
   }
 
-  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
-    if (pathsToCrawl.length === 0) {
-      return Promise.resolve([]);
-    }
-
-    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
-
-    return fastGlob.glob(globbedPaths, {
-      absolute: true,
-      caseSensitiveMatch: false,
-      onlyFiles: true,
-      followSymbolicLinks: false,
-      dot: includeHidden,
-      ignore: exclusionPatterns,
-    });
-  }
-
   async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[]> {
     const { pathsToCrawl, exclusionPatterns, includeHidden, take } = walkOptions;
     if (pathsToCrawl.length === 0) {
@@ -352,15 +333,5 @@ export class StorageRepository {
     );
 
     return (filePath: string) => overlappingFolders.some((folder) => filePath.startsWith(folder));
-  }
-
-  private asGlob(pathToCrawl: string): string {
-    const escapedPath = fastGlob
-      .escapePath(pathToCrawl)
-      .replaceAll('"', '["]')
-      .replaceAll("'", "[']")
-      .replaceAll('`', '[`]');
-    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
-    return `${escapedPath}/**/${extensions}`;
   }
 }
