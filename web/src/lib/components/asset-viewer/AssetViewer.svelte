@@ -5,12 +5,10 @@
   import { preloadManager } from '#lib/components/asset-viewer/PreloadManager.svelte.ts';
   import NextAssetAction from '#lib/components/asset-viewer/actions/NextAssetAction.svelte';
   import PreviousAssetAction from '#lib/components/asset-viewer/actions/PreviousAssetAction.svelte';
-  import type { Action, OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
-  import { AssetAction, ProjectionType } from '#lib/constants.ts';
+  import { ProjectionType } from '#lib/constants.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { EditToolType, editManager } from '#lib/managers/edit/edit-manager.svelte.ts';
-  import { eventManager } from '#lib/managers/event-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import {
     createActivityMutation,
@@ -26,7 +24,6 @@
   import { alwaysLoadOriginalVideo } from '#lib/stores/preferences.store.ts';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
   import { getSharedLink, handlePromiseError } from '#lib/utils.ts';
-  import type { OnUndoDelete } from '#lib/utils/actions.ts';
   import { navigateToAsset } from '#lib/utils/asset-utils.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { InvocationTracker } from '#lib/utils/invocationTracker.ts';
@@ -76,9 +73,6 @@
     album?: AlbumResponseDto;
     person?: PersonResponseDto;
     onAssetChange?: (asset: AssetResponseDto) => void;
-    preAction?: PreAction;
-    onAction?: OnAction;
-    onUndoDelete?: OnUndoDelete;
     onClose?: (assetId: string) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
   }
@@ -91,9 +85,6 @@
     album,
     person,
     onAssetChange,
-    preAction,
-    onAction,
-    onUndoDelete,
     onClose,
     onRandom,
   }: Props = $props();
@@ -112,7 +103,9 @@
   let previewStackedAsset: AssetResponseDto | undefined = $state();
 
   const asset = $derived(previewStackedAsset ?? cursor.current);
-  const stackId = $derived(withStacked && !authManager.isSharedLink ? cursor.current.stack?.id : undefined);
+  let deletedStackId = $state<string>();
+  const currentStackId = $derived(withStacked && !authManager.isSharedLink ? cursor.current.stack?.id : undefined);
+  const stackId = $derived(currentStackId === deletedStackId ? undefined : currentStackId);
   const activityParams = $derived({ albumId: album?.id ?? '', assetId: asset.id });
   const isActivityEnabled = $derived(!!album && isShared && authManager.authenticated);
   const queries = {
@@ -159,8 +152,19 @@
   };
 
   const onAssetUpdate = (updatedAsset: AssetResponseDto) => {
-    if (asset.id === updatedAsset.id) {
-      cursor = { ...cursor, current: updatedAsset };
+    if (asset.id !== updatedAsset.id) {
+      return;
+    }
+
+    cursor = { ...cursor, current: updatedAsset };
+    if (assetViewerManager.asset?.id === updatedAsset.id) {
+      assetViewerManager.setAsset(updatedAsset);
+    }
+  };
+
+  const onAssetsRestore = (assetIds: string[]) => {
+    if (assetIds.includes(asset.id)) {
+      onAssetUpdate({ ...asset, isTrashed: false });
     }
   };
 
@@ -171,6 +175,11 @@
     const restoredAsset = assets[0];
     await assetViewerManager.setAssetId(restoredAsset.id);
     await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+  };
+
+  const onStackDelete = ({ id }: { id: string }) => {
+    deletedStackId = id;
+    closeViewer();
   };
 
   const onStackUpdate = ({ id, assets }: StackResponseDto) => {
@@ -351,33 +360,6 @@
     previewStackedAsset = isMouseOver ? stackedAsset : undefined;
   };
 
-  const handlePreAction = (action: Action) => {
-    preAction?.(action);
-  };
-
-  const handleAction = (action: Action) => {
-    switch (action.type) {
-      case AssetAction.DELETE:
-      case AssetAction.TRASH: {
-        eventManager.emit('AssetsDelete', [asset.id]);
-        break;
-      }
-      case AssetAction.RATING: {
-        cursor.current = {
-          ...asset,
-          exifInfo: {
-            ...asset.exifInfo,
-            rating: action.rating,
-          },
-        };
-        break;
-      }
-      // no default
-    }
-
-    onAction?.(action);
-  };
-
   let isFullScreen = $derived(!!fullscreenElement);
 
   $effect(() => {
@@ -484,8 +466,9 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
 <OnEvents
   {onAssetUpdate}
+  {onAssetsRestore}
   {onAssetsUndoArchive}
-  onStackDelete={() => closeViewer()}
+  {onStackDelete}
   {onStackUpdate}
   {onPersonThumbnailReady}
 />
@@ -512,9 +495,6 @@
         {album}
         {person}
         {stack}
-        preAction={handlePreAction}
-        onAction={handleAction}
-        {onUndoDelete}
         onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
         {isPlayingOriginalVideo}
         {setPlayOriginalVideo}

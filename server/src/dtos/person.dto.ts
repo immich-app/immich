@@ -12,11 +12,14 @@ import type { ImageDimensions, MaybeDehydrated } from 'src/types.js';
 import { asDateString, asDateTimeString } from 'src/utils/date.js';
 import { hasSomeDefined } from 'src/utils/misc.js';
 import { transformFaceBoundingBox } from 'src/utils/transform.js';
-import { hexColor, stringToBool, uniqueIds } from 'src/validation.js';
+import { hexColor, nullAsEmptyString, stringToBool, uniqueIds } from 'src/validation.js';
 
 const PersonCreateSchema = z
   .object({
-    name: z.string().optional().describe('Person name'),
+    name: nullAsEmptyString
+      .optional()
+      .describe('Person name')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     birthDate: z.iso
       .date()
       .nullable()
@@ -74,7 +77,7 @@ const PeopleUsersUpsertTypeSchema = z
 const PersonOtherResponseSchema = z
   .object({
     sharedById: z.uuid(),
-    name: z.string(),
+    name: z.string().nullable().meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     birthDate: z.string().nullable(),
     role: PersonUserRoleSchema,
   })
@@ -87,10 +90,18 @@ const PeopleUserResponseSchema = UserResponseSchema.extend({
 export const PersonResponseSchema = z
   .object({
     id: z.uuidv4().describe('Person ID'),
-    name: z.string().describe('Person name'),
+    name: z
+      .string()
+      .nullable()
+      .describe('Person name')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
     birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
-    thumbnailPath: z.string().describe('Thumbnail path'),
+    thumbnailPath: z
+      .string()
+      .nullable()
+      .describe('Thumbnail path')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     isHidden: z.boolean().describe('Is hidden'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     updatedAt: z

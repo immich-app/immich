@@ -112,7 +112,7 @@ You can then make a new panel, specifying Prometheus as the data source for it.
 
 -- TODO: add images and more details here
 
-## Structured Logging
+## Structured logging
 
 In addition to Prometheus metrics, Immich supports structured JSON logging which is ideal for log aggregation systems like Grafana Loki, ELK Stack, Datadog, Splunk, and others.
 
@@ -128,7 +128,7 @@ IMMICH_LOG_FORMAT=json
 The default is `IMMICH_LOG_FORMAT=console` for human-readable logs with colors during development. For production deployments using log aggregation, use `IMMICH_LOG_FORMAT=json`.
 :::
 
-### JSON Log Format
+### JSON log format
 
 When enabled, logs are output in structured JSON format:
 

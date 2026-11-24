@@ -20,6 +20,16 @@ export class SyncCheckpointRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getPendingResets(sessionId: string, trx?: TransactionHandle) {
+    return (trx?.unwrap() ?? this.db)
+      .selectFrom('session_sync_checkpoint')
+      .select('type')
+      .where('sessionId', '=', sessionId)
+      .where('isPendingReset', '=', sql.lit(true))
+      .execute();
+  }
+
   upsertAll(items: Insertable<SessionSyncCheckpointTable>[], trx?: TransactionHandle) {
     return (trx?.unwrap() ?? this.db)
       .insertInto('session_sync_checkpoint')
@@ -38,6 +48,16 @@ export class SyncCheckpointRepository {
       .deleteFrom('session_sync_checkpoint')
       .where('sessionId', '=', sessionId)
       .$if(!!types, (qb) => qb.where('type', 'in', types!))
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, SyncEntityType.AssetOcrV1] })
+  deletePendingReset(sessionId: string, type: SyncEntityType) {
+    return this.db
+      .deleteFrom('session_sync_checkpoint')
+      .where('sessionId', '=', sessionId)
+      .where('type', '=', type)
+      .where('isPendingReset', '=', sql.lit(true))
       .execute();
   }
 

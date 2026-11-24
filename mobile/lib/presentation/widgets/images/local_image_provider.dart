@@ -164,11 +164,18 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
       checksum: key.checksum,
       previewOnly: true,
     );
+    final Stream<ImageInfo> previews;
     if (!key.previewOnly && PaintingBinding.instance.imageCache.statusForKey(previewOnlyKey).tracked) {
-      yield* loader.loadProvider(previewOnlyKey);
+      previews = loader.loadProvider(previewOnlyKey);
     } else {
       final previewRequest = loader.request = _previewRequest(key, isFinal: !loadOriginal);
-      yield* loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal || key.previewOnly);
+      previews = loader.loadRequest(previewRequest, decode, isFinal: !loadOriginal || key.previewOnly);
+    }
+
+    var previewIsOriginal = false;
+    await for (final info in previews) {
+      previewIsOriginal = info.image.width == key.width && info.image.height == key.height;
+      yield info;
     }
 
     if (!loadOriginal || key.previewOnly) {
@@ -176,6 +183,11 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     }
 
     if (loader.isCancelled) {
+      return;
+    }
+
+    if (previewIsOriginal) {
+      loader.isFinished = true;
       return;
     }
 

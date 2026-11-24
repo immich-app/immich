@@ -48,7 +48,6 @@ describe(UserAdminController.name, () => {
     for (const [key, message] of [
       ['password', 'Invalid input: expected string, received null'],
       ['email', 'Invalid input: expected email, received object'],
-      ['name', 'Invalid input: expected string, received null'],
       ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
       ['notify', 'Invalid input: expected boolean, received null'],
     ] as const) {
@@ -61,6 +60,14 @@ describe(UserAdminController.name, () => {
         expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
       });
     }
+
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const { status } = await request(ctx.getHttpServer())
+        .post(`/admin/users`)
+        .send({ email: 'user@immich.app', password: 'test', name });
+      expect(status).toBe(201);
+      expect(service.create).toHaveBeenCalledWith({ email: 'user@immich.app', password: 'test', name: '' });
+    });
 
     it(`should not allow decimal quota`, async () => {
       const dto: UserAdminCreateDto = {
@@ -97,6 +104,13 @@ describe(UserAdminController.name, () => {
       );
     });
 
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const id = factory.uuid();
+      const { status } = await request(ctx.getHttpServer()).put(`/admin/users/${id}`).send({ name });
+      expect(status).toBe(200);
+      expect(service.update).toHaveBeenCalledWith(undefined, id, { name: '' });
+    });
+
     it('should allow a null pinCode', async () => {
       const id = factory.uuid();
       await request(ctx.getHttpServer()).put(`/admin/users/${id}`).send({ pinCode: null });
@@ -112,7 +126,6 @@ describe(UserAdminController.name, () => {
     for (const [key, message] of [
       ['password', 'Invalid input: expected string, received null'],
       ['email', 'Invalid input: expected email, received object'],
-      ['name', 'Invalid input: expected string, received null'],
       ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
     ] as const) {
       it(`should not allow null ${key}`, async () => {

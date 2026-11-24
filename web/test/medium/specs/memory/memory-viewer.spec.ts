@@ -1,7 +1,10 @@
 import { Route } from '#lib/route.ts';
 import type { MockData } from '#test/common/data.ts';
 import { factory, validThumbhash } from '#test/common/factories.ts';
+import type { App } from '#test/medium/app.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
+import type { MockApi } from '#test/medium/mocks/api.ts';
+import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
 
 const addMemories = (data: MockData, assetCounts: number[]) => {
@@ -168,6 +171,44 @@ test.describe('memory viewer', () => {
     expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
   });
 
+  const removals = [
+    {
+      action: 'trashing',
+      run: (app: App) => app.viewer.deleteButton.click(),
+      expectRequest: (api: MockApi, asset: AssetResponseDto) =>
+        expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } }),
+    },
+    {
+      action: 'archiving',
+      run: (app: App) => app.viewer.archive(),
+      expectRequest: (api: MockApi, asset: AssetResponseDto) =>
+        expect(api.updateAsset).toHaveBeenCalledWith({
+          params: { id: asset.id },
+          body: { visibility: AssetVisibility.Archive },
+        }),
+    },
+  ];
+
+  for (const row of removals) {
+    test(`${row.action} from the gallery removes the asset from the memory`, async ({ page, data, api, app }) => {
+      const [memory] = addMemories(data, [2]);
+      const [asset, next] = memory.assets;
+      await page.goto(Route.memories());
+      await app.memories.card().click();
+      await app.memory.gallery.open(asset);
+
+      await row.run(app);
+
+      await app.viewer.waitForAsset(next);
+      await app.viewer.backButton.click();
+      await expect(page).toHaveURL(Route.viewMemory({ id: memory.id, assetId: next.id }));
+      await expect(app.memory.progressSteps).toHaveCount(1);
+      await expect(app.memory.gallery.thumbnail(asset)).toHaveCount(0);
+      await expect(app.memory.gallery.thumbnail(next)).toBeVisible();
+      row.expectRequest(api, asset);
+    });
+  }
+
   test('goes to the memories list for an unknown memory', async ({ page, data }) => {
     addMemories(data, [1]);
 
@@ -182,6 +223,17 @@ test.describe('memory viewer', () => {
     await page.goto(Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }));
 
     await expect(app.memory.photo).toHaveAttribute('src', new RegExp(`c=${validThumbhash}`));
+  });
+
+  test('shows the location of the full asset', async ({ page, data, api, app }) => {
+    const [memory] = addMemories(data, [1]);
+    const [asset] = memory.assets;
+    data.addAssets({ ...asset, exifInfo: { city: 'Paris', country: 'France' } });
+
+    await page.goto(Route.viewMemory({ id: memory.id, assetId: asset.id }));
+
+    await expect(app.memory.root.getByText('Paris')).toBeVisible();
+    expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: asset.id } });
   });
 
   test('closes a memory opened from a link', async ({ page, data, app }) => {

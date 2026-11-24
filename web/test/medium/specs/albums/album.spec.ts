@@ -87,3 +87,24 @@ test('removes a user from an album', async ({ page, data, api, app }) => {
   await expect.poll(() => api.removeUserFromAlbum.calls.length).toBe(1);
   expect(api.removeUserFromAlbum).toHaveBeenCalledWith({ params: { id: album.id, userId: viewer.id } });
 });
+
+test('trashing from the viewer removes the asset from the album and advances', async ({ page, data, api, app }) => {
+  const [asset, next] = [
+    factory.asset({ fileCreatedAt: '2026-06-20T12:00:00.000Z' }),
+    factory.asset({ fileCreatedAt: '2026-06-10T12:00:00.000Z' }),
+  ];
+  data.addAssets([asset, next]);
+  const album = factory.album();
+  data.addAlbums(album).addToAlbum(album.id, [asset, next]);
+  await page.goto(Route.viewAlbum({ id: album.id }));
+  await app.timeline.thumbnail(asset).click();
+  await app.viewer.waitForAsset(asset);
+
+  await app.viewer.deleteButton.click();
+
+  await app.viewer.waitForAsset(next);
+  await app.viewer.backButton.click();
+  await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
+  await expect(app.timeline.thumbnail(next)).toBeVisible();
+  expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
+});

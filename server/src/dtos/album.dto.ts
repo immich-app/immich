@@ -10,7 +10,7 @@ import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
 import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum.js';
 import type { MaybeDehydrated } from 'src/types.js';
 import { asDateTimeString } from 'src/utils/date.js';
-import { stringToBool } from 'src/validation.js';
+import { emptyStringToNull, nullToEmptyString, stringToBool } from 'src/validation.js';
 
 const AlbumUserAddSchema = z
   .object({
@@ -46,16 +46,18 @@ export const AlbumResponseSchema = z
     albumName: z.string().describe('Album name'),
     description: z
       .string()
+      .nullable()
       .describe('Album description')
-      .meta({
-        ...new HistoryBuilder()
+      .meta(
+        new HistoryBuilder()
           .added('v1')
           .updated(
             'v3',
             'An empty string is returned instead of null for backwards compatibility; null will be returned in v4.',
           )
+          .noMoreMrEmptyString()
           .getExtensions(),
-      }),
+      ),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -114,22 +116,19 @@ export class AlbumUserCreateDto extends createZodDto(AlbumUserCreateSchema) {}
 
 export class CreateAlbumDto extends createZodDto({
   albumName: z.string().describe('Album name'),
-  // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
-  description: z
-    .string()
-    .nullable()
-    .transform((value) => (value === '' ? null : value))
+  description: emptyStringToNull
     .optional()
     .describe('Album description')
-    .meta({
-      ...new HistoryBuilder()
+    .meta(
+      new HistoryBuilder()
         .added('v1')
         .updated(
           'v3',
           'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
         )
+        .noMoreMrEmptyString()
         .getExtensions(),
-    }),
+    ),
   albumUsers: z.array(AlbumUserCreateSchema).optional().describe('Album users'),
   assetIds: z.array(z.uuidv4()).optional().describe('Initial asset IDs'),
 }) {}
@@ -146,22 +145,19 @@ export class AlbumsAddAssetsResponseDto extends createZodDto({
 
 export class UpdateAlbumDto extends createZodDto({
   albumName: z.string().optional().describe('Album name'),
-  // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
-  description: z
-    .string()
-    .nullable()
-    .transform((value) => (value === '' ? null : value))
+  description: emptyStringToNull
     .optional()
     .describe('Album description')
-    .meta({
-      ...new HistoryBuilder()
+    .meta(
+      new HistoryBuilder()
         .added('v1')
         .updated(
           'v3',
           'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
         )
+        .noMoreMrEmptyString()
         .getExtensions(),
-    }),
+    ),
   albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
   isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
   order: AssetOrderSchema.optional(),
@@ -234,8 +230,7 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>, { auth }: { auth?
 
   return {
     albumName: entity.albumName,
-    // TODO: return null instead of '' in v4
-    description: entity.description ?? '',
+    description: nullToEmptyString(entity.description),
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
     createdAt: asDateTimeString(entity.createdAt),
     updatedAt: asDateTimeString(entity.updatedAt),

@@ -87,7 +87,7 @@
     }
 
     if (playOriginalVideo) {
-      return getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey });
+      return getAssetMediaUrl({ id: assetId, size: 'original', cacheKey });
     }
 
     return getAssetPlaybackUrl({ id: assetId, cacheKey });
@@ -434,7 +434,7 @@
         {/if}
 
         {#if extendedControls}
-          <media-settings-menu hidden anchor="auto" class="min-w-3xs rounded-xl border border-light-300 shadow-sm">
+          <media-settings-menu hidden anchor="auto" class="z-10 min-w-3xs rounded-xl border border-light-300 shadow-sm">
             <Icon slot="checked-indicator" icon={mdiCheck} class="m-2" />
             <media-settings-menu-item class="mx-1 rounded-lg p-1 ps-2">
               {$t('media_chrome.playback_rate')}

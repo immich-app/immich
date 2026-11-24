@@ -49,7 +49,7 @@ void main() {
     memoryRepository = MockMemoryRepository();
     userService = MockUserService();
 
-    when(() => memoryRepository.getAll('user-1')).thenAnswer((_) async => []);
+    when(() => memoryRepository.getAll('user-1', birthdaysFirst: true)).thenAnswer((_) async => []);
     when(() => memoryRepository.watchChanges()).thenAnswer((_) => const Stream.empty());
     when(() => userService.tryGetMyUser()).thenReturn(user());
     when(() => userService.watchMyUser()).thenAnswer((_) => const Stream.empty());
@@ -62,15 +62,15 @@ void main() {
         container.listen(memoryLaneProvider, (_, _) {});
         async.flushMicrotasks();
 
-        verify(() => memoryRepository.getAll('user-1')).called(1);
+        verify(() => memoryRepository.getAll('user-1', birthdaysFirst: true)).called(1);
 
         async.elapse(const Duration(seconds: 4));
         async.flushMicrotasks();
-        verifyNever(() => memoryRepository.getAll('user-1'));
+        verifyNever(() => memoryRepository.getAll('user-1', birthdaysFirst: true));
 
         async.elapse(const Duration(hours: 25));
         async.flushMicrotasks();
-        verify(() => memoryRepository.getAll('user-1')).called(greaterThanOrEqualTo(1));
+        verify(() => memoryRepository.getAll('user-1', birthdaysFirst: true)).called(greaterThanOrEqualTo(1));
       });
     });
 
@@ -81,11 +81,11 @@ void main() {
         final container = makeContainer();
         container.listen(memoryLaneProvider, (_, _) {});
         async.flushMicrotasks();
-        verify(() => memoryRepository.getAll('user-1')).called(1);
+        verify(() => memoryRepository.getAll('user-1', birthdaysFirst: true)).called(1);
 
         changes.add(null);
         async.elapse(Duration.zero);
-        verify(() => memoryRepository.getAll('user-1')).called(1);
+        verify(() => memoryRepository.getAll('user-1', birthdaysFirst: true)).called(1);
         unawaited(changes.close());
       });
     });
@@ -95,13 +95,13 @@ void main() {
         final container = makeContainer();
         final subscription = container.listen(memoryLaneProvider, (_, _) {});
         async.flushMicrotasks();
-        verify(() => memoryRepository.getAll('user-1')).called(1);
+        verify(() => memoryRepository.getAll('user-1', birthdaysFirst: true)).called(1);
 
         subscription.close();
         async.elapse(const Duration(hours: 25));
         async.flushMicrotasks();
 
-        verifyNever(() => memoryRepository.getAll('user-1'));
+        verifyNever(() => memoryRepository.getAll('user-1', birthdaysFirst: true));
       });
     });
 
@@ -116,7 +116,7 @@ void main() {
         async.elapse(const Duration(hours: 25));
         async.flushMicrotasks();
 
-        verifyNever(() => memoryRepository.getAll(any()));
+        verifyNever(() => memoryRepository.getAll(any(), birthdaysFirst: true));
       });
     });
   });
