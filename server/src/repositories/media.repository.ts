@@ -103,7 +103,7 @@ export class MediaRepository {
       try {
         const buffer =
           tag === 'PreviewImage'
-            ? await this.extractLargestPreviewImage(input)
+            ? await this.extractLargestPreview(input)
             : await exiftool.extractBinaryTagToBuffer(tag, input);
         this.logger.debug(`Successfully extracted ${tag} buffer from image`);
         return { buffer, format };
@@ -114,30 +114,33 @@ export class MediaRepository {
     return null;
   }
 
-  private async extractLargestPreviewImage(input: string): Promise<Buffer> {
-    const previewSizes = await exiftool.readRaw(input, { readArgs: ['-a', '-G1', '-PreviewImage'] });
+  private async extractLargestPreview(input: string): Promise<Buffer> {
+    const tags = await exiftool.readRaw(input, { readArgs: ['-a', '-G1', '-b', '-PreviewImage'] });
+    let largestBuffer: Buffer | undefined;
+    let largestArea = 0;
 
-    let largestTag: string | undefined;
-    let largestSize = 0;
-    for (const [tag, value] of Object.entries(previewSizes as Record<string, unknown>)) {
-      const size = typeof value === 'string' ? Number(/^\(Binary data (\d+) bytes/.exec(value)?.[1] ?? 0) : 0;
-      if (!tag.endsWith(':PreviewImage') || size <= largestSize) {
+    for (const [tag, value] of Object.entries(tags)) {
+      if (!tag.endsWith(':PreviewImage') || typeof value !== 'string' || !value.startsWith('base64:')) {
         continue;
       }
-      largestTag = tag;
-      largestSize = size;
+
+      try {
+        const buffer = Buffer.from(value.slice('base64:'.length), 'base64');
+        const { width = 0, height = 0 } = await sharp(buffer).metadata();
+        const area = width * height;
+        if (area > largestArea) {
+          largestBuffer = buffer;
+          largestArea = area;
+        }
+      } catch (error) {
+        this.logger.debug(`Could not read ${tag} dimensions: ${error}`);
+      }
     }
 
-    if (!largestTag) {
+    if (!largestBuffer) {
       throw new Error('PreviewImage not found');
     }
-
-    const extracted = await exiftool.readRaw(input, { readArgs: ['-G1', '-b', `-${largestTag}`] });
-    const value = (extracted as Record<string, unknown>)[largestTag];
-    if (typeof value !== 'string' || !value.startsWith('base64:')) {
-      throw new Error(`${largestTag} could not be extracted`);
-    }
-    return Buffer.from(value.slice('base64:'.length), 'base64');
+    return largestBuffer;
   }
 
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {
