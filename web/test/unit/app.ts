@@ -164,10 +164,22 @@ export const createApp = () => {
           presetSelect: page.getByRole('combobox', { name: 'preset', exact: true }),
           templateInput: page.getByRole('textbox', { name: 'template', exact: true }),
         },
+        trash: {
+          enabledSwitch: page.getByRole('switch', { name: 'admin.trash_enabled_description', exact: true }),
+          daysInput: page.getByRole('spinbutton', { name: 'admin.trash_number_of_days', exact: true }),
+        },
+        machineLearning: {
+          urlInput: (index: number) => page.getByRole('textbox', { name: 'url', exact: true }).nth(index),
+          removeUrlButton: (index: number) => button('remove').nth(index),
+          addUrlButton: button('add_url'),
+        },
+        backup: {
+          cronPresetSelect: page.getByRole('combobox', { name: 'admin.cron_expression_presets', exact: true }),
+          cronInput: page.getByRole('textbox', { name: 'admin.cron_expression', exact: true }),
+        },
         notifications: {
           secureSwitch: page.getByRole('switch', { name: 'admin.notification_email_secure', exact: true }),
           sendTestEmailButton: button('admin.notification_email_sent_test_email_button'),
-          testEmailButton: button('admin.notification_email_test_email'),
         },
       },
     },

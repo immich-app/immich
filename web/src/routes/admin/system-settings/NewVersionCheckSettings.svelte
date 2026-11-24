@@ -1,7 +1,6 @@
 <script lang="ts">
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { ReleaseChannel } from '@immich/sdk';
@@ -13,7 +12,6 @@
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
 </script>
 
@@ -24,12 +22,13 @@
         <SettingSwitch
           title={$t('admin.version_check_enabled_description')}
           subtitle={$t('admin.version_check_implications', { values: { server: 'version.immich.cloud' } })}
+          key="newVersionCheck.enabled"
           bind:checked={configToEdit.newVersionCheck.enabled}
-          {disabled}
         />
         <SettingSelect
           label={$t('admin.version_check_channel')}
           desc={$t('admin.version_check_channel_description')}
+          key="newVersionCheck.channel"
           bind:value={configToEdit.newVersionCheck.channel}
           options={[
             {
@@ -39,9 +38,8 @@
             { value: ReleaseChannel.ReleaseCandidate, text: $t('admin.release_channel_release_candidate') },
           ]}
           isEdited={configToEdit.newVersionCheck.channel !== config.newVersionCheck.channel}
-          {disabled}
         />
-        <SettingButtonsRow bind:configToEdit keys={['newVersionCheck']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['newVersionCheck']} />
       </div>
     </form>
   </div>

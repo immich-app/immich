@@ -3,11 +3,10 @@
   import AdminPageLayout from '#lib/components/layouts/AdminPageLayout.svelte';
   import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
   import SearchBar from '#lib/elements/SearchBar.svelte';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { getSystemConfigActions } from '#lib/services/system-config.service.ts';
-  import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
+  import { CommandPaletteDefaultProvider, Container } from '@immich/ui';
   import {
     mdiAccountOutline,
     mdiBackupRestore,
@@ -211,16 +210,13 @@
     }),
   );
 
-  const { CopyToClipboard, Upload, Download } = $derived(getSystemConfigActions($t, featureFlagsManager.value, config));
+  const { CopyToClipboard, Upload, Download } = $derived(getSystemConfigActions($t, config));
 </script>
 
 <CommandPaletteDefaultProvider name={$t('admin.system_settings')} actions={[CopyToClipboard, Upload, Download]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[CopyToClipboard, Download, Upload]}>
   <Container size="large" center>
-    {#if featureFlagsManager.value.configFile}
-      <Alert color="warning" class="my-4 text-dark" title={$t('admin.config_set_by_file')} />
-    {/if}
     <div>
       <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
     </div>

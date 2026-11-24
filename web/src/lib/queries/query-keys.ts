@@ -30,6 +30,7 @@ export const QueryKeys = {
   // system settings
   adminConfig: () => ['admin', 'config'],
   adminConfigDefaults: () => [...QueryKeys.adminConfig(), 'defaults'],
+  adminConfigFields: () => [...QueryKeys.adminConfig(), 'fields'],
   storageTemplate: () => [...QueryKeys.adminConfig(), 'storage-template'],
   storageTemplatePreview: (params: { template: string }) => [...QueryKeys.storageTemplate(), 'preview', params],
 

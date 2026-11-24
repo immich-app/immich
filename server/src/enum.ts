@@ -387,6 +387,11 @@ export enum ConfigSource {
   Env = 'env',
 }
 
+export const ConfigSourceSchema = z
+  .enum(ConfigSource)
+  .describe('Where a configuration value comes from')
+  .meta({ id: 'ConfigSource' });
+
 export enum SystemMetadataKey {
   MediaLocation = 'MediaLocation',
   ReverseGeocodingState = 'reverse-geocoding-state',

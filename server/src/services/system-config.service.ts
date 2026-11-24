@@ -3,6 +3,7 @@ import { get, isEqual } from 'lodash-es';
 import { OnEvent } from 'src/decorators.js';
 import {
   AdminConfigDto,
+  AdminConfigFieldDto,
   PublicConfigDto,
   UserConfigDto,
   configFields,
@@ -15,7 +16,7 @@ import { BootstrapEventPriority } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
-import { clearConfigCache, isLocked } from 'src/utils/config.js';
+import { clearConfigCache, getConfigEnvName, isLocked } from 'src/utils/config.js';
 import { toPlainObject } from 'src/utils/object.js';
 
 @Injectable()
@@ -43,6 +44,17 @@ export class SystemConfigService extends BaseService {
 
   getAdminConfigDefaults(): AdminConfigDto {
     return mapAdminConfig(defaults);
+  }
+
+  async getAdminConfigFields(): Promise<AdminConfigFieldDto[]> {
+    const { config, fields } = await this.getResolvedConfig({ withCache: false });
+    return configFields.map(({ key }) => ({
+      key,
+      envName: getConfigEnvName(key),
+      value: get(config, key),
+      sources: fields[key].sources,
+      isEditable: !isLocked(fields[key]),
+    }));
   }
 
   async getUserConfig(): Promise<UserConfigDto> {

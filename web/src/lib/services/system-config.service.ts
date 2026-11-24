@@ -1,16 +1,12 @@
 import { executeMutation } from '#lib/queries/client.ts';
 import { updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
 import { copyToClipboard, downloadJson } from '#lib/utils.ts';
-import type { AdminConfigDto, ServerFeaturesDto } from '@immich/sdk';
+import type { AdminConfigDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
-export const getSystemConfigActions = (
-  $t: MessageFormatter,
-  featureFlags: ServerFeaturesDto,
-  config: AdminConfigDto,
-) => {
+export const getSystemConfigActions = ($t: MessageFormatter, config: AdminConfigDto) => {
   const CopyToClipboard: ActionItem = {
     title: $t('copy_to_clipboard'),
     description: $t('admin.copy_config_to_clipboard_description'),
@@ -34,7 +30,6 @@ export const getSystemConfigActions = (
     title: $t('import_from_json'),
     description: $t('admin.import_config_from_json_description'),
     icon: mdiUpload,
-    $if: () => !featureFlags.configFile,
     onAction: () => handleUploadConfig(),
     shortcuts: { shift: true, key: 'u' },
   };

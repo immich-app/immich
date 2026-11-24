@@ -27,6 +27,7 @@ export const createHandlers = (data: MockData): Handlers => {
     getUserConfig: () => ({ json: data.userConfig }),
     getAdminConfig: () => ({ json: data.adminConfig }),
     getAdminConfigDefaults: () => ({ json: data.adminConfig }),
+    getAdminConfigFields: () => ({ json: data.adminConfigFields }),
     updateAdminConfig: ({ body }) => ({ json: data.updateAdminConfig(body) }),
     getAdminStorageTemplateOptions: () => ({ json: data.storageTemplateOptions }),
     previewStorageTemplate: ({ body }) => ({ json: { preview: data.previewStorageTemplate(body.template) } }),

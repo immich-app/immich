@@ -1,35 +1,46 @@
 <script lang="ts">
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
   import {
     getAdminConfigDefaultsQuery,
+    getAdminConfigFieldsQuery,
     getAdminConfigQuery,
     updateAdminConfigMutation,
   } from '#lib/queries/config-admin.query.ts';
   import type { AdminConfigDto } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
-  import { createMutation } from '@tanstack/svelte-query';
-  import { cloneDeep, isEqual, pick } from 'lodash-es';
+  import { createMutation, createQuery } from '@tanstack/svelte-query';
+  import { cloneDeep, get, has, isEqual, pick, set } from 'lodash-es';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    disabled?: boolean;
     keys: Array<keyof AdminConfigDto>;
     configToEdit: AdminConfigDto;
     onBeforeSave?: () => Promise<boolean>;
   };
 
-  let { disabled, keys, configToEdit = $bindable(), onBeforeSave }: Props = $props();
+  let { keys, configToEdit = $bindable(), onBeforeSave }: Props = $props();
 
   const queries = {
     config: createPreloadedQuery(getAdminConfigQuery),
     defaults: createPreloadedQuery(getAdminConfigDefaultsQuery),
   };
 
+  const fields = createQuery(getAdminConfigFieldsQuery, () => queryClient);
+
   const config = $derived(queries.config.data);
-  const defaults = $derived(queries.defaults.data);
+  const editableDefaults = $derived.by(() => {
+    const result = cloneDeep(pick(queries.defaults.data, keys));
+    for (const { key, isEditable } of fields.data ?? []) {
+      if (!isEditable && has(result, key)) {
+        set(result, key, cloneDeep(get(config, key)));
+      }
+    }
+
+    return result;
+  });
   const save = createMutation(updateAdminConfigMutation);
 
-  const showResetToDefault = $derived(!isEqual(pick(config, keys), pick(defaults, keys)));
+  const showResetToDefault = $derived(!isEqual(pick(config, keys), editableDefaults));
 
   const handleReset = () => {
     configToEdit = cloneDeep(config);
@@ -37,7 +48,7 @@
   };
 
   const handleResetToDefault = () => {
-    configToEdit = { ...configToEdit, ...cloneDeep(pick(defaults, keys)) };
+    configToEdit = { ...configToEdit, ...cloneDeep(editableDefaults) };
     toastManager.info($t('admin.reset_settings_to_default'));
   };
 
@@ -60,8 +71,8 @@
   </div>
 
   <div class="flex gap-1">
-    <Button shape="round" {disabled} size="small" color="secondary" onclick={handleReset}>{$t('reset')}</Button>
-    <Button shape="round" type="submit" disabled={disabled || save.isPending} size="small" onclick={handleSave}>
+    <Button shape="round" size="small" color="secondary" onclick={handleReset}>{$t('reset')}</Button>
+    <Button shape="round" type="submit" disabled={save.isPending} size="small" onclick={handleSave}>
       {$t('save')}
     </Button>
   </div>

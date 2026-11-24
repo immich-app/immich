@@ -3,7 +3,6 @@
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { cloneDeep } from 'lodash-es';
@@ -13,7 +12,6 @@
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
 </script>
 
@@ -25,44 +23,44 @@
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.nightly_tasks_start_time_setting')}
           description={$t('admin.nightly_tasks_start_time_setting_description')}
+          key="nightlyTasks.startTime"
           bind:value={configToEdit.nightlyTasks.startTime}
           required={true}
-          {disabled}
           isEdited={configToEdit.nightlyTasks.startTime !== config.nightlyTasks.startTime}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_database_cleanup_setting')}
           subtitle={$t('admin.nightly_tasks_database_cleanup_setting_description')}
+          key="nightlyTasks.databaseCleanup"
           bind:checked={configToEdit.nightlyTasks.databaseCleanup}
-          {disabled}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_missing_thumbnails_setting')}
           subtitle={$t('admin.nightly_tasks_missing_thumbnails_setting_description')}
+          key="nightlyTasks.missingThumbnails"
           bind:checked={configToEdit.nightlyTasks.missingThumbnails}
-          {disabled}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_cluster_new_faces_setting')}
           subtitle={$t('admin.nightly_tasks_cluster_faces_setting_description')}
+          key="nightlyTasks.clusterNewFaces"
           bind:checked={configToEdit.nightlyTasks.clusterNewFaces}
-          {disabled}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_generate_memories_setting')}
           subtitle={$t('admin.nightly_tasks_generate_memories_setting_description')}
+          key="nightlyTasks.generateMemories"
           bind:checked={configToEdit.nightlyTasks.generateMemories}
-          {disabled}
         />
         <SettingSwitch
           title={$t('admin.nightly_tasks_sync_quota_usage_setting')}
           subtitle={$t('admin.nightly_tasks_sync_quota_usage_setting_description')}
+          key="nightlyTasks.syncQuotaUsage"
           bind:checked={configToEdit.nightlyTasks.syncQuotaUsage}
-          {disabled}
         />
       </div>
 
-      <SettingButtonsRow bind:configToEdit keys={['nightlyTasks']} {disabled} />
+      <SettingButtonsRow bind:configToEdit keys={['nightlyTasks']} />
     </form>
   </div>
 </div>
