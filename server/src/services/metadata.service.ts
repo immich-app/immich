@@ -53,7 +53,7 @@ const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'DateTimeUTC',
   'SonyDateTime2',
   // Undocumented, non-standard tag from insta360 in xmp.GPano namespace
-  'SourceImageCreateTime' as keyof ImmichTags,
+  'SourceImageCreateTime',
 ];
 
 export function firstDateTime(tags: ImmichTags) {

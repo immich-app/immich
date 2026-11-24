@@ -15,6 +15,8 @@ import {
 } from '#lib/managers/timeline-manager/internal/search-support.svelte.ts';
 import { WebsocketSupport } from '#lib/managers/timeline-manager/internal/websocket-support.svelte.ts';
 import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getTimeBucketsQuery } from '#lib/queries/timeline.query.ts';
 import { updateStackedAssetInTimeline } from '#lib/utils/actions.ts';
 import { CancellableTask } from '#lib/utils/cancellable-task.ts';
 import {
@@ -25,14 +27,7 @@ import {
   type TimelineDateTime,
   type TimelineYearMonth,
 } from '#lib/utils/timeline-util.ts';
-import {
-  AssetOrder,
-  AssetOrderBy,
-  AssetVisibility,
-  getAssetInfo,
-  getTimeBuckets,
-  type AssetResponseDto,
-} from '@immich/sdk';
+import { AssetOrder, AssetOrderBy, AssetVisibility, getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { isMismatched, updateObject } from './internal/utils.svelte';
@@ -300,10 +295,7 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   async #initializeTimelineMonths() {
-    const timebuckets = await getTimeBuckets({
-      ...authManager.params,
-      ...this.#options,
-    });
+    const timebuckets = await queryClient.query(getTimeBucketsQuery({ ...authManager.params, ...this.#options }));
 
     this.months = timebuckets.map((timeBucket) => {
       const date = new SvelteDate(timeBucket.timeBucket);

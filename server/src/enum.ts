@@ -6,6 +6,7 @@ export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
   Passkey = 'passkey',
+  Code = 'code',
 }
 
 export enum AuthChallengeType {

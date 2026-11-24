@@ -582,6 +582,7 @@ const createViewer = (page: Page) => {
     ocr: {
       button: page.getByLabel('text_recognition', { exact: true }),
       boxes: content.getByTestId('ocr-box'),
+      panoramaBoxes: root.locator('[id^="psv-marker-box_"]'),
       image: ocrImage,
       imageTransform: () =>
         ocrImage.evaluate((element) => getComputedStyle(element.closest('[style*="transform"]') ?? element).transform),
@@ -594,6 +595,7 @@ const createViewer = (page: Page) => {
       rotateRightButton: page.getByLabel('editor_rotate_right', { exact: true }),
       saveButton: root.getByRole('button', { name: 'save', exact: true }),
       resetButton: root.getByRole('button', { name: 'editor_reset_all_changes', exact: true }),
+      closeButton: root.getByRole('button', { name: 'close', exact: true }),
     },
 
     profilePicture: {
