@@ -1,4 +1,4 @@
-# External Library
+# External library
 
 import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
 
@@ -49,7 +49,7 @@ In the Immich web UI:
 - Click the three-dots menu and select **Scan New Library Files**
   <img src={require('./img/scan-new-library-files.webp').default} width="50%" title="Scan New Library Files menu option" />
 
-# Confirm stuff is happening
+# Confirm jobs are running
 
 - Click **Administration**
   <img src={require('./img/administration-link.webp').default} width="50%" title="Administration link" />

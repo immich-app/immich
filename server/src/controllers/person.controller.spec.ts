@@ -44,6 +44,25 @@ describe(PersonController.name, () => {
     });
   });
 
+  describe('POST /people', () => {
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const { status } = await request(ctx.getHttpServer()).post('/people').send({ name });
+      expect(status).toBe(201);
+      expect(service.create).toHaveBeenCalledWith(undefined, { name: '' });
+    });
+  });
+
+  describe('PUT /people', () => {
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const id = factory.uuid();
+      const { status } = await request(ctx.getHttpServer())
+        .put('/people')
+        .send({ people: [{ id, name }] });
+      expect(status).toBe(200);
+      expect(service.updateAll).toHaveBeenCalledWith(undefined, { people: [{ id, name: '' }] });
+    });
+  });
+
   describe('DELETE /people', () => {
     it('should require uuids in the body', async () => {
       const { status, body } = await request(ctx.getHttpServer())
@@ -71,15 +90,11 @@ describe(PersonController.name, () => {
       );
     });
 
-    it(`should not allow a null name`, async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post(`/people`)
-        .send({ name: null })
-        .set('Authorization', `Bearer token`);
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['name'], message: 'Invalid input: expected string, received null' }]),
-      );
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const id = factory.uuid();
+      const { status } = await request(ctx.getHttpServer()).put(`/people/${id}`).send({ name });
+      expect(status).toBe(200);
+      expect(service.update).toHaveBeenCalledWith(undefined, id, { name: '' });
     });
 
     it(`should require featureFaceAssetId to be a uuid`, async () => {

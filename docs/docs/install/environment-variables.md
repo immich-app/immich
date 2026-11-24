@@ -1,5 +1,5 @@
 ---
-sidebar_position: 90
+sidebar_position: 15
 ---
 
 # Environment Variables
@@ -150,7 +150,7 @@ Redis (Sentinel) URL example JSON before encoding:
 
 </details>
 
-## Machine Learning
+## Machine learning
 
 | Variable                                                    | Description                                                                                         |           Default           | Containers       |
 | :---------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :-------------------------: | :--------------- |

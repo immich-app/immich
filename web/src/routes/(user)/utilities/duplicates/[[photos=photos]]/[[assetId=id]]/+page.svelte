@@ -3,6 +3,7 @@
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import ShortcutsModal from '#lib/modals/ShortcutsModal.svelte';
+  import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
   import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
   import {
@@ -15,7 +16,7 @@
   import { Route } from '#lib/route.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
-  import { updateAssets, type AssetResponseDto } from '@immich/sdk';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { Button, HStack, IconButton, Text, modalManager, shortcuts, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -140,17 +141,17 @@
     });
   };
 
-  const handleStacked = async (duplicateId: string, assetIds: string[]) => {
-    try {
-      await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_resolve_duplicate'));
-      return;
-    }
-
-    removeDuplicateGroups([duplicateId]);
-    await navigateToIndex(duplicatesIndex);
-  };
+  const handleStacked = (duplicateId: string, assetIds: string[]) =>
+    executeMutation(
+      () => updateAssetsMutation({ error: { toast: 'errors.unable_to_resolve_duplicate' } }),
+      [{ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } }],
+      {
+        onSuccess: () => {
+          removeDuplicateGroups([duplicateId]);
+          void navigateToIndex(duplicatesIndex);
+        },
+      },
+    );
 
   const handleDeduplicateAll = async () => {
     // Use server-provided suggestedKeepAssetIds from each group

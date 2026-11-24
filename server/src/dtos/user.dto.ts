@@ -6,12 +6,22 @@ import { pinCodeRegex } from 'src/dtos/auth.dto.js';
 import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum.js';
 import type { MaybeDehydrated, UserMetadataItem } from 'src/types.js';
 import { asDateTimeString } from 'src/utils/date.js';
-import { isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation.js';
+import {
+  isoDatetimeToDate,
+  nullAsEmptyString,
+  nullToEmptyString,
+  sanitizeFilename,
+  stringToBool,
+  toEmail,
+} from 'src/validation.js';
 
 export const UserUpdateMeSchema = z
   .object({
     email: toEmail.optional().describe('User email'),
-    name: z.string().optional().describe('User name'),
+    name: nullAsEmptyString
+      .optional()
+      .describe('User name')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     avatarColor: UserAvatarColorSchema.nullish(),
   })
   .meta({ id: 'UserUpdateMeDto' });
@@ -21,9 +31,13 @@ export class UserUpdateMeDto extends createZodDto(UserUpdateMeSchema) {}
 export const UserResponseSchema = z
   .object({
     id: z.uuidv4().describe('User ID'),
-    name: z.string().describe('User name'),
+    name: z.string().nullable().describe('User name').meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     email: toEmail.describe('User email'),
-    profileImagePath: z.string().describe('Profile image path'),
+    profileImagePath: z
+      .string()
+      .nullable()
+      .describe('Profile image path')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     avatarColor: UserAvatarColorSchema,
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     profileChangedAt: z.string().meta({ format: 'date-time' }).describe('Profile change date'),
@@ -70,7 +84,7 @@ export const UserAdminCreateSchema = z
   .object({
     email: toEmail.describe('User email'),
     password: z.string().describe('User password'),
-    name: z.string().describe('User name'),
+    name: nullAsEmptyString.describe('User name').meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     avatarColor: UserAvatarColorSchema.nullish(),
     pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
     storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
@@ -87,7 +101,10 @@ export class UserAdminUpdateDto extends createZodDto({
   email: toEmail.optional().describe('User email'),
   password: z.string().optional().describe('User password'),
   pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
-  name: z.string().optional().describe('User name'),
+  name: nullAsEmptyString
+    .optional()
+    .describe('User name')
+    .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
   avatarColor: UserAvatarColorSchema.nullish(),
   storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
   shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
@@ -110,7 +127,7 @@ const UserAdminResponseSchema = UserResponseSchema.extend({
   createdAt: isoDatetimeToDate.describe('Creation date'),
   deletedAt: isoDatetimeToDate.nullable().describe('Deletion date'),
   updatedAt: isoDatetimeToDate.describe('Last update date'),
-  oauthId: z.string().describe('OAuth ID'),
+  oauthId: z.string().nullable().describe('OAuth ID').meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
   quotaSizeInBytes: z.int().min(0).nullable().describe('Storage quota in bytes'),
   quotaUsageInBytes: z.int().min(0).nullable().describe('Storage usage in bytes'),
   status: UserStatusSchema,
@@ -134,8 +151,7 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     createdAt: entity.createdAt,
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
-    // TODO(v4): remove the mapping and make `oauthId` nullable
-    oauthId: entity.oauthId ?? '',
+    oauthId: nullToEmptyString(entity.oauthId),
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,

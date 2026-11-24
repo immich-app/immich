@@ -1,4 +1,4 @@
-# Folder View
+# Folder view
 
 Folder view provides an additional view besides the timeline that is similar to a file explorer. It allows you to navigate through the folders and files in the library. This feature is handy for a highly curated and customized external library or a nicely configured storage template.
 

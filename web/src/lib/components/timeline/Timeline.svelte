@@ -1,16 +1,17 @@
 <script lang="ts">
+  import AssetViewerEvents from '#lib/components/AssetViewerEvents.svelte';
   import Thumbnail from '#lib/components/assets/thumbnail/Thumbnail.svelte';
   import Month from '#lib/components/timeline/Month.svelte';
   import Scrubber from '#lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '#lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '#lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import { focusAsset } from '#lib/components/timeline/actions/focus-actions.ts';
-  import { AssetAction } from '#lib/constants.ts';
   import HotModuleReload from '#lib/elements/HotModuleReload.svelte';
   import Portal from '#lib/elements/Portal.svelte';
   import Skeleton from '#lib/elements/Skeleton.svelte';
   import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { isIntersecting } from '#lib/managers/timeline-manager/internal/intersection-support.svelte.ts';
   import type { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
@@ -24,8 +25,14 @@
   import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
   import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
   import { isAssetViewerRoute, navigate } from '#lib/utils/navigation.ts';
-  import { getTimes, type ScrubberListener } from '#lib/utils/timeline-util.ts';
-  import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { getTimes, toTimelineAsset, type ScrubberListener } from '#lib/utils/timeline-util.ts';
+  import {
+    getAssetInfo,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+    type PersonResponseDto,
+    type UserResponseDto,
+  } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, tick, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
@@ -42,7 +49,6 @@
     timelineManager?: TimelineManager;
     options?: TimelineManagerOptions;
     assetInteraction: AssetMultiSelectManager;
-    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
     isShared?: boolean;
@@ -74,7 +80,6 @@
     timelineManager = $bindable(),
     options,
     assetInteraction,
-    removeAction = null,
     withStacked = false,
     showArchiveIcon = false,
     isShared = false,
@@ -92,6 +97,12 @@
   timelineManager = new TimelineManager();
   onDestroy(() => timelineManager.destroy());
   $effect(() => options && void timelineManager.updateOptions(options));
+
+  const onAssetReturn = async (asset: AssetResponseDto) => {
+    timelineManager.upsertAssets([toTimelineAsset(asset)]);
+    assetViewerManager.setAsset(await getAssetInfo({ ...authManager.params, id: asset.id }));
+    await navigate({ targetRoute: 'current', assetId: asset.id });
+  };
 
   let scrollableElement: HTMLElement | undefined = $state();
   let invisible = $state(true);
@@ -213,16 +224,16 @@
     }
     const scrollTarget = assetViewerManager.gridScrollTarget?.at;
     const scrolled = scrollTarget ? await scrollAndLoadAsset(scrollTarget) : false;
-    if (scrolled && scrollTarget) {
-      await tick();
-      focusAsset(scrollTarget);
-    } else if (scrollTarget) {
-      timelineManager.scrollTo(lastVisibleScrollTop);
-    } else {
-      timelineManager.scrollTo(0);
+    if (!scrolled) {
+      timelineManager.scrollTo(scrollTarget ? lastVisibleScrollTop : 0);
     }
 
     invisible = false;
+
+    if (scrolled && scrollTarget) {
+      await tick();
+      focusAsset(scrollTarget);
+    }
   };
 
   // note: only modified once in afterNavigate()
@@ -232,6 +243,12 @@
   // The layout sets `display: none` on this subtree while the viewer is open.
   // Browsers drop the scroll offset of a hidden element.
   let lastVisibleScrollTop = 0;
+
+  const setTopSectionHeight = (height: number) => {
+    if (!assetViewerManager.isViewing) {
+      timelineManager.topSectionHeight = height;
+    }
+  };
 
   // beforeNavigate is only called AFTER a svelte route has already been loaded
   // and a new route is being navigated to. It will never be called on direct
@@ -576,6 +593,8 @@
   }}
 />
 
+<AssetViewerEvents {onAssetReturn} />
+
 <TimelineKeyboardActions
   scrollToAsset={(asset) => scrollToAsset(asset) ?? false}
   {timelineManager}
@@ -622,7 +641,7 @@
 >
   <section id="virtual-timeline" class:invisible style:height={timelineManager.totalViewerHeight + 'px'}>
     <section
-      bind:clientHeight={timelineManager.topSectionHeight}
+      bind:clientHeight={null, setTopSectionHeight}
       class:invisible
       style:position="absolute"
       style:left="0"
@@ -715,7 +734,7 @@
 
 <Portal target="body">
   {#if assetViewerManager.isViewing}
-    <TimelineAssetViewer bind:invisible {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
+    <TimelineAssetViewer bind:invisible {timelineManager} {withStacked} {isShared} {album} {person} />
   {/if}
 </Portal>
 

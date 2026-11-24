@@ -1,7 +1,6 @@
 import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { downloadManager } from '#lib/managers/download-manager.svelte.ts';
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { executeMutation } from '#lib/queries/client.ts';
@@ -12,12 +11,8 @@ import { getByteUnitString } from '#lib/utils/byte-units.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { navigate } from '#lib/utils/navigation.ts';
 import { asQueryString } from '#lib/utils/shared-links.ts';
-import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
-  AssetVisibility,
   getBaseUrl,
-  updateAsset,
-  updateAssets,
   type AssetResponseDto,
   type DownloadInfoDto,
   type DownloadResponseDto,
@@ -240,69 +235,6 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
     const $t = get(t);
     handleError(error, $t('errors.error_selecting_all_assets'));
     assetInteraction.selectAll = false;
-  }
-};
-
-export const toggleArchive = async (asset: AssetResponseDto) => {
-  const $t = get(t);
-  try {
-    const data = await updateAsset({
-      id: asset.id,
-      updateAssetDto: {
-        visibility: asset.isArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
-      },
-    });
-
-    asset.isArchived = data.isArchived;
-    asset.visibility = data.visibility;
-    if (asset.isArchived) {
-      const timelineAsset = toTimelineAsset(asset);
-      showUndoArchiveToast($t('added_to_archive'), [timelineAsset]);
-    } else {
-      toastManager.primary($t('removed_from_archive'));
-    }
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: asset.isArchived } }));
-  }
-
-  return asset;
-};
-
-const showUndoArchiveToast = (description: string, assets: TimelineAsset[]) => {
-  const $t = get(t);
-  toastManager.primary({
-    description,
-    button: (close) => ({
-      label: $t('undo'),
-      onclick: () => {
-        close();
-        void undoArchiveAssets(assets);
-      },
-    }),
-  });
-};
-
-const undoArchiveAssets = async (assets: TimelineAsset[]) => {
-  const $t = get(t);
-  try {
-    const ids = assets.map((a) => a.id);
-    if (ids.length > 0) {
-      await updateAssets({
-        assetBulkUpdateDto: {
-          ids,
-          visibility: AssetVisibility.Timeline,
-        },
-      });
-    }
-
-    for (const asset of assets) {
-      asset.visibility = AssetVisibility.Timeline;
-    }
-    eventManager.emit('AssetsUnarchive', assets);
-    eventManager.emit('AssetsUndoArchive', assets);
-    toastManager.success($t('unarchived_count', { values: { count: assets.length } }));
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
   }
 };
 

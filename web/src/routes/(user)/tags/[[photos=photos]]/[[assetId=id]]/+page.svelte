@@ -16,7 +16,6 @@
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
   import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import { AssetAction } from '#lib/constants.ts';
   import SkipLink from '#lib/elements/SkipLink.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
@@ -76,13 +75,7 @@
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] immich-scrollbar overflow-auto">
     {#if tag.hasAssets}
-      <Timeline
-        enableRouting={true}
-        bind:timelineManager
-        {options}
-        assetInteraction={assetMultiSelectManager}
-        removeAction={AssetAction.UNARCHIVE}
-      >
+      <Timeline enableRouting={true} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
         {#snippet empty()}
           <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
         {/snippet}

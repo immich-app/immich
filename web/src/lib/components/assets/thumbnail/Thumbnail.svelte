@@ -283,7 +283,7 @@
           <ImageThumbnail
             class={imageClass}
             {brokenAssetClass}
-            url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Original, cacheKey: asset.thumbhash })}
+            url={getAssetMediaUrl({ id: asset.id, size: 'original', cacheKey: asset.thumbhash })}
             altText={$getAltText(asset)}
             widthStyle="{width}px"
             heightStyle="{height}px"

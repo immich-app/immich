@@ -78,7 +78,7 @@
     () => void goto(Route.people()),
   );
   const altNames = $derived([
-    ...new Set(person.otherPeople.map(({ name }) => name).filter((name) => !!name && name !== person.name)),
+    ...new Set(person.otherPeople.map(({ name }) => name ?? '').filter((name) => !!name && name !== person.name)),
   ]);
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
@@ -228,7 +228,7 @@
   const updateName = () =>
     executeMutation(
       () => updatePersonMutation({ success: { toast: 'change_name_successfully' } }),
-      [{ id: person.id, personUpdateDto: withUpdateStrategy({ name: personName }) }],
+      [{ id: person.id, personUpdateDto: withUpdateStrategy({ name: personName || null }) }],
     );
 
   const handleCancelEditName = () => {
@@ -378,7 +378,7 @@
               <EditNameInput
                 {person}
                 bind:suggestedPeople
-                name={person.name}
+                name={person.name ?? ''}
                 bind:isSearchingPeople
                 onChange={handleNameChange}
                 {thumbnailData}

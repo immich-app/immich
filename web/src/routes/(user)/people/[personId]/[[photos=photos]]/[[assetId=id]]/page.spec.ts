@@ -80,6 +80,31 @@ test('clears the birth date', async ({ data, router, render, settle, api, app })
   });
 });
 
+test('clearing the name saves null', async ({ data, router, render, settle, api, app }) => {
+  const person = factory.person({ name: 'Alice' });
+  await showPerson({ data, router, render, settle }, person);
+
+  app.person.openNameEditor();
+  await app.person.nameInput.fill('');
+  await userEvent.keyboard('{Enter}');
+  await settle();
+
+  expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: person.id }, body: { name: null } });
+});
+
+test('clearing the name in the edit dialog saves null', async ({ data, router, render, settle, api, app }) => {
+  const person = factory.person({ name: 'Alice' });
+  await showPerson({ data, router, render, settle }, person);
+
+  await app.person.menuButton.click();
+  await app.person.menuItem('edit_person').click();
+  await app.person.editNameInput.fill('');
+  await app.dialogButton('submit').click();
+  await settle();
+
+  expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: person.id }, body: { name: null, birthDate: null } });
+});
+
 test('hiding the person goes back', async ({ data, router, render, settle, api, app }) => {
   const person = factory.person({ name: 'Alice' });
   await showPerson({ data, router, render, settle }, person);

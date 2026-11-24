@@ -8,7 +8,7 @@
   import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
 
-  let editedUser = $state(cloneDeep(authManager.user));
+  let editedUser = $state({ ...cloneDeep(authManager.user), name: authManager.user.name ?? '' });
   const bubble = createBubbler();
 
   const updateMyUser = createMutation(updateMyUserMutation);

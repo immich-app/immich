@@ -1,4 +1,4 @@
-# PR Checklist
+# PR checklist
 
 A minimal devcontainer is supplied with this repository. All commands can be executed directly inside this container to avoid tedious installation of the environment.
 :::warning
@@ -6,7 +6,7 @@ The provided devcontainer isn't complete at the moment. At least all dockerized 
 :::
 When contributing code through a pull request, please check the following:
 
-## Web Checks
+## Web checks
 
 - [ ] `mise //web:lint` (linting via ESLint)
 - [ ] `mise //web:format` (formatting via Prettier)
@@ -31,7 +31,7 @@ Use `mise //web:lint-fix` and `mise //web:format-fix` to automatically correct s
 Use `mise //docs:format-fix` to automatically fix formatting.
 :::
 
-## Server Checks
+## Server checks
 
 - [ ] `mise //server:lint` (linting via ESLint)
 - [ ] `mise //server:format` (formatting via Prettier)
@@ -46,7 +46,7 @@ Run all server checks with `mise //server:checklist`
 Use `mise //server:lint-fix` and `mise //server:format-fix` to automatically correct some issues.
 :::
 
-## Mobile Checklist
+## Mobile checklist
 
 - [ ] `mise //mobile:codegen` (auto-generate files using build_runner)
 - [ ] `mise //mobile:lint` (static analysis via Dart Analyzer and DCM)
@@ -61,7 +61,7 @@ Run all these commands at once with `mise //mobile:checklist`
 You can use `mise //mobile:lint-fix` to potentially correct some issues automatically for `mise //mobile:lint`.
 :::
 
-## Machine Learning Checklist
+## Machine learning checklist
 
 - [ ] `mise //machine-learning:lint` (linting via ruff)
 - [ ] `mise //machine-learning:format` (formatting via ruff)
@@ -76,6 +76,6 @@ Run all machine learning checks with `mise //machine-learning:checklist`
 
 The OpenAPI client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. Note that you should not modify this file directly as it is auto-generated. See [OpenAPI](/api.md) for more details.
 
-## Database Migrations
+## Database migrations
 
 A database migration needs to be generated whenever there are changes to `server/src/infra/src/entities`. See [Database Migration](/developer/database-migrations.md) for more details.

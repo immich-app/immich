@@ -29,8 +29,8 @@
   onResourceDelete(() => `/shared-links/${sharedLink.id}`, onClose);
   const onSubmit = async () => {
     const sharedLinkEditDto = {
-      description,
-      password: password ?? null,
+      description: description || null,
+      password: password || null,
       expiresAt,
       allowUpload,
       allowDownload,

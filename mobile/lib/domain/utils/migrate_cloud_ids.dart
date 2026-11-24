@@ -8,7 +8,6 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/utils/cloud_id_resolver.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -18,7 +17,6 @@ import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:logging/logging.dart';
 // ignore: import_rule_openapi
@@ -40,14 +38,6 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
 
   await populateMissingCloudIds(db, ref.read(nativeSyncApiProvider), cancellation);
 
-  final serverInfo = await ref.read(serverInfoProvider.notifier).getServerInfo();
-  final canUpdateMetadata = serverInfo.serverVersion.supports(.cloudIdMetadata);
-  if (!canUpdateMetadata) {
-    logger.fine('Server version does not support asset metadata updates. Skipping cloudId migration.');
-    return;
-  }
-  final canBulkUpdateMetadata = serverInfo.serverVersion.supports(.bulkCloudIdMetadata);
-
   // Wait for remote sync to complete, so we have up-to-date asset metadata entries
   try {
     await ref.read(syncStreamServiceProvider).sync();
@@ -66,14 +56,13 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   final assetApi = ref.read(apiServiceProvider).assetsApi;
 
   // Process cloud IDs in paginated batches
-  await _processCloudIdMappingsInBatches(db, currentUser.id, assetApi, canBulkUpdateMetadata, logger, cancellation);
+  await _processCloudIdMappingsInBatches(db, currentUser.id, assetApi, logger, cancellation);
 }
 
 Future<void> _processCloudIdMappingsInBatches(
   Drift drift,
   String userId,
   AssetsApi assetsApi,
-  bool canBulkUpdate,
   Logger logger,
   Completer<void> cancellation,
 ) async {
@@ -108,18 +97,12 @@ Future<void> _processCloudIdMappingsInBatches(
       );
     }
 
-    if (items.isNotEmpty) {
-      if (canBulkUpdate) {
-        for (final batch in items.slices(_kUploadBatchSize)) {
-          if (cancellation.isCompleted) {
-            break;
-          }
-
-          await _bulkUpdate(assetsApi, batch, cancellation.future);
-        }
-      } else {
-        await _sequentialUpdate(assetsApi, items, cancellation);
+    for (final batch in items.slices(_kUploadBatchSize)) {
+      if (cancellation.isCompleted) {
+        break;
       }
+
+      await _bulkUpdate(assetsApi, batch, cancellation.future);
     }
 
     lastRemoteId = mappings.last.remoteAssetId;
@@ -208,29 +191,6 @@ Future<List<CloudIdMapping>> fetchMapping(Drift db, String userId, int limit, St
       longitude: row.read(db.localAssetEntity.longitude),
     );
   }).get();
-}
-
-Future<void> _sequentialUpdate(
-  AssetsApi assetsApi,
-  List<AssetMetadataBulkUpsertItemDto> items,
-  Completer<void> cancellation,
-) async {
-  for (final item in items) {
-    if (cancellation.isCompleted) {
-      break;
-    }
-    try {
-      await assetsApi.updateAssetMetadata(
-        item.assetId,
-        .new(
-          items: [.new(key: item.key, value: item.value)],
-        ),
-        abortTrigger: cancellation.future,
-      );
-    } catch (error, stack) {
-      Logger('syncCloudIds: sequential').warning('Failed to update metadata for asset ${item.assetId}', error, stack);
-    }
-  }
 }
 
 Future<void> _bulkUpdate(

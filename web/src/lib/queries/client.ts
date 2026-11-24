@@ -32,7 +32,7 @@ declare module '@tanstack/svelte-query' {
     };
     mutationMeta: {
       success?: { toast?: ToastMeta };
-      error?: { toast?: Translations | false };
+      error?: { toast?: Translations | false; values?: Record<string, string | number | boolean> };
     };
   }
 }
@@ -89,7 +89,7 @@ const createQueryClient = () => {
         }
 
         const $t = await getFormatter();
-        handleError(error, $t(toast ?? 'errors.something_went_wrong'));
+        handleError(error, $t(toast ?? 'errors.something_went_wrong', { values: meta?.error?.values }));
       },
     }),
   });

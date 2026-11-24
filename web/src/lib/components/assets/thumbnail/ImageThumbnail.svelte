@@ -7,7 +7,7 @@
 
   interface Props {
     url: string;
-    altText: string | undefined;
+    altText: string | null | undefined;
     title?: string | null;
     heightStyle?: string | undefined;
     widthStyle: string;

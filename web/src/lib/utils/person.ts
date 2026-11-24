@@ -21,7 +21,7 @@ export const searchNameLocal = (
         .slice(0, slice)
     : people
         .filter((person: PersonResponseDto) => {
-          const nameParts = person.name.split(' ');
+          const nameParts = (person.name ?? '').split(' ');
           return personId
             ? nameParts.some((splitName) => normalizeSearchString(splitName).startsWith(normalizedName)) &&
                 person.id !== personId
@@ -31,7 +31,8 @@ export const searchNameLocal = (
 };
 
 export const getPersonNameWithHiddenValue = derived(t, ($t) => {
-  return (name: string, isHidden: boolean) => $t('person_hidden', { values: { name, hidden: isHidden } });
+  return (name: string | null, isHidden: boolean) =>
+    $t('person_hidden', { values: { name: name ?? '', hidden: isHidden } });
 });
 
 export const withUpdateStrategy = (dto: PersonUpdateDto): PersonUpdateDto =>
