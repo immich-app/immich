@@ -10,8 +10,12 @@ The review duplicates page allows the user to individually select which assets s
 
 When using "Deduplicate All" or viewing suggestions, Immich automatically preselects which assets to keep based on:
 
-1. **Image size in bytes** — larger files are preferred as they typically have higher quality.
-2. **Count of EXIF data** — assets with more metadata are preferred.
+1. **Image resolution** — higher pixel dimensions (`width × height`) are preferred over downscaled copies (such as 2048px shared-album exports).
+2. **EXIF metadata completeness** — assets retaining original camera, lens, exposure, geolocation, and Live Photo metadata are preferred over metadata-stripped exports.
+3. **File format, capture date & filename cleanliness** — RAW and high-efficiency formats (HEIC/HEIF/AVIF), earlier original capture timestamps, and clean filenames (without storage collision suffixes like `+1.jpg` or copy/messaging markers) are preferred over later re-encoded copies.
+4. **File size in bytes** — larger files are preferred when resolution, metadata, and format are comparable.
+
+In groups of three or more assets containing multiple distinct full-resolution camera burst shots alongside their lower-resolution or degraded duplicate copies, Immich preselects all distinct full-resolution burst originals to keep.
 
 ### Synchronizing metadata
 
