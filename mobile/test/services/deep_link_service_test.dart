@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -11,6 +12,7 @@ import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -109,6 +111,7 @@ void main() {
     });
 
     when(() => ref.read(assetViewerProvider.notifier)).thenReturn(MockAssetViewerStateNotifier());
+    when(() => ref.read(appConfigProvider)).thenReturn(const AppConfig());
 
     sut = DeepLinkService(timelineFactory, assetService, remoteAlbumService, memoryService, _user);
 

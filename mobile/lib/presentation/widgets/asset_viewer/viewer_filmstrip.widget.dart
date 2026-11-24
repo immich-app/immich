@@ -1,95 +1,79 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
-import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_filmstrip_item.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_filmstrip_physics.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
-/// Filmstrip of thumbnails shown at the bottom of the viewer.
 class ViewerFilmstrip extends ConsumerStatefulWidget {
-  const ViewerFilmstrip({super.key});
+  final Widget? actions;
+
+  const ViewerFilmstrip({super.key, this.actions});
 
   @override
-  ConsumerState<ViewerFilmstrip> createState() => _ViewerFilmstripState();
+  ConsumerState<ViewerFilmstrip> createState() => _FilmstripState();
 }
 
-class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
-  static const double _itemGap = 2.0;
+enum _StripDriver { none, user, swipe }
 
-  late double _filmstripHeight;
-  late double _itemExtent;
-  int _visibleCount = 0;
+class _FilmstripState extends ConsumerState<ViewerFilmstrip> with SingleTickerProviderStateMixin {
+  static const _recenterDuration = Durations.short4;
+  static const _collapseDuration = Durations.short2;
+  static const _expandDuration = Durations.medium1;
 
-  late final ScrollController _scrollController;
-  late TimelineService _timelineService;
+  late final _physics = SnapToItemPhysics(
+    itemSlot: FilmstripMetrics.itemSlot,
+    isSnapping: () => _driver != _StripDriver.swipe,
+  );
+  late final TimelineService _timelineService = ref.read(timelineServiceProvider);
+  late int _currentIndex = ref.read(assetViewerProvider).currentIndex;
+  late final _scrollController = ScrollController(initialScrollOffset: _currentIndex * FilmstripMetrics.itemSlot);
+  late final _expansion = AnimationController(vsync: this, value: 1);
+  late final _focus = ValueNotifier<double>(_currentIndex.toDouble());
+  final _actionsShown = ValueNotifier(true);
+  late final _swipePage = ref.read(viewerSwipePageProvider);
   StreamSubscription<TimelineReloadEvent>? _reloadSubscription;
 
-  /// Tracks the currently running assets loading operation to avoid concurrent loads.
+  int _visibleCount = 0;
   Future<void>? _loadTask;
-
-  /// True when _loadTask is already awaited. We only need one follow-up caller to await the task to
-  /// reflect to most recent state if there were further requests while _loadTask was running.
   bool _isLoadTaskAwaited = false;
-
-  /// Internal current index to track what asset filmstrip is currently displaying.
-  /// This is in contrast to the currentIndex in provider. Differentiating the two
-  /// allows us to react properly to external vs internal changes.
-  /// It is also notifier to trigger restyling of the currently centered thumbnail.
-  late final ValueNotifier<int> _currentIndex;
-
-  /// Flag to track if the user is currently scrubbing through the filmstrip.
-  bool _isScrubbing = false;
-
-  /// Tracks whether the user is currently having their finger on the filmstrip.
-  bool _isPointerDown = false;
-
-  void _applyHeight(double height) {
-    _filmstripHeight = height;
-    _itemExtent = height - 4;
-  }
+  _StripDriver _driver = _StripDriver.none;
+  int _pointersDown = 0;
+  bool _userScrollJustEnded = false;
+  bool _touchCaughtUserScroll = false;
 
   @override
   void initState() {
     super.initState();
-    final h = ref.read(appConfigProvider).viewer.filmstripHeight.toDouble();
-    _applyHeight(h);
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScrollPositionChanged);
-    _timelineService = ref.read(timelineServiceProvider);
+    _swipePage.addListener(_onSwipePage);
     _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>(_onTimelineReload);
-    final initialIndex = ref.read(assetViewerProvider).currentIndex;
-    _currentIndex = ValueNotifier(initialIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        unawaited(_ensureLoaded());
       }
-      unawaited(_ensureLoaded());
-      _scrollToCurrentIndex(animated: false);
-      _scrollController.position.isScrollingNotifier.addListener(_onScrollingChanged);
     });
   }
 
   @override
   void dispose() {
+    _swipePage.removeListener(_onSwipePage);
     unawaited(_reloadSubscription?.cancel());
-    if (_scrollController.hasClients) {
-      _scrollController.position.isScrollingNotifier.removeListener(_onScrollingChanged);
-    }
-    _scrollController.removeListener(_onScrollPositionChanged);
     _scrollController.dispose();
-    _currentIndex.dispose();
+    _expansion.dispose();
+    _focus.dispose();
+    _actionsShown.dispose();
     super.dispose();
   }
 
-  /// The timeline changed underneath us (e.g. an asset was deleted or synced).
-  /// Rebuild so the item count and thumbnails reflect the reloaded timeline.
   void _onTimelineReload(TimelineReloadEvent _) {
     if (!mounted) {
       return;
@@ -98,15 +82,17 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     unawaited(_ensureLoaded());
   }
 
-  /// Ensures the assets around current index are loaded.
+  ({int start, int count}) _windowAround(int index, int size) {
+    final start = max(index - size ~/ 2, 0);
+    return (start: start, count: min(size, _timelineService.totalAssets - start));
+  }
+
   Future<void> _ensureLoaded() async {
     if (_visibleCount == 0) {
       return;
     }
 
-    // Wait for any in-flight load to complete before starting a new one.
     if (_loadTask != null) {
-      // We need only one caller to reflect the most recent state, the rest can be safely dropped.
       if (_isLoadTaskAwaited) {
         return;
       }
@@ -118,227 +104,317 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
       }
     }
 
-    final idx = _currentIndex.value;
-    final total = _timelineService.totalAssets;
-
-    // Check if the expanded region around the current index is already cached.
-    // This helps to start loading assets early before we reach uncached region.
-    final triggerWindow = _visibleCount * 3;
-    final startTriggerWindow = max(idx - triggerWindow ~/ 2, 0);
-    final countTriggerWindow = min(triggerWindow, total - startTriggerWindow);
-    if (_timelineService.hasRange(startTriggerWindow, countTriggerWindow)) {
+    final shown = _windowAround(_currentIndex, _visibleCount * 3);
+    if (_timelineService.hasRange(shown.start, shown.count)) {
       return;
     }
 
-    // Load a larger buffer to reduce the frequency of loading during fast scrubbing.
-    final bufferWindow = _visibleCount * 10;
-    final start = max(idx - bufferWindow ~/ 2, 0);
-    final count = min(bufferWindow, total - start);
+    final buffer = _windowAround(_currentIndex, _visibleCount * 10);
+    _loadTask = _timelineService.loadAssets(buffer.start, buffer.count).catchError((_) => <BaseAsset>[]).whenComplete(
+      () {
+        if (mounted) {
+          setState(() {});
+        }
+        _loadTask = null;
+      },
+    );
+  }
 
-    // Ignore load errors (like TimelineService.getAssetAsync) so they don't surface as unhandled.
-    // Placeholders stay in place and the next index change retries the load.
-    final loadAssetsTask = _timelineService.loadAssets(start, count).catchError((_) => <BaseAsset>[]);
+  void _onViewportWidth(double width) {
+    _visibleCount = (width / FilmstripMetrics.itemSlot).ceil();
+  }
 
-    // After loading the assets, follow up with further actions.
-    // We only want to allow reentry to _ensureLoaded once all of those are completed,
-    // so we record the Future of those follow-up actions, which can then be awaited.
-    _loadTask = loadAssetsTask.whenComplete(() {
-      // We use placeholders for assets that are not cached in timeline when building filmstrip item.
-      // This call will update the thumbnails in items once the assets are actually loaded.
-      if (mounted) {
-        setState(() {});
+  int _centeredIndex(double offset) =>
+      (offset / FilmstripMetrics.itemSlot).round().clamp(0, _timelineService.totalAssets - 1);
+
+  void _onIndexChanged(int? _, int index) {
+    if (index == _currentIndex) {
+      return;
+    }
+    final distance = (index - _currentIndex).abs();
+    _currentIndex = index;
+    unawaited(_ensureLoaded());
+    if (_driver != _StripDriver.swipe) {
+      _scrollToCurrentIndex(animated: distance <= _visibleCount);
+    }
+  }
+
+  void _onSwipePage() {
+    final page = _swipePage.value;
+    if (page == null) {
+      if (_driver == _StripDriver.swipe) {
+        _driver = _StripDriver.none;
+        _scrollToCurrentIndex(animated: true);
       }
+      return;
+    }
+    if (_pointersDown > 0 || _driver == _StripDriver.user || !_scrollController.hasClients) {
+      return;
+    }
+    if (_driver != _StripDriver.swipe) {
+      _driver = _StripDriver.swipe;
+      _expand();
+    }
+    _focus.value = page;
+    final position = _scrollController.position;
+    _scrollController.jumpTo(
+      (page * FilmstripMetrics.itemSlot).clamp(position.minScrollExtent, position.maxScrollExtent),
+    );
+  }
 
-      _loadTask = null;
+  void _onPointerDown(PointerDownEvent _) {
+    if (_pointersDown++ == 0) {
+      _touchCaughtUserScroll = _userScrollJustEnded;
+    }
+  }
+
+  void _onPointerUp(PointerEvent _) {
+    _pointersDown = max(_pointersDown - 1, 0);
+    if (_pointersDown == 0) {
+      _recenterWhenIdle();
+    }
+  }
+
+  void _recenterWhenIdle() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted &&
+          _pointersDown == 0 &&
+          _driver != _StripDriver.swipe &&
+          _scrollController.hasClients &&
+          !_scrollController.position.isScrollingNotifier.value) {
+        _scrollToCurrentIndex(animated: true);
+      }
     });
   }
 
-  /// Called when the provider's currentIndex changes.
-  /// The reaction to taps is also routed through this listener.
-  void _onIndexChanged(int? _, int idx) {
-    if (idx == _currentIndex.value) {
-      return;
-    }
-    _currentIndex.value = idx;
-
-    unawaited(_ensureLoaded());
-    _scrollToCurrentIndex();
+  void _collapse() {
+    _actionsShown.value = false;
+    unawaited(_expansion.animateTo(0, duration: _collapseDuration, curve: Curves.easeOut));
   }
 
-  /// Updates the scroll position to center on the given index.
-  void _scrollToCurrentIndex({bool animated = true}) {
+  void _expand() {
+    _focus.value = _currentIndex.toDouble();
+    _actionsShown.value = true;
+    unawaited(_expansion.animateTo(1, duration: _expandDuration, curve: Curves.easeOutCubic));
+  }
+
+  void _scrollToCurrentIndex({required bool animated}) {
     if (!_scrollController.hasClients) {
       return;
     }
-    final index = _currentIndex.value;
-    if (index < 0 || index >= _timelineService.totalAssets) {
+    final position = _scrollController.position;
+    final target = (_currentIndex * FilmstripMetrics.itemSlot).clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    final distance = (target - position.pixels).abs();
+    if (distance < 1) {
+      if (distance > 0) {
+        _scrollController.jumpTo(target);
+      }
+      _expand();
       return;
     }
-
-    final targetOffset = index.toDouble() * (_itemExtent + _itemGap);
-    final clamped = targetOffset.clamp(
-      _scrollController.position.minScrollExtent,
-      _scrollController.position.maxScrollExtent,
-    );
-
     if (animated) {
-      _scrollController.animateTo(clamped, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+      unawaited(_scrollController.animateTo(target, duration: _recenterDuration, curve: Curves.easeOutCubic));
     } else {
-      _scrollController.jumpTo(clamped);
+      _scrollController.jumpTo(target);
     }
   }
 
-  void _onTap(int idx) {
-    // Tapped the already selected thumbnail, no-op.
-    if (idx == _currentIndex.value) {
-      return;
-    }
-    ref.read(assetViewerProvider.notifier).setCurrentIndex(idx);
-  }
-
-  void _onPointerDown(PointerDownEvent e) {
-    _isPointerDown = true;
-  }
-
-  void _onPointerUp(PointerUpEvent e) {
-    _isPointerDown = false;
-    // If scrubbing, leave _isScrubbing true.
-    // The scroll may still be in progress due to inertia.
-  }
-
-  void _onPointerCancel(PointerCancelEvent e) {
-    _isPointerDown = false;
-    _isScrubbing = false;
-  }
-
-  void _onScrollingChanged() {
-    // Only react to the end of scrolling.
-    if (_scrollController.position.isScrollingNotifier.value) {
-      return;
-    }
-
-    if (_isScrubbing) {
-      _isScrubbing = false;
-      // Softly snap to the current thumbnail (user might have left the scroll in an intermediate position).
-      // Note we could end up here due to exact drag or an inertia fling.
-      _scrollToCurrentIndex();
-    } else {
-      // Re-center on the selected thumbnail if a tap animation was
-      // interrupted (e.g. double-tap before the first scroll finished).
-      _scrollToCurrentIndex(animated: false);
-    }
-  }
-
-  void _onScrollPositionChanged() {
-    // Scrolling while pointer down means the user started scrubbing through the filmstrip.
-    // Othwerise, the scrolling is caused by an animation.
-    if (_isPointerDown) {
-      // Keep the flag on until the scrolling fully stops (we'll be notified).
-      _isScrubbing = true;
-    }
-
-    if (_isScrubbing) {
-      _onFilmstripDrag();
-    }
-  }
-
-  void _onFilmstripDrag() {
-    if (!_scrollController.hasClients) {
-      return;
-    }
-    final offset = _scrollController.offset;
-    final idx = (offset / (_itemExtent + _itemGap)).round().clamp(0, _timelineService.totalAssets - 1);
-    // The scroll position didn't move enough to change the centered index, ignore.
-    if (idx == _currentIndex.value) {
-      return;
-    }
-
-    // Set internal _currentIndex before updating the one in provider
-    // as we don't want the provider listener to trigger a scrollToIndex while dragging.
-    _currentIndex.value = idx;
+  void _select(int index) {
+    _currentIndex = index;
+    ref.read(hapticFeedbackProvider.notifier).selectionClick();
     unawaited(_ensureLoaded());
-    ref.read(assetViewerProvider.notifier).setCurrentIndex(idx);
+    ref.read(assetViewerProvider.notifier).setCurrentIndex(index);
   }
 
-  Widget _buildItem(int idx) {
-    final asset = _timelineService.getAssetSafe(idx);
-    return GestureDetector(
-      onTap: () => _onTap(idx),
-      child: ValueListenableBuilder<int>(
-        valueListenable: _currentIndex,
-        builder: (context, currentIdx, child) {
-          return Padding(
-            padding: const EdgeInsets.only(right: _itemGap),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              decoration: BoxDecoration(
-                border: idx == currentIdx ? Border.all(color: Colors.white70, width: 2.0) : null,
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: child,
-            ),
-          );
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(2),
-          child: SizedBox(
-            width: _itemExtent,
-            height: _filmstripHeight,
-            child: asset == null
-                ? const ColoredBox(color: Colors.black26)
-                // Default decode size on purpose (same as the timeline grid): the viewer reuses the cached
-                // thumbnail as its placeholder, so a filmstrip-sized decode would show blocky while scrubbing.
-                : Thumbnail.fromAsset(asset: asset, fit: BoxFit.cover),
-          ),
-        ),
-      ),
+  void _onTapUp(TapUpDetails details, double viewportWidth) {
+    final leadingPadding = viewportWidth / 2 - FilmstripMetrics.itemExtent / 2;
+    final index = FilmstripMetrics.indexAt(
+      details.localPosition.dx + _scrollController.offset - leadingPadding,
+      total: _timelineService.totalAssets,
+      focus: _focus.value,
+      expansion: _expansion.value,
     );
+    if (index == null || index == _currentIndex || _touchCaughtUserScroll) {
+      return;
+    }
+    _select(index);
+    _scrollToCurrentIndex(animated: true);
   }
 
-  Widget _buildList(int total) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        _visibleCount = (constraints.maxWidth / (_itemExtent + _itemGap)).ceil();
-        final sidePadding = constraints.maxWidth / 2 - _itemExtent / 2;
-        return ListView.builder(
-          controller: _scrollController,
-          scrollDirection: Axis.horizontal,
-          itemCount: total,
-          itemExtent: _itemExtent + _itemGap,
-          padding: EdgeInsets.symmetric(horizontal: sidePadding),
-          itemBuilder: (context, idx) => _buildItem(idx),
-        );
-      },
-    );
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0 || _driver == _StripDriver.swipe) {
+      return false;
+    }
+
+    switch (notification) {
+      case ScrollStartNotification(:final dragDetails):
+        _driver = dragDetails != null ? _StripDriver.user : _StripDriver.none;
+        _collapse();
+      case ScrollUpdateNotification(:final dragDetails, :final metrics):
+        if (dragDetails != null && _driver != _StripDriver.user) {
+          _driver = _StripDriver.user;
+          _collapse();
+        }
+        final index = _centeredIndex(metrics.pixels);
+        if (_driver == _StripDriver.user && index != _currentIndex) {
+          _select(index);
+        }
+      case ScrollEndNotification():
+        _userScrollJustEnded = _driver == _StripDriver.user;
+        _driver = _StripDriver.none;
+        scheduleMicrotask(() => _userScrollJustEnded = false);
+        _recenterWhenIdle();
+      default:
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen(assetViewerProvider.select((s) => s.currentIndex), _onIndexChanged);
+    final remoteSize = ref.watch(assetViewerProvider.select((s) => s.thumbnailSize));
 
-    final newHeight = ref.watch(appConfigProvider.select((c) => c.viewer.filmstripHeight)).toDouble();
-    if (newHeight != _filmstripHeight) {
-      _applyHeight(newHeight);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
-        _scrollToCurrentIndex(animated: false);
-      });
-    }
+    final hasStrip = _timelineService.totalAssets > 0;
+    return Stack(
+      children: [
+        if (hasStrip)
+          Positioned.fill(
+            child: _Strip(
+              controller: _scrollController,
+              physics: _physics,
+              itemCount: _timelineService.totalAssets,
+              assetAt: _timelineService.getAssetSafe,
+              remoteSize: remoteSize,
+              focus: _focus,
+              expansion: _expansion,
+              onViewportWidth: _onViewportWidth,
+              onPointerDown: _onPointerDown,
+              onPointerUp: _onPointerUp,
+              onScrollNotification: _onScrollNotification,
+              onTapUp: _onTapUp,
+            ),
+          ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasStrip) const SizedBox(height: FilmstripMetrics.stripHeight, width: double.infinity),
+            if (widget.actions case final actions?)
+              _CollapsibleActions(shown: _actionsShown, opacity: _expansion, child: actions),
+          ],
+        ),
+      ],
+    );
+  }
+}
 
-    final total = _timelineService.totalAssets;
-    if (total == 0) {
-      return const SizedBox.shrink();
-    }
+class _Strip extends StatelessWidget {
+  final ScrollController controller;
+  final ScrollPhysics physics;
+  final int itemCount;
+  final BaseAsset? Function(int index) assetAt;
+  final Size? remoteSize;
+  final ValueListenable<double> focus;
+  final Animation<double> expansion;
+  final ValueChanged<double> onViewportWidth;
+  final PointerDownEventListener onPointerDown;
+  final ValueChanged<PointerEvent> onPointerUp;
+  final NotificationListenerCallback<ScrollNotification> onScrollNotification;
+  final void Function(TapUpDetails details, double viewportWidth) onTapUp;
 
-    return SizedBox(
-      height: _filmstripHeight,
+  const _Strip({
+    required this.controller,
+    required this.physics,
+    required this.itemCount,
+    required this.assetAt,
+    required this.remoteSize,
+    required this.focus,
+    required this.expansion,
+    required this.onViewportWidth,
+    required this.onPointerDown,
+    required this.onPointerUp,
+    required this.onScrollNotification,
+    required this.onTapUp,
+  });
+
+  static final _placeholderTheme = ThemeData(colorScheme: const ColorScheme.dark(surfaceContainer: Color(0xFF262626)));
+
+  static Shader _edgeFade(Rect bounds) {
+    final fade = min(32 / bounds.width, 0.5);
+    return LinearGradient(
+      colors: const [Colors.transparent, Colors.white, Colors.white, Colors.transparent],
+      stops: [0, fade, 1 - fade, 1],
+    ).createShader(bounds);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Theme(
+      data: _placeholderTheme,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          onViewportWidth(width);
+          return Listener(
+            onPointerDown: onPointerDown,
+            onPointerUp: onPointerUp,
+            onPointerCancel: onPointerUp,
+            child: NotificationListener<ScrollNotification>(
+              onNotification: onScrollNotification,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapUp: (details) => onTapUp(details, width),
+                child: ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: _edgeFade,
+                  child: ListView.builder(
+                    controller: controller,
+                    physics: physics,
+                    scrollDirection: Axis.horizontal,
+                    itemCount: itemCount,
+                    itemExtent: FilmstripMetrics.itemSlot,
+                    padding: EdgeInsets.symmetric(horizontal: width / 2 - FilmstripMetrics.itemExtent / 2),
+                    itemBuilder: (context, index) => Align(
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        height: FilmstripMetrics.stripHeight,
+                        child: FilmstripItem(
+                          asset: assetAt(index),
+                          remoteSize: remoteSize,
+                          index: index,
+                          focus: focus,
+                          expansion: expansion,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _CollapsibleActions extends StatelessWidget {
+  final ValueListenable<bool> shown;
+  final Animation<double> opacity;
+  final Widget child;
+
+  const _CollapsibleActions({required this.shown, required this.opacity, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: shown,
+      builder: (_, isShown, child) => IgnorePointer(ignoring: !isShown, child: child),
       child: Listener(
-        onPointerDown: _onPointerDown,
-        onPointerUp: _onPointerUp,
-        onPointerCancel: _onPointerCancel,
-        child: _buildList(total),
+        behavior: HitTestBehavior.opaque,
+        child: FadeTransition(opacity: opacity, child: child),
       ),
     );
   }

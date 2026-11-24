@@ -70,7 +70,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   void initState() {
     super.initState();
     _eventSubscription = EventStream.shared.listen(_onEvent);
-    _asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+    _readAsset();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) {
         return;
@@ -86,8 +86,26 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   void didUpdateWidget(AssetPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.index != widget.index) {
-      _asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+      _readAsset();
     }
+  }
+
+  void _readAsset() {
+    final timeline = ref.read(timelineServiceProvider);
+    _asset = timeline.getAssetSafe(widget.index);
+    if (_asset == null) {
+      unawaited(_loadAsset(timeline));
+    }
+  }
+
+  Future<void> _loadAsset(TimelineService timeline) async {
+    final index = widget.index;
+    final asset = await timeline.getAssetAsync(index);
+    if (!mounted || index != widget.index || _asset != null) {
+      return;
+    }
+
+    setState(() => _asset = asset);
   }
 
   @override
@@ -356,6 +374,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required PhotoViewHeroAttributes? heroAttributes,
     required bool isCurrent,
     required bool isPlayingMotionVideo,
+    required bool isScrubbing,
     required String? localFilePath,
     required Size? remoteThumbnailSize,
   }) {
@@ -367,7 +386,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       remoteThumbnailSize: remoteThumbnailSize,
     );
 
-    if (asset.isImage && !isPlayingMotionVideo) {
+    final showsStillImage = (asset.isImage && !isPlayingMotionVideo) || isScrubbing;
+    if (showsStillImage) {
       return ProgressiveImage(
         provider: imageProvider,
         builder: (context, provider) => PhotoView(
@@ -444,6 +464,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         : liveMotionPlaying;
     final timelineOrigin = ref.watch(timelineServiceProvider).origin;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
+    final isScrubbing = ref.watch(assetViewerProvider.select((s) => s.isScrubbing));
 
     final asset = _asset;
     if (asset == null) {
@@ -494,6 +515,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                         : null,
                     isCurrent: isCurrent,
                     isPlayingMotionVideo: isPlayingMotionVideo,
+                    isScrubbing: isScrubbing,
                     localFilePath: viewIntentFilePath,
                     remoteThumbnailSize: thumbnailSize,
                   ),

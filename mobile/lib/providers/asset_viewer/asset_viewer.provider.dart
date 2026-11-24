@@ -24,6 +24,7 @@ abstract class AssetViewerState with _$AssetViewerState {
     Size? thumbnailSize,
     @Default(0) int stackIndex,
     @Default(0) int currentIndex,
+    @Default(false) bool isScrubbing,
   }) = _AssetViewerState;
 }
 
@@ -120,6 +121,19 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     }
     state = state.copyWith(currentIndex: index);
   }
+
+  void setScrubbing(bool isScrubbing) {
+    if (isScrubbing == state.isScrubbing) {
+      return;
+    }
+    state = state.copyWith(isScrubbing: isScrubbing);
+  }
 }
 
 final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);
+
+final viewerSwipePageProvider = Provider<ValueNotifier<double?>>((ref) {
+  final page = ValueNotifier<double?>(null);
+  ref.onDispose(page.dispose);
+  return page;
+});
