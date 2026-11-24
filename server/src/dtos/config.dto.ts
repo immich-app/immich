@@ -9,6 +9,7 @@ import {
   CQModeSchema,
   Colorspace,
   ColorspaceSchema,
+  ConfigSourceSchema,
   ConfigVisibility,
   HlsVideoResolution,
   HlsVideoResolutionSchema,
@@ -589,7 +590,34 @@ const StorageTemplateOptionsResponseSchema = ConfigTemplateStorageOptionSchema.o
   })
   .meta({ id: 'StorageTemplateOptionsResponseDto' });
 
+const AdminConfigFieldSourceSchema = z
+  .object({
+    source: ConfigSourceSchema,
+    value: z.unknown().describe('Value defined by this source'),
+  })
+  .describe('Value of a configuration property from one source')
+  .meta({ id: 'AdminConfigFieldSourceDto' });
+
+const AdminConfigFieldSchema = z
+  .object({
+    key: z.string().describe('Dotted path of the property, for example "ffmpeg.crf"'),
+    envName: z.string().describe('Environment variable that overrides the property'),
+    value: z.unknown().describe('Effective value'),
+    sources: z
+      .array(AdminConfigFieldSourceSchema)
+      .describe('Every source that defines the property, lowest priority first'),
+    isEditable: z
+      .boolean()
+      .describe(
+        'Whether the value can be changed, which is false when the config file or an environment variable sets it',
+      ),
+  })
+  .describe('Resolution details of a configuration property')
+  .meta({ id: 'AdminConfigFieldDto' });
+
 export class AdminConfigDto extends createZodDto(AdminConfigSchema) {}
+
+export class AdminConfigFieldDto extends createZodDto(AdminConfigFieldSchema) {}
 
 export class UserConfigDto extends createZodDto(UserConfigSchema) {}
 

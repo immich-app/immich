@@ -18,6 +18,8 @@ import {
 } from '#lib/queries/cluster-group.query.ts';
 import {
   getAdminConfigDefaultsQuery,
+  getAdminConfigFieldQuery,
+  getAdminConfigFieldsQuery,
   getAdminConfigQuery,
   getStorageTemplateOptionsQuery,
   getStorageTemplatePreviewQuery,
@@ -137,6 +139,8 @@ const queries: Record<string, QueryFactory> = {
   getClusterGroupUsersQuery: () => getClusterGroupUsersQuery(id),
   getAdminConfigQuery: () => getAdminConfigQuery(),
   getAdminConfigDefaultsQuery: () => getAdminConfigDefaultsQuery(),
+  getAdminConfigFieldQuery: () => getAdminConfigFieldQuery('ffmpeg.crf'),
+  getAdminConfigFieldsQuery: () => getAdminConfigFieldsQuery(),
   getStorageTemplateOptionsQuery: () => getStorageTemplateOptionsQuery(),
   getStorageTemplatePreviewQuery: () => getStorageTemplatePreviewQuery('{{y}}/{{filename}}'),
   getPublicConfigQuery: () => getPublicConfigQuery(),

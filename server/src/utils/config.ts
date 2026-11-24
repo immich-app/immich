@@ -54,6 +54,8 @@ export const getResolvedConfig = async (
   return resolved!;
 };
 
+export const getConfigEnvName = (key: string) => `${CONFIG_ENV_PREFIX}${snakeCase(key).toUpperCase()}`;
+
 export const isLocked = ({ sources }: ConfigField) =>
   ![ConfigSource.Default, ConfigSource.Database].includes(sources.at(-1)!.source);
 
@@ -208,7 +210,7 @@ const decodeEnv = ({ logger }: RepoDeps, configOverrides: Record<string, string>
   const unknownVariables = new Set(Object.keys(configOverrides));
 
   for (const { key, schema } of configFields) {
-    const variable = `${CONFIG_ENV_PREFIX}${snakeCase(key).toUpperCase()}`;
+    const variable = getConfigEnvName(key);
     const value = configOverrides[variable];
     unknownVariables.delete(variable);
     if (value === undefined) {

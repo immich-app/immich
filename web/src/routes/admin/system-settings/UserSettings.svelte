@@ -2,7 +2,6 @@
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { cloneDeep } from 'lodash-es';
@@ -12,7 +11,6 @@
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
 </script>
 
@@ -25,13 +23,14 @@
           min={1}
           label={$t('admin.user_delete_delay_settings')}
           description={$t('admin.user_delete_delay_settings_description')}
+          key="user.deleteDelay"
           bind:value={configToEdit.user.deleteDelay}
           isEdited={configToEdit.user.deleteDelay !== config.user.deleteDelay}
         />
       </div>
 
       <div class="ms-4">
-        <SettingButtonsRow bind:configToEdit keys={['user']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['user']} />
       </div>
     </form>
   </div>

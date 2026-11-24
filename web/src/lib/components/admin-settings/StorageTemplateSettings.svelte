@@ -1,14 +1,15 @@
 <script lang="ts">
   import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSourceHint from '#lib/components/shared-components/settings/SettingSourceHint.svelte';
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import StorageTemplateVariablesModal from '#lib/modals/StorageTemplateVariablesModal.svelte';
   import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import {
+    createAdminConfigField,
     getAdminConfigQuery,
     getStorageTemplateOptionsQuery,
     getStorageTemplatePreviewQuery,
@@ -44,13 +45,15 @@
 
   type StorageTemplateOption = (typeof StorageTemplateOption)[keyof typeof StorageTemplateOption];
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
   let configToEdit = $state(cloneDeep(config));
 
-  // TODO remove once we support partial overwriting with database values
-  if (preselectDate && !featureFlagsManager.value.configFile && !configToEdit.storageTemplate.enabled) {
+  const enabledField = createAdminConfigField(() => 'storageTemplate.enabled');
+  const templateField = createAdminConfigField(() => 'storageTemplate.template');
+  const optionsDisabled = $derived(enabledField.isLocked || templateField.isLocked);
+
+  if (preselectDate && !untrack(() => optionsDisabled) && !configToEdit.storageTemplate.enabled) {
     configToEdit.storageTemplate.enabled = true;
     configToEdit.storageTemplate.template = DATE_TEMPLATE;
   }
@@ -133,14 +136,14 @@
   <div
     class="flex flex-col rounded-2xl border-2 p-4 transition-colors {selectedOption === option
       ? 'border-primary bg-primary/5'
-      : 'border-primary/10 hover:border-primary/20'} {disabled ? 'opacity-50' : ''}"
+      : 'border-primary/10 hover:border-primary/20'} {optionsDisabled ? 'opacity-50' : ''}"
   >
-    <label class="flex items-center gap-3 {disabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
+    <label class="flex items-center gap-3 {optionsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
       <input
         type="radio"
         name="storage-template-option"
         class="accent-primary focus-visible:ring"
-        {disabled}
+        disabled={optionsDisabled}
         checked={selectedOption === option}
         onchange={() => handleOptionSelection(option)}
       />
@@ -158,7 +161,7 @@
           </label>
           <select
             class="mt-2 immich-form-input rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
-            {disabled}
+            disabled={templateField.isLocked}
             name="presets"
             id="preset-select"
             value={selectedPreset}
@@ -172,9 +175,9 @@
 
         <SettingInputField
           label={$t('template')}
-          {disabled}
           required
           inputType={SettingInputFieldType.TEXT}
+          key="storageTemplate.template"
           bind:value={configToEdit.storageTemplate.template}
           isEdited={configToEdit.storageTemplate.template !== config.storageTemplate.template}
         >
@@ -271,13 +274,14 @@
           $t('admin.storage_template_option_custom_description'),
           customPreview,
         )}
+        <SettingSourceHint field={enabledField.field} />
       </div>
 
       {#if !minified}
         <SettingSwitch
           title={$t('admin.storage_template_hash_verification_enabled')}
-          {disabled}
           subtitle={$t('admin.storage_template_hash_verification_enabled_description')}
+          key="storageTemplate.hashVerificationEnabled"
           bind:checked={configToEdit.storageTemplate.hashVerificationEnabled}
           isEdited={configToEdit.storageTemplate.hashVerificationEnabled !==
             config.storageTemplate.hashVerificationEnabled}
@@ -303,7 +307,7 @@
           </div>
         {/if}
 
-        <SettingButtonsRow bind:configToEdit keys={['storageTemplate']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['storageTemplate']} />
       {/if}
     </div>
   {/if}

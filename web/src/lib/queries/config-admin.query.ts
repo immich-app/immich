@@ -4,12 +4,13 @@ import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   getAdminConfig,
   getAdminConfigDefaults,
+  getAdminConfigFields,
   getAdminStorageTemplateOptions,
   previewStorageTemplate,
   updateAdminConfig,
   type AdminConfigDto,
 } from '@immich/sdk';
-import { mutationOptions, queryOptions } from '@tanstack/svelte-query';
+import { createQuery, mutationOptions, queryOptions } from '@tanstack/svelte-query';
 import { isEqual } from 'lodash-es';
 
 export const getAdminConfigQuery = () =>
@@ -24,6 +25,43 @@ export const getAdminConfigDefaultsQuery = () =>
     queryKey: QueryKeys.adminConfigDefaults(),
     queryFn: ({ signal }) => getAdminConfigDefaults({ signal }),
   });
+
+type Leaves<T> = T extends object
+  ? {
+      [K in keyof T & string]: T[K] extends readonly unknown[] ? K : T[K] extends object ? `${K}.${Leaves<T[K]>}` : K;
+    }[keyof T & string]
+  : never;
+
+export type AdminConfigKey = Leaves<AdminConfigDto>;
+
+export const getAdminConfigFieldsQuery = () =>
+  queryOptions({
+    queryKey: QueryKeys.adminConfigFields(),
+    queryFn: ({ signal }) => getAdminConfigFields({ signal }),
+  });
+
+export const getAdminConfigFieldQuery = (key?: AdminConfigKey) =>
+  queryOptions({
+    ...getAdminConfigFieldsQuery(),
+    select: (fields) => fields.find((field) => field.key === key),
+    enabled: !!key,
+  });
+
+export const createAdminConfigField = (key: () => AdminConfigKey | undefined) => {
+  const query = createQuery(
+    () => getAdminConfigFieldQuery(key()),
+    () => queryClient,
+  );
+
+  return {
+    get field() {
+      return query.data;
+    },
+    get isLocked() {
+      return query.data?.isEditable === false;
+    },
+  };
+};
 
 export const getStorageTemplateOptionsQuery = () =>
   queryOptions({
@@ -56,6 +94,7 @@ export const updateAdminConfigMutation = () =>
 
       queryClient.setQueryData(getAdminConfigQuery().queryKey, config);
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QueryKeys.adminConfigFields() }),
         queryClient.invalidateQueries({ queryKey: QueryKeys.userConfig() }),
         queryClient.invalidateQueries({ queryKey: QueryKeys.publicConfig() }),
         featureFlagsManager.init(),

@@ -1,5 +1,7 @@
 <script lang="ts">
+  import SettingSourceHint from '#lib/components/shared-components/settings/SettingSourceHint.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
+  import { createAdminConfigField, type AdminConfigKey } from '#lib/queries/config-admin.query.ts';
   import { PasswordInput } from '@immich/ui';
   import { onMount, tick, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -18,6 +20,7 @@
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
+    key?: AdminConfigKey;
     autofocus?: boolean;
     passwordAutocomplete?: AutoFill;
     descriptionSnippet?: Snippet;
@@ -44,6 +47,7 @@
     required = false,
     disabled = false,
     isEdited = false,
+    key,
     autofocus = false,
     passwordAutocomplete = 'current-password',
     descriptionSnippet,
@@ -80,6 +84,9 @@
         .catch((_) => {});
     }
   });
+
+  const configField = createAdminConfigField(() => key);
+  const isDisabled = $derived(disabled || configField.isLocked);
 </script>
 
 <div class="mb-4 w-full">
@@ -128,7 +135,7 @@
           {required}
           bind:value
           onchange={handleChange}
-          {disabled}
+          disabled={isDisabled}
           {title}
         />
       {/if}
@@ -147,7 +154,7 @@
         {required}
         bind:value
         onchange={handleChange}
-        {disabled}
+        disabled={isDisabled}
         {title}
         {placeholder}
       />
@@ -163,10 +170,12 @@
       autocomplete={passwordAutocomplete}
       {required}
       bind:value={value as string}
-      {disabled}
+      disabled={isDisabled}
       {title}
     />
   {/if}
+
+  <SettingSourceHint field={configField.field} />
 </div>
 
 <style>

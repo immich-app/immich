@@ -3,7 +3,6 @@
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { cloneDeep } from 'lodash-es';
@@ -13,7 +12,6 @@
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
 </script>
 
@@ -25,6 +23,7 @@
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_external_domain_settings')}
           description={$t('admin.server_external_domain_settings_description')}
+          key="server.externalDomain"
           bind:value={configToEdit.server.externalDomain}
           isEdited={configToEdit.server.externalDomain !== config.server.externalDomain}
         />
@@ -33,6 +32,7 @@
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_welcome_message')}
           description={$t('admin.server_welcome_message_description')}
+          key="server.loginPageMessage"
           bind:value={configToEdit.server.loginPageMessage}
           isEdited={configToEdit.server.loginPageMessage !== config.server.loginPageMessage}
         />
@@ -40,12 +40,12 @@
         <SettingSwitch
           title={$t('admin.server_public_users')}
           subtitle={$t('admin.server_public_users_description')}
-          {disabled}
+          key="server.publicUsers"
           bind:checked={configToEdit.server.publicUsers}
         />
 
         <div class="ms-4">
-          <SettingButtonsRow bind:configToEdit keys={['server']} {disabled} />
+          <SettingButtonsRow bind:configToEdit keys={['server']} />
         </div>
       </div>
     </form>

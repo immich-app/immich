@@ -18,6 +18,7 @@ import {
   type ActivityCreateDto,
   type ActivityResponseDto,
   type AdminConfigDto,
+  type AdminConfigFieldDto,
   type AlbumResponseDto,
   type ApiKeyResponseDto,
   type AssetBulkUpdateDto,
@@ -171,6 +172,7 @@ export class MockData {
   readonly versionHistory = payload.versionHistory();
   readonly mediaTypes = payload.mediaTypes();
   adminConfig = payload.adminConfig();
+  adminConfigFields: AdminConfigFieldDto[] = [];
   readonly serverVersion = payload.serverVersion();
   readonly queues = payload.queues();
   readonly notifications = payload.notifications();

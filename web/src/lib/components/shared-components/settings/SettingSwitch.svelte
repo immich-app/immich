@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SettingSourceHint from '#lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import { createAdminConfigField, type AdminConfigKey } from '#lib/queries/config-admin.query.ts';
   import { Switch } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -11,6 +13,7 @@
     checked?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
+    key?: AdminConfigKey;
     onToggle?: (isChecked: boolean) => void;
     children?: Snippet;
   };
@@ -21,6 +24,7 @@
     checked = $bindable(false),
     disabled = false,
     isEdited = false,
+    key,
     onToggle = () => {},
     children,
   }: Props = $props();
@@ -28,6 +32,9 @@
   const id = $props.id();
   const switchId = `input-${id}`;
   const subtitleId = $derived(subtitle ? `${id}-subtitle` : undefined);
+
+  const configField = createAdminConfigField(() => key);
+  const isDisabled = $derived(disabled || configField.isLocked);
 </script>
 
 <div class="flex place-items-center justify-between">
@@ -52,5 +59,6 @@
     {@render children?.()}
   </div>
 
-  <Switch {id} bind:checked {disabled} onCheckedChange={onToggle} aria-describedby={subtitleId} />
+  <Switch {id} bind:checked disabled={isDisabled} onCheckedChange={onToggle} aria-describedby={subtitleId} />
 </div>
+<SettingSourceHint field={configField.field} />

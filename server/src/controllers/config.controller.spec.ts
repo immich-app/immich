@@ -4,6 +4,7 @@ import { ConfigAdminController } from 'src/controllers/config-admin.controller.j
 import { ConfigPublicController } from 'src/controllers/config-public.controller.js';
 import { ConfigUserController } from 'src/controllers/config-user.controller.js';
 import { defaults, mapPublicConfig, mapUserConfig } from 'src/dtos/config.dto.js';
+import { Permission } from 'src/enum.js';
 import { StorageTemplateService } from 'src/services/storage-template.service.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
 import { errorDto } from 'test/medium/responses.js';
@@ -54,6 +55,18 @@ describe('config controllers', () => {
       expect(status).toBe(200);
       expect(body.oauth.clientSecret).toBeDefined();
       expect(body.job.thumbnailGeneration).toBeDefined();
+    });
+  });
+
+  describe('GET /admin/config/fields', () => {
+    it('should require admin authentication', async () => {
+      await request(ctx.getHttpServer()).get('/admin/config/fields');
+
+      expect(ctx.authenticate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({ adminRoute: true, permission: Permission.AdminConfigRead }),
+        }),
+      );
     });
   });
 

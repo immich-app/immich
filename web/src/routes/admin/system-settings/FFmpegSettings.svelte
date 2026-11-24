@@ -5,7 +5,6 @@
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import {
@@ -29,7 +28,6 @@
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
 </script>
 
@@ -60,8 +58,8 @@
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSelect
               label={$t('admin.transcoding_transcode_policy')}
-              {disabled}
               desc={$t('admin.transcoding_transcode_policy_description')}
+              key="ffmpeg.transcode"
               bind:value={configToEdit.ffmpeg.transcode}
               name="transcode"
               options={[
@@ -88,8 +86,8 @@
 
             <SettingCheckboxes
               label={$t('admin.transcoding_accepted_video_codecs')}
-              {disabled}
               desc={$t('admin.transcoding_accepted_video_codecs_description')}
+              key="ffmpeg.acceptedVideoCodecs"
               bind:value={configToEdit.ffmpeg.acceptedVideoCodecs}
               name="videoCodecs"
               lockedOptions={[configToEdit.ffmpeg.targetVideoCodec]}
@@ -107,8 +105,8 @@
 
             <SettingCheckboxes
               label={$t('admin.transcoding_accepted_audio_codecs')}
-              {disabled}
               desc={$t('admin.transcoding_accepted_audio_codecs_description')}
+              key="ffmpeg.acceptedAudioCodecs"
               bind:value={configToEdit.ffmpeg.acceptedAudioCodecs}
               name="audioCodecs"
               lockedOptions={[configToEdit.ffmpeg.targetAudioCodec]}
@@ -126,8 +124,8 @@
 
             <SettingCheckboxes
               label={$t('admin.transcoding_accepted_containers')}
-              {disabled}
               desc={$t('admin.transcoding_accepted_containers_description')}
+              key="ffmpeg.acceptedContainers"
               bind:value={configToEdit.ffmpeg.acceptedContainers}
               name="videoContainers"
               options={[
@@ -151,8 +149,8 @@
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSelect
               label={$t('admin.transcoding_video_codec')}
-              {disabled}
               desc={$t('admin.transcoding_video_codec_description')}
+              key="ffmpeg.targetVideoCodec"
               bind:value={configToEdit.ffmpeg.targetVideoCodec}
               options={[
                 { value: VideoCodec.H264, text: 'h264' },
@@ -168,8 +166,8 @@
             <!-- PCM is excluded here since it's a bad choice for users storage-wise -->
             <SettingSelect
               label={$t('admin.transcoding_audio_codec')}
-              {disabled}
               desc={$t('admin.transcoding_audio_codec_description')}
+              key="ffmpeg.targetAudioCodec"
               bind:value={configToEdit.ffmpeg.targetAudioCodec}
               options={[
                 { value: AudioCodec.Aac, text: 'aac' },
@@ -186,8 +184,8 @@
 
             <SettingSelect
               label={$t('admin.transcoding_target_resolution')}
-              {disabled}
               desc={$t('admin.transcoding_target_resolution_description')}
+              key="ffmpeg.targetResolution"
               bind:value={configToEdit.ffmpeg.targetResolution}
               options={[
                 { value: '2160', text: '4k' },
@@ -203,9 +201,9 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              {disabled}
               label={$t('admin.transcoding_constant_rate_factor')}
               description={$t('admin.transcoding_constant_rate_factor_description')}
+              key="ffmpeg.crf"
               bind:value={configToEdit.ffmpeg.crf}
               required={true}
               isEdited={configToEdit.ffmpeg.crf !== config.ffmpeg.crf}
@@ -213,8 +211,8 @@
 
             <SettingSelect
               label={$t('admin.transcoding_preset_preset')}
-              {disabled}
               desc={$t('admin.transcoding_preset_preset_description')}
+              key="ffmpeg.preset"
               bind:value={configToEdit.ffmpeg.preset}
               name="preset"
               options={[
@@ -233,26 +231,26 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              {disabled}
               label={$t('admin.transcoding_max_bitrate')}
               description={$t('admin.transcoding_max_bitrate_description')}
+              key="ffmpeg.maxBitrate"
               bind:value={configToEdit.ffmpeg.maxBitrate}
               isEdited={configToEdit.ffmpeg.maxBitrate !== config.ffmpeg.maxBitrate}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              {disabled}
               label={$t('admin.transcoding_threads')}
               description={$t('admin.transcoding_threads_description')}
+              key="ffmpeg.threads"
               bind:value={configToEdit.ffmpeg.threads}
               isEdited={configToEdit.ffmpeg.threads !== config.ffmpeg.threads}
             />
 
             <SettingSelect
               label={$t('admin.transcoding_tone_mapping')}
-              {disabled}
               desc={$t('admin.transcoding_tone_mapping_description')}
+              key="ffmpeg.tonemap"
               bind:value={configToEdit.ffmpeg.tonemap}
               name="tonemap"
               options={[
@@ -278,8 +276,8 @@
 
             <SettingSwitch
               title={$t('admin.transcoding_two_pass_encoding')}
-              {disabled}
               subtitle={$t('admin.transcoding_two_pass_encoding_setting_description')}
+              key="ffmpeg.twoPass"
               bind:checked={configToEdit.ffmpeg.twoPass}
               isEdited={configToEdit.ffmpeg.twoPass !== config.ffmpeg.twoPass}
             />
@@ -294,8 +292,8 @@
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSelect
               label={$t('admin.transcoding_acceleration_api')}
-              {disabled}
               desc={$t('admin.transcoding_acceleration_api_description')}
+              key="ffmpeg.accel"
               bind:value={configToEdit.ffmpeg.accel}
               name="accel"
               options={[
@@ -322,8 +320,8 @@
 
             <SettingSwitch
               title={$t('admin.transcoding_hardware_decoding')}
-              {disabled}
               subtitle={$t('admin.transcoding_hardware_decoding_setting_description')}
+              key="ffmpeg.accelDecode"
               bind:checked={configToEdit.ffmpeg.accelDecode}
               isEdited={configToEdit.ffmpeg.accelDecode !== config.ffmpeg.accelDecode}
             />
@@ -331,6 +329,7 @@
             <SettingSelect
               label={$t('admin.transcoding_constant_quality_mode')}
               desc={$t('admin.transcoding_constant_quality_mode_description')}
+              key="ffmpeg.cqMode"
               bind:value={configToEdit.ffmpeg.cqMode}
               options={[
                 { value: CQMode.Auto, text: 'Auto' },
@@ -338,13 +337,12 @@
                 { value: CQMode.Cqp, text: 'CQP' },
               ]}
               isEdited={configToEdit.ffmpeg.cqMode !== config.ffmpeg.cqMode}
-              {disabled}
             />
 
             <SettingSwitch
               title={$t('admin.transcoding_temporal_aq')}
-              {disabled}
               subtitle={$t('admin.transcoding_temporal_aq_description')}
+              key="ffmpeg.temporalAQ"
               bind:checked={configToEdit.ffmpeg.temporalAQ}
               isEdited={configToEdit.ffmpeg.temporalAQ !== config.ffmpeg.temporalAQ}
             />
@@ -353,9 +351,9 @@
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.transcoding_preferred_hardware_device')}
               description={$t('admin.transcoding_preferred_hardware_device_description')}
+              key="ffmpeg.preferredHwDevice"
               bind:value={configToEdit.ffmpeg.preferredHwDevice}
               isEdited={configToEdit.ffmpeg.preferredHwDevice !== config.ffmpeg.preferredHwDevice}
-              {disabled}
             />
           </div>
         </SettingAccordion>
@@ -370,27 +368,27 @@
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_b_frames')}
               description={$t('admin.transcoding_max_b_frames_description')}
+              key="ffmpeg.bframes"
               bind:value={configToEdit.ffmpeg.bframes}
               isEdited={configToEdit.ffmpeg.bframes !== config.ffmpeg.bframes}
-              {disabled}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_reference_frames')}
               description={$t('admin.transcoding_reference_frames_description')}
+              key="ffmpeg.refs"
               bind:value={configToEdit.ffmpeg.refs}
               isEdited={configToEdit.ffmpeg.refs !== config.ffmpeg.refs}
-              {disabled}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_keyframe_interval')}
               description={$t('admin.transcoding_max_keyframe_interval_description')}
+              key="ffmpeg.gopSize"
               bind:value={configToEdit.ffmpeg.gopSize}
               isEdited={configToEdit.ffmpeg.gopSize !== config.ffmpeg.gopSize}
-              {disabled}
             />
           </div>
         </SettingAccordion>
@@ -404,15 +402,16 @@
             <SettingSwitch
               title={$t('admin.transcoding_realtime_enabled')}
               subtitle={$t('admin.transcoding_realtime_enabled_description')}
+              key="ffmpeg.realtime.enabled"
               bind:checked={configToEdit.ffmpeg.realtime.enabled}
               isEdited={configToEdit.ffmpeg.realtime.enabled !== config.ffmpeg.realtime.enabled}
-              {disabled}
             />
 
             <SettingCheckboxes
               label={$t('admin.transcoding_realtime_video_codecs')}
               desc={$t('admin.transcoding_realtime_video_codecs_description')}
-              disabled={disabled || !configToEdit.ffmpeg.realtime.enabled}
+              disabled={!configToEdit.ffmpeg.realtime.enabled}
+              key="ffmpeg.realtime.videoCodecs"
               bind:value={configToEdit.ffmpeg.realtime.videoCodecs}
               name="realtimeVideoCodecs"
               options={[
@@ -429,7 +428,8 @@
             <SettingCheckboxes
               label={$t('admin.transcoding_realtime_resolutions')}
               desc={$t('admin.transcoding_realtime_resolutions_description')}
-              disabled={disabled || !configToEdit.ffmpeg.realtime.enabled}
+              disabled={!configToEdit.ffmpeg.realtime.enabled}
+              key="ffmpeg.realtime.resolutions"
               bind:value={configToEdit.ffmpeg.realtime.resolutions}
               name="realtimeResolutions"
               options={[
@@ -449,7 +449,7 @@
       </div>
 
       <div class="ms-4">
-        <SettingButtonsRow bind:configToEdit keys={['ffmpeg']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['ffmpeg']} />
       </div>
     </form>
   </div>

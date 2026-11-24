@@ -1,6 +1,5 @@
 <script lang="ts">
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { cloneDeep } from 'lodash-es';
@@ -11,7 +10,6 @@
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
 </script>
 
@@ -20,14 +18,14 @@
     <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
       <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingTextarea
-          {disabled}
           label={$t('admin.theme_custom_css_settings')}
           description={$t('admin.theme_custom_css_settings_description')}
+          key="theme.customCss"
           bind:value={configToEdit.theme.customCss}
           isEdited={configToEdit.theme.customCss !== config.theme.customCss}
         />
 
-        <SettingButtonsRow bind:configToEdit keys={['theme']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['theme']} />
       </div>
     </form>
   </div>

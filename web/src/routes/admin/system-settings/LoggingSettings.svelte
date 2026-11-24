@@ -1,7 +1,6 @@
 <script lang="ts">
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { LogLevel } from '@immich/sdk';
@@ -13,7 +12,6 @@
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
 </script>
 
@@ -23,12 +21,13 @@
       <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.logging_enable_description')}
-          {disabled}
+          key="logging.enabled"
           bind:checked={configToEdit.logging.enabled}
         />
         <SettingSelect
           label={$t('level')}
           desc={$t('admin.logging_level_description')}
+          key="logging.level"
           bind:value={configToEdit.logging.level}
           options={[
             { value: LogLevel.Fatal, text: 'Fatal' },
@@ -40,10 +39,10 @@
           ]}
           name="level"
           isEdited={configToEdit.logging.level !== config.logging.level}
-          disabled={disabled || !configToEdit.logging.enabled}
+          disabled={!configToEdit.logging.enabled}
         />
 
-        <SettingButtonsRow bind:configToEdit keys={['logging']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['logging']} />
       </div>
     </form>
   </div>

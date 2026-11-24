@@ -5,6 +5,7 @@ import {
   AudioCodec,
   CQMode,
   Colorspace,
+  ConfigSource,
   HlsVideoResolution,
   ImageEffort,
   ImageFormat,
@@ -768,6 +769,41 @@ describe(SystemConfigService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SystemConfig, {
         ffmpeg: { crf: 25 },
         trash: { days: 10 },
+      });
+    });
+  });
+
+  describe('getAdminConfigFields', () => {
+    it('reports a property set by an environment variable as locked', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configOverrides: { IMMICH_CONFIG_FFMPEG_CRF: '35' } }));
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { crf: 25 } });
+
+      const fields = await sut.getAdminConfigFields();
+
+      expect(fields.find(({ key }) => key === 'ffmpeg.crf')).toEqual({
+        key: 'ffmpeg.crf',
+        envName: 'IMMICH_CONFIG_FFMPEG_CRF',
+        value: 35,
+        sources: [
+          { source: ConfigSource.Default, value: 23 },
+          { source: ConfigSource.Database, value: 25 },
+          { source: ConfigSource.Env, value: 35 },
+        ],
+        isEditable: false,
+      });
+    });
+
+    it('reports an untouched property as editable', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({});
+
+      const fields = await sut.getAdminConfigFields();
+
+      expect(fields.find(({ key }) => key === 'trash.days')).toEqual({
+        key: 'trash.days',
+        envName: 'IMMICH_CONFIG_TRASH_DAYS',
+        value: 30,
+        sources: [{ source: ConfigSource.Default, value: 30 }],
+        isEditable: true,
       });
     });
   });

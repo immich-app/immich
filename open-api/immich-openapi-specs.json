@@ -482,6 +482,56 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/config/fields": {
+      "get": {
+        "description": "Retrieve, for every configuration property, the effective value, every source that sets it (default, database, config file, or environment variable), and whether it can be changed.",
+        "operationId": "getAdminConfigFields",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AdminConfigFieldDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get the admin configuration fields",
+        "tags": [
+          "Config (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "state": "Added",
+            "version": "v4.0.0"
+          },
+          {
+            "state": "Alpha",
+            "version": "v4.0.0"
+          }
+        ],
+        "x-immich-permission": "adminConfig.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/config/storage-template": {
       "get": {
         "description": "Retrieve the storage template variables and the preset templates, each with an example path.",
@@ -19440,6 +19490,57 @@
         ],
         "type": "object"
       },
+      "AdminConfigFieldDto": {
+        "description": "Resolution details of a configuration property",
+        "properties": {
+          "envName": {
+            "description": "Environment variable that overrides the property",
+            "type": "string"
+          },
+          "isEditable": {
+            "description": "Whether the value can be changed, which is false when the config file or an environment variable sets it",
+            "type": "boolean"
+          },
+          "key": {
+            "description": "Dotted path of the property, for example \"ffmpeg.crf\"",
+            "type": "string"
+          },
+          "sources": {
+            "description": "Every source that defines the property, lowest priority first",
+            "items": {
+              "$ref": "#/components/schemas/AdminConfigFieldSourceDto"
+            },
+            "type": "array"
+          },
+          "value": {
+            "description": "Effective value"
+          }
+        },
+        "required": [
+          "envName",
+          "isEditable",
+          "key",
+          "sources",
+          "value"
+        ],
+        "type": "object"
+      },
+      "AdminConfigFieldSourceDto": {
+        "description": "Value of a configuration property from one source",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/ConfigSource"
+          },
+          "value": {
+            "description": "Value defined by this source"
+          }
+        },
+        "required": [
+          "source",
+          "value"
+        ],
+        "type": "object"
+      },
       "AdminConfigGeneratedFullsizeImageDto": {
         "properties": {
           "effort": {
@@ -22394,6 +22495,16 @@
         "enum": [
           "srgb",
           "p3"
+        ],
+        "type": "string"
+      },
+      "ConfigSource": {
+        "description": "Where a configuration value comes from",
+        "enum": [
+          "default",
+          "database",
+          "file",
+          "env"
         ],
         "type": "string"
       },

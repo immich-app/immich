@@ -1,6 +1,6 @@
-import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
 import { Route } from '#lib/route.ts';
 import { test } from '#test/unit/fixtures.ts';
+import { ConfigSource } from '@immich/sdk';
 import { describe, expect } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import Page from './+page.svelte';
@@ -213,17 +213,134 @@ describe('saving settings', () => {
   });
 });
 
-describe('storage template settings from a config file', () => {
-  test('cannot be changed', async ({ data, router, render, app }) => {
-    data.serverFeatures.configFile = true;
-    await featureFlagsManager.init();
+describe('settings set outside the database', () => {
+  const lockedField = (key: string, envName: string, value: unknown, source = ConfigSource.Env) => ({
+    key,
+    envName,
+    value,
+    sources: [{ source, value }],
+    isEditable: false,
+  });
+
+  test('a setting set by an environment variable is disabled', async ({ data, router, render, app }) => {
+    data.adminConfigFields = [lockedField('trash.days', 'IMMICH_CONFIG_TRASH_DAYS', 30)];
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+
+    await app.admin.settings.open('admin.trash_settings');
+
+    await expect.element(app.admin.settings.trash.daysInput).toBeDisabled();
+    await expect.element(app.admin.settings.text('IMMICH_CONFIG_TRASH_DAYS')).toBeVisible();
+  });
+
+  test('a neighbouring setting stays editable', async ({ data, router, render, settle, api, app }) => {
+    data.adminConfigFields = [lockedField('trash.days', 'IMMICH_CONFIG_TRASH_DAYS', 30)];
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+    await app.admin.settings.open('admin.trash_settings');
+
+    await app.admin.settings.trash.enabledSwitch.click();
+    await app.admin.settings.saveButton.click();
+    await settle();
+
+    expect(api.updateAdminConfig).toHaveBeenCalledWith({
+      body: expect.objectContaining({ trash: { enabled: false, days: 30 } }),
+    });
+  });
+
+  test('a setting set by the config file shows the config file hint', async ({ data, router, render, app }) => {
+    data.adminConfig.storageTemplate = { enabled: true, hashVerificationEnabled: true, template: '{{y}}/{{filename}}' };
+    data.adminConfigFields = [
+      lockedField(
+        'storageTemplate.template',
+        'IMMICH_CONFIG_STORAGE_TEMPLATE_TEMPLATE',
+        '{{y}}/{{filename}}',
+        ConfigSource.File,
+      ),
+    ];
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+
+    await app.admin.settings.open('admin.storage_template_settings');
+
+    await expect.element(app.admin.settings.storageTemplate.templateInput).toBeDisabled();
+    await expect.element(app.admin.settings.text('admin.config_set_by_config_file')).toBeVisible();
+  });
+
+  test('reset to default leaves a locked setting unchanged', async ({ data, router, render, settle, api, app }) => {
+    const defaults = structuredClone(data.adminConfig);
+    api.on({ getAdminConfigDefaults: () => ({ json: defaults }) });
+    data.adminConfig.trash = { enabled: false, days: 10 };
+    data.adminConfigFields = [lockedField('trash.days', 'IMMICH_CONFIG_TRASH_DAYS', 10)];
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+    await app.admin.settings.open('admin.trash_settings');
+
+    await app.admin.settings.resetToDefaultButton.click();
+    await app.admin.settings.saveButton.click();
+    await settle();
+
+    expect(api.updateAdminConfig).toHaveBeenCalledWith({
+      body: expect.objectContaining({ trash: { enabled: true, days: 10 } }),
+    });
+  });
+
+  test('reset to default is hidden when only locked settings differ', async ({ data, router, render, api, app }) => {
+    const defaults = structuredClone(data.adminConfig);
+    api.on({ getAdminConfigDefaults: () => ({ json: defaults }) });
+    data.adminConfig.trash.days = 10;
+    data.adminConfigFields = [lockedField('trash.days', 'IMMICH_CONFIG_TRASH_DAYS', 10)];
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+
+    await app.admin.settings.open('admin.trash_settings');
+
+    await expect.element(app.admin.settings.trash.daysInput).toBeDisabled();
+    await expect.element(app.admin.settings.resetToDefaultButton).not.toBeInTheDocument();
+  });
+
+  test('a locked array setting disables every row', async ({ data, router, render, app }) => {
+    const urls = ['http://ml-1:3003', 'http://ml-2:3003'];
+    data.adminConfig.machineLearning.urls = urls;
+    data.adminConfigFields = [lockedField('machineLearning.urls', 'IMMICH_CONFIG_MACHINE_LEARNING_URLS', urls)];
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+
+    await app.admin.settings.open('admin.machine_learning_settings');
+
+    for (const index of [0, 1]) {
+      await expect.element(app.admin.settings.machineLearning.urlInput(index)).toBeDisabled();
+      await expect.element(app.admin.settings.machineLearning.removeUrlButton(index)).toBeDisabled();
+    }
+    await expect.element(app.admin.settings.machineLearning.addUrlButton).toBeDisabled();
+    await expect.element(app.admin.settings.text('IMMICH_CONFIG_MACHINE_LEARNING_URLS')).toBeVisible();
+  });
+
+  test('a locked cron setting shows its hint once', async ({ data, router, render, app }) => {
+    data.adminConfigFields = [
+      lockedField('backup.database.cronExpression', 'IMMICH_CONFIG_BACKUP_DATABASE_CRON_EXPRESSION', '0 02 * * *'),
+    ];
+    await router.goto(Route.systemSettings());
+    await render(Page, load);
+
+    await app.admin.settings.open('admin.backup_settings');
+
+    await expect.element(app.admin.settings.backup.cronPresetSelect).toBeDisabled();
+    await expect.element(app.admin.settings.backup.cronInput).toBeDisabled();
+    await expect.element(app.admin.settings.text('IMMICH_CONFIG_BACKUP_DATABASE_CRON_EXPRESSION')).toBeVisible();
+  });
+
+  test('storage template options are disabled when locked', async ({ data, router, render, app }) => {
+    data.adminConfigFields = [lockedField('storageTemplate.enabled', 'IMMICH_CONFIG_STORAGE_TEMPLATE_ENABLED', false)];
     await router.goto(Route.systemSettings());
     await render(Page, load);
 
     await app.admin.settings.open('admin.storage_template_settings');
 
     await expect.element(app.admin.settings.storageTemplate.option('YYYY/MM/DD')).toBeDisabled();
-    await expect.element(app.admin.settings.saveButton).toBeDisabled();
+    await expect
+      .element(app.admin.settings.storageTemplate.option('admin.storage_template_option_none'))
+      .toBeDisabled();
   });
 });
 
@@ -274,28 +391,5 @@ describe('email notification settings', () => {
     expect(api.updateAdminConfig).not.toHaveBeenCalled();
     expect(logger.error).toHaveBeenCalledWith(/handleError/);
     await expect.element(app.admin.settings.notifications.secureSwitch).toBeChecked();
-  });
-});
-
-describe('email notification settings from a config file', () => {
-  test('sends a test email', async ({ data, router, render, settle, api, app }) => {
-    data.adminConfig.notifications.smtp.enabled = true;
-    data.serverFeatures.configFile = true;
-    await featureFlagsManager.init();
-    await router.goto(`${Route.systemSettings()}?isOpen=notifications+email`);
-    await render(Page, load);
-
-    await app.admin.settings.notifications.testEmailButton.click();
-    await settle();
-
-    expect(api.sendTestEmailAdmin).toHaveBeenCalledWith({
-      body: {
-        enabled: true,
-        from: '',
-        replyTo: '',
-        transport: { ignoreCert: false, host: '', port: 587, secure: false, username: '', password: '' },
-      },
-    });
-    expect(api.updateAdminConfig).not.toHaveBeenCalled();
   });
 });

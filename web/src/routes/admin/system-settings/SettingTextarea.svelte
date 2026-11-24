@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SettingSourceHint from '#lib/components/shared-components/settings/SettingSourceHint.svelte';
+  import { createAdminConfigField, type AdminConfigKey } from '#lib/queries/config-admin.query.ts';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
@@ -11,6 +13,7 @@
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
+    key?: AdminConfigKey;
     descriptionSnippet?: Snippet;
   }
 
@@ -21,12 +24,16 @@
     required = false,
     disabled = false,
     isEdited = false,
+    key,
     descriptionSnippet,
   }: Props = $props();
 
   const handleInput = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
   };
+
+  const configField = createAdminConfigField(() => key);
+  const isDisabled = $derived(disabled || configField.isLocked);
 </script>
 
 <div class="mb-4 w-full">
@@ -63,5 +70,7 @@
     {required}
     {value}
     oninput={handleInput}
-    {disabled}></textarea>
+    disabled={isDisabled}></textarea>
+
+  <SettingSourceHint field={configField.field} />
 </div>

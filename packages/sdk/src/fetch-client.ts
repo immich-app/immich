@@ -443,6 +443,23 @@ export type AdminConfigDto = {
     trash: AdminConfigTrashDto;
     user: AdminConfigUserDto;
 };
+export type AdminConfigFieldSourceDto = {
+    source: ConfigSource;
+    /** Value defined by this source */
+    value: any;
+};
+export type AdminConfigFieldDto = {
+    /** Environment variable that overrides the property */
+    envName: string;
+    /** Whether the value can be changed, which is false when the config file or an environment variable sets it */
+    isEditable: boolean;
+    /** Dotted path of the property, for example "ffmpeg.crf" */
+    key: string;
+    /** Every source that defines the property, lowest priority first */
+    sources: AdminConfigFieldSourceDto[];
+    /** Effective value */
+    value: any;
+};
 export type StorageTemplatePresetDto = {
     /** Example path rendered from the preset */
     preview: string;
@@ -4091,6 +4108,17 @@ export function getAdminConfigDefaults(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: AdminConfigDto;
     }>("/admin/config/defaults", {
+        ...opts
+    }));
+}
+/**
+ * Get the admin configuration fields
+ */
+export function getAdminConfigFields(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AdminConfigFieldDto[];
+    }>("/admin/config/fields", {
         ...opts
     }));
 }
@@ -8311,6 +8339,12 @@ export enum ReleaseChannel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum ConfigSource {
+    Default = "default",
+    Database = "database",
+    File = "file",
+    Env = "env"
 }
 export enum IntegrityReport {
     UntrackedFile = "untracked_file",

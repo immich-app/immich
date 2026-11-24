@@ -3,7 +3,6 @@
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { cloneDeep } from 'lodash-es';
@@ -13,7 +12,6 @@
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
 </script>
 
@@ -23,7 +21,7 @@
       <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.trash_enabled_description')}
-          {disabled}
+          key="trash.enabled"
           bind:checked={configToEdit.trash.enabled}
         />
 
@@ -33,13 +31,14 @@
           inputType={SettingInputFieldType.NUMBER}
           label={$t('admin.trash_number_of_days')}
           description={$t('admin.trash_number_of_days_description')}
+          key="trash.days"
           bind:value={configToEdit.trash.days}
           required={true}
-          disabled={disabled || !configToEdit.trash.enabled}
+          disabled={!configToEdit.trash.enabled}
           isEdited={configToEdit.trash.days !== config.trash.days}
         />
 
-        <SettingButtonsRow bind:configToEdit keys={['trash']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['trash']} />
       </div>
     </form>
   </div>

@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   AdminConfigDto,
+  AdminConfigFieldDto,
   StorageTemplateOptionsResponseDto,
   StorageTemplatePreviewDto,
   StorageTemplatePreviewResponseDto,
@@ -40,6 +41,18 @@ export class ConfigAdminController {
   })
   getAdminConfigDefaults(): AdminConfigDto {
     return this.service.getAdminConfigDefaults();
+  }
+
+  @Get('fields')
+  @Authenticated({ permission: Permission.AdminConfigRead, admin: true })
+  @Endpoint({
+    summary: 'Get the admin configuration fields',
+    description:
+      'Retrieve, for every configuration property, the effective value, every source that sets it (default, database, config file, or environment variable), and whether it can be changed.',
+    history: HistoryBuilder.v4().alpha('v4.0.0'),
+  })
+  getAdminConfigFields(): Promise<AdminConfigFieldDto[]> {
+    return this.service.getAdminConfigFields();
   }
 
   @Put()

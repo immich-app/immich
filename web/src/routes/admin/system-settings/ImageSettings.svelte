@@ -4,7 +4,6 @@
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
-  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
   import { Colorspace, ImageEffort, ImageFormat } from '@immich/sdk';
@@ -16,7 +15,6 @@
   const query = createPreloadedQuery(getAdminConfigQuery);
   const config = $derived(query.data);
 
-  const disabled = $derived(featureFlagsManager.value.configFile);
   let configToEdit = $state(cloneDeep(config));
 
   const effortOptions = $derived([
@@ -39,6 +37,7 @@
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
+            key="image.thumbnail.format"
             bind:value={configToEdit.image.thumbnail.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -47,7 +46,6 @@
             ]}
             name="format"
             isEdited={configToEdit.image.thumbnail.format !== config.image.thumbnail.format}
-            {disabled}
             onSelect={(value) => {
               if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.thumbnail.progressive = false;
@@ -59,6 +57,7 @@
             label={$t('admin.image_resolution')}
             desc={$t('admin.image_resolution_description')}
             number
+            key="image.thumbnail.size"
             bind:value={configToEdit.image.thumbnail.size}
             options={[
               { value: 1080, text: '1080p' },
@@ -70,35 +69,36 @@
             ]}
             name="resolution"
             isEdited={configToEdit.image.thumbnail.size !== config.image.thumbnail.size}
-            {disabled}
           />
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
             description={$t('admin.image_thumbnail_quality_description')}
+            key="image.thumbnail.quality"
             bind:value={configToEdit.image.thumbnail.quality}
             isEdited={configToEdit.image.thumbnail.quality !== config.image.thumbnail.quality}
-            {disabled}
           />
 
           <SettingSelect
             label={$t('admin.image_effort')}
             desc={$t('admin.image_effort_description')}
+            key="image.thumbnail.effort"
             bind:value={configToEdit.image.thumbnail.effort}
             options={effortOptions}
             name="effort"
             isEdited={configToEdit.image.thumbnail.effort !== config.image.thumbnail.effort}
-            disabled={disabled || configToEdit.image.thumbnail.format === ImageFormat.Jpeg}
+            disabled={configToEdit.image.thumbnail.format === ImageFormat.Jpeg}
           />
 
           <SettingSwitch
             title={$t('admin.image_progressive')}
             subtitle={$t('admin.image_progressive_description')}
+            key="image.thumbnail.progressive"
             checked={configToEdit.image.thumbnail.progressive}
             onToggle={(isChecked) => (configToEdit.image.thumbnail.progressive = isChecked)}
             isEdited={configToEdit.image.thumbnail.progressive !== config.image.thumbnail.progressive}
-            disabled={disabled || configToEdit.image.thumbnail.format !== ImageFormat.Jpeg}
+            disabled={configToEdit.image.thumbnail.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -110,6 +110,7 @@
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
+            key="image.preview.format"
             bind:value={configToEdit.image.preview.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -118,7 +119,6 @@
             ]}
             name="format"
             isEdited={configToEdit.image.preview.format !== config.image.preview.format}
-            {disabled}
             onSelect={(value) => {
               if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.preview.progressive = false;
@@ -130,6 +130,7 @@
             label={$t('admin.image_resolution')}
             desc={$t('admin.image_resolution_description')}
             number
+            key="image.preview.size"
             bind:value={configToEdit.image.preview.size}
             options={[
               { value: 2160, text: '4K' },
@@ -139,35 +140,36 @@
             ]}
             name="resolution"
             isEdited={configToEdit.image.preview.size !== config.image.preview.size}
-            {disabled}
           />
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
             description={$t('admin.image_preview_quality_description')}
+            key="image.preview.quality"
             bind:value={configToEdit.image.preview.quality}
             isEdited={configToEdit.image.preview.quality !== config.image.preview.quality}
-            {disabled}
           />
 
           <SettingSelect
             label={$t('admin.image_effort')}
             desc={$t('admin.image_effort_description')}
+            key="image.preview.effort"
             bind:value={configToEdit.image.preview.effort}
             options={effortOptions}
             name="effort"
             isEdited={configToEdit.image.preview.effort !== config.image.preview.effort}
-            disabled={disabled || configToEdit.image.preview.format === ImageFormat.Jpeg}
+            disabled={configToEdit.image.preview.format === ImageFormat.Jpeg}
           />
 
           <SettingSwitch
             title={$t('admin.image_progressive')}
             subtitle={$t('admin.image_progressive_description')}
+            key="image.preview.progressive"
             checked={configToEdit.image.preview.progressive}
             onToggle={(isChecked) => (configToEdit.image.preview.progressive = isChecked)}
             isEdited={configToEdit.image.preview.progressive !== config.image.preview.progressive}
-            disabled={disabled || configToEdit.image.preview.format !== ImageFormat.Jpeg}
+            disabled={configToEdit.image.preview.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -179,10 +181,10 @@
           <SettingSwitch
             title={$t('admin.image_fullsize_enabled')}
             subtitle={$t('admin.image_fullsize_enabled_description')}
+            key="image.fullsize.enabled"
             checked={configToEdit.image.fullsize.enabled}
             onToggle={(isChecked) => (configToEdit.image.fullsize.enabled = isChecked)}
             isEdited={configToEdit.image.fullsize.enabled !== config.image.fullsize.enabled}
-            {disabled}
           />
 
           <hr class="my-4" />
@@ -190,6 +192,7 @@
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
+            key="image.fullsize.format"
             bind:value={configToEdit.image.fullsize.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -198,7 +201,7 @@
             ]}
             name="format"
             isEdited={configToEdit.image.fullsize.format !== config.image.fullsize.format}
-            disabled={disabled || !configToEdit.image.fullsize.enabled}
+            disabled={!configToEdit.image.fullsize.enabled}
             onSelect={(value) => {
               if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.fullsize.progressive = false;
@@ -210,32 +213,31 @@
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
             description={$t('admin.image_fullsize_quality_description')}
+            key="image.fullsize.quality"
             bind:value={configToEdit.image.fullsize.quality}
             isEdited={configToEdit.image.fullsize.quality !== config.image.fullsize.quality}
-            disabled={disabled || !configToEdit.image.fullsize.enabled}
+            disabled={!configToEdit.image.fullsize.enabled}
           />
 
           <SettingSelect
             label={$t('admin.image_effort')}
             desc={$t('admin.image_effort_description')}
+            key="image.fullsize.effort"
             bind:value={configToEdit.image.fullsize.effort}
             options={effortOptions}
             name="effort"
             isEdited={configToEdit.image.fullsize.effort !== config.image.fullsize.effort}
-            disabled={disabled ||
-              !configToEdit.image.fullsize.enabled ||
-              configToEdit.image.fullsize.format === ImageFormat.Jpeg}
+            disabled={!configToEdit.image.fullsize.enabled || configToEdit.image.fullsize.format === ImageFormat.Jpeg}
           />
 
           <SettingSwitch
             title={$t('admin.image_progressive')}
             subtitle={$t('admin.image_progressive_description')}
+            key="image.fullsize.progressive"
             checked={configToEdit.image.fullsize.progressive}
             onToggle={(isChecked) => (configToEdit.image.fullsize.progressive = isChecked)}
             isEdited={configToEdit.image.fullsize.progressive !== config.image.fullsize.progressive}
-            disabled={disabled ||
-              !configToEdit.image.fullsize.enabled ||
-              configToEdit.image.fullsize.format !== ImageFormat.Jpeg}
+            disabled={!configToEdit.image.fullsize.enabled || configToEdit.image.fullsize.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -243,10 +245,10 @@
           <SettingSwitch
             title={$t('admin.image_prefer_wide_gamut')}
             subtitle={$t('admin.image_prefer_wide_gamut_setting_description')}
+            key="image.colorspace"
             checked={configToEdit.image.colorspace === Colorspace.P3}
             onToggle={(isChecked) => (configToEdit.image.colorspace = isChecked ? Colorspace.P3 : Colorspace.Srgb)}
             isEdited={configToEdit.image.colorspace !== config.image.colorspace}
-            {disabled}
           />
         </div>
 
@@ -254,16 +256,16 @@
           <SettingSwitch
             title={$t('admin.image_prefer_embedded_preview')}
             subtitle={$t('admin.image_prefer_embedded_preview_setting_description')}
+            key="image.extractEmbedded"
             checked={configToEdit.image.extractEmbedded}
             onToggle={() => (configToEdit.image.extractEmbedded = !configToEdit.image.extractEmbedded)}
             isEdited={configToEdit.image.extractEmbedded !== config.image.extractEmbedded}
-            {disabled}
           />
         </div>
       </div>
 
       <div class="ms-4 mt-4">
-        <SettingButtonsRow bind:configToEdit keys={['image']} {disabled} />
+        <SettingButtonsRow bind:configToEdit keys={['image']} />
       </div>
     </form>
   </div>
