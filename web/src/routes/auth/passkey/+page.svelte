@@ -4,7 +4,6 @@
   import { MutationCancelledError } from '#lib/queries/client.ts';
   import { isPasskeyCancelled, loginWithPasskeyMutation } from '#lib/queries/passkey.query.ts';
   import { Button, Logo, Text } from '@immich/ui';
-  import { startRegistration } from '@simplewebauthn/browser';
   import { createMutation } from '@tanstack/svelte-query';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -16,15 +15,10 @@
   const logout = createMutation(logoutMutation);
 
   onMount(async () => {
-    const options = new URLSearchParams(location.hash.slice(1));
+    const codeChallenge = new URLSearchParams(location.hash.slice(1)).get('codeChallenge');
     const url = new URL('app.immich:///passkey-callback');
     try {
-      const registration = options.get('registration');
-      const codeChallenge = options.get('codeChallenge');
-      if (registration) {
-        const response = await startRegistration({ optionsJSON: JSON.parse(registration) });
-        url.searchParams.set('credential', JSON.stringify(response));
-      } else if (codeChallenge) {
+      if (codeChallenge) {
         await passkeyLogin.mutateAsync();
         const { code } = await createAuthCode.mutateAsync([{ authCodeCreateDto: { codeChallenge } }]);
         await logout.mutateAsync([]);
