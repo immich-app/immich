@@ -1,8 +1,9 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { hash } from 'bcrypt';
 import { Kysely } from 'kysely';
 import { AuthType } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
+import { AuthChallengeRepository } from 'src/repositories/auth-challenge.repository.js';
 import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CryptoRepository } from 'src/repositories/crypto.repository.js';
@@ -29,6 +30,7 @@ const setup = (db?: Kysely<DB>) => {
     database: db || defaultDatabase,
     real: [
       AccessRepository,
+      AuthChallengeRepository,
       ClusterGroupRepository,
       ConfigRepository,
       CryptoRepository,
@@ -155,6 +157,51 @@ describe(AuthService.name, () => {
       const response = sut.changePassword(auth, dto);
       await expect(response).rejects.toThrow(BadRequestException);
       await expect(response).rejects.toThrow('Wrong password');
+    });
+  });
+
+  describe('exchangeCode', () => {
+    const codeVerifier = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
+    const codeChallenge = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
+
+    it('should create a session for the user of the code', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { session } = await ctx.newSession({ userId: user.id });
+      const { code } = await sut.createCode(factory.auth({ session, user }), { codeChallenge });
+
+      await expect(sut.exchangeCode({ code, codeVerifier }, mediumFactory.loginDetails())).resolves.toEqual(
+        expect.objectContaining({ accessToken: expect.any(String), userId: user.id }),
+      );
+
+      await expect(ctx.get(SessionRepository).getByUserId(user.id)).resolves.toHaveLength(2);
+    });
+
+    it('should reject a code that was already used', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { session } = await ctx.newSession({ userId: user.id });
+      const { code } = await sut.createCode(factory.auth({ session, user }), { codeChallenge });
+      await sut.exchangeCode({ code, codeVerifier }, mediumFactory.loginDetails());
+
+      await expect(sut.exchangeCode({ code, codeVerifier }, mediumFactory.loginDetails())).rejects.toBeInstanceOf(
+        UnauthorizedException,
+      );
+    });
+
+    it('should keep the code usable after a wrong code verifier', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { session } = await ctx.newSession({ userId: user.id });
+      const { code } = await sut.createCode(factory.auth({ session, user }), { codeChallenge });
+
+      await expect(
+        sut.exchangeCode({ code, codeVerifier: 'x'.repeat(43) }, mediumFactory.loginDetails()),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+
+      await expect(sut.exchangeCode({ code, codeVerifier }, mediumFactory.loginDetails())).resolves.toEqual(
+        expect.objectContaining({ userId: user.id }),
+      );
     });
   });
 });

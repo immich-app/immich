@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
+import {
+  BinaryField,
+  DefaultReadTaskOptions,
+  ExifDateTime,
+  ExifTool,
+  ExifToolOptions,
+  ReadTaskOptions,
+  Tags,
+} from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -11,23 +19,9 @@ interface ExifDuration {
 
 type StringOrNumber = string | number;
 
-type TagsWithWrongTypes =
-  | 'FocalLength'
-  | 'Duration'
-  | 'Description'
-  | 'ImageDescription'
-  | 'RegionInfo'
-  | 'TagsList'
-  | 'Keywords'
-  | 'HierarchicalSubject'
-  | 'ISO'
-  | 'LensModel';
-
-export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
+interface ImmichTagOverrides {
   ContentIdentifier?: string;
   MotionPhoto?: number;
-  MotionPhotoVersion?: number;
-  MotionPhotoPresentationTimestampUs?: number;
   MediaGroupUUID?: string;
   ImagePixelDepth?: string;
   FocalLength?: number;
@@ -39,6 +33,7 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   HierarchicalSubject?: StringOrNumber[];
   Keywords?: StringOrNumber | StringOrNumber[];
   ISO?: number | number[];
+  SourceImageCreateTime?: ExifDateTime | string;
 
   // Type is wrong, can also be number.
   Description?: StringOrNumber;
@@ -84,35 +79,117 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   SamsungModel?: string;
 }
 
+export const IMMICH_TAGS = [
+  'AndroidMake',
+  'AndroidModel',
+  'Author',
+  'BitDepth',
+  'BitsPerSample',
+  'BurstID',
+  'BurstUUID',
+  'CameraBurstID',
+  'ColorBitDepth',
+  'ColorSpace',
+  'ComponentBitDepth',
+  'ContainerDirectory',
+  'ContentIdentifier',
+  'CreateDate',
+  'CreationDate',
+  'DateTimeCreated',
+  'DateTimeOriginal',
+  'DateTimeUTC',
+  'Description',
+  'Device',
+  'DeviceManufacturer',
+  'DeviceModelName',
+  'Duration',
+  'EmbeddedVideoFile',
+  'EmbeddedVideoType',
+  'ExposureTime',
+  'FNumber',
+  'FocalLength',
+  'GPSDateTime',
+  'GPSLatitude',
+  'GPSLongitude',
+  'HierarchicalSubject',
+  'ImageDescription',
+  'ImageHeight',
+  'ImagePixelDepth',
+  'ImageSize',
+  'ImageWidth',
+  'ISO',
+  'Keywords',
+  'LensID',
+  'LensModel',
+  'LensSpec',
+  'LensType',
+  'Make',
+  'MediaCreateDate',
+  'MediaGroupUUID',
+  'MediaUniqueID',
+  'MicroVideo',
+  'MicroVideoOffset',
+  'Model',
+  'MotionPhoto',
+  'MotionPhotoVideo',
+  'Orientation',
+  'ProfileDescription',
+  'ProjectionType',
+  'Rating',
+  'RecommendedExposureIndex',
+  'RegionInfo',
+  'Rotation',
+  'SamsungModel',
+  'SonyDateTime2',
+  'SourceImageCreateTime',
+  'StandardOutputSensitivity',
+  'SubSecCreateDate',
+  'SubSecDateTimeOriginal',
+  'TagsList',
+  'tz',
+  'VideoFrameRate',
+  'zone',
+  'zoneSource',
+] as const satisfies readonly (keyof Tags | keyof ImmichTagOverrides)[];
+
+type ImmichTag = (typeof IMMICH_TAGS)[number];
+
+export interface ImmichTags
+  extends
+    Omit<Pick<Tags, Extract<ImmichTag, keyof Tags>>, keyof ImmichTagOverrides>,
+    Pick<ImmichTagOverrides, Extract<ImmichTag, keyof ImmichTagOverrides>> {}
+
+export const exiftoolOptions: Partial<ExifToolOptions> = {
+  defaultVideosToUTC: true,
+  backfillTimezones: true,
+  inferTimezoneFromDatestamps: true,
+  inferTimezoneFromTimeStamp: true,
+  useMWG: true,
+  numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
+  /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
+  // eslint-disable-next-line import-x/no-named-as-default-member
+  geoTz: (lat, lon) => geotz.find(lat, lon)[0],
+  geolocation: true,
+  readArgs: [
+    // Enable exiftool LFS to parse metadata for files larger than 2GB.
+    '-api',
+    'largefilesupport=1',
+    '--ICC_Profile:DeviceManufacturer',
+    '--ICC_Profile:DeviceModelName',
+    // Ignore embedded thumbnail dimensions/orientation for the main asset.
+    '--IFD1:Orientation',
+    '--MWG:Orientation',
+    '--IFD1:ImageWidth',
+    '--IFD1:ImageHeight',
+    '--Samsung:Rotation',
+  ],
+  writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
+  taskTimeoutMillis: 2 * 60 * 1000,
+};
+
 @Injectable()
 export class MetadataRepository {
-  private exiftool = new ExifTool({
-    defaultVideosToUTC: true,
-    backfillTimezones: true,
-    inferTimezoneFromDatestamps: true,
-    inferTimezoneFromTimeStamp: true,
-    useMWG: true,
-    numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
-    /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    geoTz: (lat, lon) => geotz.find(lat, lon)[0],
-    geolocation: true,
-    readArgs: [
-      // Enable exiftool LFS to parse metadata for files larger than 2GB.
-      '-api',
-      'largefilesupport=1',
-      '--ICC_Profile:DeviceManufacturer',
-      '--ICC_Profile:DeviceModelName',
-      // Ignore embedded thumbnail dimensions/orientation for the main asset.
-      '--IFD1:Orientation',
-      '--MWG:Orientation',
-      '--IFD1:ImageWidth',
-      '--IFD1:ImageHeight',
-      '--Samsung:Rotation',
-    ],
-    writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
-    taskTimeoutMillis: 2 * 60 * 1000,
-  });
+  private exiftool = new ExifTool(exiftoolOptions);
 
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MetadataRepository.name);

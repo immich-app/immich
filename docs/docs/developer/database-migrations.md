@@ -1,4 +1,4 @@
-# Database Migrations
+# Database migrations
 
 After making any changes in the `server/src/schema`, a database migration need to run in order to register the changes in the database. Follow the steps below to create a new migration.
 
@@ -20,7 +20,7 @@ The last step adds the migration to the `ORDER` manifest, which records the orde
 
 The server will automatically detect `*.ts` file changes and restart. Part of the server start-up process includes running any new migrations, so it will be applied immediately.
 
-## Reverting a Migration
+## Reverting a migration
 
 If you need to undo the most recently applied migration—for example, when developing or testing on schema changes—run:
 

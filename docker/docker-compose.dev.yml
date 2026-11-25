@@ -29,6 +29,8 @@ services:
       - docs_node_modules:/usr/src/app/docs/node_modules
       - e2e_node_modules:/usr/src/app/e2e/node_modules
       - sdk_node_modules:/usr/src/app/packages/sdk/node_modules
+      - native_node_modules:/usr/src/app/native/crates/native_core_node/node_modules
+      - native_dist:/usr/src/app/native/crates/native_core_node/dist
       - app_node_modules:/usr/src/app/node_modules
       - sveltekit:/usr/src/app/web/.svelte-kit
       - coverage:/usr/src/app/web/coverage
@@ -209,6 +211,8 @@ volumes:
   docs_node_modules:
   e2e_node_modules:
   sdk_node_modules:
+  native_node_modules:
+  native_dist:
   app_node_modules:
   sveltekit:
   coverage:

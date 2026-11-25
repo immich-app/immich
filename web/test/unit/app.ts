@@ -119,6 +119,7 @@ export const createApp = () => {
         backupRestoreButton: page.getByRole('list').getByRole('button', { name: 'restore', exact: true }),
         backupMenuButton: page.getByRole('list').getByRole('button', { name: 'open', exact: true }),
         deleteMenuItem: page.getByRole('menuitem', { name: 'delete', exact: true }),
+        differentVersionWarning: page.getByText('admin.maintenance_restore_backup_different_version', { exact: true }),
       },
       integrityReport: {
         row: tableRow,
@@ -245,6 +246,10 @@ export const createApp = () => {
       permanentlyDeleteButton: button('permanently_delete'),
       emptyPlaceholder: page.getByText('trash_no_results_message', { exact: true }),
     },
+    purchase: {
+      activatedTitle: page.getByText('purchase_activated_title', { exact: true }),
+      failedAlert: page.getByText('purchase_failed_activation', { exact: true }),
+    },
     maintenanceMode: {
       title: page.getByRole('heading', { name: 'maintenance_title', exact: true }),
       loggedInAs: page.getByText('maintenance_logged_in_as', { exact: true }),
@@ -282,6 +287,8 @@ export const createApp = () => {
         productKeyInput: main.getByPlaceholder(/^IMCL-/),
         removeKeyButton: button('purchase_button_remove_key'),
         removeButton: page.getByRole('dialog').getByRole('button', { name: 'remove', exact: true }),
+        activatedTime: main.getByText('purchase_activated_time', { exact: true }),
+        serverActivated: main.getByText('purchase_settings_server_activated', { exact: true }),
       },
       partners: {
         addButton: button('add_partner'),

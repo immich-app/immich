@@ -1,4 +1,4 @@
-# Jobs and Workers
+# Jobs and workers
 
 ## Workers
 

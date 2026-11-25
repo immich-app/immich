@@ -1,3 +1,4 @@
+import { version as nativeCoreVersion } from '@immich/native-core';
 import { Injectable } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
 import { exec as execCallback } from 'node:child_process';
@@ -132,5 +133,9 @@ export class ServerInfoRepository {
     }
 
     return this.buildVersions;
+  }
+
+  getNativeCoreVersion(): string {
+    return nativeCoreVersion();
   }
 }

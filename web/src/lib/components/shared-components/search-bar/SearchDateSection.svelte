@@ -49,23 +49,31 @@
     <SearchButton
       checked
       active={currentPreset === SearchDatePreset.ThisYear}
-      onclick={() => setPreset(SearchDatePreset.ThisYear)}>{$t('search_filter_date_this_year')}</SearchButton
+      onclick={() => setPreset(SearchDatePreset.ThisYear)}
     >
+      {$t('search_filter_date_this_year')}
+    </SearchButton>
     <SearchButton
       checked
       active={currentPreset === SearchDatePreset.LastYear}
-      onclick={() => setPreset(SearchDatePreset.LastYear)}>{$t('search_filter_date_last_year')}</SearchButton
+      onclick={() => setPreset(SearchDatePreset.LastYear)}
     >
+      {$t('search_filter_date_last_year')}
+    </SearchButton>
     <SearchButton
       checked
       active={currentPreset === SearchDatePreset.Last30Days}
-      onclick={() => setPreset(SearchDatePreset.Last30Days)}>{$t('search_filter_date_last_30_days')}</SearchButton
+      onclick={() => setPreset(SearchDatePreset.Last30Days)}
     >
+      {$t('search_filter_date_last_30_days')}
+    </SearchButton>
     <SearchButton
       checked
       active={currentPreset === SearchDatePreset.Custom}
-      onclick={() => setPreset(SearchDatePreset.Custom)}>{$t('search_filter_date_custom')}</SearchButton
+      onclick={() => setPreset(SearchDatePreset.Custom)}
     >
+      {$t('search_filter_date_custom')}
+    </SearchButton>
   </div>
   {#if currentPreset === SearchDatePreset.Custom}
     <div id="date-range-selection" class="grid grid-auto-fit-40 gap-5 py-5">

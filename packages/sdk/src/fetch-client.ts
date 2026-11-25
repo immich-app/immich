@@ -1512,11 +1512,19 @@ export type ChangePasswordDto = {
     /** Current password */
     password: string;
 };
-export type LoginCredentialDto = {
-    /** User email */
-    email: string;
-    /** User password */
-    password: string;
+export type AuthCodeCreateDto = {
+    /** PKCE code challenge (S256, base64url) */
+    codeChallenge: string;
+};
+export type AuthCodeResponseDto = {
+    /** One-time code */
+    code: string;
+};
+export type AuthCodeExchangeDto = {
+    /** One-time code */
+    code: string;
+    /** PKCE code verifier (base64url) */
+    codeVerifier: string;
 };
 export type LoginResponseDto = {
     /** Access token */
@@ -1535,6 +1543,12 @@ export type LoginResponseDto = {
     userEmail: string;
     /** User ID */
     userId: string;
+};
+export type LoginCredentialDto = {
+    /** User email */
+    email: string;
+    /** User password */
+    password: string;
 };
 export type LogoutResponseDto = {
     /** Redirect URI */
@@ -5356,6 +5370,36 @@ export function changePassword({ changePasswordDto }: {
     })));
 }
 /**
+ * Create app login code
+ */
+export function createAuthCode({ authCodeCreateDto }: {
+    authCodeCreateDto: AuthCodeCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AuthCodeResponseDto;
+    }>("/auth/code", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: authCodeCreateDto
+    })));
+}
+/**
+ * Exchange app login code
+ */
+export function exchangeAuthCode({ authCodeExchangeDto }: {
+    authCodeExchangeDto: AuthCodeExchangeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: LoginResponseDto;
+    }>("/auth/exchange", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: authCodeExchangeDto
+    })));
+}
+/**
  * Login
  */
 export function login({ loginCredentialDto }: {
@@ -7766,9 +7810,10 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, hasCoordinates, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
+    hasCoordinates?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -7790,6 +7835,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
     }>(`/timeline/bucket${QS.query(QS.explode({
         albumId,
         bbox,
+        hasCoordinates,
         isFavorite,
         isTrashed,
         key,
@@ -7811,9 +7857,10 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, hasCoordinates, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
+    hasCoordinates?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -7834,6 +7881,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
     }>(`/timeline/buckets${QS.query(QS.explode({
         albumId,
         bbox,
+        hasCoordinates,
         isFavorite,
         isTrashed,
         key,

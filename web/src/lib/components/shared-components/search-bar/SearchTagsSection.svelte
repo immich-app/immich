@@ -81,7 +81,8 @@
               variant="outline"
               onclick={() => handleRemove(tagId)}
               trailingIcon={mdiClose}
-              >{tag.value}
+            >
+              {tag.value}
             </Button>
           {/if}
         {/each}
@@ -89,8 +90,9 @@
     {/if}
 
     <div class="flex flex-wrap gap-2 pt-5">
-      <SearchButton checked active={selectedTags === null} onclick={handleToggleUntagged}>{$t('untagged')}</SearchButton
-      >
+      <SearchButton checked active={selectedTags === null} onclick={handleToggleUntagged}>
+        {$t('untagged')}
+      </SearchButton>
     </div>
   </div>
 {/if}

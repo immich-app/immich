@@ -32,7 +32,7 @@ class Scrubber extends ConsumerStatefulWidget {
 
   final double bottomPadding;
 
-  final double? monthSegmentSnappingOffset;
+  final ValueChanged<Segment> scrollSegmentToTop;
 
   final bool snapToMonth;
 
@@ -45,7 +45,7 @@ class Scrubber extends ConsumerStatefulWidget {
     required this.timelineHeight,
     this.topPadding = 0,
     this.bottomPadding = 0,
-    this.monthSegmentSnappingOffset,
+    required this.scrollSegmentToTop,
     this.snapToMonth = true,
     this.hasAppBar = true,
     required this.child,
@@ -134,7 +134,12 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   void didUpdateWidget(covariant Scrubber oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.layoutSegments.lastOrNull?.endOffset != widget.layoutSegments.lastOrNull?.endOffset) {
+    final trackChanged =
+        oldWidget.timelineHeight != widget.timelineHeight ||
+        oldWidget.topPadding != widget.topPadding ||
+        oldWidget.bottomPadding != widget.bottomPadding;
+
+    if (trackChanged || oldWidget.layoutSegments.lastOrNull?.endOffset != widget.layoutSegments.lastOrNull?.endOffset) {
       _segments = _buildSegments(layoutSegments: widget.layoutSegments, timelineHeight: _scrubberHeight);
       _monthCount = getMonthCount();
     }
@@ -211,6 +216,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     }
 
     final dragPosition = _calculateDragPosition(details);
+    final isAtTrackBottom = dragPosition >= _scrubberHeight;
     final nearestMonthSegment = _findNearestMonthSegment(dragPosition);
 
     if (nearestMonthSegment != null) {
@@ -221,8 +227,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       }
     }
 
-    if (_monthCount < kMinMonthsToEnableScrubberSnap || !widget.snapToMonth) {
-      // If there are less than kMinMonthsToEnableScrubberSnap months, we don't need to snap to segments
+    if (_monthCount < kMinMonthsToEnableScrubberSnap || !widget.snapToMonth || isAtTrackBottom) {
       setState(() {
         _thumbTopOffset = dragPosition;
         _scrollController.jumpTo((dragPosition / _scrubberHeight) * _scrollController.position.maxScrollExtent);
@@ -249,14 +254,10 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   /// - The relative position would be 100 - 50 = 50 (50 pixels into the scrubber area)
   double _calculateDragPosition(DragUpdateDetails details) {
     if (widget.hasAppBar) {
-      final dragAreaTop = widget.topPadding;
-      final dragAreaBottom = widget.timelineHeight - widget.bottomPadding;
-      final dragAreaHeight = dragAreaBottom - dragAreaTop;
-
-      final relativePosition = details.globalPosition.dy - dragAreaTop;
+      final relativePosition = details.globalPosition.dy - widget.topPadding;
 
       // Make sure the position stays within the scrubber's bounds
-      return relativePosition.clamp(0.0, dragAreaHeight);
+      return relativePosition.clamp(0.0, _scrubberHeight);
     }
 
     // Get the local position relative to the gesture detector
@@ -296,7 +297,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       final layoutSegmentIndex = _findLayoutSegmentIndex(segment);
 
       if (layoutSegmentIndex >= 0) {
-        _scrollToLayoutSegment(layoutSegmentIndex);
+        widget.scrollSegmentToTop(widget.layoutSegments[layoutSegmentIndex]);
       }
     });
   }
@@ -306,17 +307,6 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       final bucket = layoutSegment.bucket as TimeBucket;
       return bucket.date.year == segment.date.year && bucket.date.month == segment.date.month;
     });
-  }
-
-  void _scrollToLayoutSegment(int layoutSegmentIndex) {
-    final layoutSegment = widget.layoutSegments[layoutSegmentIndex];
-    final maxScrollExtent = _scrollController.position.maxScrollExtent;
-    final viewportHeight = _scrollController.position.viewportDimension;
-
-    final targetScrollOffset = layoutSegment.startOffset;
-    final centeredOffset = targetScrollOffset - (viewportHeight / 4) + 100 + (widget.monthSegmentSnappingOffset ?? 0.0);
-
-    _scrollController.jumpTo(centeredOffset.clamp(0.0, maxScrollExtent));
   }
 
   void _onDragEnd(DragEndDetails _) {
@@ -332,10 +322,8 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   Widget build(BuildContext ctx) {
     Text? label;
     if (_scrollController.hasClients == true) {
-      // Cache to avoid multiple calls to [_currentOffset]
-      final scrollOffset = _currentOffset;
       final labelText =
-          _segments.lastWhereOrNull((segment) => segment.startOffset <= scrollOffset)?.scrollLabel ??
+          _segments.lastWhereOrNull((segment) => segment.startOffset <= _thumbTopOffset)?.scrollLabel ??
           _segments.firstOrNull?.scrollLabel;
       label = labelText != null
           ? Text(

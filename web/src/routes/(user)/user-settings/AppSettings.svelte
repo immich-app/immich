@@ -112,8 +112,11 @@
         <Switch bind:checked={$alwaysLoadOriginalVideo} />
       </Field>
 
-      <Field label={$t('permanent_deletion_warning')} description={$t('permanent_deletion_warning_setting_description')}
-        ><Switch bind:checked={$showDeleteModal} />
+      <Field
+        label={$t('permanent_deletion_warning')}
+        description={$t('permanent_deletion_warning_setting_description')}
+      >
+        <Switch bind:checked={$showDeleteModal} />
       </Field>
     </div>
   </div>

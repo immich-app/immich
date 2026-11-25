@@ -41,7 +41,7 @@ const POSTGRES_INT_MAX = 2_147_483_647;
 const POSTGRES_INT_MIN = -2_147_483_648;
 
 /** look for a date from these tags (in order) */
-const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
+export const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SubSecDateTimeOriginal',
   'SubSecCreateDate',
   'DateTimeOriginal',
@@ -53,7 +53,7 @@ const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'DateTimeUTC',
   'SonyDateTime2',
   // Undocumented, non-standard tag from insta360 in xmp.GPano namespace
-  'SourceImageCreateTime' as keyof ImmichTags,
+  'SourceImageCreateTime',
 ];
 
 export function firstDateTime(tags: ImmichTags) {

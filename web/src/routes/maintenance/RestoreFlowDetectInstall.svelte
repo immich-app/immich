@@ -76,9 +76,9 @@
         {/if}
       {/each}
 
-      <Button leadingIcon={mdiRefresh} variant="ghost" onclick={() => detectedInstallQuery.refetch()}
-        >{$t('refresh')}</Button
-      >
+      <Button leadingIcon={mdiRefresh} variant="ghost" onclick={() => detectedInstallQuery.refetch()}>
+        {$t('refresh')}
+      </Button>
     {:else}
       <HStack>
         <Icon icon={mdiRefresh} color="rgb(var(--immich-ui-primary))" />

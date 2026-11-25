@@ -1,4 +1,4 @@
-# The Immich CLI
+# Immich CLI
 
 Immich has a command line interface (CLI) that allows you to perform certain actions from the command line.
 
@@ -114,7 +114,7 @@ Options:
 
 Note that the above options can read from environment variables as well.
 
-## Quick Start
+## Quick start
 
 You begin by authenticating to your Immich server. For instance:
 
@@ -193,10 +193,10 @@ processing:
 immich upload --dry-run --json-output . | tail -n +6 | jq .newFiles[]
 ```
 
-### Obtain the API Key
+### Obtain the API key
 
 The API key can be obtained in the user setting panel on the web interface. You can also specify permissions for the key to limit its access.
 
-![Obtain Api Key](./img/obtain-api-key.webp)
+![Obtain Api key](./img/obtain-api-key.webp)
 
 ![Specify permissions for the key](./img/obtain-api-key-2.webp)
