@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { BinaryField, DefaultReadTaskOptions, ExifDateTime, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
+import {
+  BinaryField,
+  DefaultReadTaskOptions,
+  ExifDateTime,
+  ExifTool,
+  ExifToolOptions,
+  ReadTaskOptions,
+  Tags,
+} from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -151,35 +159,37 @@ export interface ImmichTags
     Omit<Pick<Tags, Extract<ImmichTag, keyof Tags>>, keyof ImmichTagOverrides>,
     Pick<ImmichTagOverrides, Extract<ImmichTag, keyof ImmichTagOverrides>> {}
 
+export const exiftoolOptions: Partial<ExifToolOptions> = {
+  defaultVideosToUTC: true,
+  backfillTimezones: true,
+  inferTimezoneFromDatestamps: true,
+  inferTimezoneFromTimeStamp: true,
+  useMWG: true,
+  numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
+  /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
+  // eslint-disable-next-line import-x/no-named-as-default-member
+  geoTz: (lat, lon) => geotz.find(lat, lon)[0],
+  geolocation: true,
+  readArgs: [
+    // Enable exiftool LFS to parse metadata for files larger than 2GB.
+    '-api',
+    'largefilesupport=1',
+    '--ICC_Profile:DeviceManufacturer',
+    '--ICC_Profile:DeviceModelName',
+    // Ignore embedded thumbnail dimensions/orientation for the main asset.
+    '--IFD1:Orientation',
+    '--MWG:Orientation',
+    '--IFD1:ImageWidth',
+    '--IFD1:ImageHeight',
+    '--Samsung:Rotation',
+  ],
+  writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
+  taskTimeoutMillis: 2 * 60 * 1000,
+};
+
 @Injectable()
 export class MetadataRepository {
-  private exiftool = new ExifTool({
-    defaultVideosToUTC: true,
-    backfillTimezones: true,
-    inferTimezoneFromDatestamps: true,
-    inferTimezoneFromTimeStamp: true,
-    useMWG: true,
-    numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
-    /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    geoTz: (lat, lon) => geotz.find(lat, lon)[0],
-    geolocation: true,
-    readArgs: [
-      // Enable exiftool LFS to parse metadata for files larger than 2GB.
-      '-api',
-      'largefilesupport=1',
-      '--ICC_Profile:DeviceManufacturer',
-      '--ICC_Profile:DeviceModelName',
-      // Ignore embedded thumbnail dimensions/orientation for the main asset.
-      '--IFD1:Orientation',
-      '--MWG:Orientation',
-      '--IFD1:ImageWidth',
-      '--IFD1:ImageHeight',
-      '--Samsung:Rotation',
-    ],
-    writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
-    taskTimeoutMillis: 2 * 60 * 1000,
-  });
+  private exiftool = new ExifTool(exiftoolOptions);
 
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MetadataRepository.name);
