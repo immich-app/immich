@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/passkey.action.dart';
+import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 class PasskeySettings extends ConsumerWidget {
@@ -15,6 +16,11 @@ class PasskeySettings extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final passkeys = ref.watch(Store.passkeys.all()).valueOrNull;
+    ref.listen(appStateProvider, (_, state) {
+      if (state == .resumed) {
+        ref.invalidate(Store.passkeys.all());
+      }
+    });
 
     return ListView(
       children: [

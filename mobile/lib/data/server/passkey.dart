@@ -1,8 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/api_repository.dart';
 import 'package:immich_mobile/domain/models/passkey.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:openapi/api.dart';
@@ -19,28 +17,10 @@ class PasskeyApiRepository extends ApiRepository {
 
   const PasskeyApiRepository(this._api, this._configApi, this._authApi);
 
-  PasskeysApi _webApi(String origin) {
-    return PasskeysApi(
-      ApiClient(basePath: _api.apiClient.basePath)
-        ..client = _api.apiClient.client
-        ..defaultHeaderMap.addAll(_api.apiClient.defaultHeaderMap)
-        ..addDefaultHeader('Origin', origin)
-        ..addDefaultHeader('x-immich-user-token', Store.get(StoreKey.accessToken)),
-    );
-  }
-
   /// Whether the server has passkey login turned on, and the origin passkeys are made for
   Future<({bool enabled, String origin})> getConfig() async {
     final passkey = (await checkNull(_configApi.getPublicConfig())).passkey;
     return (enabled: passkey.enabled, origin: Uri.parse(passkey.domain ?? _api.apiClient.basePath).origin);
-  }
-
-  /// The WebAuthn options for creating a passkey for the current user
-  Future<Map<String, Object?>> startRegistration(String origin) => checkNull(_webApi(origin).startRegistration());
-
-  /// Save the WebAuthn [credential] created from the [startRegistration] options as a passkey of the current user
-  Future<void> finishRegistration(String origin, Map<String, dynamic> credential) async {
-    await _webApi(origin).finishRegistration(PasskeyRegistrationFinishDto(response: credential));
   }
 
   /// Log in with the one-time code from the passkey page and the verifier of its code challenge

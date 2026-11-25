@@ -77,43 +77,27 @@ void main() {
       verifyNever(() => api.getConfig());
     });
 
-    test('is false for a server without https', () async {
-      when(() => api.getConfig()).thenAnswer((_) async => (enabled: true, origin: 'http://192.168.1.2:2283'));
-      when(() => hostApi.isSupported()).thenAnswer((_) async => true);
-
-      expect(await createContainer().read(Store.passkeys.enabled().future), isFalse);
-    });
-
     test('is false when the passkey config request fails', () async {
       when(() => hostApi.isSupported()).thenAnswer((_) async => true);
       when(() => api.getConfig()).thenThrow(ApiException(500, 'Internal Server Error'));
 
       expect(await createContainer().read(Store.passkeys.enabled().future), isFalse);
     });
+
+    test('is false for a server without https', () async {
+      when(() => api.getConfig()).thenAnswer((_) async => (enabled: true, origin: 'http://192.168.1.2:2283'));
+      when(() => hostApi.isSupported()).thenAnswer((_) async => true);
+
+      expect(await createContainer().read(Store.passkeys.enabled().future), isFalse);
+    });
   });
 
-  group('create', () {
-    setUp(() {
-      when(() => api.startRegistration(any())).thenAnswer((_) async => {'challenge': 'abc'});
-      when(() => api.finishRegistration(any(), any())).thenAnswer((_) async {});
-    });
-
-    test('opens the server options on the server page and sends the credential back to the server', () async {
-      page = () async => 'app.immich:///passkey-callback?credential=%7B%22id%22%3A%22credential%22%7D';
-
-      expect(await createContainer().read(Store.passkeys).create(), isTrue);
-      expect(opened, ['https://demo.immich.app/auth/passkey#registration=%7B%22challenge%22%3A%22abc%22%7D']);
-      verify(() => api.startRegistration('https://demo.immich.app'));
-      expect(verify(() => api.finishRegistration('https://demo.immich.app', captureAny())).captured.single, {
-        'id': 'credential',
-      });
-    });
-
-    test('does not finish when the user cancels', () async {
-      page = () async => 'app.immich:///passkey-callback';
-
-      expect(await createContainer().read(Store.passkeys).create(), isFalse);
-      verifyNever(() => api.finishRegistration(any(), any()));
+  group('getWebSettingsUrl', () {
+    test('is the passkeys section of the web settings on the passkey origin', () async {
+      expect(
+        await createContainer().read(Store.passkeys).getWebSettingsUrl(),
+        Uri.parse('https://demo.immich.app/user-settings?isOpen=passkeys'),
+      );
     });
   });
 
@@ -139,6 +123,13 @@ void main() {
       final codeVerifier = verify(() => api.exchangeCode('abc', captureAny())).captured.single;
       final codeChallenge = base64Url.encode(sha256.convert(utf8.encode(codeVerifier)).bytes).replaceAll('=', '');
       expect(opened, ['https://demo.immich.app/auth/passkey#codeChallenge=$codeChallenge']);
+    });
+
+    test('does not finish when the user cancels', () async {
+      page = () async => 'app.immich:///passkey-callback';
+
+      expect(await createContainer().read(Store.passkeys).login(), isNull);
+      verifyNever(() => api.exchangeCode(any(), any()));
     });
 
     test('does not finish when the user closes the browser', () async {

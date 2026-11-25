@@ -1,33 +1,13 @@
 import 'dart:convert';
 
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/data/server/passkey.dart';
 import 'package:immich_mobile/domain/models/passkey.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:openapi/api.dart';
 
 void main() {
-  late Drift db;
-  late StoreService store;
-
-  setUpAll(() async {
-    db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    store = await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
-    await store.put(StoreKey.accessToken, 'token');
-  });
-
-  tearDownAll(() async {
-    await store.dispose();
-    await db.close();
-  });
-
   test('getConfig gives the origin of the passkey domain, else of the server URL', () async {
     late Map<String, Object?> passkey;
     final apiClient = ApiClient(basePath: 'http://192.168.1.2:2283/api')
@@ -54,41 +34,6 @@ void main() {
     expect(await sut.getConfig(), (enabled: true, origin: 'http://192.168.1.2:2283'));
     passkey = {'enabled': true};
     expect(await sut.getConfig(), (enabled: true, origin: 'http://192.168.1.2:2283'));
-  });
-
-  test('startRegistration sends the passkey origin and token, and decodes the Map<String, Object?> answer', () async {
-    const options = {
-      'challenge': 'challenge',
-      'rp': {'name': 'Immich', 'id': 'my.immich.app'},
-      'timeout': 60000,
-    };
-    late http.Request sent;
-    final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
-      ..client = MockClient((request) async {
-        sent = request;
-        return http.Response(jsonEncode(options), 200);
-      });
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient), AuthenticationApi(apiClient));
-
-    expect(await sut.startRegistration('https://photos.example.com'), options);
-    expect(sent.url.origin, 'https://demo.immich.app');
-    expect(sent.headers['Origin'], 'https://photos.example.com');
-    expect(sent.headers['x-immich-user-token'], 'token');
-  });
-
-  test('finishRegistration sends the passkey origin and token', () async {
-    late http.Request sent;
-    final apiClient = ApiClient(basePath: 'https://demo.immich.app/api')
-      ..client = MockClient((request) async {
-        sent = request;
-        return http.Response('', 201);
-      });
-    final sut = PasskeyApiRepository(PasskeysApi(apiClient), ConfigPublicApi(apiClient), AuthenticationApi(apiClient));
-
-    await sut.finishRegistration('https://photos.example.com', {'id': 'credential'});
-
-    expect(sent.headers['Origin'], 'https://photos.example.com');
-    expect(sent.headers['x-immich-user-token'], 'token');
   });
 
   test('exchangeCode sends the code and its verifier to the server', () async {

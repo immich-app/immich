@@ -18,7 +18,7 @@ final _random = Random.secure();
 
 /// Passkeys the current user can log in with
 ///
-/// All operations directly access the HTTP API, and creating or using one also shows the system's passkey prompt
+/// All operations directly access the HTTP API, and using one also shows the system's passkey prompt
 extension type const PasskeyStore._(Provider<PasskeyMutations> _provider) implements Provider<PasskeyMutations> {
   static final PasskeyStore instance = PasskeyStore._(Provider((ref) => PasskeyMutations._(ref)));
 
@@ -61,23 +61,13 @@ final _allProvider = FutureProvider.autoDispose<List<Passkey>>((ref) async {
 class PasskeyMutations extends StoreMutations {
   const PasskeyMutations._(super.ref);
 
-  /// Create a passkey for the current user through the system's passkey prompt, returning false if the user cancels
-  Future<bool> create() async {
-    final apiRepository = read(passkeyApiRepositoryProvider);
-
+  /// The passkey settings of the web, where the current user can create a passkey
+  Future<Uri> getWebSettingsUrl() async {
     try {
-      final origin = (await apiRepository.getConfig()).origin;
-      final options = await apiRepository.startRegistration(origin);
-      final credential = await _prompt(origin, {'registration': jsonEncode(options)}, 'credential');
-      if (credential == null) {
-        return false;
-      }
-
-      await apiRepository.finishRegistration(origin, jsonDecode(credential));
-      invalidate(_allProvider);
-      return true;
+      final origin = (await read(passkeyApiRepositoryProvider).getConfig()).origin;
+      return Uri.parse('$origin/user-settings?isOpen=passkeys');
     } catch (error, stack) {
-      _log.severe("Failed to create a passkey", error, stack);
+      _log.severe("Failed to get the passkey settings link", error, stack);
       rethrow;
     }
   }
@@ -90,7 +80,7 @@ class PasskeyMutations extends StoreMutations {
 
     try {
       final origin = (await apiRepository.getConfig()).origin;
-      final code = await _prompt(origin, {'codeChallenge': codeChallenge}, 'code');
+      final code = await _prompt(origin, codeChallenge);
       if (code == null) {
         return null;
       }
@@ -102,11 +92,11 @@ class PasskeyMutations extends StoreMutations {
     }
   }
 
-  Future<String?> _prompt(String origin, Map<String, String> input, String output) async {
+  Future<String?> _prompt(String origin, String codeChallenge) async {
     final String callback;
     try {
       callback = await FlutterWebAuth2.authenticate(
-        url: '$origin/auth/passkey#${Uri(queryParameters: input).query}',
+        url: '$origin/auth/passkey#codeChallenge=$codeChallenge',
         callbackUrlScheme: 'app.immich',
         options: const FlutterWebAuth2Options(preferEphemeral: true),
       );
@@ -123,7 +113,7 @@ class PasskeyMutations extends StoreMutations {
       throw Exception(error);
     }
 
-    return result[output];
+    return result['code'];
   }
 
   /// Rename the passkey [id], or clear its name with `null`

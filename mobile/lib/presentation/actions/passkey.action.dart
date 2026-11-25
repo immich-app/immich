@@ -8,6 +8,7 @@ import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_ui/immich_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PasskeyCreateAction extends ActionBuilder {
   const PasskeyCreateAction();
@@ -17,16 +18,27 @@ class PasskeyCreateAction extends ActionBuilder {
       ActionItem(icon: Icons.add_rounded, label: context.t.new_passkey, onAction: () => _create(context, ref));
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
-    final message = context.t.passkey_added;
     final passkeys = ref.read(Store.passkeys);
-    final toastService = ref.read(toastServiceProvider);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.t.new_passkey),
+        content: Text(context.t.new_passkey_prompt),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(context.t.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(context.t.open_in_browser)),
+        ],
+      ),
+    );
+    if (confirmed != true) {
+      return;
+    }
 
     try {
-      if (await passkeys.create()) {
-        toastService.success(message);
-      }
+      await launchUrl(await passkeys.getWebSettingsUrl(), mode: .externalApplication);
     } catch (error, stack) {
-      handleError(error, stack: stack, description: "Failed to create a passkey");
+      handleError(error, stack: stack, description: "Failed to open the passkey settings");
     }
   }
 }
