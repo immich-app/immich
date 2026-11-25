@@ -179,8 +179,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -329,7 +327,7 @@ importers:
         version: 79.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)
       exiftool-vendored:
         specifier: ^39.0.0
-        version: 39.2.0
+        version: 39.4.0
       globals:
         specifier: ^17.0.0
         version: 17.14.0
@@ -684,7 +682,7 @@ importers:
         version: 4.4.0
       exiftool-vendored:
         specifier: ^39.0.0
-        version: 39.2.0
+        version: 39.4.0
       express:
         specifier: ^5.1.0
         version: 5.3.0(supports-color@7.2.0)
@@ -8313,17 +8311,17 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
-  exiftool-vendored.exe@13.61.0:
-    resolution: {integrity: sha512-tCXAO3OUmzzwKTQdhppXlz5beDgGEYwWirb9HdHYOqeVh+fsto4jtb6ULqz9uvNZBYBYVXU7ZtXB0FMeBre9Tg==}
+  exiftool-vendored.exe@13.64.0:
+    resolution: {integrity: sha512-lHfNsnUytT2Yf5LMYjBosVN+HkpVtXsBi8jq9LN8vlb/c11yS5xY7l6pwG1RcRebuBD06AOLZ9RCCcAFJb+m2A==}
     os: [win32]
 
-  exiftool-vendored.pl@13.61.0:
-    resolution: {integrity: sha512-ALoCpPRfuG3UOuaddPjHh7zA56D/SYVb/F090rhW9awwYpErPtv1uLmeLJivbtdmOzGr5cRtf8bpqhgXMBb4EQ==}
+  exiftool-vendored.pl@13.64.0:
+    resolution: {integrity: sha512-NAaZhPJ1UFJKPrg3aIcajlgEVueQNWs2C8BFrAKKxCnQg8o+nIOKacP4jgB5RTCNT42UkVoE3fAxlyQif60y3A==}
     os: ['!win32']
     hasBin: true
 
-  exiftool-vendored@39.2.0:
-    resolution: {integrity: sha512-Ynix+E+n/KePpRc0DJOC4WAFmUieaQvn7zPGFGDHMixsjgkOwRQYAdANr4dR4YdaHJ/l8AaAWlPLijn9gVsQzA==}
+  exiftool-vendored@39.4.0:
+    resolution: {integrity: sha512-t8rwvqEPG7TTtW/8FQFJYAt9KlOAX2zePVPq6Ltvc2Be/wiWGMDU5MkOPnJnQ3hinuBgvoJBQhyJQ7ATNaTBhA==}
     engines: {node: '>=22'}
 
   expand-template@2.0.3:
@@ -22273,21 +22271,22 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
-  exiftool-vendored.exe@13.61.0:
+  exiftool-vendored.exe@13.64.0:
     optional: true
 
-  exiftool-vendored.pl@13.61.0: {}
+  exiftool-vendored.pl@13.64.0:
+    optional: true
 
-  exiftool-vendored@39.2.0:
+  exiftool-vendored@39.4.0:
     dependencies:
       '@photostructure/tz-lookup': 11.8.0
       '@types/luxon': 3.7.6
       batch-cluster: 19.6.0
-      exiftool-vendored.pl: 13.61.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
-      exiftool-vendored.exe: 13.61.0
+      exiftool-vendored.exe: 13.64.0
+      exiftool-vendored.pl: 13.64.0
 
   expand-template@2.0.3: {}
 
