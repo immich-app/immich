@@ -25,6 +25,7 @@ import {
   AssetType,
   AssetVisibility,
   CalendarHeatmapType,
+  ChecksumAlgorithm,
 } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table.js';
@@ -36,8 +37,10 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
 import {
   anyUuid,
   asUuid,
+  dummy,
   hasPeople,
   inSharedAlbum,
+  onOriginal,
   removeUndefinedKeys,
   truncatedDate,
   unnest,
@@ -50,6 +53,7 @@ import {
   withFilePath,
   withFiles,
   withLibrary,
+  withOriginalPath,
   withOwner,
   withSmartSearch,
   withTagId,
@@ -57,6 +61,8 @@ import {
 } from 'src/utils/database.js';
 
 export type AssetStats = Record<AssetType, number>;
+
+export type AssetCreate = Insertable<AssetTable> & { originalPath: string };
 
 export interface BoundingBox {
   west: number;
@@ -446,17 +452,89 @@ export class AssetRepository {
     });
   }
 
-  create(asset: Insertable<AssetTable>) {
-    return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
+  @GenerateSql({
+    params: [
+      {
+        ownerId: DummyValue.UUID,
+        type: AssetType.Image,
+        checksum: DummyValue.BUFFER,
+        checksumAlgorithm: ChecksumAlgorithm.sha1File,
+        originalFileName: DummyValue.STRING,
+        originalPath: DummyValue.STRING,
+        fileCreatedAt: DummyValue.DATE,
+        fileModifiedAt: DummyValue.DATE,
+        localDateTime: DummyValue.DATE,
+      },
+    ],
+  })
+  create({ originalPath, ...asset }: AssetCreate) {
+    return this.db
+      .with('inserted_asset', (qb) => qb.insertInto('asset').values(asset).returningAll())
+      .with('inserted_original', (qb) =>
+        qb
+          .insertInto('asset_file')
+          .columns(['assetId', 'type', 'path'])
+          .expression((eb) =>
+            eb
+              .selectFrom('inserted_asset')
+              .select((eb) => [
+                'inserted_asset.id',
+                sql.lit(AssetFileType.Original).as('type'),
+                eb.val(originalPath).as('path'),
+              ]),
+          ),
+      )
+      .selectFrom('inserted_asset')
+      .selectAll()
+      .select((eb) => eb.val(originalPath).as('originalPath'))
+      .executeTakeFirstOrThrow();
   }
 
+  @GenerateSql({
+    params: [
+      [
+        {
+          id: DummyValue.UUID,
+          ownerId: DummyValue.UUID,
+          libraryId: DummyValue.UUID,
+          type: AssetType.Image,
+          checksum: DummyValue.BUFFER,
+          checksumAlgorithm: ChecksumAlgorithm.sha1Path,
+          originalFileName: DummyValue.STRING,
+          originalPath: DummyValue.STRING,
+          fileCreatedAt: DummyValue.DATE,
+          fileModifiedAt: DummyValue.DATE,
+          localDateTime: DummyValue.DATE,
+          isExternal: true,
+        },
+      ],
+    ],
+  })
   @ChunkedArray({ chunkSize: 4000 })
-  async createAll(assets: Insertable<AssetTable>[]) {
+  async createAll(assets: (AssetCreate & { id: string })[]) {
     if (assets.length === 0) {
       return [];
     }
-    const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
-    return ids.map(({ id }) => id);
+
+    const ids = assets.map(({ id }) => id);
+    const paths = assets.map(({ originalPath }) => originalPath);
+    await this.db
+      .with('inserted_asset', (qb) =>
+        qb.insertInto('asset').values(assets.map(({ originalPath: _, ...asset }) => asset)),
+      )
+      .insertInto('asset_file')
+      .columns(['assetId', 'type', 'path'])
+      .expression((eb) =>
+        eb
+          .selectFrom(dummy)
+          .select([
+            sql<string>`unnest(${ids}::uuid[])`.as('assetId'),
+            sql.lit(AssetFileType.Original).as('type'),
+            sql<string>`unnest(${paths}::text[])`.as('path'),
+          ]),
+      )
+      .execute();
+    return ids;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { year: 2000, day: 1, month: 1 }] })
@@ -538,9 +616,10 @@ export class AssetRepository {
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string) {
     return this.db
       .selectFrom('asset')
+      .innerJoin('asset_file as asset_original', onOriginal)
       .selectAll('asset')
-      .where('libraryId', '=', asUuid(libraryId))
-      .where('originalPath', '=', originalPath)
+      .where('asset.libraryId', '=', asUuid(libraryId))
+      .where('asset_original.path', '=', originalPath)
       .limit(1)
       .executeTakeFirst();
   }
@@ -564,7 +643,8 @@ export class AssetRepository {
   getForCopy(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['id', 'stackId', 'originalPath', 'isFavorite'])
+      .select(['id', 'stackId', 'isFavorite'])
+      .select(withOriginalPath)
       .select(withFiles)
       .where('id', '=', asUuid(id))
       .limit(1)
@@ -578,6 +658,7 @@ export class AssetRepository {
   ) {
     return this.db
       .selectFrom('asset')
+      .select(withOriginalPath)
       .selectAll('asset')
       .where('asset.id', '=', asUuid(id))
       .$if(!!exifInfo, withExif)
@@ -663,6 +744,7 @@ export class AssetRepository {
   getByChecksum({ ownerId, libraryId, checksum }: AssetGetByChecksumOptions) {
     return this.db
       .selectFrom('asset')
+      .select(withOriginalPath)
       .selectAll('asset')
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
@@ -1098,7 +1180,8 @@ export class AssetRepository {
     return this.db.transaction().execute(async (trx) => {
       const query = trx
         .selectFrom('asset')
-        .select(['asset.id', 'asset.originalPath'])
+        .innerJoin('asset_file as asset_original', onOriginal)
+        .select(['asset.id', 'asset_original.path as originalPath'])
         .where('asset.libraryId', '=', asUuid(libraryId))
         .where('asset.isOffline', '=', false)
         .where('asset.isExternal', '=', true);
@@ -1143,10 +1226,10 @@ export class AssetRepository {
           eb.exists(
             this.db
               .selectFrom('asset')
-              .select('originalPath')
-              .whereRef('asset.originalPath', '=', eb.ref('path'))
-              .where('libraryId', '=', asUuid(libraryId))
-              .where('isExternal', '=', true),
+              .innerJoin('asset_file as asset_original', onOriginal)
+              .whereRef('asset_original.path', '=', eb.ref('path.path'))
+              .where('asset.libraryId', '=', asUuid(libraryId))
+              .where('asset.isExternal', '=', true),
           ),
         ),
       )
@@ -1181,7 +1264,7 @@ export class AssetRepository {
           )
           .select('asset_file.path as editedPath'),
       )
-      .select('originalPath');
+      .select(withOriginalPath);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, true] })
@@ -1198,11 +1281,12 @@ export class AssetRepository {
   async getForThumbnail(id: string, type: AssetFileType, isEdited: boolean) {
     return this.db
       .selectFrom('asset')
+      .select(withOriginalPath)
       .where('asset.id', '=', id)
       .leftJoin('asset_file', (join) =>
         join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type),
       )
-      .select(['asset.originalPath', 'asset.originalFileName', 'asset_file.path as path'])
+      .select(['asset.originalFileName', 'asset_file.path as path'])
       .orderBy('asset_file.isEdited', isEdited ? 'desc' : 'asc')
       .executeTakeFirstOrThrow();
   }
@@ -1211,7 +1295,7 @@ export class AssetRepository {
   async getForVideo(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.originalPath'])
+      .select(withOriginalPath)
       .select((eb) => withFilePath(eb, AssetFileType.EncodedVideo).as('encodedVideoPath'))
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
@@ -1233,7 +1317,8 @@ export class AssetRepository {
   async getForEdit(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.type', 'asset.livePhotoVideoId', 'asset.originalPath', 'asset.originalFileName'])
+      .select(withOriginalPath)
+      .select(['asset.type', 'asset.livePhotoVideoId', 'asset.originalFileName'])
       .where('asset.id', '=', id)
       .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
       .select([

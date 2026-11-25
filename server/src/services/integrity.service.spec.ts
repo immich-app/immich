@@ -24,7 +24,7 @@ describe(IntegrityService.name, () => {
     const composedPath = '/data/upload/upload/user-id/Caf\u{E9}.jpg';
 
     beforeEach(() => {
-      mocks.integrityReport.getAssetPathsByPaths.mockResolvedValue([]);
+      mocks.integrityReport.getMediaFilePathsByPaths.mockResolvedValue([]);
       mocks.integrityReport.getPersonThumbnailPathsByPaths.mockResolvedValue([]);
     });
 
@@ -34,13 +34,11 @@ describe(IntegrityService.name, () => {
     ])(
       'should not report a tracked asset whose path differs only by unicode normalization',
       async ({ scannedPath, storedPath }) => {
-        mocks.integrityReport.getAssetPathsByPaths.mockResolvedValue([
-          { originalPath: storedPath, encodedVideoPath: null },
-        ]);
+        mocks.integrityReport.getMediaFilePathsByPaths.mockResolvedValue([{ path: storedPath }]);
 
         await sut.handleUntrackedFiles({ type: 'asset', paths: [scannedPath] });
 
-        expect(mocks.integrityReport.getAssetPathsByPaths).toHaveBeenCalledWith(
+        expect(mocks.integrityReport.getMediaFilePathsByPaths).toHaveBeenCalledWith(
           expect.arrayContaining([decomposedPath, composedPath]),
         );
         expect(mocks.integrityReport.create).not.toHaveBeenCalled();

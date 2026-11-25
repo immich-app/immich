@@ -168,7 +168,7 @@ const assetEntity = Object.freeze({
     longitude: 10.703075,
   },
   livePhotoVideoId: null,
-} as MapAsset);
+} as MapAsset & { originalPath: string });
 
 describe(AssetMediaService.name, () => {
   let sut: AssetMediaService;

@@ -77,12 +77,26 @@ const keyframeRow = (assetId: string, n: number) => ({
 });
 
 describe(AssetRepository.name, () => {
+  describe('upsertFile', () => {
+    it('should move the original path the asset is returned with', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, originalPath: '/upload/photo.jpg' });
+
+      await sut.upsertFile({ assetId: asset.id, type: AssetFileType.Original, path: '/library/2024/photo.jpg' });
+
+      await expect(sut.getById(asset.id)).resolves.toEqual(
+        expect.objectContaining({ id: asset.id, originalPath: '/library/2024/photo.jpg' }),
+      );
+    });
+  });
+
   describe('deleteFile', () => {
     it('should delete only the requested asset and file type', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
-      const { asset } = await ctx.newAsset({ ownerId: user.id });
-      const { asset: other } = await ctx.newAsset({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id, originalPath: '/photos/photo.jpg' });
+      const { asset: other } = await ctx.newAsset({ ownerId: user.id, originalPath: '/photos/other.jpg' });
       await sut.upsertFiles([
         { assetId: asset.id, type: AssetFileType.Sidecar, path: '/photos/photo.jpg.xmp' },
         { assetId: asset.id, type: AssetFileType.Thumbnail, path: '/photos/thumbnail.jpg' },
@@ -98,7 +112,12 @@ describe(AssetRepository.name, () => {
           .select('path')
           .orderBy('path')
           .execute(),
-      ).resolves.toEqual([{ path: '/photos/other.jpg.xmp' }, { path: '/photos/thumbnail.jpg' }]);
+      ).resolves.toEqual([
+        { path: '/photos/other.jpg' },
+        { path: '/photos/other.jpg.xmp' },
+        { path: '/photos/photo.jpg' },
+        { path: '/photos/thumbnail.jpg' },
+      ]);
     });
   });
 

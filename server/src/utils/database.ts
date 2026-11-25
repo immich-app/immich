@@ -4,6 +4,7 @@ import {
   DeduplicateJoinsPlugin,
   Expression,
   ExpressionBuilder,
+  JoinBuilder,
   Kysely,
   KyselyConfig,
   NotNull,
@@ -243,6 +244,20 @@ export function withFiles(eb: ExpressionBuilder<DB, 'asset'>, type?: AssetFileTy
       .whereRef('asset_file.assetId', '=', 'asset.id')
       .$if(!!type, (qb) => qb.where('asset_file.type', '=', type!)),
   ).as('files');
+}
+
+export const onOriginal = <
+  J extends JoinBuilder<DB & { asset_original: DB['asset_file'] }, 'asset_original' | 'asset'>,
+>(
+  join: J,
+): J =>
+  join
+    .onRef('asset_original.assetId', '=', 'asset.id')
+    .on('asset_original.type', '=', sql.lit(AssetFileType.Original))
+    .on('asset_original.isEdited', '=', sql.lit(false)) as J;
+
+export function withOriginalPath(eb: ExpressionBuilder<DB, 'asset'>) {
+  return sql<string>`${withFilePath(eb, AssetFileType.Original)}`.as('originalPath');
 }
 
 export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFileType, isEdited = false) {
@@ -533,7 +548,11 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
         .where('asset_file.path', '=', options.encodedVideoPath!),
     )
     .$if(!!options.originalPath, (qb) =>
-      qb.where(sql`f_unaccent(asset."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
+      qb.where(
+        (eb) => sql`f_unaccent(${withFilePath(eb, AssetFileType.Original)})`,
+        'ilike',
+        sql`'%' || f_unaccent(${options.originalPath}) || '%'`,
+      ),
     )
     .$if(!!options.originalFileName, (qb) =>
       qb.where(
@@ -718,11 +737,14 @@ type StringColumn =
   | 'asset_exif.model'
   | 'asset_exif.lensModel'
   | 'asset_exif.description'
-  | 'asset.originalFileName'
-  | 'asset.originalPath';
+  | 'asset.originalFileName';
 
-function stringPatternPredicates(eb: AssetExpressionBuilder, column: StringColumn, filter: StringPatternFilter = {}) {
-  const ref = sql.ref(column);
+function stringPatternPredicates(
+  eb: AssetExpressionBuilder,
+  column: StringColumn | Expression<string>,
+  filter: StringPatternFilter = {},
+) {
+  const ref = typeof column === 'string' ? sql.ref(column) : column;
   const predicates = comparisonPredicates(eb, column, filter);
   if (filter.like !== undefined) {
     predicates.push(sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.like}) || '%')`);
@@ -747,6 +769,15 @@ function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter = {
     notIn: filter.notIn?.map((checksum) => fromChecksum(checksum)),
   });
 }
+
+const originalPath = (eb: AssetExpressionBuilder) =>
+  eb
+    .selectFrom('asset_file')
+    .select('asset_file.path')
+    .whereRef('asset_file.assetId', '=', 'asset.id')
+    .where('asset_file.type', '=', sql.lit(AssetFileType.Original))
+    .where('asset_file.isEdited', '=', sql.lit(false))
+    .$castTo<string>();
 
 const encodedVideoFiles = (eb: AssetExpressionBuilder) =>
   eb
@@ -790,7 +821,7 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
     ...comparisonPredicates(eb, 'asset_exif.lensModel', branch.lensModel),
     ...stringPatternPredicates(eb, 'asset_exif.description', branch.description),
     ...stringPatternPredicates(eb, 'asset.originalFileName', branch.originalFileName),
-    ...stringPatternPredicates(eb, 'asset.originalPath', branch.originalPath),
+    ...stringPatternPredicates(eb, originalPath(eb), branch.originalPath),
     ...(branch.ocr
       ? [
           eb.exists(

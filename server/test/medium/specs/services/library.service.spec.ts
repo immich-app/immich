@@ -26,6 +26,7 @@ import { DB } from 'src/schema/index.js';
 import { LibraryService } from 'src/services/library.service.js';
 import { MetadataService } from 'src/services/metadata.service.js';
 import { JobItem } from 'src/types.js';
+import { onOriginal } from 'src/utils/database.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { MediumTestContext, mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { newUuid } from 'test/small.factory.js';
@@ -154,10 +155,11 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
   getSidecarPaths(libraryId: string) {
     return this.database
       .selectFrom('asset')
+      .innerJoin('asset_file as asset_original', onOriginal)
       .innerJoin('asset_file', 'asset_file.assetId', 'asset.id')
-      .where('libraryId', '=', libraryId)
+      .where('asset.libraryId', '=', libraryId)
       .where('asset_file.type', '=', AssetFileType.Sidecar)
-      .select(['originalPath', 'asset_file.path as sidecarPath'])
+      .select(['asset_original.path as originalPath', 'asset_file.path as sidecarPath'])
       .orderBy('originalPath')
       .execute();
   }
@@ -166,9 +168,10 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
   async getAssetPaths(libraryId: string) {
     const assets = await this.database
       .selectFrom('asset')
-      .select('originalPath')
-      .where('libraryId', '=', libraryId)
-      .where('deletedAt', 'is', null)
+      .innerJoin('asset_file as asset_original', onOriginal)
+      .select('asset_original.path as originalPath')
+      .where('asset.libraryId', '=', libraryId)
+      .where('asset.deletedAt', 'is', null)
       .execute();
 
     return assets.map(({ originalPath }) => originalPath).sort();
@@ -177,24 +180,25 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
   getAsset(originalPath: string) {
     return this.database
       .selectFrom('asset')
+      .innerJoin('asset_file as asset_original', onOriginal)
       .select([
-        'id',
-        'ownerId',
-        'libraryId',
-        'originalPath',
-        'originalFileName',
-        'type',
-        'isExternal',
-        'isOffline',
-        'status',
-        'checksum',
-        'checksumAlgorithm',
-        'deletedAt',
-        'fileCreatedAt',
-        'fileModifiedAt',
-        'localDateTime',
+        'asset.id',
+        'asset.ownerId',
+        'asset.libraryId',
+        'asset_original.path as originalPath',
+        'asset.originalFileName',
+        'asset.type',
+        'asset.isExternal',
+        'asset.isOffline',
+        'asset.status',
+        'asset.checksum',
+        'asset.checksumAlgorithm',
+        'asset.deletedAt',
+        'asset.fileCreatedAt',
+        'asset.fileModifiedAt',
+        'asset.localDateTime',
       ])
-      .where('originalPath', '=', originalPath)
+      .where('asset_original.path', '=', originalPath)
       .executeTakeFirstOrThrow();
   }
 }
@@ -599,9 +603,10 @@ describe(LibraryService.name, () => {
         await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([includedAsset]);
         const excluded = await ctx.database
           .selectFrom('asset')
-          .select(['originalPath', 'isOffline', 'deletedAt'])
-          .where('libraryId', '=', library.id)
-          .where('originalPath', 'in', excludedAssets)
+          .innerJoin('asset_file as asset_original', onOriginal)
+          .select(['asset_original.path as originalPath', 'asset.isOffline', 'asset.deletedAt'])
+          .where('asset.libraryId', '=', library.id)
+          .where('asset_original.path', 'in', excludedAssets)
           .orderBy('originalPath')
           .execute();
         expect(excluded).toEqual(

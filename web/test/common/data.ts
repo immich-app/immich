@@ -3,6 +3,7 @@ import { SeededRandom } from '#test/common/helpers.ts';
 import { payload } from '#test/common/payloads.ts';
 import type { Call, ResponseOf } from '#test/common/types.ts';
 import {
+  AssetFileType,
   AssetOrder,
   AssetTypeEnum,
   AssetVisibility,
@@ -24,6 +25,7 @@ import {
   type AssetEditActionItemResponseDto,
   type AssetEditsCreateDto,
   type AssetFaceResponseDto,
+  type AssetFileResponseDto,
   type AssetOcrResponseDto,
   type AssetResponseDto,
   type AssetStatsResponseDto,
@@ -160,6 +162,8 @@ const integrityReportPageSize = 50;
 
 type IntegrityReportItem = IntegrityReportResponseDto['items'][number];
 
+const getFolder = (path: string) => path.slice(0, path.lastIndexOf('/'));
+
 export class MockData {
   readonly user = factory.user({ id: adminUserId });
   readonly serverConfig = payload.serverConfig();
@@ -186,6 +190,7 @@ export class MockData {
   private maintenanceStatus: MaintenanceStatusResponseDto = { action: MaintenanceAction.Start, active: true };
   private readonly users = new Map<string, UserAdminResponseDto>([[this.user.id, this.user]]);
   private readonly assets = new Map<string, AssetResponseDto>();
+  private readonly originalPaths = new Map<string, string>();
   private readonly albums = new Map<string, AlbumResponseDto>();
   private readonly albumAssets = new Map<string, Set<string>>();
   private readonly memories = new Map<string, MemoryResponseDto>();
@@ -585,6 +590,35 @@ export class MockData {
       this.assets.set(asset.id, asset);
     }
     return this;
+  }
+
+  setOriginalPath({ id }: Pick<AssetResponseDto, 'id'>, path: string) {
+    this.originalPaths.set(id, path);
+    return this;
+  }
+
+  assetFiles({ assetId, $type }: { assetId: string; $type?: AssetFileType }): AssetFileResponseDto[] {
+    const asset = this.assets.get(assetId);
+    if (!asset || ($type && $type !== AssetFileType.Original)) {
+      return [];
+    }
+
+    return [
+      {
+        id: asset.id,
+        type: AssetFileType.Original,
+        path: this.getOriginalPath(asset),
+        isEdited: false,
+        isProgressive: false,
+        isTransparent: false,
+        createdAt: asset.createdAt,
+        updatedAt: asset.updatedAt,
+      },
+    ];
+  }
+
+  private getOriginalPath({ id, originalFileName }: AssetResponseDto) {
+    return this.originalPaths.get(id) ?? `/photos/${originalFileName}`;
   }
 
   sharedLinkList() {
@@ -1607,8 +1641,8 @@ export class MockData {
   }
 
   uniqueOriginalPaths() {
-    const folders = this.timelineAssets({ visibility: AssetVisibility.Timeline }).map(({ originalPath }) =>
-      originalPath.slice(0, originalPath.lastIndexOf('/')),
+    const folders = this.timelineAssets({ visibility: AssetVisibility.Timeline }).map((asset) =>
+      getFolder(this.getOriginalPath(asset)),
     );
     return [...new Set(folders)].sort((a, b) => a.localeCompare(b));
   }
@@ -1616,7 +1650,7 @@ export class MockData {
   assetsByOriginalPath(path: string) {
     const folder = `/${path.replaceAll(/^\/+|\/+$/g, '')}`;
     return this.timelineAssets({ visibility: AssetVisibility.Timeline })
-      .filter(({ originalPath }) => originalPath.slice(0, originalPath.lastIndexOf('/')) === folder)
+      .filter((asset) => getFolder(this.getOriginalPath(asset)) === folder)
       .sort((a, b) => a.originalFileName.localeCompare(b.originalFileName));
   }
 }

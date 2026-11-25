@@ -129,6 +129,16 @@ const checkSharedLinkAccess = async (
       return sharedLink.allowDownload ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
     }
 
+    case Permission.AssetFileRead: {
+      return sharedLink.showExif ? await access.assetFile.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
+    }
+
+    case Permission.AssetFileDownload: {
+      return sharedLink.showExif && sharedLink.allowDownload
+        ? await access.assetFile.checkSharedLinkAccess(sharedLinkId, ids)
+        : new Set();
+    }
+
     case Permission.AssetUpload: {
       return sharedLink.allowUpload ? ids : new Set();
     }
@@ -187,10 +197,6 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return isOwner.union(isAlbum).union(isPartner);
     }
 
-    case Permission.AssetFileDownload: {
-      return access.assetFile.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
-    }
-
     case Permission.AssetView: {
       const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
       const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, ids.difference(isOwner));
@@ -236,6 +242,16 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.AssetFileRead:
+    case Permission.AssetFileDownload: {
+      const isOwner = await access.assetFile.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+      const isAlbum = await access.assetFile.checkAlbumAccess(auth.user.id, ids.difference(isOwner));
+      const isPartner = await access.assetFile.checkPartnerAccess(
+        auth.user.id,
+        ids.difference(isOwner).difference(isAlbum),
+      );
+      return isOwner.union(isAlbum).union(isPartner);
+    }
+
     case Permission.AssetFileDelete: {
       return await access.assetFile.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
     }

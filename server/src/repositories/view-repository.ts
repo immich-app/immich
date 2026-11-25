@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
-import { asUuid, withExif } from 'src/utils/database.js';
+import { asUuid, onOriginal, withExif } from 'src/utils/database.js';
 
 const escapeLikePattern = (value: string) => value.replaceAll(/[\\%_]/g, String.raw`\$&`);
 
@@ -15,14 +15,15 @@ export class ViewRepository {
   async getUniqueOriginalPaths(userId: string) {
     const results = await this.db
       .selectFrom('asset')
-      .select((eb) => eb.fn<string>('substring', ['asset.originalPath', eb.val('^(.*/)[^/]*$')]).as('directoryPath'))
+      .innerJoin('asset_file as asset_original', onOriginal)
+      .select((eb) => eb.fn<string>('substring', ['asset_original.path', eb.val('^(.*/)[^/]*$')]).as('directoryPath'))
       .distinct()
-      .where('ownerId', '=', asUuid(userId))
-      .where('visibility', '=', AssetVisibility.Timeline)
-      .where('deletedAt', 'is', null)
-      .where('fileCreatedAt', 'is not', null)
-      .where('fileModifiedAt', 'is not', null)
-      .where('localDateTime', 'is not', null)
+      .where('asset.ownerId', '=', asUuid(userId))
+      .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.fileCreatedAt', 'is not', null)
+      .where('asset.fileModifiedAt', 'is not', null)
+      .where('asset.localDateTime', 'is not', null)
       .orderBy('directoryPath', 'asc')
       .execute();
 
@@ -36,18 +37,19 @@ export class ViewRepository {
 
     return this.db
       .selectFrom('asset')
-      .selectAll('asset')
       .$call(withExif)
-      .where('ownerId', '=', asUuid(userId))
-      .where('visibility', '=', AssetVisibility.Timeline)
-      .where('deletedAt', 'is', null)
-      .where('fileCreatedAt', 'is not', null)
-      .where('fileModifiedAt', 'is not', null)
-      .where('localDateTime', 'is not', null)
-      .where('originalPath', 'like', `${prefix}%`)
-      .where('originalPath', 'not like', `${prefix}%/%`)
+      .innerJoin('asset_file as asset_original', onOriginal)
+      .selectAll('asset')
+      .where('asset.ownerId', '=', asUuid(userId))
+      .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.fileCreatedAt', 'is not', null)
+      .where('asset.fileModifiedAt', 'is not', null)
+      .where('asset.localDateTime', 'is not', null)
+      .where('asset_original.path', 'like', `${prefix}%`)
+      .where('asset_original.path', 'not like', `${prefix}%/%`)
       .orderBy(
-        (eb) => eb.fn('regexp_replace', ['asset.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
+        (eb) => eb.fn('regexp_replace', ['asset_original.path', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
         'asc',
       )
       .execute();

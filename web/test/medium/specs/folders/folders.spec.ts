@@ -4,8 +4,8 @@ import { expect, test } from '#test/medium/fixtures.ts';
 
 test.describe('folders', () => {
   test('trashing the only asset in a folder closes the viewer on the folder', async ({ page, data, api, app }) => {
-    const asset = factory.asset({ originalPath: '/library/trip/beach.jpg', originalFileName: 'beach.jpg' });
-    data.addAssets(asset);
+    const asset = factory.asset({ originalFileName: 'beach.jpg' });
+    data.addAssets(asset).setOriginalPath(asset, '/library/trip/beach.jpg');
     const folderUrl = Route.folders({ path: '/library/trip' });
     await page.goto(folderUrl);
     await app.timeline.thumbnail(asset).click();
@@ -19,9 +19,12 @@ test.describe('folders', () => {
   });
 
   test('trashing an asset from the viewer removes it from the folder', async ({ page, data, api, app }) => {
-    const asset = factory.asset({ originalPath: '/library/trip/a.jpg', originalFileName: 'a.jpg' });
-    const next = factory.asset({ originalPath: '/library/trip/b.jpg', originalFileName: 'b.jpg' });
-    data.addAssets([asset, next]);
+    const asset = factory.asset({ originalFileName: 'a.jpg' });
+    const next = factory.asset({ originalFileName: 'b.jpg' });
+    data
+      .addAssets([asset, next])
+      .setOriginalPath(asset, '/library/trip/a.jpg')
+      .setOriginalPath(next, '/library/trip/b.jpg');
     await page.goto(Route.folders({ path: '/library/trip' }));
     await app.timeline.thumbnail(asset).click();
     await app.viewer.waitForAsset(asset);

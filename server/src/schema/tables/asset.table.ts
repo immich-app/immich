@@ -54,7 +54,6 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database.js';
   name: 'asset_localDateTime_month_idx',
   expression: `date_trunc('MONTH'::text, ("localDateTime" AT TIME ZONE 'UTC'::text)) AT TIME ZONE 'UTC'::text`,
 })
-@Index({ columns: ['originalPath', 'libraryId'] })
 @Index({ columns: ['id', 'stackId'] })
 @Index({ columns: ['ownerId', 'updateId'] })
 @Index({
@@ -67,7 +66,6 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database.js';
   columns: ['id'],
   where: `visibility = 'timeline' AND "deletedAt" IS NULL`,
 })
-// For all assets, each originalpath must be unique per user and library
 export class AssetTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -77,9 +75,6 @@ export class AssetTable {
 
   @Column()
   type!: AssetType;
-
-  @Column()
-  originalPath!: string;
 
   @Column({ type: 'timestamp with time zone', index: true })
   fileCreatedAt!: Timestamp;

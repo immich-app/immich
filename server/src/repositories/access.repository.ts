@@ -295,6 +295,39 @@ class AssetFileAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
+  async checkAlbumAccess(userId: string, fileIds: Set<string>) {
+    if (fileIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('asset_file')
+      .innerJoin('asset', (join) =>
+        join
+          .on((eb) =>
+            eb.or([
+              eb('asset.id', '=', eb.ref('asset_file.assetId')),
+              eb('asset.livePhotoVideoId', '=', eb.ref('asset_file.assetId')),
+            ]),
+          )
+          .on('asset.deletedAt', 'is', null),
+      )
+      .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
+      .innerJoin('album', (join) =>
+        join.onRef('album.id', '=', 'album_asset.albumId').on('album.deletedAt', 'is', null),
+      )
+      .innerJoin('album_user', 'album_user.albumId', 'album.id')
+      .innerJoin('user', (join) => join.onRef('user.id', '=', 'album_user.userId').on('user.deletedAt', 'is', null))
+      .select('asset_file.id')
+      .distinct()
+      .where('user.id', '=', userId)
+      .where('asset_file.id', 'in', [...fileIds])
+      .execute()
+      .then((files) => new Set(files.map(({ id }) => id)));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, fileIds: Set<string>, hasElevatedPermission: boolean | undefined) {
     if (fileIds.size === 0) {
       return new Set<string>();
@@ -306,6 +339,86 @@ class AssetFileAccess {
       .innerJoin('asset', 'asset.id', 'asset_file.assetId')
       .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
       .where('asset.ownerId', '=', userId)
+      .where('asset_file.id', 'in', [...fileIds])
+      .execute()
+      .then((files) => new Set(files.map(({ id }) => id)));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkPartnerAccess(userId: string, fileIds: Set<string>) {
+    if (fileIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('partner')
+      .innerJoin('user as sharedBy', (join) =>
+        join.onRef('sharedBy.id', '=', 'partner.sharedById').on('sharedBy.deletedAt', 'is', null),
+      )
+      .innerJoin('asset', (join) => join.onRef('asset.ownerId', '=', 'sharedBy.id').on('asset.deletedAt', 'is', null))
+      .innerJoin('asset_file', 'asset_file.assetId', 'asset.id')
+      .select('asset_file.id')
+      .where('partner.sharedWithId', '=', userId)
+      .where((eb) =>
+        eb.or([
+          eb('asset.visibility', '=', sql.lit(AssetVisibility.Timeline)),
+          eb('asset.visibility', '=', sql.lit(AssetVisibility.Hidden)),
+        ]),
+      )
+      .where('asset_file.id', 'in', [...fileIds])
+      .execute()
+      .then((files) => new Set(files.map(({ id }) => id)));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkSharedLinkAccess(sharedLinkId: string, fileIds: Set<string>) {
+    if (fileIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .with('link', (qb) =>
+        qb
+          .selectFrom('shared_link')
+          .select(['shared_link.id', 'shared_link.albumId'])
+          .where('shared_link.id', '=', sharedLinkId),
+      )
+      .selectFrom('asset_file')
+      .innerJoin('asset', (join) =>
+        join
+          .on((eb) =>
+            eb.or([
+              eb('asset.id', '=', eb.ref('asset_file.assetId')),
+              eb('asset.livePhotoVideoId', '=', eb.ref('asset_file.assetId')),
+            ]),
+          )
+          .on('asset.deletedAt', 'is', null),
+      )
+      .innerJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('link')
+            .innerJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'link.id')
+            .select(sql.lit(1).as('match'))
+            .whereRef('shared_link_asset.assetId', '=', 'asset.id')
+            .unionAll(
+              eb
+                .selectFrom('link')
+                .innerJoin('album', (join) =>
+                  join.onRef('album.id', '=', 'link.albumId').on('album.deletedAt', 'is', null),
+                )
+                .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
+                .select(sql.lit(1).as('match'))
+                .whereRef('album_asset.assetId', '=', 'asset.id'),
+            )
+            .limit(1)
+            .as('membership'),
+        (join) => join.onTrue(),
+      )
+      .select('asset_file.id')
+      .distinct()
       .where('asset_file.id', 'in', [...fileIds])
       .execute()
       .then((files) => new Set(files.map(({ id }) => id)));

@@ -290,22 +290,11 @@ export class IntegrityService extends BaseService {
 
     const lookupPaths = [...new Set(paths.flatMap((path) => [path, path.normalize('NFC'), path.normalize('NFD')]))];
 
-    const trackedPaths = new Set<string>();
-    if (type === 'asset') {
-      const assets = await this.integrityRepository.getAssetPathsByPaths(lookupPaths);
-      for (const { originalPath, encodedVideoPath } of assets) {
-        trackedPaths.add(originalPath.normalize('NFC'));
-
-        if (encodedVideoPath) {
-          trackedPaths.add(encodedVideoPath.normalize('NFC'));
-        }
-      }
-    } else {
-      const assets = await this.integrityRepository.getAssetFilePathsByPaths(lookupPaths);
-      for (const { path } of assets) {
-        trackedPaths.add(path.normalize('NFC'));
-      }
-    }
+    const files =
+      type === 'asset'
+        ? await this.integrityRepository.getMediaFilePathsByPaths(lookupPaths)
+        : await this.integrityRepository.getAssetFilePathsByPaths(lookupPaths);
+    const trackedPaths = new Set(files.map(({ path }) => path.normalize('NFC')));
 
     const personThumbnailPaths = await this.integrityRepository.getPersonThumbnailPathsByPaths(lookupPaths);
     for (const { thumbnailPath } of personThumbnailPaths) {

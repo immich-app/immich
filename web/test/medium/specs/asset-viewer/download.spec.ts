@@ -32,4 +32,21 @@ test.describe('download from the viewer', () => {
     expect(api.downloadAsset).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id }) });
     expect(api.downloadAsset).toHaveBeenCalledWith({ params: expect.objectContaining({ id: video.id }) });
   });
+
+  test('a live photo skips a motion video extracted from an Android photo', async ({ page, data, api, app }) => {
+    const video = factory.asset({ type: AssetTypeEnum.Video, originalFileName: 'holiday.mp4' });
+    const asset = factory.asset({ originalFileName: 'holiday.jpg', livePhotoVideoId: video.id });
+    data.addAssets([asset, video]).setOriginalPath(video, `/data/encoded-video/user/ab/cd/${video.id}-MP.mp4`);
+    await page.clock.install();
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+
+    const [photo] = await Promise.all([page.waitForEvent('download'), app.viewer.download()]);
+    await page.clock.runFor(1000);
+
+    expect(photo.suggestedFilename()).toBe('holiday.jpg');
+    expect(api.downloadAsset).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id }) });
+    expect(api.searchAssetFiles).toHaveBeenCalledWith({ params: expect.objectContaining({ assetId: video.id }) });
+    expect(api.downloadAsset).not.toHaveBeenCalledWith({ params: expect.objectContaining({ id: video.id }) });
+  });
 });

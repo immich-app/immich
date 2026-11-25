@@ -101,6 +101,73 @@ where
   and "key" = $2
 commit
 
+-- AssetRepository.create
+with
+  "inserted_asset" as (
+    insert into
+      "asset" (
+        "ownerId",
+        "type",
+        "checksum",
+        "checksumAlgorithm",
+        "originalFileName",
+        "fileCreatedAt",
+        "fileModifiedAt",
+        "localDateTime"
+      )
+    values
+      ($1, $2, $3, $4, $5, $6, $7, $8)
+    returning
+      *
+  ),
+  "inserted_original" as (
+    insert into
+      "asset_file" ("assetId", "type", "path")
+    select
+      "inserted_asset"."id",
+      'original' as "type",
+      $9 as "path"
+    from
+      "inserted_asset"
+  )
+select
+  *,
+  $10 as "originalPath"
+from
+  "inserted_asset"
+
+-- AssetRepository.createAll
+with
+  "inserted_asset" as (
+    insert into
+      "asset" (
+        "id",
+        "ownerId",
+        "libraryId",
+        "type",
+        "checksum",
+        "checksumAlgorithm",
+        "originalFileName",
+        "fileCreatedAt",
+        "fileModifiedAt",
+        "localDateTime",
+        "isExternal"
+      )
+    values
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+  )
+insert into
+  "asset_file" ("assetId", "type", "path")
+select
+  unnest($12::uuid[]) as "assetId",
+  'original' as "type",
+  unnest($13::text[]) as "path"
+from
+  (
+    select
+      1
+  ) as "dummy"
+
 -- AssetRepository.getByDayOfYear
 with
   "res" as (
@@ -237,9 +304,12 @@ select
   "asset".*
 from
   "asset"
+  inner join "asset_file" as "asset_original" on "asset_original"."assetId" = "asset"."id"
+  and "asset_original"."type" = 'original'
+  and "asset_original"."isEdited" = false
 where
-  "libraryId" = $1::uuid
-  and "originalPath" = $2
+  "asset"."libraryId" = $1::uuid
+  and "asset_original"."path" = $2
 limit
   $3
 
@@ -264,8 +334,17 @@ limit
 select
   "id",
   "stackId",
-  "originalPath",
   "isFavorite",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -291,6 +370,16 @@ limit
 
 -- AssetRepository.getById
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset".*
 from
   "asset"
@@ -307,6 +396,16 @@ where
 
 -- AssetRepository.getByChecksum
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset".*
 from
   "asset"
@@ -526,9 +625,12 @@ begin
 declare offline_check no scroll cursor for (
   select
     "asset"."id",
-    "asset"."originalPath"
+    "asset_original"."path" as "originalPath"
   from
     "asset"
+    inner join "asset_file" as "asset_original" on "asset_original"."assetId" = "asset"."id"
+    and "asset_original"."type" = 'original'
+    and "asset_original"."isEdited" = false
   where
     "asset"."libraryId" = $1::uuid
     and "asset"."isOffline" = $2
@@ -547,13 +649,15 @@ from
 where
   not exists (
     select
-      "originalPath"
     from
       "asset"
+      inner join "asset_file" as "asset_original" on "asset_original"."assetId" = "asset"."id"
+      and "asset_original"."type" = 'original'
+      and "asset_original"."isEdited" = false
     where
-      "asset"."originalPath" = "path"
-      and "libraryId" = $2::uuid
-      and "isExternal" = $3
+      "asset_original"."path" = "path"."path"
+      and "asset"."libraryId" = $2::uuid
+      and "asset"."isExternal" = $3
   )
 
 -- AssetRepository.getForOriginal
@@ -561,7 +665,16 @@ select
   "asset"."id",
   "originalFileName",
   "asset_file"."path" as "editedPath",
-  "originalPath"
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath"
 from
   "asset"
   left join "asset_file" on "asset"."id" = "asset_file"."assetId"
@@ -575,7 +688,16 @@ select
   "asset"."id",
   "originalFileName",
   "asset_file"."path" as "editedPath",
-  "originalPath"
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath"
 from
   "asset"
   left join "asset_file" on "asset"."id" = "asset_file"."assetId"
@@ -586,7 +708,16 @@ where
 
 -- AssetRepository.getForThumbnail
 select
-  "asset"."originalPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset"."originalFileName",
   "asset_file"."path" as "path"
 from
@@ -600,7 +731,16 @@ order by
 
 -- AssetRepository.getForVideo
 select
-  "asset"."originalPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   (
     select
       "asset_file"."path"
@@ -644,9 +784,18 @@ where
 
 -- AssetRepository.getForEdit
 select
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   "asset"."type",
   "asset"."livePhotoVideoId",
-  "asset"."originalPath",
   "asset"."originalFileName",
   "asset_exif"."exifImageWidth",
   "asset_exif"."exifImageHeight",

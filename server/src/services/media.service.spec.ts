@@ -5,7 +5,6 @@ import { SystemConfig } from 'src/dtos/config.dto.js';
 import { AssetEditAction } from 'src/dtos/editing.dto.js';
 import {
   AssetFileType,
-  AssetPathType,
   AssetStatus,
   AssetType,
   AssetVisibility,
@@ -326,7 +325,7 @@ describe(MediaService.name, () => {
         id: 'move-id',
         newPath: '/new/path',
         oldPath: '/old/path',
-        pathType: AssetPathType.Original,
+        pathType: AssetFileType.Original,
       });
 
       await expect(sut.handleAssetMigration({ id: asset.id })).resolves.toBe(JobStatus.Success);

@@ -2,7 +2,6 @@ import { dirname, extname, join, resolve } from 'node:path';
 import { StorageAsset } from 'src/database.js';
 import {
   AssetFileType,
-  AssetPathType,
   ImageFormat,
   PathType,
   PersonPathType,
@@ -174,7 +173,7 @@ export class StorageCore {
     const encodedVideoFile = getAssetFile(asset.files, AssetFileType.EncodedVideo, { isEdited: false });
     return this.moveFile({
       entityId: asset.id,
-      pathType: AssetPathType.EncodedVideo,
+      pathType: AssetFileType.EncodedVideo,
       oldPath: encodedVideoFile?.path || null,
       newPath: StorageCore.getEncodedVideoPath(asset),
     });
@@ -233,7 +232,7 @@ export class StorageCore {
       move = await this.moveRepository.create({ entityId, pathType, oldPath, newPath });
     }
 
-    if (pathType === AssetPathType.Original && !assetInfo) {
+    if (pathType === AssetFileType.Original && !assetInfo) {
       this.logger.warn(`Unable to complete move. Missing asset info for ${entityId}`);
       return;
     }
@@ -324,17 +323,13 @@ export class StorageCore {
 
   private savePath(pathType: PathType, id: string, newPath: string, ownerId?: string) {
     switch (pathType) {
-      case AssetPathType.Original: {
-        return this.assetRepository.update({ id, originalPath: newPath });
-      }
-
+      case AssetFileType.Original:
       case AssetFileType.FullSize:
       case AssetFileType.EncodedVideo:
       case AssetFileType.Thumbnail:
       case AssetFileType.Preview:
-      case AssetFileType.Sidecar:
-      case AssetPathType.EncodedVideo: {
-        return this.assetRepository.upsertFile({ assetId: id, type: pathType as AssetFileType, path: newPath });
+      case AssetFileType.Sidecar: {
+        return this.assetRepository.upsertFile({ assetId: id, type: pathType, path: newPath });
       }
 
       case PersonPathType.Face: {

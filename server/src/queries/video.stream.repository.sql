@@ -191,7 +191,16 @@ where
 
 -- VideoStreamRepository.getForTranscoding
 select
-  "asset"."originalPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'original'
+      and "asset_file"."isEdited" = false
+  ) as "originalPath",
   (
     select
       to_json(obj)

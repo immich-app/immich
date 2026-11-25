@@ -9,6 +9,7 @@ import {
   getRecentAlbumsQuery,
 } from '#lib/queries/album.query.ts';
 import { getApiKeysQuery } from '#lib/queries/api-key.query.ts';
+import { getOriginalFileQuery } from '#lib/queries/asset-file.query.ts';
 import { getAssetEditsQuery, getAssetOcrQuery, getAssetStatisticsQuery } from '#lib/queries/asset.query.ts';
 import { getAuthStatusQuery } from '#lib/queries/auth.query.ts';
 import {
@@ -131,6 +132,7 @@ const queries: Record<string, QueryFactory> = {
   getApiKeysQuery: () => getApiKeysQuery(),
   searchMemoriesQuery: () => searchMemoriesQuery({ isSaved: true }),
   memoriesStatisticsQuery: () => memoriesStatisticsQuery({ isSaved: true }),
+  getOriginalFileQuery: () => getOriginalFileQuery('asset-id'),
   getAssetStatisticsQuery: () => getAssetStatisticsQuery({ isFavorite: true }),
   getAssetOcrQuery: () => getAssetOcrQuery(id),
   getAssetEditsQuery: () => getAssetEditsQuery(id),
