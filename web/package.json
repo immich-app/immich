@@ -119,7 +119,7 @@
     "rollup-plugin-visualizer": "^7.0.0",
     "svelte": "5.58.0",
     "svelte-check": "^4.7.5",
-    "svelte-eslint-parser": "^1.8.1",
+    "svelte-eslint-parser": "^1.10.2",
     "tailwindcss": "^4.2.4",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "8.73.0",
