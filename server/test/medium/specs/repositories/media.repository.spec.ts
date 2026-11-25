@@ -2,7 +2,7 @@ import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { Colorspace, ImageEffort, ImageFormat } from 'src/enum.js';
+import { Colorspace, ImageEffort, ImageFormat, RawExtractedFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { testAssetsDir } from 'test/medium.factory.js';
@@ -15,6 +15,20 @@ describe(MediaRepository.name, () => {
     sut = new MediaRepository(
       automock(LoggingRepository, { args: [undefined, { getEnv: () => ({}) }], strict: false }),
     );
+  });
+
+  describe('extract', () => {
+    it('should extract the full-resolution preview from a Ricoh GR III DNG', async () => {
+      const result = await sut.extract(resolve(testAssetsDir, 'formats/raw/Ricoh/GR3/Ricoh_GR3-450.DNG'));
+
+      expect(result).not.toBeNull();
+      expect(result?.format).toBe(RawExtractedFormat.Jpeg);
+      expect(await sut.getImageMetadata(result!.buffer)).toEqual({
+        width: 6000,
+        height: 4000,
+        isTransparent: false,
+      });
+    });
   });
 
   describe('generateThumbnail', () => {

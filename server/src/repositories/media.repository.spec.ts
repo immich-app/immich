@@ -1,10 +1,11 @@
+import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
-import { Colorspace, ImageEffort, ImageFormat } from 'src/enum.js';
+import { Colorspace, ImageEffort, ImageFormat, RawExtractedFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { automock } from 'test/utils.js';
@@ -61,12 +62,74 @@ const buildTestQuadImage = async () => {
   return image.png().toBuffer();
 };
 
+const createPreview = (width: number, height: number) =>
+  sharp({ create: { width, height, channels: 3, background: 'red' } })
+    .jpeg()
+    .toBuffer();
+
+const encodePreview = (buffer: Buffer) => `base64:${buffer.toString('base64')}`;
+
 describe(MediaRepository.name, () => {
   let sut: MediaRepository;
 
   beforeEach(() => {
     // eslint-disable-next-line no-sparse-arrays
     sut = new MediaRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
+  });
+
+  describe('extract', () => {
+    const input = '/path/to/image.dng';
+
+    const mockPreviewTags = (tags: Record<string, string | number | undefined>) =>
+      vi.mocked(exiftool.readRaw).mockResolvedValue({ SourceFile: input, ...tags });
+
+    beforeEach(() => {
+      vi.spyOn(exiftool, 'extractBinaryTagToBuffer').mockRejectedValue(new Error('Tag not found'));
+      vi.spyOn(exiftool, 'readRaw').mockResolvedValue({});
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it.each([
+      { largestTag: 'SubIFD1:PreviewImage', largestFirst: true },
+      { largestTag: 'SubIFD1:PreviewImage', largestFirst: false },
+      { largestTag: 'Pentax:PreviewImage', largestFirst: true },
+      { largestTag: 'Pentax:PreviewImage', largestFirst: false },
+    ])(
+      'should select $largestTag by pixel area with largestFirst=$largestFirst',
+      async ({ largestTag, largestFirst }) => {
+        const largest = await createPreview(60, 40);
+        const widest = await createPreview(80, 20);
+        const smallerTag = largestTag === 'SubIFD1:PreviewImage' ? 'Pentax:PreviewImage' : 'SubIFD1:PreviewImage';
+        const entries = [
+          [largestTag, encodePreview(largest)],
+          [smallerTag, encodePreview(widest)],
+        ];
+        mockPreviewTags(Object.fromEntries(largestFirst ? entries : entries.toReversed()));
+
+        await expect(sut.extract(input)).resolves.toEqual({ buffer: largest, format: RawExtractedFormat.Jpeg });
+      },
+    );
+
+    it.each([
+      { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg, attempts: 1 },
+      { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg, attempts: 2 },
+      { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl, attempts: 3 },
+    ])('should prefer $tag over PreviewImage', async ({ tag, format, attempts }) => {
+      const buffer = Buffer.from('embedded image');
+      vi.mocked(exiftool.extractBinaryTagToBuffer).mockImplementation((requestedTag) => {
+        if (requestedTag === tag) {
+          return Promise.resolve(buffer);
+        }
+        return Promise.reject(new Error('Tag not found'));
+      });
+
+      await expect(sut.extract(input)).resolves.toEqual({ buffer, format });
+      expect(exiftool.extractBinaryTagToBuffer).toHaveBeenCalledTimes(attempts);
+      expect(exiftool.readRaw).not.toHaveBeenCalled();
+    });
   });
 
   describe('edit (single actions)', () => {
