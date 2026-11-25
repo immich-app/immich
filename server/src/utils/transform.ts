@@ -1,4 +1,4 @@
-import { Matrix, applyToPoint, compose, flipX, flipY, identity, rotate, scale, translate } from 'transformation-matrix';
+import { Matrix, applyToPoint, compose, flipX, flipY, identity, rotate, translate } from 'transformation-matrix';
 import { AssetEditAction, AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
 import type { ImageDimensions } from 'src/types.js';
@@ -27,40 +27,6 @@ export const getOutputDimensions = (
   }
 
   return { width, height };
-};
-
-export const createAffineMatrix = (
-  edits: AssetEditActionItem[],
-  scalingParameters?: {
-    pointSpace: ImageDimensions;
-    targetSpace: ImageDimensions;
-  },
-): Matrix => {
-  let scalingMatrix: Matrix = identity();
-
-  if (scalingParameters) {
-    const { pointSpace, targetSpace } = scalingParameters;
-    const scaleX = targetSpace.width / pointSpace.width;
-    scalingMatrix = scale(scaleX);
-  }
-
-  return compose(
-    scalingMatrix,
-    ...edits.map((edit) => {
-      switch (edit.action) {
-        case 'rotate': {
-          const angleInRadians = (-edit.parameters.angle * Math.PI) / 180;
-          return rotate(angleInRadians);
-        }
-        case 'mirror': {
-          return edit.parameters.axis === 'horizontal' ? flipY() : flipX();
-        }
-        default: {
-          return identity();
-        }
-      }
-    }),
-  );
 };
 
 export type Point = { x: number; y: number };

@@ -2,7 +2,6 @@ import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import sharp from 'sharp';
 import { Colorspace, ImageEffort, ImageFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
@@ -24,7 +23,7 @@ describe(MediaRepository.name, () => {
     const images = await sut.getEmbeddedImages(resolve(testAssetsDir, path), tags);
     return Promise.all(
       images.map(async ({ tag, buffer, photometricInterpretation }) => {
-        const { width, height } = await sharp(buffer).metadata();
+        const { width, height } = await sut.getImageMetadata(buffer);
         return { tag, photometricInterpretation, width, height };
       }),
     );
@@ -35,19 +34,18 @@ describe(MediaRepository.name, () => {
       const input = await readFile(resolve(testAssetsDir, 'formats/avif/security-limit.avif'));
 
       const metadata = await sut.getImageMetadata(input);
-      expect(metadata).toEqual({ width: 1, height: 1, isTransparent: false });
+      expect(metadata).toEqual({ width: 1, height: 1 });
 
-      const decoded = await sut.decodeImage(input, { colorspace: Colorspace.P3, processInvalidImages: false });
+      using decoded = await sut.decodeImage(input, { profile: Colorspace.P3, strict: true });
       const dir = mkdtempDisposableSync(join(tmpdir(), 'media-repository-'));
       const file = join(dir.path, 'test.webp');
       await sut.generateThumbnail(
         decoded,
         {
-          colorspace: Colorspace.P3,
           quality: 80,
           effort: ImageEffort.Medium,
           format: ImageFormat.Webp,
-          processInvalidImages: false,
+          progressive: false,
           decodingTier: 0,
         },
         file,

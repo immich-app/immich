@@ -1,3 +1,4 @@
+import { decodeImage, imageDimensions, type Decode, type Step, type Transform } from '@immich/native-core';
 import { Injectable } from '@nestjs/common';
 import { ExifDateTime, WriteTags, exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
@@ -6,29 +7,22 @@ import { Duration } from 'luxon';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
-import sharp, { Sharp } from 'sharp';
-import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants.js';
 import { Exif } from 'src/database.js';
-import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import {
   AacProfile,
   Av1Profile,
   ColorMatrix,
   ColorPrimaries,
   ColorTransfer,
-  Colorspace,
   DvProfile,
   DvSignalCompatibility,
   H264Profile,
   HevcProfile,
-  ImageEffort,
-  ImageFormat,
   LogLevel,
 } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import type {
   Bitmap,
-  DecodeToBufferOptions,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
   ImageDimensions,
@@ -39,7 +33,6 @@ import type {
   VideoPacketInfo,
 } from 'src/types.js';
 import { handlePromiseError } from 'src/utils/misc.js';
-import { createAffineMatrix } from 'src/utils/transform.js';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
@@ -48,20 +41,7 @@ const probe = (input: string, options: string[]): Promise<FfprobeData> =>
 
 const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
 
-const IMAGE_EFFORT: Partial<Record<ImageFormat, Record<ImageEffort, number>>> = {
-  [ImageFormat.Jxl]: {
-    [ImageEffort.Low]: 3,
-    [ImageEffort.Medium]: 5,
-    [ImageEffort.High]: 7,
-    [ImageEffort.Max]: 9,
-  },
-  [ImageFormat.Webp]: {
-    [ImageEffort.Low]: 2,
-    [ImageEffort.Medium]: 4,
-    [ImageEffort.High]: 5,
-    [ImageEffort.Max]: 6,
-  },
-};
+const ROTATIONS: Record<number, Step | undefined> = { 90: 'rotate90', 180: 'rotate180', 270: 'rotate270' };
 
 type ProgressEvent = {
   frames: number;
@@ -82,10 +62,6 @@ export type EmbeddedImage = {
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    sharp.concurrency(0);
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    sharp.cache({ files: 0 });
   }
 
   /**
@@ -171,108 +147,38 @@ export class MediaRepository {
     }
   }
 
-  async decodeImage(input: string | Buffer, options: DecodeToBufferOptions): Promise<Bitmap> {
-    const decoded = await this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
-    return await this.transform(decoded, options);
+  async decodeImage(input: string | Buffer, options: Decode): Promise<Bitmap> {
+    const bitmap = await decodeImage(input, options);
+    // the pixels are outside the JS heap, so they are freed by scope rather than left to the garbage collector
+    return Object.assign(bitmap, { [Symbol.dispose]: () => bitmap.close() });
   }
 
-  private edit(pipeline: Sharp, edits: AssetEditActionItem[]): Sharp {
-    const crop = edits.find((edit) => edit.action === 'crop');
-    if (crop) {
-      pipeline = pipeline.extract({
-        left: Math.round(crop.parameters.x),
-        top: Math.round(crop.parameters.y),
-        width: Math.round(crop.parameters.width),
-        height: Math.round(crop.parameters.height),
-      });
+  private transform({ size, fit = 'outside', edits = [] }: TransformOptions): Transform {
+    const crop = edits.find((edit) => edit.action === 'crop')?.parameters;
+    const steps: Step[] = [];
+    for (const edit of edits) {
+      if (edit.action === 'rotate') {
+        const step = ROTATIONS[edit.parameters.angle];
+        if (step) {
+          steps.push(step);
+        }
+      } else if (edit.action === 'mirror') {
+        steps.push(edit.parameters.axis === 'horizontal' ? 'mirrorHorizontal' : 'mirrorVertical');
+      }
     }
 
-    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
-    if (affineEditOperations.length > 0) {
-      const { a, b, c, d } = createAffineMatrix(affineEditOperations);
-      pipeline = pipeline.affine([
-        [a, b],
-        [c, d],
-      ]);
-    }
-
-    return pipeline;
+    return { crop: crop && { left: crop.x, top: crop.y, width: crop.width, height: crop.height }, steps, size, fit };
   }
 
-  async generateThumbnail(image: Bitmap, options: GenerateThumbnailOptions, output: string): Promise<void> {
-    const transformed = await this.transform(image, options);
-    await this.tag(transformed, options.colorspace)
-      .toFormat(options.format, {
-        quality: options.quality,
-        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
-        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
-        progressive: options.progressive,
-        effort: IMAGE_EFFORT[options.format]?.[options.effort],
-        decodingTier: options.decodingTier,
-      })
-      .toFile(output);
-  }
-
-  private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
-    // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
-    let pipeline = this.encoded(input, options.processInvalidImages ? 'none' : 'error')
-      .pipelineColorspace(this.getPipelineColorspace(options.colorspace))
-      .withIccProfile(options.colorspace);
-
-    const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
-    pipeline = pipeline.rotate(angle);
-    if (flip) {
-      pipeline = pipeline.flip();
-    }
-
-    if (flop) {
-      pipeline = pipeline.flop();
-    }
-
-    return pipeline;
-  }
-
-  private getPipelineColorspace(colorspace: string) {
-    return colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16';
-  }
-
-  /* Resamples in linear light; averaging gamma-encoded values darkens the result and loses detail. `colorspace`
-   * always has a sRGB transfer function and scRGB applies no primaries matrix, so linearising as sRGB is exact. */
-  private transform(image: Bitmap, { size, fit = 'outside', edits = [] }: TransformOptions): Promise<Bitmap> {
-    if (!size && edits.length === 0) {
-      return Promise.resolve(image);
-    }
-
-    return this.edit(this.raw(image).pipelineColorspace('scrgb'), edits)
-      .resize(size, size, { fit, withoutEnlargement: true })
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-  }
-
-  private raw({ data, info: raw }: Bitmap) {
-    return sharp(data, { raw, limitInputChannels: false, limitInputPixels: false, unlimited: true });
-  }
-
-  private encoded(image: string | Buffer, failOn: 'none' | 'error') {
-    return sharp(image, { failOn, limitInputChannels: false, limitInputPixels: false, unlimited: true });
-  }
-
-  /** Re-attaches the profile, converting nothing: the pixels are already in that colourspace. */
-  private tag(image: Bitmap, colorspace: string): Sharp {
-    return this.raw(image).pipelineColorspace(this.getPipelineColorspace(colorspace)).withIccProfile(colorspace);
+  generateThumbnail(image: Bitmap, options: GenerateThumbnailOptions, output: string): Promise<void> {
+    const { size, fit, edits, ...encode } = options;
+    return image.save(output, encode, this.transform({ size, fit, edits }));
   }
 
   async generateThumbhash(image: Bitmap, options: GenerateThumbhashOptions): Promise<Buffer> {
     const { rgbaToThumbHash } = await import('thumbhash');
-
-    const transformed = await this.transform(image, { edits: options.edits, fit: 'inside', size: 100 });
-
-    const { data, info } = await sharp(transformed.data, { raw: transformed.info })
-      .ensureAlpha()
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-
-    return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
+    const { data, width, height } = await image.pixels(this.transform({ ...options, fit: 'inside', size: 100 }));
+    return Buffer.from(rgbaToThumbHash(width, height, data));
   }
 
   async probe(input: string, options?: ProbeOptions): Promise<VideoInfo> {
@@ -456,9 +362,8 @@ export class MediaRepository {
     });
   }
 
-  async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
-    const { width = 0, height = 0, hasAlpha = false } = await sharp(input, { unlimited: true }).metadata();
-    return { width, height, isTransparent: hasAlpha };
+  getImageMetadata(input: string | Buffer): Promise<ImageDimensions> {
+    return imageDimensions(input);
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {

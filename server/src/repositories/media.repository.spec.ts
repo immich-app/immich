@@ -1,18 +1,15 @@
+import type { Pixels } from '@immich/native-core';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import sharp from 'sharp';
-import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
+import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editing.dto.js';
 import { Colorspace, ImageEffort, ImageFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { automock } from 'test/utils.js';
 
-const getPixelColor = async (buffer: Buffer, x: number, y: number) => {
-  const metadata = await sharp(buffer).metadata();
-  const width = metadata.width!;
-  const { data } = await sharp(buffer).raw().toBuffer({ resolveWithObject: true });
+const getPixelColor = ({ data, width }: Pixels, x: number, y: number) => {
   const idx = (y * width + x) * 4;
   return {
     r: data[idx],
@@ -21,45 +18,23 @@ const getPixelColor = async (buffer: Buffer, x: number, y: number) => {
   };
 };
 
-const buildTestQuadImage = async () => {
-  // build a 4 quadrant image for testing mirroring
-  const base = sharp({
-    create: { width: 1000, height: 1000, channels: 3, background: { r: 0, g: 0, b: 0 } },
-  }).png();
+type Color = [number, number, number];
 
-  const tl = await sharp({
-    create: { width: 500, height: 500, channels: 3, background: { r: 255, g: 0, b: 0 } },
-  })
-    .png()
-    .toBuffer();
-
-  const tr = await sharp({
-    create: { width: 500, height: 500, channels: 3, background: { r: 0, g: 255, b: 0 } },
-  })
-    .png()
-    .toBuffer();
-
-  const bl = await sharp({
-    create: { width: 500, height: 500, channels: 3, background: { r: 0, g: 0, b: 255 } },
-  })
-    .png()
-    .toBuffer();
-
-  const br = await sharp({
-    create: { width: 500, height: 500, channels: 3, background: { r: 255, g: 255, b: 0 } },
-  })
-    .png()
-    .toBuffer();
-
-  const image = base.composite([
-    { input: tl, left: 0, top: 0 }, // top-left
-    { input: tr, left: 500, top: 0 }, // top-right
-    { input: bl, left: 0, top: 500 }, // bottom-left
-    { input: br, left: 500, top: 500 }, // bottom-right
-  ]);
-
-  return image.png().toBuffer();
+const buildTestImage = (width: number, height: number, color: (x: number, y: number) => Color) => {
+  const pixels = Buffer.alloc(width * height * 3);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      pixels.set(color(x, y), (y * width + x) * 3);
+    }
+  }
+  return Buffer.concat([Buffer.from(`P6 ${width} ${height} 255\n`), pixels]);
 };
+
+// a 4 quadrant image for testing mirroring: red, green, blue and yellow
+const buildTestQuadImage = () =>
+  buildTestImage(1000, 1000, (x, y) =>
+    y < 500 ? (x < 500 ? [255, 0, 0] : [0, 255, 0]) : x < 500 ? [0, 0, 255] : [255, 255, 0],
+  );
 
 describe(MediaRepository.name, () => {
   let sut: MediaRepository;
@@ -69,17 +44,15 @@ describe(MediaRepository.name, () => {
     sut = new MediaRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 
+  const applyEdits = async (input: Buffer, edits: AssetEditActionItem[]) => {
+    using decoded = await sut.decodeImage(input, { profile: Colorspace.Srgb, strict: true });
+    return decoded.pixels(sut['transform']({ edits }));
+  };
+
   describe('edit (single actions)', () => {
     it('should apply crop edit correctly', async () => {
-      const result = sut['edit'](
-        sharp({
-          create: {
-            width: 1000,
-            height: 1000,
-            channels: 4,
-            background: { r: 255, g: 0, b: 0, alpha: 0.5 },
-          },
-        }).png(),
+      const result = await applyEdits(
+        buildTestImage(1000, 900, () => [255, 0, 0]),
         [
           {
             action: AssetEditAction.Crop,
@@ -92,21 +65,12 @@ describe(MediaRepository.name, () => {
           },
         ],
       );
-
-      const metadata = await result.toBuffer().then((buf) => sharp(buf).metadata());
-      expect(metadata.width).toBe(700);
-      expect(metadata.height).toBe(300);
+      expect(result.width).toBe(700);
+      expect(result.height).toBe(300);
     });
     it('should apply rotate edit correctly', async () => {
-      const result = sut['edit'](
-        sharp({
-          create: {
-            width: 500,
-            height: 1000,
-            channels: 4,
-            background: { r: 255, g: 0, b: 0, alpha: 0.5 },
-          },
-        }).png(),
+      const result = await applyEdits(
+        buildTestImage(500, 1000, () => [255, 0, 0]),
         [
           {
             action: AssetEditAction.Rotate,
@@ -116,14 +80,12 @@ describe(MediaRepository.name, () => {
           },
         ],
       );
-
-      const metadata = await result.toBuffer().then((buf) => sharp(buf).metadata());
-      expect(metadata.width).toBe(1000);
-      expect(metadata.height).toBe(500);
+      expect(result.width).toBe(1000);
+      expect(result.height).toBe(500);
     });
 
     it('should apply mirror edit correctly', async () => {
-      const resultHorizontal = sut['edit'](sharp(await buildTestQuadImage()), [
+      const resultHorizontal = await applyEdits(buildTestQuadImage(), [
         {
           action: AssetEditAction.Mirror,
           parameters: {
@@ -131,18 +93,15 @@ describe(MediaRepository.name, () => {
           },
         },
       ]);
+      expect(resultHorizontal.width).toBe(1000);
+      expect(resultHorizontal.height).toBe(1000);
 
-      const bufferHorizontal = await resultHorizontal.toBuffer();
-      const metadataHorizontal = await resultHorizontal.metadata();
-      expect(metadataHorizontal.width).toBe(1000);
-      expect(metadataHorizontal.height).toBe(1000);
+      expect(getPixelColor(resultHorizontal, 10, 10)).toEqual({ r: 0, g: 255, b: 0 });
+      expect(getPixelColor(resultHorizontal, 990, 10)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(resultHorizontal, 10, 990)).toEqual({ r: 255, g: 255, b: 0 });
+      expect(getPixelColor(resultHorizontal, 990, 990)).toEqual({ r: 0, g: 0, b: 255 });
 
-      expect(await getPixelColor(bufferHorizontal, 10, 10)).toEqual({ r: 0, g: 255, b: 0 });
-      expect(await getPixelColor(bufferHorizontal, 990, 10)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(bufferHorizontal, 10, 990)).toEqual({ r: 255, g: 255, b: 0 });
-      expect(await getPixelColor(bufferHorizontal, 990, 990)).toEqual({ r: 0, g: 0, b: 255 });
-
-      const resultVertical = sut['edit'](sharp(await buildTestQuadImage()), [
+      const resultVertical = await applyEdits(buildTestQuadImage(), [
         {
           action: AssetEditAction.Mirror,
           parameters: {
@@ -150,174 +109,144 @@ describe(MediaRepository.name, () => {
           },
         },
       ]);
-
-      const bufferVertical = await resultVertical.toBuffer();
-      const metadataVertical = await resultVertical.metadata();
-      expect(metadataVertical.width).toBe(1000);
-      expect(metadataVertical.height).toBe(1000);
+      expect(resultVertical.width).toBe(1000);
+      expect(resultVertical.height).toBe(1000);
 
       // top-left should now be bottom-left (blue)
-      expect(await getPixelColor(bufferVertical, 10, 10)).toEqual({ r: 0, g: 0, b: 255 });
+      expect(getPixelColor(resultVertical, 10, 10)).toEqual({ r: 0, g: 0, b: 255 });
       // top-right should now be bottom-right (yellow)
-      expect(await getPixelColor(bufferVertical, 990, 10)).toEqual({ r: 255, g: 255, b: 0 });
+      expect(getPixelColor(resultVertical, 990, 10)).toEqual({ r: 255, g: 255, b: 0 });
       // bottom-left should now be top-left (red)
-      expect(await getPixelColor(bufferVertical, 10, 990)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(resultVertical, 10, 990)).toEqual({ r: 255, g: 0, b: 0 });
       // bottom-right should now be top-right (blue)
-      expect(await getPixelColor(bufferVertical, 990, 990)).toEqual({ r: 0, g: 255, b: 0 });
+      expect(getPixelColor(resultVertical, 990, 990)).toEqual({ r: 0, g: 255, b: 0 });
     });
   });
 
   describe('edit (multiple sequential edits)', () => {
     it('should apply horizontal mirror then vertical mirror (equivalent to 180° rotation)', async () => {
-      const imageBuffer = await buildTestQuadImage();
-      const result = sut['edit'](sharp(imageBuffer), [
+      const imageBuffer = buildTestQuadImage();
+      const result = await applyEdits(imageBuffer, [
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
       ]);
+      expect(result.width).toBe(1000);
+      expect(result.height).toBe(1000);
 
-      const buffer = await result.png().toBuffer();
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.width).toBe(1000);
-      expect(metadata.height).toBe(1000);
-
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 255, b: 0 });
-      expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
-      expect(await getPixelColor(buffer, 10, 990)).toEqual({ r: 0, g: 255, b: 0 });
-      expect(await getPixelColor(buffer, 990, 990)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 10, 10)).toEqual({ r: 255, g: 255, b: 0 });
+      expect(getPixelColor(result, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
+      expect(getPixelColor(result, 10, 990)).toEqual({ r: 0, g: 255, b: 0 });
+      expect(getPixelColor(result, 990, 990)).toEqual({ r: 255, g: 0, b: 0 });
     });
 
     it('should apply rotate 90° then horizontal mirror', async () => {
-      const imageBuffer = await buildTestQuadImage();
-      const result = sut['edit'](sharp(imageBuffer), [
+      const imageBuffer = buildTestQuadImage();
+      const result = await applyEdits(imageBuffer, [
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
       ]);
+      expect(result.width).toBe(1000);
+      expect(result.height).toBe(1000);
 
-      const buffer = await result.png().toBuffer();
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.width).toBe(1000);
-      expect(metadata.height).toBe(1000);
-
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
-      expect(await getPixelColor(buffer, 10, 990)).toEqual({ r: 0, g: 255, b: 0 });
-      expect(await getPixelColor(buffer, 990, 990)).toEqual({ r: 255, g: 255, b: 0 });
+      expect(getPixelColor(result, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
+      expect(getPixelColor(result, 10, 990)).toEqual({ r: 0, g: 255, b: 0 });
+      expect(getPixelColor(result, 990, 990)).toEqual({ r: 255, g: 255, b: 0 });
     });
 
     it('should apply 180° rotation', async () => {
-      const imageBuffer = await buildTestQuadImage();
-      const result = sut['edit'](sharp(imageBuffer), [{ action: AssetEditAction.Rotate, parameters: { angle: 180 } }]);
+      const imageBuffer = buildTestQuadImage();
+      const result = await applyEdits(imageBuffer, [{ action: AssetEditAction.Rotate, parameters: { angle: 180 } }]);
+      expect(result.width).toBe(1000);
+      expect(result.height).toBe(1000);
 
-      const buffer = await result.png().toBuffer();
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.width).toBe(1000);
-      expect(metadata.height).toBe(1000);
-
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 255, b: 0 });
-      expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
-      expect(await getPixelColor(buffer, 10, 990)).toEqual({ r: 0, g: 255, b: 0 });
-      expect(await getPixelColor(buffer, 990, 990)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 10, 10)).toEqual({ r: 255, g: 255, b: 0 });
+      expect(getPixelColor(result, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
+      expect(getPixelColor(result, 10, 990)).toEqual({ r: 0, g: 255, b: 0 });
+      expect(getPixelColor(result, 990, 990)).toEqual({ r: 255, g: 0, b: 0 });
     });
 
     it('should apply 270° rotations', async () => {
-      const imageBuffer = await buildTestQuadImage();
-      const result = sut['edit'](sharp(imageBuffer), [{ action: AssetEditAction.Rotate, parameters: { angle: 270 } }]);
+      const imageBuffer = buildTestQuadImage();
+      const result = await applyEdits(imageBuffer, [{ action: AssetEditAction.Rotate, parameters: { angle: 270 } }]);
+      expect(result.width).toBe(1000);
+      expect(result.height).toBe(1000);
 
-      const buffer = await result.png().toBuffer();
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.width).toBe(1000);
-      expect(metadata.height).toBe(1000);
-
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 0, g: 255, b: 0 });
-      expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 255, g: 255, b: 0 });
-      expect(await getPixelColor(buffer, 10, 990)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(buffer, 990, 990)).toEqual({ r: 0, g: 0, b: 255 });
+      expect(getPixelColor(result, 10, 10)).toEqual({ r: 0, g: 255, b: 0 });
+      expect(getPixelColor(result, 990, 10)).toEqual({ r: 255, g: 255, b: 0 });
+      expect(getPixelColor(result, 10, 990)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 990, 990)).toEqual({ r: 0, g: 0, b: 255 });
     });
 
     it('should apply crop then rotate 90°', async () => {
-      const imageBuffer = await buildTestQuadImage();
-      const result = sut['edit'](sharp(imageBuffer), [
+      const imageBuffer = buildTestQuadImage();
+      const result = await applyEdits(imageBuffer, [
         { action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 1000, height: 500 } },
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
       ]);
+      expect(result.width).toBe(500);
+      expect(result.height).toBe(1000);
 
-      const buffer = await result.png().toBuffer();
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.width).toBe(500);
-      expect(metadata.height).toBe(1000);
-
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(buffer, 10, 990)).toEqual({ r: 0, g: 255, b: 0 });
+      expect(getPixelColor(result, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 10, 990)).toEqual({ r: 0, g: 255, b: 0 });
     });
 
     it('should apply rotate 90° then crop', async () => {
-      const imageBuffer = await buildTestQuadImage();
-      const result = sut['edit'](sharp(imageBuffer), [
+      const imageBuffer = buildTestQuadImage();
+      const result = await applyEdits(imageBuffer, [
         { action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 500, height: 1000 } },
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
       ]);
+      expect(result.width).toBe(1000);
+      expect(result.height).toBe(500);
 
-      const buffer = await result.png().toBuffer();
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.width).toBe(1000);
-      expect(metadata.height).toBe(500);
-
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 0, g: 0, b: 255 });
-      expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 10, 10)).toEqual({ r: 0, g: 0, b: 255 });
+      expect(getPixelColor(result, 990, 10)).toEqual({ r: 255, g: 0, b: 0 });
     });
 
     it('should apply vertical mirror then horizontal mirror then rotate 90°', async () => {
-      const imageBuffer = await buildTestQuadImage();
-      const result = sut['edit'](sharp(imageBuffer), [
+      const imageBuffer = buildTestQuadImage();
+      const result = await applyEdits(imageBuffer, [
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
       ]);
+      expect(result.width).toBe(1000);
+      expect(result.height).toBe(1000);
 
-      const buffer = await result.png().toBuffer();
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.width).toBe(1000);
-      expect(metadata.height).toBe(1000);
-
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 0, g: 255, b: 0 });
-      expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 255, g: 255, b: 0 });
-      expect(await getPixelColor(buffer, 10, 990)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(buffer, 990, 990)).toEqual({ r: 0, g: 0, b: 255 });
+      expect(getPixelColor(result, 10, 10)).toEqual({ r: 0, g: 255, b: 0 });
+      expect(getPixelColor(result, 990, 10)).toEqual({ r: 255, g: 255, b: 0 });
+      expect(getPixelColor(result, 10, 990)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 990, 990)).toEqual({ r: 0, g: 0, b: 255 });
     });
 
     it('should apply crop to single quadrant then mirror', async () => {
-      const imageBuffer = await buildTestQuadImage();
-      const result = sut['edit'](sharp(imageBuffer), [
+      const imageBuffer = buildTestQuadImage();
+      const result = await applyEdits(imageBuffer, [
         { action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 500, height: 500 } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
       ]);
+      expect(result.width).toBe(500);
+      expect(result.height).toBe(500);
 
-      const buffer = await result.png().toBuffer();
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.width).toBe(500);
-      expect(metadata.height).toBe(500);
-
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(buffer, 490, 10)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(buffer, 10, 490)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(buffer, 490, 490)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 490, 10)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 10, 490)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 490, 490)).toEqual({ r: 255, g: 0, b: 0 });
     });
 
     it('should apply all operations: crop, rotate, mirror', async () => {
-      const imageBuffer = await buildTestQuadImage();
-      const result = sut['edit'](sharp(imageBuffer), [
+      const imageBuffer = buildTestQuadImage();
+      const result = await applyEdits(imageBuffer, [
         { action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 500, height: 1000 } },
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
       ]);
+      expect(result.width).toBe(1000);
+      expect(result.height).toBe(500);
 
-      const buffer = await result.png().toBuffer();
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.width).toBe(1000);
-      expect(metadata.height).toBe(500);
-
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
+      expect(getPixelColor(result, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
+      expect(getPixelColor(result, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
     });
   });
 
@@ -349,42 +278,20 @@ describe(MediaRepository.name, () => {
       const buffer = Buffer.from(await response.arrayBuffer());
       const dir = mkdtempDisposableSync(join(tmpdir(), 'media-repository-'));
       const file = join(dir.path, 'test.webp');
-      const decoded = await sut.decodeImage(buffer, { colorspace: Colorspace.P3, processInvalidImages: false });
+      using decoded = await sut.decodeImage(buffer, { profile: Colorspace.P3, strict: true });
       await sut.generateThumbnail(
         decoded,
         {
-          colorspace: Colorspace.P3,
           quality: 80,
           format: ImageFormat.Webp,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
+          progressive: false,
           decodingTier: 0,
         },
         file,
       );
 
       expect(statSync(file).blksize).toBeGreaterThan(0);
-    });
-
-    it.each([
-      { format: ImageFormat.Webp, effort: ImageEffort.Low, expected: 2 },
-      { format: ImageFormat.Webp, effort: ImageEffort.Max, expected: 6 },
-      { format: ImageFormat.Jpeg, effort: ImageEffort.Max, expected: undefined },
-    ])('should encode $format at $effort effort', async ({ format, effort, expected }) => {
-      const toFormat = vi.spyOn(sharp.prototype, 'toFormat');
-      const dir = mkdtempDisposableSync(join(tmpdir(), 'media-repository-'));
-      const decoded = await sut.decodeImage(await buildTestQuadImage(), {
-        colorspace: Colorspace.Srgb,
-        processInvalidImages: false,
-      });
-
-      await sut.generateThumbnail(
-        decoded,
-        { colorspace: Colorspace.Srgb, quality: 80, format, effort, processInvalidImages: false, decodingTier: 0 },
-        join(dir.path, `test.${format}`),
-      );
-
-      expect(toFormat).toHaveBeenCalledWith(format, expect.objectContaining({ effort: expected }));
     });
   });
 });

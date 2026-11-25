@@ -1,10 +1,9 @@
-import { version as nativeCoreVersion } from '@immich/native-core';
+import { version as nativeCoreVersion, vipsVersion } from '@immich/native-core';
 import { Injectable } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
 import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
-import sharp from 'sharp';
 import { ReleaseChannel } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -120,8 +119,7 @@ export class ServerInfoRepository {
         exiftool.version(),
       ]);
 
-      // eslint-disable-next-line import-x/no-named-as-default-member
-      const libvipsVersion = getLockfileVersion('libvips', lockfile) || sharp.versions.vips;
+      const libvipsVersion = getLockfileVersion('libvips', lockfile) || vipsVersion();
 
       this.buildVersions = {
         nodejs: nodejsVersion,
