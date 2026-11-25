@@ -49,8 +49,10 @@
             shape="round"
             type="submit"
             size="small"
-            disabled={!(password && newPassword && newPassword === confirmPassword)}>{$t('save')}</Button
+            disabled={!(password && newPassword && newPassword === confirmPassword)}
           >
+            {$t('save')}
+          </Button>
         </div>
       </div>
     </form>

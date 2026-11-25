@@ -44,9 +44,9 @@
           <Text size="small" color="muted">{method.description}</Text>
         {/if}
       </div>
-      <Button size="small" color="secondary" shape="round" onclick={onPickMethod} leadingIcon={mdiPencilOutline}
-        >{$t('change')}</Button
-      >
+      <Button size="small" color="secondary" shape="round" onclick={onPickMethod} leadingIcon={mdiPencilOutline}>
+        {$t('change')}
+      </Button>
     </div>
 
     {#if method.schema}

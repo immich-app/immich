@@ -67,8 +67,8 @@
       <Alert color="danger" title={errorMessage} size="medium" class="mt-4" />
     {/if}
 
-    <Button class="mt-4" type="submit" size="giant" shape="round" fullWidth disabled={!valid || loading} {loading}
-      >{$t('sign_up')}</Button
-    >
+    <Button class="mt-4" type="submit" size="giant" shape="round" fullWidth disabled={!valid || loading} {loading}>
+      {$t('sign_up')}
+    </Button>
   </form>
 </AuthPageLayout>

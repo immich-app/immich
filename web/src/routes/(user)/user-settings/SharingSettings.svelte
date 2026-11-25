@@ -237,9 +237,9 @@
       {/if}
 
       <HStack fullWidth class="mt-5 justify-end">
-        <Button shape="round" size="small" onclick={() => handleRerunFacialRecognition()}
-          >{$t('cluster_group_facial_recognition')}</Button
-        >
+        <Button shape="round" size="small" onclick={() => handleRerunFacialRecognition()}>
+          {$t('cluster_group_facial_recognition')}
+        </Button>
         <Button shape="round" size="small" onclick={() => handleAddUsers()}>{$t('add_user')}</Button>
       </HStack>
     </SettingAccordion>
@@ -281,9 +281,9 @@
                 <Text class="my-4" size="small" fontWeight="medium">
                   {$t('shared_with_partner', { values: { partner: partner.user.name } })}
                 </Text>
-                <Text size="tiny" fontWeight="medium"
-                  >{$t('partner_can_access', { values: { partner: partner.user.name } })}</Text
-                >
+                <Text size="tiny" fontWeight="medium">
+                  {$t('partner_can_access', { values: { partner: partner.user.name } })}
+                </Text>
                 <ul class="text-sm">
                   <li class="mt-2 flex place-items-center gap-2 py-1">
                     <Icon icon={mdiCheck} />

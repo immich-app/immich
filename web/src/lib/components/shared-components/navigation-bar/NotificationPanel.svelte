@@ -83,8 +83,10 @@
           leadingIcon={mdiCheckAll}
           size="small"
           color="primary"
-          onclick={() => markAllAsRead()}>{$t('mark_all_as_read')}</Button
+          onclick={() => markAllAsRead()}
         >
+          {$t('mark_all_as_read')}
+        </Button>
       </div>
     </div>
 

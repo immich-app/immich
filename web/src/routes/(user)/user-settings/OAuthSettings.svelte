@@ -40,9 +40,9 @@
       {:else if config.oauth.enabled}
         {#if authManager.user.oauthId}
           {#if config.oauth.accountManagementUrl}
-            <Button shape="round" size="small" href={config.oauth.accountManagementUrl}
-              >{$t('manage_oauth_account')}</Button
-            >
+            <Button shape="round" size="small" href={config.oauth.accountManagementUrl}>
+              {$t('manage_oauth_account')}
+            </Button>
           {/if}
           <Button shape="round" size="small" onclick={() => unlink.mutate([])}>{$t('unlink_oauth')}</Button>
         {:else}
