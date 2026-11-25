@@ -138,9 +138,9 @@
         </p>
       </div>
 
-      <Button shape="round" class="mt-2" fullWidth onclick={openPurchaseModal}
-        >{$t('purchase_button_buy_immich')}</Button
-      >
+      <Button shape="round" class="mt-2" fullWidth onclick={openPurchaseModal}>
+        {$t('purchase_button_buy_immich')}
+      </Button>
       <div class="mt-3 flex gap-4">
         <Button shape="round" size="small" fullWidth color="secondary" variant="ghost" onclick={() => hideButton(true)}>
           {$t('purchase_button_never_show_again')}

@@ -79,8 +79,10 @@
         <a
           href={Route.people()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
         {#snippet children({ itemCount })}
@@ -111,8 +113,10 @@
         <a
           href={Route.places()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-28 gap-x-4 md:grid-auto-fill-36">
         {#snippet children({ itemCount })}
@@ -144,8 +148,10 @@
         <a
           href={Route.memories()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <ImageCarousel items={memories}>
         {#snippet child(item)}
@@ -162,8 +168,10 @@
         <a
           href={Route.recentlyAdded()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <div class="flex h-24 max-w-fit flex-wrap gap-x-1 overflow-hidden md:h-42">
         {#each recents as item (item.data.id)}

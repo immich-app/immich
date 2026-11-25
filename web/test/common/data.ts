@@ -1610,7 +1610,7 @@ export class MockData {
     const folders = this.timelineAssets({ visibility: AssetVisibility.Timeline }).map(({ originalPath }) =>
       originalPath.slice(0, originalPath.lastIndexOf('/')),
     );
-    return [...new Set(folders)].sort();
+    return [...new Set(folders)].sort((a, b) => a.localeCompare(b));
   }
 
   assetsByOriginalPath(path: string) {
