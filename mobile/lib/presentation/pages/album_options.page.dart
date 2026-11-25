@@ -61,7 +61,6 @@ class AlbumOptionsPage extends HookConsumerWidget {
     Future<void> removeUserFromAlbum(UserDto user) async {
       try {
         await ref.read(remoteAlbumProvider.notifier).removeUser(album.id, user.id);
-        ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
       } catch (_) {
         showErrorMessage();
       }
@@ -82,7 +81,6 @@ class AlbumOptionsPage extends HookConsumerWidget {
         }
 
         await ref.read(remoteAlbumProvider.notifier).addUsers(album.id, newUsers);
-        ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
         if (!context.mounted) {
           return;
         }

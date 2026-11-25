@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
@@ -320,6 +321,25 @@ void main() {
 
       // album2 (Jan 1) should come before album1 (Jan 25)
       expect(resultEnd, [album2.id, album1.id]);
+    });
+  });
+
+  group('watchSharedUsers', () {
+    test('emits shared users without the owner and updates when one is removed', () async {
+      final owner = await ctx.newUser();
+      final user1 = await ctx.newUser();
+      final user2 = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: owner.id);
+      await sut.addUsers(album.id, [user1.id, user2.id]);
+
+      final queue = StreamQueue(sut.watchSharedUsers(album.id));
+
+      expect((await queue.next).map((user) => user.id), unorderedEquals([user1.id, user2.id]));
+
+      await sut.removeUser(album.id, userId: user1.id);
+      expect((await queue.next).map((user) => user.id), [user2.id]);
+
+      await queue.cancel();
     });
   });
 }

@@ -14,7 +14,6 @@ import 'package:immich_mobile/presentation/widgets/remote_album/album_option.wid
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -81,7 +80,6 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       }
 
       await ref.read(remoteAlbumProvider.notifier).addUsers(_album.id, newUsers);
-      ref.invalidate(remoteAlbumSharedUsersProvider(_album.id));
       if (!context.mounted) {
         return;
       }

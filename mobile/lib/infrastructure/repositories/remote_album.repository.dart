@@ -236,33 +236,34 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
     }).watchSingle();
   }
 
-  Future<List<UserDto>> getSharedUsers(String albumId) async {
-    final albumUserRows = await (_db.select(
-      _db.remoteAlbumUserEntity,
-    )..where((row) => row.albumId.equals(albumId) & row.role.isNotValue(AlbumUserRole.owner.index))).get();
-
-    if (albumUserRows.isEmpty) {
-      return [];
-    }
-
-    final userIds = albumUserRows.map((row) => row.userId);
-
-    return (_db.select(_db.userEntity)..where((row) => row.id.isIn(userIds)))
-        .map(
-          (user) => UserDto(
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            memoryEnabled: true,
-            inTimeline: false,
-            isPartnerSharedBy: false,
-            isPartnerSharedWith: false,
-            profileChangedAt: user.profileChangedAt,
-            hasProfileImage: user.hasProfileImage,
-            avatarColor: user.avatarColor,
+  Stream<List<UserDto>> watchSharedUsers(String albumId) {
+    final query =
+        _db.userEntity.select().join([
+          innerJoin(
+            _db.remoteAlbumUserEntity,
+            _db.userEntity.id.equalsExp(_db.remoteAlbumUserEntity.userId),
+            useColumns: false,
           ),
-        )
-        .get();
+        ])..where(
+          _db.remoteAlbumUserEntity.albumId.equals(albumId) &
+              _db.remoteAlbumUserEntity.role.isNotValue(AlbumUserRole.owner.index),
+        );
+
+    return query.map((row) {
+      final user = row.readTable(_db.userEntity);
+      return UserDto(
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        memoryEnabled: true,
+        inTimeline: false,
+        isPartnerSharedBy: false,
+        isPartnerSharedWith: false,
+        profileChangedAt: user.profileChangedAt,
+        hasProfileImage: user.hasProfileImage,
+        avatarColor: user.avatarColor,
+      );
+    }).watch();
   }
 
   Future<AlbumUserRole?> getUserRole(String albumId, String userId) async {

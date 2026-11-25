@@ -307,9 +307,7 @@ final remoteAlbumDateRangeProvider = StreamProvider.autoDispose.family<(DateTime
   return service.watchDateRange(albumId);
 });
 
-final remoteAlbumSharedUsersProvider = FutureProvider.autoDispose.family<List<UserDto>, String>((ref, albumId) async {
-  final link = ref.keepAlive();
-  ref.onDispose(() => link.close());
+final remoteAlbumSharedUsersProvider = StreamProvider.autoDispose.family<List<UserDto>, String>((ref, albumId) {
   final service = ref.watch(remoteAlbumServiceProvider);
-  return service.getSharedUsers(albumId);
+  return service.watchSharedUsers(albumId);
 });
