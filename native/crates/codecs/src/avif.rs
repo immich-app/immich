@@ -4,10 +4,6 @@ use std::ptr::NonNull;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
 
-use jxl::api::{
-    JxlColorEncoding, JxlColorProfile, JxlPrimaries, JxlTransferFunction, JxlWhitePoint,
-    RenderingIntent,
-};
 use moxcms::{ColorProfile, Layout, MatrixCoefficients, Transform16BitExecutor};
 use mp4parse::{ImageMirror, ImageRotation, ParseStrictness};
 use quick_cache::sync::Cache;
@@ -19,11 +15,11 @@ use yuv::{YuvGrayImage, YuvPlanarImage, YuvRange, YuvStandardMatrix};
 
 use crate::Options;
 use crate::color::{
-    self, BAND, CicpColorPrimaries, CicpProfile, TRANSFORMS, Target, TransferCharacteristics,
-    Transforms,
+    self, BAND, CicpColorPrimaries, CicpProfile, SRGB_RGBA, TRANSFORMS, Target,
+    TransferCharacteristics, Transforms,
 };
 use crate::image::{self, Image, Pixels, Sample, Samples};
-use crate::jxl::srgb_transform;
+use crate::jxl::hdr_transform;
 use crate::resize;
 use crate::rotate::Orientation;
 
@@ -320,23 +316,11 @@ fn matrix(mtrx: u8) -> Option<Option<YuvStandardMatrix>> {
 /// The transform from `cicp` to sRGB, built once per space.
 fn cicp_transform(cicp: CicpProfile) -> Option<Arc<Transform16BitExecutor>> {
     if color::is_hdr(cicp) {
-        // jxl-rs writes a tone-mapping table into the profiles it makes for PQ and HLG.
-        let encoding = JxlColorEncoding::RgbColorSpace {
-            white_point: JxlWhitePoint::D65,
-            primaries: match cicp.color_primaries {
-                CicpColorPrimaries::Bt709 => JxlPrimaries::SRGB,
-                CicpColorPrimaries::Smpte432 => JxlPrimaries::P3,
-                CicpColorPrimaries::Bt2020 => JxlPrimaries::BT2100,
-                _ => return None,
-            },
-            transfer_function: match cicp.transfer_characteristics {
-                TransferCharacteristics::Hlg => JxlTransferFunction::HLG,
-                _ => JxlTransferFunction::PQ,
-            },
-            rendering_intent: RenderingIntent::Relative,
-        };
-        let (transform, _) = srgb_transform(&JxlColorProfile::Simple(encoding))?;
-        return Some(transform);
+        return hdr_transform(
+            cicp.color_primaries,
+            cicp.transfer_characteristics,
+            SRGB_RGBA,
+        );
     }
 
     static SPACES: LazyLock<Transforms<(u8, u8)>> = LazyLock::new(|| Cache::new(TRANSFORMS));
@@ -346,7 +330,7 @@ fn cicp_transform(cicp: CicpProfile) -> Option<Arc<Transform16BitExecutor>> {
     );
     let (transform, _) = SPACES
         .get_or_insert_with(&key, || {
-            color::profile_to_srgb(&ColorProfile::new_from_cicp(cicp)).ok_or(())
+            color::profile_transform(&ColorProfile::new_from_cicp(cicp), SRGB_RGBA).ok_or(())
         })
         .ok()?;
     Some(transform)

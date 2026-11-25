@@ -13,10 +13,21 @@ avif = ["codecs/avif"]
 jxl = ["codecs/jxl"]
 # One group per target.
 flutter = ["convert", "rotate", "thumbhash", "jxl"]
-server = []
+server = [
+    "dep:moxcms",
+    "dep:napi",
+    "dep:napi-derive",
+    "dep:rs-vips",
+    "codecs/napi",
+    "jxl",
+]
 
 [dependencies]
 codecs = { path = "../codecs", default-features = false, optional = true }
+moxcms = { workspace = true, optional = true }
+napi = { workspace = true, optional = true }
+napi-derive = { workspace = true, optional = true }
+rs-vips = { workspace = true, optional = true }
 
 [lints]
 workspace = true

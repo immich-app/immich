@@ -13,4 +13,7 @@ fetches the pinned toolchain itself. The server loads it as a Node addon, which
 - `native_core`: Flutter package with the build hook and the ffigen bindings
   (`NOTICES` carries the licenses of the crates compiled into the core, update it with the dependencies)
 
+The `server` group links libvips 8.19, which the build finds through pkg-config; set `PKG_CONFIG_PATH` when it
+is not installed in a default location.
+
 `mise run build`, `test`, `lint`, and `fmt`. The header and the Dart bindings come from `mise run //mobile:codegen:native`.

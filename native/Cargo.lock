@@ -140,6 +140,8 @@ dependencies = [
  "libc",
  "moxcms",
  "mp4parse",
+ "napi",
+ "napi-derive",
  "pic-scale",
  "quick_cache",
  "rav1d",
@@ -641,6 +643,10 @@ name = "native_core"
 version = "0.1.0"
 dependencies = [
  "codecs",
+ "moxcms",
+ "napi",
+ "napi-derive",
+ "rs-vips",
 ]
 
 [[package]]
@@ -868,6 +874,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "rs-vips"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52bff86a769bb29a4a68a54ca68dfb8e713aa5e6c6a380d26d6878393007528c"
+dependencies = [
+ "num-derive",
+ "num-traits",
 ]
 
 [[package]]

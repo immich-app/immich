@@ -23,7 +23,7 @@
     ]
   },
   "scripts": {
-    "build": "napi build --platform --release --esm -o dist"
+    "build": "napi build --platform --release --esm --no-const-enum -o dist"
   },
   "license": "GNU Affero General Public License version 3",
   "devDependencies": {

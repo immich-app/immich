@@ -56,6 +56,7 @@ rav1d = { version = "1.1.1", git = "https://github.com/memorysafety/rav1d", rev 
     "bitdepth_16",
 ] }
 rayon = { version = "1.11", default-features = false }
+rs-vips = { version = "0.7", default-features = false }
 yuv = { version = "0.8", default-features = false, features = [
     "avx",
     "rdm",
