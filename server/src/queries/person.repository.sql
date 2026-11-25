@@ -1179,6 +1179,9 @@ with
       "face_search" ("faceId", "embedding")
     values
       ($1, $2)
+    on conflict ("faceId") do update
+    set
+      "embedding" = "excluded"."embedding"
   )
 select
 from

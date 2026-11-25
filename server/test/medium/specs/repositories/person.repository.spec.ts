@@ -67,6 +67,28 @@ beforeAll(async () => {
 });
 
 describe(PersonRepository.name, () => {
+  describe('refreshFaces', () => {
+    it('should replace an existing face embedding on refresh', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { assetFace } = await ctx.newAssetFace({ assetId: asset.id });
+      const zeros = Array.from({ length: 510 }, () => 0);
+      const original = JSON.stringify([1, 0, ...zeros]);
+      const replacement = JSON.stringify([0, 1, ...zeros]);
+
+      await sut.refreshFaces([], [], [{ faceId: assetFace.id, embedding: original }]);
+      await sut.refreshFaces([], [], [{ faceId: assetFace.id, embedding: replacement }]);
+
+      const { embedding } = await ctx.database
+        .selectFrom('face_search')
+        .select('embedding')
+        .where('faceId', '=', assetFace.id)
+        .executeTakeFirstOrThrow();
+      expect(embedding).toBe(replacement);
+    });
+  });
+
   describe('createAll', () => {
     it('should create people in the groups they were given', async () => {
       const { ctx, sut } = setup();
