@@ -11,7 +11,7 @@ If your reverse proxy uses the [Let's Encrypt](https://letsencrypt.org/) [http-0
 :::
 
 :::caution
-The default compose file publishes `2283:2283` on every interface. If Immich is hosted on a rented server that is reachable from the internet (e.g. VPS), it remains reachable over plain HTTP at `http://<server-ip>:2283`, bypassing the proxy and its TLS.
+The default compose file publishes `2283:2283` on every interface. If Immich is hosted on a server that is reachable from the internet (e.g. VPS), it remains reachable over plain HTTP at `http://<server-ip>:2283`, bypassing the proxy and its TLS.
 
 If you're using a reverse proxy in such a setup, publish it only on loopback, `127.0.0.1:2283:2283`, and point the proxy at `127.0.0.1:2283`.
 
