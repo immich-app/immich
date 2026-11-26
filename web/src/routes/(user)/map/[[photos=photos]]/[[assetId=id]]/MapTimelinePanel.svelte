@@ -72,11 +72,7 @@
 
   const timelineOptions = $derived({
     bbox: timelineBoundingBox,
-    visibility: $mapSettings.withPartners
-      ? AssetVisibility.Timeline
-      : $mapSettings.includeArchived
-        ? undefined
-        : AssetVisibility.Timeline,
+    visibility: $mapSettings.withPartners || !$mapSettings.includeArchived ? AssetVisibility.Timeline : undefined,
     isFavorite: $mapSettings.onlyFavorites || undefined,
     withPartners: $mapSettings.withPartners || undefined,
     withStacked: true,

@@ -29,12 +29,43 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immi
 COPY ./packages/plugin-sdk ./packages/plugin-sdk/
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/plugin-sdk build
 
+FROM ghcr.io/immich-app/base-server-dev:202610291416@sha256:5f4f9f77059e1cd0182994419a19f4ee045c3fd48e611f5e77623ed63f7aa1e4 AS rust
+
+COPY --from=ghcr.io/jdx/mise:2026.11.14@sha256:7178a0bc7eb30d5090f81237fc0a7830f57e52126b9d8df656e24547437a1e53 /usr/local/bin/mise /usr/local/bin/mise
+COPY ./native/mise.toml ./native/mise.lock /usr/src/app/native/
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/native/mise.toml \
+  RUSTUP_HOME=/usr/local/rustup \
+  CARGO_HOME=/usr/local/cargo
+RUN mise --cd /usr/src/app/native install --locked
+
+FROM builder AS native
+
+ARG TARGETPLATFORM
+
+COPY --from=rust /usr/local/rustup /usr/local/rustup
+COPY --from=rust /usr/local/cargo /usr/local/cargo
+ENV RUSTUP_HOME=/usr/local/rustup \
+  CARGO_HOME=/usr/local/cargo \
+  PATH=/usr/local/cargo/bin:$PATH
+RUN cat /proc/sys/kernel/random/uuid | tr -d - > /etc/machine-id
+
+COPY ./native/crates/native_core_node/package.json ./native/crates/native_core_node/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/native-core install --frozen-lockfile
+
+COPY ./native ./native/
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
+  --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry \
+  --mount=type=cache,id=native-target-${TARGETPLATFORM},target=/usr/src/app/native/target \
+  pnpm --filter @immich/native-core build
+
 FROM plugin-sdk AS server
 
 COPY ./server/package.json ./server/package.json
+COPY ./native/crates/native_core_node/package.json ./native/crates/native_core_node/package.json
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich install --frozen-lockfile
 
 COPY ./server ./server/
+COPY --from=native /usr/src/app/native/crates/native_core_node/dist ./native/crates/native_core_node/dist
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   pnpm --filter immich build && \
   pnpm --filter immich --prod --no-optional deploy /output/server-pruned
@@ -68,7 +99,7 @@ FROM plugin-sdk AS plugins
 
 ARG TARGETPLATFORM
 
-COPY --from=ghcr.io/jdx/mise:2026.11.9@sha256:9a182adba2584a6f5b29ddc1f2c7651c93694a5f829d74452b90214616baacf4 /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2026.11.14@sha256:7178a0bc7eb30d5090f81237fc0a7830f57e52126b9d8df656e24547437a1e53 /usr/local/bin/mise /usr/local/bin/mise
 
 COPY ./mise.toml ./mise.toml
 COPY ./mise.lock ./mise.lock

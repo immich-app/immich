@@ -46,6 +46,7 @@ jobs:
               - 'mise.toml'
             server:
               - 'server/**'
+              - 'native/**'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
               - 'packages/plugin-core/**'

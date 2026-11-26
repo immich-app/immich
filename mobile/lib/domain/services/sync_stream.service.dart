@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -14,10 +13,10 @@ import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.da
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -58,18 +57,18 @@ class SyncStreamService {
 
   Future<bool> sync() async {
     _logger.info("Remote sync request for user");
-    final serverVersion = await _api.serverInfoApi.getServerVersion();
-    if (serverVersion == null) {
+    final serverVersionDto = await _api.serverInfoApi.getServerVersion();
+    if (serverVersionDto == null) {
       _logger.severe("Cannot perform sync: unable to determine server version");
       return false;
     }
 
-    final serverSemVer = SemVer(major: serverVersion.major, minor: serverVersion.minor, patch: serverVersion.patch_);
+    final serverVersion = ServerVersion.fromDto(serverVersionDto);
 
     final value = Store.get(StoreKey.syncMigrationStatus, "[]");
     final migrations = (jsonDecode(value) as List).cast<String>();
     int previousLength = migrations.length;
-    await _runPreSyncTasks(migrations, serverSemVer);
+    await _runPreSyncTasks(migrations);
 
     if (migrations.length != previousLength) {
       _logger.info("Updated pre-sync migration status: $migrations");
@@ -80,7 +79,7 @@ class SyncStreamService {
     bool shouldReset = false;
     await _syncApiRepository.streamChanges(
       _handleEvents,
-      serverVersion: serverSemVer,
+      serverVersion: serverVersion,
       onReset: () => shouldReset = true,
       abortSignal: _cancellation?.future,
     );
@@ -88,7 +87,7 @@ class SyncStreamService {
       _logger.info("Resetting sync state as requested by server");
       await _syncApiRepository.streamChanges(
         _handleEvents,
-        serverVersion: serverSemVer,
+        serverVersion: serverVersion,
         abortSignal: _cancellation?.future,
       );
     }
@@ -104,7 +103,7 @@ class SyncStreamService {
     return true;
   }
 
-  Future<void> _runPreSyncTasks(List<String> migrations, SemVer semVer) async {
+  Future<void> _runPreSyncTasks(List<String> migrations) async {
     if (!migrations.contains(SyncMigrationTask.v20260701_ResetAlbumsV1.name)) {
       _logger.info("Running pre-sync task: v20260701_ResetAlbumsV1");
       await _syncApiRepository.deleteSyncAck([SyncEntityType.albumV1]);
@@ -122,8 +121,7 @@ class SyncStreamService {
       migrations.add(SyncMigrationTask.v20260128_ResetExifV1.name);
     }
 
-    if (!migrations.contains(SyncMigrationTask.v20260128_ResetAssetV1.name) &&
-        semVer.supports(.assetPayloadChange20260128)) {
+    if (!migrations.contains(SyncMigrationTask.v20260128_ResetAssetV1.name)) {
       _logger.info("Running pre-sync task: v20260128_ResetAssetV1");
       await _syncApiRepository.deleteSyncAck([
         SyncEntityType.assetV1,
@@ -139,8 +137,7 @@ class SyncStreamService {
       }
     }
 
-    if (!migrations.contains(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name) &&
-        semVer.supports(.assetPayloadChange20260597)) {
+    if (!migrations.contains(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name)) {
       _logger.info("Running pre-sync task: v20260597_ResetAssetV1AssetV2");
       await _syncApiRepository.deleteSyncAck([SyncEntityType.assetV1, SyncEntityType.assetV2]);
       migrations.add(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name);
@@ -164,7 +161,7 @@ class SyncStreamService {
         return;
       }
 
-      if (event.type != items.firstOrNull?.type) {
+      if (event.type != items.firstOrNull?.type || event.type == SyncEntityType.syncPendingResetV1) {
         await _processBatch(items);
       }
 
@@ -295,6 +292,12 @@ class SyncStreamService {
       // Request to reset the client state. Clear everything related to remote entities
       case SyncEntityType.syncResetV1:
         return _syncStreamRepository.reset();
+      case SyncEntityType.syncPendingResetV1:
+        final requestType = data.cast<SyncPendingResetV1>().single.type;
+        return switch (requestType) {
+          SyncRequestType.assetOcrV1 => _syncStreamRepository.resetAssetOcrV1(),
+          _ => throw UnsupportedError("Cannot reset $requestType"),
+        };
       case SyncEntityType.memoryV1:
       case SyncEntityType.memoryV2:
         return _syncStreamRepository.updateMemoriesV2(data.cast());

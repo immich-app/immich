@@ -1,4 +1,4 @@
-# Files Custom Locations
+# Files custom locations
 
 import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
 

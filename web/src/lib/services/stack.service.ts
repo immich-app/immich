@@ -1,6 +1,7 @@
 import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { deleteAssetsMutation } from '#lib/queries/asset.query.ts';
 import { executeMutation, queryClient } from '#lib/queries/client.ts';
 import {
   createStackMutation,
@@ -13,7 +14,7 @@ import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { navigate } from '#lib/utils/navigation.ts';
-import { deleteAssets, type AssetResponseDto, type AssetStackResponseDto, type StackResponseDto } from '@immich/sdk';
+import type { AssetResponseDto, AssetStackResponseDto, StackResponseDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiImageCheckOutline,
@@ -23,6 +24,7 @@ import {
   mdiPinOutline,
   mdiUploadMultiple,
 } from '@mdi/js';
+import { type MutationMeta } from '@tanstack/svelte-query';
 import { type MessageFormatter } from 'svelte-i18n';
 
 export const getStackBulkActions = ($t: MessageFormatter) => {
@@ -115,24 +117,18 @@ const handleKeepThisDeleteOthers = async (stack: StackResponseDto, asset: AssetR
   }
 
   const assetsToDeleteIds = stack.assets.filter((a) => a.id !== asset.id).map((asset) => asset.id);
-  try {
-    await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_keep_this_delete_others'));
-    return;
-  }
-
-  await executeMutation(
-    () => deleteStacksMutation({ error: { toast: 'errors.failed_to_keep_this_delete_others' } }),
-    [{ bulkIdsDto: { ids: [stack.id] } }],
-    {
-      onSuccess: () => {
-        toastManager.primary($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
-        eventManager.emit('StackDelete', { id: stack.id, assets: [asset] });
-        eventManager.emit('AssetUpdate', { ...asset, stack: null });
-      },
-    },
-  );
+  const meta: MutationMeta = { error: { toast: 'errors.failed_to_keep_this_delete_others' } };
+  await executeMutation(() => deleteAssetsMutation(meta), [{ assetBulkDeleteDto: { ids: assetsToDeleteIds } }], {
+    onSuccess: () =>
+      void executeMutation(() => deleteStacksMutation(meta), [{ bulkIdsDto: { ids: [stack.id] } }], {
+        onSuccess: () => {
+          toastManager.primary($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
+          const keptAsset = { ...asset, stack: null };
+          eventManager.emit('StackDelete', { id: stack.id, assets: [keptAsset] });
+          eventManager.emit('AssetUpdate', keptAsset);
+        },
+      }),
+  });
 };
 
 const handleRemoveFromStack = (stack: StackResponseDto, asset: AssetResponseDto) =>

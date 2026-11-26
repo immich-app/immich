@@ -1,7 +1,10 @@
+import { ProjectionType } from '#lib/constants.ts';
 import { Route } from '#lib/route.ts';
 import type { MockData } from '#test/common/data.ts';
 import { factory } from '#test/common/factories.ts';
+import { opaquePng } from '#test/common/helpers.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
+import { AssetEditAction, SharedLinkType } from '@immich/sdk';
 import type { Page } from '@playwright/test';
 
 const helloWorld = { text: 'Hello World', x1: 0.1, y1: 0.1, x2: 0.4, y2: 0.1, x3: 0.4, y3: 0.15, x4: 0.1, y4: 0.15 };
@@ -189,5 +192,73 @@ test.describe('OCR bounding boxes', () => {
 
     await dispatchSplitTouch(page, (await app.viewer.content.boundingBox())!);
     expect(await app.viewer.ocr.imageTransform()).toBe(initialTransform);
+  });
+  test('a shared link never looks up the recognized text', async ({ page, context, data, api, app }) => {
+    const asset = setup(data);
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset] });
+    data.addSharedLinks(link);
+    await context.clearCookies();
+
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+
+    await app.viewer.waitForAsset(asset);
+    await expect(app.viewer.ocr.button).toHaveCount(0);
+    expect(api.getAssetOcr).not.toHaveBeenCalled();
+  });
+
+  test('show the new text after saving an edit', async ({ page, data, api, app }) => {
+    const asset = setup(data);
+    let ocr = data.getOcr(asset.id);
+    api.on({ getAssetOcr: () => ({ json: ocr }) });
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.editor.openButton.click();
+    await app.viewer.editor.rotateRightButton.click();
+
+    await app.viewer.editor.saveButton.click();
+    await expect.poll(() => api.editAsset.calls).toHaveLength(1);
+    ocr = [factory.ocr({ assetId: asset.id, ...secondText })];
+    api.emit('AssetEditReadyV2', { asset: { id: asset.id }, edit: [] });
+    await expect(app.viewer.editor.saveButton).toHaveCount(0);
+    await app.viewer.ocr.button.click();
+
+    await expect(app.viewer.ocr.boxes).toHaveCount(1);
+    await expect(app.viewer.ocr.boxes.first()).toContainText('Second Asset Text');
+    expect(api.editAsset).toHaveBeenCalledWith({
+      params: { id: asset.id },
+      body: { edits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }] },
+    });
+  });
+
+  test('show the first asset text again after going back to it', async ({ page, data, app }) => {
+    const first = setup(data);
+    const second = factory.asset({ fileCreatedAt: '2024-01-01T12:00:00.000Z', originalFileName: 'second.jpg' });
+    data.addAssets(second).addOcr(factory.ocr({ assetId: second.id, ...secondText }));
+    await page.goto(Route.viewAsset({ id: first.id }));
+    await app.viewer.waitForAsset(first);
+    await app.viewer.nextButton.click();
+    await app.viewer.waitForAsset(second);
+
+    await app.viewer.previousButton.click();
+    await app.viewer.waitForAsset(first);
+    await app.viewer.ocr.button.click();
+
+    await expect(app.viewer.ocr.boxes).toHaveCount(2);
+    await expect(app.viewer.ocr.boxes.first()).toContainText('Hello World');
+  });
+
+  test('show on a panorama', async ({ page, data, api, app }) => {
+    const asset = factory.asset({
+      width: 4000,
+      height: 2000,
+      exifInfo: { projectionType: ProjectionType.EQUIRECTANGULAR },
+    });
+    data.addAssets(asset).addOcr(factory.ocr({ assetId: asset.id, ...helloWorld }));
+    api.on({ viewAsset: () => ({ body: opaquePng, contentType: 'image/png' }) });
+    await page.goto(Route.viewAsset({ id: asset.id }));
+
+    await app.viewer.ocr.button.click();
+
+    await expect(app.viewer.ocr.panoramaBoxes).toHaveCount(1);
   });
 });

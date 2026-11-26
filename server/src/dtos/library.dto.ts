@@ -15,6 +15,10 @@ export interface CrawlOptionsDto {
   exclusionPatterns?: string[];
 }
 
+export interface MatchOptionsDto extends CrawlOptionsDto {
+  extensions?: string[];
+}
+
 export interface WalkOptionsDto extends CrawlOptionsDto {
   take: number;
 }

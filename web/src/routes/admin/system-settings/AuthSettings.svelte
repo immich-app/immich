@@ -86,9 +86,9 @@
 
               <div class="flex items-center justify-between gap-2">
                 <Text size="small">{$t('admin.unlink_all_oauth_accounts_description')}</Text>
-                <Button size="small" onclick={handleUnlinkAllOAuthAccounts}
-                  >{$t('admin.unlink_all_oauth_accounts')}</Button
-                >
+                <Button size="small" onclick={handleUnlinkAllOAuthAccounts}>
+                  {$t('admin.unlink_all_oauth_accounts')}
+                </Button>
               </div>
 
               <SettingInputField
@@ -349,8 +349,10 @@
                 shape="round"
                 leadingIcon={mdiPlus}
                 onclick={() => void configToEdit.passkey.additionalDomains.push('')}
-                disabled={disabled || !configToEdit.passkey.enabled}>{$t('add_url')}</Button
+                disabled={disabled || !configToEdit.passkey.enabled}
               >
+                {$t('add_url')}
+              </Button>
             </div>
           </div>
         </SettingAccordion>

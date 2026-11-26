@@ -72,13 +72,13 @@
         placeholder="IMCL-0KEY-0CAN-00BE-FOUD-FROM-YOUR-EMAIL-INBX"
         disabled={isLoading}
       />
-      <Button type="submit"
-        >{#if isLoading}
+      <Button type="submit">
+        {#if isLoading}
           <LoadingSpinner />
         {:else}
           {$t('purchase_button_activate')}
-        {/if}</Button
-      >
+        {/if}
+      </Button>
     </form>
   </div>
 </section>

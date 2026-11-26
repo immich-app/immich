@@ -9,7 +9,7 @@ import {
   getRecentAlbumsQuery,
 } from '#lib/queries/album.query.ts';
 import { getApiKeysQuery } from '#lib/queries/api-key.query.ts';
-import { getAssetStatisticsQuery } from '#lib/queries/asset.query.ts';
+import { getAssetEditsQuery, getAssetOcrQuery, getAssetStatisticsQuery } from '#lib/queries/asset.query.ts';
 import { getAuthStatusQuery } from '#lib/queries/auth.query.ts';
 import {
   getClusterGroupRequestsForGroupQuery,
@@ -75,6 +75,7 @@ import { getSessionsQuery } from '#lib/queries/session.query.ts';
 import { getAllSharedLinksQuery, getMySharedLinkQuery, getSharedLinkQuery } from '#lib/queries/shared-link.query.ts';
 import { getStackQuery } from '#lib/queries/stack.query.ts';
 import { getAllTagsQuery, getTagByIdQuery } from '#lib/queries/tag.query.ts';
+import { getTimeBucketQuery, getTimeBucketsQuery } from '#lib/queries/timeline.query.ts';
 import {
   getUserAdminQuery,
   getUserCalendarHeatmapAdminQuery,
@@ -131,6 +132,8 @@ const queries: Record<string, QueryFactory> = {
   searchMemoriesQuery: () => searchMemoriesQuery({ isSaved: true }),
   memoriesStatisticsQuery: () => memoriesStatisticsQuery({ isSaved: true }),
   getAssetStatisticsQuery: () => getAssetStatisticsQuery({ isFavorite: true }),
+  getAssetOcrQuery: () => getAssetOcrQuery(id),
+  getAssetEditsQuery: () => getAssetEditsQuery(id),
   getAuthStatusQuery: () => getAuthStatusQuery(),
   getClusterGroupRequestsQuery: () => getClusterGroupRequestsQuery(),
   getClusterGroupRequestsForGroupQuery: () => getClusterGroupRequestsForGroupQuery(id),
@@ -189,6 +192,8 @@ const queries: Record<string, QueryFactory> = {
   getStackQuery: () => getStackQuery(id),
   getAllTagsQuery: () => getAllTagsQuery(),
   getTagByIdQuery: () => getTagByIdQuery(id),
+  getTimeBucketsQuery: () => getTimeBucketsQuery({ isFavorite: true }),
+  getTimeBucketQuery: () => getTimeBucketQuery({ timeBucket: '2024-01-01' }),
   searchUsersAdminQuery: () => searchUsersAdminQuery({ withDeleted: true }),
   getUserAdminQuery: () => getUserAdminQuery(id),
   getUserPreferencesAdminQuery: () => getUserPreferencesAdminQuery(id),

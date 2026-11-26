@@ -1,4 +1,4 @@
-# Server Stats
+# Server stats
 
 Server statistics to show the total number of videos, photos, usage and quota per user.
 

@@ -33,7 +33,7 @@
   {onSubmit}
 >
   <Field label={$t('owner')}>
-    <Select bind:value={ownerId} options={users.map((user) => ({ label: user.name, value: user.id }))} />
+    <Select bind:value={ownerId} options={users.map((user) => ({ label: user.name ?? '', value: user.id }))} />
     <HelperText color="warning">{$t('admin.note_cannot_be_changed_later')}</HelperText>
   </Field>
 </FormModal>

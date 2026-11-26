@@ -1,4 +1,4 @@
-# Better Facial Recognition Clusters
+# Better facial recognition clusters
 
 ## Purpose
 
@@ -6,15 +6,15 @@ This guide explains how to optimize facial recognition in systems with large ima
 
 ---
 
-## Important Notes
+## Important notes
 
-- **Best Suited For:** Large image libraries after importing a significant number of images.
+- **Best suited for:** Large image libraries after importing a significant number of images.
 - **Warning:** This method deletes all previously assigned names.
-- **Tip:** **Always take a [backup](/administration/backup-and-restore#database) before proceeding!**
+- **Tip:** **always take a [backup](/administration/backup-and-restore#database) before proceeding!**
 
 ---
 
-## Step-by-Step Instructions
+## Step-by-step instructions
 
 ### Objective
 
@@ -24,7 +24,7 @@ To enhance face clustering and ensure the model effectively identifies faces usi
 
 ### Steps
 
-#### 1. Adjust Machine Learning Settings
+#### 1. Adjust machine learning settings
 
 Navigate to:  
 **Admin → Administration → Settings → Machine Learning Settings**
@@ -39,7 +39,7 @@ Make the following changes:
 
 ---
 
-#### 2. Run Reset Jobs
+#### 2. Run reset jobs
 
 Go to:  
 **Administration → Job Queues**
@@ -52,7 +52,7 @@ Perform the following:
 
 ---
 
-#### 3. Refine Recognition with Lower Thresholds
+#### 3. Refine recognition with lower thresholds
 
 Once the reset jobs are complete, refine the recognition as follows:
 

@@ -58,8 +58,8 @@
       <HelperText color="danger">{errorMessage}</HelperText>
     </Field>
 
-    <Button class="mt-2" type="submit" size="large" shape="round" fullWidth disabled={!valid}
-      >{$t('to_change_password')}</Button
-    >
+    <Button class="mt-2" type="submit" size="large" shape="round" fullWidth disabled={!valid}>
+      {$t('to_change_password')}
+    </Button>
   </form>
 </AuthPageLayout>

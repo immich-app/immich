@@ -13,7 +13,7 @@ import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getDatabaseBackupDateTime = (filename: string, zone?: string): DateTime | undefined => {
-  const dateMatch = filename.match(/\d+T\d+/);
+  const dateMatch = /\d+T\d+/.exec(filename);
   if (!dateMatch) {
     return;
   }

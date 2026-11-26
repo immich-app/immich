@@ -949,6 +949,16 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
       rethrow;
     }
   }
+
+  Future<void> resetAssetOcrV1() async {
+    _logger.fine("resetAssetOcrV1 received. Resetting OCR entities");
+    try {
+      await _db.assetOcrEntity.deleteAll();
+    } catch (error, stack) {
+      _logger.severe('Error: resetAssetOcrV1', error, stack);
+      rethrow;
+    }
+  }
 }
 
 extension on AssetTypeEnum {

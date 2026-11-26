@@ -19,6 +19,7 @@ import {
   type ActivityResponseDto,
   type AdminConfigDto,
   type AlbumResponseDto,
+  type AlbumUserRole,
   type ApiKeyResponseDto,
   type AssetBulkUpdateDto,
   type AssetEditActionItemResponseDto,
@@ -94,6 +95,8 @@ export type TimelineFilter = {
   visibility?: AssetVisibility;
   order?: AssetOrder;
   withStacked?: boolean;
+  withCoordinates?: boolean;
+  hasCoordinates?: boolean;
   personId?: string;
 };
 
@@ -140,6 +143,9 @@ const toWorkflowSteps = (steps: WorkflowStepDto[]) =>
   steps.map(({ method, config, enabled }) => ({ method, config, enabled }));
 
 const hiddenVisibilities = new Set<AssetVisibility>([AssetVisibility.Hidden, AssetVisibility.Locked]);
+
+const hasCoordinates = ({ exifInfo }: AssetResponseDto) =>
+  typeof exifInfo?.latitude === 'number' && typeof exifInfo.longitude === 'number';
 
 const suggestionFields: Record<SearchSuggestionType, keyof ExifResponseDto> = {
   [SearchSuggestionType.Country]: 'country',
@@ -298,7 +304,7 @@ export class MockData {
     };
   }
 
-  signUpAdmin(dto: { email: string; name: string }) {
+  signUpAdmin(dto: { email: string; name: string | null }) {
     Object.assign(this.user, { email: dto.email, name: dto.name, isAdmin: true });
     this.serverConfig.isInitialized = true;
     return this.user;
@@ -394,7 +400,7 @@ export class MockData {
     const all = this.getPeople().filter(
       (person) =>
         (isHidden === undefined || person.isHidden === isHidden) &&
-        (name === undefined || unaccent(person.name).includes(unaccent(name))),
+        (name === undefined || unaccent(person.name ?? '').includes(unaccent(name))),
     );
     const people = withHidden || isHidden !== undefined ? all : all.filter((person) => !person.isHidden);
     return {
@@ -410,7 +416,7 @@ export class MockData {
     return this.getPeople().filter(
       (person) =>
         (withHidden || !person.isHidden) &&
-        (unaccent(person.name).startsWith(query) || unaccent(person.name).includes(` ${query}`)),
+        (unaccent(person.name ?? '').startsWith(query) || unaccent(person.name ?? '').includes(` ${query}`)),
     );
   }
 
@@ -545,6 +551,7 @@ export class MockData {
             : asset.visibility === filter.visibility) &&
           asset.isTrashed === isTrashed &&
           (filter.isFavorite === undefined || asset.isFavorite === filter.isFavorite) &&
+          (filter.hasCoordinates === undefined || hasCoordinates(asset) === filter.hasCoordinates) &&
           (filter.personId === undefined || !!asset.people?.some((person) => person.id === filter.personId)) &&
           (!filter.withStacked || !asset.stack || asset.stack.primaryAssetId === asset.id),
       )
@@ -806,6 +813,19 @@ export class MockData {
 
     const id = userId === 'me' ? this.user.id : userId;
     this.albums.set(albumId, { ...album, albumUsers: album.albumUsers.filter(({ user }) => user.id !== id) });
+    return true;
+  }
+
+  updateAlbumUser(albumId: string, userId: string, role: AlbumUserRole) {
+    const album = this.albums.get(albumId);
+    if (!album?.albumUsers.some(({ user }) => user.id === userId)) {
+      return false;
+    }
+
+    const albumUsers = album.albumUsers.map((albumUser) =>
+      albumUser.user.id === userId ? { ...albumUser, role } : albumUser,
+    );
+    this.albums.set(albumId, { ...album, albumUsers });
     return true;
   }
 
@@ -1325,7 +1345,7 @@ export class MockData {
 
   mapMarkers(albumId?: string): MapMarkerResponseDto[] {
     return this.timelineAssets({ albumId })
-      .filter((asset) => typeof asset.exifInfo?.latitude === 'number' && typeof asset.exifInfo.longitude === 'number')
+      .filter((asset) => hasCoordinates(asset))
       .map((asset) => ({
         id: asset.id,
         lat: asset.exifInfo!.latitude!,
@@ -1376,10 +1396,12 @@ export class MockData {
       livePhotoVideoId: bucket.map((asset) => asset.livePhotoVideoId ?? null),
       city: bucket.map((asset) => asset.exifInfo?.city ?? null),
       country: bucket.map((asset) => asset.exifInfo?.country ?? null),
-      latitude: bucket.map((asset) => asset.exifInfo?.latitude ?? null),
-      longitude: bucket.map((asset) => asset.exifInfo?.longitude ?? null),
       visibility: bucket.map((asset) => asset.visibility),
       stack: bucket.map((asset) => (asset.stack ? [asset.stack.id, String(asset.stack.assetCount)] : null)),
+      ...(filter.withCoordinates && {
+        latitude: bucket.map((asset) => asset.exifInfo?.latitude ?? null),
+        longitude: bucket.map((asset) => asset.exifInfo?.longitude ?? null),
+      }),
     };
   }
 
@@ -1551,7 +1573,7 @@ export class MockData {
     const nextPage = matches.length > page * size ? String(page + 1) : null;
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
-      assets: { total: items.length, count: items.length, items, facets: [], nextPage, nextCursor: null },
+      assets: { count: items.length, items, facets: [], nextPage, nextCursor: null },
     };
   }
 
@@ -1602,7 +1624,7 @@ export class MockData {
     const folders = this.timelineAssets({ visibility: AssetVisibility.Timeline }).map(({ originalPath }) =>
       originalPath.slice(0, originalPath.lastIndexOf('/')),
     );
-    return [...new Set(folders)].sort();
+    return [...new Set(folders)].sort((a, b) => a.localeCompare(b));
   }
 
   assetsByOriginalPath(path: string) {

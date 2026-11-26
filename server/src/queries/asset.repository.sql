@@ -521,40 +521,42 @@ order by
 limit
   $4
 
--- AssetRepository.detectOfflineExternalAssets
-begin
-declare offline_check no scroll cursor for (
-  select
-    "asset"."id",
-    "asset"."originalPath"
-  from
-    "asset"
-  where
-    "asset"."libraryId" = $1::uuid
-    and "asset"."isOffline" = $2
-    and "asset"."isExternal" = $3
-)
-fetch 10000
-from
-  offline_check
-commit
-
--- AssetRepository.filterNewExternalAssetPaths
+-- AssetRepository.getLibraryScanPage
 select
-  "path"
+  "id",
+  "originalPath",
+  "isOffline",
+  "status",
+  "fileModifiedAt"
 from
-  unnest(array[$1]::text[]) as "path"
+  "asset"
 where
-  not exists (
-    select
-      "originalPath"
-    from
-      "asset"
-    where
-      "asset"."originalPath" = "path"
-      and "libraryId" = $2::uuid
-      and "isExternal" = $3
-  )
+  "libraryId" = $1
+  and "isExternal" = $2
+  and "originalPath" > $3
+order by
+  "originalPath"
+limit
+  $4
+
+-- AssetRepository.setOffline
+update "asset"
+set
+  "isOffline" = $1,
+  "deletedAt" = coalesce("deletedAt", $2)
+where
+  "id" = any ($3::uuid[])
+  and "createdAt" < $4
+
+-- AssetRepository.setOnline
+update "asset"
+set
+  "isOffline" = $1,
+  "deletedAt" = case
+    when "status" = 'trashed' then "deletedAt"
+  end
+where
+  "id" = any ($2::uuid[])
 
 -- AssetRepository.getForOriginal
 select

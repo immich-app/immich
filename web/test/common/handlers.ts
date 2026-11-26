@@ -296,7 +296,12 @@ export const createHandlers = (data: MockData): Handlers => {
       const person = data.reassignFace(body.id, params.id);
       return person ? { json: person } : notFound;
     },
-    createFace: () => ({ status: 201 }),
+    createFace: ({ body: { assetId, personId, x, y, width, height, ...size } }) => {
+      const person = data.getPerson(personId);
+      const box = { boundingBoxX1: x, boundingBoxY1: y, boundingBoxX2: x + width, boundingBoxY2: y + height };
+      data.addFaces(assetId, factory.face({ ...size, ...box, person }));
+      return { status: 201 };
+    },
     getAllPeople: ({ params = {} }) => ({ json: data.peoplePage(params) }),
     mergePeople: ({ body }) => ({ json: data.mergePeople(body.ids) }),
     reassignFaces: ({ params }) => {
@@ -341,8 +346,11 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     removeUserFromAlbum: ({ params }) =>
       data.removeUserFromAlbum(params.id, params.userId) ? { status: 204 } : notFound,
+    updateAlbumUser: ({ params, body }) =>
+      data.updateAlbumUser(params.id, params.userId, body.role) ? { status: 200 } : notFound,
     getAlbumMapMarkers: ({ params }) => ({ json: data.mapMarkers(params.id) }),
     getMapMarkers: () => ({ json: data.mapMarkers() }),
+    reverseGeocode: () => ({ json: [] }),
     getAlbumInfo: ({ params }) => {
       const album = data.getAlbum(params.id);
       return album ? { json: album } : notFound;

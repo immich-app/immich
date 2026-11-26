@@ -1,4 +1,4 @@
-# External Libraries
+# External libraries
 
 import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
 
@@ -22,7 +22,7 @@ Due to aggressive caching it can take some time for a refreshed asset to appear 
 
 :::
 
-### Import Paths
+### Import paths
 
 External libraries use import paths to determine which files to scan. Each library can have multiple import paths so that files from different locations can be added to the same library. Import paths are scanned recursively, and if a file is in multiple import paths, it will only be added once. Each import file must be a readable directory that exists on the filesystem; the import path dialog will alert you of any paths that are not accessible.
 
@@ -41,7 +41,7 @@ Sometimes, an external library will not scan correctly. This can happen if Immic
 
 To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_server bash` to a bash shell. If your import path is `/mnt/photos`, check it with `ls /mnt/photos`. If you are using a dedicated microservices container, make sure to add the same mount point and check for availability within the microservices container as well.
 
-### Exclusion Patterns
+### Exclusion patterns
 
 By default, all files in the import paths will be added to the library. If there are files that should not be added, exclusion patterns can be used to exclude them. Exclusion patterns are glob patterns matched against the full file path. If a file matches an exclusion pattern, it will not be added to the library. If it has already been imported, it will be offlined on the next library scan. Exclusion patterns can be added in the Scan Settings page for each library.
 
@@ -65,7 +65,7 @@ Special characters such as @ should be escaped, for instance:
 For more information on the glob syntax supported by exclusion patterns, refer to the [Picomatch documentation](https://github.com/micromatch/picomatch#globbing-features).
 :::
 
-### Automatic watching (EXPERIMENTAL)
+### Automatic watching [EXPERIMENTAL]
 
 This feature is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan.
 
@@ -87,7 +87,7 @@ There is an automatic scan job that is scheduled to run once a day. Its schedule
 
 This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
 
-### Deleting a Library
+### Deleting a library
 
 When deleting an external library, all assets inside are immediately deleted along with the library. Note that while a library can take a long time to fully delete in the background, it is immediately removed from the library list. If the deletion process is interrupted (for example, due to server restart), it will be cleaned up in the next nightly cron job. The cleanup process can also be manually initiated by clicking the "Scan All Libraries" button in the library list.
 
@@ -101,7 +101,7 @@ Let's show a concrete example where we add an existing gallery to Immich. Here, 
 
 First, we need to plan how we want to organize the libraries. The christmas trip photos should belong to its own library since we want to exclude the raw files. The videos and old photos can be in the same library since we want to import all files. We could also add all three folders to the same library if there are no files matching the Raw exclusion pattern in the other folders.
 
-### Mount Docker Volumes
+### Mount Docker volumes
 
 <ComposeBuilder query="storage.externalLibraries.0.path=&storage.externalLibraries.0.readOnly=true" />
 
@@ -127,7 +127,7 @@ This will disallow the images from being deleted in the web UI, or adding metada
 _Remember to run `docker compose up -d` to register the changes. Make sure you can see the mounted path in the container._
 :::
 
-### Create A New Library
+### Create a new library
 
 These actions must be performed by the Immich administrator.
 
@@ -171,7 +171,7 @@ You can enable this feature under [`Account Settings > Features > Folders`](http
 
 <img src={require('./img/folder-view-1.webp').default} width="100%" title='Folder-view' />
 
-### Set Custom Scan Interval
+### Set custom scan interval
 
 :::note
 Only an admin can do this.

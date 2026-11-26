@@ -697,6 +697,27 @@ test('removes the server product key', async ({ data, router, render, settle, ap
   await expect.element(app.settings.purchase.productKeyInput).toBeVisible();
 });
 
+test('shows when the server license was activated', async ({ data, router, render, app }) => {
+  data.setServerLicense({ licenseKey: serverKey, activationKey: 'activation-key' });
+  await router.goto(Route.userSettings({ isOpen: OpenQueryParam.PURCHASE_SETTINGS }));
+
+  await render(Page, load);
+
+  await expect.element(app.settings.purchase.activatedTime).toBeVisible();
+  await expect.element(app.settings.purchase.serverActivated).not.toBeInTheDocument();
+});
+
+test('shows the server as licensed when it has no license details', async ({ data, router, render, api, app }) => {
+  data.aboutInfo.licensed = true;
+  await router.goto(Route.userSettings({ isOpen: OpenQueryParam.PURCHASE_SETTINGS }));
+
+  await render(Page, load);
+
+  await expect.element(app.settings.purchase.serverActivated).toBeVisible();
+  expect(api.getServerLicense).toHaveBeenCalled();
+  await expect.element(app.settings.purchase.activatedTime).not.toBeInTheDocument();
+});
+
 test('shows the supporter badge', async ({ data, router, render, settle, api, app }) => {
   data.user.license = factory.license();
   await router.goto(Route.userSettings({ isOpen: OpenQueryParam.PURCHASE_SETTINGS }));

@@ -204,9 +204,9 @@
       {/if}
     </div>
     {#if multiSelectActive}
-      <Button size="small" shape="round" fullWidth onclick={handleMultiSubmit}
-        >{$t('add_to_albums_count', { values: { count: multiSelectedAlbumIds.length } })}</Button
-      >
+      <Button size="small" shape="round" fullWidth onclick={handleMultiSubmit}>
+        {$t('add_to_albums_count', { values: { count: multiSelectedAlbumIds.length } })}
+      </Button>
     {/if}
   </ModalBody>
   <ModalFooter>

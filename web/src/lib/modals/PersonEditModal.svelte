@@ -15,14 +15,19 @@
 
   const { person, onClose }: Props = $props();
 
-  let name = $state(person.name);
+  let name = $state(person.name ?? '');
   let birthDate = $state(person.birthDate);
   let onlyForMe = $state(authManager.preferences.people?.updateStrategy !== PersonUpdateStrategy.Everyone);
 
   const onSubmit = async () => {
     await executeMutation(
       updatePersonMutation,
-      [{ id: person.id, personUpdateDto: { name, birthDate, userId: onlyForMe ? authManager.user.id : undefined } }],
+      [
+        {
+          id: person.id,
+          personUpdateDto: { name: name || null, birthDate, userId: onlyForMe ? authManager.user.id : undefined },
+        },
+      ],
       { onSuccess: onClose },
     );
   };

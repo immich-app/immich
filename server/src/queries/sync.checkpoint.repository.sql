@@ -9,10 +9,26 @@ from
 where
   "sessionId" = $1
 
+-- SyncCheckpointRepository.getPendingResets
+select
+  "type"
+from
+  "session_sync_checkpoint"
+where
+  "sessionId" = $1
+  and "isPendingReset" = true
+
 -- SyncCheckpointRepository.deleteAll
 delete from "session_sync_checkpoint"
 where
   "sessionId" = $1
+
+-- SyncCheckpointRepository.deletePendingReset
+delete from "session_sync_checkpoint"
+where
+  "sessionId" = $1
+  and "type" = $2
+  and "isPendingReset" = true
 
 -- SyncCheckpointRepository.getNow
 select

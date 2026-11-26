@@ -1,6 +1,8 @@
 import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { Session } from 'src/database.js';
+import { HistoryBuilder } from 'src/decorators.js';
+import { nullAsEmptyString } from 'src/validation.js';
 
 const SessionResponseSchema = z
   .object({
@@ -9,8 +11,16 @@ const SessionResponseSchema = z
     updatedAt: z.string().describe('Last update date'),
     expiresAt: z.string().optional().describe('Expiration date'),
     current: z.boolean().describe('Is current session'),
-    deviceType: z.string().describe('Device type'),
-    deviceOS: z.string().describe('Device OS'),
+    deviceType: z
+      .string()
+      .nullable()
+      .describe('Device type')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
+    deviceOS: z
+      .string()
+      .nullable()
+      .describe('Device OS')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     appVersion: z.string().nullable().describe('App version'),
     isPendingSyncReset: z.boolean().describe('Is pending sync reset'),
   })
@@ -22,8 +32,14 @@ const SessionCreateResponseSchema = SessionResponseSchema.extend({
 
 export class SessionCreateDto extends createZodDto({
   duration: z.int().min(1).optional().describe('Session duration in seconds'),
-  deviceType: z.string().optional().describe('Device type'),
-  deviceOS: z.string().optional().describe('Device OS'),
+  deviceType: nullAsEmptyString
+    .optional()
+    .describe('Device type')
+    .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
+  deviceOS: nullAsEmptyString
+    .optional()
+    .describe('Device OS')
+    .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
 }) {}
 
 export class SessionUpdateDto extends createZodDto({

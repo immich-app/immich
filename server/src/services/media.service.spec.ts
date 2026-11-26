@@ -16,7 +16,6 @@ import {
   ImageFormat,
   JobName,
   JobStatus,
-  RawExtractedFormat,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
   VideoCodec,
@@ -974,7 +973,7 @@ describe(MediaService.name, () => {
       const asset = AssetFactory.from({ originalFileName: 'file.dng' })
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
@@ -1005,7 +1004,7 @@ describe(MediaService.name, () => {
       const asset = AssetFactory.from({ originalFileName: 'file.dng' })
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
@@ -1020,7 +1019,7 @@ describe(MediaService.name, () => {
       const asset = AssetFactory.from({ originalFileName: 'file.dng' })
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000, isTransparent: false });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
@@ -1051,6 +1050,100 @@ describe(MediaService.name, () => {
       });
     });
 
+    describe('embedded image selection', () => {
+      const asset = AssetFactory.from({ originalFileName: 'file.dng' })
+        .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
+        .build();
+      const smaller = Buffer.from('smaller');
+      const large = Buffer.from('large');
+
+      beforeEach(() => {
+        mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+        mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+        mocks.media.getImageMetadata.mockImplementation((image) =>
+          Promise.resolve(
+            image === smaller
+              ? { width: 2160, height: 1440, isTransparent: false }
+              : { width: 6000, height: 4000, isTransparent: false },
+          ),
+        );
+      });
+
+      const expectDecodedFrom = (input: string | Buffer) =>
+        expect(mocks.media.decodeImage).toHaveBeenCalledWith(input, expect.objectContaining({ size: 1440 }));
+
+      it('should skip embedded images that contain raw sensor data', async () => {
+        const raw = Buffer.from('raw');
+        mocks.media.getEmbeddedImages.mockResolvedValue([
+          { tag: 'PreviewJXL', buffer: raw, photometricInterpretation: 34_892 },
+          { tag: 'PreviewImage', buffer: large, photometricInterpretation: 6 },
+        ]);
+
+        await sut.handleGenerateThumbnails({ id: asset.id });
+
+        expect(mocks.media.getImageMetadata).not.toHaveBeenCalledWith(raw);
+        expectDecodedFrom(large);
+      });
+
+      it('should use a JXL preview that is a rendered image', async () => {
+        mocks.media.getEmbeddedImages.mockResolvedValue([
+          { tag: 'PreviewJXL', buffer: large, photometricInterpretation: 6 },
+        ]);
+
+        await sut.handleGenerateThumbnails({ id: asset.id });
+
+        expectDecodedFrom(large);
+      });
+
+      it('should prefer the largest embedded image', async () => {
+        mocks.media.getEmbeddedImages.mockResolvedValue([
+          { tag: 'JpgFromRaw', buffer: smaller },
+          { tag: 'PreviewImage', buffer: large },
+        ]);
+
+        await sut.handleGenerateThumbnails({ id: asset.id });
+
+        expectDecodedFrom(large);
+      });
+
+      it('should prefer the earlier tag between embedded images of the same size', async () => {
+        const other = Buffer.from('other');
+        mocks.media.getEmbeddedImages.mockResolvedValue([
+          { tag: 'JpgFromRaw', buffer: large },
+          { tag: 'PreviewImage', buffer: other },
+        ]);
+
+        await sut.handleGenerateThumbnails({ id: asset.id });
+
+        expectDecodedFrom(large);
+      });
+
+      it('should skip embedded images that cannot be read', async () => {
+        const broken = Buffer.from('broken');
+        mocks.media.getEmbeddedImages.mockResolvedValue([
+          { tag: 'JpgFromRaw', buffer: broken },
+          { tag: 'PreviewImage', buffer: large },
+        ]);
+        mocks.media.getImageMetadata.mockImplementation((image) =>
+          image === broken
+            ? Promise.reject(new Error('unsupported image format'))
+            : Promise.resolve({ width: 6000, height: 4000, isTransparent: false }),
+        );
+
+        await sut.handleGenerateThumbnails({ id: asset.id });
+
+        expectDecodedFrom(large);
+      });
+
+      it('should resize original image if embedded images cannot be read', async () => {
+        mocks.media.getEmbeddedImages.mockRejectedValue(new Error('exiftool failed'));
+
+        await sut.handleGenerateThumbnails({ id: asset.id });
+
+        expectDecodedFrom(asset.originalPath);
+      });
+    });
+
     it('should resize original image if embedded image extraction is not enabled', async () => {
       const asset = AssetFactory.from({ originalFileName: 'file.dng' })
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
@@ -1060,7 +1153,7 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.extract).not.toHaveBeenCalled();
+      expect(mocks.media.getEmbeddedImages).not.toHaveBeenCalled();
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
         colorspace: Colorspace.P3,
@@ -1114,7 +1207,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { fullsize: { enabled: true, format: ImageFormat.Webp }, extractEmbedded: true },
       });
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
@@ -1153,7 +1246,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { fullsize: { enabled: true, format: ImageFormat.Webp }, extractEmbedded: true },
       });
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jxl });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'PreviewJXL', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
@@ -1203,7 +1296,7 @@ describe(MediaService.name, () => {
         .build();
 
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
@@ -1249,7 +1342,7 @@ describe(MediaService.name, () => {
 
     it('should generate full-size preview from non-web-friendly images', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       const asset = AssetFactory.from({ originalFileName: 'image.hif' })
@@ -1289,7 +1382,7 @@ describe(MediaService.name, () => {
     it('should skip generating full-size preview for web-friendly images', async () => {
       const asset = AssetFactory.from().exif().build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
@@ -1312,7 +1405,7 @@ describe(MediaService.name, () => {
 
     it('should always generate full-size preview from non-web-friendly panoramas', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.media.copyTagGroup.mockResolvedValue(true);
 
@@ -1359,7 +1452,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { fullsize: { enabled: true, format: ImageFormat.Webp, quality: 90 } },
       });
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       const asset = AssetFactory.from({ originalFileName: 'image.hif' })
@@ -1400,7 +1493,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { fullsize: { enabled: true, format: ImageFormat.Jpeg, progressive: true } },
       });
-      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       const asset = AssetFactory.from({ originalFileName: 'image.hif' })
         .exif({
@@ -2016,7 +2109,7 @@ describe(MediaService.name, () => {
       const extracted = Buffer.from('');
       const data = Buffer.from('');
       const info = { width: 2160, height: 3840 } as OutputInfo;
-      mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extracted }]);
       mocks.media.decodeImage.mockResolvedValue({ data, info });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 2160, height: 3840, isTransparent: false });
 
@@ -2024,7 +2117,10 @@ describe(MediaService.name, () => {
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
       ).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
+      expect(mocks.media.getEmbeddedImages).toHaveBeenCalledWith(
+        personThumbnailStub.rawEmbeddedThumbnail.originalPath,
+        expect.any(Array),
+      );
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extracted, {
         colorspace: Colorspace.P3,
         orientation: ExifOrientation.Horizontal,
@@ -2070,7 +2166,7 @@ describe(MediaService.name, () => {
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
       ).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.media.extract).not.toHaveBeenCalled();
+      expect(mocks.media.getEmbeddedImages).not.toHaveBeenCalled();
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });
 
@@ -2088,7 +2184,10 @@ describe(MediaService.name, () => {
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
       ).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
+      expect(mocks.media.getEmbeddedImages).toHaveBeenCalledWith(
+        personThumbnailStub.rawEmbeddedThumbnail.originalPath,
+        expect.any(Array),
+      );
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
         colorspace: Colorspace.P3,
         orientation: undefined,
@@ -2107,14 +2206,17 @@ describe(MediaService.name, () => {
       const data = Buffer.from('');
       const info = { width: 1000, height: 1000 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
-      mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.Jpeg });
+      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extracted }]);
       mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000, isTransparent: false });
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
       ).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
+      expect(mocks.media.getEmbeddedImages).toHaveBeenCalledWith(
+        personThumbnailStub.rawEmbeddedThumbnail.originalPath,
+        expect.any(Array),
+      );
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
         colorspace: Colorspace.P3,
         orientation: undefined,

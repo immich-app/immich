@@ -1,4 +1,4 @@
-# System Integrity
+# System integrity
 
 ## Integrity report
 
