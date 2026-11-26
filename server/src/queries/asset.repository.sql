@@ -556,7 +556,7 @@ set
     when "status" = 'trashed' then "deletedAt"
   end
 where
-  "id" = any ($3::uuid[])
+  "id" = any ($2::uuid[])
 
 -- AssetRepository.getForOriginal
 select
