@@ -288,7 +288,7 @@ export const getAssetActions = (
     title: $t('asset_offline'),
     icon: mdiAlertOutline,
     color: 'danger',
-    $if: () => !!asset.isOffline,
+    $if: () => asset.isOffline,
     onAction: () => assetViewerManager.toggleDetailPanel(),
   };
 

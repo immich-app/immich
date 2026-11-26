@@ -24,7 +24,7 @@ const aliases: Record<string, string> = {
 const modules = import.meta.glob('#i18n/*.json');
 
 const fileCodes = Object.keys(modules)
-  .map((path) => path.match(/\/(\w+)\.json$/)?.[1])
+  .map((path) => /\/(\w+)\.json$/.exec(path)?.[1])
   .filter(Boolean) as string[];
 
 export const convertBCP47 = (code: string) => code.replaceAll('_', '-');

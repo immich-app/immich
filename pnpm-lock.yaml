@@ -325,8 +325,8 @@ importers:
         specifier: ^5.1.3
         version: 5.5.7(eslint-config-prettier@10.1.8(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0)))(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(prettier@3.10.1)
       eslint-plugin-unicorn:
-        specifier: ^79.0.0
-        version: 79.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)
+        specifier: ^80.0.0
+        version: 80.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))
       exiftool-vendored:
         specifier: ^39.0.0
         version: 39.2.0
@@ -440,8 +440,8 @@ importers:
         specifier: ^5.1.3
         version: 5.5.7(eslint-config-prettier@10.1.8(eslint@10.15.0))(eslint@10.15.0)(prettier@3.10.1)
       eslint-plugin-unicorn:
-        specifier: ^79.0.0
-        version: 79.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0)
+        specifier: ^80.0.0
+        version: 80.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0)
       globals:
         specifier: ^17.0.0
         version: 17.14.0
@@ -584,8 +584,11 @@ importers:
         specifier: workspace:*
         version: link:../packages/plugin-sdk
       '@immich/sql-tools':
-        specifier: ^0.7.0
-        version: 0.7.0
+        specifier: ^0.8.0
+        version: 0.8.0
+      '@immich/walkrs':
+        specifier: 0.0.17
+        version: 0.0.17
       '@nestjs/bullmq':
         specifier: ^12.0.0
         version: 12.0.2(@nestjs/common@12.5.1(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.5.1)(bullmq@6.7.8(ioredis@6.0.0(supports-color@7.2.0))(pg@8.23.1))
@@ -688,9 +691,6 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.3.0(supports-color@7.2.0)
-      fast-glob:
-        specifier: ^3.3.2
-        version: 3.3.3
       fluent-ffmpeg:
         specifier: ^2.1.2
         version: 2.1.3
@@ -723,7 +723,7 @@ importers:
         version: 0.29.9
       kysely-postgres-js:
         specifier: ^5.0.0
-        version: 5.1.0(kysely@0.29.9)(postgres@3.4.9)
+        version: 5.1.0(kysely@0.29.9)(postgres@4.1.1)
       lodash-es:
         specifier: ^4.17.21
         version: 4.18.1
@@ -757,12 +757,9 @@ importers:
       pg:
         specifier: ^8.11.3
         version: 8.23.1
-      picomatch:
-        specifier: ^4.0.2
-        version: 4.0.7
       postgres:
-        specifier: 3.4.9
-        version: 3.4.9
+        specifier: ^4.0.0
+        version: 4.1.1
       react:
         specifier: ^19.0.0
         version: 19.3.1
@@ -875,9 +872,6 @@ importers:
       '@types/nodemailer':
         specifier: ^8.0.0
         version: 8.0.2
-      '@types/picomatch':
-        specifier: ^4.0.0
-        version: 4.0.3
       '@types/pngjs':
         specifier: ^6.0.5
         version: 6.0.5
@@ -915,8 +909,8 @@ importers:
         specifier: ^4.17.1
         version: 4.18.1(@typescript-eslint/utils@8.73.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2))(eslint@10.15.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)
       eslint-plugin-unicorn:
-        specifier: ^79.0.0
-        version: 79.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)
+        specifier: ^80.0.0
+        version: 80.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.6.1)(supports-color@7.2.0))
       globals:
         specifier: ^17.0.0
         version: 17.14.0
@@ -961,7 +955,7 @@ importers:
         version: 3.5.23
       '@futo-org/backups-orchestrator-ui':
         specifier: 1.18.1
-        version: 1.18.1(@immich/ui@0.93.0(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0)))(@lingui/cli@6.10.1(rolldown@1.2.18)(supports-color@7.2.0))(@typescript/typescript6@6.0.2)(supports-color@7.2.0)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(typescript@7.0.2)
+        version: 1.18.1(@immich/ui@0.95.1(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0)))(@lingui/cli@6.10.1(rolldown@1.2.18)(supports-color@7.2.0))(@typescript/typescript6@6.0.2)(supports-color@7.2.0)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(typescript@7.0.2)
       '@immich/justified-layout-wasm':
         specifier: ^0.4.3
         version: 0.4.6
@@ -969,8 +963,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/sdk
       '@immich/ui':
-        specifier: ^0.93.0
-        version: 0.93.0(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0))
+        specifier: ^0.95.1
+        version: 0.95.1(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0))
       '@mdi/js':
         specifier: ^7.4.47
         version: 7.4.47
@@ -1180,8 +1174,8 @@ importers:
         specifier: ^3.23.1
         version: 3.24.1(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(svelte@5.58.0(@typescript-eslint/types@8.73.0))
       eslint-plugin-unicorn:
-        specifier: ^79.0.0
-        version: 79.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)
+        specifier: ^80.0.0
+        version: 80.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))
       globals:
         specifier: ^17.0.0
         version: 17.14.0
@@ -3216,17 +3210,25 @@ packages:
     resolution: {integrity: sha512-RWSHO5UEza6zUrF1vncsbkeTT59MuWlUz6Ys47Dkujb+FqjBOsXnzQb0v8d5g4iTtIfXZzQKTWgvfIMY3GbzrA==}
     hasBin: true
 
+  '@immich/sql-tools@0.8.0':
+    resolution: {integrity: sha512-u39/5G5sTCuq2GZn4aTMgPhJZKtvPEyaapYBGMTTFw0doI4LW1hzM2cBXFOl8hr2pBDIot055C6iLbA21+RZ2A==}
+    hasBin: true
+
   '@immich/ui@0.90.0':
     resolution: {integrity: sha512-bQY5K1af/m8p66jTZyzGSfUvfzAQZd3+8z+9nMGPb5wojTZODU81s+TSg/zNE93DcXY2++DdRpdf2nrPH1Nbpw==}
     peerDependencies:
       '@sveltejs/kit': ^2.13.0
       svelte: ^5.0.0
 
-  '@immich/ui@0.93.0':
-    resolution: {integrity: sha512-ujM3kAbivUKq18Rj3PyPtwECmt4pfB9+u77+TmM3SIHpDFjES2r4nwvUTGWmKtUYY9MnaoCjyrtVNxE3JYMAVA==}
+  '@immich/ui@0.95.1':
+    resolution: {integrity: sha512-pPFwFclmJZBVLsVbgPtVPgdsKfNyuDchYdcghWi4UH/qicaXbnbGqx0YmEZje9g3lerDkH5nZoQf+Oh0DmpivA==}
     peerDependencies:
       '@sveltejs/kit': ^2.13.0 || ^3.0.0
       svelte: ^5.29.0
+
+  '@immich/walkrs@0.0.17':
+    resolution: {integrity: sha512-IIardZ5qFCgiQS0R3eaK7vN1Qj23hM1crUNtS1Yo84PgH53vM2IMI6VNPdXyQoFBv2JC2ZCCwThA4P2RmZ4kFQ==}
+    engines: {pnpm: '>=10.0.0'}
 
   '@inquirer/ansi@2.1.0':
     resolution: {integrity: sha512-63GU5AD9KhNbWM0jlhHoMJTEFck2upFOPxHlnCKf3xYTV3rjTUUQfodihmTnfYQzMLS29oy8lK/gA1eJgu4bhA==}
@@ -5776,9 +5778,6 @@ packages:
   '@types/pg@8.23.1':
     resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
 
-  '@types/picomatch@4.0.3':
-    resolution: {integrity: sha512-iG0T6+nYJ9FAPmx9SsUlnwcq1ZVRuCXcVEvWnntoPlrOpwtSTKNDC9uVAxTsC3PUvJ+99n4RpAcNgBbHX3JSnQ==}
-
   '@types/pngjs@6.0.5':
     resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
 
@@ -8155,9 +8154,9 @@ packages:
       svelte:
         optional: true
 
-  eslint-plugin-unicorn@79.0.0:
-    resolution: {integrity: sha512-k7MWrjoVTVCnjKpgaxBuScPNSPomLvDpsd9uADpWrIFzrnwiec27eWhGrmmyuTj1bC3xVNYP4QfG3MEzEw6ifg==}
-    engines: {node: '>=22'}
+  eslint-plugin-unicorn@80.0.0:
+    resolution: {integrity: sha512-aHqSTSY0VglZtQfPrAJQiYNGJgOnI2O5+yuavD3oVXnToUL15kqIN/Dl10pAxpud2v/rrXSiepRaDlYuNxjlWg==}
+    engines: {node: '>=22.13'}
     peerDependencies:
       eslint: '>=10.4'
       typescript: '*'
@@ -11256,6 +11255,10 @@ packages:
   postgres@3.4.9:
     resolution: {integrity: sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw==}
     engines: {node: '>=12'}
+
+  postgres@4.1.1:
+    resolution: {integrity: sha512-1kJDojqNZC+iTHHXh6eif0J98LUtyLAePe/qkW1GK35eh2JixlsAiIKq3FGI+xqI+SUGTNodzf7TScVeIIyUug==}
+    engines: {node: '>=18'}
 
   potpack@2.1.0:
     resolution: {integrity: sha512-pcaShQc1Shq0y+E7GqJqvZj8DTthWV1KeHGdi0Z6IAin2Oi3JnLCOfwnCo84qc+HAp52wT9nK9H7FAJp5a44GQ==}
@@ -16264,10 +16267,10 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@futo-org/backups-orchestrator-ui@1.18.1(@immich/ui@0.93.0(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0)))(@lingui/cli@6.10.1(rolldown@1.2.18)(supports-color@7.2.0))(@typescript/typescript6@6.0.2)(supports-color@7.2.0)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(typescript@7.0.2)':
+  '@futo-org/backups-orchestrator-ui@1.18.1(@immich/ui@0.95.1(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0)))(@lingui/cli@6.10.1(rolldown@1.2.18)(supports-color@7.2.0))(@typescript/typescript6@6.0.2)(supports-color@7.2.0)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(typescript@7.0.2)':
     dependencies:
       '@futo-org/backups-api-client': 1.18.1
-      '@immich/ui': 0.93.0(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0))
+      '@immich/ui': 0.95.1(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0))
       '@lingui/core': 5.9.5
       '@material-symbols/svg-400': 0.48.2
       '@mdi/js': 7.4.47
@@ -16487,6 +16490,15 @@ snapshots:
       pg-connection-string: 2.14.1
       postgres: 3.4.9
 
+  '@immich/sql-tools@0.8.0':
+    dependencies:
+      commander: 15.1.0
+      graph-data-structure: 4.5.0
+      kysely: 0.29.9
+      kysely-postgres-js: 5.1.0(kysely@0.29.9)(postgres@4.1.1)
+      pg-connection-string: 2.14.1
+      postgres: 4.1.1
+
   '@immich/ui@0.90.0(@sveltejs/kit@2.70.3(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0))':
     dependencies:
       '@internationalized/date': 3.12.2
@@ -16502,7 +16514,7 @@ snapshots:
       tailwind-variants: 3.3.1(tailwind-merge@3.7.1)(tailwindcss@4.3.5)
       tailwindcss: 4.3.5
 
-  '@immich/ui@0.93.0(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0))':
+  '@immich/ui@0.95.1(@sveltejs/kit@3.4.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(@typescript/typescript6@6.0.2)(svelte@5.58.0(@typescript-eslint/types@8.73.0))(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(sass@1.102.0)(yaml@2.9.1)))(svelte@5.58.0(@typescript-eslint/types@8.73.0))':
     dependencies:
       '@internationalized/date': 3.12.2
       '@mdi/js': 7.4.47
@@ -16519,6 +16531,8 @@ snapshots:
       tailwindcss: 4.3.5
     transitivePeerDependencies:
       - zod
+
+  '@immich/walkrs@0.0.17': {}
 
   '@inquirer/ansi@2.1.0': {}
 
@@ -19175,8 +19189,6 @@ snapshots:
       '@types/node': 26.6.6
       pg-protocol: 1.16.1
       pg-types: 2.2.0
-
-  '@types/picomatch@4.0.3': {}
 
   '@types/pngjs@6.0.5':
     dependencies:
@@ -21927,7 +21939,7 @@ snapshots:
     transitivePeerDependencies:
       - ts-node
 
-  eslint-plugin-unicorn@79.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0):
+  eslint-plugin-unicorn@80.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.6.1)(supports-color@7.2.0)):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.15.0(jiti@2.6.1)(supports-color@7.2.0))
       '@eslint/css-tree': 4.1.1
@@ -21943,7 +21955,6 @@ snapshots:
       identifier-regex: 1.1.0
       indent-string: 5.0.0
       is-builtin-module: 5.0.0
-      micromark: 4.0.3(supports-color@7.2.0)
       parse5: 8.1.1
       pluralize: 8.0.0
       quote-js-string: 0.1.0
@@ -21954,10 +21965,8 @@ snapshots:
       yaml: 2.9.1
     optionalDependencies:
       typescript: '@typescript/typescript6@6.0.2'
-    transitivePeerDependencies:
-      - supports-color
 
-  eslint-plugin-unicorn@79.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0):
+  eslint-plugin-unicorn@80.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0)):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))
       '@eslint/css-tree': 4.1.1
@@ -21973,7 +21982,6 @@ snapshots:
       identifier-regex: 1.1.0
       indent-string: 5.0.0
       is-builtin-module: 5.0.0
-      micromark: 4.0.3(supports-color@7.2.0)
       parse5: 8.1.1
       pluralize: 8.0.0
       quote-js-string: 0.1.0
@@ -21984,10 +21992,8 @@ snapshots:
       yaml: 2.9.1
     optionalDependencies:
       typescript: '@typescript/typescript6@6.0.2'
-    transitivePeerDependencies:
-      - supports-color
 
-  eslint-plugin-unicorn@79.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0):
+  eslint-plugin-unicorn@80.0.0(@typescript/typescript6@6.0.2)(eslint@10.15.0):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.15.0)
       '@eslint/css-tree': 4.1.1
@@ -22003,7 +22009,6 @@ snapshots:
       identifier-regex: 1.1.0
       indent-string: 5.0.0
       is-builtin-module: 5.0.0
-      micromark: 4.0.3
       parse5: 8.1.1
       pluralize: 8.0.0
       quote-js-string: 0.1.0
@@ -22014,8 +22019,6 @@ snapshots:
       yaml: 2.9.1
     optionalDependencies:
       typescript: '@typescript/typescript6@6.0.2'
-    transitivePeerDependencies:
-      - supports-color
 
   eslint-scope@5.1.1:
     dependencies:
@@ -23613,6 +23616,12 @@ snapshots:
     optionalDependencies:
       postgres: 3.4.9
 
+  kysely-postgres-js@5.1.0(kysely@0.29.9)(postgres@4.1.1):
+    dependencies:
+      kysely: 0.29.9
+    optionalDependencies:
+      postgres: 4.1.1
+
   kysely@0.29.9: {}
 
   latest-version@7.0.0:
@@ -24406,52 +24415,6 @@ snapshots:
   micromark-util-types@1.1.0: {}
 
   micromark-util-types@2.0.2: {}
-
-  micromark@4.0.3:
-    dependencies:
-      '@types/debug': 4.1.13
-      debug: 4.4.3
-      decode-named-character-reference: 1.3.0
-      devlop: 1.1.0
-      micromark-core-commonmark: 2.0.3
-      micromark-factory-space: 2.0.1
-      micromark-util-character: 2.1.1
-      micromark-util-chunked: 2.0.1
-      micromark-util-combine-extensions: 2.0.1
-      micromark-util-decode-numeric-character-reference: 2.0.2
-      micromark-util-edit-map: 1.0.0
-      micromark-util-encode: 2.0.1
-      micromark-util-normalize-identifier: 2.0.1
-      micromark-util-resolve-all: 2.0.1
-      micromark-util-sanitize-uri: 2.0.1
-      micromark-util-subtokenize: 2.1.0
-      micromark-util-symbol: 2.0.1
-      micromark-util-types: 2.0.2
-    transitivePeerDependencies:
-      - supports-color
-
-  micromark@4.0.3(supports-color@7.2.0):
-    dependencies:
-      '@types/debug': 4.1.13
-      debug: 4.4.3(supports-color@7.2.0)
-      decode-named-character-reference: 1.3.0
-      devlop: 1.1.0
-      micromark-core-commonmark: 2.0.3
-      micromark-factory-space: 2.0.1
-      micromark-util-character: 2.1.1
-      micromark-util-chunked: 2.0.1
-      micromark-util-combine-extensions: 2.0.1
-      micromark-util-decode-numeric-character-reference: 2.0.2
-      micromark-util-edit-map: 1.0.0
-      micromark-util-encode: 2.0.1
-      micromark-util-normalize-identifier: 2.0.1
-      micromark-util-resolve-all: 2.0.1
-      micromark-util-sanitize-uri: 2.0.1
-      micromark-util-subtokenize: 2.1.0
-      micromark-util-symbol: 2.0.1
-      micromark-util-types: 2.0.2
-    transitivePeerDependencies:
-      - supports-color
 
   micromark@4.0.3(supports-color@8.1.1):
     dependencies:
@@ -25707,6 +25670,8 @@ snapshots:
       xtend: 4.0.2
 
   postgres@3.4.9: {}
+
+  postgres@4.1.1: {}
 
   potpack@2.1.0: {}
 

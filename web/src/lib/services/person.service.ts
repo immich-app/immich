@@ -79,7 +79,7 @@ export const getPersonActions = (
   const ShowPerson: ActionItem = {
     title: $t('unhide_person'),
     icon: mdiEyeOutline,
-    $if: () => !!person.isHidden,
+    $if: () => person.isHidden,
     onAction: () =>
       executeMutation(
         () => updatePersonMutation({ success: { toast: 'changed_visibility_successfully' } }),

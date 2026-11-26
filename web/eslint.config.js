@@ -157,6 +157,7 @@ export default defineConfig(
       'unicorn/no-empty-file': 'off',
       'unicorn/prefer-simple-condition-first': 'off',
       'unicorn/single-line-block-comment-style': ['error', 'single-line'],
+      'unicorn/prefer-options-parameter': 'off',
       // prefer the typescript-eslint type-aware version
       'unicorn/require-array-sort-compare': 'off',
       '@typescript-eslint/require-array-sort-compare': 'error',

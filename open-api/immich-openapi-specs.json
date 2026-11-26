@@ -23704,8 +23704,6 @@
           "LibraryDeleteCheck",
           "LibraryDelete",
           "LibraryRemoveAsset",
-          "LibraryScanAssetsQueueAll",
-          "LibrarySyncAssets",
           "LibrarySyncFilesQueueAll",
           "LibrarySyncFiles",
           "LibraryScanQueueAll",

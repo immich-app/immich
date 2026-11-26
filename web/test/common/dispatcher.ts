@@ -107,7 +107,7 @@ export class Dispatcher {
   }
 
   async dispatch(method: string, url: URL, body: unknown): Promise<Response> {
-    const activation = url.pathname.match(activationPattern);
+    const activation = activationPattern.exec(url.pathname);
     if (activation) {
       return this.activate(decodeURIComponent(activation[1]));
     }
