@@ -31,6 +31,8 @@ export type Events = {
   ZoomChange: [ZoomImageWheelState];
   Copy: [];
   FaceEditModeChange: [boolean];
+  AssetLeave: [{ asset: AssetResponseDto; reason: 'trash' | 'delete' | 'archive' | 'lock' | 'unlock' }];
+  AssetReturn: [AssetResponseDto];
 };
 
 class AssetViewerManager extends BaseEventManager<Events> {

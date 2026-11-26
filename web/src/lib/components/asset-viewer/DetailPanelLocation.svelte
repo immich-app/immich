@@ -1,7 +1,8 @@
 <script lang="ts">
   import GeolocationPointPickerModal from '#lib/modals/GeolocationPointPickerModal.svelte';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { updateAsset, type AssetResponseDto } from '@immich/sdk';
+  import { updateAssetMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
   import { mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -19,14 +20,11 @@
       return;
     }
 
-    try {
-      asset = await updateAsset({
-        id: asset.id,
-        updateAssetDto: { latitude: point.lat, longitude: point.lng },
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_location'));
-    }
+    await executeMutation(
+      () => updateAssetMutation({ error: { toast: 'errors.unable_to_change_location' } }),
+      [{ id: asset.id, updateAssetDto: { latitude: point.lat, longitude: point.lng } }],
+      { onSuccess: (response) => (asset = response) },
+    );
   };
 </script>
 

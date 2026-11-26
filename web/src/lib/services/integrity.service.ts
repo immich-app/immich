@@ -1,18 +1,22 @@
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
-import { Route } from '#lib/route.ts';
-import { handleError } from '#lib/utils/handle-error.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import {
+  clearIntegrityReport,
+  deleteIntegrityReportMutation,
+  integrityReportDeleteAllJobs,
+} from '#lib/queries/integrity-admin.query.ts';
+import { createJobMutation } from '#lib/queries/queue.query.ts';
+import { ApiRoute } from '#lib/route.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
-import { IntegrityReport, ManualJobName, createJob, deleteIntegrityReport } from '@immich/sdk';
-import { modalManager, toastManager, type ActionItem } from '@immich/ui';
+import { IntegrityReport } from '@immich/sdk';
+import type { ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { goto } from '$app/navigation';
 
 export const getIntegrityReportActions = ($t: MessageFormatter, reportType: IntegrityReport) => {
   const Download: ActionItem = {
     title: $t('admin.download_csv'),
     icon: mdiDownload,
-    onAction: () => goto(Route.integrityReportCsv(reportType)),
+    onAction: () => location.assign(ApiRoute.integrityReportCsv(reportType)),
   };
 
   const Delete: ActionItem = {
@@ -29,7 +33,7 @@ export const getIntegrityReportItemActions = ($t: MessageFormatter, reportId: st
   const Download: ActionItem = {
     title: $t('download'),
     icon: mdiDownload,
-    onAction: () => goto(Route.integrityReportFile(reportId)),
+    onAction: () => location.assign(ApiRoute.integrityReportFile(reportId)),
     $if: () => reportType === IntegrityReport.UntrackedFile || reportType === IntegrityReport.ChecksumMismatch,
   };
 
@@ -43,83 +47,22 @@ export const getIntegrityReportItemActions = ($t: MessageFormatter, reportId: st
   return { Download, Delete };
 };
 
-export const handleRemoveAllIntegrityReportItems = async (reportType: IntegrityReport) => {
+const handleRemoveAllIntegrityReportItems = async (reportType: IntegrityReport) => {
   const $t = await getFormatter();
-  const confirm = await modalManager.showDialog({
-    confirmText: $t('delete'),
-  });
 
-  if (!confirm) {
-    return;
-  }
-
-  let name: ManualJobName;
-  switch (reportType) {
-    case IntegrityReport.UntrackedFile: {
-      name = ManualJobName.IntegrityUntrackedFilesDeleteAll;
-      break;
-    }
-    case IntegrityReport.MissingFile: {
-      name = ManualJobName.IntegrityMissingFilesDeleteAll;
-      break;
-    }
-    case IntegrityReport.ChecksumMismatch: {
-      name = ManualJobName.IntegrityChecksumMismatchDeleteAll;
-      break;
-    }
-  }
-
-  try {
-    eventManager.emit('IntegrityReportDeleteStatus', {
-      type: reportType,
-      isDeleting: true,
-    });
-
-    await createJob({ jobCreateDto: { name } });
-    toastManager.success($t('admin.job_created'));
-
-    eventManager.emit('IntegrityReportDeleted', {
-      type: reportType,
-    });
-  } catch (error) {
-    handleError(error, $t('failed_to_delete_file'));
-
-    eventManager.emit('IntegrityReportDeleteStatus', {
-      type: reportType,
-      isDeleting: false,
-    });
-  }
+  await executeMutation(
+    () =>
+      createJobMutation({
+        success: { toast: { color: 'success', description: 'admin.job_created' } },
+        error: { toast: 'failed_to_delete_file' },
+      }),
+    [{ jobCreateDto: { name: integrityReportDeleteAllJobs[reportType] } }],
+    { confirm: { confirmText: $t('delete') }, onSuccess: () => clearIntegrityReport(reportType) },
+  );
 };
 
-export const handleRemoveIntegrityReportItem = async (reportId: string) => {
+const handleRemoveIntegrityReportItem = async (reportId: string) => {
   const $t = await getFormatter();
-  const confirm = await modalManager.showDialog({
-    confirmText: $t('delete'),
-  });
 
-  if (!confirm) {
-    return;
-  }
-
-  try {
-    eventManager.emit('IntegrityReportDeleteStatus', {
-      id: reportId,
-      isDeleting: true,
-    });
-
-    await deleteIntegrityReport({
-      id: reportId,
-    });
-
-    eventManager.emit('IntegrityReportDeleted', {
-      id: reportId,
-    });
-  } catch (error) {
-    handleError(error, $t('failed_to_delete_file'));
-
-    eventManager.emit('IntegrityReportDeleteStatus', {
-      id: reportId,
-      isDeleting: false,
-    });
-  }
+  await executeMutation(deleteIntegrityReportMutation, [{ id: reportId }], { confirm: { confirmText: $t('delete') } });
 };

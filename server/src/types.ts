@@ -134,6 +134,7 @@ export interface VideoFormat {
   formatLongName?: string;
   duration: number;
   bitrate: number;
+  isFragmented: boolean;
 }
 
 export interface ImageDimensions {
@@ -241,17 +242,6 @@ export interface IAssetDeleteJob extends IEntityJob {
 export interface ILibraryFileJob {
   libraryId: string;
   paths: string[];
-  progressCounter?: number;
-  totalAssets?: number;
-}
-
-export interface ILibraryBulkIdsJob {
-  libraryId: string;
-  importPaths: string[];
-  exclusionPatterns: string[];
-  assetIds: string[];
-  progressCounter: number;
-  totalAssets: number;
 }
 
 export interface IDeleteFilesJob extends IBaseJob {
@@ -421,8 +411,6 @@ export type JobItem =
   // Library Management
   | { name: JobName.LibrarySyncFiles; data: ILibraryFileJob }
   | { name: JobName.LibrarySyncFilesQueueAll; data: IEntityJob }
-  | { name: JobName.LibrarySyncAssetsQueueAll; data: IEntityJob }
-  | { name: JobName.LibrarySyncAssets; data: ILibraryBulkIdsJob }
   | { name: JobName.LibraryRemoveAsset; data: ILibraryFileJob }
   | { name: JobName.LibraryDelete; data: IEntityJob }
   | { name: JobName.LibraryScanQueueAll; data?: IBaseJob }

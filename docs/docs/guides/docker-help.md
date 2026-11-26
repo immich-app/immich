@@ -1,4 +1,4 @@
-# Docker Help
+# Docker help
 
 ## Containers
 
@@ -7,7 +7,7 @@ docker ps                         # see a list of running containers
 docker ps -a                      # see a list of running and stopped containers
 ```
 
-## Attach to a Container
+## Attach to a container
 
 ```bash
 docker exec -it <id or name> <command>          # attach to a container with a command

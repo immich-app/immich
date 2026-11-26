@@ -38,7 +38,7 @@
   );
   const relativeTime = $derived(backupDateTime?.toRelative({ locale: $locale }));
 
-  const version = $derived(filename.match(/-v(.*)-/)?.[1]);
+  const version = $derived(/-v(.*)-/.exec(filename)?.[1]);
 
   const status = $derived.by(() => {
     if (!version) {

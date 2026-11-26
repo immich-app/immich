@@ -1,7 +1,10 @@
 <script lang="ts">
   import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { PartnerDirection, getPartners, searchUsers, type UserResponseDto } from '@immich/sdk';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { getPartnersQuery } from '#lib/queries/partner.query.ts';
+  import { searchUsersQuery } from '#lib/queries/user.query.ts';
+  import { PartnerDirection, type UserResponseDto } from '@immich/sdk';
   import { Button, ListButton, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -15,15 +18,12 @@
   let selectedUsers: UserResponseDto[] = $state([]);
 
   const loadUsers = async () => {
-    let users = await searchUsers();
-
-    // remove current user
-    users = users.filter(({ id }) => id !== authManager.user.id);
-
-    // exclude partners from the list of users available for selection
-    const partners = await getPartners({ direction: PartnerDirection.SharedBy });
-    const partnerIds = new Set(partners.map((partner) => partner.id));
-    availableUsers = users.filter((user) => !partnerIds.has(user.id));
+    const [users, partners] = await Promise.all([
+      queryClient.query(searchUsersQuery()),
+      queryClient.query(getPartnersQuery(PartnerDirection.SharedBy)),
+    ]);
+    const excludedIds = new Set([authManager.user.id, ...partners.map(({ id }) => id)]);
+    availableUsers = users.filter(({ id }) => !excludedIds.has(id));
   };
 
   const selectUser = (user: UserResponseDto) => {

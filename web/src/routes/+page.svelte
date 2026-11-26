@@ -1,22 +1,17 @@
 <script lang="ts">
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
+  import { startDatabaseRestoreFlowMutation } from '#lib/queries/database-backup.query.ts';
   import { Route } from '#lib/route.ts';
   import { websocketStore } from '#lib/stores/websocket.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { startDatabaseRestoreFlow } from '@immich/sdk';
   import { Button, Heading, Stack } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
-  async function switchToMaintenance() {
-    try {
-      websocketStore.serverRestarting.set({
-        isMaintenanceMode: true,
-      });
+  const startDatabaseRestoreFlow = createMutation(startDatabaseRestoreFlowMutation);
 
-      await startDatabaseRestoreFlow();
-    } catch (error) {
-      handleError(error, $t('admin.maintenance_start_error'));
-    }
+  function switchToMaintenance() {
+    websocketStore.serverRestarting.set({ isMaintenanceMode: true });
+    startDatabaseRestoreFlow.mutate([]);
   }
 </script>
 

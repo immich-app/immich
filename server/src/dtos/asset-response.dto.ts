@@ -1,3 +1,4 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { Selectable, ShallowDehydrateObject } from 'kysely';
 import z from 'zod';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database.js';
@@ -20,7 +21,6 @@ import type { MaybeDehydrated } from 'src/types.js';
 import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { createZodDto } from 'src/zod.js';
 
 const SanitizedAssetResponseSchema = z
   .object({
@@ -104,11 +104,6 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
     checksum: z.string().describe('Base64 encoded SHA1 hash'),
     stack: AssetStackResponseSchema.nullish(),
     duplicateId: z.uuidv4().nullish().describe('Duplicate group ID'),
-    resized: z
-      .boolean()
-      .optional()
-      .describe('Is resized')
-      .meta(new HistoryBuilder().added('v1').deprecated('v1.113.0').getExtensions()),
     isEdited: z
       .boolean()
       .describe('Is edited')
@@ -237,7 +232,6 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
-    resized: true,
     width: entity.width,
     height: entity.height,
     isEdited: entity.isEdited,

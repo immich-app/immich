@@ -10,6 +10,7 @@
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAllPeopleQuery, updateCachedPerson } from '#lib/queries/person.query.ts';
   import { getExploreDataQuery } from '#lib/queries/search.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '#lib/utils.ts';
@@ -26,8 +27,11 @@
 
   let { data }: Props = $props();
 
-  const query = createPreloadedQuery(getExploreDataQuery);
-  const explore = $derived(query.data);
+  const queries = {
+    explore: createPreloadedQuery(getExploreDataQuery),
+    people: createPreloadedQuery(() => getAllPeopleQuery({ withHidden: false })),
+  };
+  const explore = $derived(queries.explore.data);
 
   const getFieldItems = (field: string) => {
     const targetField = explore.find((item) => item.fieldName === field);
@@ -38,7 +42,7 @@
   let recents = $derived(
     getFieldItems('createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
   );
-  let people = $state(data.people.people);
+  const people = $derived(queries.people.data.people);
   let memories = $derived(
     data.memories.map((memory) => ({
       id: memory.id,
@@ -50,15 +54,10 @@
     })),
   );
 
-  let hasPeople = $derived(data.people.total > 0);
+  const hasPeople = $derived(queries.people.data.total > 0);
 
-  const onPersonThumbnailReady = ({ id }: { id: string }) => {
-    for (const person of people) {
-      if (person.id === id) {
-        person.updatedAt = new Date().toISOString();
-      }
-    }
-  };
+  const onPersonThumbnailReady = ({ id }: { id: string }) =>
+    updateCachedPerson(id, (person) => ({ ...person, updatedAt: new Date().toISOString() }));
 
   const onViewAsset = async (id: string) => {
     const asset = await getAssetInfo({ ...authManager.params, id });
@@ -80,8 +79,10 @@
         <a
           href={Route.people()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
         {#snippet children({ itemCount })}
@@ -112,8 +113,10 @@
         <a
           href={Route.places()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-28 gap-x-4 md:grid-auto-fill-36">
         {#snippet children({ itemCount })}
@@ -145,8 +148,10 @@
         <a
           href={Route.memories()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <ImageCarousel items={memories}>
         {#snippet child(item)}
@@ -163,8 +168,10 @@
         <a
           href={Route.recentlyAdded()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <div class="flex h-24 max-w-fit flex-wrap gap-x-1 overflow-hidden md:h-42">
         {#each recents as item (item.data.id)}

@@ -5,9 +5,19 @@ import { StorageCore } from 'src/cores/storage.core.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { ImmichWorker, JobStatus, StorageFolder } from 'src/enum.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
-import { AutoMocked, ServiceMocks, automock, getMocks, mockDuplex, mockSpawn } from 'test/utils.js';
+import { mockAdmins } from 'test/repositories/user.repository.mock.js';
+import {
+  AutoMocked,
+  ServiceMocks,
+  automock,
+  expectResourceEvents,
+  getMocks,
+  mockDuplex,
+  mockSpawn,
+} from 'test/utils.js';
 
 describe(DatabaseBackupService.name, () => {
   let sut: DatabaseBackupService;
@@ -17,6 +27,7 @@ describe(DatabaseBackupService.name, () => {
   beforeEach(() => {
     mocks = getMocks();
     mocks.process.isCommandAvailable.mockResolvedValue(false);
+    mocks.user.getAdminIds.mockResolvedValue([]);
     maintenanceHealthRepositoryMock = automock(MaintenanceHealthRepository, {
       args: [mocks.logger],
       strict: false,
@@ -32,6 +43,7 @@ describe(DatabaseBackupService.name, () => {
       mocks.cron as never,
       mocks.job as never,
       maintenanceHealthRepositoryMock as never,
+      mocks.resource as never,
     );
   });
 
@@ -661,11 +673,20 @@ describe(DatabaseBackupService.name, () => {
       await expect(sut.uploadBackup({ originalname: 'invalid backup' } as never)).rejects.toThrowError(
         new BadRequestException('Invalid backup name!'),
       );
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should write file', async () => {
       await sut.uploadBackup({ originalname: 'path.sql.gz', buffer: 'buffer' } as never);
       expect(mocks.storage.createOrOverwriteFile).toBeCalledWith('/data/backups/uploaded-path.sql.gz', 'buffer');
+    });
+
+    it('should tell every admin', async () => {
+      const adminIds = mockAdmins(mocks.user);
+
+      await sut.uploadBackup({ originalname: 'path.sql.gz', buffer: 'buffer' } as never);
+
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.databaseBackups()] });
     });
   });
 
@@ -708,6 +729,15 @@ describe(DatabaseBackupService.name, () => {
       await expect(sut.deleteBackup(['filename'])).rejects.toThrowError(
         new BadRequestException('Invalid backup name!'),
       );
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell every admin', async () => {
+      const adminIds = mockAdmins(mocks.user);
+
+      await sut.deleteBackup(['filename.sql']);
+
+      expectResourceEvents(mocks, { userIds: adminIds, changed: [Resource.databaseBackups()] });
     });
 
     it('should unlink the target file', async () => {

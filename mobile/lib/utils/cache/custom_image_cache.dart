@@ -9,12 +9,13 @@ final class CustomImageCache implements ImageCache {
   final _thumbhash = ImageCache()..maximumSize = 0;
   final _small = ImageCache();
   final _large = ImageCache()..maximumSize = 5; // Maximum 5 images
+  final _preview = ImageCache()..maximumSize = 5;
 
   @override
-  int get maximumSize => _small.maximumSize + _large.maximumSize;
+  int get maximumSize => _small.maximumSize + _large.maximumSize + _preview.maximumSize;
 
   @override
-  int get maximumSizeBytes => _small.maximumSizeBytes + _large.maximumSizeBytes;
+  int get maximumSizeBytes => _small.maximumSizeBytes + _large.maximumSizeBytes + _preview.maximumSizeBytes;
 
   @override
   set maximumSize(int value) => _small.maximumSize = value;
@@ -26,17 +27,20 @@ final class CustomImageCache implements ImageCache {
   void clear() {
     _small.clear();
     _large.clear();
+    _preview.clear();
   }
 
   @override
   void clearLiveImages() {
     _small.clearLiveImages();
     _large.clearLiveImages();
+    _preview.clearLiveImages();
   }
 
   /// Gets the cache for the given key
   ImageCache _cacheForKey(Object key) {
     return switch (key) {
+      LocalFullImageProvider(previewOnly: true) || RemoteFullImageProvider(previewOnly: true) => _preview,
       LocalFullImageProvider() || RemoteFullImageProvider() => _large,
       ThumbHashProvider() => _thumbhash,
       _ => _small,
@@ -51,19 +55,19 @@ final class CustomImageCache implements ImageCache {
   }
 
   @override
-  int get currentSize => _small.currentSize + _large.currentSize;
+  int get currentSize => _small.currentSize + _large.currentSize + _preview.currentSize;
 
   @override
-  int get currentSizeBytes => _small.currentSizeBytes + _large.currentSizeBytes;
+  int get currentSizeBytes => _small.currentSizeBytes + _large.currentSizeBytes + _preview.currentSizeBytes;
 
   @override
   bool evict(Object key, {bool includeLive = true}) => _cacheForKey(key).evict(key, includeLive: includeLive);
 
   @override
-  int get liveImageCount => _small.liveImageCount + _large.liveImageCount;
+  int get liveImageCount => _small.liveImageCount + _large.liveImageCount + _preview.liveImageCount;
 
   @override
-  int get pendingImageCount => _small.pendingImageCount + _large.pendingImageCount;
+  int get pendingImageCount => _small.pendingImageCount + _large.pendingImageCount + _preview.pendingImageCount;
 
   @override
   ImageStreamCompleter? putIfAbsent(

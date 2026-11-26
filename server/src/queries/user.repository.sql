@@ -80,6 +80,15 @@ where
   "user"."isAdmin" = $1
   and "user"."deletedAt" is null
 
+-- UserRepository.getAdminIds
+select
+  "user"."id"
+from
+  "user"
+where
+  "user"."isAdmin" = $1
+  and "user"."deletedAt" is null
+
 -- UserRepository.getFileSamples
 select
   "id",

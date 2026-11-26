@@ -3,34 +3,26 @@
   import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
   import { SettingInputFieldType } from '#lib/constants.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { updateMyPreferencesMutation } from '#lib/queries/user.query.ts';
   import { ByteUnit, convertFromBytes, convertToBytes } from '#lib/utils/byte-units.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { updateMyPreferences } from '@immich/sdk';
-  import { Button, toastManager } from '@immich/ui';
+  import { Button } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
   let archiveSize = $state(convertFromBytes(authManager.preferences.download.archiveSize || 4, ByteUnit.GiB));
   let includeEmbeddedVideos = $state(authManager.preferences.download.includeEmbeddedVideos);
 
-  const handleSave = async () => {
-    try {
-      const response = await updateMyPreferences({
+  const updatePreferences = createMutation(() => updateMyPreferencesMutation());
+
+  const handleSave = () =>
+    updatePreferences.mutate([
+      {
         userPreferencesUpdateDto: {
-          download: {
-            archiveSize: Math.floor(convertToBytes(archiveSize, ByteUnit.GiB)),
-            includeEmbeddedVideos,
-          },
+          download: { archiveSize: Math.floor(convertToBytes(archiveSize, ByteUnit.GiB)), includeEmbeddedVideos },
         },
-      });
-
-      authManager.setPreferences(response);
-
-      toastManager.primary($t('saved_settings'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_settings'));
-    }
-  };
+      },
+    ]);
 
   const onsubmit = (event: Event) => {
     event.preventDefault();

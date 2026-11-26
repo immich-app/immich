@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { updateAsset, type AssetResponseDto } from '@immich/sdk';
-  import { Textarea, shortcut, toastManager } from '@immich/ui';
+  import { updateAssetMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import type { AssetResponseDto } from '@immich/sdk';
+  import { Textarea, shortcut } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -18,12 +19,14 @@
     if (description === currentDescription) {
       return;
     }
-    try {
-      await updateAsset({ id: asset.id, updateAssetDto: { description } });
-      toastManager.primary($t('asset_description_updated'));
-    } catch (error) {
-      handleError(error, $t('cannot_update_the_description'));
-    }
+    await executeMutation(
+      () =>
+        updateAssetMutation({
+          success: { toast: 'asset_description_updated' },
+          error: { toast: 'cannot_update_the_description' },
+        }),
+      [{ id: asset.id, updateAssetDto: { description: description || null } }],
+    );
   };
 </script>
 

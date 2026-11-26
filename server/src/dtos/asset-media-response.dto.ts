@@ -1,5 +1,5 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
-import { createZodDto } from 'src/zod.js';
 
 export enum AssetMediaStatus {
   CREATED = 'created',
@@ -7,13 +7,6 @@ export enum AssetMediaStatus {
 }
 
 const AssetMediaStatusSchema = z.enum(AssetMediaStatus).describe('Upload status').meta({ id: 'AssetMediaStatus' });
-
-const AssetMediaResponseSchema = z
-  .object({
-    status: AssetMediaStatusSchema,
-    id: z.uuidv4().describe('Asset media ID'),
-  })
-  .meta({ id: 'AssetMediaResponseDto' });
 
 export enum AssetUploadAction {
   ACCEPT = 'accept',
@@ -42,11 +35,11 @@ const AssetBulkUploadCheckResultSchema = z
   })
   .meta({ id: 'AssetBulkUploadCheckResult' });
 
-const AssetBulkUploadCheckResponseSchema = z
-  .object({
-    results: z.array(AssetBulkUploadCheckResultSchema).describe('Upload check results'),
-  })
-  .meta({ id: 'AssetBulkUploadCheckResponseDto' });
+export class AssetMediaResponseDto extends createZodDto({
+  status: AssetMediaStatusSchema,
+  id: z.uuidv4().describe('Asset media ID'),
+}) {}
 
-export class AssetMediaResponseDto extends createZodDto(AssetMediaResponseSchema) {}
-export class AssetBulkUploadCheckResponseDto extends createZodDto(AssetBulkUploadCheckResponseSchema) {}
+export class AssetBulkUploadCheckResponseDto extends createZodDto({
+  results: z.array(AssetBulkUploadCheckResultSchema).describe('Upload check results'),
+}) {}

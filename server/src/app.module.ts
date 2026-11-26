@@ -1,4 +1,5 @@
 import { OrchestrationApiModule, controllers as futoBackupsControllers } from '@futo-org/backups-orchestrator-api';
+import { registerSchemas } from '@immich/nestjs-standard-schema';
 import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, applyDecorators, forwardRef } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -44,7 +45,6 @@ import { QueueService } from 'src/services/queue.service.js';
 import { getKyselyConfig } from 'src/utils/database.js';
 import { configureUserAgent } from 'src/utils/fetch.js';
 import { detectMediaLocation, getBackupsStatePath } from 'src/utils/storage.js';
-import { registerSchemas } from 'src/zod.js';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
@@ -100,7 +100,7 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
       this.authService.authenticate({
         headers: client.request.headers,
         queryParams: {},
-        metadata: { adminRoute: false, sharedLinkRoute: false, uri: '/api/socket.io' },
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: '/api/socket.io', method: client.request.method },
       }),
     );
 
@@ -133,7 +133,12 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
           authService.authenticate({
             headers: client.request.headers,
             queryParams: {},
-            metadata: { adminRoute: true, sharedLinkRoute: false, uri: '/api/futo-backups/socket.io' },
+            metadata: {
+              adminRoute: true,
+              sharedLinkRoute: false,
+              uri: '/api/futo-backups/socket.io',
+              method: client.request.method,
+            },
           }),
       }),
     }),
@@ -163,7 +168,7 @@ export class ApiModule extends BaseModule {
         requireLock: true,
         developmentMode: isFutoBackupsDevelopmentMode,
         authenticate: async (client) => {
-          await maintenanceWorkerService.authenticate(client.request.headers);
+          await maintenanceWorkerService.authenticate(client.request.headers, client.request.method);
           return { user: { isAdmin: true } };
         },
       }),
@@ -179,6 +184,7 @@ export class ApiModule extends BaseModule {
     UserRepository,
     SystemMetadataRepository,
     AppRepository,
+    EventRepository,
     MaintenanceHealthRepository,
     MaintenanceWebsocketRepository,
     DatabaseBackupService,
@@ -197,12 +203,14 @@ export class MaintenanceModule {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
+    private eventRepository: EventRepository,
     private maintenanceWorkerService: MaintenanceWorkerService,
   ) {
     logger.setAppName(this.worker);
   }
 
   async onModuleInit() {
+    this.eventRepository.setup({ services: [MaintenanceWorkerService] });
     await this.maintenanceWorkerService.init();
   }
 }

@@ -7,7 +7,6 @@ import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import {
-  anyUuid,
   asUuid,
   withAudioStream,
   withDefaultVisibility,
@@ -260,22 +259,6 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  getForSyncAssets(ids: string[]) {
-    return this.db
-      .selectFrom('asset')
-      .select([
-        'asset.id',
-        'asset.isOffline',
-        'asset.libraryId',
-        'asset.originalPath',
-        'asset.status',
-        'asset.fileModifiedAt',
-      ])
-      .where('asset.id', '=', anyUuid(ids))
-      .execute();
-  }
-
   @GenerateSql({ params: [DummyValue.UUID] })
   getForAssetDeletion(id: string) {
     return this.db
@@ -305,8 +288,8 @@ export class AssetJobRepository {
                   .select(['stack_asset.id'])
                   .whereRef('stack_asset.stackId', '=', 'stack.id')
                   .whereRef('stack_asset.id', '!=', 'stack.primaryAssetId')
-                  .where('stack_asset.visibility', '=', sql.val(AssetVisibility.Timeline))
-                  .where('stack_asset.status', '!=', sql.val(AssetStatus.Deleted)),
+                  .where('stack_asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                  .where('stack_asset.status', '!=', sql.lit(AssetStatus.Deleted)),
               ).as('assets'),
             ])
             .as('stack_result'),

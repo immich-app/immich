@@ -1,4 +1,4 @@
-# Hardware Transcoding
+# Hardware transcoding
 
 import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
 
@@ -91,7 +91,7 @@ If you use a [configuration file](/install/config-file.md), use the `accel` opti
 
 </details>
 
-#### Single Compose File
+#### Single Compose file
 
 Some platforms, including Unraid and Portainer, do not support multiple Compose files as of writing. As an alternative, you can "inline" the relevant contents of the [`hwaccel.transcoding.yml`][hw-file] file into the `immich-server` service directly.
 

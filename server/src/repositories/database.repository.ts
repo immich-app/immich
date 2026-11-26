@@ -403,7 +403,7 @@ export class DatabaseRepository {
       this.logger.error(`Migrations failed: ${error}`);
 
       const missing =
-        error instanceof Error ? error.message.match(/previously executed migration (.+) is missing/u) : null;
+        error instanceof Error ? /previously executed migration (.+) is missing/u.exec(error.message) : null;
       if (missing) {
         throw new Error(
           `Migration "${missing[1]}" was already applied to this database but is not in this version of Immich (${serverVersion}). ` +

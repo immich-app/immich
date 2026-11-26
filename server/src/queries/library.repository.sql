@@ -45,14 +45,14 @@ select
         and "asset"."visibility" != $4
       )
   ) as "videos",
-  coalesce(sum("asset_exif"."fileSizeInByte"), $5) as "usage"
+  coalesce(sum("asset_exif"."fileSizeInByte"), 0) as "usage"
 from
   "library"
   inner join "asset" on "asset"."libraryId" = "library"."id"
   left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
   "asset"."deletedAt" is null
-  and "library"."id" = $6
+  and "library"."id" = $5
 group by
   "library"."id"
 select

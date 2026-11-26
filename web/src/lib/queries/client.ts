@@ -1,12 +1,12 @@
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
-import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
-import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { modalManager, toastManager } from '@immich/ui';
 import {
   MutationCache,
   MutationObserver,
+  QueryCache,
   QueryClient,
   createQuery,
   hashKey,
@@ -27,9 +27,12 @@ type ToastMeta =
 
 declare module '@tanstack/svelte-query' {
   interface Register {
+    queryMeta: {
+      error?: { toast?: Translations };
+    };
     mutationMeta: {
       success?: { toast?: ToastMeta };
-      error?: { toast?: Translations | false };
+      error?: { toast?: Translations | false; values?: Record<string, string | number | boolean> };
     };
   }
 }
@@ -49,6 +52,16 @@ const createQueryClient = () => {
         staleTime: Infinity,
       },
     },
+    queryCache: new QueryCache({
+      onError: (error, { meta }) => {
+        const toast = meta?.error?.toast;
+        if (!toast) {
+          return;
+        }
+
+        void getFormatter().then(($t) => handleError(error, $t(toast)));
+      },
+    }),
     mutationCache: new MutationCache({
       onSuccess: async (_data, _variables, _onMutateResult, { meta }) => {
         const toast = meta?.success?.toast;
@@ -76,13 +89,13 @@ const createQueryClient = () => {
         }
 
         const $t = await getFormatter();
-        handleError(error, $t(toast ?? 'errors.something_went_wrong'));
+        handleError(error, $t(toast ?? 'errors.something_went_wrong', { values: meta?.error?.values }));
       },
     }),
   });
 
   const publicQueryHashes = new Set(
-    [getServerConfigQuery(), getPublicConfigQuery()].map(({ queryKey }) => hashKey(queryKey)),
+    [QueryKeys.serverConfig(), QueryKeys.publicConfig()].map((queryKey) => hashKey(queryKey)),
   );
   eventManager.on({
     AuthLogout: () => {
@@ -98,7 +111,7 @@ export const queryClient = createQueryClient();
 
 export const asMutation = <TArgs extends unknown[], TData, TError = DefaultError, TOnMutateResult = unknown>(
   fn: (...args: TArgs) => Promise<TData>,
-  options?: Omit<CreateMutationOptions<TData, TError, TArgs, TOnMutateResult>, 'mutationFn' | 'mutationKey'>,
+  options?: Omit<CreateMutationOptions<TData, TError, TArgs, TOnMutateResult>, 'mutationFn'>,
 ) => mutationOptions({ ...options, mutationFn: (args: TArgs) => fn(...args) });
 
 const getPreloadedData = <TQueryFnData>(queryKey: QueryKey) => {

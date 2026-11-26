@@ -1,4 +1,4 @@
-# System Settings
+# System settings
 
 The admin user can manage settings for the Immich instance here.
 
@@ -6,15 +6,15 @@ The admin user can manage settings for the Immich instance here.
 You can always return to the default settings by clicking the `Reset to default` button.
 :::
 
-## Authentication Settings
+## Authentication settings
 
 Manage password, OAuth, and other authentication settings
 
-### OAuth Authentication
+### OAuth authentication
 
 Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/administration/oauth).
 
-### Password Authentication
+### Password authentication
 
 The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](/administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
 
@@ -22,7 +22,7 @@ The administrator can choose to disable login with username and password for the
 You can always use the [Server CLI](/administration/server-commands) to re-enable password login.
 :::
 
-## Image Settings (thumbnails and previews)
+## Image settings (thumbnails and previews)
 
 - Thumbnails - Used in the main timeline.
 - Previews - Used in the asset viewer.
@@ -59,7 +59,7 @@ Use embedded previews in RAW photos as the input to image processing when availa
 The default resolution for Large thumbnails can be lowered from 1440p (default) to 1080p or 720p to save storage space.
 :::
 
-## Job Settings
+## Job settings
 
 Using these settings, you can determine the amount of work that will run concurrently for each task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
 
@@ -78,13 +78,13 @@ The Facial Recognition Concurrency value cannot be changed because
 [DBSCAN](https://www.youtube.com/watch?v=RDZUdRSDOok) is traditionally sequential, but there are parallel implementations of it out there. Our implementation isn't parallel.
 :::
 
-## External Library
+## External library
 
-### Library watching (EXPERIMENTAL)
+### Library watching [EXPERIMENTAL]
 
 External libraries can automatically import changed files without a full rescan. It will import the file whenever the operating system reports a file change. If your photos are mounted over the network, this does not work.
 
-### Periodic Scanning
+### Periodic scanning
 
 You can define a custom interval for the trigger external library rescan under Administration -> Settings -> Library.  
 You can set the scanning interval using the preset or cron format. For more information please refer to e.g. [Crontab Guru](https://crontab.guru/).
@@ -93,7 +93,7 @@ You can set the scanning interval using the preset or cron format. For more info
 
 The default Immich log level is `Log` (commonly known as `Info`). The Immich administrator can choose a higher or lower log level according to personal preference or as requested by the Immich support team.
 
-## Machine Learning Settings
+## Machine learning settings
 
 Through this setting, you can manage all the settings related to machine learning in Immich, from the setting of remote machine learning to the model and its parameters
 You can choose to disable a certain type of machine learning, for example smart search or facial recognition.
@@ -106,7 +106,7 @@ Hosting the `immich-machine-learning` container on a machine with a more powerfu
 
 If more than one URL is provided, each server will be attempted one-at-a-time until one responds successfully, in order from first to last. Servers that don't respond will be temporarily ignored until they come back online.
 
-### Smart Search
+### Smart search
 
 The [smart search](/features/searching) settings allow you to change the [CLIP model](https://openai.com/research/clip). Larger models will typically provide [more accurate search results](https://github.com/immich-app/immich/discussions/11862) but consume more processing power and RAM. When [changing the CLIP model](/FAQ#can-i-use-a-custom-clip-model) it is mandatory to re-run the Smart Search job on all images to fully apply the change.
 
@@ -116,13 +116,13 @@ After downloading, there is no need for Immich to connect to the network
 Unless version checking has been enabled in the settings.
 :::
 
-### Duplicate Detection
+### Duplicate detection
 
 Use CLIP embeddings to find likely duplicates. The maximum detection distance can be configured in order to improve / reduce the level of accuracy.
 
 - **Maximum detection distance -** Maximum distance between two images to consider them duplicates, ranging from 0.001-0.1. Higher values will detect more duplicates, but may result in false positives.
 
-### Facial Recognition
+### Facial recognition
 
 Under these settings, you can change the facial recognition settings
 Editable settings:
@@ -132,7 +132,7 @@ Editable settings:
 - **Max Recognition Distance**
 - **Min Recognized Faces**
 
-You can learn more about these options on the [Facial Recognition page](/features/facial-recognition#how-face-detection-works)
+You can learn more about these options on the [facial recognition page](/features/facial-recognition#how-face-detection-works)
 
 :::info
 When changing the values in Min Detection Score, Max Recognition Distance, and Min Recognized Faces.
@@ -145,40 +145,40 @@ If you replace the Facial Recognition Model, you will have to run the job FACE D
 If you have twins, you might want to lower the Max Recognition Distance value, decreasing this a **bit** can make it distinguish between them.
 :::
 
-## Map & GPS Settings
+## Map & GPS settings
 
-### Map Settings
+### Map settings
 
 In these settings, you can change the appearance of the map in night and day modes according to your personal preference and according to the supported options.
 The map can be adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for example.
 
-### Reverse Geocoding Settings
+### Reverse geocoding settings
 
 Immich supports [Reverse Geocoding](/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
 
-## Notification Settings
+## Notification settings
 
 SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](/administration/email-notification)
 
-## Notification Templates
+## Notification templates
 
 Override the default notifications text with notification templates. More information can be found [here](/administration/email-notification)
 
-## Server Settings
+## Server settings
 
-### External Domain
+### External domain
 
 Overrides the domain name in shared links and email notifications. The URL should not include a trailing slash.
 
-### Welcome Message
+### Welcome message
 
 The administrator can set a custom message on the login screen (the message will be displayed to all users).
 
-## Storage Template
+## Storage template
 
 Immich supports a custom [Storage Template](/administration/storage-template). Learn more about this feature and its configuration [here](/administration/storage-template).
 
-## Theme Settings
+## Theme settings
 
 You can write custom CSS that will get loaded in the web application for all users. This enables administrators to change fonts, colors, and other styles.
 
@@ -190,7 +190,7 @@ p {
 }
 ```
 
-## Trash Settings
+## Trash settings
 
 In the system administrator's option to set a trash for deleted files, these files will remain in the trash until the deletion date 30 days (default) or as defined by the system administrator.
 
@@ -200,17 +200,17 @@ The trash can be disabled, however this is not recommended as future files that 
 You can select assets and press Ctrl + Del from the timeline for quick permanent deletion without the trash option.
 :::
 
-## User Settings
+## User settings
 
 ### Delete delay
 
 The system administrator can choose to delete users through the administration panel, the system administrator can delete users immediately or alternatively delay the deletion for users (7 days by default) this action permanently delete a user's account and assets. The user deletion job runs at midnight to check for users that are ready for deletion. Changes to this setting will be evaluated at the next execution.
 
-## Version Check
+## Version check
 
 When this option is enabled the `immich-server` will periodically make requests to GitHub to check for new releases.
 
-## Video Transcoding Settings
+## Video transcoding settings
 
 The system administrator can configure which video files will be converted to different formats. The settings can be changed in depth, to learn more about the terminology used here, refer to FFmpeg documentation for [H.264](https://trac.ffmpeg.org/wiki/Encode/H.264) codec, [HEVC](https://trac.ffmpeg.org/wiki/Encode/H.265) codec and [VP9](https://trac.ffmpeg.org/wiki/Encode/VP9) codec.
 
@@ -234,7 +234,7 @@ Which audio codec to use when the audio stream is being transcoded. Can be one o
 
 The default value is `aac`.
 
-### Video Codec (`ffmpeg.targetVideoCodec`) {#ffmpeg.targetVideoCodec}
+### Video codec (`ffmpeg.targetVideoCodec`) {#ffmpeg.targetVideoCodec}
 
 Which video codec to use when the video stream is being transcoded. Can be one of `h264`, `hevc`, `vp9` or `av1`.
 

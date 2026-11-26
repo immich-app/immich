@@ -71,7 +71,11 @@ export class MockFetch extends Dispatcher {
       body,
       contentType = 'application/octet-stream',
       headers,
+      networkError,
     } = await this.dispatch(request.method, url, await parseBody(request));
+    if (networkError) {
+      throw new TypeError('Failed to fetch');
+    }
     if (body !== undefined) {
       return new Response(body, {
         status,

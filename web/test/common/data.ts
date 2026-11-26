@@ -1,21 +1,25 @@
-import { adminUserId, factory, type TimelineConfig } from '#test/common/factories.ts';
+import { adminUserId, editedThumbhash, factory, type TimelineConfig } from '#test/common/factories.ts';
 import { SeededRandom } from '#test/common/helpers.ts';
 import { payload } from '#test/common/payloads.ts';
-import type { ResponseOf } from '#test/common/types.ts';
+import type { Call, ResponseOf } from '#test/common/types.ts';
 import {
   AssetOrder,
   AssetTypeEnum,
   AssetVisibility,
   MaintenanceAction,
   PartnerDirection,
+  PeopleUsersUpsertType,
+  PersonUserRole,
   QueueCommand,
   ReactionLevel,
   ReactionType,
   SearchSuggestionType,
+  SharingDirection,
   type ActivityCreateDto,
   type ActivityResponseDto,
   type AdminConfigDto,
   type AlbumResponseDto,
+  type AlbumUserRole,
   type ApiKeyResponseDto,
   type AssetBulkUpdateDto,
   type AssetEditActionItemResponseDto,
@@ -34,6 +38,8 @@ import {
   type IntegrityReport,
   type IntegrityReportResponseDto,
   type LibraryResponseDto,
+  type LicenseKeyDto,
+  type LicenseResponseDto,
   type LoginResponseDto,
   type MaintenanceStatusResponseDto,
   type MapMarkerResponseDto,
@@ -42,9 +48,11 @@ import {
   type MetadataSearchDto,
   type PartnerResponseDto,
   type PasskeyResponseDto,
+  type PeopleUsersUpsertDto,
   type PersonCreateDto,
   type PersonResponseDto,
   type PersonUpdateDto,
+  type PersonUsersDeleteDto,
   type PlacesResponseDto,
   type PluginMethodResponseDto,
   type QueueCommandDto,
@@ -72,7 +80,9 @@ import {
   type UserPreferencesResponseDto,
   type UserPreferencesUpdateDto,
   type UserResponseDto,
+  type UserUpdateMeDto,
   type WorkflowCreateDto,
+  type WorkflowLogEntryDto,
   type WorkflowResponseDto,
   type WorkflowStepDto,
   type WorkflowUpdateDto,
@@ -85,7 +95,18 @@ export type TimelineFilter = {
   visibility?: AssetVisibility;
   order?: AssetOrder;
   withStacked?: boolean;
+  withCoordinates?: boolean;
+  hasCoordinates?: boolean;
+  personId?: string;
 };
+
+type PersonUser = { personId: string; sharedById: string; sharedWithId: string; role: PersonUserRole };
+
+const unaccent = (value: string) =>
+  value
+    .normalize('NFD')
+    .replaceAll(/\p{Diacritic}/gu, '')
+    .toLowerCase();
 
 export type ActivityFilter = {
   assetId?: string;
@@ -105,6 +126,7 @@ export type SuggestionFilter = {
 
 export type MemoryFilter = {
   id?: string;
+  isSaved?: boolean;
   page?: number;
   size?: number;
 };
@@ -121,6 +143,9 @@ const toWorkflowSteps = (steps: WorkflowStepDto[]) =>
   steps.map(({ method, config, enabled }) => ({ method, config, enabled }));
 
 const hiddenVisibilities = new Set<AssetVisibility>([AssetVisibility.Hidden, AssetVisibility.Locked]);
+
+const hasCoordinates = ({ exifInfo }: AssetResponseDto) =>
+  typeof exifInfo?.latitude === 'number' && typeof exifInfo.longitude === 'number';
 
 const suggestionFields: Record<SearchSuggestionType, keyof ExifResponseDto> = {
   [SearchSuggestionType.Country]: 'country',
@@ -151,9 +176,12 @@ export class MockData {
   readonly queues = payload.queues();
   readonly notifications = payload.notifications();
   readonly backups = payload.backups();
+  readonly storageTemplateOptions = payload.storageTemplateOptions();
   isOnboarded = true;
 
   private preferences = factory.preferences();
+  private serverLicense: LicenseResponseDto | null = null;
+  private readonly activationKeys = new Map<string, string>();
   private authStatus = factory.authStatus();
   private integrityReport = payload.integrityReport();
   private maintenanceStatus: MaintenanceStatusResponseDto = { action: MaintenanceAction.Start, active: true };
@@ -163,6 +191,7 @@ export class MockData {
   private readonly albumAssets = new Map<string, Set<string>>();
   private readonly memories = new Map<string, MemoryResponseDto>();
   private readonly people = new Map<string, PersonResponseDto>();
+  private personUsers: PersonUser[] = [];
   private readonly places: PlacesResponseDto[] = [];
   private readonly stacks = new Map<string, StackResponseDto>();
   private readonly ocr = new Map<string, AssetOcrResponseDto[]>();
@@ -172,6 +201,7 @@ export class MockData {
   private readonly tags = new Map<string, TagResponseDto>();
   private readonly activities = new Map<string, ActivityResponseDto>();
   private readonly workflows = new Map<string, WorkflowResponseDto>();
+  private readonly workflowLogs = new Map<string, WorkflowLogEntryDto[]>();
   private readonly apiKeys = new Map<string, ApiKeyResponseDto>();
   private readonly libraries = new Map<string, LibraryResponseDto>();
   private readonly faces = new Map<string, AssetFaceResponseDto[]>();
@@ -185,6 +215,10 @@ export class MockData {
     [PartnerDirection.SharedBy]: new Map(),
     [PartnerDirection.SharedWith]: new Map(),
   };
+
+  previewStorageTemplate(template: string) {
+    return this.storageTemplateOptions.presets.find((preset) => preset.template === template)?.preview ?? template;
+  }
 
   getPreferences() {
     return this.preferences;
@@ -210,6 +244,10 @@ export class MockData {
     const start = cursor ? items.findIndex((item) => item.id === cursor) : 0;
     const page = items.slice(start, start + integrityReportPageSize);
     return { items: page, nextCursor: items[start + integrityReportPageSize]?.id };
+  }
+
+  getIntegrityReportItem(id: string) {
+    return this.integrityReportItems.get(id);
   }
 
   deleteIntegrityReportItem(id: string) {
@@ -266,10 +304,62 @@ export class MockData {
     };
   }
 
-  signUpAdmin(dto: { email: string; name: string }) {
+  signUpAdmin(dto: { email: string; name: string | null }) {
     Object.assign(this.user, { email: dto.email, name: dto.name, isAdmin: true });
     this.serverConfig.isInitialized = true;
     return this.user;
+  }
+
+  updateMyUser({ email, name, avatarColor }: UserUpdateMeDto) {
+    Object.assign(this.user, {
+      email: email ?? this.user.email,
+      name: name ?? this.user.name,
+      avatarColor: avatarColor ?? this.user.avatarColor,
+    });
+    return this.user;
+  }
+
+  addActivationKey(licenseKey: string, activationKey: string) {
+    this.activationKeys.set(licenseKey, activationKey);
+    return this;
+  }
+
+  getActivationKey(licenseKey: string) {
+    return this.activationKeys.get(licenseKey);
+  }
+
+  getServerLicense() {
+    return this.serverLicense;
+  }
+
+  setServerLicense(dto: LicenseKeyDto) {
+    this.serverLicense = { ...dto, activatedAt: new Date().toISOString() };
+    this.aboutInfo.licensed = true;
+    return this.serverLicense;
+  }
+
+  deleteServerLicense() {
+    this.serverLicense = null;
+    this.aboutInfo.licensed = false;
+  }
+
+  setUserLicense(dto: LicenseKeyDto) {
+    this.user.license = { ...dto, activatedAt: new Date().toISOString() };
+    return this.user.license;
+  }
+
+  deleteUserLicense() {
+    this.user.license = null;
+  }
+
+  albumStatistics() {
+    const albums = [...this.albums.values()];
+    const owned = albums.filter((album) => album.albumUsers[0]?.user.id === this.user.id);
+    return {
+      owned: owned.length,
+      shared: albums.filter((album) => album.shared).length,
+      notShared: owned.filter((album) => !album.shared).length,
+    };
   }
 
   changePassword() {
@@ -306,8 +396,12 @@ export class MockData {
     return { assets: this.timelineAssets().filter((asset) => asset.people?.some((person) => person.id === id)).length };
   }
 
-  peoplePage({ withHidden, isHidden }: { withHidden?: boolean; isHidden?: boolean }) {
-    const all = this.getPeople().filter((person) => isHidden === undefined || person.isHidden === isHidden);
+  peoplePage({ withHidden, isHidden, name }: { withHidden?: boolean; isHidden?: boolean; name?: string }) {
+    const all = this.getPeople().filter(
+      (person) =>
+        (isHidden === undefined || person.isHidden === isHidden) &&
+        (name === undefined || unaccent(person.name ?? '').includes(unaccent(name))),
+    );
     const people = withHidden || isHidden !== undefined ? all : all.filter((person) => !person.isHidden);
     return {
       people,
@@ -318,11 +412,63 @@ export class MockData {
   }
 
   searchPeople({ name, withHidden }: { name: string; withHidden?: boolean }) {
-    const query = name.toLowerCase();
+    const query = unaccent(name);
     return this.getPeople().filter(
       (person) =>
         (withHidden || !person.isHidden) &&
-        (person.name.toLowerCase().startsWith(query) || person.name.toLowerCase().includes(` ${query}`)),
+        (unaccent(person.name ?? '').startsWith(query) || unaccent(person.name ?? '').includes(` ${query}`)),
+    );
+  }
+
+  mergePeople([id, ...mergeIds]: string[]) {
+    return mergeIds.map((mergeId) => ({ id: mergeId, success: this.people.has(id) && this.people.delete(mergeId) }));
+  }
+
+  reassignFaces(id: string) {
+    const person = this.people.get(id);
+    return person ? [person] : undefined;
+  }
+
+  sharePerson(personId: string, sharedById: string, sharedWithId: string) {
+    this.personUsers.push({ personId, sharedById, sharedWithId, role: PersonUserRole.Admin });
+    return this;
+  }
+
+  personUserList({ personId, direction }: { personId?: string; direction?: SharingDirection }) {
+    const users = new Map(this.searchUsers().map((user) => [user.id, user]));
+    const getUser = (id: string) => {
+      const user = users.get(id);
+      if (!user) {
+        throw new Error(`Unknown user ${id}`);
+      }
+      return user;
+    };
+    return this.personUsers
+      .filter(
+        (share) =>
+          (personId === undefined || share.personId === personId) &&
+          (direction !== SharingDirection.SharedBy || share.sharedById === this.user.id) &&
+          (direction !== SharingDirection.SharedWith || share.sharedWithId === this.user.id),
+      )
+      .map((share) => ({ ...share, sharedBy: getUser(share.sharedById), sharedWith: getUser(share.sharedWithId) }));
+  }
+
+  upsertPersonUsers({ personIds = [], sharedWithIds, role, type }: PeopleUsersUpsertDto) {
+    const ids = type === PeopleUsersUpsertType.Everyone ? this.getPeople().map(({ id }) => id) : personIds;
+    for (const personId of ids) {
+      for (const sharedWithId of sharedWithIds) {
+        this.removePersonUsers([{ personId, sharedWithId }]);
+        this.personUsers.push({ personId, sharedById: this.user.id, sharedWithId, role });
+      }
+    }
+  }
+
+  removePersonUsers(items: PersonUsersDeleteDto) {
+    this.personUsers = this.personUsers.filter((share) =>
+      items.every(
+        ({ personId, sharedWithId, sharedById = this.user.id }) =>
+          share.personId !== personId || share.sharedWithId !== sharedWithId || share.sharedById !== sharedById,
+      ),
     );
   }
 
@@ -349,6 +495,7 @@ export class MockData {
       isHidden: dto.isHidden ?? person.isHidden,
       isFavorite: dto.isFavorite ?? person.isFavorite,
       birthDate: dto.birthDate === undefined ? person.birthDate : dto.birthDate,
+      updatedAt: new Date().toISOString(),
     };
     this.people.set(id, updated);
     return updated;
@@ -404,6 +551,8 @@ export class MockData {
             : asset.visibility === filter.visibility) &&
           asset.isTrashed === isTrashed &&
           (filter.isFavorite === undefined || asset.isFavorite === filter.isFavorite) &&
+          (filter.hasCoordinates === undefined || hasCoordinates(asset) === filter.hasCoordinates) &&
+          (filter.personId === undefined || !!asset.people?.some((person) => person.id === filter.personId)) &&
           (!filter.withStacked || !asset.stack || asset.stack.primaryAssetId === asset.id),
       )
       .sort((a, b) => direction * a.fileCreatedAt.localeCompare(b.fileCreatedAt));
@@ -667,6 +816,19 @@ export class MockData {
     return true;
   }
 
+  updateAlbumUser(albumId: string, userId: string, role: AlbumUserRole) {
+    const album = this.albums.get(albumId);
+    if (!album?.albumUsers.some(({ user }) => user.id === userId)) {
+      return false;
+    }
+
+    const albumUsers = album.albumUsers.map((albumUser) =>
+      albumUser.user.id === userId ? { ...albumUser, role } : albumUser,
+    );
+    this.albums.set(albumId, { ...album, albumUsers });
+    return true;
+  }
+
   addDuplicates(assets: AssetResponseDto[]) {
     const duplicateId = crypto.randomUUID();
     for (const asset of assets) {
@@ -829,7 +991,20 @@ export class MockData {
   }
 
   getFaces(assetId: string) {
-    return this.faces.get(assetId) ?? [];
+    return (this.faces.get(assetId) ?? []).map((face) =>
+      face.person ? { ...face, person: this.people.get(face.person.id) ?? face.person } : face,
+    );
+  }
+
+  reassignFace(id: string, personId: string) {
+    const person = this.people.get(personId);
+    for (const faces of this.faces.values()) {
+      const index = faces.findIndex((face) => face.id === id);
+      if (person && index !== -1) {
+        faces[index] = { ...faces[index], person };
+        return person;
+      }
+    }
   }
 
   deleteFace(id: string) {
@@ -985,6 +1160,19 @@ export class MockData {
 
   workflowList() {
     return [...this.workflows.values()];
+  }
+
+  addWorkflowLogs(workflowId: string, entries: MaybeArray<WorkflowLogEntryDto>) {
+    this.workflowLogs.set(workflowId, [...(this.workflowLogs.get(workflowId) ?? []), ...toList(entries)]);
+    return this;
+  }
+
+  workflowLogPage({ id, result, before, limit = 50 }: Call<'getWorkflowLogs'>['params']) {
+    return (this.workflowLogs.get(id) ?? [])
+      .filter((entry) => !result || entry.result === result)
+      .filter((entry) => !before || entry.at < before)
+      .toSorted((a, b) => b.at.localeCompare(a.at))
+      .slice(0, limit);
   }
 
   deleteWorkflow(id: string) {
@@ -1157,7 +1345,7 @@ export class MockData {
 
   mapMarkers(albumId?: string): MapMarkerResponseDto[] {
     return this.timelineAssets({ albumId })
-      .filter((asset) => typeof asset.exifInfo?.latitude === 'number' && typeof asset.exifInfo.longitude === 'number')
+      .filter((asset) => hasCoordinates(asset))
       .map((asset) => ({
         id: asset.id,
         lat: asset.exifInfo!.latitude!,
@@ -1210,6 +1398,10 @@ export class MockData {
       country: bucket.map((asset) => asset.exifInfo?.country ?? null),
       visibility: bucket.map((asset) => asset.visibility),
       stack: bucket.map((asset) => (asset.stack ? [asset.stack.id, String(asset.stack.assetCount)] : null)),
+      ...(filter.withCoordinates && {
+        latitude: bucket.map((asset) => asset.exifInfo?.latitude ?? null),
+        longitude: bucket.map((asset) => asset.exifInfo?.longitude ?? null),
+      }),
     };
   }
 
@@ -1272,7 +1464,7 @@ export class MockData {
       assetId,
       edits.map((edit) => factory.assetEdit(edit)),
     );
-    this.assets.set(assetId, { ...asset, isEdited: true });
+    this.assets.set(assetId, { ...asset, isEdited: true, thumbhash: editedThumbhash });
     return this.getAssetEdits(assetId);
   }
 
@@ -1335,11 +1527,22 @@ export class MockData {
     }
   }
 
-  memoryList({ id, page = 1, size = 250 }: MemoryFilter = {}) {
+  memoryList({ id, isSaved, page = 1, size = 250 }: MemoryFilter = {}) {
     const memories = [...this.memories.values()]
       .filter((memory) => id === undefined || memory.id === id)
+      .filter((memory) => isSaved === undefined || memory.isSaved === isSaved)
       .sort((a, b) => b.memoryAt.localeCompare(a.memoryAt));
     return memories.slice((page - 1) * size, page * size);
+  }
+
+  removeMemoryAssets(id: string, assetIds: string[]) {
+    const memory = this.memories.get(id);
+    if (!memory) {
+      return;
+    }
+    const ids = new Set(assetIds);
+    this.memories.set(id, { ...memory, assets: memory.assets.filter((asset) => !ids.has(asset.id)) });
+    return assetIds.map((assetId) => ({ id: assetId, success: true }));
   }
 
   deleteMemory(id: string) {
@@ -1363,15 +1566,19 @@ export class MockData {
     return updated;
   }
 
-  searchAssets(dto: Pick<MetadataSearchDto, 'visibility' | 'isFavorite' | 'size'>): SearchResponseDto {
-    const items = this.timelineAssets({ visibility: dto.visibility, isFavorite: dto.isFavorite ?? undefined }).slice(
-      0,
-      dto.size ?? 250,
-    );
+  searchAssets(dto: Pick<MetadataSearchDto, 'visibility' | 'isFavorite' | 'page' | 'size'>): SearchResponseDto {
+    const { page = 1, size = 250 } = dto;
+    const matches = this.timelineAssets({ visibility: dto.visibility, isFavorite: dto.isFavorite ?? undefined });
+    const items = matches.slice((page - 1) * size, page * size);
+    const nextPage = matches.length > page * size ? String(page + 1) : null;
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
-      assets: { total: items.length, count: items.length, items, facets: [], nextPage: null, nextCursor: null },
+      assets: { count: items.length, items, facets: [], nextPage, nextCursor: null },
     };
+  }
+
+  searchLargeAssets() {
+    return this.timelineAssets().sort((a, b) => (b.exifInfo?.fileSizeInByte ?? 0) - (a.exifInfo?.fileSizeInByte ?? 0));
   }
 
   searchSuggestions({ $type, country, state, make, model, includeNull }: SuggestionFilter) {
@@ -1411,5 +1618,19 @@ export class MockData {
       }
     }
     return [...byCity.values()];
+  }
+
+  uniqueOriginalPaths() {
+    const folders = this.timelineAssets({ visibility: AssetVisibility.Timeline }).map(({ originalPath }) =>
+      originalPath.slice(0, originalPath.lastIndexOf('/')),
+    );
+    return [...new Set(folders)].sort((a, b) => a.localeCompare(b));
+  }
+
+  assetsByOriginalPath(path: string) {
+    const folder = `/${path.replaceAll(/^\/+|\/+$/g, '')}`;
+    return this.timelineAssets({ visibility: AssetVisibility.Timeline })
+      .filter(({ originalPath }) => originalPath.slice(0, originalPath.lastIndexOf('/')) === folder)
+      .sort((a, b) => a.originalFileName.localeCompare(b.originalFileName));
   }
 }

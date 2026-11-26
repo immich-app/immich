@@ -115,6 +115,19 @@ describe('Album Modal', () => {
     ]);
   });
 
+  it('search skips albums without a description', () => {
+    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
+    const holidayAlbum = factory.album({ albumName: 'Holidays', description: null });
+    const constructionAlbum = factory.album({ albumName: 'Construction', description: null });
+    const modalRows = converter.toModalRows('Cons', [], [holidayAlbum, constructionAlbum], -1, []);
+
+    expect(modalRows).toStrictEqual([
+      createNewAlbumRow(false),
+      createSectionRow('ALBUMS'),
+      createAlbumRow(constructionAlbum, false),
+    ]);
+  });
+
   it('selection can select new album row', () => {
     const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
     const holidayAlbum = factory.album({ albumName: 'Holidays' });

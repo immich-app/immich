@@ -1,5 +1,5 @@
 import { YuccaService } from '@futo-org/backups-orchestrator-api';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { parseCookie } from 'cookie';
 import { NextFunction, Request, Response } from 'express';
@@ -9,6 +9,7 @@ import { IncomingHttpHeaders } from 'node:http';
 import { basename } from 'node:path';
 import { serverVersion } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent } from 'src/decorators.js';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
@@ -16,12 +17,13 @@ import {
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto.js';
 import { ServerConfigDto, ServerPingResponse, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
-import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
+import { DatabaseLock, ImmichCookie, ImmichWorker, MaintenanceAction, SystemMetadataKey } from 'src/enum.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { DatabaseRepository } from 'src/repositories/database.repository.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
@@ -35,6 +37,7 @@ import type { MaintenanceModeState } from 'src/types.js';
 import { getConfig } from 'src/utils/config.js';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance.js';
 import { getExternalDomain } from 'src/utils/misc.js';
+import { isCrossOriginRequest } from 'src/utils/request.js';
 import { detectMediaLocation } from 'src/utils/storage.js';
 
 /** This service is available inside of maintenance mode to manage maintenance mode */
@@ -80,8 +83,9 @@ export class MaintenanceWorkerService {
 
     StorageCore.setMediaLocation(this.detectMediaLocation());
 
-    this.maintenanceWebsocketRepository.setAuthFn(async (client) => this.authenticate(client.request.headers));
-    this.maintenanceWebsocketRepository.setStatusUpdateFn((status) => (this.#status = status));
+    this.maintenanceWebsocketRepository.setAuthFn(async (client) =>
+      this.authenticate(client.request.headers, client.request.method),
+    );
 
     await this.logSecret();
 
@@ -196,6 +200,17 @@ export class MaintenanceWorkerService {
     return state;
   }
 
+  @OnEvent({ name: 'MaintenanceStatus', server: true, workers: [ImmichWorker.Maintenance] })
+  onMaintenanceStatus(status: ArgOf<'MaintenanceStatus'>) {
+    this.#status = status;
+  }
+
+  @OnEvent({ name: 'MaintenanceWebsocketConnect', workers: [ImmichWorker.Maintenance] })
+  onWebsocketConnect({ clientId, isAuthenticated }: ArgOf<'MaintenanceWebsocketConnect'>) {
+    const status = isAuthenticated ? this.getStatus() : this.getPublicStatus();
+    this.maintenanceWebsocketRepository.clientSend('MaintenanceStatusV1', clientId, status);
+  }
+
   setStatus(status: MaintenanceStatusResponseDto): void {
     this.#status = status;
     this.maintenanceWebsocketRepository.serverSend('MaintenanceStatus', status);
@@ -218,7 +233,11 @@ export class MaintenanceWorkerService {
     this.logger.log(`\n\n🚧 Immich is in maintenance mode, you can log in using the following URL:\n${url}\n`);
   }
 
-  async authenticate(headers: IncomingHttpHeaders): Promise<MaintenanceAuthDto> {
+  async authenticate(headers: IncomingHttpHeaders, method?: string): Promise<MaintenanceAuthDto> {
+    if (isCrossOriginRequest(headers, method)) {
+      throw new ForbiddenException('Cross-origin request blocked');
+    }
+
     const jwtToken = parseCookie(headers.cookie || '')[ImmichCookie.MaintenanceToken];
     return this.login(jwtToken);
   }

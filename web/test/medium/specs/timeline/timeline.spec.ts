@@ -1,8 +1,109 @@
 import { Route } from '#lib/route.ts';
+import type { MockData } from '#test/common/data.ts';
 import { factory } from '#test/common/factories.ts';
 import { adjacentAsset, adjacentYearMonths, yearMonthOf, yearMonthsOf } from '#test/common/timeline.ts';
+import type { App } from '#test/medium/app.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
-import { AssetTypeEnum, AssetVisibility } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility, type AssetResponseDto } from '@immich/sdk';
+
+const addLivePhotoCandidates = (data: MockData) => {
+  const photo = factory.asset({ fileCreatedAt: '2025-06-01T12:00:00.000Z' });
+  const video = factory.asset({ type: AssetTypeEnum.Video, fileCreatedAt: '2025-06-01T12:00:01.000Z' });
+  const livePhoto = factory.asset({ fileCreatedAt: '2025-05-01T12:00:00.000Z' });
+  const motion = factory.asset({ type: AssetTypeEnum.Video, fileCreatedAt: '2025-05-01T12:00:01.000Z' });
+  data.addAssets([photo, video, livePhoto, motion]);
+  data.updateAsset(livePhoto.id, { livePhotoVideoId: motion.id });
+  return { photo, video, livePhoto };
+};
+
+type Selectable = ReturnType<typeof addLivePhotoCandidates>;
+type FailedAction = {
+  action: string;
+  operation: 'updateAssets' | 'updateAsset' | 'deleteAssets';
+  toast: string;
+  act: (app: App, assets: Selectable) => Promise<void>;
+};
+
+const selectOne = async (app: App, asset: AssetResponseDto, run: () => Promise<void>) => {
+  await app.timeline.select(asset);
+  await run();
+};
+
+const failedActions: FailedAction[] = [
+  {
+    action: 'favorite',
+    operation: 'updateAssets',
+    toast: 'errors.unable_to_add_remove_favorites',
+    act: (app, { photo }) => selectOne(app, photo, () => app.timeline.selectionBar.favoriteButton.click()),
+  },
+  {
+    action: 'archive',
+    operation: 'updateAssets',
+    toast: 'errors.unable_to_archive_unarchive',
+    act: (app, { photo }) => selectOne(app, photo, app.timeline.selectionBar.archive),
+  },
+  {
+    action: 'change date',
+    operation: 'updateAssets',
+    toast: 'errors.unable_to_change_date',
+    act: (app, { photo }) =>
+      selectOne(app, photo, async () => {
+        await app.timeline.selectionBar.changeDate();
+        await app.timeline.changeDate.confirmButton.click();
+      }),
+  },
+  {
+    action: 'change description',
+    operation: 'updateAssets',
+    toast: 'errors.unable_to_change_description',
+    act: (app, { photo }) =>
+      selectOne(app, photo, async () => {
+        await app.timeline.selectionBar.changeDescription();
+        await app.timeline.changeDescription.input.fill('Summer trip');
+        await app.timeline.changeDescription.saveButton.click();
+      }),
+  },
+  {
+    action: 'change location',
+    operation: 'updateAssets',
+    toast: 'errors.unable_to_update_location',
+    act: (app, { photo }) =>
+      selectOne(app, photo, async () => {
+        await app.timeline.selectionBar.changeLocation();
+        await app.timeline.changeLocation.latitudeInput.fill('48.8566');
+        await app.timeline.changeLocation.longitudeInput.fill('2.3522');
+        await app.timeline.changeLocation.confirmButton.click();
+      }),
+  },
+  {
+    action: 'lock',
+    operation: 'updateAssets',
+    toast: 'errors.unable_to_save_settings',
+    act: (app, { photo }) => selectOne(app, photo, app.timeline.selectionBar.moveToLockedFolder),
+  },
+  {
+    action: 'link live photo',
+    operation: 'updateAsset',
+    toast: 'errors.unable_to_link_motion_video',
+    act: (app, { photo, video }) =>
+      selectOne(app, photo, async () => {
+        await app.timeline.thumbnail(video).click();
+        await app.timeline.selectionBar.linkLivePhoto();
+      }),
+  },
+  {
+    action: 'unlink live photo',
+    operation: 'updateAsset',
+    toast: 'errors.unable_to_unlink_motion_video',
+    act: (app, { livePhoto }) => selectOne(app, livePhoto, app.timeline.selectionBar.unlinkLivePhoto),
+  },
+  {
+    action: 'trash',
+    operation: 'deleteAssets',
+    toast: 'errors.unable_to_delete_assets',
+    act: (app, { photo }) => selectOne(app, photo, app.timeline.selectionBar.trash),
+  },
+];
 
 test.describe('timeline', () => {
   test.describe('/photos', () => {
@@ -12,6 +113,12 @@ test.describe('timeline', () => {
         await page.goto(Route.photos({ at: asset.id }));
         await expect(app.timeline.thumbnail(asset)).toBeInViewport();
       }
+    });
+
+    test('deep link focuses the asset', async ({ page, data, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos({ at: assets[300].id }));
+      await expect(app.timeline.thumbnail(assets[300])).toBeFocused();
     });
 
     test('browser back returns to the viewed asset and scroll position', async ({ page, data, app }) => {
@@ -39,6 +146,67 @@ test.describe('timeline', () => {
       expect(Math.abs((await app.timeline.scrollTop()) - scrollTopBefore)).toBeLessThan(5);
     });
 
+    test('browser back keeps the scroll position after the viewed asset left', async ({
+      page,
+      data,
+      api,
+      logger,
+      app,
+    }) => {
+      const assets = data.addTimeline({ years: 1 });
+      const asset = assets[300];
+      await page.goto(Route.photos({ at: asset.id }));
+      const scrollTopBefore = await app.timeline.scrollTop();
+      await app.timeline.thumbnail(asset).click();
+      await app.viewer.waitForAsset(asset);
+      data.deleteAssets([asset.id], true);
+      api.emit('on_asset_delete', asset.id);
+
+      await page.goBack();
+
+      await page.waitForURL(/\/photos\?at=/);
+      await expect
+        .poll(async () => Math.abs((await app.timeline.currentScrollTop()) - scrollTopBefore))
+        .toBeLessThan(5);
+      expect(logger.error).toHaveBeenCalledWith(/404/);
+    });
+
+    test('photos link scrolls the timeline back to the top', async ({ page, data, app }) => {
+      data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+      await app.timeline.grid.hover();
+      await page.mouse.wheel(0, 3000);
+      await app.timeline.scrollTop();
+
+      await app.sidebar.photosLink.click();
+
+      await expect.poll(app.timeline.currentScrollTop).toBe(0);
+    });
+
+    test('removes an asset trashed on another device', async ({ page, data, api, app }) => {
+      const [asset, next] = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+      await expect(app.timeline.thumbnail(asset)).toBeVisible();
+      data.deleteAssets([asset.id]);
+
+      api.emit('on_asset_trash', [asset.id]);
+
+      await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
+      await expect(app.timeline.thumbnail(next)).toBeVisible();
+    });
+
+    test('adds an asset uploaded on another device', async ({ page, data, api, app }) => {
+      const [existing] = data.addTimeline({ years: 1 });
+      const uploaded = factory.asset({ fileCreatedAt: existing.fileCreatedAt });
+      await page.goto(Route.photos());
+      await expect(app.timeline.thumbnail(existing)).toBeVisible();
+      data.addAssets(uploaded);
+
+      api.emit('on_upload_success', uploaded);
+
+      await expect(app.timeline.thumbnail(uploaded)).toBeVisible();
+    });
+
     test('next photo 15 times, go back lands on the viewed asset', async ({ page, data, app }) => {
       const assets = data.addTimeline({ years: 1 });
       await page.goto(Route.photos({ at: assets[0].id }));
@@ -55,9 +223,54 @@ test.describe('timeline', () => {
       await expect(app.timeline.thumbnail(assets[15])).toBeInViewport();
       await app.timeline.expectAtBottom(assets[15]);
     });
+
+    test('go back lands on the viewed asset below the memory lane', async ({ page, data, app }) => {
+      const assets = data.addTimeline({ years: 3 });
+      data.addMemories(
+        factory.memories(assets, [
+          { year: 2025, assetCount: 3 },
+          { year: 2024, assetCount: 3 },
+        ]),
+      );
+      await page.goto(Route.photos({ at: assets[200].id }));
+      await app.timeline.thumbnail(assets[200]).click();
+      await app.viewer.waitForAsset(assets[200]);
+      for (let index = 201; index <= 212; index++) {
+        await app.viewer.nextButton.click();
+        await app.viewer.waitForAsset(assets[index]);
+      }
+
+      await app.viewer.backButton.click();
+      await page.waitForURL(/\/photos\?at=/);
+
+      await expect(app.timeline.thumbnail(assets[212])).toBeInViewport({ ratio: 0.9 });
+    });
+
+    test('view in timeline from the viewer outlines the asset', async ({ page, data, app }) => {
+      const assets = data.addTimeline({ years: 1 });
+      const asset = assets[300];
+      await page.goto(Route.photos({ at: asset.id }));
+      await app.timeline.thumbnail(asset).click();
+      await app.viewer.waitForAsset(asset);
+
+      await app.viewer.viewInTimeline();
+      await page.waitForURL(/\/photos\?at=/);
+
+      await expect(app.timeline.thumbnail(asset).and(page.locator(':focus-visible'))).toBeFocused();
+    });
   });
 
   test.describe('keyboard', () => {
+    test('space scrolls the timeline right after load', async ({ page, data, app }) => {
+      const [asset] = data.addTimeline({ years: 1 });
+      await page.goto(Route.photos());
+      await expect(app.timeline.thumbnail(asset)).toBeVisible();
+
+      await page.keyboard.press(' ');
+
+      await expect.poll(app.timeline.currentScrollTop).toBeGreaterThan(0);
+    });
+
     test('next/previous asset with arrow keys and tab', async ({ page, data, app }) => {
       const assets = data.addTimeline({ years: 1 });
       await page.goto(Route.photos());
@@ -336,6 +549,22 @@ test.describe('timeline', () => {
     });
   });
 
+  test.describe('failed selection action', () => {
+    for (const { action, operation, toast, act } of failedActions) {
+      test(`${action} shows its error toast`, async ({ page, data, api, logger, app }) => {
+        const assets = addLivePhotoCandidates(data);
+        api.on({ [operation]: () => ({ networkError: true }) });
+        await page.goto(Route.photos());
+
+        await act(app, assets);
+
+        await expect(app.text(toast)).toBeVisible();
+        expect(api[operation]).toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalledWith(/Failed/);
+      });
+    }
+  });
+
   test.describe('scroll', () => {
     test('click scrubber segments across the timeline', async ({ page, data, app }) => {
       test.slow();
@@ -578,6 +807,24 @@ test.describe('timeline', () => {
 
       await page.goto(Route.viewAlbum({ id: album.id }));
       await expect(app.timeline.thumbnail(asset)).toBeInViewport();
+    });
+  });
+
+  test.describe('/locked', () => {
+    test('moves assets off the locked folder', async ({ page, data, api, app }) => {
+      const [asset, other] = data.addTimeline({ years: 1 });
+      data.updateAssets({ ids: [asset.id, other.id], visibility: AssetVisibility.Locked });
+      data.setAuthStatus({ pinCode: true, isElevated: true });
+      await page.goto(Route.locked());
+
+      await app.timeline.select(asset);
+      await app.timeline.selectionBar.moveOffLockedFolder();
+
+      await expect(app.timeline.thumbnail(asset)).toHaveCount(0);
+      await expect(app.timeline.thumbnail(other)).toBeVisible();
+      expect(api.updateAssets).toHaveBeenCalledWith({
+        body: { ids: [asset.id], visibility: AssetVisibility.Timeline },
+      });
     });
   });
 

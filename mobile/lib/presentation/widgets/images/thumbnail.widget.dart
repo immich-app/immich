@@ -55,32 +55,19 @@ class Thumbnail extends StatefulWidget {
 
 class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMixin {
   ui.Image? _providerImage;
-  ui.Image? _previousImage;
-
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
+  bool _doFadeIn = false;
 
   ImageStream? _imageStream;
   ImageStreamListener? _imageStreamListener;
   ImageStream? _thumbhashStream;
   ImageStreamListener? _thumbhashStreamListener;
 
-  static final _gradientCache = <ColorScheme, Gradient>{};
+  static final _gradientCache = Map<ColorScheme, Gradient>.identity();
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
-    _fadeController.addStatusListener(_onAnimationStatusChanged);
     _loadImage();
-  }
-
-  void _onAnimationStatusChanged(AnimationStatus status) {
-    if (status == AnimationStatus.completed) {
-      _previousImage?.dispose();
-      _previousImage = null;
-    }
   }
 
   void _loadFromThumbhashProvider() {
@@ -98,9 +85,9 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
           imageInfo.dispose();
           return;
         }
-        _fadeController.value = 1.0;
         setState(() {
           _providerImage = imageInfo.image;
+          _doFadeIn = false;
         });
       },
       onError: (exception, stackTrace) {
@@ -131,22 +118,11 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
           return;
         }
 
-        if ((synchronousCall && _providerImage == null) || !_isVisible()) {
-          _fadeController.value = 1.0;
-        } else if (_fadeController.isAnimating) {
-          unawaited(_fadeController.forward());
-        } else {
-          unawaited(_fadeController.forward(from: 0.0));
-        }
-
+        final doFadeIn = !(synchronousCall && _providerImage == null) && _isVisible();
         setState(() {
-          _previousImage?.dispose();
-          if (_providerImage != null) {
-            _previousImage = _providerImage;
-          } else {
-            _previousImage = null;
-          }
+          _providerImage?.dispose();
           _providerImage = imageInfo.image;
+          _doFadeIn = doFadeIn;
         });
       },
       onError: (exception, stackTrace) {
@@ -183,11 +159,6 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
     super.didUpdateWidget(oldWidget);
 
     if (widget.imageProvider != oldWidget.imageProvider) {
-      if (_fadeController.isAnimating) {
-        _fadeController.stop();
-        _previousImage?.dispose();
-        _previousImage = null;
-      }
       _loadFromImageProvider();
     }
 
@@ -227,72 +198,57 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
       end: Alignment.bottomCenter,
     );
 
-    return AnimatedBuilder(
-      animation: _fadeAnimation,
-      builder: (context, child) {
-        return _ThumbnailLeaf(
-          image: _providerImage,
-          previousImage: _previousImage,
-          fadeValue: _fadeAnimation.value,
-          fit: widget.fit,
-          placeholderGradient: gradient,
-        );
-      },
+    return _ThumbnailLeaf(
+      vsync: this,
+      image: _providerImage,
+      doFadeIn: _doFadeIn,
+      fit: widget.fit,
+      placeholderGradient: gradient,
     );
   }
 
   @override
   void dispose() {
-    _fadeController.removeStatusListener(_onAnimationStatusChanged);
-    _fadeController.dispose();
     _stopListeningToStream();
     _providerImage?.dispose();
-    _previousImage?.dispose();
     super.dispose();
   }
 }
 
 class _ThumbnailLeaf extends LeafRenderObjectWidget {
+  final TickerProvider vsync;
   final ui.Image? image;
-  final ui.Image? previousImage;
-  final double fadeValue;
+  final bool doFadeIn;
   final BoxFit fit;
   final Gradient placeholderGradient;
 
   const _ThumbnailLeaf({
+    required this.vsync,
     required this.image,
-    required this.previousImage,
-    required this.fadeValue,
+    required this.doFadeIn,
     required this.fit,
     required this.placeholderGradient,
   });
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _ThumbnailRenderBox(
-      image: image,
-      previousImage: previousImage,
-      fadeValue: fadeValue,
-      fit: fit,
-      placeholderGradient: placeholderGradient,
-    );
+    return _ThumbnailRenderBox(vsync: vsync, image: image?.clone(), fit: fit, placeholderGradient: placeholderGradient);
   }
 
   @override
   void updateRenderObject(BuildContext context, _ThumbnailRenderBox renderObject) {
     renderObject
-      ..image = image
-      ..previousImage = previousImage
-      ..fadeValue = fadeValue
+      ..show(image, doFadeIn: doFadeIn)
       ..fit = fit
       ..placeholderGradient = placeholderGradient;
   }
 }
 
 class _ThumbnailRenderBox extends RenderBox {
+  final TickerProvider _vsync;
   ui.Image? _image;
   ui.Image? _previousImage;
-  double _fadeValue;
+  AnimationController? _fade;
   BoxFit _fit;
   Gradient _placeholderGradient;
 
@@ -300,19 +256,63 @@ class _ThumbnailRenderBox extends RenderBox {
   bool isRepaintBoundary = true;
 
   _ThumbnailRenderBox({
+    required this._vsync,
     required this._image,
-    required this._previousImage,
-    required this._fadeValue,
     required this._fit,
     required this._placeholderGradient,
   });
+
+  double get _fadeValue {
+    final fade = _fade;
+    return fade == null ? 1 : Curves.easeOut.transform(fade.value);
+  }
+
+  void show(ui.Image? image, {required bool doFadeIn}) {
+    final shown = _image;
+    if (image == null ? shown == null : shown != null && image.isCloneOf(shown)) {
+      return;
+    }
+
+    _previousImage?.dispose();
+    _previousImage = null;
+    _image = image?.clone();
+    if (doFadeIn) {
+      _previousImage = shown;
+      final fade = _fade ??= AnimationController(vsync: _vsync, duration: const Duration(milliseconds: 100))
+        ..addListener(markNeedsPaint)
+        ..addStatusListener(_onFadeStatusChanged);
+      if (!fade.isAnimating) {
+        unawaited(fade.forward(from: 0));
+      }
+    } else {
+      shown?.dispose();
+      _fade?.value = 1;
+    }
+    markNeedsPaint();
+  }
+
+  void _onFadeStatusChanged(AnimationStatus status) {
+    if (status.isCompleted) {
+      _previousImage?.dispose();
+      _previousImage = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _fade?.dispose();
+    _image?.dispose();
+    _previousImage?.dispose();
+    super.dispose();
+  }
 
   @override
   void paint(PaintingContext context, Offset offset) {
     final rect = offset & size;
     final canvas = context.canvas;
+    final fadeValue = _fadeValue;
 
-    if (_previousImage != null && _fadeValue < 1.0) {
+    if (_previousImage != null && fadeValue < 1.0) {
       paintImage(
         canvas: canvas,
         rect: rect,
@@ -321,7 +321,7 @@ class _ThumbnailRenderBox extends RenderBox {
         filterQuality: FilterQuality.low,
         opacity: 1.0,
       );
-    } else if (_image == null || _fadeValue < 1.0) {
+    } else if (_image == null || fadeValue < 1.0) {
       final paint = Paint()..shader = _placeholderGradient.createShader(rect);
       canvas.drawRect(rect, paint);
     }
@@ -333,7 +333,7 @@ class _ThumbnailRenderBox extends RenderBox {
         image: _image!,
         fit: _fit,
         filterQuality: FilterQuality.low,
-        opacity: _fadeValue,
+        opacity: fadeValue,
       );
     }
   }
@@ -341,27 +341,6 @@ class _ThumbnailRenderBox extends RenderBox {
   @override
   void performLayout() {
     size = constraints.biggest;
-  }
-
-  set image(ui.Image? value) {
-    if (_image != value) {
-      _image = value;
-      markNeedsPaint();
-    }
-  }
-
-  set previousImage(ui.Image? value) {
-    if (_previousImage != value) {
-      _previousImage = value;
-      markNeedsPaint();
-    }
-  }
-
-  set fadeValue(double value) {
-    if (_fadeValue != value) {
-      _fadeValue = value;
-      markNeedsPaint();
-    }
   }
 
   set fit(BoxFit value) {

@@ -1,5 +1,6 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
 import {
   ReactionType,
   createActivity,
@@ -12,19 +13,21 @@ import { queryOptions, type MutationMeta } from '@tanstack/svelte-query';
 
 export type ActivityParams = { albumId: string; assetId?: string };
 
-export const activitiesQueryKey = ['activities'];
-
 const isMyLike = (activity: ActivityResponseDto, assetId?: string) =>
   activity.type === ReactionType.Like &&
   activity.user.id === authManager.user.id &&
   activity.assetId === (assetId ?? null);
 
 export const invalidateActivities = ({ albumId }: { albumId: string }) =>
-  queryClient.invalidateQueries({ queryKey: [...activitiesQueryKey, albumId] });
+  Promise.all(
+    [QueryKeys.activities({ albumId }), QueryKeys.activityStatistics({ albumId })].map((queryKey) =>
+      queryClient.invalidateQueries({ queryKey }),
+    ),
+  );
 
 export const getActivitiesQuery = ({ albumId, assetId }: ActivityParams) =>
   queryOptions({
-    queryKey: [...activitiesQueryKey, albumId, assetId ?? null],
+    queryKey: QueryKeys.activities({ albumId, assetId }),
     queryFn: ({ signal }) => getActivities({ albumId, assetId }, { signal }),
   });
 
@@ -36,7 +39,7 @@ export const getMyLikeQuery = ({ albumId, assetId }: ActivityParams) =>
 
 export const getActivityStatisticsQuery = ({ albumId, assetId }: ActivityParams) =>
   queryOptions({
-    queryKey: [...activitiesQueryKey, albumId, assetId ?? null, 'statistics'],
+    queryKey: QueryKeys.activityStatistics({ albumId, assetId }),
     queryFn: ({ signal }) => getActivityStatistics({ albumId, assetId }, { signal }),
   });
 
@@ -57,10 +60,10 @@ export const deleteActivityMutation = (meta?: MutationMeta) =>
   asMutation(deleteActivity, {
     onSuccess: async (_, [{ id }]) => {
       queryClient.setQueriesData<ActivityResponseDto[]>(
-        { queryKey: activitiesQueryKey, predicate: ({ state }) => Array.isArray(state.data) },
+        { queryKey: QueryKeys.activities(), predicate: ({ state }) => Array.isArray(state.data) },
         (activities) => activities?.filter((activity) => activity.id !== id),
       );
-      await queryClient.invalidateQueries({ queryKey: activitiesQueryKey });
+      await queryClient.invalidateQueries({ queryKey: QueryKeys.activities() });
     },
     meta: meta ?? { error: { toast: 'errors.unable_to_remove_reaction' } },
   });

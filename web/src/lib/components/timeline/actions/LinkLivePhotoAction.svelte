@@ -3,10 +3,11 @@
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { updateAssetMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
   import type { OnLink, OnUnlink } from '#lib/utils/actions.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { getAssetInfo, updateAsset } from '@immich/sdk';
+  import { getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiLinkOff, mdiMotionPlayOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -33,16 +34,18 @@
       [still, motion] = [motion, still];
     }
 
-    try {
-      loading = true;
-      const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: motion.id } });
-      onLink({ still: toTimelineAsset(stillResponse), motion: motion as TimelineAsset });
-      assetMultiSelectManager.clear();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_link_motion_video'));
-    } finally {
-      loading = false;
-    }
+    loading = true;
+    await executeMutation(
+      () => updateAssetMutation({ error: { toast: 'errors.unable_to_link_motion_video' } }),
+      [{ id: still.id, updateAssetDto: { livePhotoVideoId: motion.id } }],
+      {
+        onSuccess: (stillResponse) => {
+          onLink({ still: toTimelineAsset(stillResponse), motion: motion as TimelineAsset });
+          assetMultiSelectManager.clear();
+        },
+      },
+    );
+    loading = false;
   };
 
   const handleUnlink = async () => {
@@ -54,17 +57,17 @@
     if (!motionId) {
       return;
     }
-    try {
-      loading = true;
-      const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: null } });
+    loading = true;
+    const stillResponse = await executeMutation(
+      () => updateAssetMutation({ error: { toast: 'errors.unable_to_unlink_motion_video' } }),
+      [{ id: still.id, updateAssetDto: { livePhotoVideoId: null } }],
+    );
+    if (stillResponse) {
       const motionResponse = await getAssetInfo({ ...authManager.params, id: motionId });
       onUnlink({ still: toTimelineAsset(stillResponse), motion: toTimelineAsset(motionResponse) });
       assetMultiSelectManager.clear();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_unlink_motion_video'));
-    } finally {
-      loading = false;
     }
+    loading = false;
   };
 </script>
 

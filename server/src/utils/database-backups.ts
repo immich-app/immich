@@ -1,16 +1,16 @@
 export function isValidDatabaseBackupName(filename: string) {
-  return filename.match(/^[\d\w-.]+\.sql(?:\.gz)?$/);
+  return /^[\d\w-.]+\.sql(?:\.gz)?$/.exec(filename);
 }
 
 export function isValidDatabaseRoutineBackupName(filename: string) {
-  const oldBackupStyle = filename.match(/^immich-db-backup-\d+\.sql\.gz$/);
+  const oldBackupStyle = /^immich-db-backup-\d+\.sql\.gz$/.exec(filename);
   //immich-db-backup-20250729T114018-v1.136.0-pg14.17.sql.gz
-  const newBackupStyle = filename.match(/^immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
+  const newBackupStyle = /^immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/.exec(filename);
   return oldBackupStyle || newBackupStyle;
 }
 
 export function isFailedDatabaseBackupName(filename: string) {
-  return filename.match(/^immich-db-backup-.*\.sql\.gz\.tmp$/);
+  return /^immich-db-backup-.*\.sql\.gz\.tmp$/.exec(filename);
 }
 
 export function findDatabaseBackupVersion(filename: string) {

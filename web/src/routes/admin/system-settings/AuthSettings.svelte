@@ -7,11 +7,11 @@
   import FormatMessage from '#lib/elements/FormatMessage.svelte';
   import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import AuthDisableLoginConfirmModal from '#lib/modals/AuthDisableLoginConfirmModal.svelte';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { unlinkAllOAuthAccountsAdminMutation } from '#lib/queries/auth-admin.query.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin } from '@immich/sdk';
-  import { Button, IconButton, Link, Text, modalManager, toastManager } from '@immich/ui';
+  import { OAuthTokenEndpointAuthMethod } from '@immich/sdk';
+  import { Button, IconButton, Link, Text, modalManager } from '@immich/ui';
   import { mdiPlus, mdiRestart, mdiTrashCanOutline } from '@mdi/js';
   import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -46,25 +46,15 @@
     return true;
   };
 
-  const handleUnlinkAllOAuthAccounts = async () => {
-    const confirmed = await modalManager.showDialog({
-      icon: mdiRestart,
-      title: $t('admin.unlink_all_oauth_accounts'),
-      prompt: $t('admin.unlink_all_oauth_accounts_prompt'),
-      confirmColor: 'danger',
+  const handleUnlinkAllOAuthAccounts = () =>
+    executeMutation(unlinkAllOAuthAccountsAdminMutation, [], {
+      confirm: {
+        icon: mdiRestart,
+        title: $t('admin.unlink_all_oauth_accounts'),
+        prompt: $t('admin.unlink_all_oauth_accounts_prompt'),
+        confirmColor: 'danger',
+      },
     });
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      await unlinkAllOAuthAccountsAdmin();
-      toastManager.primary();
-    } catch (error) {
-      handleError(error, $t('errors.something_went_wrong'));
-    }
-  };
 </script>
 
 <div>
@@ -96,9 +86,9 @@
 
               <div class="flex items-center justify-between gap-2">
                 <Text size="small">{$t('admin.unlink_all_oauth_accounts_description')}</Text>
-                <Button size="small" onclick={handleUnlinkAllOAuthAccounts}
-                  >{$t('admin.unlink_all_oauth_accounts')}</Button
-                >
+                <Button size="small" onclick={handleUnlinkAllOAuthAccounts}>
+                  {$t('admin.unlink_all_oauth_accounts')}
+                </Button>
               </div>
 
               <SettingInputField
@@ -359,8 +349,10 @@
                 shape="round"
                 leadingIcon={mdiPlus}
                 onclick={() => void configToEdit.passkey.additionalDomains.push('')}
-                disabled={disabled || !configToEdit.passkey.enabled}>{$t('add_url')}</Button
+                disabled={disabled || !configToEdit.passkey.enabled}
               >
+                {$t('add_url')}
+              </Button>
             </div>
           </div>
         </SettingAccordion>

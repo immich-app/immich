@@ -9,6 +9,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MemoryRepository } from 'src/repositories/memory.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { DB } from 'src/schema/index.js';
@@ -34,7 +35,7 @@ const setup = (db?: Kysely<DB>) => {
       PartnerRepository,
       PersonRepository,
     ],
-    mock: [LoggingRepository],
+    mock: [ResourceRepository, LoggingRepository],
   });
 };
 

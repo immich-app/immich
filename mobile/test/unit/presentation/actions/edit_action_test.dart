@@ -2,19 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/edit_asset.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../riverpod_mocks.dart';
 import '../../../service.mocks.dart';
 import '../../factories/remote_asset_factory.dart';
 import '../presentation_context.dart';
@@ -35,21 +32,10 @@ void main() {
   RemoteAsset owned({AssetType type = .image}) =>
       RemoteAssetFactory.create(ownerId: context.currentUser.id, type: type);
 
-  const supportedVersion = ServerVersion(major: 2, minor: 6, patch: 0);
-
-  List<Override> reportedVersion(ServerVersion version) => [
-    serverInfoProvider.overrideWith((ref) => StubServerInfoNotifier(context.service.serverInfo, version: version)),
-  ];
-
   late BuildContext actionContext;
   late WidgetRef actionRef;
 
-  Future<void> pumpAction(
-    WidgetTester tester,
-    ActionBuilder action,
-    Set<BaseAsset> selection, {
-    List<Override> overrides = const [],
-  }) => tester.pumpTestWidget(
+  Future<void> pumpAction(WidgetTester tester, ActionBuilder action, Set<BaseAsset> selection) => tester.pumpTestWidget(
     context,
     Consumer(
       builder: (widgetContext, ref, _) {
@@ -58,31 +44,17 @@ void main() {
         return ActionIconButton(action: action);
       },
     ),
-    overrides: [...context.selected(selection), ...overrides],
+    overrides: context.selected(selection),
   );
 
   group('EditAssetAction', () {
-    Future<void> pumpEditAsset(
-      WidgetTester tester,
-      Set<BaseAsset> selection, {
-      ServerVersion version = supportedVersion,
-    }) => pumpAction(
-      tester,
-      const EditAssetAction(source: .timeline),
-      selection,
-      overrides: [...reportedVersion(version)],
-    );
+    Future<void> pumpEditAsset(WidgetTester tester, Set<BaseAsset> selection) =>
+        pumpAction(tester, const EditAssetAction(source: .timeline), selection);
 
     testWidgets('offers to edit a single owned editable asset', (tester) async {
       await pumpEditAsset(tester, {owned()});
 
       expect(find.byType(ImmichIconButton), findsOneWidget);
-    });
-
-    testWidgets('is hidden when the server predates edit sync', (tester) async {
-      await pumpEditAsset(tester, {owned()}, version: const ServerVersion(major: 2, minor: 5, patch: 9));
-
-      expect(find.byType(ImmichIconButton), findsNothing);
     });
 
     testWidgets('is hidden for more than one asset', (tester) async {

@@ -99,7 +99,8 @@
             variant="ghost"
             size="medium"
             color="secondary"
-            >{$t('upload')}
+          >
+            {$t('upload')}
           </Button>
           <IconButton
             color="secondary"

@@ -4,12 +4,14 @@ import { WorkflowType } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { DB } from 'src/schema/index.js';
 import { WorkflowService } from 'src/services/workflow.service.js';
 import { newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
-import { getKyselyDB } from 'test/utils.js';
+import { expectResourceEvents, getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -18,7 +20,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(WorkflowService, {
     database: db || defaultDatabase,
     real: [WorkflowRepository, PluginRepository, AccessRepository],
-    mock: [LoggingRepository],
+    mock: [LoggingRepository, ResourceRepository],
   });
 };
 
@@ -94,6 +96,77 @@ describe(WorkflowService.name, () => {
         description: 'A test workflow',
         enabled: true,
       });
+    });
+
+    it('should tell the owner about the new workflow', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      await sut.create(factory.auth({ user }), { trigger: WorkflowTrigger.AssetCreate, name: 'test-workflow' });
+
+      expectResourceEvents(
+        { resource: ctx.getMock(ResourceRepository) },
+        { userIds: [user.id], changed: [Resource.workflows()] },
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('should tell the owner about the change', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const workflow = await ctx
+        .get(WorkflowRepository)
+        .create({ ownerId: user.id, trigger: WorkflowTrigger.AssetCreate, name: 'test-workflow' });
+
+      await sut.update(factory.auth({ user }), workflow.id, { name: 'renamed' });
+
+      expectResourceEvents(
+        { resource: ctx.getMock(ResourceRepository) },
+        { userIds: [user.id], changed: [Resource.workflow(workflow)] },
+      );
+    });
+
+    it('should not tell anyone when another user tries to change it', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: stranger } = await ctx.newUser();
+      const workflow = await ctx
+        .get(WorkflowRepository)
+        .create({ ownerId: owner.id, trigger: WorkflowTrigger.AssetCreate, name: 'test-workflow' });
+
+      await expect(sut.update(factory.auth({ user: stranger }), workflow.id, { name: 'renamed' })).rejects.toThrow();
+
+      expect(ctx.getMock(ResourceRepository).send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('delete', () => {
+    it('should tell the owner about the deletion', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const workflow = await ctx
+        .get(WorkflowRepository)
+        .create({ ownerId: user.id, trigger: WorkflowTrigger.AssetCreate, name: 'test-workflow' });
+
+      await sut.delete(factory.auth({ user }), workflow.id);
+      expectResourceEvents(
+        { resource: ctx.getMock(ResourceRepository) },
+        { userIds: [user.id], deleted: [Resource.workflow(workflow)] },
+      );
+    });
+
+    it('should not tell anyone when another user tries to delete it', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: stranger } = await ctx.newUser();
+      const workflow = await ctx
+        .get(WorkflowRepository)
+        .create({ ownerId: owner.id, trigger: WorkflowTrigger.AssetCreate, name: 'test-workflow' });
+
+      await expect(sut.delete(factory.auth({ user: stranger }), workflow.id)).rejects.toThrow();
+
+      expect(ctx.getMock(ResourceRepository).send).not.toHaveBeenCalled();
     });
   });
 

@@ -1,4 +1,4 @@
-# Remote Access
+# Remote access
 
 This page gives a few pointers on how to access your Immich instance from outside your LAN.
 You can read the [full discussion in Discord](https://discord.com/channels/979116623879368755/1122615710846308484)
@@ -42,7 +42,7 @@ You can learn how to set up Tailscale together with Immich with the [tutorial vi
 - Tailscale is a paid service. However, there is a generous [free tier](https://tailscale.com/pricing/) suitable for personal use.
 - Tailscale needs to be installed and running on both server-side and client-side.
 
-## Option 3: Reverse Proxy
+## Option 3: Reverse proxy
 
 A reverse proxy is a service that sits between web servers and clients. A reverse proxy can either be hosted on the server itself or remotely. Clients can connect to the reverse proxy via https, and the proxy relays data to Immich. This setup makes most sense if you have your own domain and want to access your Immich instance just like any other website, from outside your LAN. You can also use a DDNS provider like DuckDNS or no-ip if you don't have a domain. This configuration allows the Immich Android and iphone apps to connect to your server without a VPN or tailscale app on the client side.
 

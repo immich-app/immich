@@ -12,13 +12,14 @@ import {
   JobStatus,
 } from 'src/enum.js';
 import { AssetStats } from 'src/repositories/asset.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { AssetService } from 'src/services/asset.service.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { getForAsset, getForAssetDeletion } from 'test/mappers.js';
 import { factory, newUuid } from 'test/small.factory.js';
-import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, makeStream, newTestService } from 'test/utils.js';
 
 const stats: AssetStats = {
   [AssetType.Image]: 10,
@@ -32,6 +33,16 @@ const statResponse: AssetStatsResponseDto = {
   videos: 23,
   total: 33,
 };
+
+const visibilityPaths = [
+  Resource.albums(),
+  Resource.duplicates(),
+  Resource.mapMarkers(),
+  Resource.memories(),
+  Resource.people(),
+  Resource.search(),
+  Resource.view(),
+];
 
 describe(AssetService.name, () => {
   let sut: AssetService;
@@ -177,6 +188,39 @@ describe(AssetService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { field: 'description', dto: { description: 'Test description' }, paths: [] },
+      { field: 'favorite', dto: { isFavorite: true }, paths: [Resource.assetStatistics(), Resource.mapMarkers()] },
+      { field: 'location', dto: { latitude: 10, longitude: 20 }, paths: [Resource.mapMarkers()] },
+      {
+        field: 'visibility',
+        dto: { visibility: AssetVisibility.Archive },
+        paths: [Resource.assetStatistics(), ...visibilityPaths],
+      },
+    ])('should tell the owner about a changed $field', async ({ dto, paths }) => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.from().owner(auth.user).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.asset.update.mockResolvedValue(getForAsset(asset));
+
+      await sut.update(auth, asset.id, dto);
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.asset(asset), ...paths] });
+    });
+
+    it('should not tell anyone when nothing changes', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.asset.update.mockResolvedValue(getForAsset(asset));
+
+      await sut.update(authStub.admin, asset.id, {});
+
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should update the asset', async () => {
@@ -256,6 +300,7 @@ describe(AssetService.name, () => {
         assetId: 'unknown',
         userId: auth.user.id,
       });
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should fail linking a live video if the motion part is not a video', async () => {
@@ -285,6 +330,7 @@ describe(AssetService.name, () => {
         assetId: motionAsset.id,
         userId: auth.user.id,
       });
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should fail linking a live video if the motion part has a different owner', async () => {
@@ -312,6 +358,7 @@ describe(AssetService.name, () => {
         assetId: motionAsset.id,
         userId: auth.user.id,
       });
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should link a live video', async () => {
@@ -338,6 +385,7 @@ describe(AssetService.name, () => {
       await expect(sut.update(AuthFactory.create(), 'asset-1', { isFavorite: true })).rejects.toBeInstanceOf(
         BadRequestException,
       );
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should unlink a live video', async () => {
@@ -380,6 +428,7 @@ describe(AssetService.name, () => {
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -387,6 +436,30 @@ describe(AssetService.name, () => {
     it('should require asset write access for all ids', async () => {
       const auth = AuthFactory.create();
       await expect(sut.updateAll(auth, { ids: ['asset-1'] })).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { field: 'description', dto: { description: 'Test description' }, paths: [] },
+      { field: 'favorite', dto: { isFavorite: true }, paths: [Resource.mapMarkers()] },
+      { field: 'duplicate', dto: { duplicateId: null }, paths: [Resource.duplicates()] },
+      { field: 'visibility', dto: { visibility: AssetVisibility.Archive }, paths: visibilityPaths },
+    ])('should tell the owner about a changed $field', async ({ dto, paths }) => {
+      const auth = AuthFactory.create();
+      const [asset1, asset2] = [AssetFactory.create(), AssetFactory.create()];
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+
+      await sut.updateAll(auth, { ids: [asset1.id, asset2.id], ...dto });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.assets(), ...paths] });
+    });
+
+    it('should not tell anyone when nothing changes', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.updateAll(AuthFactory.create(), { ids: ['asset-1'] });
+
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should update all assets', async () => {
@@ -507,6 +580,17 @@ describe(AssetService.name, () => {
           ids: ['asset-1'],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell the owner about the trashed assets', async () => {
+      const auth = AuthFactory.create();
+      const [asset1, asset2] = [AssetFactory.create(), AssetFactory.create()];
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+
+      await sut.deleteAll(auth, { ids: [asset1.id, asset2.id] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.assets(), ...visibilityPaths] });
     });
 
     it('should force delete a batch of assets', async () => {
@@ -530,6 +614,40 @@ describe(AssetService.name, () => {
         status: AssetStatus.Trashed,
       });
       expect(mocks.job.queue.mock.calls).toEqual([]);
+    });
+  });
+
+  describe('copy', () => {
+    it('should require asset copy access', async () => {
+      await expect(sut.copy(AuthFactory.create(), { sourceId: newUuid(), targetId: newUuid() })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell the owner about the copied albums, shared links, stack and favorite', async () => {
+      const auth = AuthFactory.create();
+      const source = AssetFactory.from({ isFavorite: true }).owner(auth.user).stack().build();
+      const target = AssetFactory.from().owner(auth.user).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([source.id, target.id]));
+      mocks.asset.getForCopy
+        .mockResolvedValueOnce({ ...source, files: [] })
+        .mockResolvedValueOnce({ ...target, files: [] });
+      mocks.sharedLinkAsset.copySharedLinks.mockResolvedValue([]);
+
+      await sut.copy(auth, { sourceId: source.id, targetId: target.id });
+
+      expectResourceEvents(mocks, {
+        userIds: [auth.user.id],
+        changed: [
+          Resource.asset(target),
+          Resource.albums(),
+          Resource.sharedLinks(),
+          Resource.stacks(),
+          Resource.assetStatistics(),
+        ],
+      });
     });
   });
 
@@ -796,6 +914,49 @@ describe(AssetService.name, () => {
     });
   });
 
+  describe('deleteMetadataByKey', () => {
+    it('should tell the owner about the deleted metadata', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.from().owner(auth.user).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+
+      await sut.deleteMetadataByKey(auth, asset.id, AssetMetadataKey.MobileApp);
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.asset(asset)] });
+    });
+  });
+
+  describe('deleteBulkMetadata', () => {
+    it('should tell the owner about the deleted metadata', async () => {
+      const auth = AuthFactory.create();
+      const [asset1, asset2] = [AssetFactory.create(), AssetFactory.create()];
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+
+      await sut.deleteBulkMetadata(auth, {
+        items: [
+          { assetId: asset1.id, key: AssetMetadataKey.MobileApp },
+          { assetId: asset2.id, key: AssetMetadataKey.MobileApp },
+        ],
+      });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.assets()] });
+    });
+  });
+
+  describe('removeAssetEdits', () => {
+    it('should tell the owner about the removed edits', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.from().owner(auth.user).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.assetEdit.replaceAll.mockResolvedValue([]);
+
+      await sut.removeAssetEdits(auth, asset.id);
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.asset(asset)] });
+    });
+  });
+
   describe('editAsset', () => {
     it('should enforce crop first', async () => {
       await expect(
@@ -814,6 +975,28 @@ describe(AssetService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.assetEdit.replaceAll).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell the owner about the new edits', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.from({ type: AssetType.Image }).owner(auth.user).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Image,
+        livePhotoVideoId: null,
+        originalPath: '/photos/image.jpg',
+        originalFileName: 'image.jpg',
+        exifImageWidth: 100,
+        exifImageHeight: 100,
+        orientation: null,
+        projectionType: null,
+      });
+      mocks.assetEdit.replaceAll.mockResolvedValue([]);
+
+      await sut.editAsset(auth, asset.id, { edits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }] });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.asset(asset)] });
     });
   });
 });

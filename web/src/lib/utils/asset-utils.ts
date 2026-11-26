@@ -1,24 +1,21 @@
 import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { downloadManager } from '#lib/managers/download-manager.svelte.ts';
-import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { getDownloadInfoMutation } from '#lib/queries/download.query.ts';
 import { locale } from '#lib/stores/preferences.store.ts';
-import { downloadUrlPost, withError } from '#lib/utils.ts';
+import { downloadUrlPost } from '#lib/utils.ts';
 import { getByteUnitString } from '#lib/utils/byte-units.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { navigate } from '#lib/utils/navigation.ts';
 import { asQueryString } from '#lib/utils/shared-links.ts';
-import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
-  AssetVisibility,
   getBaseUrl,
-  getDownloadInfo,
-  updateAsset,
-  updateAssets,
   type AssetResponseDto,
   type DownloadInfoDto,
+  type DownloadResponseDto,
   type ExifResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
@@ -30,18 +27,14 @@ import { handleError } from './handle-error';
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
   const archiveSize = authManager.authenticated ? authManager.preferences.download.archiveSize : undefined;
-  const dto = { ...options, archiveSize };
-  const [error, downloadInfo] = await withError(() => getDownloadInfo({ ...authManager.params, downloadInfoDto: dto }));
-  if (error) {
-    const $t = get(t);
-    handleError(error, $t('errors.unable_to_download_files'));
-    return;
-  }
+  await executeMutation(
+    getDownloadInfoMutation,
+    [{ ...authManager.params, downloadInfoDto: { ...options, archiveSize } }],
+    { onSuccess: (downloadInfo) => void startArchiveDownloads(fileName, downloadInfo) },
+  );
+};
 
-  if (!downloadInfo) {
-    return;
-  }
-
+const startArchiveDownloads = async (fileName: string, downloadInfo: DownloadResponseDto) => {
   for (let index = 0; index < downloadInfo.archives.length; index++) {
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
@@ -149,7 +142,7 @@ export const isFirefox = typeof navigator !== 'undefined' && navigator.userAgent
 async function addSupportedMimeTypes(): Promise<void> {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
   if (isSafari) {
-    const match = navigator.userAgent.match(/Version\/(\d+)/);
+    const match = /Version\/(\d+)/.exec(navigator.userAgent);
 
     if (!match) {
       return;
@@ -242,69 +235,6 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
     const $t = get(t);
     handleError(error, $t('errors.error_selecting_all_assets'));
     assetInteraction.selectAll = false;
-  }
-};
-
-export const toggleArchive = async (asset: AssetResponseDto) => {
-  const $t = get(t);
-  try {
-    const data = await updateAsset({
-      id: asset.id,
-      updateAssetDto: {
-        visibility: asset.isArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
-      },
-    });
-
-    asset.isArchived = data.isArchived;
-    asset.visibility = data.visibility;
-    if (asset.isArchived) {
-      const timelineAsset = toTimelineAsset(asset);
-      showUndoArchiveToast($t('added_to_archive'), [timelineAsset]);
-    } else {
-      toastManager.primary($t('removed_from_archive'));
-    }
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: asset.isArchived } }));
-  }
-
-  return asset;
-};
-
-const showUndoArchiveToast = (description: string, assets: TimelineAsset[]) => {
-  const $t = get(t);
-  toastManager.primary({
-    description,
-    button: (close) => ({
-      label: $t('undo'),
-      onclick: () => {
-        close();
-        void undoArchiveAssets(assets);
-      },
-    }),
-  });
-};
-
-const undoArchiveAssets = async (assets: TimelineAsset[]) => {
-  const $t = get(t);
-  try {
-    const ids = assets.map((a) => a.id);
-    if (ids.length > 0) {
-      await updateAssets({
-        assetBulkUpdateDto: {
-          ids,
-          visibility: AssetVisibility.Timeline,
-        },
-      });
-    }
-
-    for (const asset of assets) {
-      asset.visibility = AssetVisibility.Timeline;
-    }
-    eventManager.emit('AssetsUnarchive', assets);
-    eventManager.emit('AssetsUndoArchive', assets);
-    toastManager.success($t('unarchived_count', { values: { count: assets.length } }));
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
   }
 };
 

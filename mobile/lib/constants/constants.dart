@@ -4,6 +4,8 @@ const String kMobileMetadataKey = "mobile-app";
 
 // Number of log entries to retain on app start
 const int kLogTruncateLimit = 2000;
+// Number of log entries that triggers the trim back to kLogTruncateLimit
+const int kLogTruncateThreshold = 3000;
 
 // Sync
 const int kSyncEventBatchSize = 5000;

@@ -26,5 +26,7 @@
   variant="outline"
   class="{active ? '' : 'bg-transparent'} {className}"
   leadingIcon={checked && active ? mdiCheck : leadingIcon}
-  {...rest}>{@render children()}</Button
+  {...rest}
 >
+  {@render children()}
+</Button>

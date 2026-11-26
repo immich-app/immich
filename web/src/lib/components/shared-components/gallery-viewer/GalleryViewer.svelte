@@ -1,8 +1,7 @@
 <script lang="ts">
+  import OnEvents from '#lib/components/OnEvents.svelte';
   import type { AssetCursor } from '#lib/components/asset-viewer/AssetViewer.svelte';
-  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
   import Thumbnail from '#lib/components/assets/thumbnail/Thumbnail.svelte';
-  import { AssetAction } from '#lib/constants.ts';
   import Portal from '#lib/elements/Portal.svelte';
   import type { AssetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
@@ -39,6 +38,8 @@
     showArchiveIcon?: boolean;
     viewport: Viewport;
     onEndReached?: (() => void) | undefined;
+    onAssetChange?: (asset: AssetResponseDto) => void;
+    onAssetRemove?: (assetId: string) => void;
     showAssetName?: boolean;
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
@@ -54,6 +55,8 @@
     showArchiveIcon = false,
     viewport,
     onEndReached = undefined,
+    onAssetChange,
+    onAssetRemove,
     showAssetName = false,
     onReload = undefined,
     slidingWindowOffset = 0,
@@ -98,6 +101,7 @@
   const updateCurrentAsset = (asset: AssetResponseDto) => {
     const index = assets.findIndex((oldAsset) => oldAsset.id === asset.id);
     assets[index] = asset;
+    onAssetChange?.(asset);
   };
 
   const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
@@ -270,26 +274,27 @@
     }
   };
 
-  const handleAction = async (action: Action) => {
-    switch (action.type) {
-      case AssetAction.ARCHIVE:
-      case AssetAction.DELETE:
-      case AssetAction.TRASH: {
-        const nextAsset = assetCursor.nextAsset ?? assetCursor.previousAsset;
-        assets.splice(
-          assets.findIndex((currentAsset) => currentAsset.id === action.asset.id),
-          1,
-        );
-        if (assets.length === 0) {
-          return await goto(Route.photos());
-        }
-        if (nextAsset) {
-          await navigateToAsset(nextAsset);
-        }
-        break;
-      }
-      // no default
+  const onAssetsRemove = async (assetIds: string[]) => {
+    if (assetIds.includes(assetCursor.current.id)) {
+      await removeViewedAsset();
     }
+  };
+
+  const onAssetUpdate = async ({ id, isArchived }: AssetResponseDto) => {
+    const listedAsset = assets.find((asset) => asset.id === id);
+    if (id === assetCursor.current.id && isArchived && listedAsset && !listedAsset.isArchived) {
+      await removeViewedAsset();
+    }
+  };
+
+  const removeViewedAsset = async () => {
+    const { current, nextAsset, previousAsset } =
+      listedCursor?.current.id === assetCursor.current.id ? listedCursor : assetCursor;
+    assets = assets.filter(({ id }) => id !== current.id);
+    await (assets.length === 0
+      ? navigate({ targetRoute: 'current', assetId: null })
+      : navigateToAsset(nextAsset ?? previousAsset));
+    onAssetRemove?.(current.id);
   };
 
   const assetMouseEventHandler = (asset: TimelineAsset | null) => {
@@ -320,6 +325,13 @@
     current: assetViewerManager.asset!,
     nextAsset: getNextAsset(navigationAssets, assetViewerManager.asset),
     previousAsset: getPreviousAsset(navigationAssets, assetViewerManager.asset),
+  });
+
+  let listedCursor = $state<AssetCursor>();
+  $effect(() => {
+    if (navigationAssets.some(({ id }) => id === assetCursor.current?.id)) {
+      listedCursor = assetCursor;
+    }
   });
 </script>
 
@@ -371,9 +383,9 @@
 {#if assetViewerManager.isViewing}
   <Portal target="body">
     {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+      <OnEvents onAssetsDelete={onAssetsRemove} onAssetsArchive={onAssetsRemove} {onAssetUpdate} />
       <AssetViewer
         cursor={assetCursor}
-        onAction={handleAction}
         onRandom={handleRandom}
         onAssetChange={updateCurrentAsset}
         onClose={() => {

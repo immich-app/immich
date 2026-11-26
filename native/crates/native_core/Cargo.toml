@@ -13,6 +13,7 @@ avif = ["codecs/avif"]
 jxl = ["codecs/jxl"]
 # One group per target.
 flutter = ["convert", "rotate", "thumbhash", "jxl"]
+server = []
 
 [dependencies]
 codecs = { path = "../codecs", default-features = false, optional = true }

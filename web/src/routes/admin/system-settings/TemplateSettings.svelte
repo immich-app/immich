@@ -4,9 +4,8 @@
   import EmailTemplatePreviewModal from '#lib/modals/EmailTemplatePreviewModal.svelte';
   import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
-  import { getNotificationTemplateAdmin, type AdminConfigDto, type AdminConfigTemplateEmailsDto } from '@immich/sdk';
-  import { Button, Icon, LoadingSpinner, modalManager } from '@immich/ui';
+  import type { AdminConfigDto, AdminConfigTemplateEmailsDto } from '@immich/sdk';
+  import { Button, Icon, modalManager } from '@immich/ui';
   import { mdiEyeOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -19,20 +18,6 @@
   let { config = $bindable() }: Props = $props();
 
   const query = createPreloadedQuery(getAdminConfigQuery);
-
-  let loadingPreview = $state(false);
-
-  const getTemplate = async (name: string, template: string) => {
-    try {
-      loadingPreview = true;
-      const { html } = await getNotificationTemplateAdmin({ name, templateDto: { template } });
-      await modalManager.show(EmailTemplatePreviewModal, { html });
-    } catch (error) {
-      handleError(error, 'Could not load template.');
-    } finally {
-      loadingPreview = false;
-    }
-  };
 
   const templateConfigs = [
     {
@@ -78,10 +63,6 @@
             </FormatMessage>
           </p>
           <hr />
-          {#if loadingPreview}
-            <LoadingSpinner />
-          {/if}
-
           {#each templateConfigs as { label, templateKey, descriptionTags, templateName } (templateKey)}
             <SettingTextarea
               {label}
@@ -94,7 +75,11 @@
               <Button
                 size="small"
                 shape="round"
-                onclick={() => getTemplate(templateName, config.templates.email[templateKey])}
+                onclick={() =>
+                  modalManager.show(EmailTemplatePreviewModal, {
+                    name: templateName,
+                    template: config.templates.email[templateKey],
+                  })}
                 title={$t('admin.template_email_preview')}
               >
                 <Icon icon={mdiEyeOutline} class="me-1" />

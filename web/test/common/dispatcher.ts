@@ -8,10 +8,13 @@ const mutationMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const readOperations = new Set<OperationId>([
   'searchAssets',
   'searchSmart',
+  'searchLargeAssets',
   'getDownloadInfo',
   'downloadArchive',
   'checkBulkUpload',
+  'previewStorageTemplate',
 ]);
+const activationPattern = /^\/api\/v1\/activate\/([^/]+)$/;
 
 export type Response = {
   status: number;
@@ -19,6 +22,7 @@ export type Response = {
   body?: Uint8Array<ArrayBuffer> | string;
   contentType?: string;
   headers?: Record<string, string>;
+  networkError?: boolean;
 };
 
 export class OperationSpy<K extends OperationId> extends Spy<Call<K>> {
@@ -54,7 +58,7 @@ export class Dispatcher {
   private readonly handlers = new Map<string, Handler<OperationId>>();
   private readonly spies = new Map<string, OperationSpy<OperationId>>();
 
-  constructor(data: MockData) {
+  constructor(private readonly data: MockData) {
     this.on(createHandlers(data));
   }
 
@@ -103,6 +107,11 @@ export class Dispatcher {
   }
 
   async dispatch(method: string, url: URL, body: unknown): Promise<Response> {
+    const activation = activationPattern.exec(url.pathname);
+    if (activation) {
+      return this.activate(decodeURIComponent(activation[1]));
+    }
+
     const match = matchOperation(method, url.pathname);
     if (!match) {
       this.unhandled.push(`${method} ${url.pathname}${url.search} (no matching OpenAPI operation)`);
@@ -128,6 +137,9 @@ export class Dispatcher {
       this.failures.push(`${operation.operationId}: ${message}`);
       return { status: 500, json: { message: `Mock handler for ${operation.operationId} threw` } };
     }
+    if (result && 'networkError' in result) {
+      return { status: 0, networkError: true };
+    }
     if (result && 'body' in result && result.body !== undefined) {
       return {
         status: result.status ?? 200,
@@ -140,5 +152,13 @@ export class Dispatcher {
       return { status: result.status ?? 200, json: result.json, headers: result.headers };
     }
     return { status: result?.status ?? 204, headers: result?.headers };
+  }
+
+  private activate(licenseKey: string): Response {
+    const activationKey = this.data.getActivationKey(licenseKey);
+    const headers = { 'Access-Control-Allow-Origin': '*' };
+    return activationKey
+      ? { status: 200, body: activationKey, contentType: 'text/plain', headers }
+      : { status: 404, headers };
   }
 }
