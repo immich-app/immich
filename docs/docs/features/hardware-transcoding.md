@@ -61,7 +61,7 @@ For RKMPP to work:
 
 <ComposeBuilder />
 
-#### Basic Setup
+#### Basic setup
 
 1. If you do not already have it, download the latest [`hwaccel.transcoding.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. In the `docker-compose.yml` under `immich-server`, uncomment the `extends` section and change `cpu` to the appropriate backend.
@@ -78,7 +78,7 @@ For RKMPP to work:
 <details>
 <summary>immich.json</summary>
 
-If you use a [configuration file](/install/config-file.md), use the `accel` option to select the hardware (e.g. `qsv` for Intel or `nvenc` for Nvidia). Set `accelDecode` to `true` if you want hardware decoding.
+If you use a [configuration file](/install/config-file.md), use the `accel` option to select the hardware (e.g. `qsv` for Intel or `nvenc` for NVIDIA). Set `accelDecode` to `true` if you want hardware decoding.
 
 ```json
 {
@@ -91,7 +91,7 @@ If you use a [configuration file](/install/config-file.md), use the `accel` opti
 
 </details>
 
-#### Single Compose file
+#### Single compose file
 
 Some platforms, including Unraid and Portainer, do not support multiple Compose files as of writing. As an alternative, you can "inline" the relevant contents of the [`hwaccel.transcoding.yml`][hw-file] file into the `immich-server` service directly.
 
@@ -117,7 +117,7 @@ immich-server:
 
 Once this is done, you can continue to step 3 of "Basic Setup".
 
-#### All-In-One - Unraid Setup
+#### All-in-one - Unraid setup
 
 ##### QSV
 

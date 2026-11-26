@@ -42,7 +42,7 @@ docker run -it -v "$(pwd)":/import:ro -e IMMICH_INSTANCE_URL=https://your-immich
 
 Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variables as suitable. You can also use a Docker env file to store your sensitive API key.
 
-This `docker run` command will directly run the command `immich` inside the container. You can directly append the desired parameters (see under "usage") to the commandline like this:
+This `docker run` command will directly run the command `immich` inside the container. You can directly append the desired parameters (see under "usage") to the command line like this:
 
 ```bash
 docker run -it -v "$(pwd)":/import:ro -e IMMICH_INSTANCE_URL=https://your-immich-instance/api -e IMMICH_API_KEY=your-api-key ghcr.io/immich-app/immich-cli:latest upload -a -c 5 --recursive directory/
@@ -183,9 +183,9 @@ You can set the visibility of uploaded assets to `archive`, `timeline`, `hidden`
 immich upload --visibility archive --recursive directory/
 ```
 
-You can use the `--json-output` option to get a json printed which includes
+You can use the `--json-output` option to get JSON printed which includes
 three keys: `newFiles`, `duplicates` and `newAssets`. Due to some logging
-output you will need to strip the first three lines of output to get the json.
+output you will need to strip the first three lines of output to get the JSON.
 For example to get a list of files that would be uploaded for further
 processing:
 
@@ -197,6 +197,6 @@ immich upload --dry-run --json-output . | tail -n +6 | jq .newFiles[]
 
 The API key can be obtained in the user setting panel on the web interface. You can also specify permissions for the key to limit its access.
 
-![Obtain Api key](./img/obtain-api-key.webp)
+![Obtain API key](./img/obtain-api-key.webp)
 
 ![Specify permissions for the key](./img/obtain-api-key-2.webp)

@@ -82,4 +82,4 @@ title="Android backup options"
 
 Local albums containing assets from iCloud and marked for backup in Immich will be pulled from iCloud and temporarily stored in the app's cache folder. Once the hashing and uploading process is completed, the temporary files will be emptied.
 
-This process may consume additional data and storage space on your device, especially if you have a large number of iCloud photos and videos. Please ensure you have sufficient storage space and monitor your data usage if you are not connected to Wi-Fi.
+This process may consume additional data and storage space on your device, especially if you have a large number of photos and videos in iCloud. Please ensure you have sufficient storage space and monitor your data usage if you are not connected to Wi-Fi.

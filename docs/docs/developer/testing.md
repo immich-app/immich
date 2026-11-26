@@ -29,7 +29,7 @@ mise //e2e:test
 The tests check various things including:
 
 - Authentication and authorization
-- Query param, body, and url validation
+- Query param, body, and URL validation
 - Response codes
 - Thumbnail generation
 - Metadata extraction
