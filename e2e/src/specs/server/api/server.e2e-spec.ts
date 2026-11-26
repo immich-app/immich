@@ -20,6 +20,17 @@ describe('/server', () => {
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
+  describe('form bodies', () => {
+    it('should not be accepted by a json endpoint', async () => {
+      const { status } = await request(app)
+        .post('/admin/users')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .type('form')
+        .send(createUserDto.user2);
+      expect(status).toBe(400);
+    });
+  });
+
   describe('GET /server/about', () => {
     it('should return about information', async () => {
       const { status, body } = await request(app)

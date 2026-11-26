@@ -93,5 +93,15 @@ describe(OAuthController.name, () => {
         ]),
       );
     });
+
+    it('should accept a form encoded logout token', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/oauth/backchannel-logout')
+        .type('form')
+        .send({ logout_token: 'token' });
+
+      expect(status).toBe(200);
+      expect(service.backchannelLogout).toHaveBeenCalledWith({ logout_token: 'token' });
+    });
   });
 });

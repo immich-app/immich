@@ -1,6 +1,6 @@
 import { Body, Controller, Header, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
-import { ContentSecurityPolicy, Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { ContentSecurityPolicy, Endpoint, FormBody, HistoryBuilder } from 'src/decorators.js';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
 import {
@@ -75,6 +75,7 @@ export class NotificationAdminController {
     'frame-ancestors': ["'self'"],
   })
   @ApiProduces('text/html')
+  @FormBody()
   @Endpoint({
     summary: 'Preview email template',
     description: 'Render the provided email template as an HTML document.',
