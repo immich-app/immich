@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202611101105@sha256:174b605f52a3430c58295db1737d46a602cc076103aba60f33bdb8bb545e0b41 AS builder
+FROM ghcr.io/immich-app/base-server-dev:202611272241@sha256:890390fa025d3d5fcdd2a38c9b3b606534e305d3aaa49cc00f9d4acfa004d5e6 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -29,7 +29,7 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immi
 COPY ./packages/plugin-sdk ./packages/plugin-sdk/
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/plugin-sdk build
 
-FROM ghcr.io/immich-app/base-server-dev:202610291416@sha256:5f4f9f77059e1cd0182994419a19f4ee045c3fd48e611f5e77623ed63f7aa1e4 AS rust
+FROM ghcr.io/immich-app/base-server-dev:202611272241@sha256:890390fa025d3d5fcdd2a38c9b3b606534e305d3aaa49cc00f9d4acfa004d5e6 AS rust
 
 COPY --from=ghcr.io/jdx/mise:2026.11.14@sha256:7178a0bc7eb30d5090f81237fc0a7830f57e52126b9d8df656e24547437a1e53 /usr/local/bin/mise /usr/local/bin/mise
 COPY ./native/mise.toml ./native/mise.lock /usr/src/app/native/
@@ -115,7 +115,7 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise //:plugins
 
-FROM ghcr.io/immich-app/base-server-prod:202611101105@sha256:282c05976d233c7a601199b9be79f6c8260352b37b1d808e96b16fb76cc63270
+FROM ghcr.io/immich-app/base-server-prod:202611272241@sha256:57ca5ffeaefa1844ceafc89fd4b642eeea3f17a9f8deaf701524e60ad4fc7f8b
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
