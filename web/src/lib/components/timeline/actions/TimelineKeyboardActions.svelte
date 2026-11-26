@@ -20,7 +20,7 @@
   import { handlePromiseError } from '#lib/utils.ts';
   import { deleteAssets } from '#lib/utils/actions.ts';
   import { selectAllAssets } from '#lib/utils/asset-utils.ts';
-  import { isModalOpen, modalManager, shortcuts, type ShortcutOptions } from '@immich/ui';
+  import { modalManager, shortcuts, type ShortcutOptions } from '@immich/ui';
   import { goto } from '$app/navigation';
 
   type Props = {
@@ -106,7 +106,7 @@
   };
 
   const shortcutList = $derived.by(() => {
-    if (searchStore.isSearchEnabled || assetViewerManager.isViewing || isModalOpen()) {
+    if (searchStore.isSearchEnabled || assetViewerManager.isViewing || modalManager.isOpen()) {
       return [];
     }
 
