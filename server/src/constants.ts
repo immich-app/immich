@@ -40,6 +40,8 @@ export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 export const JOBS_CLEAN_BATCH_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
 
+export const UTF16_SURROGATE_OR_ABOVE = /[\u{D800}-\u{10FFFF}]/u;
+
 export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   cube: 'cube',
   earthdistance: 'earthdistance',

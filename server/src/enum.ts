@@ -453,6 +453,13 @@ export enum AssetStatus {
   Deleted = 'deleted',
 }
 
+export enum LibraryChange {
+  Import = 'import',
+  Offline = 'offline',
+  Online = 'online',
+  Refresh = 'refresh',
+}
+
 export enum SourceType {
   MachineLearning = 'machine-learning',
   Exif = 'exif',
@@ -926,8 +933,6 @@ export enum JobName {
   LibraryDeleteCheck = 'LibraryDeleteCheck',
   LibraryDelete = 'LibraryDelete',
   LibraryRemoveAsset = 'LibraryRemoveAsset',
-  LibrarySyncAssetsQueueAll = 'LibraryScanAssetsQueueAll',
-  LibrarySyncAssets = 'LibrarySyncAssets',
   LibrarySyncFilesQueueAll = 'LibrarySyncFilesQueueAll',
   LibrarySyncFiles = 'LibrarySyncFiles',
   LibraryScanQueueAll = 'LibraryScanQueueAll',

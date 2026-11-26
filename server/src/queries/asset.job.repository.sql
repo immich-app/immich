@@ -633,19 +633,6 @@ from
 where
   "asset"."id" = $1
 
--- AssetJobRepository.getForSyncAssets
-select
-  "asset"."id",
-  "asset"."isOffline",
-  "asset"."libraryId",
-  "asset"."originalPath",
-  "asset"."status",
-  "asset"."fileModifiedAt"
-from
-  "asset"
-where
-  "asset"."id" = any ($1::uuid[])
-
 -- AssetJobRepository.getForAssetDeletion
 select
   "asset"."id",

@@ -1,5 +1,5 @@
 import { R_OK } from 'node:constants';
-import { mkdir, mkdtemp, mkdtempDisposable, rename, rm, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, mkdtempDisposable, rename, rm, symlink, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
@@ -49,7 +49,7 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should crawl multiple paths',
+    test: 'should walk multiple paths',
     options: {
       pathsToCrawl: ['/photos/', '/images/', '/albums/'],
     },
@@ -60,7 +60,7 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should crawl a single path without trailing slash',
+    test: 'should walk a single path without trailing slash',
     options: {
       pathsToCrawl: ['/photos'],
     },
@@ -69,7 +69,7 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should crawl a single path',
+    test: 'should walk a single path',
     options: {
       pathsToCrawl: ['/photos/'],
     },
@@ -168,13 +168,15 @@ const inRoot = (root: string, options: CrawlOptionsDto): CrawlOptionsDto => ({
 describe(StorageRepository.name, () => {
   const annoyingExclusionPatterns = ['@', '#', '$', '%', '^', '&', '='];
   let sut: StorageRepository;
+  let logger: LoggingRepository;
   let tempDir: string;
   let includedFile: string;
   let excludedFile: string;
 
   beforeEach(async () => {
     // eslint-disable-next-line no-sparse-arrays
-    sut = new StorageRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
+    logger = automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false });
+    sut = new StorageRepository(logger);
     tempDir = await mkdtemp(join(tmpdir(), 'immich-storage-watch-'));
     includedFile = join(tempDir, 'included/photo.jpg');
     excludedFile = join(tempDir, 'excluded/photo.jpg');
@@ -190,14 +192,14 @@ describe(StorageRepository.name, () => {
     await rm(tempDir, { recursive: true, force: true });
   });
 
-  const startWatching = (options: WatchOptions) => {
+  const startWatching = (options: WatchOptions, root = tempDir) => {
     const paths: string[] = [];
     const changedPaths: string[] = [];
     const unlinkedPaths: string[] = [];
     let resolveReady!: () => void;
 
     const ready = new Promise<void>((resolve) => (resolveReady = resolve));
-    const close = sut.watch([tempDir], options, {
+    const close = sut.watch([root], options, {
       onAdd: (path) => {
         paths.push(path);
       },
@@ -340,7 +342,39 @@ describe(StorageRepository.name, () => {
     }
   });
 
-  it.each(['crawl', 'walk'] as const)('%s should skip symbolic links to files and directories', async (method) => {
+  it.each(['', '/'])('should emit events in new folders but not excluded ones, root suffix %j', async (suffix) => {
+    const watcher = startWatching(
+      { ignoreInitial: true, usePolling: true, interval: 50, ignored: ['**/excluded/**', '**/Raw', '**/*.tif'] },
+      tempDir + suffix,
+    );
+
+    try {
+      await watcher.ready;
+      await writeFile(excludedFile, 'changed');
+      await mkdir(join(tempDir, 'Raw/sub'), { recursive: true });
+      await writeFile(join(tempDir, 'Raw/sub/photo.jpg'), 'excluded');
+      await writeFile(join(tempDir, 'included/photo.tif'), 'excluded');
+      const nestedFile = join(tempDir, 'included/2020/01/photo.jpg');
+      await mkdir(dirname(nestedFile), { recursive: true });
+      await writeFile(nestedFile, 'nested');
+      await writeFile(includedFile, 'changed');
+
+      await vitest.waitFor(
+        () => {
+          expect(watcher.paths).toContain(nestedFile);
+          expect(watcher.changedPaths).toContain(includedFile);
+        },
+        { timeout: 3000 },
+      );
+
+      expect(watcher.paths).toEqual([nestedFile]);
+      expect(watcher.changedPaths).toEqual([includedFile]);
+    } finally {
+      await watcher.close();
+    }
+  });
+
+  it('should skip symbolic links to files and directories', async () => {
     await using root = await newRoot();
     await writeFiles(root.path, [
       '/photos/image.jpg',
@@ -354,44 +388,12 @@ describe(StorageRepository.name, () => {
     await symlink(`${root.path}/photos/subfolder`, `${root.path}/photos/internal-directory-link`);
     await symlink(`${root.path}/outside/missing.jpg`, `${root.path}/photos/broken-link.jpg`);
 
-    const options = { pathsToCrawl: [`${root.path}/photos`], take: 1 };
-    const batches = method === 'crawl' ? [await sut.crawl(options)] : await Array.fromAsync(sut.walk(options));
+    const batches = await Array.fromAsync(sut.walk({ pathsToCrawl: [`${root.path}/photos`], take: 1 }));
 
     expect(batches.flat().toSorted()).toEqual([
       `${root.path}/photos/image.jpg`,
       `${root.path}/photos/subfolder/image.jpg`,
     ]);
-  });
-
-  describe('crawl', () => {
-    for (const { test, options, files } of tests) {
-      it(test, async () => {
-        await using root = await newRoot();
-        await writeFiles(root.path, Object.keys(files));
-
-        const actual = await sut.crawl(inRoot(root.path, options));
-        const expected = Object.entries(files)
-          .filter((entry) => entry[1])
-          .map(([file]) => root.path + file);
-
-        expect(actual.toSorted()).toEqual(expected.toSorted());
-      });
-    }
-
-    it('should return absolute paths', async () => {
-      await using root = await newRoot();
-      await writeFiles(root.path, ['/photos/1.jpg', '/photos/2.jpg']);
-      const cwd = process.cwd();
-      process.chdir(root.path);
-
-      try {
-        const actual = await sut.crawl({ pathsToCrawl: ['photos'] });
-
-        expect(actual.toSorted()).toEqual([`${root.path}/photos/1.jpg`, `${root.path}/photos/2.jpg`]);
-      } finally {
-        process.chdir(cwd);
-      }
-    });
   });
 
   describe('walk', () => {
@@ -406,6 +408,97 @@ describe(StorageRepository.name, () => {
         `${root.path}/photos/1.jpg`,
         `${root.path}/photos/2.jpg`,
         `${root.path}/photos/3.jpg`,
+      ]);
+    });
+  });
+
+  const walkOrdered = async (root: string, pathsToCrawl: string[]) => {
+    const batches = await Array.fromAsync(
+      sut.walkOrdered({ pathsToCrawl: pathsToCrawl.map((path) => root + path), includeHidden: false }),
+    );
+    return batches.flatMap(({ files }) => files.map((file) => file.slice(root.length)));
+  };
+
+  describe('walkOrdered', () => {
+    for (const { test, options, files } of tests) {
+      it(test, async () => {
+        await using root = await newRoot();
+        await writeFiles(root.path, Object.keys(files));
+
+        const batches = await Array.fromAsync(sut.walkOrdered(inRoot(root.path, options)));
+        const expected = Object.entries(files)
+          .filter((entry) => entry[1])
+          .map(([file]) => root.path + file);
+
+        expect(batches.flatMap(({ files }) => files).toSorted()).toEqual(expected.toSorted());
+      });
+    }
+
+    it('should walk disjoint import paths one after another in byte order', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/a/x.jpg', '/a-b/x.jpg', '/b/x.jpg']);
+
+      await expect(walkOrdered(root.path, ['/b', '/a', '/a-b'])).resolves.toEqual([
+        '/a-b/x.jpg',
+        '/a/x.jpg',
+        '/b/x.jpg',
+      ]);
+    });
+
+    it('should yield a file of nested import paths once', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/a.jpg', '/lib/sub/b.jpg', '/lib/z.jpg']);
+
+      await expect(walkOrdered(root.path, ['/lib', '/lib/sub'])).resolves.toEqual([
+        '/lib/a.jpg',
+        '/lib/sub/b.jpg',
+        '/lib/z.jpg',
+      ]);
+    });
+
+    it('should keep the files of a nested import path the outer walk skips', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/.hidden/b.jpg', '/lib/a.jpg', '/lib/z.jpg']);
+
+      await expect(walkOrdered(root.path, ['/lib/.hidden', '/lib'])).resolves.toEqual([
+        '/lib/.hidden/b.jpg',
+        '/lib/a.jpg',
+        '/lib/z.jpg',
+      ]);
+    });
+
+    it.each(['/lib/', '/lib//', '/lib/sub/..', '/lib/.'])('should walk %s as the same folder as /lib', async (path) => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/a.jpg', '/lib/sub/b.jpg']);
+
+      await expect(walkOrdered(root.path, [path, '/lib'])).resolves.toEqual(['/lib/a.jpg', '/lib/sub/b.jpg']);
+    });
+
+    it('should yield nothing without import paths', async () => {
+      await expect(Array.fromAsync(sut.walkOrdered({ pathsToCrawl: [] }))).resolves.toEqual([]);
+    });
+
+    it('should report the modification time of each file', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/a.jpg', '/lib/b.jpg']);
+      await utimes(`${root.path}/lib/a.jpg`, new Date(1_700_000_000_000), new Date(1_700_000_000_000));
+      await utimes(`${root.path}/lib/b.jpg`, new Date(1_800_000_000_123), new Date(1_800_000_000_123));
+
+      const batches = await Array.fromAsync(sut.walkOrdered({ pathsToCrawl: [`${root.path}/lib`] }));
+
+      expect(batches.flatMap(({ modified }) => modified)).toEqual([1_700_000_000_000, 1_800_000_000_123]);
+    });
+
+    it.skipIf(process.getuid?.() === 0)('should log a folder that cannot be read and keep walking', async () => {
+      await using root = await newRoot();
+      await writeFiles(root.path, ['/lib/a.jpg', '/lib/locked/b.jpg', '/lib/z.jpg']);
+      await chmod(`${root.path}/lib/locked`, 0o000);
+
+      const paths = await walkOrdered(root.path, ['/lib']).finally(() => chmod(`${root.path}/lib/locked`, 0o755));
+
+      expect(paths).toEqual(['/lib/a.jpg', '/lib/z.jpg']);
+      expect(vitest.mocked(logger.warn).mock.calls).toEqual([
+        [`Unable to walk ${root.path}/lib/locked: Permission denied (os error 13)`],
       ]);
     });
   });
