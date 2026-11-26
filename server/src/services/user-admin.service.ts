@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { SALT_ROUNDS } from 'src/constants.js';
+import { OAUTH_RELINK_TTL, SALT_ROUNDS } from 'src/constants.js';
 import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto.js';
@@ -15,7 +15,7 @@ import {
   UserAdminUpdateDto,
   mapUserAdmin,
 } from 'src/dtos/user.dto.js';
-import { JobName, UserMetadataKey, UserStatus } from 'src/enum.js';
+import { AuthChallengeType, JobName, UserMetadataKey, UserStatus } from 'src/enum.js';
 import { UserFindOptions } from 'src/repositories/user.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
@@ -172,14 +172,11 @@ export class UserAdminService extends BaseService {
 
     const user = await this.findOrFail(id, {});
     const plainToken = this.cryptoRepository.randomBytesAsText(32);
-    const hashedToken = this.cryptoRepository.hashSha256(plainToken);
-    const expiresAt = DateTime.now().plus({ hours: 24 }).toJSDate();
-    await this.oauthLinkTokenRepository.create({
-      token: hashedToken,
-      oauthSub: null,
-      oauthSid: null,
-      email: user.email,
-      profile: null,
+    const expiresAt = DateTime.now().plus(OAUTH_RELINK_TTL).toJSDate();
+    await this.authChallengeRepository.create({
+      type: AuthChallengeType.OAuthReLink,
+      challenge: this.cryptoRepository.hashSha256(plainToken).toString('base64url'),
+      userId: user.id,
       expiresAt,
     });
 

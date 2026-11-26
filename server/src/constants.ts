@@ -62,6 +62,8 @@ export const SALT_ROUNDS = 10;
 // Syntactically valid bcrypt hash used in login() preventing timing-based user enumeration.
 export const LOGIN_DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZabcde';
 export const AUTH_CODE_TTL = Duration.fromObject({ minutes: 1 });
+export const OAUTH_LINK_TTL = Duration.fromObject({ minutes: 10 });
+export const OAUTH_RELINK_TTL = Duration.fromObject({ hours: 24 });
 
 export const IWorker = 'IWorker';
 

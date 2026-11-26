@@ -13,6 +13,8 @@ export enum AuthChallengeType {
   PasskeyRegistration = 'PasskeyRegistration',
   PasskeyAuthentication = 'PasskeyAuthentication',
   AppLogin = 'AppLogin',
+  OAuthLink = 'OAuthLink',
+  OAuthReLink = 'OAuthReLink',
 }
 
 export enum ImmichCookie {

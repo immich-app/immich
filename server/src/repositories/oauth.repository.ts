@@ -41,6 +41,7 @@ export type OAuthConfig = Pick<
   | 'allowInsecureRequests'
 >;
 export type OAuthRawProfile = UserInfoResponse;
+export type OAuthLinkData = { sub: string; email: string; sid?: string; idToken?: string; profile: OAuthRawProfile };
 
 @Injectable()
 export class OAuthRepository {

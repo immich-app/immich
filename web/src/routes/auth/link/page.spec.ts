@@ -19,6 +19,19 @@ test('links the OAuth account by logging in with a password', async ({ router, r
   expect(router.url.pathname).toBe(Route.photos());
 });
 
+test('asks for a password change before continuing', async ({ data, router, render, settle, api, app }) => {
+  Object.assign(data.user, { isAdmin: false, shouldChangePassword: true });
+  await router.goto(Route.authLink({ email }));
+  await render(Page, load);
+
+  await app.auth.input('password').fill('password');
+  await app.auth.loginButton.click();
+  await settle();
+
+  expect(api.login).toHaveBeenCalledWith({ body: { email, password: 'password' } });
+  expect(router.url.pathname).toBe(Route.changePassword());
+});
+
 test('shows an error for an incorrect password', async ({ router, render, settle, api, app }) => {
   api.on({ login: () => ({ status: 401, json: { message: 'Incorrect email or password', statusCode: 401 } }) });
   await router.goto(Route.authLink({ email }));

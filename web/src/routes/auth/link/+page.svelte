@@ -4,9 +4,13 @@
   import { eventManager } from '#lib/managers/event-manager.svelte.ts';
   import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
   import { loginMutation } from '#lib/queries/auth.query.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
   import { registerOAuthMutation, startOAuthReLinkMutation } from '#lib/queries/oauth.query.ts';
+  import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
   import { Route } from '#lib/route.ts';
   import { oauth } from '#lib/utils.ts';
+  import { getFirstLoginRoute } from '#lib/utils/auth.ts';
   import { getServerErrorMessage } from '#lib/utils/handle-error.ts';
   import type { LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
@@ -22,6 +26,11 @@
 
   const { data }: Props = $props();
 
+  const queries = {
+    publicConfig: createPreloadedQuery(getPublicConfigQuery),
+    serverConfig: createPreloadedQuery(getServerConfigQuery),
+  };
+
   const linkingCurrentUser = authManager.authenticated;
   let email = $state(linkingCurrentUser ? authManager.user.email : data.email);
   let password = $state('');
@@ -34,8 +43,22 @@
   const passwordLogin = createMutation(() => ({
     ...loginMutation(),
     onSuccess: async (user) => {
+      const route = getFirstLoginRoute(user, {
+        isServerOnboarded: queries.serverConfig.data.isOnboarded,
+        passwordLoginEnabled: queries.publicConfig.data.passwordLogin.enabled,
+      });
+      if (route) {
+        await goto(route);
+        return;
+      }
+
       await onSuccess(user);
-      toastManager.primary($t('linked_oauth_account'));
+
+      if (authManager.user.oauthId) {
+        toastManager.primary($t('linked_oauth_account'));
+      } else {
+        toastManager.warning($t('errors.unable_to_link_oauth_account'));
+      }
     },
   }));
   const loading = $derived(passwordLogin.isPending || passwordLogin.isSuccess);
@@ -43,7 +66,10 @@
     passwordLogin.error ? getServerErrorMessage(passwordLogin.error) || $t('errors.incorrect_email_or_password') : '',
   );
 
-  const registration = createMutation(() => ({ ...registerOAuthMutation(), onSuccess }));
+  const registration = createMutation(() => ({
+    ...registerOAuthMutation(),
+    onSuccess: (user) => (user.isOnboarded ? onSuccess(user) : goto(Route.onboarding())),
+  }));
   const registering = $derived(registration.isPending || registration.isSuccess);
 
   const reLink = createMutation(() => ({

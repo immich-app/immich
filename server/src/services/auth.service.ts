@@ -2,7 +2,14 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { parseCookie } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import { AUTH_CODE_TTL, LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants.js';
+import {
+  AUTH_CODE_TTL,
+  LOGIN_DUMMY_HASH,
+  LOGIN_URL,
+  MOBILE_REDIRECT,
+  OAUTH_LINK_TTL,
+  SALT_ROUNDS,
+} from 'src/constants.js';
 import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
 import {
   AuthCodeCreateDto,
@@ -34,6 +41,7 @@ import { BaseService } from 'src/services/base.service.js';
 import { isGranted } from 'src/utils/access.js';
 import { generateProfileImage } from 'src/utils/profile-image.js';
 import { getUserAgentDetails, isCrossOriginRequest } from 'src/utils/request.js';
+import { getOAuthLinkCookieName } from 'src/utils/response.js';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -88,28 +96,19 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Incorrect email or password');
     }
 
-    const linkTokenCookie = this.getCookieOAuthLinkToken(headers);
-    if (linkTokenCookie) {
-      const hashedToken = this.cryptoRepository.hashSha256(linkTokenCookie);
-      const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken, 'callback');
-      if (record && record.oauthSub !== null && record.profile !== null) {
-        const duplicate = await this.userRepository.getByOAuthId(record.oauthSub);
-        if (duplicate && duplicate.id !== user.id) {
-          throw new BadRequestException('This OAuth account has already been linked to another user.');
-        }
-
-        this.logger.log(`Linking OAuth account ${record.oauthSub} to user ${user.id}`);
-        const linked = await this.userRepository.update(user.id, { oauthId: record.oauthSub });
-        this.resourceRepository.send({ userIds: [user.id], changed: [Resource.myUser()] });
-        const profile = this.parseOAuthClaims(record.profile, config.oauth);
-        const synced = await this.syncOAuthUser(linked, profile, config.oauth);
-        return this.createLoginResponse(
-          synced,
-          details,
-          record.oauthSid ?? undefined,
-          record.oauthBearerToken ?? undefined,
-        );
+    const link = config.oauth.enabled ? await this.consumeOAuthLink(headers, details.isSecure) : undefined;
+    if (link) {
+      const duplicate = await this.userRepository.getByOAuthId(link.sub);
+      if (duplicate && duplicate.id !== user.id) {
+        throw new BadRequestException('This OAuth account has already been linked to another user.');
       }
+
+      this.logger.log(`Linking OAuth account ${link.sub} to user ${user.id}`);
+      const linked = await this.userRepository.update(user.id, { oauthId: link.sub });
+      this.resourceRepository.send({ userIds: [user.id], changed: [Resource.myUser()] });
+      const profile = this.parseOAuthClaims(link.profile, config.oauth);
+      const synced = await this.syncOAuthUser(linked, profile, config.oauth);
+      return this.createLoginResponse(synced, details, link.sid, link.idToken);
     }
 
     return this.createLoginResponse(user, details);
@@ -121,33 +120,30 @@ export class AuthService extends BaseService {
       throw new BadRequestException('OAuth auto-register is disabled');
     }
 
-    const linkTokenCookie = this.getCookieOAuthLinkToken(headers);
-    if (!linkTokenCookie) {
+    if (!this.getCookieOAuthLinkToken(headers, details.isSecure)) {
       throw new BadRequestException('Missing OAuth link token');
     }
 
-    const hashedToken = this.cryptoRepository.hashSha256(linkTokenCookie);
-    const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken, 'callback');
-    if (!record || record.oauthSub === null || record.profile === null) {
+    const link = await this.consumeOAuthLink(headers, details.isSecure);
+    if (!link) {
       throw new BadRequestException('Invalid OAuth link token for registration');
     }
-    const { oauthSub } = record;
-    const profile = this.parseOAuthClaims(record.profile, oauth);
+    const profile = this.parseOAuthClaims(link.profile, oauth);
 
-    const existing = await this.userRepository.getByOAuthId(oauthSub);
+    const existing = await this.userRepository.getByOAuthId(link.sub);
     if (existing) {
       throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
 
-    this.logger.log(`Registering new user from OAuth: ${oauthSub}/${record.email}`);
+    this.logger.log(`Registering new user from OAuth: ${link.sub}/${link.email}`);
     const user = await this.createUser({
       name:
         profile.name ||
         `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
         profile.preferred_username ||
-        record.email,
-      email: record.email,
-      oauthId: oauthSub,
+        link.email,
+      email: link.email,
+      oauthId: link.sub,
       quotaSizeInBytes:
         profile.immich_quota_bytes === undefined ? profile.defaults.immich_quota_bytes : profile.immich_quota_bytes,
       storageLabel: profile.immich_storage_label ?? null,
@@ -158,7 +154,7 @@ export class AuthService extends BaseService {
       await this.syncProfilePicture(user, profile.picture);
     }
 
-    return this.createLoginResponse(user, details, record.oauthSid ?? undefined, record.oauthBearerToken ?? undefined);
+    return this.createLoginResponse(user, details, link.sid, link.idToken);
   }
 
   async createCode(auth: AuthDto, dto: AuthCodeCreateDto): Promise<AuthCodeResponseDto> {
@@ -405,15 +401,19 @@ export class AuthService extends BaseService {
     return `${MOBILE_REDIRECT}?${url.split('?', 2)[1] || ''}`;
   }
 
-  async validateOAuthReLinkToken(plainToken: string) {
+  async validateOAuthReLinkToken(plainToken: string, headers: IncomingHttpHeaders) {
+    this.requireSameOrigin(headers);
+
     const { oauth } = await this.getConfig({ withCache: false });
     if (!oauth.enabled) {
       throw new BadRequestException('OAuth is not enabled');
     }
 
-    const hashed = this.cryptoRepository.hashSha256(plainToken);
-    const record = await this.oauthLinkTokenRepository.getByToken(hashed);
-    if (!record || record.oauthSub !== null) {
+    const record = await this.authChallengeRepository.exists({
+      type: AuthChallengeType.OAuthReLink,
+      challenge: this.hashCode(plainToken),
+    });
+    if (!record) {
       throw new BadRequestException('Invalid or expired re-link token');
     }
   }
@@ -446,6 +446,8 @@ export class AuthService extends BaseService {
   }
 
   async callback(dto: OAuthCallbackDto, headers: IncomingHttpHeaders, loginDetails: LoginDetails) {
+    this.requireSameOrigin(headers);
+
     const { oauth } = await this.getConfig({ withCache: false });
     if (!oauth.enabled) {
       throw new BadRequestException('OAuth is not enabled');
@@ -470,16 +472,25 @@ export class AuthService extends BaseService {
     const profile = this.parseOAuthClaims(rawProfile, oauth);
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
+    const sessionUserId = await this.getSessionUserId(headers);
 
-    if (!user) {
-      const reLinkTokenCookie = this.getCookieOAuthLinkToken(headers);
-      if (reLinkTokenCookie) {
-        const hashedCookie = this.cryptoRepository.hashSha256(reLinkTokenCookie);
-        const record = await this.oauthLinkTokenRepository.consumeToken(hashedCookie, 'admin');
-        if (record) {
-          user = await this.completeAdminIssuedReLink(record, profile.sub);
+    const reLinkTokenCookie = this.getCookieOAuthLinkToken(headers, loginDetails.isSecure);
+    if (reLinkTokenCookie) {
+      const record = await this.authChallengeRepository.consume({
+        type: AuthChallengeType.OAuthReLink,
+        challenge: this.hashCode(reLinkTokenCookie),
+      });
+      if (record) {
+        if (sessionUserId && record.userId !== sessionUserId) {
+          throw new BadRequestException('This re-link token belongs to another user.');
         }
+
+        user = await this.completeAdminIssuedReLink(record.userId, profile.sub);
       }
+    }
+
+    if (user && sessionUserId && user.id !== sessionUserId) {
+      throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
 
     if (user) {
@@ -492,21 +503,46 @@ export class AuthService extends BaseService {
     }
 
     const plainToken = this.cryptoRepository.randomBytesAsText(32);
-    const hashedToken = this.cryptoRepository.hashSha256(plainToken);
-    await this.oauthLinkTokenRepository.create({
-      token: hashedToken,
-      oauthSub: profile.sub,
-      oauthSid: oauthSid ?? null,
-      oauthBearerToken: oauthBearerToken ?? null,
-      email: profile.email,
-      profile: rawProfile,
-      expiresAt: DateTime.now().plus({ minutes: 10 }).toJSDate(),
+    await this.authChallengeRepository.create({
+      type: AuthChallengeType.OAuthLink,
+      challenge: this.hashCode(plainToken),
+      data: { sub: profile.sub, email: profile.email, sid: oauthSid, idToken: oauthBearerToken, profile: rawProfile },
+      expiresAt: DateTime.now().plus(OAUTH_LINK_TTL).toJSDate(),
     });
     throw new OAuthLinkRequiredException(profile.email, plainToken);
   }
 
-  private async completeAdminIssuedReLink(record: { email: string }, oauthId: string) {
-    const targetUser = await this.userRepository.getByEmail(record.email);
+  private requireSameOrigin(headers: IncomingHttpHeaders) {
+    if (isCrossOriginRequest(headers)) {
+      throw new ForbiddenException('Cross-origin request blocked');
+    }
+  }
+
+  private async getSessionUserId(headers: IncomingHttpHeaders) {
+    const token = this.getCookieToken(headers);
+    if (!token) {
+      return;
+    }
+
+    const session = await this.sessionRepository.getByToken(this.cryptoRepository.hashSha256(token));
+    return session?.user?.id;
+  }
+
+  private async consumeOAuthLink(headers: IncomingHttpHeaders, isSecure: boolean) {
+    const token = this.getCookieOAuthLinkToken(headers, isSecure);
+    if (!token) {
+      return;
+    }
+
+    const record = await this.authChallengeRepository.consume({
+      type: AuthChallengeType.OAuthLink,
+      challenge: this.hashCode(token),
+    });
+    return record?.data ?? undefined;
+  }
+
+  private async completeAdminIssuedReLink(userId: string | null, oauthId: string) {
+    const targetUser = userId ? await this.userRepository.get(userId, {}) : undefined;
     if (!targetUser) {
       throw new BadRequestException('The user for this re-link token no longer exists');
     }
@@ -620,9 +656,9 @@ export class AuthService extends BaseService {
     return cookies[ImmichCookie.OAuthCodeVerifier] || null;
   }
 
-  private getCookieOAuthLinkToken(headers: IncomingHttpHeaders): string | null {
+  private getCookieOAuthLinkToken(headers: IncomingHttpHeaders, isSecure: boolean): string | null {
     const cookies = parseCookie(headers.cookie || '');
-    return cookies[ImmichCookie.OAuthLinkToken] || null;
+    return cookies[getOAuthLinkCookieName(isSecure)] || null;
   }
 
   async validateSharedLinkKey(key: string | string[]): Promise<AuthDto> {

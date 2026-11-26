@@ -186,7 +186,7 @@ describe(AuthController.name, () => {
       expect(cookies).toMatch(/immich_oauth_link_token=;/);
     });
 
-    it('should clear the link token cookie when login fails', async () => {
+    it('should keep the link token cookie when login fails', async () => {
       service.login.mockRejectedValue(new Error('Incorrect email or password'));
 
       const { headers } = await request(ctx.getHttpServer())
@@ -195,7 +195,7 @@ describe(AuthController.name, () => {
         .send({ name: 'admin', email: 'admin@local', password: 'wrong' });
 
       const cookies = (headers['set-cookie'] as unknown as string[] | undefined)?.join('\n') ?? '';
-      expect(cookies).toMatch(/immich_oauth_link_token=;/);
+      expect(cookies).not.toMatch(/immich_oauth_link_token=/);
     });
 
     it('should not set a link token cookie header when no link token was present', async () => {
@@ -262,7 +262,7 @@ describe(AuthController.name, () => {
       expect(cookies).toMatch(/immich_oauth_link_token=;/);
     });
 
-    it('should clear the link token cookie when register fails', async () => {
+    it('should keep the link token cookie when register fails', async () => {
       service.register.mockRejectedValue(new Error('Missing OAuth link token'));
 
       const { headers } = await request(ctx.getHttpServer())
@@ -271,7 +271,7 @@ describe(AuthController.name, () => {
         .send({});
 
       const cookies = (headers['set-cookie'] as unknown as string[] | undefined)?.join('\n') ?? '';
-      expect(cookies).toMatch(/immich_oauth_link_token=;/);
+      expect(cookies).not.toMatch(/immich_oauth_link_token=/);
     });
   });
 

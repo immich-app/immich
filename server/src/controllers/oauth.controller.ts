@@ -1,6 +1,5 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res, UseInterceptors } from '@nestjs/common';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { parseCookie } from 'cookie';
 import type { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
@@ -15,6 +14,7 @@ import {
 import { UserAdminResponseDto } from 'src/dtos/user.dto.js';
 import { ApiTag, AuthType, ImmichCookie } from 'src/enum.js';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { OAuthLinkCookieInterceptor } from 'src/middleware/oauth-link-cookie.interceptor.js';
 import { AuthService, OAuthLinkRequiredException, type LoginDetails } from 'src/services/auth.service.js';
 import { respondWithCookie } from 'src/utils/response.js';
 
@@ -67,6 +67,7 @@ export class OAuthController {
 
   @Post('callback')
   @Authenticated({ public: true })
+  @UseInterceptors(OAuthLinkCookieInterceptor)
   @Endpoint({
     summary: 'Finish OAuth',
     description: 'Complete the OAuth authorization process by exchanging the authorization code for a session token.',
@@ -78,8 +79,6 @@ export class OAuthController {
     @Body() dto: OAuthCallbackDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const hadLinkCookie = !!parseCookie(request.headers.cookie || '')[ImmichCookie.OAuthLinkToken];
-    let freshLinkCookieIssued = false;
     try {
       const body = await this.service.callback(dto, request.headers, loginDetails);
       return respondWithCookie(res, body, {
@@ -96,15 +95,11 @@ export class OAuthController {
           isSecure: loginDetails.isSecure,
           values: [{ key: ImmichCookie.OAuthLinkToken, value: error.oauthLinkToken }],
         });
-        freshLinkCookieIssued = true;
       }
       throw error;
     } finally {
       res.clearCookie(ImmichCookie.OAuthState);
       res.clearCookie(ImmichCookie.OAuthCodeVerifier);
-      if (hadLinkCookie && !freshLinkCookieIssued) {
-        res.clearCookie(ImmichCookie.OAuthLinkToken);
-      }
     }
   }
 
@@ -118,11 +113,12 @@ export class OAuthController {
     history: new HistoryBuilder().added('v4'),
   })
   async startOAuthReLink(
+    @Req() request: Request,
     @Body() dto: OAuthReLinkStartDto,
     @Res({ passthrough: true }) res: Response,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<void> {
-    await this.service.validateOAuthReLinkToken(dto.token);
+    await this.service.validateOAuthReLinkToken(dto.token, request.headers);
     respondWithCookie(res, null, {
       isSecure: loginDetails.isSecure,
       values: [{ key: ImmichCookie.OAuthLinkToken, value: dto.token }],

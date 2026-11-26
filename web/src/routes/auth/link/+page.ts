@@ -1,7 +1,9 @@
 import { getFormatter } from '#lib/utils/i18n.ts';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ url }) => {
+export const load = (async ({ parent, url }) => {
+  await parent();
+
   const email = url.searchParams.get('email') || '';
   const reLinkToken = url.searchParams.get('token') || '';
 

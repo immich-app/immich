@@ -11,6 +11,7 @@
   import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
   import { Route } from '#lib/route.ts';
   import { oauth } from '#lib/utils.ts';
+  import { getFirstLoginRoute } from '#lib/utils/auth.ts';
   import { getServerErrorMessage, handleError } from '#lib/utils/handle-error.ts';
   import { isHttpError, type LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
@@ -60,6 +61,12 @@
         return;
       }
 
+      if (authManager.authenticated) {
+        await goto(Route.userSettings({ isOpen: OpenQueryParam.OAUTH }));
+        toastManager.warning(getServerErrorMessage(error) || $t('errors.unable_to_link_oauth_account'));
+        return;
+      }
+
       oauthError = getServerErrorMessage(error) || $t('errors.unable_to_complete_oauth_login');
       oauthLoading = false;
     },
@@ -78,25 +85,15 @@
     eventManager.emit('AuthLogin', user);
   };
 
-  const onFirstLogin = () => goto(Route.changePassword());
   const onOnboarding = () => goto(Route.onboarding());
 
   const onLogin = async (user: LoginResponseDto) => {
-    if (user.isAdmin && !serverConfig.isOnboarded) {
-      await onOnboarding();
-      return;
-    }
-
-    // change the user password before we onboard them
-    if (!user.isAdmin && user.shouldChangePassword && publicConfig.passwordLogin.enabled) {
-      await onFirstLogin();
-      return;
-    }
-
-    // We want to onboard after the first login since their password will change
-    // and handleLogin will be called again (relogin). We then do onboarding on that next call.
-    if (!user.isOnboarded) {
-      await onOnboarding();
+    const route = getFirstLoginRoute(user, {
+      isServerOnboarded: serverConfig.isOnboarded,
+      passwordLoginEnabled: publicConfig.passwordLogin.enabled,
+    });
+    if (route) {
+      await goto(route);
       return;
     }
 

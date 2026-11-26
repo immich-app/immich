@@ -14,6 +14,17 @@ export class AuthChallengeRepository {
     return this.db.insertInto('auth_challenge').values(dto).executeTakeFirstOrThrow();
   }
 
+  @GenerateSql({ params: [{ type: AuthChallengeType.OAuthReLink, challenge: DummyValue.STRING }] })
+  exists({ type, challenge }: { type: AuthChallengeType; challenge: string }) {
+    return this.db
+      .selectFrom('auth_challenge')
+      .select('id')
+      .where('challenge', '=', challenge)
+      .where('type', '=', type)
+      .where('expiresAt', '>', new Date())
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [{ type: AuthChallengeType.PasskeyRegistration, challenge: DummyValue.STRING }] })
   consume({ type, challenge, codeChallenge }: { type: AuthChallengeType; challenge: string; codeChallenge?: string }) {
     return this.db
@@ -22,7 +33,7 @@ export class AuthChallengeRepository {
       .where('type', '=', type)
       .where('codeChallenge', 'is not distinct from', codeChallenge ?? null)
       .where('expiresAt', '>', new Date())
-      .returning(['id', 'userId'])
+      .returning(['id', 'userId', 'data'])
       .executeTakeFirst();
   }
 

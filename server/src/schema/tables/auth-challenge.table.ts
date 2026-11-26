@@ -8,6 +8,7 @@ import {
   type Timestamp,
 } from '@immich/sql-tools';
 import { AuthChallengeType } from 'src/enum.js';
+import type { OAuthLinkData } from 'src/repositories/oauth.repository.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
 
 @Table('auth_challenge')
@@ -26,6 +27,9 @@ export class AuthChallengeTable {
 
   @Column({ nullable: true })
   codeChallenge!: string | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  data!: OAuthLinkData | null;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;

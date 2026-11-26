@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { describe } from 'vitest';
 import { mapUserAdmin } from 'src/dtos/user.dto.js';
-import { AlbumUserRole, JobName, UserStatus } from 'src/enum.js';
+import { AlbumUserRole, AuthChallengeType, JobName, UserStatus } from 'src/enum.js';
 import { Resource } from 'src/resource-paths.js';
 import { UserAdminService } from 'src/services/user-admin.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
@@ -230,29 +230,24 @@ describe(UserAdminService.name, () => {
       await expect(sut.createOAuthReLinkToken(authStub.admin, userStub.user1.id)).rejects.toBeInstanceOf(
         BadRequestException,
       );
-      expect(mocks.oauthLinkToken.create).not.toHaveBeenCalled();
+      expect(mocks.authChallenge.create).not.toHaveBeenCalled();
     });
 
     it('should throw when the target user is missing', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.user.get.mockResolvedValueOnce(void 0);
       await expect(sut.createOAuthReLinkToken(authStub.admin, 'missing')).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.oauthLinkToken.create).not.toHaveBeenCalled();
+      expect(mocks.authChallenge.create).not.toHaveBeenCalled();
     });
 
-    it('should create a token with null oauthSub and the target email', async () => {
+    it('should create a re-link challenge for the target user', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      mocks.oauthLinkToken.create.mockResolvedValue({} as any);
+      mocks.authChallenge.create.mockResolvedValue({} as any);
 
       const result = await sut.createOAuthReLinkToken(authStub.admin, userStub.user1.id);
 
-      expect(mocks.oauthLinkToken.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          oauthSub: null,
-          oauthSid: null,
-          profile: null,
-          email: userStub.user1.email,
-        }),
+      expect(mocks.authChallenge.create).toHaveBeenCalledWith(
+        expect.objectContaining({ type: AuthChallengeType.OAuthReLink, userId: userStub.user1.id }),
       );
       expect(result.token).toEqual(expect.any(String));
       expect(result.expiresAt).toBeInstanceOf(Date);

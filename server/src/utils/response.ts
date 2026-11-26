@@ -1,6 +1,7 @@
 import { CookieOptions, Response } from 'express';
 import { Duration } from 'luxon';
 import { Writable } from 'node:stream';
+import { OAUTH_LINK_TTL } from 'src/constants.js';
 import { CookieResponse } from 'src/dtos/auth.dto.js';
 import { ImmichCookie } from 'src/enum.js';
 
@@ -39,6 +40,12 @@ export const waitForDrain = (response: Writable) =>
     }
   });
 
+export const getOAuthLinkCookieName = (isSecure: boolean) =>
+  isSecure ? `__Host-${ImmichCookie.OAuthLinkToken}` : ImmichCookie.OAuthLinkToken;
+
+export const clearOAuthLinkCookie = (res: Response, isSecure: boolean) =>
+  res.clearCookie(getOAuthLinkCookieName(isSecure), { secure: isSecure });
+
 export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values }: CookieResponse) => {
   const defaults: CookieOptions = {
     path: '/',
@@ -54,7 +61,7 @@ export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values 
     [ImmichCookie.MaintenanceToken]: { ...defaults, maxAge: Duration.fromObject({ days: 1 }).toMillis() },
     [ImmichCookie.OAuthState]: defaults,
     [ImmichCookie.OAuthCodeVerifier]: defaults,
-    [ImmichCookie.OAuthLinkToken]: { ...defaults, maxAge: Duration.fromObject({ minutes: 10 }).toMillis() },
+    [ImmichCookie.OAuthLinkToken]: { ...defaults, maxAge: OAUTH_LINK_TTL.toMillis() },
     // no httpOnly so that the client can know the auth state
     [ImmichCookie.IsAuthenticated]: { ...defaults, httpOnly: false },
     [ImmichCookie.SharedLinkToken]: { ...defaults, maxAge: Duration.fromObject({ days: 1 }).toMillis() },
@@ -65,7 +72,8 @@ export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values 
       continue;
     }
     const options = cookieOptions[key];
-    res.cookie(key, value, options);
+    const name = key === ImmichCookie.OAuthLinkToken ? getOAuthLinkCookieName(isSecure) : key;
+    res.cookie(name, value, options);
   }
 
   return body;
