@@ -109,6 +109,7 @@ describe(PasskeyService.name, () => {
       await expect(repository.consume({ type: AuthChallengeType.PasskeyRegistration, challenge })).resolves.toEqual({
         id: expect.any(String),
         userId: user.id,
+        data: null,
       });
       await expect(
         repository.consume({ type: AuthChallengeType.PasskeyRegistration, challenge }),
@@ -156,6 +157,7 @@ describe(PasskeyService.name, () => {
       await expect(repository.consume({ type: AuthChallengeType.PasskeyAuthentication, challenge })).resolves.toEqual({
         id: expect.any(String),
         userId: null,
+        data: null,
       });
       await expect(
         repository.consume({ type: AuthChallengeType.PasskeyAuthentication, challenge }),
