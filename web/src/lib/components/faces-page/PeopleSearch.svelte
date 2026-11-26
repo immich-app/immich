@@ -103,7 +103,7 @@
     {showLoadingSpinner}
     {placeholder}
     onReset={handleReset}
-    onSearch={({ force }) => searchPeople(force ?? false)}
+    onSearch={({ force = false }) => searchPeople(force)}
   />
 {:else}
   <input

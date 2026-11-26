@@ -46,8 +46,10 @@
                 <Text
                   class="line-clamp-3 overflow-hidden font-mono"
                   size="small"
-                  title={JSON.stringify(key.permissions, null, 2)}>{key.permissions}</Text
+                  title={JSON.stringify(key.permissions, null, 2)}
                 >
+                  {key.permissions}
+                </Text>
               </TableCell>
               <TableCell>{new Date(key.createdAt).toLocaleDateString($locale, dateFormats.settings)}</TableCell>
               <TableCell class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1">

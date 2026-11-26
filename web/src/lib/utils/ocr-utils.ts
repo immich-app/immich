@@ -1,5 +1,5 @@
-import type { OcrBoundingBox } from '#lib/stores/ocr.svelte.ts';
 import { mapNormalizedToContent, type Point, type Size } from '#lib/utils/container-utils.ts';
+import type { AssetOcrResponseDto } from '@immich/sdk';
 import { clamp } from 'lodash-es';
 
 export type { Point } from '#lib/utils/container-utils.ts';
@@ -121,6 +121,7 @@ export const calculateFittedFontSize = (
       return clamp(fontSize, MIN_FONT_SIZE, MAX_FONT_SIZE);
     }
 
+    // eslint-disable-next-line tscompat/tscompat
     context.font = getReferenceFont();
 
     let maxCharWidth = 0;
@@ -146,6 +147,7 @@ export const calculateFittedFontSize = (
   }
 
   // Unsupported in Safari iOS <16.6; falls back to default canvas font, giving less accurate but functional sizing
+  // eslint-disable-next-line tscompat/tscompat
   context.font = getReferenceFont();
 
   const metrics = context.measureText(text);
@@ -158,7 +160,7 @@ export const calculateFittedFontSize = (
   return clamp(Math.min(scaleFromWidth, scaleFromHeight), MIN_FONT_SIZE, MAX_FONT_SIZE);
 };
 
-export const getOcrBoundingBoxes = (ocrData: OcrBoundingBox[], imageSize: Size): OcrBox[] => {
+export const getOcrBoundingBoxes = (ocrData: AssetOcrResponseDto[], imageSize: Size): OcrBox[] => {
   const boxes: OcrBox[] = [];
   for (const ocr of ocrData) {
     const points = [

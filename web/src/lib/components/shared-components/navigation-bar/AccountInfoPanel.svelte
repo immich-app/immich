@@ -97,8 +97,10 @@
       href={Route.logout()}
       leadingIcon={mdiLogout}
       variant="ghost"
-      color="secondary">{$t('sign_out')}</Button
+      color="secondary"
     >
+      {$t('sign_out')}
+    </Button>
 
     <button
       type="button"

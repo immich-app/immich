@@ -223,9 +223,9 @@
     {#if preview}
       <Text size="small" class="mt-4">
         {$t('preview')}:
-        <Code size="small"
-          >{`UPLOAD_LOCATION/library/${authManager.user.storageLabel || authManager.user.id}/${preview}.jpg`}</Code
-        >
+        <Code size="small">
+          {`UPLOAD_LOCATION/library/${authManager.user.storageLabel || authManager.user.id}/${preview}.jpg`}
+        </Code>
       </Text>
     {/if}
   </div>

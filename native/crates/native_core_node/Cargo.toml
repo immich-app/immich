@@ -1,0 +1,20 @@
+[package]
+name = "native_core_node"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+native_core = { path = "../native_core", features = ["server"] }
+napi = { workspace = true }
+napi-derive = { workspace = true }
+
+[build-dependencies]
+napi-build = { workspace = true }
+
+[lints]
+workspace = true

@@ -346,6 +346,8 @@ export const createHandlers = (data: MockData): Handlers => {
     },
     removeUserFromAlbum: ({ params }) =>
       data.removeUserFromAlbum(params.id, params.userId) ? { status: 204 } : notFound,
+    updateAlbumUser: ({ params, body }) =>
+      data.updateAlbumUser(params.id, params.userId, body.role) ? { status: 200 } : notFound,
     getAlbumMapMarkers: ({ params }) => ({ json: data.mapMarkers(params.id) }),
     getMapMarkers: () => ({ json: data.mapMarkers() }),
     reverseGeocode: () => ({ json: [] }),

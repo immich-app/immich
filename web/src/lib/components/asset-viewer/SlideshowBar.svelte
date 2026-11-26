@@ -81,7 +81,7 @@
     hideControlsAfterDelay();
     unsubscribeRestart = restartProgress.subscribe((value) => {
       if (value) {
-        progressBar?.restart();
+        void progressBar?.restart();
       }
     });
 
@@ -90,7 +90,7 @@
         return;
       }
 
-      progressBar?.restart();
+      void progressBar?.restart();
       stopControlsHideTimer();
     });
   });
@@ -150,13 +150,13 @@
     true,
   );
 
-  const togglePause = () => {
+  const togglePause = async () => {
     if (progressBarStatus === ProgressBarStatus.Paused) {
       $slideshowState = SlideshowState.PlaySlideshow;
-      progressBar?.play();
+      await progressBar?.play();
     } else {
       $slideshowState = SlideshowState.PauseSlideshow;
-      progressBar?.pause();
+      await progressBar?.pause();
     }
   };
 

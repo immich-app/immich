@@ -6,11 +6,13 @@ export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
   Passkey = 'passkey',
+  Code = 'code',
 }
 
 export enum AuthChallengeType {
   PasskeyRegistration = 'PasskeyRegistration',
   PasskeyAuthentication = 'PasskeyAuthentication',
+  AppLogin = 'AppLogin',
 }
 
 export enum ImmichCookie {
@@ -449,6 +451,13 @@ export enum AssetStatus {
   Active = 'active',
   Trashed = 'trashed',
   Deleted = 'deleted',
+}
+
+export enum LibraryChange {
+  Import = 'import',
+  Offline = 'offline',
+  Online = 'online',
+  Refresh = 'refresh',
 }
 
 export enum SourceType {
@@ -924,8 +933,6 @@ export enum JobName {
   LibraryDeleteCheck = 'LibraryDeleteCheck',
   LibraryDelete = 'LibraryDelete',
   LibraryRemoveAsset = 'LibraryRemoveAsset',
-  LibrarySyncAssetsQueueAll = 'LibraryScanAssetsQueueAll',
-  LibrarySyncAssets = 'LibrarySyncAssets',
   LibrarySyncFilesQueueAll = 'LibrarySyncFilesQueueAll',
   LibrarySyncFiles = 'LibrarySyncFiles',
   LibraryScanQueueAll = 'LibraryScanQueueAll',

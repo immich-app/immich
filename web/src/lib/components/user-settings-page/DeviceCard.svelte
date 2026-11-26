@@ -56,11 +56,11 @@
     <div class="flex flex-col justify-center gap-1 dark:text-white">
       <span class="text-sm">
         {#if session.deviceType || session.deviceOS}
-          <span
-            >{session.deviceOS || $t('unknown')} • {session.deviceType || $t('unknown')}{session.appVersion
+          <span>
+            {session.deviceOS || $t('unknown')} • {session.deviceType || $t('unknown')}{session.appVersion
               ? ` (v${session.appVersion})`
-              : ''}</span
-          >
+              : ''}
+          </span>
         {:else}
           <span>{$t('unknown')}</span>
         {/if}

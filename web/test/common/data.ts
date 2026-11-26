@@ -19,6 +19,7 @@ import {
   type ActivityResponseDto,
   type AdminConfigDto,
   type AlbumResponseDto,
+  type AlbumUserRole,
   type ApiKeyResponseDto,
   type AssetBulkUpdateDto,
   type AssetEditActionItemResponseDto,
@@ -812,6 +813,19 @@ export class MockData {
 
     const id = userId === 'me' ? this.user.id : userId;
     this.albums.set(albumId, { ...album, albumUsers: album.albumUsers.filter(({ user }) => user.id !== id) });
+    return true;
+  }
+
+  updateAlbumUser(albumId: string, userId: string, role: AlbumUserRole) {
+    const album = this.albums.get(albumId);
+    if (!album?.albumUsers.some(({ user }) => user.id === userId)) {
+      return false;
+    }
+
+    const albumUsers = album.albumUsers.map((albumUser) =>
+      albumUser.user.id === userId ? { ...albumUser, role } : albumUser,
+    );
+    this.albums.set(albumId, { ...album, albumUsers });
     return true;
   }
 
@@ -1610,7 +1624,7 @@ export class MockData {
     const folders = this.timelineAssets({ visibility: AssetVisibility.Timeline }).map(({ originalPath }) =>
       originalPath.slice(0, originalPath.lastIndexOf('/')),
     );
-    return [...new Set(folders)].sort();
+    return [...new Set(folders)].sort((a, b) => a.localeCompare(b));
   }
 
   assetsByOriginalPath(path: string) {

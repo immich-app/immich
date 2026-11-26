@@ -3,6 +3,7 @@ packages:
   - docs
   - e2e
   - i18n
+  - native/crates/native_core_node
   - server
   - plugins
   - web
@@ -34,7 +35,6 @@ overrides:
   sharp: ^0.35.3
   # 1.9.3-1.9.5 are confirmed broken
   tsc-alias: 1.9.10
-  svelte-eslint-parser: 1.9.0
 packageExtensions:
   nestjs-kysely:
     dependencies:
@@ -72,7 +72,8 @@ shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
   - '@immich/ui'
-  - '@immich/sql-tools@0.7.0'
+  - '@immich/sql-tools@0.8.0'
   - '@nestjs/cli@12.0.1'
   - '@futo-org/*'
   - '@immich/nestjs-standard-schema@0.1.0'
+  - '@immich/walkrs@0.0.17'

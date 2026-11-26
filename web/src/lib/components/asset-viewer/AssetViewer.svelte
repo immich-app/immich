@@ -16,6 +16,7 @@
     getActivityStatisticsQuery,
     getMyLikeQuery,
   } from '#lib/queries/activity.query.ts';
+  import { getAssetOcrQuery } from '#lib/queries/asset.query.ts';
   import { executeMutation, queryClient } from '#lib/queries/client.ts';
   import { getStackQuery } from '#lib/queries/stack.query.ts';
   import { getAssetActions } from '#lib/services/asset.service.ts';
@@ -108,6 +109,7 @@
   const stackId = $derived(currentStackId === deletedStackId ? undefined : currentStackId);
   const activityParams = $derived({ albumId: album?.id ?? '', assetId: asset.id });
   const isActivityEnabled = $derived(!!album && isShared && authManager.authenticated);
+  let sharedLink = getSharedLink();
   const queries = {
     stack: createQuery(
       () => ({ ...getStackQuery(stackId ?? ''), enabled: !!stackId }),
@@ -118,6 +120,7 @@
       enabled: isActivityEnabled,
     })),
     myLike: createQuery(() => ({ ...getMyLikeQuery(activityParams), enabled: isActivityEnabled })),
+    ocr: createQuery(() => ({ ...getAssetOcrQuery(asset.id), enabled: !sharedLink })),
   };
   const stack = $derived(
     queries.stack.data?.assets.some(({ id }) => id === cursor.current.id) ? queries.stack.data : undefined,
@@ -125,9 +128,9 @@
   const commentCount = $derived(queries.activityStatistics.data?.comments ?? 0);
   const likeCount = $derived(queries.activityStatistics.data?.likes ?? 0);
   const myLike = $derived(queries.myLike.data ?? null);
+  const ocrData = $derived(queries.ocr.data ?? []);
   const nextAsset = $derived(cursor.nextAsset);
   const previousAsset = $derived(cursor.previousAsset);
-  let sharedLink = getSharedLink();
   let fullscreenElement = $state<Element>();
 
   let isPlayingOriginalVideo = $state($alwaysLoadOriginalVideo);
@@ -378,7 +381,6 @@
     ocrManager.clear();
     faceManager.clear();
     if (!sharedLink) {
-      await ocrManager.getAssetOcr(id);
       await faceManager.getAssetFaces(id);
     }
   };
@@ -436,7 +438,7 @@
     $slideshowState === SlideshowState.None &&
       asset.type === AssetTypeEnum.Image &&
       !assetViewerManager.isShowEditor &&
-      ocrManager.hasOcrData,
+      ocrData.length > 0,
   );
   const { Tag, TagPeople } = $derived(getAssetActions($t, asset));
   const showDetailPanel = $derived(
@@ -549,11 +551,11 @@
         playOriginalVideo={isPlayingOriginalVideo}
       />
     {:else if viewerKind === 'ImagePanaramaViewer'}
-      <ImagePanoramaViewer {asset} />
+      <ImagePanoramaViewer {asset} {ocrData} />
     {:else if viewerKind === 'CropArea'}
       <CropArea {asset} />
     {:else if viewerKind === 'PhotoViewer'}
-      <PhotoViewer cursor={{ ...cursor, current: asset }} {sharedLink} {onSwipe} />
+      <PhotoViewer cursor={{ ...cursor, current: asset }} {sharedLink} {ocrData} {onSwipe} />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
         {asset}

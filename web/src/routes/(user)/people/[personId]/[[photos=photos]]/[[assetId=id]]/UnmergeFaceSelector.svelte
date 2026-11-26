@@ -118,8 +118,8 @@
           disabled={isPending || hasSelection}
           onclick={handleCreate}
         >
-          {$t('create_new_person')}</Button
-        >
+          {$t('create_new_person')}
+        </Button>
         <Button
           size="small"
           shape="round"

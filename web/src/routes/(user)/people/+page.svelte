@@ -240,8 +240,10 @@
         onclick={() => goto('/people/manage')}
         size="small"
         variant="ghost"
-        color="secondary">{$t('show_and_hide_people')}</Button
+        color="secondary"
       >
+        {$t('show_and_hide_people')}
+      </Button>
       <ActionButton action={ManageAccess} />
       <IconButton
         shape="round"

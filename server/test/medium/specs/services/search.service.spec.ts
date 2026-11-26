@@ -66,6 +66,17 @@ describe(SearchService.name, () => {
     ]);
   });
 
+  it('should match a path in another script regardless of case', async () => {
+    const { sut, ctx } = setup();
+    const { user } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user.id, originalPath: '/photos/Москва/IMG.jpg' });
+    const auth = factory.auth({ user: { id: user.id } });
+
+    const response = await sut.searchMetadata(auth, { size: 250, originalPath: 'москва' });
+
+    expect(response.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
+  });
+
   it('should not return hidden assets', async () => {
     const { sut, ctx } = setup();
     const { user } = await ctx.newUser();

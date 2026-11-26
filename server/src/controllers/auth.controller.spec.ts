@@ -236,4 +236,69 @@ describe(AuthController.name, () => {
       );
     });
   });
+
+  describe('POST /auth/code', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer())
+        .post('/auth/code')
+        .send({ codeChallenge: 'a'.repeat(43) });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it.each([
+      { name: 'missing', codeChallenge: undefined },
+      { name: 'too short', codeChallenge: 'a'.repeat(42) },
+      { name: 'too long', codeChallenge: 'a'.repeat(44) },
+      { name: 'not base64url', codeChallenge: `${'a'.repeat(42)}=` },
+    ])('should reject a $name code challenge', async ({ codeChallenge }) => {
+      const { status } = await request(ctx.getHttpServer()).post('/auth/code').send({ codeChallenge });
+      expect(status).toEqual(400);
+      expect(service.createCode).not.toHaveBeenCalled();
+    });
+
+    it('should respond with 201', async () => {
+      service.createCode.mockResolvedValue({ code: 'code' });
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/auth/code')
+        .send({ codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM' });
+      expect(status).toEqual(201);
+      expect(body).toEqual({ code: 'code' });
+    });
+  });
+
+  describe('POST /auth/exchange', () => {
+    const codeVerifier = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
+
+    it('should not be an authenticated route', async () => {
+      service.exchangeCode.mockResolvedValue({ accessToken: 'token' } as LoginResponseDto);
+      await request(ctx.getHttpServer()).post('/auth/exchange').send({ code: 'code', codeVerifier });
+      expect(ctx.authenticate).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { name: 'a missing code', dto: { codeVerifier } },
+      { name: 'an empty code', dto: { code: '', codeVerifier } },
+      { name: 'a too short code verifier', dto: { code: 'code', codeVerifier: 'a'.repeat(42) } },
+      { name: 'a too long code verifier', dto: { code: 'code', codeVerifier: 'a'.repeat(129) } },
+      { name: 'a non base64url code verifier', dto: { code: 'code', codeVerifier: `${'a'.repeat(42)}~` } },
+    ])('should reject $name', async ({ dto }) => {
+      const { status } = await request(ctx.getHttpServer()).post('/auth/exchange').send(dto);
+      expect(status).toEqual(400);
+      expect(service.exchangeCode).not.toHaveBeenCalled();
+    });
+
+    it('should respond with 201 and set the auth cookies', async () => {
+      service.exchangeCode.mockResolvedValue({ accessToken: 'token' } as LoginResponseDto);
+      const { status, headers } = await request(ctx.getHttpServer())
+        .post('/auth/exchange')
+        .send({ code: 'code', codeVerifier });
+      expect(status).toEqual(201);
+      expect(headers['set-cookie']).toEqual([
+        expect.stringContaining('immich_access_token=token; Max-Age=34560000; Path=/; Expires='),
+        expect.stringContaining('immich_auth_type=code; Max-Age=34560000; Path=/; Expires='),
+        expect.stringContaining('immich_is_authenticated=true; Max-Age=34560000; Path=/; Expires='),
+      ]);
+      expect(service.exchangeCode).toHaveBeenCalledWith({ code: 'code', codeVerifier }, expect.anything());
+    });
+  });
 });

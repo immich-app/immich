@@ -83,9 +83,9 @@
 
         {#if authManager.user.isAdmin}
           <div class="mt-4 text-right">
-            <Button shape="round" size="small" color="danger" onclick={removeServerProductKey}
-              >{$t('purchase_button_remove_key')}</Button
-            >
+            <Button shape="round" size="small" color="danger" onclick={removeServerProductKey}>
+              {$t('purchase_button_remove_key')}
+            </Button>
           </div>
         {/if}
       {:else}
@@ -111,9 +111,9 @@
         </div>
 
         <div class="mt-4 text-right">
-          <Button shape="round" size="small" color="danger" onclick={removeIndividualProductKey}
-            >{$t('purchase_button_remove_key')}</Button
-          >
+          <Button shape="round" size="small" color="danger" onclick={removeIndividualProductKey}>
+            {$t('purchase_button_remove_key')}
+          </Button>
         </div>
       {/if}
     {:else}

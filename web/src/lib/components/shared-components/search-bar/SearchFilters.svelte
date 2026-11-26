@@ -256,8 +256,10 @@
           variant={advancedFiltersSet ? 'outline' : 'ghost'}
           leadingIcon={mdiTune}
           trailingIcon={showAdvanced ? mdiChevronUp : mdiChevronDown}
-          onclick={() => (showAdvanced = !showAdvanced)}>{$t('advanced_filters')}</Button
+          onclick={() => (showAdvanced = !showAdvanced)}
         >
+          {$t('advanced_filters')}
+        </Button>
         <div class="flex-1"></div>
         <Button
           size="small"
@@ -265,8 +267,10 @@
           variant="outline"
           color="secondary"
           class="bg-transparent"
-          onclick={() => clear()}>{$t('clear_all')}</Button
+          onclick={() => clear()}
         >
+          {$t('clear_all')}
+        </Button>
         <Button size="small" shape="round" onclick={() => onSearch()}>{$t('search')}</Button>
       </div>
     </div>
