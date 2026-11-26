@@ -139,19 +139,17 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
     emit.mockClear();
     this.queued = [];
 
+    const before = await this.getOfflineStates(libraryId);
+
     await this.sut.queueScan(libraryId);
 
     const jobs: JobItem[] = [];
     const failed: JobName[] = [];
     const imports: string[] = [];
-    const checks: string[] = [];
     for (let index = 0; index < this.queued.length; index++) {
       const job = this.queued[index];
       if (job.name === JobName.LibrarySyncFiles) {
         imports.push(...job.data.paths);
-      }
-      if (job.name === JobName.LibrarySyncAssets) {
-        checks.push(...job.data.assetIds);
       }
       const status = await this.runLibraryJob(job)?.catch(() => JobStatus.Failed);
       if (status === undefined) {
@@ -168,7 +166,30 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
       }
     }
 
-    return { jobs, events: emit.mock.calls, failed, imports, checks };
+    const existing = new Set(before.map(({ id }) => id));
+    const refreshed = new Set<string>();
+    for (const job of jobs) {
+      if (job.name === JobName.SidecarCheck && existing.has(job.data.id)) {
+        refreshed.add(job.data.id);
+      }
+    }
+
+    const states = await this.getOfflineStates(libraryId);
+    const after = new Map(states.map(({ id, isOffline }) => [id, isOffline]));
+    const changed = before
+      .filter(({ id, isOffline }) => after.get(id) !== isOffline || refreshed.has(id))
+      .map(({ id }) => id);
+
+    return { jobs, events: emit.mock.calls, failed, imports, changed, refreshed: [...refreshed] };
+  }
+
+  private getOfflineStates(libraryId: string) {
+    return this.database
+      .selectFrom('asset')
+      .select(['id', 'isOffline'])
+      .where('libraryId', '=', libraryId)
+      .orderBy(sql`"originalPath" collate "C"`)
+      .execute();
   }
 
   private runLibraryJob(job: JobItem) {
@@ -178,9 +199,6 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
       }
       case JobName.LibrarySyncFiles: {
         return this.sut.handleSyncFiles(job.data);
-      }
-      case JobName.LibrarySyncAssets: {
-        return this.sut.handleSyncAssets(job.data);
       }
       default: {
         return;
@@ -630,9 +648,9 @@ describe(LibraryService.name, () => {
         await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([...excludedAssets, includedAsset].sort());
 
         await sut.update(library.id, { exclusionPatterns: [pattern] });
-        const { checks } = await ctx.scan(library.id);
+        const { refreshed } = await ctx.scan(library.id);
 
-        expect(checks).toEqual([]);
+        expect(refreshed).toEqual([]);
         await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([includedAsset]);
         const excluded = await ctx.database
           .selectFrom('asset')
@@ -650,7 +668,7 @@ describe(LibraryService.name, () => {
         );
 
         const rescan = await ctx.scan(library.id);
-        expect(rescan.checks).toEqual([]);
+        expect(rescan.changed).toEqual([]);
         await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([includedAsset]);
       },
     );
@@ -707,11 +725,11 @@ describe(LibraryService.name, () => {
       await sut.update(excludedLater.id, { exclusionPatterns: [exclusionPattern] });
 
       await ctx.scan(excludedFirst.id);
-      const { checks } = await ctx.scan(excludedLater.id);
+      const { refreshed } = await ctx.scan(excludedLater.id);
 
       await expect(ctx.getAssetPaths(excludedFirst.id)).resolves.toEqual(keptPaths.sort());
       await expect(ctx.getAssetPaths(excludedLater.id)).resolves.toEqual(keptPaths.sort());
-      expect(checks).toEqual([]);
+      expect(refreshed).toEqual([]);
     });
 
     it.each([
@@ -809,13 +827,14 @@ describe(LibraryService.name, () => {
         events: [],
         failed: [],
         imports: [],
-        checks: [],
+        changed: [],
+        refreshed: [],
       });
     });
 
     it.each([
-      { name: 'the walk runs', before: ['b', 'c', 'd'], after: ['a', 'b'], imports: ['a'], checks: ['c', 'd'] },
-      { name: 'the assets run', before: ['a'], after: ['b', 'c'], imports: ['b', 'c'], checks: ['a'] },
+      { name: 'the walk runs', before: ['b', 'c', 'd'], after: ['a', 'b'], imports: ['a'], changed: ['c', 'd'] },
+      { name: 'the assets run', before: ['a'], after: ['b', 'c'], imports: ['b', 'c'], changed: ['a'] },
     ])('should import and check every file when $name out first', async ({ before, after, ...expected }) => {
       const { ctx } = setup();
       const toPath = (name: string) => join(importPath, `${name}.png`);
@@ -826,11 +845,11 @@ describe(LibraryService.name, () => {
       await rm(importPath, { recursive: true });
       await Promise.all(after.map((name) => createFile(toPath(name))));
 
-      const { imports, checks } = await ctx.scan(library.id);
+      const { imports, changed } = await ctx.scan(library.id);
 
-      expect({ imports, checks }).toEqual({
+      expect({ imports, changed }).toEqual({
         imports: expected.imports.map((name) => toPath(name)),
-        checks: expected.checks.map((name) => assets[before.indexOf(name)].id),
+        changed: expected.changed.map((name) => assets[before.indexOf(name)].id),
       });
     });
 
@@ -841,12 +860,12 @@ describe(LibraryService.name, () => {
       const library = await ctx.createLibrary({ importPaths: [importPath] });
       await ctx.scan(library.id);
 
-      const { imports, checks } = await ctx.scan(library.id);
+      const { imports, changed } = await ctx.scan(library.id);
 
-      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
+      expect({ imports, changed }).toEqual({ imports: [], changed: [] });
     });
 
-    it('should import, check and offline new, modified and deleted files in one scan', async () => {
+    it('should import, refresh and offline new, modified and deleted files in one scan', async () => {
       const { ctx } = setup();
       const kept = await createFile(join(importPath, 'kept.png'));
       const modified = await createFile(join(importPath, 'modified.png'));
@@ -859,14 +878,14 @@ describe(LibraryService.name, () => {
       const added = await createFile(join(importPath, 'added.png'));
       await utimes(modified, new Date(1_800_000_000_000), new Date(1_800_000_000_000));
       await rm(deleted);
-      const { jobs, imports, checks } = await ctx.scan(library.id);
+      const { jobs, imports, changed } = await ctx.scan(library.id);
 
       expect(imports).toEqual([added]);
-      expect(checks).toEqual([deletedAsset.id, modifiedAsset.id]);
+      expect(changed).toEqual([deletedAsset.id, modifiedAsset.id]);
       const addedAsset = await ctx.getAsset(added);
       expect(jobs).toEqual([
-        { name: JobName.SidecarCheck, data: { id: addedAsset.id, source: 'upload' } },
         { name: JobName.SidecarCheck, data: { id: modifiedAsset.id, source: 'upload' } },
+        { name: JobName.SidecarCheck, data: { id: addedAsset.id, source: 'upload' } },
       ]);
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([added, kept, modified]);
       await expect(ctx.getAsset(deleted)).resolves.toEqual(expect.objectContaining({ isOffline: true }));
@@ -946,7 +965,7 @@ describe(LibraryService.name, () => {
       const added = await ctx.scan(library.id);
       const rescan = await ctx.scan(library.id);
 
-      expect([added.imports, added.checks, rescan.imports, rescan.checks]).toEqual([[fullwidth], [], [], []]);
+      expect([added.imports, added.changed, rescan.imports, rescan.changed]).toEqual([[fullwidth], [], [], []]);
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([astral, fullwidth]);
     });
 
@@ -969,10 +988,10 @@ describe(LibraryService.name, () => {
       const library = await ctx.createLibrary({ importPaths: [importPath] });
       await ctx.scan(library.id);
 
-      const { imports, checks } = await ctx.scan(library.id);
+      const { imports, changed } = await ctx.scan(library.id);
 
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual(assetPaths.toSorted());
-      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
+      expect({ imports, changed }).toEqual({ imports: [], changed: [] });
     });
 
     it('should import the files of nested import paths once', async () => {
@@ -984,10 +1003,10 @@ describe(LibraryService.name, () => {
       const library = await ctx.createLibrary({ importPaths: [importPath, importRoot, hiddenPath] });
       await ctx.scan(library.id);
 
-      const { imports, checks } = await ctx.scan(library.id);
+      const { imports, changed } = await ctx.scan(library.id);
 
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([hidden, inner, outer]);
-      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
+      expect({ imports, changed }).toEqual({ imports: [], changed: [] });
     });
 
     it('should import through an import path with a trailing slash', async () => {
@@ -996,10 +1015,10 @@ describe(LibraryService.name, () => {
       const library = await ctx.createLibrary({ importPaths: [`${importPath}/`] });
       await ctx.scan(library.id);
 
-      const { imports, checks } = await ctx.scan(library.id);
+      const { imports, changed } = await ctx.scan(library.id);
 
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([assetPath]);
-      expect({ imports, checks }).toEqual({ imports: [], checks: [] });
+      expect({ imports, changed }).toEqual({ imports: [], changed: [] });
     });
 
     it('should import through an import path that is a symbolic link', async () => {
@@ -1106,7 +1125,7 @@ describe(LibraryService.name, () => {
       );
     });
 
-    it('should check an online asset outside the import paths that is not external', async () => {
+    it('should leave an asset that is not external alone', async () => {
       const { ctx } = setup();
       await mkdir(importPath, { recursive: true });
       const library = await ctx.createLibrary({ importPaths: [importPath] });
@@ -1117,12 +1136,13 @@ describe(LibraryService.name, () => {
         isExternal: false,
       });
 
-      const { checks } = await ctx.scan(library.id);
+      const { changed } = await ctx.scan(library.id);
 
-      expect(checks).toEqual([asset.id]);
+      expect(changed).toEqual([]);
+      await expect(ctx.getAsset(asset.originalPath)).resolves.toEqual(expect.objectContaining({ isOffline: false }));
     });
 
-    it('should check an offline asset that is being deleted outside the import paths', async () => {
+    it('should leave an offline asset that is being deleted alone', async () => {
       const { ctx } = setup();
       await mkdir(importPath, { recursive: true });
       const library = await ctx.createLibrary({ importPaths: [importPath] });
@@ -1135,12 +1155,13 @@ describe(LibraryService.name, () => {
         status: AssetStatus.Deleted,
       });
 
-      const { checks } = await ctx.scan(library.id);
+      const { changed } = await ctx.scan(library.id);
 
-      expect(checks).toEqual([asset.id]);
+      expect(changed).toEqual([]);
+      await expect(ctx.getAsset(asset.originalPath)).resolves.toEqual(expect.objectContaining({ isOffline: true }));
     });
 
-    it('should keep an asset with an unsupported extension online through a check', async () => {
+    it('should offline an asset whose extension is not supported', async () => {
       const { ctx } = setup();
       const assetPath = await createFile(join(importPath, 'asset.xyz'));
       const library = await ctx.createLibrary({ importPaths: [importPath] });
@@ -1152,10 +1173,10 @@ describe(LibraryService.name, () => {
         fileModifiedAt,
       });
 
-      const { checks } = await ctx.scan(library.id);
+      const { changed } = await ctx.scan(library.id);
 
-      expect(checks).toEqual([asset.id]);
-      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([assetPath]);
+      expect(changed).toEqual([asset.id]);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([]);
     });
 
     it('should offline an asset in a hidden folder once its import path is removed', async () => {
@@ -1171,7 +1192,7 @@ describe(LibraryService.name, () => {
       const offlining = await ctx.scan(library.id);
       const rescan = await ctx.scan(library.id);
 
-      expect([offlining.checks, rescan.checks]).toEqual([[], []]);
+      expect([offlining.refreshed, rescan.changed]).toEqual([[], []]);
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([kept]);
     });
 
@@ -1185,9 +1206,9 @@ describe(LibraryService.name, () => {
       await ctx.scan(id);
       await sut.update(id, { importPaths: [lib] });
 
-      const { checks } = await ctx.scan(id);
+      const { refreshed } = await ctx.scan(id);
 
-      expect(checks).toEqual([]);
+      expect(refreshed).toEqual([]);
       await expect(ctx.getAssetPaths(id)).resolves.toEqual([kept]);
     });
 
@@ -1199,9 +1220,9 @@ describe(LibraryService.name, () => {
       const { id } = await ctx.getAsset(assetPath);
       await rm(importPath, { recursive: true });
 
-      const { checks } = await ctx.scan(library.id);
+      const { changed } = await ctx.scan(library.id);
 
-      expect(checks).toEqual([id]);
+      expect(changed).toEqual([id]);
       await expect(ctx.getAsset(assetPath)).resolves.toEqual(expect.objectContaining({ isOffline: true }));
     });
 
@@ -1245,7 +1266,7 @@ describe(LibraryService.name, () => {
       await sut.update(library.id, { importPaths: [importPath] });
       const offlining = await ctx.scan(library.id);
       const rescan = await ctx.scan(library.id);
-      expect([offlining.checks, rescan.checks]).toEqual([[], []]);
+      expect([offlining.refreshed, rescan.changed]).toEqual([[], []]);
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([kept]);
 
       await sut.update(library.id, { importPaths: [importPath, secondPath] });
@@ -1371,33 +1392,26 @@ describe(LibraryService.name, () => {
       expect(ctx.getQueued()).toEqual([
         {
           name: JobName.LibrarySyncFiles,
-          data: { libraryId: library.id, paths: paths.slice(0, 10_000), progressCounter: 10_000 },
+          data: { libraryId: library.id, paths: paths.slice(0, 10_000) },
         },
         {
           name: JobName.LibrarySyncFiles,
-          data: { libraryId: library.id, paths: [paths[10_000]], progressCounter: 10_001 },
+          data: { libraryId: library.id, paths: [paths[10_000]] },
         },
       ]);
     });
 
-    it('should queue checks in batches of 10000', async () => {
+    it('should offline missing assets spanning several batches', async () => {
       const { sut, ctx } = setup();
       await mkdir(importPath, { recursive: true });
       const library = await ctx.createLibrary({ importPaths: [importPath] });
       const missing = Array.from({ length: 10_001 }, (_, index) => join(importPath, `${index}.jpg`));
-      const assets = await ctx.createAssets(library, missing.toSorted());
-      const assetIds = assets.map(({ id }) => id);
+      await ctx.createAssets(library, missing);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
-      const job = { libraryId: library.id, importPaths: [importPath], exclusionPatterns: [], totalAssets: 10_001 };
-      expect(ctx.getQueued()).toEqual([
-        {
-          name: JobName.LibrarySyncAssets,
-          data: { ...job, assetIds: assetIds.slice(0, 10_000), progressCounter: 10_000 },
-        },
-        { name: JobName.LibrarySyncAssets, data: { ...job, assetIds: [assetIds[10_000]], progressCounter: 10_001 } },
-      ]);
+      expect(ctx.getQueued()).toEqual([]);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([]);
     });
 
     it('should fail without leaving a cursor open when the library has a path twice', async () => {
@@ -1448,39 +1462,6 @@ describe(LibraryService.name, () => {
       const { id } = await ctx.getAsset(second);
       expect(jobs.queueAll.mock.calls).toEqual([[[{ name: JobName.SidecarCheck, data: { id, source: 'upload' } }]]]);
       expect(emit.mock.calls).toEqual([['AssetCreate', { asset: { id, ownerId: library.ownerId } }]]);
-    });
-  });
-
-  describe('handleSyncAssets', () => {
-    it('should keep an excluded asset offline when a job queued by an older version checks it', async () => {
-      const { sut, ctx } = setup();
-      const assetPath = await createFile(join(excludedPath, 'asset.png'));
-      const library = await ctx.createLibrary({ importPaths: [importRoot] });
-      await ctx.scan(library.id);
-      await sut.update(library.id, { exclusionPatterns: ['**/excluded/**'] });
-      await ctx.scan(library.id);
-      const { id } = await ctx.getAsset(assetPath);
-
-      await sut.handleSyncAssets({
-        libraryId: library.id,
-        importPaths: [importRoot],
-        exclusionPatterns: ['**/excluded/**'],
-        assetIds: [id],
-        progressCounter: 1,
-        totalAssets: 1,
-      });
-
-      await expect(ctx.getAsset(assetPath)).resolves.toEqual(expect.objectContaining({ isOffline: true }));
-    });
-  });
-
-  describe('handleQueueSyncAssets', () => {
-    it('should skip a job queued by an older version', async () => {
-      const { sut, ctx } = setup();
-
-      await expect(sut.handleQueueSyncAssets()).resolves.toBe(JobStatus.Skipped);
-
-      expect(ctx.getQueued()).toEqual([]);
     });
   });
 

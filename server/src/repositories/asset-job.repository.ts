@@ -7,7 +7,6 @@ import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import {
-  anyUuid,
   asUuid,
   withAudioStream,
   withDefaultVisibility,
@@ -258,22 +257,6 @@ export class AssetJobRepository {
       .select((eb) => ['asset.ownerId', 'asset.visibility', withFilePath(eb, AssetFileType.Preview).as('previewFile')])
       .where('asset.id', '=', id)
       .executeTakeFirst();
-  }
-
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  getForSyncAssets(ids: string[]) {
-    return this.db
-      .selectFrom('asset')
-      .select([
-        'asset.id',
-        'asset.isOffline',
-        'asset.libraryId',
-        'asset.originalPath',
-        'asset.status',
-        'asset.fileModifiedAt',
-      ])
-      .where('asset.id', '=', anyUuid(ids))
-      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

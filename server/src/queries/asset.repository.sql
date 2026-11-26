@@ -529,13 +529,13 @@ with
       "asset"."id",
       "asset"."originalPath",
       "asset"."isOffline",
-      "asset"."isExternal",
       "asset"."status",
       "asset"."fileModifiedAt"
     from
       "asset"
     where
       "asset"."libraryId" = $1::uuid
+      and "asset"."isExternal" = true
     order by
       "originalPath" collate "C"
   )
@@ -545,10 +545,17 @@ from
 update "asset"
 set
   "isOffline" = $1,
-  "deletedAt" = $2
+  "deletedAt" = coalesce("deletedAt", $2)
 where
   "id" = any ($3::uuid[])
-  and "isOffline" = false
+update "asset"
+set
+  "isOffline" = $1,
+  "deletedAt" = case
+    when "status" = $2 then "deletedAt"
+  end
+where
+  "id" = any ($3::uuid[])
 close library_scan
 
 -- AssetRepository.getForOriginal

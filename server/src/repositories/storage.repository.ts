@@ -1,4 +1,4 @@
-import { Matcher, walk, walkOrdered } from '@immich/walkrs';
+import { Matcher, WalkOrderedBatch, walk, walkOrdered } from '@immich/walkrs';
 import { Injectable } from '@nestjs/common';
 import { ZipArchive } from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
@@ -19,7 +19,6 @@ import { createGunzip, createGzip } from 'node:zlib';
 import { CrawlOptionsDto, MatchOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { OrderedFiles } from 'src/utils/ordered.js';
 
 export interface WatchEvents {
   onReady(): void;
@@ -31,7 +30,7 @@ export interface WatchEvents {
 
 export type WatchOptions = Omit<ChokidarOptions, 'ignored'> & { ignored?: string[] };
 
-export type PathMatcher = Pick<Matcher, 'includes' | 'includesAll'>;
+export type WalkedFiles = Pick<WalkOrderedBatch, 'files' | 'modified'>;
 
 export interface ImmichReadStream {
   stream: Readable;
@@ -272,11 +271,7 @@ export class StorageRepository {
     }
   }
 
-  async *walkOrdered({
-    pathsToCrawl,
-    exclusionPatterns,
-    includeHidden,
-  }: CrawlOptionsDto): AsyncGenerator<OrderedFiles> {
+  async *walkOrdered({ pathsToCrawl, exclusionPatterns, includeHidden }: CrawlOptionsDto): AsyncGenerator<WalkedFiles> {
     for await (const { files, modified, errors } of walkOrdered({
       paths: pathsToCrawl,
       exclusionPatterns,
@@ -287,11 +282,13 @@ export class StorageRepository {
         this.logger.warn(path ? `Unable to walk ${path}: ${message}` : `Unable to walk: ${message}`);
       }
 
-      yield { paths: files, modified };
+      if (files.length > 0) {
+        yield { files, modified };
+      }
     }
   }
 
-  createMatcher({ pathsToCrawl, exclusionPatterns, includeHidden, extensions }: MatchOptionsDto): PathMatcher {
+  createMatcher({ pathsToCrawl, exclusionPatterns, includeHidden, extensions }: MatchOptionsDto): Matcher {
     return new Matcher({
       paths: pathsToCrawl.filter((pathToCrawl) => path.isAbsolute(pathToCrawl)),
       exclusionPatterns,

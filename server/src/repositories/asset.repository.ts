@@ -178,14 +178,14 @@ export type LibraryScanAsset = {
   id: string;
   originalPath: string;
   isOffline: boolean;
-  isExternal: boolean;
   status: AssetStatus;
   fileModifiedAt: Date;
 };
 
 export type LibraryScan = {
   assets: AsyncIterable<LibraryScanAsset[]>;
-  setOffline: (ids: string[]) => Promise<number>;
+  setOffline: (ids: string[]) => Promise<unknown>;
+  setOnline: (ids: string[]) => Promise<unknown>;
 };
 
 @Injectable()
@@ -1115,9 +1115,10 @@ export class AssetRepository {
   @GenerateSql({
     params: [
       DummyValue.UUID,
-      async ({ assets, setOffline }: LibraryScan) => {
+      async ({ assets, setOffline, setOnline }: LibraryScan) => {
         await Array.fromAsync(assets);
         await setOffline([DummyValue.UUID]);
+        await setOnline([DummyValue.UUID]);
       },
     ],
   })
@@ -1125,15 +1126,9 @@ export class AssetRepository {
     return this.db.connection().execute(async (connection) => {
       const query = connection
         .selectFrom('asset')
-        .select([
-          'asset.id',
-          'asset.originalPath',
-          'asset.isOffline',
-          'asset.isExternal',
-          'asset.status',
-          'asset.fileModifiedAt',
-        ])
+        .select(['asset.id', 'asset.originalPath', 'asset.isOffline', 'asset.status', 'asset.fileModifiedAt'])
         .where('asset.libraryId', '=', asUuid(libraryId))
+        .where('asset.isExternal', '=', sql.lit(true))
         .orderBy(sql`"originalPath" collate "C"`);
       await sql`declare library_scan no scroll cursor with hold for ${query}`.execute(connection);
 
@@ -1150,33 +1145,29 @@ export class AssetRepository {
         }
       }
 
-      const deletedAt = new Date();
-      const setOffline = async (ids: string[]) => {
-        const { numUpdatedRows } = await connection
+      const scannedAt = new Date();
+      const setOffline = (ids: string[]) =>
+        connection
           .updateTable('asset')
-          .set({ isOffline: true, deletedAt })
+          .set((eb) => ({ isOffline: true, deletedAt: eb.fn.coalesce('deletedAt', eb.val(scannedAt)) }))
           .where('id', '=', anyUuid(ids))
-          .where('isOffline', '=', sql.lit(false))
-          .executeTakeFirst();
-        return Number(numUpdatedRows);
-      };
+          .execute();
+      const setOnline = (ids: string[]) =>
+        connection
+          .updateTable('asset')
+          .set((eb) => ({
+            isOffline: false,
+            deletedAt: eb.case().when('status', '=', AssetStatus.Trashed).then(eb.ref('deletedAt')).end(),
+          }))
+          .where('id', '=', anyUuid(ids))
+          .execute();
 
       try {
-        return await onScan({ assets: fetchBatches(), setOffline });
+        return await onScan({ assets: fetchBatches(), setOffline, setOnline });
       } finally {
         await sql`close library_scan`.execute(connection);
       }
     });
-  }
-
-  async getLibraryAssetCount(libraryId: string): Promise<number> {
-    const { count } = await this.db
-      .selectFrom('asset')
-      .select((eb) => eb.fn.countAll<number>().as('count'))
-      .where('libraryId', '=', asUuid(libraryId))
-      .executeTakeFirstOrThrow();
-
-    return count;
   }
 
   private buildGetForOriginal(ids: string[], isEdited: boolean) {

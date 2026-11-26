@@ -1,7 +1,5 @@
 import { UTF16_SURROGATE_OR_ABOVE } from 'src/constants.js';
 
-export type OrderedFiles = { paths: string[]; modified: number[] };
-
 export const compareUtf8 = (a: string, b: string) => {
   if (a === b) {
     return 0;
@@ -24,65 +22,14 @@ export const compareUtf8 = (a: string, b: string) => {
   return a.codePointAt(index)! - b.codePointAt(index)!;
 };
 
-export class OrderedCursor<T> {
-  batch?: T;
-  index = 0;
-  count = 0;
-  private keys: string[] = [];
-  private previous?: string;
-
-  private iterator: AsyncIterator<T>;
-
-  constructor(
-    source: AsyncIterable<T>,
-    private getKeys: (batch: T) => string[],
-    private name: string,
-  ) {
-    this.iterator = source[Symbol.asyncIterator]();
-  }
-
-  get key(): string | undefined {
-    return this.keys[this.index];
-  }
-
-  advance() {
-    this.index++;
-    this.count++;
-    if (this.index >= this.keys.length) {
-      return false;
+export const requireAscending = (keys: string[], previous: string | undefined, name: string) => {
+  for (const key of keys) {
+    if (previous !== undefined && compareUtf8(previous, key) >= 0) {
+      throw new Error(`${name} is not in ascending order: ${JSON.stringify(key)} after ${JSON.stringify(previous)}`);
     }
 
-    this.requireAscending();
-    return true;
+    previous = key;
   }
 
-  async fill() {
-    while (this.index >= this.keys.length) {
-      const { done, value } = await this.iterator.next();
-      if (done) {
-        return;
-      }
-
-      this.batch = value;
-      this.keys = this.getKeys(value);
-      this.index = 0;
-    }
-
-    this.requireAscending();
-  }
-
-  async close() {
-    await this.iterator.return?.();
-  }
-
-  private requireAscending() {
-    const key = this.keys[this.index];
-    if (this.previous !== undefined && compareUtf8(this.previous, key) >= 0) {
-      throw new Error(
-        `${this.name} is not in ascending order: ${JSON.stringify(key)} after ${JSON.stringify(this.previous)}`,
-      );
-    }
-
-    this.previous = key;
-  }
-}
+  return previous;
+};

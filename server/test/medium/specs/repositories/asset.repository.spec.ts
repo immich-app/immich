@@ -609,7 +609,7 @@ describe(AssetRepository.name, () => {
   });
 
   describe('scanLibraryAssets', () => {
-    it('should stream the assets of the library in UTF-8 byte order', async () => {
+    it('should stream the external assets of the library in UTF-8 byte order', async () => {
       const { ctx, sut } = setup();
       const [library, otherLibrary] = await Promise.all([newExternalLibrary(ctx), newExternalLibrary(ctx)]);
       const paths = [
@@ -628,6 +628,12 @@ describe(AssetRepository.name, () => {
         libraryId: otherLibrary.id,
         isExternal: true,
         originalPath: '/lib/other.jpg',
+      });
+      await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        isExternal: false,
+        originalPath: '/upload/motion.mp4',
       });
 
       await expect(sut.scanLibraryAssets(library.id, ({ assets }) => collectPaths(assets))).resolves.toEqual([
@@ -655,7 +661,7 @@ describe(AssetRepository.name, () => {
       expect(batches.map((batch) => batch.length)).toEqual([10_000, 1]);
     }, 60_000);
 
-    it('should offline online assets and return how many it offlined', async () => {
+    it('should offline assets and keep the trash date of a trashed asset', async () => {
       const { ctx, sut } = setup();
       const library = await newExternalLibrary(ctx);
       const deletedAt = new Date('2020-01-01T00:00:00.000Z');
@@ -668,16 +674,49 @@ describe(AssetRepository.name, () => {
         newExternalAsset('/reject/d.jpg', { isOffline: true, deletedAt }),
       ]);
 
-      await expect(
-        sut.scanLibraryAssets(library.id, ({ setOffline }) => setOffline([rejected.id, trashed.id, alreadyOffline.id])),
-      ).resolves.toBe(2);
+      await sut.scanLibraryAssets(library.id, ({ setOffline }) =>
+        setOffline([rejected.id, trashed.id, alreadyOffline.id]),
+      );
 
       await expect(sut.getById(kept.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
       await expect(sut.getById(rejected.id)).resolves.toMatchObject({ isOffline: true, deletedAt: expect.any(Date) });
-      const trashedAfter = await sut.getById(trashed.id);
-      expect(trashedAfter).toMatchObject({ isOffline: true, status: AssetStatus.Trashed });
-      expect(trashedAfter?.deletedAt).not.toEqual(deletedAt);
+      await expect(sut.getById(trashed.id)).resolves.toMatchObject({
+        isOffline: true,
+        status: AssetStatus.Trashed,
+        deletedAt,
+      });
       await expect(sut.getById(alreadyOffline.id)).resolves.toMatchObject({ isOffline: true, deletedAt });
+    });
+
+    it('should bring assets online and keep a trashed asset in the trash', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const deletedAt = new Date('2020-01-01T00:00:00.000Z');
+      const newOfflineAsset = (originalPath: string, dto: Partial<Insertable<AssetTable>> = {}) =>
+        ctx.newAsset({
+          ownerId: library.ownerId,
+          libraryId: library.id,
+          isExternal: true,
+          isOffline: true,
+          deletedAt,
+          originalPath,
+          ...dto,
+        });
+      const [{ asset: restored }, { asset: trashed }, { asset: untouched }] = await Promise.all([
+        newOfflineAsset('/lib/a.jpg'),
+        newOfflineAsset('/lib/b.jpg', { status: AssetStatus.Trashed }),
+        newOfflineAsset('/lib/c.jpg'),
+      ]);
+
+      await sut.scanLibraryAssets(library.id, ({ setOnline }) => setOnline([restored.id, trashed.id]));
+
+      await expect(sut.getById(restored.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
+      await expect(sut.getById(trashed.id)).resolves.toMatchObject({
+        isOffline: false,
+        status: AssetStatus.Trashed,
+        deletedAt,
+      });
+      await expect(sut.getById(untouched.id)).resolves.toMatchObject({ isOffline: true, deletedAt });
     });
 
     it('should commit an offline mark without locking the asset while the scan runs', async () => {
@@ -741,33 +780,5 @@ describe(AssetRepository.name, () => {
 
       expect(batches).toEqual([['/lib/a.jpg']]);
     });
-
-    it('should offline each asset once when the same library is scanned concurrently', async () => {
-      const { ctx, sut } = setup();
-      const library = await newExternalLibrary(ctx);
-      const assets = Array.from({ length: JOBS_LIBRARY_PAGINATION_SIZE * 2 }, (_, index) =>
-        mediumFactory.assetInsert({
-          ownerId: library.ownerId,
-          libraryId: library.id,
-          isExternal: true,
-          originalPath: `/reject/${index}.jpg`,
-        }),
-      );
-      for (const batch of chunk(assets, 1000)) {
-        await sut.createAll(batch);
-      }
-      const offlineAll = () =>
-        sut.scanLibraryAssets(library.id, async ({ assets, setOffline }) => {
-          let count = 0;
-          for await (const batch of assets) {
-            count += await setOffline(batch.map(({ id }) => id));
-          }
-          return count;
-        });
-
-      const counts = await Promise.all([offlineAll(), offlineAll()]);
-
-      expect(counts[0] + counts[1]).toBe(assets.length);
-    }, 60_000);
   });
 });

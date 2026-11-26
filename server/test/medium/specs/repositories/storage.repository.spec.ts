@@ -416,7 +416,7 @@ describe(StorageRepository.name, () => {
     const batches = await Array.fromAsync(
       sut.walkOrdered({ pathsToCrawl: pathsToCrawl.map((path) => root + path), includeHidden: false }),
     );
-    return batches.flatMap(({ paths }) => paths.map((path) => path.slice(root.length)));
+    return batches.flatMap(({ files }) => files.map((file) => file.slice(root.length)));
   };
 
   describe('walkOrdered', () => {
@@ -430,7 +430,7 @@ describe(StorageRepository.name, () => {
           .filter((entry) => entry[1])
           .map(([file]) => root.path + file);
 
-        expect(batches.flatMap(({ paths }) => paths).toSorted()).toEqual(expected.toSorted());
+        expect(batches.flatMap(({ files }) => files).toSorted()).toEqual(expected.toSorted());
       });
     }
 
