@@ -205,7 +205,7 @@ export const createApp = (page: Page, data: MockData) => {
         await memoryRoot.getByRole('button', { name: 'menu', exact: true }).click();
         await page.getByRole('menuitem', { name: 'remove_photo_from_memory', exact: true }).click();
       },
-      currentMemoryId: () => new URL(page.url()).pathname.match(/\/memories\/([^/]+)/)?.[1],
+      currentMemoryId: () => /\/memories\/([^/]+)/.exec(new URL(page.url()).pathname)?.[1],
       gallery: {
         root: memoryGallery,
         thumbnail: (asset: Asset) =>
@@ -223,7 +223,7 @@ export const createApp = (page: Page, data: MockData) => {
       },
       currentAssetId: () => {
         const url = new URL(page.url());
-        return url.pathname.match(/\/memories\/[^/]+\/photos\/([^/]+)/)?.[1] ?? url.searchParams.get('assetId');
+        return /\/memories\/[^/]+\/photos\/([^/]+)/.exec(url.pathname)?.[1] ?? url.searchParams.get('assetId');
       },
     },
 

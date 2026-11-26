@@ -70,7 +70,7 @@ export class ApiService {
 
       let meta: OpenGraphTags | null = null;
 
-      const shareKey = request.url.match(/^\/share\/(.+)$/);
+      const shareKey = /^\/share\/(.+)$/.exec(request.url);
       if (shareKey) {
         try {
           const key = shareKey[1];
@@ -81,7 +81,7 @@ export class ApiService {
         }
       }
 
-      const shareSlug = request.url.match(/^\/s\/(.+)$/);
+      const shareSlug = /^\/s\/(.+)$/.exec(request.url);
       if (shareSlug) {
         try {
           const slug = shareSlug[1];
