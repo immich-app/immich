@@ -7,13 +7,6 @@ import { AssetType, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryTable } from 'src/schema/tables/library.table.js';
 
-export enum AssetSyncResult {
-  DO_NOTHING,
-  UPDATE,
-  OFFLINE,
-  CHECK_OFFLINE,
-}
-
 @Injectable()
 export class LibraryRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}

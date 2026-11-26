@@ -40,7 +40,6 @@ import {
   inSharedAlbum,
   removeUndefinedKeys,
   truncatedDate,
-  unnest,
   withCoordinatesFilter,
   withDefaultVisibility,
   withEdits,
@@ -174,6 +173,8 @@ const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T
     eb.or([eb('asset_exif.longitude', '>=', west), eb('asset_exif.longitude', '<=', east)]),
   );
 };
+
+export type LibraryScanAsset = Awaited<ReturnType<AssetRepository['getLibraryScanPage']>>[number];
 
 @Injectable()
 export class AssetRepository {
@@ -455,7 +456,14 @@ export class AssetRepository {
     if (assets.length === 0) {
       return [];
     }
-    const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
+    const ids = await this.db
+      .insertInto('asset')
+      .values(assets)
+      .onConflict((oc) =>
+        oc.columns(['ownerId', 'libraryId', 'checksum']).where('libraryId', 'is not', null).doNothing(),
+      )
+      .returning('id')
+      .execute();
     return ids.map(({ id }) => id);
   }
 
@@ -1092,77 +1100,53 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, () => true] })
-  detectOfflineExternalAssets(libraryId: string, isInLibrary: (originalPath: string) => boolean): Promise<number> {
-    // read and write on one connection, so concurrent library scans can't deadlock on the pool
-    return this.db.transaction().execute(async (trx) => {
-      const query = trx
-        .selectFrom('asset')
-        .select(['asset.id', 'asset.originalPath'])
-        .where('asset.libraryId', '=', asUuid(libraryId))
-        .where('asset.isOffline', '=', false)
-        .where('asset.isExternal', '=', true);
-      await sql`declare offline_check no scroll cursor for ${query}`.execute(trx);
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getLibraryScanPage(libraryId: string, after: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id', 'originalPath', 'isOffline', 'status', 'fileModifiedAt'])
+      .where('libraryId', '=', libraryId)
+      .where('isExternal', '=', true)
+      .where('originalPath', '>', after)
+      .orderBy('originalPath')
+      .limit(JOBS_LIBRARY_PAGINATION_SIZE)
+      .execute();
+  }
 
-      const fetchBatch = async () => {
-        const { rows } = await sql<{ id: string; originalPath: string }>`
-          fetch ${sql.lit(JOBS_LIBRARY_PAGINATION_SIZE)} from offline_check
-        `.execute(trx);
-        return rows;
-      };
-
-      const deletedAt = new Date();
-      let count = 0;
-      for (let rows = await fetchBatch(); rows.length > 0; rows = await fetchBatch()) {
-        const ids = rows.filter(({ originalPath }) => !isInLibrary(originalPath)).map(({ id }) => id);
-        if (ids.length === 0) {
-          continue;
-        }
-
-        // a concurrent check of the same library may have offlined these rows after the cursor was declared
-        const { numUpdatedRows } = await trx
-          .updateTable('asset')
-          .set({ isOffline: true, deletedAt })
-          .where('id', '=', anyUuid(ids))
-          .where('isOffline', '=', false)
-          .executeTakeFirst();
-        count += Number(numUpdatedRows);
+  async *streamLibraryScan(libraryId: string) {
+    let after = '';
+    while (true) {
+      const page = await this.getLibraryScanPage(libraryId, after);
+      const last = page.at(-1);
+      if (!last) {
+        return;
       }
 
-      return count;
-    });
+      yield page;
+      after = last.originalPath;
+    }
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
-  async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
-    const result = await this.db
-      .selectFrom(unnest(paths).as('path'))
-      .select('path')
-      .where((eb) =>
-        eb.not(
-          eb.exists(
-            this.db
-              .selectFrom('asset')
-              .select('originalPath')
-              .whereRef('asset.originalPath', '=', eb.ref('path'))
-              .where('libraryId', '=', asUuid(libraryId))
-              .where('isExternal', '=', true),
-          ),
-        ),
-      )
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.DATE] })
+  setOffline(ids: string[], createdBefore: Date): Promise<unknown> {
+    return this.db
+      .updateTable('asset')
+      .set((eb) => ({ isOffline: true, deletedAt: eb.fn.coalesce('deletedAt', eb.val(createdBefore)) }))
+      .where('id', '=', anyUuid(ids))
+      .where('createdAt', '<', createdBefore)
       .execute();
-
-    return result.map((row) => row.path as string);
   }
 
-  async getLibraryAssetCount(libraryId: string): Promise<number> {
-    const { count } = await this.db
-      .selectFrom('asset')
-      .select((eb) => eb.fn.countAll<number>().as('count'))
-      .where('libraryId', '=', asUuid(libraryId))
-      .executeTakeFirstOrThrow();
-
-    return count;
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  setOnline(ids: string[]): Promise<unknown> {
+    return this.db
+      .updateTable('asset')
+      .set((eb) => ({
+        isOffline: false,
+        deletedAt: eb.case().when('status', '=', sql.lit(AssetStatus.Trashed)).then(eb.ref('deletedAt')).end(),
+      }))
+      .where('id', '=', anyUuid(ids))
+      .execute();
   }
 
   private buildGetForOriginal(ids: string[], isEdited: boolean) {

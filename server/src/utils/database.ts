@@ -89,8 +89,6 @@ export const asUuid = (id: string | Expression<string>) => sql<string>`${id}::uu
 
 export const anyUuid = (ids: string[]) => sql<string>`any(${`{${ids}}`}::uuid[])`;
 
-export const unnest = (array: string[]) => sql<Record<string, string>>`unnest(array[${sql.join(array)}]::text[])`;
-
 export const removeUndefinedKeys = <T extends object>(update: T, template: unknown) => {
   for (const key in update) {
     if ((template as T)[key] === undefined) {
@@ -533,7 +531,11 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
         .where('asset_file.path', '=', options.encodedVideoPath!),
     )
     .$if(!!options.originalPath, (qb) =>
-      qb.where(sql`f_unaccent(asset."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
+      qb.where(
+        sql`f_unaccent(asset."originalPath") collate "default"`,
+        'ilike',
+        sql`'%' || f_unaccent(${options.originalPath}) || '%'`,
+      ),
     )
     .$if(!!options.originalFileName, (qb) =>
       qb.where(

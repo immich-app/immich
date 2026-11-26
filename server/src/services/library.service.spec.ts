@@ -3,17 +3,78 @@ import { Stats } from 'node:fs';
 import { vitest } from 'vitest';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { mapLibrary } from 'src/dtos/library.dto.js';
-import { CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum.js';
+import { AssetStatus, CronJob, ImmichWorker, JobName, JobStatus, LibraryChange } from 'src/enum.js';
+import type { LibraryScanAsset } from 'src/repositories/asset.repository.js';
+import type { WalkedFiles } from 'src/repositories/storage.repository.js';
 import { Resource } from 'src/resource-paths.js';
-import { LibraryService } from 'src/services/library.service.js';
+import { LibraryService, diffLibrary } from 'src/services/library.service.js';
 import type { ILibraryFileJob } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { makeMockWatcher } from 'test/repositories/storage.repository.mock.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
-import { factory, newUuid } from 'test/small.factory.js';
+import { factory } from 'test/small.factory.js';
 import { ServiceMocks, expectResourceEvents, makeStream, newTestService } from 'test/utils.js';
+
+const newScanAsset = (originalPath: string, dto: Partial<LibraryScanAsset> = {}): LibraryScanAsset => ({
+  id: originalPath,
+  originalPath,
+  isOffline: false,
+  status: AssetStatus.Active,
+  fileModifiedAt: new Date(1),
+  ...dto,
+});
+
+const diff = (files: WalkedFiles[], assets: LibraryScanAsset[][]) =>
+  Array.fromAsync(diffLibrary(makeStream(files), makeStream(assets)));
+
+describe(diffLibrary.name, () => {
+  it('should classify files and assets', async () => {
+    const files = [{ files: ['/a', '/b', '/c', '/d', '/f'], modified: [1, 2, 1, 1, 1] }];
+    const assets = [
+      [
+        newScanAsset('/b'),
+        newScanAsset('/c'),
+        newScanAsset('/d', { isOffline: true }),
+        newScanAsset('/e'),
+        newScanAsset('/f', { isOffline: true, status: AssetStatus.Deleted }),
+        newScanAsset('/g', { isOffline: true }),
+      ],
+    ];
+
+    await expect(diff(files, assets)).resolves.toEqual([
+      [LibraryChange.Import, ['/a']],
+      [LibraryChange.Offline, ['/e']],
+      [LibraryChange.Online, ['/d']],
+      [LibraryChange.Refresh, ['/b']],
+    ]);
+  });
+
+  it('should merge batches that end at different paths', async () => {
+    const files = [
+      { files: ['/a', '/b'], modified: [1, 1] },
+      { files: ['/c', '/e'], modified: [1, 1] },
+    ];
+    const assets = [
+      [newScanAsset('/a')],
+      [newScanAsset('/b'), newScanAsset('/c'), newScanAsset('/d')],
+      [newScanAsset('/f')],
+    ];
+
+    await expect(diff(files, assets)).resolves.toEqual([
+      [LibraryChange.Import, ['/e']],
+      [LibraryChange.Offline, ['/d', '/f']],
+    ]);
+  });
+
+  it.each([
+    { name: 'files', files: [{ files: ['/b', '/a'], modified: [1, 1] }], assets: [] },
+    { name: 'assets', files: [], assets: [[newScanAsset('/b')], [newScanAsset('/b')]] },
+  ])('should fail when the $name are not in ascending order', async ({ files, assets }) => {
+    await expect(diff(files, assets)).rejects.toThrow('is not in ascending order');
+  });
+});
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
@@ -165,13 +226,6 @@ describe(LibraryService.name, () => {
       await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.Skipped);
     });
   });
-
-  describe('handleQueueSyncAssets', () => {
-    it("should fail if library can't be found", async () => {
-      await expect(sut.handleQueueSyncAssets({ id: newUuid() })).resolves.toBe(JobStatus.Skipped);
-    });
-  });
-
   describe('handleSyncFiles', () => {
     it('should not import an asset to a soft deleted library', async () => {
       const library = factory.library({ deletedAt: new Date() });
@@ -774,15 +828,9 @@ describe(LibraryService.name, () => {
 
       await sut.queueScan(library.id);
 
-      expect(mocks.job.queue).toHaveBeenCalledTimes(2);
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibrarySyncFilesQueueAll,
-        data: { id: library.id },
-      });
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibrarySyncAssetsQueueAll,
-        data: { id: library.id },
-      });
+      expect(mocks.job.queue.mock.calls).toEqual([
+        [{ name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } }],
+      ]);
     });
   });
 
@@ -798,8 +846,8 @@ describe(LibraryService.name, () => {
         name: JobName.LibraryDeleteCheck,
         data: {},
       });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } },
+      expect(mocks.job.queueAll.mock.calls).toEqual([
+        [[{ name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } }]],
       ]);
     });
   });

@@ -586,6 +586,9 @@ importers:
       '@immich/sql-tools':
         specifier: ^0.7.0
         version: 0.7.0
+      '@immich/walkrs':
+        specifier: 0.0.17
+        version: 0.0.17
       '@nestjs/bullmq':
         specifier: ^12.0.0
         version: 12.0.2(@nestjs/common@12.5.1(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.5.1)(bullmq@6.7.8(ioredis@6.0.0(supports-color@7.2.0))(pg@8.23.1))
@@ -688,9 +691,6 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.3.0(supports-color@7.2.0)
-      fast-glob:
-        specifier: ^3.3.2
-        version: 3.3.3
       fluent-ffmpeg:
         specifier: ^2.1.2
         version: 2.1.3
@@ -757,9 +757,6 @@ importers:
       pg:
         specifier: ^8.11.3
         version: 8.23.1
-      picomatch:
-        specifier: ^4.0.2
-        version: 4.0.7
       postgres:
         specifier: 3.4.9
         version: 3.4.9
@@ -875,9 +872,6 @@ importers:
       '@types/nodemailer':
         specifier: ^8.0.0
         version: 8.0.2
-      '@types/picomatch':
-        specifier: ^4.0.0
-        version: 4.0.3
       '@types/pngjs':
         specifier: ^6.0.5
         version: 6.0.5
@@ -3227,6 +3221,10 @@ packages:
     peerDependencies:
       '@sveltejs/kit': ^2.13.0 || ^3.0.0
       svelte: ^5.29.0
+
+  '@immich/walkrs@0.0.17':
+    resolution: {integrity: sha512-IIardZ5qFCgiQS0R3eaK7vN1Qj23hM1crUNtS1Yo84PgH53vM2IMI6VNPdXyQoFBv2JC2ZCCwThA4P2RmZ4kFQ==}
+    engines: {pnpm: '>=10.0.0'}
 
   '@inquirer/ansi@2.1.0':
     resolution: {integrity: sha512-63GU5AD9KhNbWM0jlhHoMJTEFck2upFOPxHlnCKf3xYTV3rjTUUQfodihmTnfYQzMLS29oy8lK/gA1eJgu4bhA==}
@@ -5775,9 +5773,6 @@ packages:
 
   '@types/pg@8.23.1':
     resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
-
-  '@types/picomatch@4.0.3':
-    resolution: {integrity: sha512-iG0T6+nYJ9FAPmx9SsUlnwcq1ZVRuCXcVEvWnntoPlrOpwtSTKNDC9uVAxTsC3PUvJ+99n4RpAcNgBbHX3JSnQ==}
 
   '@types/pngjs@6.0.5':
     resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
@@ -16520,6 +16515,8 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
+  '@immich/walkrs@0.0.17': {}
+
   '@inquirer/ansi@2.1.0': {}
 
   '@inquirer/checkbox@5.3.0':
@@ -19175,8 +19172,6 @@ snapshots:
       '@types/node': 26.6.6
       pg-protocol: 1.16.1
       pg-types: 2.2.0
-
-  '@types/picomatch@4.0.3': {}
 
   '@types/pngjs@6.0.5':
     dependencies:
