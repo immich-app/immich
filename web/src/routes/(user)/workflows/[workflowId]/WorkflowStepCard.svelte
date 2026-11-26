@@ -122,7 +122,7 @@
 </script>
 
 <div class="group/step-row flex w-full flex-col">
-  <div class="-mt-4 ml-18 flex w-full items-center gap-4">
+  <div class="-mt-4 ml-18 flex items-center gap-4">
     <div class="relative flex w-1 shrink-0 justify-start">
       <div class="h-10 w-0.5 bg-light-200"></div>
       <button
