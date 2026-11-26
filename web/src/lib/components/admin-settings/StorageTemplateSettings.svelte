@@ -1,21 +1,26 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import StorageTemplateVariablesModal from '$lib/modals/StorageTemplateVariablesModal.svelte';
-  import { Route } from '$lib/route';
-  import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
-  import { Code, Heading, IconButton, Link, modalManager, Text } from '@immich/ui';
+  import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import StorageTemplateVariablesModal from '#lib/modals/StorageTemplateVariablesModal.svelte';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import {
+    getAdminConfigQuery,
+    getStorageTemplateOptionsQuery,
+    getStorageTemplatePreviewQuery,
+    updateAdminConfigMutation,
+  } from '#lib/queries/config-admin.query.ts';
+  import { Route } from '#lib/route.ts';
+  import type { AdminConfigStorageTemplateDto } from '@immich/sdk';
+  import { Code, Heading, IconButton, Link, Text, modalManager } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
-  import handlebar from 'handlebars';
-  import * as luxon from 'luxon';
-  import { onDestroy } from 'svelte';
+  import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
+  import { cloneDeep, debounce } from 'lodash-es';
+  import { onDestroy, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade, slide } from 'svelte/transition';
 
@@ -23,11 +28,13 @@
     minified?: boolean;
     duration?: number;
     saveOnClose?: boolean;
+    preselectDate?: boolean;
   };
 
-  const { minified = false, duration = 500, saveOnClose = false }: Props = $props();
+  const { minified = false, duration = 500, saveOnClose = false, preselectDate = false }: Props = $props();
 
   const DATE_TEMPLATE = '{{y}}/{{MM}}/{{dd}}/{{filename}}';
+  const PREVIEW_DEBOUNCE_MS = 300;
 
   const StorageTemplateOption = {
     None: 'none',
@@ -38,79 +45,42 @@
   type StorageTemplateOption = (typeof StorageTemplateOption)[keyof typeof StorageTemplateOption];
 
   const disabled = $derived(featureFlagsManager.value.configFile);
-  const config = $derived(systemConfigManager.value);
-  let configToEdit = $state(systemConfigManager.cloneValue());
+  const query = createPreloadedQuery(getAdminConfigQuery);
+  const config = $derived(query.data);
+  let configToEdit = $state(cloneDeep(config));
 
-  let templateOptions: SystemConfigTemplateStorageOptionDto | undefined = $state();
-  let selectedPreset = $state('');
-  let customTemplate = $state(systemConfigManager.value.storageTemplate.template);
+  // TODO remove once we support partial overwriting with database values
+  if (preselectDate && !featureFlagsManager.value.configFile && !configToEdit.storageTemplate.enabled) {
+    configToEdit.storageTemplate.enabled = true;
+    configToEdit.storageTemplate.template = DATE_TEMPLATE;
+  }
 
-  const getTemplateOptions = async () => {
-    templateOptions = await getStorageTemplateOptions();
-    selectedPreset = config.storageTemplate.template;
-  };
-
-  const renderTemplate = (templateString: string) => {
-    if (!templateOptions) {
-      return '';
-    }
-
-    const template = handlebar.compile(templateString, {
-      knownHelpers: undefined,
-    });
-
-    const substitutions: Record<string, string> = {
-      filename: 'IMAGE_56437',
-      ext: 'jpg',
-      filetype: 'IMG',
-      filetypefull: 'IMAGE',
-      assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
-      assetIdShort: '56717ccba856',
-      album: $t('album_name'),
-      make: 'FUJIFILM',
-      model: 'X-T50',
-      lensModel: 'XF27mm F2.8 R WR',
-    };
-
-    const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
-    const albumStartTime = luxon.DateTime.fromISO(new Date('2021-12-31T05:32:41.750').toISOString());
-    const albumEndTime = luxon.DateTime.fromISO(new Date('2023-05-06T09:15:17.100').toISOString());
-
-    const dateTokens = [
-      ...templateOptions.yearOptions,
-      ...templateOptions.monthOptions,
-      ...templateOptions.weekOptions,
-      ...templateOptions.dayOptions,
-      ...templateOptions.hourOptions,
-      ...templateOptions.minuteOptions,
-      ...templateOptions.secondOptions,
-    ];
-
-    for (const token of dateTokens) {
-      substitutions[token] = dt.toFormat(token);
-      substitutions['album-startDate-' + token] = albumStartTime.toFormat(token);
-      substitutions['album-endDate-' + token] = albumEndTime.toFormat(token);
-    }
-
-    return template(substitutions);
-  };
-
-  const handlePresetSelection = () => {
-    configToEdit.storageTemplate.template = selectedPreset;
-  };
-
-  let selectedOption = $state(
-    // initially load the selection state from saved config
-    (() => {
-      if (!configToEdit.storageTemplate.enabled) {
-        return StorageTemplateOption.None;
-      }
-
-      return configToEdit.storageTemplate.template === DATE_TEMPLATE
-        ? StorageTemplateOption.Date
-        : StorageTemplateOption.Custom;
-    })(),
+  const optionsQuery = createQuery(() => getStorageTemplateOptionsQuery());
+  const templateOptions = $derived(optionsQuery.data);
+  const datePreviewQuery = createQuery(() => getStorageTemplatePreviewQuery(DATE_TEMPLATE));
+  const selectedPreset = $derived(
+    templateOptions?.presets.some(({ template }) => template === configToEdit.storageTemplate.template)
+      ? configToEdit.storageTemplate.template
+      : '',
   );
+  let customTemplate = $state(config.storageTemplate.template);
+
+  const handlePresetSelection = (event: Event & { currentTarget: HTMLSelectElement }) => {
+    configToEdit.storageTemplate.template = event.currentTarget.value;
+  };
+
+  const getStorageTemplateOption = ({ enabled, template }: AdminConfigStorageTemplateDto) => {
+    if (!enabled) {
+      return StorageTemplateOption.None;
+    }
+
+    return template === DATE_TEMPLATE ? StorageTemplateOption.Date : StorageTemplateOption.Custom;
+  };
+
+  let selectedOption = $derived.by(() => {
+    const { storageTemplate } = configToEdit;
+    return untrack(() => getStorageTemplateOption(storageTemplate));
+  });
 
   const handleOptionSelection = (option: StorageTemplateOption) => {
     if (selectedOption === StorageTemplateOption.Custom) {
@@ -134,19 +104,27 @@
     }
   };
 
-  let parsedCustomTemplate = $derived(() => {
-    try {
-      return renderTemplate(
-        selectedOption === StorageTemplateOption.Custom ? configToEdit.storageTemplate.template : customTemplate,
-      );
-    } catch {
-      return 'error';
-    }
+  const templateToPreview = $derived(
+    selectedOption === StorageTemplateOption.Custom ? configToEdit.storageTemplate.template : customTemplate,
+  );
+  let debouncedTemplate = $state(config.storageTemplate.template);
+  const updateDebouncedTemplate = debounce((template: string) => {
+    debouncedTemplate = template;
+  }, PREVIEW_DEBOUNCE_MS);
+  $effect(() => {
+    updateDebouncedTemplate(templateToPreview);
   });
 
-  onDestroy(async () => {
+  const customPreviewQuery = createQuery(() => ({
+    ...getStorageTemplatePreviewQuery(debouncedTemplate),
+    placeholderData: keepPreviousData,
+  }));
+  const customPreview = $derived(customPreviewQuery.isError ? 'error' : (customPreviewQuery.data?.preview ?? ''));
+
+  onDestroy(() => {
+    updateDebouncedTemplate.cancel();
     if (saveOnClose) {
-      await handleSystemConfigSave({ storageTemplate: configToEdit.storageTemplate });
+      void executeMutation(updateAdminConfigMutation, { storageTemplate: configToEdit.storageTemplate });
     }
   });
 </script>
@@ -183,11 +161,11 @@
             {disabled}
             name="presets"
             id="preset-select"
-            bind:value={selectedPreset}
+            value={selectedPreset}
             onchange={handlePresetSelection}
           >
-            {#each templateOptions?.presetOptions ?? [] as preset (preset)}
-              <option value={preset}>{renderTemplate(preset)}</option>
+            {#each templateOptions?.presets ?? [] as preset (preset.template)}
+              <option value={preset.template}>{preset.preview}</option>
             {/each}
           </select>
         </div>
@@ -245,9 +223,9 @@
     {#if preview}
       <Text size="small" class="mt-4">
         {$t('preview')}:
-        <Code size="small"
-          >{`UPLOAD_LOCATION/library/${authManager.user.storageLabel || authManager.user.id}/${preview}.jpg`}</Code
-        >
+        <Code size="small">
+          {`UPLOAD_LOCATION/library/${authManager.user.storageLabel || authManager.user.id}/${preview}.jpg`}
+        </Code>
       </Text>
     {/if}
   </div>
@@ -272,7 +250,7 @@
     </div>
   {/if}
 
-  {#await getTemplateOptions() then}
+  {#if templateOptions}
     <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ms-4 mt-4'}">
       <div class="flex flex-col gap-2">
         {@render templateOption(
@@ -285,13 +263,13 @@
           StorageTemplateOption.Date,
           'YYYY/MM/DD',
           $t('admin.storage_template_option_date_description'),
-          renderTemplate(DATE_TEMPLATE),
+          datePreviewQuery.data?.preview ?? '',
         )}
         {@render templateOption(
           StorageTemplateOption.Custom,
           $t('admin.storage_template_option_custom'),
           $t('admin.storage_template_option_custom_description'),
-          parsedCustomTemplate(),
+          customPreview,
         )}
       </div>
 
@@ -328,5 +306,5 @@
         <SettingButtonsRow bind:configToEdit keys={['storageTemplate']} {disabled} />
       {/if}
     </div>
-  {/await}
+  {/if}
 </section>

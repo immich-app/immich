@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { Button } from '@immich/ui';
+  import { Button, type ButtonProps } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
   import type { Snippet } from 'svelte';
-  import type { ButtonProps } from '@immich/ui';
 
   type Props = {
     active: boolean;
@@ -27,5 +26,7 @@
   variant="outline"
   class="{active ? '' : 'bg-transparent'} {className}"
   leadingIcon={checked && active ? mdiCheck : leadingIcon}
-  {...rest}>{@render children()}</Button
+  {...rest}
 >
+  {@render children()}
+</Button>

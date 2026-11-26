@@ -1,4 +1,4 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { CalendarHeatmapType } from 'src/enum.js';
 import { isoDateToDate } from 'src/validation.js';
@@ -19,18 +19,14 @@ const CalendarHeatmapSchema = z
 
 export class CalendarHeatmapDto extends createZodDto(CalendarHeatmapSchema) {}
 
-const CalendarHeatmapResponseSchema = z
-  .object({
-    from: z.string().describe('Start date in UTC').meta({ example: '2024-01-01' }),
-    to: z.string().describe('End date in UTC').meta({ example: '2024-12-31' }),
-    series: z.array(
-      z.object({
-        date: z.string().describe('Date in UTC').meta({ example: '2024-01-01' }),
-        count: z.int().nonnegative().describe('Activity count'),
-      }),
-    ),
-    totalCount: z.int().nonnegative().describe('Total activity count over the period'),
-  })
-  .meta({ id: 'CalendarHeatmapResponseDto' });
-
-export class CalendarHeatmapResponseDto extends createZodDto(CalendarHeatmapResponseSchema) {}
+export class CalendarHeatmapResponseDto extends createZodDto({
+  from: z.string().describe('Start date in UTC').meta({ example: '2024-01-01' }),
+  to: z.string().describe('End date in UTC').meta({ example: '2024-12-31' }),
+  series: z.array(
+    z.object({
+      date: z.string().describe('Date in UTC').meta({ example: '2024-01-01' }),
+      count: z.int().nonnegative().describe('Activity count'),
+    }),
+  ),
+  totalCount: z.int().nonnegative().describe('Total activity count over the period'),
+}) {}

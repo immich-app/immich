@@ -1,13 +1,13 @@
 <script lang="ts">
-  import BrokenAsset from '$lib/components/assets/BrokenAsset.svelte';
-  import Image from '$lib/components/Image.svelte';
+  import Image from '#lib/components/Image.svelte';
+  import BrokenAsset from '#lib/components/assets/BrokenAsset.svelte';
   import { Icon } from '@immich/ui';
   import { mdiEyeOffOutline } from '@mdi/js';
   import type { ClassValue } from 'svelte/elements';
 
   interface Props {
     url: string;
-    altText: string | undefined;
+    altText: string | null | undefined;
     title?: string | null;
     heightStyle?: string | undefined;
     widthStyle: string;

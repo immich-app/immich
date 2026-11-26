@@ -169,9 +169,10 @@ describe(AssetMediaController.name, () => {
 
     // TODO figure out how to deal with `sendFile`
     describe('GET /assets/:id/thumbnail', () => {
-      it('should redirect if size=original is requested', async () => {
+      it('should reject size=original', async () => {
         const { status } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail?size=original`);
-        expect(status).toBe(302);
+        expect(status).toBe(400);
+        expect(service.viewThumbnail).not.toHaveBeenCalled();
       });
     });
   });

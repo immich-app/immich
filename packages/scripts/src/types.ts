@@ -41,6 +41,8 @@ export class JsonFile<T extends object> {
   }
 }
 
+export type Public<T extends object> = Pick<T, keyof T>;
+
 export class ReleaseInputError extends Error {}
 export class ReleaseError extends Error {
   version: string;

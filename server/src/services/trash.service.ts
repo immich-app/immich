@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { ASSET_VISIBILITY_DEPENDENT_PATHS } from 'src/constants.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { TrashResponseDto } from 'src/dtos/trash.dto.js';
 import { JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { batched } from 'src/utils/misc.js';
 
@@ -16,7 +18,14 @@ export class TrashService extends BaseService {
     }
 
     await this.requireAccess({ auth, permission: Permission.AssetDelete, ids });
-    await this.trashRepository.restoreAll(ids);
+    const count = await this.trashRepository.restoreAll(ids);
+    if (count > 0) {
+      this.resourceRepository.send({
+        userIds: [auth.user.id],
+        changed: [Resource.assets(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
+      });
+    }
+
     await this.eventRepository.emit('AssetRestoreAll', { assetIds: ids, userId: auth.user.id });
 
     this.logger.log(`Restored ${ids.length} asset(s) from trash`);
@@ -27,6 +36,10 @@ export class TrashService extends BaseService {
   async restore(auth: AuthDto): Promise<TrashResponseDto> {
     const count = await this.trashRepository.restore(auth.user.id);
     if (count > 0) {
+      this.resourceRepository.send({
+        userIds: [auth.user.id],
+        changed: [Resource.assets(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
+      });
       this.logger.log(`Restored ${count} asset(s) from trash`);
     }
     return { count };
@@ -35,6 +48,7 @@ export class TrashService extends BaseService {
   async empty(auth: AuthDto): Promise<TrashResponseDto> {
     const count = await this.trashRepository.empty(auth.user.id);
     if (count > 0) {
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.assets()] });
       await this.jobRepository.queue({ name: JobName.AssetEmptyTrash, data: {} });
     }
     return { count };

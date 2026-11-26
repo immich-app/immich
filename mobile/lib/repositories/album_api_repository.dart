@@ -133,7 +133,7 @@ extension on AlbumResponseDto {
       name: albumName,
       ownerId: user.id,
       ownerName: user.name,
-      description: description,
+      description: description ?? '',
       createdAt: createdAt,
       updatedAt: updatedAt,
       thumbnailAssetId: albumThumbnailAssetId,

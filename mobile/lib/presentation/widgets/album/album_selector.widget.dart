@@ -22,7 +22,6 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
-import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -554,7 +553,7 @@ class _QuickSortAndViewMode extends StatelessWidget {
   }
 }
 
-class _AlbumList extends ConsumerWidget {
+class _AlbumList extends StatelessWidget {
   const _AlbumList({required this.albums, required this.userId, required this.onAlbumSelected});
 
   final List<RemoteAlbum> albums;
@@ -562,7 +561,7 @@ class _AlbumList extends ConsumerWidget {
   final AlbumSelectorCallback onAlbumSelected;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (albums.isEmpty) {
       return SliverToBoxAdapter(
         child: Center(
@@ -576,43 +575,11 @@ class _AlbumList extends ConsumerWidget {
       sliver: SliverList.builder(
         itemBuilder: (_, index) {
           final album = albums[index];
-          final isOwner = album.ownerId == userId;
 
-          if (isOwner) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Dismissible(
-                key: ValueKey(album.id),
-                background: Container(
-                  color: context.colorScheme.error,
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Icon(Icons.delete, color: context.colorScheme.onError),
-                ),
-                direction: DismissDirection.endToStart,
-                confirmDismiss: (direction) {
-                  return showDialog<bool>(
-                    context: context,
-                    builder: (context) => ConfirmDialog(
-                      onOk: () => true,
-                      title: context.t.delete_album,
-                      content: context.t.album_delete_confirmation(album: album.name),
-                      ok: context.t.delete,
-                    ),
-                  );
-                },
-                onDismissed: (direction) async {
-                  await ref.read(remoteAlbumProvider.notifier).deleteAlbum(album.id);
-                },
-                child: AlbumTile(album: album, isOwner: isOwner, onAlbumSelected: onAlbumSelected),
-              ),
-            );
-          } else {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: AlbumTile(album: album, isOwner: isOwner, onAlbumSelected: onAlbumSelected),
-            );
-          }
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: AlbumTile(album: album, isOwner: album.ownerId == userId, onAlbumSelected: onAlbumSelected),
+          );
         },
         itemCount: albums.length,
       ),

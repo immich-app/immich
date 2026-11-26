@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { initInput } from '$lib/actions/focus';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { searchUsers, type UserResponseDto } from '@immich/sdk';
+  import { initInput } from '#lib/actions/focus.ts';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { searchUsersQuery } from '#lib/queries/user.query.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
+  import type { UserResponseDto } from '@immich/sdk';
   import { FormModal, ListButton, LoadingSpinner, Stack, Text } from '@immich/ui';
   import { sortBy } from 'lodash-es';
   import { onMount } from 'svelte';
@@ -23,7 +25,7 @@
     excludedUserIds,
     emptyMessage = $t('album_share_no_users'),
     onAddUsers,
-    loadUsers = searchUsers,
+    loadUsers = () => queryClient.query(searchUsersQuery()),
     onClose,
   }: Props = $props();
 
@@ -80,7 +82,7 @@
         class="border-b-4 border-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:focus:border-immich-dark-primary"
         placeholder={$t('search')}
         bind:value={search}
-        use:initInput
+        {@attach initInput}
       />
       {#each filteredUsers as user (user.id)}
         <ListButton selected={selectedUsers.has(user.id)} onclick={() => handleToggle(user)}>

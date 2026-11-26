@@ -355,7 +355,7 @@ describe('/asset', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ livePhotoVideoId: asset.id });
 
-      expect(body).toEqual(errorDto.badRequest('Live photo video does not belong to the user'));
+      expect(body).toEqual(errorDto.badRequest('Not found or no asset.update access'));
       expect(status).toEqual(400);
     });
 
@@ -929,22 +929,26 @@ describe('/asset', () => {
       },
     ];
 
-    it.each(tests)(`should upload and generate a thumbnail for different file types`, async ({ input, expected }) => {
-      const filepath = join(testAssetDir, input);
-      const response = await utils.createAsset(admin.accessToken, {
-        assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-      });
+    it.each(tests)(
+      `should upload and generate a thumbnail for different file types`,
+      async ({ input, expected }) => {
+        const filepath = join(testAssetDir, input);
+        const response = await utils.createAsset(admin.accessToken, {
+          assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+        });
 
-      expect(response.status).toBe(AssetMediaStatus.Created);
-      const id = response.id;
-      // longer timeout as the thumbnail generation from full-size raw files can take a while
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
+        expect(response.status).toBe(AssetMediaStatus.Created);
+        const id = response.id;
+        // longer timeout as the thumbnail generation from full-size raw files can take a while
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id, timeout: 30_000 });
 
-      const asset = await utils.getAssetInfo(admin.accessToken, id);
-      expect(asset.exifInfo).toBeDefined();
-      expect(asset.exifInfo).toMatchObject(expected.exifInfo);
-      expect(asset).toMatchObject(expected);
-    });
+        const asset = await utils.getAssetInfo(admin.accessToken, id);
+        expect(asset.exifInfo).toBeDefined();
+        expect(asset.exifInfo).toMatchObject(expected.exifInfo);
+        expect(asset).toMatchObject(expected);
+      },
+      40_000,
+    );
 
     it('should handle a duplicate', async () => {
       const filepath = 'formats/jpeg/el_torcal_rocks.jpeg';

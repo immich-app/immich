@@ -48,6 +48,7 @@ enum SettingsKey<T> {
   timelineTilesPerRow<int>(),
   timelineGroupAssetsBy<GroupAssetsBy>(codec: EnumCodec(GroupAssetsBy.values)),
   timelineStorageIndicator<bool>(),
+  timelineSmoothScrubbing<bool>(),
 
   // Log
   logLevel<LogLevel>(codec: EnumCodec(LogLevel.values)),
@@ -76,6 +77,9 @@ enum SettingsKey<T> {
   slideshowDuration<int>(),
   slideshowLook<SlideshowLook>(codec: EnumCodec(SlideshowLook.values)),
   slideshowDirection<SlideshowDirection>(codec: EnumCodec(SlideshowDirection.values)),
+
+  // Server
+  supportedFileExtensions<Set<String>?>(codec: SetCodec(PrimitiveCodec.string)),
 
   // Feature message
   featureMessageSeenRelease<SemVer>(codec: SemVerCodec());

@@ -1,47 +1,40 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAlbumInfo } from '@immich/sdk';
-  import { Textarea } from '@immich/ui';
+  import { updateAlbumInfoMutation } from '#lib/queries/album.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { Draft } from '#lib/utils/draft.svelte.ts';
+  import { Textarea, shortcut } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { fromAction } from 'svelte/attachments';
 
   interface Props {
     id: string;
-    description: string;
+    description: string | null;
     isEditor: boolean;
   }
 
-  let { id, description = $bindable(), isEditor }: Props = $props();
+  let { id, description, isEditor }: Props = $props();
 
-  const handleFocusOut = async () => {
-    try {
-      const response = await updateAlbumInfo({
-        id,
-        updateAlbumDto: {
-          description: description || null,
-        },
-      });
-      eventManager.emit('AlbumUpdate', response);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_album'));
-    }
-  };
+  const draft = new Draft(() => description ?? '');
+
+  const handleFocusOut = () =>
+    executeMutation(
+      () => updateAlbumInfoMutation({ error: { toast: 'errors.unable_to_save_album' } }),
+      [{ id, updateAlbumDto: { description: draft.value || null } }],
+      { onSuccess: () => draft.reset() },
+    );
 </script>
 
 {#if isEditor}
   <Textarea
-    bind:value={description}
+    bind:value={draft.value}
     variant="ghost"
     onfocusout={handleFocusOut}
     placeholder={$t('add_a_description')}
     data-testid="autogrow-textarea"
     class="max-h-32"
-    {@attach fromAction(shortcut, () => ({
+    {@attach shortcut({
       shortcut: { key: 'Enter', ctrl: true },
       onShortcut: (e) => e.currentTarget.blur(),
-    }))}
+    })}
   />
 {:else if description}
   <p class="wrap-break-words w-full text-base whitespace-pre-line text-black dark:text-white">

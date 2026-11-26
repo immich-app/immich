@@ -109,6 +109,17 @@ class AssetMediaRepository {
         }
       }),
     );
+    // a share download lives in a directory named after its task
+    await FileDownloader().database.deleteRecordsWithIds(
+      tempFiles.whereType<Directory>().map((directory) => p.basename(directory.path)),
+    );
+  }
+
+  Future<void> cleanupStaleShareFiles() async {
+    final records = await FileDownloader().database.allRecords(group: kShareDownloadGroup);
+    await FileDownloader().cancelTasksWithIds(records.map((record) => record.taskId));
+    final directories = await Future.wait(records.map((record) async => File(await record.task.filePath()).parent));
+    await cleanupTempFiles(directories);
   }
 
   static final RegExp _pathSeparators = RegExp(r'[\\/]');

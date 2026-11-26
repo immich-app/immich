@@ -1,3 +1,4 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { ShallowDehydrateObject } from 'kysely';
 import { Mocked } from 'vitest';
 import { VECTOR_EXTENSIONS } from 'src/constants.js';
@@ -20,6 +21,7 @@ import {
   ExifOrientation,
   H264Profile,
   HevcProfile,
+  ImageEffort,
   ImageFormat,
   IntegrityReport,
   JobName,
@@ -43,19 +45,15 @@ export type DeepPartial<T> = T extends Date
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
-export type FullsizeImageOptions = {
-  format: ImageFormat;
-  quality: number;
-  enabled: boolean;
-  progressive?: boolean;
-};
-
 export type ImageOptions = {
   format: ImageFormat;
   quality: number;
-  size: number;
   progressive?: boolean;
+  effort: ImageEffort;
+  decodingTier: 0 | 1 | 2 | 3 | 4;
 };
+
+export type FullsizeImageOptions = ImageOptions & { enabled: boolean };
 
 export type RawImageInfo = {
   width: number;
@@ -84,9 +82,7 @@ export type TransformOptions = {
   edits?: AssetEditActionItem[];
 };
 
-export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> &
-  ImageColorOptions &
-  TransformOptions;
+export type GenerateThumbnailOptions = ImageOptions & ImageColorOptions & TransformOptions;
 export type GenerateThumbhashOptions = ImageColorOptions & Pick<TransformOptions, 'edits'>;
 
 export interface VideoStreamInfo {
@@ -138,6 +134,7 @@ export interface VideoFormat {
   formatLongName?: string;
   duration: number;
   bitrate: number;
+  isFragmented: boolean;
 }
 
 export interface ImageDimensions {
@@ -245,17 +242,6 @@ export interface IAssetDeleteJob extends IEntityJob {
 export interface ILibraryFileJob {
   libraryId: string;
   paths: string[];
-  progressCounter?: number;
-  totalAssets?: number;
-}
-
-export interface ILibraryBulkIdsJob {
-  libraryId: string;
-  importPaths: string[];
-  exclusionPatterns: string[];
-  assetIds: string[];
-  progressCounter: number;
-  totalAssets: number;
 }
 
 export interface IDeleteFilesJob extends IBaseJob {
@@ -343,7 +329,6 @@ export interface JobCounts {
   failed: number;
   delayed: number;
   waiting: number;
-  paused: number;
 }
 
 export type JobItem =
@@ -412,6 +397,7 @@ export type JobItem =
 
   // Cleanup
   | { name: JobName.SessionCleanup; data?: IBaseJob }
+  | { name: JobName.AuthChallengeCleanup; data?: IBaseJob }
   | { name: JobName.HlsSessionCleanup; data?: IBaseJob }
 
   // Tags
@@ -425,8 +411,6 @@ export type JobItem =
   // Library Management
   | { name: JobName.LibrarySyncFiles; data: ILibraryFileJob }
   | { name: JobName.LibrarySyncFilesQueueAll; data: IEntityJob }
-  | { name: JobName.LibrarySyncAssetsQueueAll; data: IEntityJob }
-  | { name: JobName.LibrarySyncAssets; data: ILibraryBulkIdsJob }
   | { name: JobName.LibraryRemoveAsset; data: ILibraryFileJob }
   | { name: JobName.LibraryDelete; data: IEntityJob }
   | { name: JobName.LibraryScanQueueAll; data?: IBaseJob }
@@ -446,7 +430,7 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowAssetTrigger; data: { workflowId: string; assetId: string } }
+  | { name: JobName.WorkflowAssetTrigger; data: { workflowId: string; assetId: string; trigger: WorkflowTrigger } }
 
   // Integrity
   | { name: JobName.IntegrityUntrackedFilesQueueAll; data?: IIntegrityJob }

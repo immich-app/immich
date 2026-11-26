@@ -4,6 +4,7 @@ import { SystemConfigSmtpDto } from 'src/dtos/config.dto.js';
 import { NotificationCreateDto, mapNotification } from 'src/dtos/notification.dto.js';
 import { NotificationLevel, NotificationType } from 'src/enum.js';
 import { EmailTemplate } from 'src/repositories/email.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getExternalDomain } from 'src/utils/misc.js';
 
@@ -18,6 +19,7 @@ export class NotificationAdminService extends BaseService {
       description: dto.description,
       data: dto.data,
     });
+    this.resourceRepository.send({ userIds: [dto.userId], changed: [Resource.notifications()] });
 
     return mapNotification(item);
   }

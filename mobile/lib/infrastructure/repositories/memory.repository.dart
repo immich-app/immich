@@ -12,7 +12,12 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
 
   Drift get _db => attachedDatabase;
 
-  Future<List<Memory>> getAll(String ownerId, {bool onlyToday = true, bool onlyFavorites = false}) async {
+  Future<List<Memory>> getAll(
+    String ownerId, {
+    bool onlyToday = true,
+    bool onlyFavorites = false,
+    bool birthdaysFirst = false,
+  }) async {
     final query =
         _db.select(_db.memoryEntity).join([
             innerJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
@@ -24,7 +29,6 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
             ),
           ])
           ..where(_db.memoryEntity.ownerId.equals(ownerId))
-          ..where(_db.memoryEntity.type.equalsValue(MemoryTypeEnum.onThisDay))
           ..where(_db.memoryEntity.deletedAt.isNull());
 
     if (onlyFavorites) {
@@ -39,7 +43,13 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
       query.where(_db.memoryEntity.hideAt.isNull() | _db.memoryEntity.hideAt.isBiggerOrEqualValue(localUtc));
     }
 
-    query.orderBy([OrderingTerm.desc(_db.memoryEntity.memoryAt), OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
+    query.orderBy([
+      if (birthdaysFirst) OrderingTerm.desc(_db.memoryEntity.type.equalsValue(MemoryTypeEnum.birthday)),
+      OrderingTerm.asc(_db.memoryEntity.showAt.isNull()),
+      OrderingTerm.desc(_db.memoryEntity.showAt),
+      OrderingTerm.desc(_db.memoryEntity.memoryAt),
+      OrderingTerm.asc(_db.remoteAssetEntity.createdAt),
+    ]);
 
     final rows = await query.get();
     if (rows.isEmpty) {
@@ -93,6 +103,10 @@ class MemoryRepository extends DatabaseAccessor<Drift> with $MemoryRepositoryMix
 
   Future<int> getCount() {
     return _db.managers.memoryEntity.count();
+  }
+
+  Stream<void> watchChanges() {
+    return _db.tableUpdates(TableUpdateQuery.onAllTables([_db.memoryEntity, _db.memoryAssetEntity]));
   }
 }
 

@@ -1,24 +1,10 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { HistoryBuilder } from 'src/decorators.js';
 import { Permission } from 'src/enum.js';
 import { isoDatetimeToDate } from 'src/validation.js';
 
 const PermissionSchema = z.enum(Permission).describe('List of permissions').meta({ id: 'Permission' });
-
-const ApiKeyCreateSchema = z
-  .object({
-    name: z.string().optional().describe('API key name'),
-    permissions: z.array(PermissionSchema).min(1).describe('List of permissions'),
-  })
-  .meta({ id: 'ApiKeyCreateDto' });
-
-const ApiKeyUpdateSchema = z
-  .object({
-    name: z.string().optional().describe('API key name'),
-    permissions: z.array(PermissionSchema).min(1).optional().describe('List of permissions'),
-  })
-  .meta({ id: 'ApiKeyUpdateDto' });
 
 const ApiKeyResponseSchema = z
   .object({
@@ -30,15 +16,20 @@ const ApiKeyResponseSchema = z
   })
   .meta({ id: 'ApiKeyResponseDto' });
 
-const ApiKeyCreateResponseSchema = z
-  .object({
-    ...ApiKeyResponseSchema.shape,
-    secret: z.string().describe('API key secret (only shown once)'),
-    apiKey: ApiKeyResponseSchema.meta({ ...new HistoryBuilder().added('v1').deprecated('v3.2.0').getExtensions() }),
-  })
-  .meta({ id: 'ApiKeyCreateResponseDto' });
+export class ApiKeyCreateDto extends createZodDto({
+  name: z.string().optional().describe('API key name'),
+  permissions: z.array(PermissionSchema).min(1).describe('List of permissions'),
+}) {}
 
-export class ApiKeyCreateDto extends createZodDto(ApiKeyCreateSchema) {}
-export class ApiKeyUpdateDto extends createZodDto(ApiKeyUpdateSchema) {}
+export class ApiKeyUpdateDto extends createZodDto({
+  name: z.string().optional().describe('API key name'),
+  permissions: z.array(PermissionSchema).min(1).optional().describe('List of permissions'),
+}) {}
+
 export class ApiKeyResponseDto extends createZodDto(ApiKeyResponseSchema) {}
-export class ApiKeyCreateResponseDto extends createZodDto(ApiKeyCreateResponseSchema) {}
+
+export class ApiKeyCreateResponseDto extends createZodDto({
+  ...ApiKeyResponseSchema.shape,
+  secret: z.string().describe('API key secret (only shown once)'),
+  apiKey: ApiKeyResponseSchema.meta({ ...new HistoryBuilder().added('v1').deprecated('v3.2.0').getExtensions() }),
+}) {}

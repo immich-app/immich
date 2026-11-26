@@ -34,6 +34,7 @@ services:
       IMMICH_ENV: testing
       IMMICH_PORT: '2285'
       IMMICH_IGNORE_MOUNT_CHECK_ERRORS: 'true'
+      IMMICH_HELMET_FILE: 'true'
     volumes:
       - ./test-assets:/test-assets
     depends_on:
@@ -46,7 +47,7 @@ services:
 
   redis:
     container_name: immich-e2e-redis
-    image: docker.io/valkey/valkey:9@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd
+    image: ghcr.io/valkey-io/valkey:9@sha256:1c2b25b09f354c66fe994733acdf12fcfd4bdf6f3bd92b88a93a70378d884056
     healthcheck:
       test: redis-cli ping || exit 1
 

@@ -1,26 +1,26 @@
 <script lang="ts">
-  import AlbumSharedLink from '$lib/components/album-page/AlbumSharedLink.svelte';
-  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
+  import AlbumSharedLink from '#lib/components/album-page/AlbumSharedLink.svelte';
+  import UserAvatar from '#lib/components/shared-components/UserAvatar.svelte';
+  import { getAlbumQuery, updateAlbumInfoMutation } from '#lib/queries/album.query.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { getAllSharedLinksQuery } from '#lib/queries/shared-link.query.ts';
   import {
     getAlbumActions,
     handleRemoveUserFromAlbum,
-    handleUpdateAlbum,
     handleUpdateUserAlbumRole,
-  } from '$lib/services/album.service';
+  } from '#lib/services/album.service.ts';
   import {
     AlbumUserRole,
     AssetOrder,
-    getAlbumInfo,
-    getAllSharedLinks,
     type AlbumResponseDto,
-    type SharedLinkResponseDto,
+    type UpdateAlbumDto,
     type UserResponseDto,
   } from '@immich/sdk';
   import { Field, HStack, Modal, ModalBody, Select, Stack, Switch, Text, type SelectOption } from '@immich/ui';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
+  import { SvelteMap } from 'svelte/reactivity';
 
   type Props = {
     album: AlbumResponseDto;
@@ -28,7 +28,17 @@
     onClose: () => void;
   };
 
-  let { album, readOnly = false, onClose }: Props = $props();
+  let { album: initialAlbum, readOnly = false, onClose }: Props = $props();
+
+  const query = createQuery(
+    () => getAlbumQuery(initialAlbum.id),
+    () => queryClient,
+  );
+  const album = $derived(query.data ?? initialAlbum);
+
+  // TODO: migrate the pending values to optimistic query updates
+  const pendingRoles = new SvelteMap<string, AlbumUserRole>();
+  let pendingSettings = $state<UpdateAlbumDto>({});
 
   const handleRoleSelect = async (user: UserResponseDto, role: AlbumUserRole | 'none') => {
     if (role === 'none') {
@@ -36,42 +46,35 @@
       return;
     }
 
-    await handleUpdateUserAlbumRole({ albumId: album.id, userId: user.id, role });
-  };
-
-  const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id });
-  };
-
-  const onAlbumUserDelete = async ({ userId }: { userId: string }) => {
-    album.albumUsers = album.albumUsers.filter(({ user: { id } }) => id !== userId);
-    await refreshAlbum();
-  };
-
-  const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinks.push(sharedLink);
-  };
-
-  const onSharedLinkDelete = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinks = sharedLinks.filter(({ id }) => sharedLink.id !== id);
+    pendingRoles.set(user.id, role);
+    try {
+      await handleUpdateUserAlbumRole({ albumId: album.id, userId: user.id, role });
+    } finally {
+      if (pendingRoles.get(user.id) === role) {
+        pendingRoles.delete(user.id);
+      }
+    }
   };
 
   const { AddUsers, CreateSharedLink } = $derived(getAlbumActions($t, album));
 
-  let sharedLinks: SharedLinkResponseDto[] = $state([]);
+  const updateAlbum = async (updateAlbumDto: UpdateAlbumDto) => {
+    pendingSettings = { ...pendingSettings, ...updateAlbumDto };
+    try {
+      await executeMutation(updateAlbumInfoMutation, [{ id: album.id, updateAlbumDto }]);
+    } finally {
+      pendingSettings = Object.fromEntries(
+        Object.entries(pendingSettings).filter(([key, value]) => updateAlbumDto[key as keyof UpdateAlbumDto] !== value),
+      );
+    }
+  };
 
-  onMount(async () => {
-    sharedLinks = await getAllSharedLinks({ albumId: album.id });
-  });
+  const sharedLinksQuery = createQuery(
+    () => getAllSharedLinksQuery({ albumId: album.id }),
+    () => queryClient,
+  );
+  const sharedLinks = $derived(sharedLinksQuery.data ?? []);
 </script>
-
-<OnEvents
-  {onAlbumUserDelete}
-  onAlbumShare={refreshAlbum}
-  {onSharedLinkCreate}
-  {onSharedLinkDelete}
-  onAlbumUpdate={(newAlbum) => (album = newAlbum)}
-/>
 
 <Modal title={readOnly ? $t('album') : $t('options')} {onClose} size="small">
   <ModalBody>
@@ -82,19 +85,20 @@
           {#if album.order}
             <Field label={$t('display_order')} disabled={readOnly}>
               <Select
-                value={album.order}
+                bind:value={() => pendingSettings.order ?? album.order, (order) => updateAlbum({ order })}
                 options={[
                   { label: $t('newest_first'), value: AssetOrder.Desc },
                   { label: $t('oldest_first'), value: AssetOrder.Asc },
                 ]}
-                onChange={(value) => handleUpdateAlbum(album, { order: value })}
               />
             </Field>
           {/if}
           <Field label={$t('comments_and_likes')} description={$t('let_others_respond')} disabled={readOnly}>
             <Switch
-              checked={album.isActivityEnabled}
-              onCheckedChange={(checked) => handleUpdateAlbum(album, { isActivityEnabled: checked })}
+              bind:checked={
+                () => pendingSettings.isActivityEnabled ?? album.isActivityEnabled,
+                (isActivityEnabled) => updateAlbum({ isActivityEnabled })
+              }
             />
           </Field>
         </div>
@@ -118,14 +122,13 @@
               </div>
               <Field class="w-32" disabled={readOnly || role === AlbumUserRole.Owner}>
                 <Select
-                  value={role}
+                  bind:value={() => pendingRoles.get(user.id) ?? role, (value) => handleRoleSelect(user, value)}
                   options={[
                     { label: $t('role_editor'), value: AlbumUserRole.Editor },
                     { label: $t('role_viewer'), value: AlbumUserRole.Viewer },
                     { label: $t('owner'), value: AlbumUserRole.Owner, disabled: true },
                     { label: $t('remove_user'), value: 'none' },
                   ] as SelectOption<AlbumUserRole | 'none'>[]}
-                  onChange={(value) => handleRoleSelect(user, value)}
                 />
               </Field>
             </div>

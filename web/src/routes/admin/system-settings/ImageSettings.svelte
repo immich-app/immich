@@ -1,20 +1,30 @@
 <script lang="ts">
-  import SettingSelect from './SettingSelect.svelte';
-  import { Colorspace, ImageFormat } from '@immich/sdk';
-  import { fade } from 'svelte/transition';
-
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+  import { Colorspace, ImageEffort, ImageFormat } from '@immich/sdk';
+  import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import SettingSelect from './SettingSelect.svelte';
+
+  const query = createPreloadedQuery(getAdminConfigQuery);
+  const config = $derived(query.data);
 
   const disabled = $derived(featureFlagsManager.value.configFile);
-  const config = $derived(systemConfigManager.value);
-  let configToEdit = $state(systemConfigManager.cloneValue());
+  let configToEdit = $state(cloneDeep(config));
+
+  const effortOptions = $derived([
+    { value: ImageEffort.Low, text: $t('admin.image_effort_low') },
+    { value: ImageEffort.Medium, text: $t('admin.image_effort_medium') },
+    { value: ImageEffort.High, text: $t('admin.image_effort_high') },
+    { value: ImageEffort.Max, text: $t('admin.image_effort_max') },
+  ]);
 </script>
 
 <div>
@@ -32,13 +42,14 @@
             bind:value={configToEdit.image.thumbnail.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
+              { value: ImageFormat.Jxl, text: 'JPEG XL' },
               { value: ImageFormat.Webp, text: 'WebP' },
             ]}
             name="format"
             isEdited={configToEdit.image.thumbnail.format !== config.image.thumbnail.format}
             {disabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.thumbnail.progressive = false;
               }
             }}
@@ -53,6 +64,7 @@
               { value: 1080, text: '1080p' },
               { value: 720, text: '720p' },
               { value: 480, text: '480p' },
+              { value: 360, text: '360p' },
               { value: 250, text: '250p' },
               { value: 200, text: '200p' },
             ]}
@@ -70,13 +82,23 @@
             {disabled}
           />
 
+          <SettingSelect
+            label={$t('admin.image_effort')}
+            desc={$t('admin.image_effort_description')}
+            bind:value={configToEdit.image.thumbnail.effort}
+            options={effortOptions}
+            name="effort"
+            isEdited={configToEdit.image.thumbnail.effort !== config.image.thumbnail.effort}
+            disabled={disabled || configToEdit.image.thumbnail.format === ImageFormat.Jpeg}
+          />
+
           <SettingSwitch
             title={$t('admin.image_progressive')}
             subtitle={$t('admin.image_progressive_description')}
             checked={configToEdit.image.thumbnail.progressive}
             onToggle={(isChecked) => (configToEdit.image.thumbnail.progressive = isChecked)}
             isEdited={configToEdit.image.thumbnail.progressive !== config.image.thumbnail.progressive}
-            disabled={disabled || configToEdit.image.thumbnail.format === ImageFormat.Webp}
+            disabled={disabled || configToEdit.image.thumbnail.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -91,13 +113,14 @@
             bind:value={configToEdit.image.preview.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
+              { value: ImageFormat.Jxl, text: 'JPEG XL' },
               { value: ImageFormat.Webp, text: 'WebP' },
             ]}
             name="format"
             isEdited={configToEdit.image.preview.format !== config.image.preview.format}
             {disabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.preview.progressive = false;
               }
             }}
@@ -128,13 +151,23 @@
             {disabled}
           />
 
+          <SettingSelect
+            label={$t('admin.image_effort')}
+            desc={$t('admin.image_effort_description')}
+            bind:value={configToEdit.image.preview.effort}
+            options={effortOptions}
+            name="effort"
+            isEdited={configToEdit.image.preview.effort !== config.image.preview.effort}
+            disabled={disabled || configToEdit.image.preview.format === ImageFormat.Jpeg}
+          />
+
           <SettingSwitch
             title={$t('admin.image_progressive')}
             subtitle={$t('admin.image_progressive_description')}
             checked={configToEdit.image.preview.progressive}
             onToggle={(isChecked) => (configToEdit.image.preview.progressive = isChecked)}
             isEdited={configToEdit.image.preview.progressive !== config.image.preview.progressive}
-            disabled={disabled || configToEdit.image.preview.format === ImageFormat.Webp}
+            disabled={disabled || configToEdit.image.preview.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -160,13 +193,14 @@
             bind:value={configToEdit.image.fullsize.format}
             options={[
               { value: ImageFormat.Jpeg, text: 'JPEG' },
+              { value: ImageFormat.Jxl, text: 'JPEG XL' },
               { value: ImageFormat.Webp, text: 'WebP' },
             ]}
             name="format"
             isEdited={configToEdit.image.fullsize.format !== config.image.fullsize.format}
             disabled={disabled || !configToEdit.image.fullsize.enabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.fullsize.progressive = false;
               }
             }}
@@ -181,6 +215,18 @@
             disabled={disabled || !configToEdit.image.fullsize.enabled}
           />
 
+          <SettingSelect
+            label={$t('admin.image_effort')}
+            desc={$t('admin.image_effort_description')}
+            bind:value={configToEdit.image.fullsize.effort}
+            options={effortOptions}
+            name="effort"
+            isEdited={configToEdit.image.fullsize.effort !== config.image.fullsize.effort}
+            disabled={disabled ||
+              !configToEdit.image.fullsize.enabled ||
+              configToEdit.image.fullsize.format === ImageFormat.Jpeg}
+          />
+
           <SettingSwitch
             title={$t('admin.image_progressive')}
             subtitle={$t('admin.image_progressive_description')}
@@ -189,7 +235,7 @@
             isEdited={configToEdit.image.fullsize.progressive !== config.image.fullsize.progressive}
             disabled={disabled ||
               !configToEdit.image.fullsize.enabled ||
-              configToEdit.image.fullsize.format === ImageFormat.Webp}
+              configToEdit.image.fullsize.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 

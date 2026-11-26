@@ -1,9 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
-import type { ArgOf } from 'src/repositories/event.repository.js';
-import type { JobOf, UserMetadataItem } from 'src/types.js';
-import { SALT_ROUNDS } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
@@ -14,10 +11,13 @@ import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } 
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto.js';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto.js';
 import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
 import { UserFindOptions } from 'src/repositories/user.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getCalendarHeatmap } from 'src/services/shared/user-methods.js';
+import type { JobOf, UserMetadataItem } from 'src/types.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { findOrFail } from 'src/utils/misc.js';
@@ -68,13 +68,8 @@ export class UserService extends BaseService {
       avatarColor: dto.avatarColor,
     };
 
-    if (dto.password) {
-      const hashedPassword = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
-      update.password = hashedPassword;
-      update.shouldChangePassword = false;
-    }
-
     const updatedUser = await this.userRepository.update(user.id, update);
+    this.sendProfileUpdate(user.id);
 
     return mapUserAdmin(updatedUser);
   }
@@ -92,6 +87,7 @@ export class UserService extends BaseService {
       key: UserMetadataKey.Preferences,
       value: getPreferencesPartial(updated),
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myPreferences()] });
 
     return mapPreferences(updated);
   }
@@ -122,6 +118,7 @@ export class UserService extends BaseService {
       profileImagePath,
       profileChangedAt: new Date(),
     });
+    this.sendProfileUpdate(auth.user.id);
 
     const toDelete = [file.path, ...(oldPath ? [oldPath] : [])];
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: toDelete } });
@@ -139,6 +136,7 @@ export class UserService extends BaseService {
       throw new BadRequestException("Can't delete a missing profile Image");
     }
     await this.userRepository.update(auth.user.id, { profileImagePath: '', profileChangedAt: new Date() });
+    this.sendProfileUpdate(auth.user.id);
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [user.profileImagePath] } });
   }
 
@@ -170,6 +168,7 @@ export class UserService extends BaseService {
 
   async deleteLicense({ user }: AuthDto): Promise<void> {
     await this.userRepository.deleteMetadata(user.id, UserMetadataKey.License);
+    this.resourceRepository.send({ userIds: [user.id], changed: [Resource.myLicense()] });
   }
 
   async setLicense(auth: AuthDto, license: LicenseKeyDto): Promise<LicenseResponseDto> {
@@ -201,6 +200,7 @@ export class UserService extends BaseService {
       key: UserMetadataKey.License,
       value: { ...license, activatedAt: activatedAt.toISOString() },
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myLicense()] });
 
     return { ...license, activatedAt };
   }
@@ -223,6 +223,7 @@ export class UserService extends BaseService {
 
   async deleteOnboarding({ user }: AuthDto): Promise<void> {
     await this.userRepository.deleteMetadata(user.id, UserMetadataKey.Onboarding);
+    this.resourceRepository.send({ userIds: [user.id], changed: [Resource.myOnboarding()] });
   }
 
   async setOnboarding(auth: AuthDto, onboarding: OnboardingDto): Promise<OnboardingResponseDto> {
@@ -232,6 +233,7 @@ export class UserService extends BaseService {
         isOnboarded: onboarding.isOnboarded,
       },
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myOnboarding()] });
 
     return {
       isOnboarded: onboarding.isOnboarded,
@@ -301,6 +303,10 @@ export class UserService extends BaseService {
     }
 
     return DateTime.now().minus({ days: delayUntilDeletion }) > DateTime.fromJSDate(user.deletedAt);
+  }
+
+  private sendProfileUpdate(userId: string) {
+    this.resourceRepository.send({ userIds: [userId], changed: [Resource.myUser(), Resource.user({ id: userId })] });
   }
 
   private findOrFail(id: string, options: UserFindOptions) {

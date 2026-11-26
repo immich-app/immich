@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SettingInputFieldType } from '$lib/constants';
+  import { SettingInputFieldType } from '#lib/constants.ts';
   import { PasswordInput } from '@immich/ui';
   import { onMount, tick, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -14,6 +14,7 @@
     label?: string;
     description?: string;
     title?: string;
+    placeholder?: string;
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
@@ -39,6 +40,7 @@
     label = '',
     description = '',
     title = '',
+    placeholder = '',
     required = false,
     disabled = false,
     isEdited = false,
@@ -48,6 +50,7 @@
     trailingSnippet,
   }: Props = $props();
 
+  const id = $props.id();
   let input: HTMLInputElement | undefined = $state();
 
   const handleChange: FormEventHandler<HTMLInputElement> = (e) => {
@@ -81,7 +84,10 @@
 
 <div class="mb-4 w-full">
   <div class="flex place-items-center gap-1">
-    <label class="min-h-6 text-sm font-medium text-primary" for={label}>{label}</label>
+    {#if label}
+      <label class="min-h-6 text-sm font-medium text-primary" for={id}>{label}</label>
+    {/if}
+
     {#if required}
       <div class="text-red-400">*</div>
     {/if}
@@ -97,10 +103,10 @@
   </div>
 
   {#if description}
-    <p class="pb-2 text-sm immich-form-label" id="{label}-desc">
+    <p class="pb-2 text-sm immich-form-label" id="{id}-desc">
       {description}
     </p>
-  {:else}
+  {:else if descriptionSnippet}
     <div class="pb-2">
       {@render descriptionSnippet?.()}
     </div>
@@ -112,9 +118,8 @@
         <input
           bind:this={input}
           class="me-1 immich-form-input w-full rounded-none pb-2"
-          aria-describedby={description ? `${label}-desc` : undefined}
-          aria-labelledby="{label}-label"
-          id={label}
+          aria-describedby={description ? `${id}-desc` : undefined}
+          {id}
           name={label}
           type="text"
           min={min.toString()}
@@ -132,9 +137,8 @@
         bind:this={input}
         class="immich-form-input w-full min-w-[50px] pb-2"
         class:color-picker={inputType === SettingInputFieldType.COLOR}
-        aria-describedby={description ? `${label}-desc` : undefined}
-        aria-labelledby="{label}-label"
-        id={label}
+        aria-describedby={description ? `${id}-desc` : undefined}
+        id={inputType === SettingInputFieldType.COLOR ? `${id}-picker` : id}
         name={label}
         type={inputType}
         min={min.toString()}
@@ -145,16 +149,16 @@
         onchange={handleChange}
         {disabled}
         {title}
+        {placeholder}
       />
 
       {@render trailingSnippet?.()}
     </div>
   {:else}
     <PasswordInput
-      aria-describedby={description ? `${label}-desc` : undefined}
-      aria-labelledby="{label}-label"
+      aria-describedby={description ? `${id}-desc` : undefined}
       size="small"
-      id={label}
+      {id}
       name={label}
       autocomplete={passwordAutocomplete}
       {required}

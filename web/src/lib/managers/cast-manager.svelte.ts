@@ -1,7 +1,9 @@
-import { createSession, type SessionCreateResponseDto } from '@immich/sdk';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { createSessionMutation } from '#lib/queries/session.query.ts';
+import { GCastDestination } from '#lib/utils/cast/gcast-destination.svelte.ts';
+import type { SessionCreateResponseDto } from '@immich/sdk';
 import { DateTime, Duration } from 'luxon';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 
 // follows chrome.cast.media.PlayerState
 export enum CastState {
@@ -109,13 +111,16 @@ class CastManager {
     // check and make sure we have at least 10 seconds remaining in the session
     // before we send the media request, refresh the session if needed
     if (!this.isTokenValid()) {
-      this.sessionKey = await createSession({
-        sessionCreateDto: {
-          duration: Duration.fromObject({ minutes: 15 }).as('seconds'),
-          deviceOS: 'Google Cast',
-          deviceType: 'Cast',
+      const session = await executeMutation(createSessionMutation, [
+        {
+          sessionCreateDto: {
+            duration: Duration.fromObject({ minutes: 15 }).as('seconds'),
+            deviceOS: 'Google Cast',
+            deviceType: 'Cast',
+          },
         },
-      });
+      ]);
+      this.sessionKey = session ?? null;
     }
   }
 

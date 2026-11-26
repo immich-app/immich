@@ -1,14 +1,19 @@
 <script lang="ts">
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { handleSystemConfigSave } from '$lib/services/system-config.service';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery, updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
+  import { cloneDeep } from 'lodash-es';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  const configToEdit = $state(systemConfigManager.cloneValue());
+  const query = createPreloadedQuery(getAdminConfigQuery);
+  const configToEdit = $state(cloneDeep(query.data));
 
-  onDestroy(async () => {
-    await handleSystemConfigSave({ map: configToEdit.map, newVersionCheck: configToEdit.newVersionCheck });
+  onDestroy(() => {
+    void executeMutation(updateAdminConfigMutation, {
+      map: configToEdit.map,
+      newVersionCheck: configToEdit.newVersionCheck,
+    });
   });
 </script>
 

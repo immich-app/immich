@@ -61,31 +61,21 @@ select
         where
           "shared_link"."albumId" = "album"."id"
       ) as agg
-  ) as "sharedLinks",
-  (
-    select
-      json_agg("asset") as "assets"
-    from
-      (
-        select
-          "asset".*,
-          "asset_exif" as "exifInfo"
-        from
-          "asset"
-          left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-          inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
-        where
-          "album_asset"."albumId" = "album"."id"
-          and "asset"."deletedAt" is null
-          and "asset"."visibility" in ('archive', 'timeline')
-        order by
-          "asset"."fileCreatedAt" desc
-      ) as "asset"
-  ) as "assets"
+  ) as "sharedLinks"
 from
   "album"
 where
   "album"."id" = $3
+  and "album"."deletedAt" is null
+
+-- AlbumRepository.getUserIds
+select
+  "album_user"."userId"
+from
+  "album_user"
+  inner join "album" on "album"."id" = "album_user"."albumId"
+where
+  "album_user"."albumId" = $1
   and "album"."deletedAt" is null
 
 -- AlbumRepository.getByAssetId
@@ -396,27 +386,7 @@ select
           "album_user"."role",
           "user"."name" asc
       ) as agg
-  ) as "albumUsers",
-  (
-    select
-      json_agg("asset") as "assets"
-    from
-      (
-        select
-          "asset".*,
-          "asset_exif" as "exifInfo"
-        from
-          "asset"
-          left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-          inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
-        where
-          "album_asset"."albumId" = "album"."id"
-          and "asset"."deletedAt" is null
-          and "asset"."visibility" in ('archive', 'timeline')
-        order by
-          "asset"."fileCreatedAt" desc
-      ) as "asset"
-  ) as "assets"
+  ) as "albumUsers"
 from
   "album"
 

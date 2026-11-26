@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
-  import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
-  import { Button, HStack, IconButton } from '@immich/ui';
+  import { EditToolType, editManager, type EditActions } from '#lib/managers/edit/edit-manager.svelte.ts';
+  import { editAssetMutation, getAssetEditsQuery, removeAssetEditsMutation } from '#lib/queries/asset.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
+  import { websocketEvents } from '#lib/stores/websocket.ts';
+  import type { AssetResponseDto } from '@immich/sdk';
+  import { Button, HStack, IconButton, shortcuts } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
+  import { createMutation } from '@tanstack/svelte-query';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -22,7 +24,7 @@
   }
 
   onMount(async () => {
-    const edits = await getAssetEdits({ id: asset.id });
+    const edits = await queryClient.query(getAssetEditsQuery(asset.id));
     await editManager.activateTool(EditToolType.Transform, asset, edits);
   });
 
@@ -30,8 +32,16 @@
     editManager.cleanup();
   });
 
+  const editAsset = createMutation(editAssetMutation);
+  const removeAssetEdits = createMutation(removeAssetEditsMutation);
+
+  const saveEdits = (id: string, edits: EditActions) =>
+    edits.length === 0
+      ? removeAssetEdits.mutateAsync([{ id }])
+      : editAsset.mutateAsync([{ id, assetEditsCreateDto: { edits } }]);
+
   async function applyEdits() {
-    const success = await editManager.applyEdits();
+    const success = await editManager.applyEdits(saveEdits);
 
     if (success) {
       onClose();
@@ -47,11 +57,11 @@
   let { asset = $bindable(), onClose }: Props = $props();
 </script>
 
-<svelte:document
-  use:shortcuts={[
+<svelte:window
+  {@attach shortcuts([
     { shortcut: { key: 'Escape' }, onShortcut: onClose },
     { shortcut: { key: 'Enter' }, onShortcut: applyEdits },
-  ]}
+  ])}
 />
 
 <section class="dark relative flex h-full flex-col p-2 pt-3 dark:bg-immich-dark-bg dark:text-immich-dark-fg">

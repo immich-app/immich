@@ -50,6 +50,49 @@ describe(DownloadService.name, () => {
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, asset.originalPath, asset.originalFileName);
     });
 
+    it('should return the original file when the unedited version is requested', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create();
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([asset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset.id], edited: false })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(mocks.asset.getForOriginals).toHaveBeenCalledWith([asset.id], false);
+      expect(archiveMock.addFile).toHaveBeenCalledWith(asset.originalPath, asset.originalFileName);
+    });
+
+    it('should not return the unedited version when requested using a shared link', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create({ originalFileName: 'foo.heic' });
+      const editedPath = '/data/edited.jpg';
+
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([{ ...asset, editedPath }]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(
+        sut.downloadArchive(authStub.adminSharedLink, { assetIds: [asset.id], edited: false }),
+      ).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(mocks.asset.getForOriginals).toHaveBeenCalledWith([asset.id], true);
+      expect(archiveMock.addFile).toHaveBeenCalledWith(editedPath, 'foo.jpg');
+    });
+
     it('should log a warning if the original path could not be resolved', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
@@ -98,6 +141,40 @@ describe(DownloadService.name, () => {
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, asset2.originalPath, asset2.originalFileName);
     });
 
+    it('should name files after the library path when the storage template is enabled', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create({
+        originalPath: '/data/library/admin/2024/IMG_1234.jpg',
+        originalFileName: 'upload.jpg',
+      });
+      const editedAsset = AssetFactory.create({
+        originalPath: '/data/library/admin/2024/IMG_5678.heic',
+        originalFileName: 'upload.heic',
+      });
+
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id, editedAsset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([
+        asset,
+        { ...editedAsset, editedPath: '/data/thumbs/admin/ab/cd/asset-2_fullsize_edited.jpeg' },
+      ]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await sut.downloadArchive(authStub.admin, { assetIds: [asset.id, editedAsset.id] });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/admin/2024/IMG_1234.jpg', 'IMG_1234.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(
+        2,
+        '/data/thumbs/admin/ab/cd/asset-2_fullsize_edited.jpeg',
+        'IMG_5678.jpeg',
+      );
+    });
+
     it('should handle duplicate file names', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
@@ -143,13 +220,13 @@ describe(DownloadService.name, () => {
     });
 
     it.each([
-      { input: '../../../../tmp/pwn.jpg', expected: '........tmppwn.jpg' },
+      { input: '../../../../tmp/pwn.jpg', expected: 'pwn.jpg' },
       { input: String.raw`C:\temp\abs3.jpg`, expected: 'Ctempabs3.jpg' },
-      { input: 'a/../../b.jpg', expected: 'a....b.jpg' },
+      { input: 'a/../../b.jpg', expected: 'b.jpg' },
       { input: String.raw`..\..\win1.jpg`, expected: '....win1.jpg' },
-      { input: '/etc/passwd', expected: 'etcpasswd' },
-      { input: '..', expected: 'unnamed' },
-      { input: '', expected: 'unnamed' },
+      { input: '/etc/passwd', expected: 'passwd.jpg' },
+      { input: '..', expected: 'unnamed.jpg' },
+      { input: '', expected: 'unnamed.jpg' },
     ])('should sanitize unsafe originalFileName "$input" to "$expected"', async ({ input, expected }) => {
       const archiveMock = {
         addFile: vitest.fn(),
@@ -193,8 +270,8 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/a.jpg', '......tmppwn.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/b.jpg', '......tmppwn+1.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/a.jpg', 'pwn.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/b.jpg', 'pwn+1.jpg');
     });
 
     it('should resolve symlinks', async () => {

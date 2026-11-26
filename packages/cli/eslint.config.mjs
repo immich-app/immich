@@ -38,11 +38,13 @@ export default typescriptEslint.config([
       'unicorn/name-replacements': 'off',
       'unicorn/no-unreadable-for-of-expression': 'off',
       'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/prefer-smaller-scope': 'off',
       'unicorn/no-process-exit': 'off',
       'unicorn/import-style': 'off',
       'unicorn/consistent-class-member-order': 'off',
       'unicorn/prefer-simple-condition-first': 'off',
       'unicorn/single-line-block-comment-style': ['error', 'single-line'],
+      'unicorn/prefer-options-parameter': 'off',
       curly: 2,
       // prefer the typescript-eslint type-aware version
       'unicorn/require-array-sort-compare': 'off',

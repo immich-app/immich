@@ -1,4 +1,4 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 
 /** @deprecated Use `BulkIdResponseDto` instead */
@@ -12,15 +12,6 @@ const AssetIdErrorReasonSchema = z
   .enum(AssetIdErrorReason)
   .describe('Error reason if failed')
   .meta({ id: 'AssetIdErrorReason' });
-
-/** @deprecated Use `BulkIdResponseDto` instead */
-const AssetIdsResponseSchema = z
-  .object({
-    assetId: z.uuidv4().describe('Asset ID'),
-    success: z.boolean().describe('Whether operation succeeded'),
-    error: AssetIdErrorReasonSchema.optional(),
-  })
-  .meta({ id: 'AssetIdsResponseDto' });
 
 export enum BulkIdErrorReason {
   DUPLICATE = 'duplicate',
@@ -41,16 +32,18 @@ export const BulkIdsSchema = z
   })
   .meta({ id: 'BulkIdsDto' });
 
-const BulkIdResponseSchema = z
-  .object({
-    id: z.uuidv4().describe('ID'),
-    success: z.boolean().describe('Whether operation succeeded'),
-    error: BulkIdErrorReasonSchema.optional(),
-    errorMessage: z.string().optional(),
-  })
-  .meta({ id: 'BulkIdResponseDto' });
-
 /** @deprecated Use `BulkIdResponseDto` instead */
-export class AssetIdsResponseDto extends createZodDto(AssetIdsResponseSchema) {}
+export class AssetIdsResponseDto extends createZodDto({
+  assetId: z.uuidv4().describe('Asset ID'),
+  success: z.boolean().describe('Whether operation succeeded'),
+  error: AssetIdErrorReasonSchema.optional(),
+}) {}
+
 export class BulkIdsDto extends createZodDto(BulkIdsSchema) {}
-export class BulkIdResponseDto extends createZodDto(BulkIdResponseSchema) {}
+
+export class BulkIdResponseDto extends createZodDto({
+  id: z.uuidv4().describe('ID'),
+  success: z.boolean().describe('Whether operation succeeded'),
+  error: BulkIdErrorReasonSchema.optional(),
+  errorMessage: z.string().optional(),
+}) {}

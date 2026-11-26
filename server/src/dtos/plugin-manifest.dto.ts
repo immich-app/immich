@@ -1,4 +1,4 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { JsonSchemaSchema } from 'src/dtos/json-schema.dto.js';
 import { WorkflowTriggerSchema, WorkflowTypeSchema } from 'src/enum.js';
@@ -47,31 +47,27 @@ const PluginManifestTemplateSchema = z
   })
   .meta({ id: 'PluginManifestTemplateDto' });
 
-const PluginManifestSchema = z
-  .object({
-    name: z
-      .string()
-      .min(1)
-      .regex(
-        pluginNameRegex,
-        'Plugin name must contain only lowercase letters, numbers, and hyphens, and cannot end with a hyphen',
-      )
-      .describe('Plugin name (lowercase, numbers, hyphens only)'),
-    version: z.string().regex(semverRegex).describe('Plugin version (semver)'),
-    title: z.string().min(1).describe('Plugin title'),
-    description: z.string().min(1).describe('Plugin description'),
-    wasmPath: z.string().min(1).describe('WASM file path'),
-    author: z.string().min(1).describe('Plugin author'),
-    methods: z.array(PluginManifestMethodSchema).optional().default([]).describe('Plugin methods'),
-    templates: z
-      .array(PluginManifestTemplateSchema)
-      .optional()
-      .default([])
-      .refine((templates) => new Set(templates.map((t) => t.name)).size === templates.length, {
-        error: 'Template names must be unique within the manifest',
-      })
-      .describe('Workflow templates'),
-  })
-  .meta({ id: 'PluginManifestDto' });
-
-export class PluginManifestDto extends createZodDto(PluginManifestSchema) {}
+export class PluginManifestDto extends createZodDto({
+  name: z
+    .string()
+    .min(1)
+    .regex(
+      pluginNameRegex,
+      'Plugin name must contain only lowercase letters, numbers, and hyphens, and cannot end with a hyphen',
+    )
+    .describe('Plugin name (lowercase, numbers, hyphens only)'),
+  version: z.string().regex(semverRegex).describe('Plugin version (semver)'),
+  title: z.string().min(1).describe('Plugin title'),
+  description: z.string().min(1).describe('Plugin description'),
+  wasmPath: z.string().min(1).describe('WASM file path'),
+  author: z.string().min(1).describe('Plugin author'),
+  methods: z.array(PluginManifestMethodSchema).optional().default([]).describe('Plugin methods'),
+  templates: z
+    .array(PluginManifestTemplateSchema)
+    .optional()
+    .default([])
+    .refine((templates) => new Set(templates.map((t) => t.name)).size === templates.length, {
+      error: 'Template names must be unique within the manifest',
+    })
+    .describe('Workflow templates'),
+}) {}

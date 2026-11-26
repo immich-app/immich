@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { type Kysely, sql } from 'kysely';
+import { sql, type Kysely } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database.js';
@@ -7,7 +7,6 @@ import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import {
-  anyUuid,
   asUuid,
   withAudioStream,
   withDefaultVisibility,
@@ -255,25 +254,9 @@ export class AssetJobRepository {
   getForOcr(id: string) {
     return this.db
       .selectFrom('asset')
-      .select((eb) => ['asset.visibility', withFilePath(eb, AssetFileType.Preview).as('previewFile')])
+      .select((eb) => ['asset.ownerId', 'asset.visibility', withFilePath(eb, AssetFileType.Preview).as('previewFile')])
       .where('asset.id', '=', id)
       .executeTakeFirst();
-  }
-
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  getForSyncAssets(ids: string[]) {
-    return this.db
-      .selectFrom('asset')
-      .select([
-        'asset.id',
-        'asset.isOffline',
-        'asset.libraryId',
-        'asset.originalPath',
-        'asset.status',
-        'asset.fileModifiedAt',
-      ])
-      .where('asset.id', '=', anyUuid(ids))
-      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -305,8 +288,8 @@ export class AssetJobRepository {
                   .select(['stack_asset.id'])
                   .whereRef('stack_asset.stackId', '=', 'stack.id')
                   .whereRef('stack_asset.id', '!=', 'stack.primaryAssetId')
-                  .where('stack_asset.visibility', '=', sql.val(AssetVisibility.Timeline))
-                  .where('stack_asset.status', '!=', sql.val(AssetStatus.Deleted)),
+                  .where('stack_asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                  .where('stack_asset.status', '!=', sql.lit(AssetStatus.Deleted)),
               ).as('assets'),
             ])
             .as('stack_result'),
@@ -418,11 +401,7 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })
   streamForDeletedJob(trashedBefore: Date) {
-    return this.db
-      .selectFrom('asset')
-      .select(['id', 'isOffline'])
-      .where('asset.deletedAt', '<=', trashedBefore)
-      .stream();
+    return this.db.selectFrom('asset').select(['id']).where('asset.deletedAt', '<=', trashedBefore).stream();
   }
 
   @GenerateSql({ params: [], stream: true })

@@ -5,6 +5,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:my.immich.app</string>
+		<string>webcredentials:my.immich.app</string>
 	</array>
 	<key>com.apple.developer.networking.wifi-info</key>
 	<true/>

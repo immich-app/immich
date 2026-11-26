@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/data/server/tag.dart';
 import 'package:immich_mobile/data/store/util/cache.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:logging/logging.dart';
 
 final _log = Logger("TagStore");
@@ -16,6 +17,12 @@ extension type const TagStore._(Provider<TagMutations> _provider) implements Pro
   ///
   /// **NOTE:** This is not reactive to changes, and only hits the HTTP API
   AutoDisposeFutureProvider<List<Tag>> all() => _allProvider;
+
+  /// The tags applied to the asset [assetId]
+  ///
+  /// **NOTE:** This is not reactive to changes, and only hits the HTTP API. Invalidate the whole family after a
+  /// mutation, since a single change can affect many assets
+  AutoDisposeFutureProviderFamily<List<Tag>, String> get forAsset => _forAssetProvider;
 }
 
 final _allProvider = FutureProvider.autoDispose<List<Tag>>((ref) async {
@@ -26,6 +33,10 @@ final _allProvider = FutureProvider.autoDispose<List<Tag>>((ref) async {
     return const [];
   }
 });
+
+final _forAssetProvider = FutureProvider.autoDispose.family<List<Tag>, String>(
+  (ref, assetId) => ref.watch(assetServiceProvider).getTags(assetId),
+);
 
 class TagMutations extends StoreMutations {
   const TagMutations._(super.ref);
@@ -46,6 +57,16 @@ class TagMutations extends StoreMutations {
       return await read(tagApiRepositoryProvider).bulkTagAssets(assetIds, tagIds);
     } catch (error, stack) {
       _log.severe("Failed to tag assets", error, stack);
+      rethrow;
+    }
+  }
+
+  /// Remove the tag [tagId] from every asset in [assetIds], returning the number of assets successfully untagged
+  Future<int> removeFromAssets(String tagId, List<String> assetIds) async {
+    try {
+      return await read(tagApiRepositoryProvider).untagAssets(tagId, assetIds);
+    } catch (error, stack) {
+      _log.severe("Failed to untag assets", error, stack);
       rethrow;
     }
   }

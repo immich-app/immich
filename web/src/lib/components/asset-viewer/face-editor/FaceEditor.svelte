@@ -1,15 +1,18 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import FaceCreateTagModal from '$lib/modals/CreateFaceModal.svelte';
-  import { faceManager } from '$lib/stores/face.svelte';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Input, modalManager, toastManager } from '@immich/ui';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import FaceCreateTagModal from '#lib/modals/CreateFaceModal.svelte';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { createFaceMutation } from '#lib/queries/face.query.ts';
+  import { getAllPeopleQuery } from '#lib/queries/person.query.ts';
+  import { faceManager } from '#lib/stores/face.svelte.ts';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { getNaturalSize, scaleToFit } from '#lib/utils/container-utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { Button, Input, modalManager, shortcut, toastManager } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { clamp } from 'lodash-es';
   import { onDestroy, onMount, tick } from 'svelte';
@@ -30,8 +33,11 @@
   let faceSelectorEl: HTMLDivElement | undefined = $state();
   let scrollableListEl: HTMLDivElement | undefined = $state();
   let searchInputEl: HTMLInputElement | null = $state(null);
-  let page = $state(1);
-  let candidates = $state<PersonResponseDto[]>([]);
+  const query = createQuery(
+    () => ({ ...getAllPeopleQuery({ page: 1, size: 1000, withHidden: false }), staleTime: 0 }),
+    () => queryClient,
+  );
+  const candidates = $derived(query.data?.people ?? []);
 
   let searchTerm = $state('');
   let faceBoxPosition = $state({ left: 0, top: 0, width: 0, height: 0 });
@@ -83,7 +89,6 @@
 
   onMount(async () => {
     setupCanvas();
-    await getPeople();
     await tick();
     searchInputEl?.focus();
   });
@@ -143,20 +148,6 @@
 
   const onClose = () => {
     assetViewerManager.closeFaceEditMode();
-  };
-
-  const getPeople = async () => {
-    const { hasNextPage, people, total } = await getAllPeople({ page, size: 1000, withHidden: false });
-
-    if (candidates.length === total) {
-      return;
-    }
-
-    candidates = [...candidates, ...people];
-
-    if (hasNextPage) {
-      page++;
-    }
   };
 
   const MAX_LIST_HEIGHT = 250;
@@ -304,38 +295,26 @@
   };
 
   const tagFace = async (person: PersonResponseDto) => {
-    try {
-      const data = getFaceCroppedCoordinates();
-      if (!data) {
-        toastManager.warning($t('error_tag_face_bounding_box'));
-        return;
-      }
+    const data = getFaceCroppedCoordinates();
+    if (!data) {
+      toastManager.warning($t('error_tag_face_bounding_box'));
+      return;
+    }
 
-      const isConfirmed = await modalManager.showDialog({
+    const onSuccess = async () => {
+      await assetViewerManager.setAssetId(assetId);
+      faceManager.clear();
+    };
+
+    await executeMutation(createFaceMutation, [{ assetFaceCreateDto: { assetId, personId: person.id, ...data } }], {
+      confirm: {
         prompt: person.name
           ? $t('confirm_tag_face', { values: { name: person.name } })
           : $t('confirm_tag_face_unnamed'),
-      });
-
-      if (!isConfirmed) {
-        return;
-      }
-
-      await createFace({
-        assetFaceCreateDto: {
-          assetId,
-          personId: person.id,
-          ...data,
-        },
-      });
-
-      await assetViewerManager.setAssetId(assetId);
-      faceManager.clear();
-      onClose();
-    } catch (error) {
-      handleError(error, 'Error tagging face');
-      onClose();
-    }
+      },
+      onSuccess: () => void onSuccess(),
+      onSettled: onClose,
+    });
   };
 
   const showCreateFaceModal = async () => {
@@ -365,10 +344,10 @@
   });
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose, ignoreInputFields: false }} />
+<svelte:window {@attach shortcut({ shortcut: { key: 'Escape' }, onShortcut: onClose, ignoreInputFields: false })} />
 
 <div
-  id="face-editor-data"
+  data-testid="face-editor-data"
   class="absolute inset-s-0 top-0 z-5 size-full overflow-hidden"
   data-overlay-interactive
   data-face-left={faceBoxPosition.left}
@@ -376,10 +355,10 @@
   data-face-width={faceBoxPosition.width}
   data-face-height={faceBoxPosition.height}
 >
-  <canvas bind:this={canvasEl} id="face-editor" class="absolute inset-s-0 top-0"></canvas>
+  <canvas bind:this={canvasEl} data-testid="face-editor" class="absolute inset-s-0 top-0"></canvas>
 
   <div
-    id="face-selector"
+    data-testid="face-selector"
     bind:this={faceSelectorEl}
     class="absolute inset-s-[calc(50%-125px)] top-[calc(50%-250px)] w-62.5 max-w-62.5 rounded-xl border border-gray-200 bg-white px-2 py-4 backdrop-blur-sm transition-[top,left] duration-200 ease-out dark:border-gray-800 dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >

@@ -3,17 +3,7 @@ import { createHash } from 'node:crypto';
 import { basename } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import type { ArgOf } from 'src/repositories/event.repository.js';
-import type {
-  IIntegrityDeleteReportTypeJob,
-  IIntegrityDeleteReportsJob,
-  IIntegrityJob,
-  IIntegrityMissingFilesJob,
-  IIntegrityPathWithChecksumJob,
-  IIntegrityPathWithReportJob,
-  IIntegrityUntrackedFilesJob,
-} from 'src/types.js';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
+import { ASSET_VISIBILITY_DEPENDENT_PATHS, JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import {
@@ -33,33 +23,44 @@ import {
   StorageFolder,
   SystemMetadataKey,
 } from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
+import type {
+  IIntegrityDeleteReportTypeJob,
+  IIntegrityDeleteReportsJob,
+  IIntegrityJob,
+  IIntegrityMissingFilesJob,
+  IIntegrityPathWithChecksumJob,
+  IIntegrityPathWithReportJob,
+  IIntegrityUntrackedFilesJob,
+} from 'src/types.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { batched, handlePromiseError } from 'src/utils/misc.js';
 
 /**
- * Untracked Files:
- *   Files are detected in /data/encoded-video, /data/library, /data/upload
- *     Checked against the asset table
- *   Files are detected in /data/thumbs
- *     Checked against the asset_file table
- *
- *   * Can perform download or delete of files
- *
- * Missing Files:
- *   Paths are queried from asset(originalPath, encodedVideoPath), asset_file(path)
- *     Check whether files exist on disk
- *
- *   * Reports must include origin (asset or asset_file) & ID for further action
- *   * Can perform trash (asset) or delete (asset_file)
- *
- * Checksum Mismatch:
- *   Paths & checksums are queried from asset(originalPath, checksum)
- *     Check whether files match checksum, missing files ignored
- *
- *   * Reports must include origin (as above) for further action
- *   * Can perform download or trash (asset)
- */
+Untracked Files:
+  Files are detected in /data/encoded-video, /data/library, /data/upload
+    Checked against the asset table
+  Files are detected in /data/thumbs
+    Checked against the asset_file table
+
+Can perform download or delete of files
+
+Missing Files:
+  Paths are queried from asset(originalPath, encodedVideoPath), asset_file(path)
+    Check whether files exist on disk
+
+Reports must include origin (asset or asset_file) & ID for further action
+Can perform trash (asset) or delete (asset_file)
+
+Checksum Mismatch:
+  Paths & checksums are queried from asset(originalPath, checksum)
+    Check whether files match checksum, missing files ignored
+
+Reports must include origin (as above) for further action
+Can perform download or trash (asset)
+*/
 
 @Injectable()
 export class IntegrityService extends BaseService {
@@ -176,10 +177,17 @@ export class IntegrityService extends BaseService {
     const { path, assetId, fileAssetId } = await this.integrityRepository.getById(id);
 
     if (assetId) {
+      const asset = await this.assetRepository.getById(assetId);
       await this.assetRepository.updateAll([assetId], {
         deletedAt: new Date(),
         status: AssetStatus.Trashed,
       });
+      if (asset) {
+        this.resourceRepository.send({
+          userIds: [asset.ownerId],
+          changed: [Resource.asset({ id: assetId }), Resource.assetStatistics(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
+        });
+      }
 
       await this.eventRepository.emit('AssetTrashAll', {
         assetIds: [assetId],
@@ -196,6 +204,11 @@ export class IntegrityService extends BaseService {
       }
       await this.integrityRepository.deleteById(id);
     }
+
+    this.resourceRepository.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.integrityReport(), Resource.integrityReportSummary()],
+    });
   }
 
   private async queueRefreshAllUntrackedFiles() {

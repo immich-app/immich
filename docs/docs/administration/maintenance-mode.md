@@ -1,4 +1,4 @@
-# Maintenance Mode
+# Maintenance mode
 
 Maintenance mode is used to perform administrative tasks such as restoring backups to Immich.
 

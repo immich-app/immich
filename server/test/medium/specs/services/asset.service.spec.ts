@@ -10,6 +10,7 @@ import { EventRepository } from 'src/repositories/event.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { OcrRepository } from 'src/repositories/ocr.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository.js';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository.js';
 import { StackRepository } from 'src/repositories/stack.repository.js';
@@ -23,6 +24,7 @@ import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(AssetService, {
     database: db || defaultDatabase,
@@ -36,7 +38,7 @@ const setup = (db?: Kysely<DB>) => {
       StackRepository,
       UserRepository,
     ],
-    mock: [EventRepository, LoggingRepository, JobRepository, StorageRepository, OcrRepository],
+    mock: [ResourceRepository, EventRepository, LoggingRepository, JobRepository, StorageRepository, OcrRepository],
   });
 };
 

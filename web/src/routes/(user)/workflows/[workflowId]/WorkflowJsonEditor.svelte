@@ -8,14 +8,14 @@
     CardTitle,
     Icon,
     Theme,
-    themeManager,
     VStack,
+    themeManager,
   } from '@immich/ui';
   import { mdiCodeJson } from '@mdi/js';
   import { isEqual } from 'lodash-es';
   import { untrack } from 'svelte';
-  import { JSONEditor, Mode, type Content, type OnChangeStatus } from 'svelte-jsoneditor';
   import { t } from 'svelte-i18n';
+  import { JSONEditor, Mode, type Content, type OnChangeStatus } from 'svelte-jsoneditor';
 
   type WorkflowJsonContent = Required<
     Pick<WorkflowUpdateDto, 'description' | 'enabled' | 'name' | 'steps' | 'trigger'>

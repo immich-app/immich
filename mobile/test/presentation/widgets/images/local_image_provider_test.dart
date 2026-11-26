@@ -1,10 +1,18 @@
+import 'dart:ffi' hide Size;
+
+import 'package:ffi/ffi.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/platform/local_image_api.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 
 import '../../../unit/factories/local_asset_factory.dart';
+import '../../../unit/presentation/presentation_context.dart';
 
 class _StubCompleter extends ImageStreamCompleter {}
 
@@ -139,6 +147,56 @@ void main() {
       );
 
       expect(loads, 2);
+    });
+  });
+
+  group('LocalFullImageProvider with load original', () {
+    const api = 'dev.flutter.pigeon.immich_mobile.LocalImageApi';
+
+    testWidgets('skips the original when the preview is already full size', (tester) async {
+      final context = await PresentationContext.create();
+      addTearDown(context.dispose);
+      addTearDown(PaintingBinding.instance.imageCache.clear);
+      await SettingsRepository.instance.write(SettingsKey.imageLoadOriginal, true);
+      final requests = <(Object?, Object?)>[];
+      tester.binding.defaultBinaryMessenger
+        ..setMockDecodedMessageHandler<Object?>(
+          const BasicMessageChannel('$api.requestImage', LocalImageApi.pigeonChannelCodec),
+          (message) async {
+            final [_, _, width, height, ...] = message! as List<Object?>;
+            requests.add((width, height));
+            // every request comes back at 4x4, the photo's full size
+            return [
+              {'pointer': malloc<Uint8>(4 * 4 * 4).address, 'width': 4, 'height': 4, 'rowBytes': 4 * 4},
+            ];
+          },
+        )
+        ..setMockDecodedMessageHandler<Object?>(
+          const BasicMessageChannel('$api.cancelRequest', LocalImageApi.pigeonChannelCodec),
+          (_) async => [null],
+        );
+      const provider = LocalFullImageProvider(
+        id: 'asset-1',
+        assetType: AssetType.image,
+        size: Size(400, 800),
+        isAnimated: false,
+        width: 4,
+        height: 4,
+      );
+
+      final stream = provider.resolve(ImageConfiguration.empty);
+      final listener = ImageStreamListener((image, _) => image.dispose());
+      stream.addListener(listener);
+      for (var i = 0; i < 20; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 5)));
+        await tester.pump();
+      }
+      stream.removeListener(listener);
+
+      // the original is the only request without a size
+      expect(requests, isNot(contains((0, 0))));
+      // closing it keeps the image cached, so the load counted as finished
+      expect(PaintingBinding.instance.imageCache.statusForKey(provider).tracked, isTrue);
     });
   });
 }

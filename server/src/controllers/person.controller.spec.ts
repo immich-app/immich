@@ -44,6 +44,25 @@ describe(PersonController.name, () => {
     });
   });
 
+  describe('POST /people', () => {
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const { status } = await request(ctx.getHttpServer()).post('/people').send({ name });
+      expect(status).toBe(201);
+      expect(service.create).toHaveBeenCalledWith(undefined, { name: '' });
+    });
+  });
+
+  describe('PUT /people', () => {
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const id = factory.uuid();
+      const { status } = await request(ctx.getHttpServer())
+        .put('/people')
+        .send({ people: [{ id, name }] });
+      expect(status).toBe(200);
+      expect(service.updateAll).toHaveBeenCalledWith(undefined, { people: [{ id, name: '' }] });
+    });
+  });
+
   describe('DELETE /people', () => {
     it('should require uuids in the body', async () => {
       const { status, body } = await request(ctx.getHttpServer())
@@ -71,15 +90,11 @@ describe(PersonController.name, () => {
       );
     });
 
-    it(`should not allow a null name`, async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post(`/people`)
-        .send({ name: null })
-        .set('Authorization', `Bearer token`);
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['name'], message: 'Invalid input: expected string, received null' }]),
-      );
+    it.each([null, ''])('should store %j as an empty name', async (name) => {
+      const id = factory.uuid();
+      const { status } = await request(ctx.getHttpServer()).put(`/people/${id}`).send({ name });
+      expect(status).toBe(200);
+      expect(service.update).toHaveBeenCalledWith(undefined, id, { name: '' });
     });
 
     it(`should require featureFaceAssetId to be a uuid`, async () => {
@@ -152,6 +167,26 @@ describe(PersonController.name, () => {
       expect(body).toEqual(
         errorDto.validationError([{ path: ['birthDate'], message: 'Invalid input: expected string, received number' }]),
       );
+    });
+
+    it.each(['', '2024-02-30', '2024-01-01T00:00:00.000+01:00', '01/01/2024'])(
+      'should not accept a birth date that is not a calendar date (%s)',
+      async (birthDate) => {
+        const { status, body } = await request(ctx.getHttpServer())
+          .put(`/people/${factory.uuid()}`)
+          .send({ birthDate });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.validationError([{ path: ['birthDate'], message: 'Invalid ISO date' }]));
+        expect(service.update).not.toHaveBeenCalled();
+      },
+    );
+
+    it('should accept a calendar birth date', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .put(`/people/${factory.uuid()}`)
+        .send({ birthDate: '1990-01-01' });
+      expect(status).toBe(200);
+      expect(service.update).toHaveBeenCalledWith(undefined, expect.any(String), { birthDate: '1990-01-01' });
     });
 
     it('should not accept a birth date in the future)', async () => {

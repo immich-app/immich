@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { Route } from '$lib/route';
-  import { handleCreateWorkflow } from '$lib/services/workflow.service';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { createWorkflowMutation } from '#lib/queries/workflow.query.ts';
+  import { Route } from '#lib/route.ts';
   import { WorkflowTrigger, type WorkflowResponseDto } from '@immich/sdk';
   import { Field, FormModal, Input, Textarea, VStack } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
 
   type Props = {
     workflow: WorkflowResponseDto;
@@ -18,18 +19,16 @@
   let trigger = $state<WorkflowTrigger>(workflow.trigger);
 
   const onSubmit = async () => {
-    const response = await handleCreateWorkflow({
-      name,
-      description,
-      trigger,
-      steps: workflow.steps,
-      enabled: false,
-    });
-
-    if (response) {
-      await goto(Route.viewWorkflow({ id: response.id }));
-      onClose();
-    }
+    await executeMutation(
+      createWorkflowMutation,
+      [{ workflowCreateDto: { name, description, trigger, steps: workflow.steps, enabled: false } }],
+      {
+        onSuccess: (response) => {
+          onClose();
+          void goto(Route.viewWorkflow(response));
+        },
+      },
+    );
   };
 </script>
 

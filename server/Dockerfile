@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202609291109@sha256:2985290fa839a44c577972103744a888c03338b330dcdb110c5a310120c715e7 AS builder
+FROM ghcr.io/immich-app/base-server-dev:202611101105@sha256:174b605f52a3430c58295db1737d46a602cc076103aba60f33bdb8bb545e0b41 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -29,17 +29,48 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immi
 COPY ./packages/plugin-sdk ./packages/plugin-sdk/
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/plugin-sdk build
 
+FROM ghcr.io/immich-app/base-server-dev:202610291416@sha256:5f4f9f77059e1cd0182994419a19f4ee045c3fd48e611f5e77623ed63f7aa1e4 AS rust
+
+COPY --from=ghcr.io/jdx/mise:2026.11.14@sha256:7178a0bc7eb30d5090f81237fc0a7830f57e52126b9d8df656e24547437a1e53 /usr/local/bin/mise /usr/local/bin/mise
+COPY ./native/mise.toml ./native/mise.lock /usr/src/app/native/
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/native/mise.toml \
+  RUSTUP_HOME=/usr/local/rustup \
+  CARGO_HOME=/usr/local/cargo
+RUN mise --cd /usr/src/app/native install --locked
+
+FROM builder AS native
+
+ARG TARGETPLATFORM
+
+COPY --from=rust /usr/local/rustup /usr/local/rustup
+COPY --from=rust /usr/local/cargo /usr/local/cargo
+ENV RUSTUP_HOME=/usr/local/rustup \
+  CARGO_HOME=/usr/local/cargo \
+  PATH=/usr/local/cargo/bin:$PATH
+RUN cat /proc/sys/kernel/random/uuid | tr -d - > /etc/machine-id
+
+COPY ./native/crates/native_core_node/package.json ./native/crates/native_core_node/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/native-core install --frozen-lockfile
+
+COPY ./native ./native/
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
+  --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry \
+  --mount=type=cache,id=native-target-${TARGETPLATFORM},target=/usr/src/app/native/target \
+  pnpm --filter @immich/native-core build
+
 FROM plugin-sdk AS server
 
 COPY ./server/package.json ./server/package.json
+COPY ./native/crates/native_core_node/package.json ./native/crates/native_core_node/package.json
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich install --frozen-lockfile
 
 COPY ./server ./server/
+COPY --from=native /usr/src/app/native/crates/native_core_node/dist ./native/crates/native_core_node/dist
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   pnpm --filter immich build && \
   pnpm --filter immich --prod --no-optional deploy /output/server-pruned
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
-  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false --dir /output/server-pruned/node_modules/sharp exec npm run build
+  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false --dir /output/server-pruned/node_modules/sharp run build
 
 FROM sdk AS web
 
@@ -68,17 +99,17 @@ FROM plugin-sdk AS plugins
 
 ARG TARGETPLATFORM
 
-COPY --from=ghcr.io/jdx/mise:2026.9.17@sha256:4ad8e4e194bf8185a54f1b1f4aafda56d8f4431f19f6e0799fcbdceaa849a427 /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2026.11.14@sha256:7178a0bc7eb30d5090f81237fc0a7830f57e52126b9d8df656e24547437a1e53 /usr/local/bin/mise /usr/local/bin/mise
 
 COPY ./mise.toml ./mise.toml
 COPY ./mise.lock ./mise.lock
+COPY ./.mise ./.mise
 COPY ./packages/plugin-core/mise.toml ./packages/plugin-core/
 ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml
 ENV MISE_DATA_DIR=/buildcache/mise
 ENV MISE_DISABLE_TOOLS=flutter
 RUN --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise install --locked
-
 COPY ./packages/plugin-core ./packages/plugin-core/
 
 # Build plugins
@@ -86,7 +117,7 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise //:plugins
 
-FROM ghcr.io/immich-app/base-server-prod:202609291109@sha256:328f9fddcaf00ffdba46abe4b67139514c987fecc0aa351d64196c17680f54c2
+FROM ghcr.io/immich-app/base-server-prod:202611101105@sha256:282c05976d233c7a601199b9be79f6c8260352b37b1d808e96b16fb76cc63270
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -118,6 +149,9 @@ ENV IMMICH_REPOSITORY_URL=https://github.com/immich-app/immich
 ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
 ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
+
+COPY --from=ghcr.io/futo-org/backups/restic-proxy:v1.18.1@sha256:8ce6e9ba833c16985d1353cdf06437161322fcd6825cd60f2bb19c4154bacd60 /usr/local/bin/restic-proxy /usr/local/bin/restic-proxy
+COPY --from=ghcr.io/futo-org/restic:0.19.1-futo.2@sha256:72a88670ee0bbb5485c74bd9a7fb3f36d46bf3f8e29c6d0886cd6039077a3184 /usr/bin/restic /usr/local/bin/restic
 
 VOLUME /data
 EXPOSE 2283

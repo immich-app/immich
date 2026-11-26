@@ -206,6 +206,13 @@ describe('/shared-links', () => {
       );
     });
 
+    it('should not return album users', async () => {
+      const { status, body } = await request(app).get('/shared-links/me').query({ key: linkWithAlbum.key });
+
+      expect(status).toBe(200);
+      expect(body.album.albumUsers).toEqual([]);
+    });
+
     it('should return unauthorized for incorrect shared link', async () => {
       const { status, body } = await request(app)
         .get('/shared-links/me')
@@ -329,6 +336,16 @@ describe('/shared-links', () => {
           userId: user1.userId,
         }),
       );
+    });
+
+    it('should not allow uploads unless requested', async () => {
+      const { status, body } = await request(app)
+        .post('/shared-links')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ type: SharedLinkType.Album, albumId: album.id });
+
+      expect(status).toBe(201);
+      expect(body).toEqual(expect.objectContaining({ allowUpload: false, allowDownload: true }));
     });
 
     it('should create an album shared link when the client sends an empty assetIds array', async () => {

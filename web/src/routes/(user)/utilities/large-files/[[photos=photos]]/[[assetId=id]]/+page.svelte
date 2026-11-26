@@ -1,16 +1,18 @@
 <script lang="ts">
-  import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import LargeAssetData from './LargeAssetData.svelte';
-  import Portal from '$lib/elements/Portal.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { getNextAsset, getPreviousAsset, navigateToAsset } from '$lib/utils/asset-utils';
-  import { navigate } from '$lib/utils/navigation';
+  import AssetViewerEvents from '#lib/components/AssetViewerEvents.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { searchLargeAssetsQuery } from '#lib/queries/search.query.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { getNextAsset, getPreviousAsset, navigateToAsset } from '#lib/utils/asset-utils.ts';
+  import { navigate } from '#lib/utils/navigation.ts';
   import type { AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import LargeAssetData from './LargeAssetData.svelte';
 
   interface Props {
     data: PageData;
@@ -18,7 +20,8 @@
 
   let { data }: Props = $props();
 
-  let assets = $state(data.assets);
+  const query = createPreloadedQuery(searchLargeAssetsQuery);
+  const assets = $derived(query.data);
   let asset = $derived(data.asset);
 
   $effect(() => {
@@ -37,17 +40,19 @@
     return asset;
   };
 
-  const preAction = async (payload: Action) => {
-    if (payload.type === 'trash') {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      (await navigateToAsset(assetCursor?.nextAsset)) ||
-        (await navigateToAsset(assetCursor?.previousAsset)) ||
-        assetViewerManager.showAssetViewer(false);
+  const onAssetLeave = async ({ reason }: { reason: string }) => {
+    if (reason !== 'trash') {
+      return;
+    }
+
+    if (!(await navigateToAsset(assetCursor?.nextAsset)) && !(await navigateToAsset(assetCursor?.previousAsset))) {
+      assetViewerManager.showAssetViewer(false);
     }
   };
 
   const onAssetsDelete = (assetIds: string[]) => {
-    assets = assets.filter(({ id }) => !assetIds.includes(id));
+    const ids = new Set(assetIds);
+    queryClient.setQueryData(searchLargeAssetsQuery().queryKey, (assets) => assets?.filter(({ id }) => !ids.has(id)));
   };
 
   const onViewAsset = async (asset: AssetResponseDto) => {
@@ -62,10 +67,11 @@
 </script>
 
 <OnEvents {onAssetsDelete} />
+<AssetViewerEvents {onAssetLeave} />
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-    {#if assets && assets.length > 0}
+    {#if assets.length > 0}
       {#each assets as asset (asset.id)}
         <LargeAssetData {asset} {onViewAsset} />
       {/each}
@@ -78,13 +84,12 @@
 </UserPageLayout>
 
 {#if assetViewerManager.isViewing}
-  {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+  {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
         cursor={assetCursor}
         showNavigation={assets.length > 1}
         {onRandom}
-        {preAction}
         onClose={() => {
           assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

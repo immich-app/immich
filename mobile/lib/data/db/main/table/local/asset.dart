@@ -8,6 +8,9 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_local_asset_cloud_id ON local_asset_entity (i_cloud_id)')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_local_asset_created_at ON local_asset_entity (created_at)')
+@TableIndex.sql(
+  'CREATE INDEX IF NOT EXISTS idx_local_asset_group ON local_asset_entity (group_date DESC, created_at DESC)',
+)
 class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const LocalAssetEntity();
 
@@ -23,6 +26,8 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   DateTimeColumn get adjustmentTime => customType(clampedDateTime).nullable()();
 
+  TextColumn get groupDate => text().nullable()();
+
   RealColumn get latitude => real().nullable()();
 
   RealColumn get longitude => real().nullable()();
@@ -31,6 +36,9 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   /// Checksum of the last synced version of this asset
   TextColumn get previousChecksum => text().nullable()();
+
+  /// Set by backup when the server does not accept the name the asset uploads with
+  BoolColumn get unsupported => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};

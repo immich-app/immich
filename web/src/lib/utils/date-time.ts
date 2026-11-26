@@ -1,7 +1,7 @@
+import { dateFormats } from '#lib/constants.ts';
+import { locale } from '#lib/stores/preferences.store.ts';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
-import { dateFormats } from '$lib/constants';
-import { locale } from '$lib/stores/preferences.store';
 
 export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();
@@ -26,20 +26,18 @@ const getDateRange = (startTimestamp: string, endTimestamp: string, format: 'sho
 };
 
 /**
- * Get localized date range in short format like 'Oct – Nov 2026', with full month if start and end are the same: 'October 2026'.
- * Timestamps are expected to be date-only in UTC.
- */
+Get localized date range in short format like 'Oct – Nov 2026', with full month if start and end are the same: 'October 2026'.
+Timestamps are expected to be date-only in UTC.
+*/
 export const getShortDateRange = (start: string, end: string) => getDateRange(start, end, 'short');
 
-/**
- * Get localized date range in long format. Timestamps are expected to be date-only in UTC.
- */
+/** Get localized date range in long format. Timestamps are expected to be date-only in UTC. */
 export const getAlbumDateRange = (start: string, end: string) => getDateRange(start, end, 'long');
 
 /**
- * Use this to convert from "5pm EST" to "5pm UTC"
- *
- * Useful with some APIs where you want to query by "today", but the values in the database are stored as UTC
- */
+Use this to convert from "5pm EST" to "5pm UTC"
+
+Useful with some APIs where you want to query by "today", but the values in the database are stored as UTC
+*/
 export const asLocalTimeISO = (date: DateTime<true>) =>
   (date.setZone('utc', { keepLocalTime: true }) as DateTime<true>).toISO();

@@ -76,6 +76,24 @@ void main() {
     expect(args[4], isNull);
   });
 
+  test('accepts a decoded image for an animation request', () async {
+    final pointer = malloc<Uint8>(8)..asTypedList(8).setAll(0, [255, 0, 0, 255, 0, 0, 255, 255]);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockDecodedMessageHandler(channel, (
+      message,
+    ) async {
+      return <Object?>[
+        <Object?, Object?>{'pointer': pointer.address, 'width': 2, 'height': 1, 'rowBytes': 8},
+      ];
+    });
+
+    final codec = (await RemoteImageRequest(uri: 'https://example.test/animation').loadCodec())!;
+    final image = (await codec.getNextFrame()).image;
+
+    expect((image.width, image.height), (2, 1));
+    image.dispose();
+    codec.dispose();
+  });
+
   test('keeps portrait cover quality in a wide tile', () async {
     final image = await loadEncoded('assets/feature_message/ocr.webp', const ui.Size(963, 642));
 

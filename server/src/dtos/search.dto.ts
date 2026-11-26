@@ -1,4 +1,4 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { Place } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
@@ -78,29 +78,6 @@ const LargeAssetSearchSchema = BaseSearchWithResultsSchema.extend({
   size: z.coerce.number().int().min(1).max(1000).default(250).describe('Number of results to return'),
 }).meta({ id: 'LargeAssetSearchDto' });
 
-const SearchPlacesSchema = z
-  .object({
-    name: z.string().describe('Place name to search for'),
-  })
-  .meta({ id: 'SearchPlacesDto' });
-
-const SearchPeopleSchema = z
-  .object({
-    name: z.string().describe('Person name to search for'),
-    withHidden: stringToBool.optional().describe('Include hidden people'),
-  })
-  .meta({ id: 'SearchPeopleDto' });
-
-const PlacesResponseSchema = z
-  .object({
-    name: z.string().describe('Place name'),
-    latitude: z.number().meta({ format: 'double' }).describe('Latitude coordinate'),
-    longitude: z.number().meta({ format: 'double' }).describe('Longitude coordinate'),
-    admin1name: z.string().optional().describe('Administrative level 1 name (state/province)'),
-    admin2name: z.string().optional().describe('Administrative level 2 name (county/district)'),
-  })
-  .meta({ id: 'PlacesResponseDto' });
-
 export enum SearchSuggestionType {
   COUNTRY = 'country',
   STATE = 'state',
@@ -114,21 +91,6 @@ const SearchSuggestionTypeSchema = z
   .enum(SearchSuggestionType)
   .describe('Suggestion type')
   .meta({ id: 'SearchSuggestionType' });
-
-const SearchSuggestionRequestSchema = z
-  .object({
-    type: SearchSuggestionTypeSchema,
-    country: z.string().optional().describe('Filter by country'),
-    state: z.string().optional().describe('Filter by state/province'),
-    make: z.string().optional().describe('Filter by camera make'),
-    model: z.string().optional().describe('Filter by camera model'),
-    lensModel: z.string().optional().describe('Filter by lens model'),
-    includeNull: stringToBool
-      .optional()
-      .describe('Include null values in suggestions')
-      .meta(new HistoryBuilder().added('v1.111.0').stable('v2').getExtensions()),
-  })
-  .meta({ id: 'SearchSuggestionRequestDto' });
 
 const IdFilterSchema = nonEmptyPartial({
   eq: z.uuidv4(),
@@ -323,9 +285,9 @@ export const isFullyAlbumConfined = (filter: SearchFilter): boolean =>
   isAlbumConfined(filter) || (!!filter.or?.length && filter.or.every((branch) => isAlbumConfined(branch)));
 
 /**
- * The structured shape and the deprecated flat search fields are mutually exclusive
- * TODO(v4): remove together with the deprecated flat fields.
- */
+The structured shape and the deprecated flat search fields are mutually exclusive
+TODO(v4): remove together with the deprecated flat fields.
+*/
 const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) => {
   const deprecatedFields = Object.keys(schema.shape).filter(
     (field) => (schema.shape[field] as z.ZodType).meta()?.deprecated,
@@ -399,14 +361,44 @@ const SmartSearchSchema = withShapeExclusivity(
 ).meta({ id: 'SmartSearchDto' });
 
 export class RandomSearchDto extends createZodDto(RandomSearchSchema) {}
+
 export class LargeAssetSearchDto extends createZodDto(LargeAssetSearchSchema) {}
+
 export class MetadataSearchDto extends createZodDto(MetadataSearchSchema) {}
+
 export class StatisticsSearchDto extends createZodDto(StatisticsSearchSchema) {}
+
 export class SmartSearchDto extends createZodDto(SmartSearchSchema) {}
-export class SearchPlacesDto extends createZodDto(SearchPlacesSchema) {}
-export class SearchPeopleDto extends createZodDto(SearchPeopleSchema) {}
-export class PlacesResponseDto extends createZodDto(PlacesResponseSchema) {}
-export class SearchSuggestionRequestDto extends createZodDto(SearchSuggestionRequestSchema) {}
+
+export class SearchPlacesDto extends createZodDto({
+  name: z.string().describe('Place name to search for'),
+}) {}
+
+export class SearchPeopleDto extends createZodDto({
+  name: z.string().describe('Person name to search for'),
+  withHidden: stringToBool.optional().describe('Include hidden people'),
+}) {}
+
+export class PlacesResponseDto extends createZodDto({
+  name: z.string().describe('Place name'),
+  latitude: z.number().meta({ format: 'double' }).describe('Latitude coordinate'),
+  longitude: z.number().meta({ format: 'double' }).describe('Longitude coordinate'),
+  admin1name: z.string().optional().describe('Administrative level 1 name (state/province)'),
+  admin2name: z.string().optional().describe('Administrative level 2 name (county/district)'),
+}) {}
+
+export class SearchSuggestionRequestDto extends createZodDto({
+  type: SearchSuggestionTypeSchema,
+  country: z.string().optional().describe('Filter by country'),
+  state: z.string().optional().describe('Filter by state/province'),
+  make: z.string().optional().describe('Filter by camera make'),
+  model: z.string().optional().describe('Filter by camera model'),
+  lensModel: z.string().optional().describe('Filter by lens model'),
+  includeNull: stringToBool
+    .optional()
+    .describe('Include null values in suggestions')
+    .meta(new HistoryBuilder().added('v1.111.0').stable('v2').getExtensions()),
+}) {}
 
 export function mapPlaces(place: Place): PlacesResponseDto {
   return {
@@ -443,11 +435,6 @@ const SearchAlbumResponseSchema = z
 
 const SearchAssetResponseSchema = z
   .object({
-    total: z
-      .int()
-      .min(0)
-      .describe('Total number of matching assets')
-      .meta(new HistoryBuilder().deprecated('v3.0.0').getExtensions()),
     count: z.int().min(0).describe('Number of assets in this page'),
     items: z.array(AssetResponseSchema),
     facets: z.array(SearchFacetResponseSchema),
@@ -456,22 +443,14 @@ const SearchAssetResponseSchema = z
   })
   .meta({ id: 'SearchAssetResponseDto' });
 
-const SearchResponseSchema = z
-  .object({
-    albums: SearchAlbumResponseSchema,
-    assets: SearchAssetResponseSchema,
-  })
-  .meta({ id: 'SearchResponseDto' });
+export class SearchResponseDto extends createZodDto({
+  albums: SearchAlbumResponseSchema,
+  assets: SearchAssetResponseSchema,
+}) {}
 
-export class SearchResponseDto extends createZodDto(SearchResponseSchema) {}
-
-const SearchStatisticsResponseSchema = z
-  .object({
-    total: z.int().describe('Total number of matching assets'),
-  })
-  .meta({ id: 'SearchStatisticsResponseDto' });
-
-export class SearchStatisticsResponseDto extends createZodDto(SearchStatisticsResponseSchema) {}
+export class SearchStatisticsResponseDto extends createZodDto({
+  total: z.int().describe('Total number of matching assets'),
+}) {}
 
 const SearchExploreItemSchema = z
   .object({
@@ -480,11 +459,7 @@ const SearchExploreItemSchema = z
   })
   .meta({ id: 'SearchExploreItem' });
 
-const SearchExploreResponseSchema = z
-  .object({
-    fieldName: z.string().describe('Explore field name'),
-    items: z.array(SearchExploreItemSchema),
-  })
-  .meta({ id: 'SearchExploreResponseDto' });
-
-export class SearchExploreResponseDto extends createZodDto(SearchExploreResponseSchema) {}
+export class SearchExploreResponseDto extends createZodDto({
+  fieldName: z.string().describe('Explore field name'),
+  items: z.array(SearchExploreItemSchema),
+}) {}

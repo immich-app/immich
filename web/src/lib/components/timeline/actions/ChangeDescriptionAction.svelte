@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import AssetUpdateDescriptionConfirmModal from '$lib/modals/AssetUpdateDescriptionConfirmModal.svelte';
-  import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAssets } from '@immich/sdk';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import AssetUpdateDescriptionConfirmModal from '#lib/modals/AssetUpdateDescriptionConfirmModal.svelte';
+  import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { getOwnedAssetsWithWarning } from '#lib/utils/asset-utils.ts';
   import { modalManager } from '@immich/ui';
   import { mdiText } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -20,13 +20,11 @@
     const description = await modalManager.show(AssetUpdateDescriptionConfirmModal);
     if (description) {
       const ids = getOwnedAssetsWithWarning(assetMultiSelectManager.assets, authManager.user);
-
-      try {
-        await updateAssets({ assetBulkUpdateDto: { ids, description } });
-        assetMultiSelectManager.clear();
-      } catch (error) {
-        handleError(error, $t('errors.unable_to_change_description'));
-      }
+      await executeMutation(
+        () => updateAssetsMutation({ error: { toast: 'errors.unable_to_change_description' } }),
+        [{ assetBulkUpdateDto: { ids, description } }],
+        { onSuccess: () => assetMultiSelectManager.clear() },
+      );
     }
   };
 </script>

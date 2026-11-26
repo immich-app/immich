@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAsset, type AssetResponseDto } from '@immich/sdk';
-  import { Textarea, toastManager } from '@immich/ui';
+  import { updateAssetMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import type { AssetResponseDto } from '@immich/sdk';
+  import { Textarea, shortcut } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { fromAction } from 'svelte/attachments';
 
   interface Props {
     asset: AssetResponseDto;
@@ -20,12 +19,14 @@
     if (description === currentDescription) {
       return;
     }
-    try {
-      await updateAsset({ id: asset.id, updateAssetDto: { description } });
-      toastManager.primary($t('asset_description_updated'));
-    } catch (error) {
-      handleError(error, $t('cannot_update_the_description'));
-    }
+    await executeMutation(
+      () =>
+        updateAssetMutation({
+          success: { toast: 'asset_description_updated' },
+          error: { toast: 'cannot_update_the_description' },
+        }),
+      [{ id: asset.id, updateAssetDto: { description: description || null } }],
+    );
   };
 </script>
 
@@ -40,10 +41,10 @@
       onfocusout={handleFocusOut}
       placeholder={$t('add_a_description')}
       data-testid="autogrow-textarea"
-      {@attach fromAction(shortcut, () => ({
+      {@attach shortcut({
         shortcut: { key: 'Enter', ctrl: true },
         onShortcut: (e) => e.currentTarget.blur(),
-      }))}
+      })}
     />
   </section>
 {:else if description}

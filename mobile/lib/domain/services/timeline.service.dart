@@ -74,8 +74,8 @@ class TimelineFactory {
 
   TimelineService place(String place) => TimelineService(_timelineRepository.place(place, groupBy));
 
-  TimelineService person(List<String> userIds, String personId) =>
-      TimelineService(_timelineRepository.person(userIds, personId, groupBy));
+  TimelineService person(String userId, String personId) =>
+      TimelineService(_timelineRepository.person(userId, personId, groupBy));
 
   TimelineService fromAssets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssets(assets, type));
@@ -229,6 +229,15 @@ class TimelineService {
   int? getIndex(String heroTag) {
     final index = _buffer.indexWhere((a) => a.heroTag == heroTag);
     return index >= 0 ? _bufferOffset + index : null;
+  }
+
+  Set<BaseAsset> refreshAssets(Set<BaseAsset> assets) {
+    final byId = {
+      for (final asset in assets) ?asset.remoteId: asset,
+      for (final asset in assets) ?asset.localId: asset,
+    };
+    final reloaded = {for (final asset in _buffer) ?(byId[asset.remoteId] ?? byId[asset.localId]): asset};
+    return {for (final asset in assets) reloaded[asset] ?? asset};
   }
 
   Future<void> dispose() async {

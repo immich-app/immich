@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { AssetFileResponseDto, AssetFileSearchDto, mapAssetFile } from 'src/dtos/asset-file.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AssetFileType, CacheControl, JobName, Permission } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { ImmichFileResponse, getFileNameWithoutExtension, getFilenameExtension } from 'src/utils/file.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -43,6 +44,7 @@ export class AssetFileService extends BaseService {
     }
 
     await this.assetFileRepository.delete(id);
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.assetFile({ id })] });
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [file.path] } });
   }
 }

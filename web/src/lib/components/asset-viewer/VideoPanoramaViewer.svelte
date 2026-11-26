@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAssetPlaybackUrl, getAssetUrl } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetUrl } from '#lib/utils.ts';
   import type { AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';

@@ -1,6 +1,6 @@
+import { OpenQueryParam } from '#lib/constants.ts';
+import { Route } from '#lib/route.ts';
 import { redirect } from '@sveltejs/kit';
-import { OpenQueryParam } from '$lib/constants';
-import { Route } from '$lib/route';
 import type { PageLoad } from './$types';
 
 enum LinkTarget {
@@ -8,6 +8,7 @@ enum LinkTarget {
   UNSUBSCRIBE = 'unsubscribe',
   VIEW_ASSET = 'view_asset',
   ACTIVATE_LICENSE = 'activate_license',
+  BACKUPS = 'backups',
 }
 
 export const load = (({ url }) => {
@@ -20,6 +21,10 @@ export const load = (({ url }) => {
 
     case LinkTarget.UNSUBSCRIBE: {
       return redirect(307, Route.userSettings({ isOpen: OpenQueryParam.NOTIFICATIONS }));
+    }
+
+    case LinkTarget.BACKUPS: {
+      return redirect(307, Route.backups());
     }
 
     case LinkTarget.VIEW_ASSET: {

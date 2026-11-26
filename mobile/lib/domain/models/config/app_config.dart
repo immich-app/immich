@@ -42,6 +42,7 @@ abstract class AppConfig with _$AppConfig {
     @Default(BackupConfig()) BackupConfig backup,
     @Default(NetworkConfig()) NetworkConfig network,
     @Default(ShareConfig()) ShareConfig share,
+    Set<String>? supportedFileExtensions,
     @Default(FeatureMessageConfig()) FeatureMessageConfig featureMessage,
   }) = _AppConfig;
 
@@ -75,6 +76,7 @@ abstract class AppConfig with _$AppConfig {
             .timelineTilesPerRow => timeline.tilesPerRow,
             .timelineGroupAssetsBy => timeline.groupAssetsBy,
             .timelineStorageIndicator => timeline.storageIndicator,
+            .timelineSmoothScrubbing => timeline.smoothScrubbing,
             .mapShowFavoriteOnly => map.favoritesOnly,
             .mapRelativeDate => map.relativeDays,
             .mapCustomFrom => map.customFrom,
@@ -92,6 +94,7 @@ abstract class AppConfig with _$AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .supportedFileExtensions => supportedFileExtensions,
             .featureMessageSeenRelease => featureMessage.seenRelease,
           })
           as T;
@@ -131,6 +134,7 @@ abstract class AppConfig with _$AppConfig {
       .timelineTilesPerRow => copyWith(timeline: timeline.copyWith(tilesPerRow: value as int)),
       .timelineGroupAssetsBy => copyWith(timeline: timeline.copyWith(groupAssetsBy: value as GroupAssetsBy)),
       .timelineStorageIndicator => copyWith(timeline: timeline.copyWith(storageIndicator: value as bool)),
+      .timelineSmoothScrubbing => copyWith(timeline: timeline.copyWith(smoothScrubbing: value as bool)),
       .mapShowFavoriteOnly => copyWith(map: map.copyWith(favoritesOnly: value as bool)),
       .mapRelativeDate => copyWith(map: map.copyWith(relativeDays: value as int)),
       .mapCustomFrom => copyWith(map: map.copyWith(customFrom: .fromNullable(value as DateTime?))),
@@ -148,6 +152,7 @@ abstract class AppConfig with _$AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .supportedFileExtensions => copyWith(supportedFileExtensions: value as Set<String>?),
       .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
     };
   }

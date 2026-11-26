@@ -417,13 +417,49 @@ final sharedWithPartnerProvider = StreamProvider.autoDispose<Iterable<Partner>>(
   return ref.watch(partnerServiceProvider).search(currentUser.id, .sharedWith);
 });
 
+class _QuickAccessItem {
+  final Widget leading;
+  final String title;
+  final VoidCallback onTap;
+  final EdgeInsetsGeometry? contentPadding;
+
+  const _QuickAccessItem({required this.leading, required this.title, required this.onTap, this.contentPadding});
+}
+
 class _QuickAccessButtonList extends ConsumerWidget {
   const _QuickAccessButtonList();
+
+  static const _tileRadius = 20.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final partnerSharedWithAsync = ref.watch(sharedWithPartnerProvider);
     final partners = partnerSharedWithAsync.valueOrNull ?? [];
+
+    final items = [
+      _QuickAccessItem(
+        leading: const Icon(Icons.folder_outlined, size: 26),
+        title: context.t.folders,
+        onTap: () => context.pushRoute(FolderRoute()),
+      ),
+      _QuickAccessItem(
+        leading: const Icon(Icons.lock_outline_rounded, size: 26),
+        title: context.t.locked_folder,
+        onTap: () => context.pushRoute(const LockedFolderRoute()),
+      ),
+      _QuickAccessItem(
+        leading: const Icon(Icons.group_outlined, size: 26),
+        title: context.t.partners,
+        onTap: () => context.pushRoute(const PartnerRoute()),
+      ),
+      for (final partner in partners)
+        _QuickAccessItem(
+          contentPadding: const EdgeInsets.only(left: 12.0, right: 18.0),
+          leading: PartnerUserAvatar(userId: partner.id, name: partner.name),
+          title: context.t.partner_list_user_photos(user: partner.name),
+          onTap: () => context.pushRoute(PartnerDetailRoute(partner: partner)),
+        ),
+    ];
 
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 32),
@@ -431,7 +467,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: context.colorScheme.onSurface.withAlpha(10), width: 1),
-            borderRadius: const BorderRadius.all(Radius.circular(20)),
+            borderRadius: const BorderRadius.all(Radius.circular(_tileRadius)),
             gradient: LinearGradient(
               colors: [
                 context.colorScheme.primary.withAlpha(10),
@@ -442,83 +478,33 @@ class _QuickAccessButtonList extends ConsumerWidget {
               end: Alignment.bottomCenter,
             ),
           ),
-          child: ListView(
+          child: ListView.builder(
             shrinkWrap: true,
             padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
-            children: [
-              ListTile(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              final isFirst = index == 0;
+              final isLast = index == items.length - 1;
+              return ListTile(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(20),
-                    topRight: const Radius.circular(20),
-                    bottomLeft: Radius.circular(partners.isEmpty ? 20 : 0),
-                    bottomRight: Radius.circular(partners.isEmpty ? 20 : 0),
+                    topLeft: Radius.circular(isFirst ? _tileRadius : 0),
+                    topRight: Radius.circular(isFirst ? _tileRadius : 0),
+                    bottomLeft: Radius.circular(isLast ? _tileRadius : 0),
+                    bottomRight: Radius.circular(isLast ? _tileRadius : 0),
                   ),
                 ),
-                leading: const Icon(Icons.folder_outlined, size: 26),
-                title: Text(
-                  context.t.folders,
-                  style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
-                ),
-                onTap: () => context.pushRoute(FolderRoute()),
-              ),
-              ListTile(
-                leading: const Icon(Icons.lock_outline_rounded, size: 26),
-                title: Text(
-                  context.t.locked_folder,
-                  style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
-                ),
-                onTap: () => context.pushRoute(const LockedFolderRoute()),
-              ),
-              ListTile(
-                leading: const Icon(Icons.group_outlined, size: 26),
-                title: Text(
-                  context.t.partners,
-                  style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
-                ),
-                onTap: () => context.pushRoute(const PartnerRoute()),
-              ),
-              _PartnerList(partners: partners.toList()),
-            ],
+                contentPadding: item.contentPadding,
+                leading: item.leading,
+                title: Text(item.title, style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
+                onTap: item.onTap,
+              );
+            },
           ),
         ),
       ),
-    );
-  }
-}
-
-class _PartnerList extends StatelessWidget {
-  const _PartnerList({required this.partners});
-
-  final List<Partner> partners;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: EdgeInsets.zero,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: partners.length,
-      shrinkWrap: true,
-      itemBuilder: (context, index) {
-        final partner = partners[index];
-        final isLastItem = index == partners.length - 1;
-        return ListTile(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(isLastItem ? 20 : 0),
-              bottomRight: Radius.circular(isLastItem ? 20 : 0),
-            ),
-          ),
-          contentPadding: const EdgeInsets.only(left: 12.0, right: 18.0),
-          leading: PartnerUserAvatar(userId: partner.id, name: partner.name),
-          title: Text(
-            context.t.partner_list_user_photos(user: partner.name),
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          onTap: () => context.pushRoute(PartnerDetailRoute(partner: partner)),
-        );
-      },
     );
   }
 }

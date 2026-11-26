@@ -1,5 +1,5 @@
-import { OpenQueryParam } from '$lib/constants';
-import { Route } from '$lib/route';
+import { OpenQueryParam } from '#lib/constants.ts';
+import { Route } from '#lib/route.ts';
 
 describe('Route', () => {
   describe(Route.login.name, () => {
@@ -11,11 +11,11 @@ describe('Route', () => {
   });
 
   describe(Route.search.name, () => {
-    it('should work', () => {
+    it('omits the query when the search terms are empty', () => {
       expect(Route.search({})).toBe('/search');
     });
 
-    it('should work', () => {
+    it('drops undefined terms from the query', () => {
       expect(Route.search({ make: undefined, model: 'Immich' })).toBe('/search?query=%7B%22model%22%3A%22Immich%22%7D');
     });
 
@@ -39,7 +39,7 @@ describe('Route', () => {
   });
 
   describe(Route.tags.name, () => {
-    it('should work', () => {
+    it('links to the tag root', () => {
       expect(Route.tags()).toBe('/tags');
     });
 
@@ -53,7 +53,7 @@ describe('Route', () => {
   });
 
   describe(Route.systemSettings.name, () => {
-    it('should work', () => {
+    it('links to the settings page', () => {
       expect(Route.systemSettings()).toBe('/admin/system-settings');
     });
 
@@ -63,21 +63,14 @@ describe('Route', () => {
   });
 
   describe(Route.continue.name, () => {
-    beforeEach(() => {
-      // @ts-expect-error - override location for testing
-      // eslint-disable-next-line unicorn/no-global-object-property-assignment
-      globalThis.location = new URL('https://my.immich.server');
-      vi.spyOn(document, 'baseURI', 'get').mockReturnValue('https://my.immich.server/');
-    });
-
     it('should resolve relative URLs', () => {
-      expect(Route.continue('/some/path', '/fallback')).property('href', 'https://my.immich.server/some/path');
+      expect(Route.continue('/some/path', '/fallback')).property('href', `${location.origin}/some/path`);
     });
 
     it('should resolve absolute URLs on the same origin', () => {
-      expect(Route.continue('https://my.immich.server/some/path', '/fallback')).property(
+      expect(Route.continue(`${location.origin}/some/path`, '/fallback')).property(
         'href',
-        'https://my.immich.server/some/path',
+        `${location.origin}/some/path`,
       );
     });
 
@@ -86,7 +79,7 @@ describe('Route', () => {
     });
 
     it('should return fallback for null URLs', () => {
-      expect(Route.continue(null, '/fallback')).property('href', 'https://my.immich.server/fallback');
+      expect(Route.continue(null, '/fallback')).property('href', `${location.origin}/fallback`);
     });
 
     it('should block javascript: URLs', () => {

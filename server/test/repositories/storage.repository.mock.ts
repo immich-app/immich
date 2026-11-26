@@ -1,8 +1,8 @@
 import { ChokidarOptions } from 'chokidar';
 import { Mocked, vitest } from 'vitest';
-import type { RepositoryInterface } from 'src/types.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { StorageRepository, WatchEvents } from 'src/repositories/storage.repository.js';
+import type { RepositoryInterface } from 'src/types.js';
 
 interface MockWatcherOptions {
   items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;
@@ -69,8 +69,9 @@ export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRe
     readdir: vitest.fn(),
     realpath: vitest.fn().mockImplementation((filepath: string) => Promise.resolve(filepath)),
     stat: vitest.fn(),
-    crawl: vitest.fn(),
+    createMatcher: vitest.fn().mockImplementation(StorageRepository.prototype.createMatcher),
     walk: vitest.fn().mockImplementation(async function* () {}),
+    walkOrdered: vitest.fn().mockImplementation(async function* () {}),
     rename: vitest.fn(),
     copyFile: vitest.fn(),
     utimes: vitest.fn(),

@@ -3,6 +3,7 @@ packages:
   - docs
   - e2e
   - i18n
+  - native/crates/native_core_node
   - server
   - plugins
   - web
@@ -14,6 +15,7 @@ allowBuilds:
   '@scarf/scarf': false
   '@swc/core': false
   bcrypt: true
+  better-sqlite3: true
   canvas: false
   core-js: false
   cpu-features: false
@@ -32,7 +34,7 @@ overrides:
   canvas: 3.2.3
   sharp: ^0.35.3
   # 1.9.3-1.9.5 are confirmed broken
-  tsc-alias: 1.9.2
+  tsc-alias: 1.9.10
 packageExtensions:
   nestjs-kysely:
     dependencies:
@@ -70,5 +72,8 @@ shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
   - '@immich/ui'
-  - '@immich/sql-tools@0.6.3'
+  - '@immich/sql-tools@0.8.0'
   - '@nestjs/cli@12.0.1'
+  - '@futo-org/*'
+  - '@immich/nestjs-standard-schema@0.1.0'
+  - '@immich/walkrs@0.0.17'

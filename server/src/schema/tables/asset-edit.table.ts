@@ -3,12 +3,12 @@ import {
   AfterInsertTrigger,
   Column,
   ForeignKeyColumn,
-  type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   Unique,
   UpdateDateColumn,
+  type Generated,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { AssetEditAction, type AssetEditParameters } from 'src/dtos/editing.dto.js';

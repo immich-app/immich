@@ -16,8 +16,8 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
@@ -57,7 +57,7 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     registerFallbackValue(LocalAssetStub.image1);
-    registerFallbackValue(const SemVer(major: 2, minor: 5, patch: 0));
+    registerFallbackValue(const ServerVersion(major: 2, minor: 5, patch: 0));
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: StoreRepository(db));
@@ -111,9 +111,9 @@ void main() {
     when(() => mockSyncApiRepo.deleteSyncAck(any())).thenAnswer((_) async => {});
 
     when(() => mockApi.serverInfoApi).thenReturn(mockServerApi);
-    when(
-      () => mockServerApi.getServerVersion(),
-    ).thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0, prerelease: null));
+    when(() => mockServerApi.getServerVersion()).thenAnswer(
+      (_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0, prerelease: null, featureLevel: 1),
+    );
 
     when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);
@@ -131,7 +131,7 @@ void main() {
     when(
       () => mockSyncStreamRepo.updateAssetsExifV1(any(), debugLabel: any(named: 'debugLabel')),
     ).thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updateMemoriesV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateMemoriesV2(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteMemoriesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateMemoryAssetsV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteMemoryAssetsV1(any())).thenAnswer(successHandler);
@@ -320,7 +320,7 @@ void main() {
       await simulateEvents(events);
 
       verifyInOrder([
-        () => mockSyncStreamRepo.updateMemoriesV1(any()),
+        () => mockSyncStreamRepo.updateMemoriesV2(any()),
         () => mockSyncApiRepo.ack(["5"]),
         () => mockSyncStreamRepo.deleteMemoriesV1(any()),
         () => mockSyncApiRepo.ack(["6"]),
@@ -349,14 +349,14 @@ void main() {
         () => mockSyncApiRepo.ack(["1"]),
         () => mockSyncStreamRepo.updateMemoryAssetsV1(any()),
         () => mockSyncApiRepo.ack(["7"]),
-        () => mockSyncStreamRepo.updateMemoriesV1(any()),
+        () => mockSyncStreamRepo.updateMemoriesV2(any()),
         () => mockSyncApiRepo.ack(["5"]),
       ]);
       verifyNever(() => mockAbortCallbackWrapper());
     });
 
     test("handles memory sync failure gracefully", () async {
-      when(() => mockSyncStreamRepo.updateMemoriesV1(any())).thenThrow(Exception("Memory sync failed"));
+      when(() => mockSyncStreamRepo.updateMemoriesV2(any())).thenThrow(Exception("Memory sync failed"));
 
       final events = [SyncStreamStub.memoryV1, SyncStreamStub.userV1Admin];
 
@@ -386,8 +386,94 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockSyncStreamRepo.updateMemoriesV1(any())).called(1);
+      verify(() => mockSyncStreamRepo.updateMemoriesV2(any())).called(1);
       verify(() => mockSyncApiRepo.ack(["5"])).called(1);
+    });
+
+    test("processes memory v2 events", () async {
+      final events = [SyncStreamStub.memoryV2, SyncStreamStub.memoryToAssetV2];
+
+      await simulateEvents(events);
+
+      verifyInOrder([
+        () => mockSyncStreamRepo.updateMemoriesV2(any()),
+        () => mockSyncApiRepo.ack(["9"]),
+        () => mockSyncStreamRepo.updateMemoryAssetsV1(any()),
+        () => mockSyncApiRepo.ack(["10"]),
+      ]);
+    });
+  });
+
+  group("SyncStreamService - pending reset", () {
+    SyncEvent pendingReset(SyncRequestType type, String ack) =>
+        SyncEvent(type: SyncEntityType.syncPendingResetV1, data: SyncPendingResetV1(type: type), ack: ack);
+
+    setUp(() {
+      when(() => mockSyncStreamRepo.resetAssetOcrV1()).thenAnswer((_) async {});
+    });
+
+    test("resets OCR and acks the event", () async {
+      await simulateEvents([pendingReset(SyncRequestType.assetOcrV1, "1")]);
+
+      verifyInOrder([() => mockSyncStreamRepo.resetAssetOcrV1(), () => mockSyncApiRepo.ack(["1"])]);
+    });
+
+    test("acks each reset individually", () async {
+      await simulateEvents([
+        pendingReset(SyncRequestType.assetOcrV1, "1"),
+        pendingReset(SyncRequestType.assetOcrV1, "2"),
+      ]);
+
+      verifyInOrder([
+        () => mockSyncStreamRepo.resetAssetOcrV1(),
+        () => mockSyncApiRepo.ack(["1"]),
+        () => mockSyncStreamRepo.resetAssetOcrV1(),
+        () => mockSyncApiRepo.ack(["2"]),
+      ]);
+    });
+
+    test("throws and does not ack an unsupported reset", () async {
+      await expectLater(
+        simulateEvents([pendingReset(SyncRequestType.usersV1, "1")]),
+        throwsA(isA<UnsupportedError>()),
+      );
+
+      verifyNever(() => mockSyncStreamRepo.resetAssetOcrV1());
+      verifyNever(() => mockSyncApiRepo.ack(any()));
+    });
+  });
+
+  group("SyncStreamService - server version", () {
+    Future<ServerVersion> syncWith(ServerVersionResponseDto dto) async {
+      when(() => mockServerApi.getServerVersion()).thenAnswer((_) async => dto);
+
+      await sut.sync();
+
+      final captured = verify(
+        () => mockSyncApiRepo.streamChanges(
+          any(),
+          onReset: any(named: 'onReset'),
+          serverVersion: captureAny(named: 'serverVersion'),
+          abortSignal: any(named: 'abortSignal'),
+        ),
+      ).captured;
+      return captured.single as ServerVersion;
+    }
+
+    test("supports pending resets from feature level 3", () async {
+      final version = await syncWith(
+        ServerVersionResponseDto(major: 3, minor: 4, patch_: 0, prerelease: null, featureLevel: 3),
+      );
+
+      expect(version.supportsSyncPendingReset, isTrue);
+    });
+
+    test("does not support pending resets below feature level 3", () async {
+      final version = await syncWith(
+        ServerVersionResponseDto(major: 3, minor: 4, patch_: 0, prerelease: null, featureLevel: 2),
+      );
+
+      expect(version.supportsSyncPendingReset, isFalse);
     });
   });
 
@@ -550,39 +636,11 @@ void main() {
   });
 
   group('SyncStreamService - Sync Migration', () {
-    test('ensure that <2.5.0 migrations run', () async {
+    test('ensure that asset payload migrations run', () async {
       await Store.put(StoreKey.syncMigrationStatus, "[]");
-      when(
-        () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
-
-      await sut.sync();
-
-      verifyInOrder([
-        () => mockSyncApiRepo.deleteSyncAck([
-          SyncEntityType.assetExifV1,
-          SyncEntityType.partnerAssetExifV1,
-          SyncEntityType.albumAssetExifCreateV1,
-          SyncEntityType.albumAssetExifUpdateV1,
-        ]),
-        () => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset(),
-      ]);
-
-      // should only run on server >2.5.0
-      verifyNever(
-        () => mockSyncApiRepo.deleteSyncAck([
-          SyncEntityType.assetV1,
-          SyncEntityType.partnerAssetV1,
-          SyncEntityType.albumAssetCreateV1,
-          SyncEntityType.albumAssetUpdateV1,
-        ]),
+      when(() => mockServerApi.getServerVersion()).thenAnswer(
+        (_) async => ServerVersionResponseDto(major: 3, minor: 0, patch_: 0, prerelease: null, featureLevel: 1),
       );
-    });
-    test('ensure that >=2.5.0 migrations run', () async {
-      await Store.put(StoreKey.syncMigrationStatus, "[]");
-      when(
-        () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0, prerelease: null));
       await sut.sync();
 
       verifyInOrder([
@@ -598,6 +656,7 @@ void main() {
           SyncEntityType.albumAssetCreateV1,
           SyncEntityType.albumAssetUpdateV1,
         ]),
+        () => mockSyncApiRepo.deleteSyncAck([SyncEntityType.assetV1, SyncEntityType.assetV2]),
       ]);
 
       // v20260128_ResetAssetV1 writes that v20260128_CopyExifWidthHeightToAsset has been completed
@@ -610,9 +669,9 @@ void main() {
         '["${SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name}"]',
       );
 
-      when(
-        () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
+      when(() => mockServerApi.getServerVersion()).thenAnswer(
+        (_) async => ServerVersionResponseDto(major: 3, minor: 0, patch_: 0, prerelease: null, featureLevel: 1),
+      );
 
       await sut.sync();
 

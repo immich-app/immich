@@ -1,4 +1,4 @@
-import { getWorkflowDefaultConfig } from '$lib/utils/workflow';
+import { getWorkflowDefaultConfig } from '#lib/utils/workflow.ts';
 
 describe(getWorkflowDefaultConfig.name, () => {
   describe('required properties', () => {
@@ -15,6 +15,25 @@ describe(getWorkflowDefaultConfig.name, () => {
           required: ['test'],
         }),
       ).toEqual({ test: true });
+    });
+
+    it('should default properties after a property with a default value', () => {
+      expect(
+        getWorkflowDefaultConfig({
+          type: 'object',
+          properties: {
+            first: {
+              type: 'string',
+              default: 'value',
+            },
+            second: {
+              type: 'string',
+              array: true,
+            },
+          },
+          required: ['first', 'second'],
+        }),
+      ).toEqual({ first: 'value', second: [] });
     });
 
     it('should default to an empty array', () => {

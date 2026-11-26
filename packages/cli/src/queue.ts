@@ -28,11 +28,11 @@ export const defaultQueueOptions = {
 };
 
 /**
- * An in-memory queue that processes tasks in parallel with a given concurrency.
- * @see {@link https://www.npmjs.com/package/fastq}
- * @template T - The type of the worker task data.
- * @template R - The type of the worker output data.
- */
+An in-memory queue that processes tasks in parallel with a given concurrency.
+@see {@link https://www.npmjs.com/package/fastq}
+@template T - The type of the worker task data.
+@template R - The type of the worker output data.
+*/
 export class Queue<T, R> {
   private readonly queue: fastq.queueAsPromised<string, Task<T, R>>;
   private readonly store = new Map<string, Task<T, R>>();
@@ -40,10 +40,10 @@ export class Queue<T, R> {
   readonly worker: (data: T) => Promise<R>;
 
   /**
-   * Create a new queue.
-   * @param worker - The worker function that processes the task.
-   * @param options - The queue options.
-   */
+  Create a new queue.
+  @param worker - The worker function that processes the task.
+  @param options - The queue options.
+  */
   constructor(worker: (data: T) => Promise<R>, options?: QueueOptions) {
     this.options = { ...defaultQueueOptions, ...options };
     this.worker = worker;
@@ -65,21 +65,21 @@ export class Queue<T, R> {
   }
 
   /**
-   * Wait for the queue to be empty.
-   * @returns Promise<void> - The returned Promise will be resolved when all tasks in the queue have been processed by a worker.
-   * This promise could be ignored as it will not lead to a `unhandledRejection`.
-   */
+  Wait for the queue to be empty.
+  @returns Promise<void> - The returned Promise will be resolved when all tasks in the queue have been processed by a worker.
+  This promise could be ignored as it will not lead to a `unhandledRejection`.
+  */
   drained(): Promise<void> {
     return this.queue.drained();
   }
 
   /**
-   * Add a task at the end of the queue.
-   * @see {@link https://www.npmjs.com/package/fastq}
-   * @param data
-   * @returns Promise<void> - A Promise that will be fulfilled (rejected) when the task is completed successfully (unsuccessfully).
-   * This promise could be ignored as it will not lead to a `unhandledRejection`.
-   */
+  Add a task at the end of the queue.
+  @see {@link https://www.npmjs.com/package/fastq}
+  @param data
+  @returns Promise<void> - A Promise that will be fulfilled (rejected) when the task is completed successfully (unsuccessfully).
+  This promise could be ignored as it will not lead to a `unhandledRejection`.
+  */
   async push(data: T): Promise<Task<T, R>> {
     const id = uniqueId();
     const task: Task<T, R> = { id, status: 'idle', error: undefined, count: 0, data, result: undefined };

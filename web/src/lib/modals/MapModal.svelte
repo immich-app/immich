@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { timeToLoadTheMap } from '$lib/constants';
-  import { delay } from '$lib/utils/asset-utils';
+  import { timeToLoadTheMap } from '#lib/constants.ts';
+  import { delay } from '#lib/utils/asset-utils.ts';
   import type { MapMarkerResponseDto } from '@immich/sdk';
   import { LoadingSpinner, Modal, ModalBody } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -17,7 +17,7 @@
   <ModalBody>
     <div class="flex size-full flex-col gap-2 rounded-2xl border border-gray-300 dark:border-light">
       <div class="h-[75vh] min-h-[300px] w-full">
-        {#await import('$lib/components/shared-components/map/Map.svelte')}
+        {#await import('#lib/components/shared-components/map/Map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
             <div class="flex size-full items-center justify-center">

@@ -1,8 +1,8 @@
+import { MediaType } from '#lib/constants.ts';
 import type { QueueResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
-import { MediaType } from '$lib/constants';
 
 export type LatLng = { lng: number; lat: number };
 
@@ -81,6 +81,7 @@ export type PeopleFilter = {
   sharedWithId?: string;
   isFavorite?: boolean;
   isHidden?: boolean;
+  name?: string;
 };
 
 export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
@@ -99,7 +100,7 @@ export type JSONSchemaProperty = {
   properties?: Record<string, JSONSchemaProperty>;
   required?: string[];
   uiHint?: {
-    type?: 'AlbumId' | 'AssetId' | 'PersonId' | 'TagId';
+    type?: 'AlbumId' | 'AssetId' | 'PersonId' | 'TagId' | 'TagValue';
     order?: number;
   };
 };

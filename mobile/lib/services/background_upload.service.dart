@@ -186,6 +186,8 @@ class BackgroundUploadService {
     await _storageRepository.clearCache();
     await _uploadRepository.reset(kBackupGroup);
     await _uploadRepository.deleteDatabaseRecords(kBackupGroup);
+    await _uploadRepository.reset(kBackupLivePhotoGroup);
+    await _uploadRepository.deleteDatabaseRecords(kBackupLivePhotoGroup);
 
     final activeTasks = await _uploadRepository.getActiveTasks(kBackupGroup);
     return activeTasks.length;
@@ -287,9 +289,6 @@ class BackgroundUploadService {
     ///
     /// We implement two separate upload groups for this, the normal one for the video file
     /// and the higher priority group for the photo file because the video file is already uploaded.
-    ///
-    /// The cancel operation will only cancel the video group (normal group), the photo group will not
-    /// be touched, as the video file is already uploaded.
 
     if (entity.isLivePhoto) {
       file = await _storageRepository.getMotionFileForAsset(asset);
@@ -306,6 +305,10 @@ class BackgroundUploadService {
     // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
     final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
     final originalFileName = p.setExtension(fileName, extension);
+    if (await _backupRepository.markIfUnsupported(asset.id, extension)) {
+      _logger.info("Skipping ${asset.id}, the server does not accept $originalFileName");
+      return null;
+    }
 
     final String metadata = UploadTaskMetadata(
       localAssetId: asset.id,

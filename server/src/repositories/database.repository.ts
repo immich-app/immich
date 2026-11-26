@@ -1,14 +1,13 @@
 import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
-import { Kysely, sql } from 'kysely';
+import { IsolationLevel, Kysely, sql } from 'kysely';
 import { FileMigrationProvider, Migrator } from 'kysely/migration';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { diff } from 'semver';
 import z from 'zod';
-import type { ExtensionVersion, VectorExtension } from 'src/types.js';
 import {
   EXTENSION_NAMES,
   POSTGRES_VERSION_RANGE,
@@ -19,6 +18,7 @@ import {
   VECTOR_VERSION_RANGE,
   serverVersion,
 } from 'src/constants.js';
+import { TransactionHandle } from 'src/database.js';
 import { GenerateSql } from 'src/decorators.js';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -26,8 +26,10 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { immich_uuid_v7 } from 'src/schema/functions.js';
 // eslint-disable-next-line import-x/no-duplicates
 import 'src/schema/index.js'; // make sure all schema definitions are imported for schemaFromCode
+
 // eslint-disable-next-line import-x/no-duplicates
 import { DB } from 'src/schema/index.js';
+import type { ExtensionVersion, VectorExtension } from 'src/types.js';
 import { vectorIndexQuery } from 'src/utils/database.js';
 
 export let cachedVectorExtension: VectorExtension | undefined;
@@ -242,7 +244,8 @@ export class DatabaseRepository {
       await sql`
         ALTER TABLE ${sql.raw(table)}
         ALTER COLUMN embedding
-        SET DATA TYPE vector(${sql.raw(String(dimSize))})`.execute(tx);
+        SET DATA TYPE vector(${sql.raw(String(dimSize))})
+      `.execute(tx);
       await sql.raw(vectorIndexQuery({ vectorExtension, table, indexName, lists })).execute(tx);
     });
     this.logger.log(`Reindexed ${indexName}`);
@@ -289,6 +292,7 @@ export class DatabaseRepository {
       functions: { ignoreExtra: false },
       parameters: { ignoreExtra: true },
       extensions: { ignoreExtra: true },
+      ignorePrefixes: ['futo_backups_'],
     });
 
     return drift;
@@ -311,7 +315,7 @@ export class DatabaseRepository {
         .int()
         .min(1)
         .max(2 ** 16)
-        .safeParse(dimSize).success
+        .validate(dimSize)
     ) {
       this.logger.warn(`Could not retrieve dimension size of column '${column}' in table '${table}', assuming 512`);
       return 512;
@@ -325,7 +329,7 @@ export class DatabaseRepository {
         .int()
         .min(1)
         .max(2 ** 16)
-        .safeParse(dimSize).success
+        .validate(dimSize)
     ) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
@@ -399,7 +403,7 @@ export class DatabaseRepository {
       this.logger.error(`Migrations failed: ${error}`);
 
       const missing =
-        error instanceof Error ? error.message.match(/previously executed migration (.+) is missing/u) : null;
+        error instanceof Error ? /previously executed migration (.+) is missing/u.exec(error.message) : null;
       if (missing) {
         throw new Error(
           `Migration "${missing[1]}" was already applied to this database but is not in this version of Immich (${serverVersion}). ` +
@@ -481,6 +485,10 @@ export class DatabaseRepository {
 
   async wait(lock: DatabaseLock): Promise<void> {
     await this.asyncLock.acquire(DatabaseLock[lock], () => {});
+  }
+
+  async transaction(isolationLevel: IsolationLevel) {
+    return new TransactionHandle(await this.db.startTransaction().setIsolationLevel(isolationLevel).execute());
   }
 
   private async acquireLock(lock: DatabaseLock, connection: Kysely<DB>): Promise<void> {

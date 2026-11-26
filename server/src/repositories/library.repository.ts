@@ -1,18 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { type Insertable, type Kysely, type Updateable, sql } from 'kysely';
+import { sql, type Insertable, type Kysely, type Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto.js';
 import { AssetType, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryTable } from 'src/schema/tables/library.table.js';
-
-export enum AssetSyncResult {
-  DO_NOTHING,
-  UPDATE,
-  OFFLINE,
-  CHECK_OFFLINE,
-}
 
 @Injectable()
 export class LibraryRepository {
@@ -91,7 +84,7 @@ export class LibraryRepository {
           )
           .as('videos'),
       )
-      .select((eb) => eb.fn.coalesce((eb) => eb.fn.sum('asset_exif.fileSizeInByte'), eb.val(0)).as('usage'))
+      .select((eb) => eb.fn.coalesce((eb) => eb.fn.sum('asset_exif.fileSizeInByte'), eb.lit(0)).as('usage'))
       .where('asset.deletedAt', 'is', null)
       .groupBy('library.id')
       .where('library.id', '=', id)

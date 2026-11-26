@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { type ExpressionBuilder, type Insertable, type Kysely, type Updateable, sql } from 'kysely';
+import { sql, type ExpressionBuilder, type Insertable, type Kysely, type Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
-import type { UserMetadata, UserMetadataItem } from 'src/types.js';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { AssetType, AssetVisibility, UserStatus } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
+import type { UserMetadata, UserMetadataItem } from 'src/types.js';
 import { asUuid } from 'src/utils/database.js';
 
 export interface UserListFilter {
@@ -74,6 +74,18 @@ export class UserRepository {
       .where('user.isAdmin', '=', true)
       .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
+  }
+
+  @GenerateSql()
+  async getAdminIds() {
+    const admins = await this.db
+      .selectFrom('user')
+      .select('user.id')
+      .where('user.isAdmin', '=', true)
+      .where('user.deletedAt', 'is', null)
+      .execute();
+
+    return admins.map(({ id }) => id);
   }
 
   @GenerateSql()

@@ -11,11 +11,11 @@ final class _DateTimeClampType implements DialectAwareSqlType<DateTime> {
 
   @override
   Object mapToSqlParameter(GenerationContext context, DateTime value) =>
-      context.typeMapping.mapToSqlVariable(_clampDateTime(value))!;
+      context.typeMapping.mapToSqlVariable(clampDateTime(value))!;
 
   @override
   String mapToSqlLiteral(GenerationContext context, DateTime value) =>
-      context.typeMapping.mapToSqlLiteral(_clampDateTime(value));
+      context.typeMapping.mapToSqlLiteral(clampDateTime(value));
 
   @override
   String sqlTypeName(GenerationContext context) => DriftSqlType.dateTime.sqlTypeName(context);
@@ -28,7 +28,7 @@ final class _DateTimeClampType implements DialectAwareSqlType<DateTime> {
 final DateTime _floor = DateTime.utc(1);
 final DateTime _ceiling = DateTime.utc(9999, 12, 31);
 
-DateTime _clampDateTime(DateTime value) {
+DateTime clampDateTime(DateTime value) {
   if (value.isBefore(_floor)) {
     return _floor;
   }

@@ -1,11 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { SharingDirection } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { PartnerService } from 'src/services/partner.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { PartnerFactory } from 'test/factories/partner.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { getForPartner } from 'test/mappers.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 describe(PartnerService.name, () => {
   let sut: PartnerService;
@@ -65,6 +66,22 @@ describe(PartnerService.name, () => {
       });
     });
 
+    it('should tell both partners and refresh the map of the shared with user', async () => {
+      const [user1, user2] = [UserFactory.create(), UserFactory.create()];
+      const partner = PartnerFactory.from().sharedBy(user1).sharedWith(user2).build();
+      mocks.partner.get.mockResolvedValue(void 0);
+      mocks.user.get.mockResolvedValue(user2);
+      mocks.partner.create.mockResolvedValue(getForPartner(partner));
+
+      await sut.create(AuthFactory.create(user1), { sharedWithId: user2.id });
+
+      expectResourceEvents(
+        mocks,
+        { userIds: [user1.id, user2.id], changed: [Resource.partners()] },
+        { userIds: [user2.id], changed: [Resource.mapMarkers()] },
+      );
+    });
+
     it('should throw an error when the partner already exists', async () => {
       const user1 = UserFactory.create();
       const user2 = UserFactory.create();
@@ -76,6 +93,7 @@ describe(PartnerService.name, () => {
       await expect(sut.create(auth, { sharedWithId: user2.id })).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.partner.create).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should throw an error when sharedWithId does not resolve to an existing (non-deleted) user', async () => {
@@ -89,6 +107,7 @@ describe(PartnerService.name, () => {
       await expect(sut.create(auth, { sharedWithId: user2.id })).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.partner.create).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -106,6 +125,20 @@ describe(PartnerService.name, () => {
       expect(mocks.partner.remove).toHaveBeenCalledWith({ sharedById: user1.id, sharedWithId: user2.id });
     });
 
+    it('should tell both partners and refresh the map of the shared with user', async () => {
+      const [user1, user2] = [UserFactory.create(), UserFactory.create()];
+      const partner = PartnerFactory.from().sharedBy(user1).sharedWith(user2).build();
+      mocks.partner.get.mockResolvedValue(getForPartner(partner));
+
+      await sut.remove(AuthFactory.create(user1), user2.id);
+
+      expectResourceEvents(
+        mocks,
+        { userIds: [user1.id], changed: [Resource.partners()] },
+        { userIds: [user2.id], changed: [Resource.partners(), Resource.mapMarkers()] },
+      );
+    });
+
     it('should throw an error when the partner does not exist', async () => {
       const user2 = UserFactory.create();
       const auth = AuthFactory.create();
@@ -115,6 +148,7 @@ describe(PartnerService.name, () => {
       await expect(sut.remove(auth, user2.id)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.partner.remove).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
   });
 
@@ -124,6 +158,23 @@ describe(PartnerService.name, () => {
       const auth = AuthFactory.create();
 
       await expect(sut.update(auth, user2.id, { inTimeline: false })).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.resource.send).not.toHaveBeenCalled();
+    });
+
+    it('should tell both partners', async () => {
+      const [user1, user2] = [UserFactory.create(), UserFactory.create()];
+      const partner = PartnerFactory.from().sharedBy(user2).sharedWith(user1).build();
+      mocks.access.partner.checkUpdateAccess.mockResolvedValue(new Set([user2.id]));
+      mocks.partner.update.mockResolvedValue(getForPartner(partner));
+
+      await sut.update(AuthFactory.create(user1), user2.id, { inTimeline: false });
+
+      expectResourceEvents(
+        mocks,
+        { userIds: [user1.id], changed: [Resource.partners()] },
+        { userIds: [user2.id], changed: [Resource.partners()] },
+      );
     });
 
     it('should update partner', async () => {

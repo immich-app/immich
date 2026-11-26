@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
-  import { Button, Heading, LoadingSpinner } from '@immich/ui';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { activateProduct, getActivationKey } from '#lib/utils/license-utils.ts';
+  import { Button, Heading, LoadingSpinner, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import UserPurchaseOptionCard from './IndividualPurchaseOptionCard.svelte';
   import ServerPurchaseOptionCard from './ServerPurchaseOptionCard.svelte';
 
   interface Props {
-    onActivate: () => void;
+    onActivate?: () => void;
     showTitle?: boolean;
     showMessage?: boolean;
   }
@@ -17,16 +16,14 @@
   let productKey = $state('');
   let isLoading = $state(false);
 
-  const activate = async () => {
+  const activate = async (event: Event) => {
+    event.preventDefault();
     try {
       productKey = productKey.trim();
       isLoading = true;
 
       const activationKey = await getActivationKey(productKey);
-      await activateProduct(productKey, activationKey);
-
-      onActivate();
-      authManager.isPurchased = true;
+      await activateProduct(productKey, activationKey, { onSuccess: onActivate });
     } catch (error) {
       handleError(error, $t('purchase_failed_activation'));
     } finally {
@@ -41,6 +38,9 @@
       {$t('purchase_option_title')}
     </Heading>
   {/if}
+
+  <Text>{$t('purchase_product_key_description')}</Text>
+  <Text fontWeight="bold">{$t('purchase_product_key_excludes_backups')}</Text>
 
   {#if showMessage}
     <div class="mt-2">
@@ -72,13 +72,13 @@
         placeholder="IMCL-0KEY-0CAN-00BE-FOUD-FROM-YOUR-EMAIL-INBX"
         disabled={isLoading}
       />
-      <Button type="submit"
-        >{#if isLoading}
+      <Button type="submit">
+        {#if isLoading}
           <LoadingSpinner />
         {:else}
           {$t('purchase_button_activate')}
-        {/if}</Button
-      >
+        {/if}
+      </Button>
     </form>
   </div>
 </section>

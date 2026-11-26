@@ -91,6 +91,8 @@ volumes:
   docs_node_modules:
   e2e_node_modules:
   sdk_node_modules:
+  native_node_modules:
+  native_dist:
   app_node_modules:
   sveltekit:
   coverage:

@@ -1,10 +1,12 @@
 <script lang="ts">
-  import BreadcrumbActionPage from '$lib/components/BreadcrumbActionPage.svelte';
-  import NavigationBar from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
-  import BottomInfo from '$lib/components/shared-components/side-bar/BottomInfo.svelte';
-  import { Route } from '$lib/route';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import type { HeaderButtonActionItem } from '$lib/types';
+  import BreadcrumbActionPage from '#lib/components/BreadcrumbActionPage.svelte';
+  import NavigationBar from '#lib/components/shared-components/navigation-bar/NavigationBar.svelte';
+  import BottomInfo from '#lib/components/shared-components/side-bar/BottomInfo.svelte';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
+  import type { HeaderButtonActionItem } from '#lib/types.ts';
+  import { ImmichBackupsAdminNavButton } from '@futo-org/backups-orchestrator-ui';
   import { AppShell, AppShellHeader, AppShellSidebar, MenuItemType, NavbarItem, type BreadcrumbItem } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
   import type { Snippet } from 'svelte';
@@ -28,6 +30,10 @@
     class="flex h-full flex-col justify-between gap-2 border-none shadow-none"
   >
     <div class="flex flex-col gap-1 pe-4 pt-8">
+      {#if featureFlagsManager.value.backups}
+        <ImmichBackupsAdminNavButton href={Route.backups()} />
+      {/if}
+
       <NavbarItem title={$t('users')} href={Route.users()} icon={mdiAccountMultipleOutline} />
       <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
       <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />

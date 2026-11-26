@@ -1,6 +1,6 @@
-import type { JobItem } from 'src/types.js';
 import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum.js';
 import { JobService } from 'src/services/job.service.js';
+import type { JobItem } from 'src/types.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { newUuid } from 'test/small.factory.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
@@ -42,6 +42,19 @@ describe(JobService.name, () => {
       expect(mocks.event.emit).toHaveBeenCalledWith('JobSuccess', { job, response: JobStatus.Success });
       expect(mocks.event.emit).toHaveBeenCalledWith('JobComplete', QueueName.BackgroundTask, job);
       expect(mocks.logger.error).not.toHaveBeenCalled();
+    });
+
+    it('should emit JobError and rethrow when a job handler throws', async () => {
+      const error = new Error('Job execution failed');
+      mocks.job.run.mockRejectedValue(error);
+
+      const job: JobItem = { name: JobName.FileDelete, data: { files: ['path/to/file'] } };
+      await expect(sut.onJobRun(QueueName.BackgroundTask, job)).rejects.toThrow(error);
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobStart', QueueName.BackgroundTask, job);
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobError', { job, error });
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobComplete', QueueName.BackgroundTask, job);
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('JobSuccess', expect.anything());
     });
 
     it.each([JobStatus.Success, JobStatus.Skipped])(

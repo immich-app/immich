@@ -3,7 +3,9 @@ import { ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
-  type AuthDto,
+  AuthCodeCreateDto,
+  AuthCodeExchangeDto,
+  AuthCodeResponseDto,
   AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
@@ -15,6 +17,7 @@ import {
   SessionUnlockDto,
   SignUpDto,
   ValidateAccessTokenResponseDto,
+  type AuthDto,
 } from 'src/dtos/auth.dto.js';
 import { UserAdminResponseDto } from 'src/dtos/user.dto.js';
 import { ApiTag, AuthType, ImmichCookie, Permission } from 'src/enum.js';
@@ -45,6 +48,40 @@ export class AuthController {
       values: [
         { key: ImmichCookie.AccessToken, value: body.accessToken },
         { key: ImmichCookie.AuthType, value: AuthType.Password },
+        { key: ImmichCookie.IsAuthenticated, value: 'true' },
+      ],
+    });
+  }
+
+  @Post('code')
+  @Authenticated({ permission: Permission.SessionCreate })
+  @Endpoint({
+    summary: 'Create app login code',
+    description: 'Create a one-time code that the mobile app exchanges for a session.',
+    history: HistoryBuilder.v4().alpha('v4.0.0'),
+  })
+  createAuthCode(@Auth() auth: AuthDto, @Body() dto: AuthCodeCreateDto): Promise<AuthCodeResponseDto> {
+    return this.service.createCode(auth, dto);
+  }
+
+  @Post('exchange')
+  @Authenticated({ public: true })
+  @Endpoint({
+    summary: 'Exchange app login code',
+    description: 'Exchange a one-time code and its code verifier for a session.',
+    history: HistoryBuilder.v4().alpha('v4.0.0'),
+  })
+  async exchangeAuthCode(
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: AuthCodeExchangeDto,
+    @GetLoginDetails() loginDetails: LoginDetails,
+  ): Promise<LoginResponseDto> {
+    const body = await this.service.exchangeCode(dto, loginDetails);
+    return respondWithCookie(res, body, {
+      isSecure: loginDetails.isSecure,
+      values: [
+        { key: ImmichCookie.AccessToken, value: body.accessToken },
+        { key: ImmichCookie.AuthType, value: AuthType.Code },
         { key: ImmichCookie.IsAuthenticated, value: 'true' },
       ],
     });

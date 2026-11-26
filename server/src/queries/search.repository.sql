@@ -134,7 +134,48 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
-  to_json("asset_exif") as "exifInfo"
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_exif"."assetId",
+          "asset_exif"."autoStackId",
+          "asset_exif"."bitsPerSample",
+          "asset_exif"."city",
+          "asset_exif"."colorspace",
+          "asset_exif"."country",
+          "asset_exif"."dateTimeOriginal",
+          "asset_exif"."description",
+          "asset_exif"."exifImageHeight",
+          "asset_exif"."exifImageWidth",
+          "asset_exif"."exposureTime",
+          "asset_exif"."fileSizeInByte",
+          "asset_exif"."fNumber",
+          "asset_exif"."focalLength",
+          "asset_exif"."fps",
+          "asset_exif"."iso",
+          "asset_exif"."latitude",
+          "asset_exif"."lensModel",
+          "asset_exif"."livePhotoCID",
+          "asset_exif"."longitude",
+          "asset_exif"."make",
+          "asset_exif"."model",
+          "asset_exif"."modifyDate",
+          "asset_exif"."orientation",
+          "asset_exif"."profileDescription",
+          "asset_exif"."projectionType",
+          "asset_exif"."rating",
+          "asset_exif"."state",
+          "asset_exif"."tags",
+          "asset_exif"."timeZone"
+        from
+          "asset_exif"
+        where
+          "asset_exif"."assetId" = "asset"."id"
+      ) as obj
+  ) as "exifInfo"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -1420,7 +1461,48 @@ offset
 
 -- SearchRepository.searchMetadataV3 (order-rating-withExif)
 select
-  to_json("asset_exif") as "exifInfo",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_exif"."assetId",
+          "asset_exif"."autoStackId",
+          "asset_exif"."bitsPerSample",
+          "asset_exif"."city",
+          "asset_exif"."colorspace",
+          "asset_exif"."country",
+          "asset_exif"."dateTimeOriginal",
+          "asset_exif"."description",
+          "asset_exif"."exifImageHeight",
+          "asset_exif"."exifImageWidth",
+          "asset_exif"."exposureTime",
+          "asset_exif"."fileSizeInByte",
+          "asset_exif"."fNumber",
+          "asset_exif"."focalLength",
+          "asset_exif"."fps",
+          "asset_exif"."iso",
+          "asset_exif"."latitude",
+          "asset_exif"."lensModel",
+          "asset_exif"."livePhotoCID",
+          "asset_exif"."longitude",
+          "asset_exif"."make",
+          "asset_exif"."model",
+          "asset_exif"."modifyDate",
+          "asset_exif"."orientation",
+          "asset_exif"."profileDescription",
+          "asset_exif"."projectionType",
+          "asset_exif"."rating",
+          "asset_exif"."state",
+          "asset_exif"."tags",
+          "asset_exif"."timeZone"
+        from
+          "asset_exif"
+        where
+          "asset_exif"."assetId" = "asset"."id"
+      ) as obj
+  ) as "exifInfo",
   "asset"."id",
   "asset"."updateId",
   "asset"."createdAt",

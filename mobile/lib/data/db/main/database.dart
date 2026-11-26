@@ -122,7 +122,7 @@ class Drift extends $Drift {
   @override
   Future<void> close() async {
     await super.close();
-    _updatePool?.close();
+    await _updatePool?.close();
   }
 
   Future<void> reset() async {
@@ -160,7 +160,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 35;
+  int get schemaVersion => 37;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -375,7 +375,16 @@ class Drift extends $Drift {
                 await _healV33DateTimes(this);
               },
               from34To35: (m, v35) async {
-                await m.addColumn(v35.remoteAlbumEntity, v35.remoteAlbumEntity.isPinned);
+                await m.addColumn(v35.remoteAssetEntity, v35.remoteAssetEntity.groupDate);
+                await m.addColumn(v35.localAssetEntity, v35.localAssetEntity.groupDate);
+                await m.createIndex(v35.idxRemoteAssetGroup);
+                await m.createIndex(v35.idxLocalAssetGroup);
+              },
+              from35To36: (m, v36) async {
+                await m.addColumn(v36.localAssetEntity, v36.localAssetEntity.unsupported);
+              },
+              from36To37: (m, v37) async {
+                await m.addColumn(v37.remoteAlbumEntity, v37.remoteAlbumEntity.isPinned);
               },
             ),
           );

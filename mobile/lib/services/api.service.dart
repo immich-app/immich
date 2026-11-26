@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
@@ -40,6 +41,8 @@ class ApiService {
   late MemoriesApi memoriesApi;
   late SessionsApi sessionsApi;
   late TagsApi tagsApi;
+  late PasskeysApi passkeysApi;
+  late ConfigPublicApi configPublicApi;
 
   ApiService() {
     // The below line ensures that the api clients are initialized when the service is instantiated
@@ -77,6 +80,8 @@ class ApiService {
     memoriesApi = MemoriesApi(_apiClient);
     sessionsApi = SessionsApi(_apiClient);
     tagsApi = TagsApi(_apiClient);
+    passkeysApi = PasskeysApi(_apiClient);
+    configPublicApi = ConfigPublicApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {
@@ -96,7 +101,19 @@ class ApiService {
   ///  port   - optional (default: based on schema)
   ///  path   - optional
   Future<String> resolveEndpoint(String serverUrl) async {
-    String url = normalizeServerUrl(serverUrl);
+    final url = normalizeServerUrl(serverUrl);
+    try {
+      return await _resolveEndpoint(url);
+    } on ServerRedirectException catch (redirect) {
+      if (!redirect.isHttpsUpgrade) {
+        rethrow;
+      }
+      return _resolveEndpoint(Uri.parse(url).replace(scheme: 'https').toString());
+    }
+  }
+
+  Future<String> _resolveEndpoint(String baseUrl) async {
+    String url = baseUrl;
 
     // Check for /.well-known/immich
     final wellKnownEndpoint = await _getWellKnownEndpoint(url);
@@ -115,9 +132,11 @@ class ApiService {
   Future<bool> _isEndpointAvailable(String serverUrl) async {
     final endpoint = serverUrl.endsWith('/api') ? serverUrl : '$serverUrl/api';
 
+    // Probe with a throwaway client so the shared client keeps pointing at the active endpoint
+    final probeClient = ApiClient(basePath: endpoint)..client = NetworkRepository.client;
+
     try {
-      setEndpoint(endpoint);
-      await serverInfoApi.pingServer().timeout(const Duration(seconds: 5));
+      await ServerApi(probeClient).pingServer().timeout(const Duration(seconds: 5));
     } on TimeoutException catch (_) {
       return false;
     } on SocketException catch (_) {
@@ -131,9 +150,16 @@ class ApiService {
 
   Future<String> _getWellKnownEndpoint(String baseUrl) async {
     try {
+      final request = Request('GET', Uri.parse("$baseUrl/.well-known/immich"))..followRedirects = false;
       final res = await NetworkRepository.client
-          .get(Uri.parse("$baseUrl/.well-known/immich"))
+          .send(request)
+          .then(Response.fromStream)
           .timeout(const Duration(seconds: 5));
+
+      final location = res.headers['location'];
+      if (res.isRedirect && location != null) {
+        throw ServerRedirectException(request.url, request.url.resolve(location));
+      }
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -145,6 +171,8 @@ class ApiService {
         }
         return endpoint;
       }
+    } on ServerRedirectException {
+      rethrow;
     } catch (e) {
       dPrint(() => "Could not locate /.well-known/immich at $baseUrl");
     }
@@ -193,4 +221,13 @@ class ApiService {
   }
 
   ApiClient get apiClient => _apiClient;
+}
+
+class ServerRedirectException implements Exception {
+  final Uri from;
+  final Uri to;
+
+  const ServerRedirectException(this.from, this.to);
+
+  bool get isHttpsUpgrade => from.isScheme('http') && to == from.replace(scheme: 'https', userInfo: '');
 }

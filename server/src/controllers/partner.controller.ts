@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { PartnerCreateDto, PartnerResponseDto, PartnerSearchDto, PartnerUpdateDto } from 'src/dtos/partner.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
@@ -33,17 +33,6 @@ export class PartnerController {
   })
   createPartner(@Auth() auth: AuthDto, @Body() dto: PartnerCreateDto): Promise<PartnerResponseDto> {
     return this.service.create(auth, dto);
-  }
-
-  @Post(':id')
-  @Endpoint({
-    summary: 'Create a partner',
-    description: 'Create a new partner to share assets with.',
-    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'createPartner' }),
-  })
-  @Authenticated({ permission: Permission.PartnerCreate })
-  createPartnerDeprecated(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PartnerResponseDto> {
-    return this.service.create(auth, { sharedWithId: id });
   }
 
   @Put(':id')

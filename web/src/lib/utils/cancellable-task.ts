@@ -1,9 +1,7 @@
 export class CancellableTask {
   cancelToken: AbortController | null = null;
   cancellable: boolean = true;
-  /**
-   * A promise that resolves once the bucket is loaded, and rejects if bucket is canceled.
-   */
+  /** A promise that resolves once the bucket is loaded, and rejects if bucket is canceled. */
   complete!: Promise<unknown>;
   executed: boolean = false;
 
@@ -83,7 +81,7 @@ export class CancellableTask {
       return 'LOADED';
     } catch (error) {
       // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-      if ((error as any).name === 'AbortError') {
+      if (cancelToken.signal.aborted || (error as any).name === 'AbortError') {
         // abort error is not treated as an error, but as a cancellation.
         return 'CANCELED';
       }

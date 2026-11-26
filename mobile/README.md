@@ -1,6 +1,6 @@
 # Immich Mobile Application - Flutter
 
-The Immich mobile app is a Flutter-based solution leveraging the Isar Database for local storage and Riverpod for state management. This structure optimizes functionality and maintainability, allowing for efficient development and robust performance.
+The Immich mobile app is a Flutter-based solution leveraging the Drift (SQLite) database for local storage and Riverpod for state management. This structure optimizes functionality and maintainability, allowing for efficient development and robust performance.
 
 ## Setup
 

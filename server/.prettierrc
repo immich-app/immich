@@ -2,5 +2,11 @@
   "singleQuote": true,
   "trailingComma": "all",
   "printWidth": 120,
-  "semi": true
+  "semi": true,
+  "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-eslint"],
+  "importOrder": ["^(?!(src|test)/)", "^(src|test)/", "<BUILTIN_MODULES>", "<THIRD_PARTY_MODULES>"],
+  "importOrderCaseSensitive": true,
+  "importOrderTypeScriptVersion": "6.0.0",
+  "importOrderSafeSideEffects": [".*"],
+  "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"]
 }

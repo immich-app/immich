@@ -1,62 +1,42 @@
 <script lang="ts">
-  import TemplateSettings from './TemplateSettings.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import { handleError } from '$lib/utils/handle-error';
-  import { sendTestEmailAdmin } from '@immich/sdk';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingInputField from '#lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '#lib/components/shared-components/settings/SettingSwitch.svelte';
+  import SettingButtonsRow from '#lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
+  import { SettingInputFieldType } from '#lib/constants.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery, updateAdminConfigMutation } from '#lib/queries/config-admin.query.ts';
+  import { sendTestEmailAdminMutation } from '#lib/queries/notification-admin.query.ts';
   import { Button, toastManager } from '@immich/ui';
+  import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import TemplateSettings from './TemplateSettings.svelte';
+
+  const query = createPreloadedQuery(getAdminConfigQuery);
+  const config = $derived(query.data);
 
   const disabled = $derived(featureFlagsManager.value.configFile);
-  const config = $derived(systemConfigManager.value);
-  let configToEdit = $state(systemConfigManager.cloneValue());
+  let configToEdit = $state(cloneDeep(config));
 
   let isSending = $state(false);
 
-  const handleSendTestEmail = async () => {
-    if (isSending) {
-      return;
-    }
-
+  const handleSendTestEmail = () => {
+    const { smtp } = configToEdit.notifications;
     isSending = true;
-
-    try {
-      await sendTestEmailAdmin({
-        adminConfigSmtpDto: {
-          enabled: configToEdit.notifications.smtp.enabled,
-          transport: {
-            host: configToEdit.notifications.smtp.transport.host,
-            port: configToEdit.notifications.smtp.transport.port,
-            secure: configToEdit.notifications.smtp.transport.secure,
-            username: configToEdit.notifications.smtp.transport.username,
-            password: configToEdit.notifications.smtp.transport.password,
-            ignoreCert: configToEdit.notifications.smtp.transport.ignoreCert,
-          },
-          from: configToEdit.notifications.smtp.from,
-          replyTo: configToEdit.notifications.smtp.from,
-        },
-      });
-
-      toastManager.primary(
-        $t('admin.notification_email_test_email_sent', { values: { email: authManager.user.email } }),
-      );
-
-      if (!disabled) {
-        await handleSystemConfigSave({ notifications: configToEdit.notifications });
-      }
-    } catch (error) {
-      handleError(error, $t('admin.notification_email_test_email_failed'));
-    } finally {
-      isSending = false;
-    }
+    return executeMutation(sendTestEmailAdminMutation, [{ adminConfigSmtpDto: { ...smtp, replyTo: smtp.from } }], {
+      onSuccess: () => {
+        toastManager.primary(
+          $t('admin.notification_email_test_email_sent', { values: { email: authManager.user.email } }),
+        );
+        if (!disabled) {
+          void executeMutation(updateAdminConfigMutation, { notifications: configToEdit.notifications });
+        }
+      },
+      onSettled: () => (isSending = false),
+    });
   };
 </script>
 

@@ -1,22 +1,25 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { Route } from '$lib/route';
-  import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '$lib/utils';
-  import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
-  import { Icon, ImageCarousel } from '@immich/ui';
-  import { mdiHeart } from '@mdi/js';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import PersonIndicator from '#lib/components/faces-page/PersonIndicator.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import MemoryCard from '#lib/components/memories/MemoryCard.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import SingleGridRow from '#lib/components/shared-components/SingleGridRow.svelte';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAllPeopleQuery, updateCachedPerson } from '#lib/queries/person.query.ts';
+  import { getExploreDataQuery } from '#lib/queries/search.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '#lib/utils.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
+  import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
+  import { ImageCarousel } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import Portal from '$lib/elements/Portal.svelte';
 
   interface Props {
     data: PageData;
@@ -24,16 +27,22 @@
 
   let { data }: Props = $props();
 
-  const getFieldItems = (items: SearchExploreResponseDto[], field: string) => {
-    const targetField = items.find((item) => item.fieldName === field);
+  const queries = {
+    explore: createPreloadedQuery(getExploreDataQuery),
+    people: createPreloadedQuery(() => getAllPeopleQuery({ withHidden: false })),
+  };
+  const explore = $derived(queries.explore.data);
+
+  const getFieldItems = (field: string) => {
+    const targetField = explore.find((item) => item.fieldName === field);
     return targetField?.items || [];
   };
 
-  let places = $derived(getFieldItems(data.explore, 'exifInfo.city'));
+  let places = $derived(getFieldItems('exifInfo.city'));
   let recents = $derived(
-    getFieldItems(data.explore, 'createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
+    getFieldItems('createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
   );
-  let people = $state(data.people.people);
+  const people = $derived(queries.people.data.people);
   let memories = $derived(
     data.memories.map((memory) => ({
       id: memory.id,
@@ -45,15 +54,10 @@
     })),
   );
 
-  let hasPeople = $derived(data.people.total > 0);
+  const hasPeople = $derived(queries.people.data.total > 0);
 
-  const onPersonThumbnailReady = ({ id }: { id: string }) => {
-    for (const person of people) {
-      if (person.id === id) {
-        person.updatedAt = new Date().toISOString();
-      }
-    }
-  };
+  const onPersonThumbnailReady = ({ id }: { id: string }) =>
+    updateCachedPerson(id, (person) => ({ ...person, updatedAt: new Date().toISOString() }));
 
   const onViewAsset = async (id: string) => {
     const asset = await getAssetInfo({ ...authManager.params, id });
@@ -75,25 +79,25 @@
         <a
           href={Route.people()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
         {#snippet children({ itemCount })}
           {#each people.slice(0, itemCount) as person (person.id)}
-            <a href={Route.viewPerson(person)} class="relative text-center">
-              <ImageThumbnail
-                circle
-                shadow
-                url={getPeopleThumbnailUrl(person)}
-                altText={person.name}
-                widthStyle="100%"
-              />
-              {#if person.isFavorite}
-                <div class="absolute inset-s-2 top-2">
-                  <Icon icon={mdiHeart} size="24" class="text-white" />
-                </div>
-              {/if}
+            <a href={Route.viewPerson(person)} class="text-center">
+              <div class="@container relative">
+                <ImageThumbnail
+                  circle
+                  shadow
+                  url={getPeopleThumbnailUrl(person)}
+                  altText={person.name}
+                  widthStyle="100%"
+                />
+                <PersonIndicator {person} />
+              </div>
               <p class="mt-2 text-sm font-medium text-ellipsis dark:text-white">{person.name}</p>
             </a>
           {/each}
@@ -109,8 +113,10 @@
         <a
           href={Route.places()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <SingleGridRow class="grid grid-flow-col grid-auto-fill-28 gap-x-4 md:grid-auto-fill-36">
         {#snippet children({ itemCount })}
@@ -142,8 +148,10 @@
         <a
           href={Route.memories()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <ImageCarousel items={memories}>
         {#snippet child(item)}
@@ -160,8 +168,10 @@
         <a
           href={Route.recentlyAdded()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">{$t('view_all')}</a
+          draggable="false"
         >
+          {$t('view_all')}
+        </a>
       </div>
       <div class="flex h-24 max-w-fit flex-wrap gap-x-1 overflow-hidden md:h-42">
         {#each recents as item (item.data.id)}
@@ -188,7 +198,7 @@
 </UserPageLayout>
 
 {#if assetViewerManager.isViewing}
-  {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+  {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
         cursor={assetCursor}

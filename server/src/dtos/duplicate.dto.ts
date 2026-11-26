@@ -1,14 +1,6 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { AssetResponseSchema } from 'src/dtos/asset-response.dto.js';
-
-const DuplicateResponseSchema = z
-  .object({
-    duplicateId: z.uuidv4().describe('Duplicate group ID'),
-    assets: z.array(AssetResponseSchema).describe('Duplicate assets'),
-    suggestedKeepAssetIds: z.array(z.uuidv4()).describe('Suggested asset IDs to keep based on file size and EXIF data'),
-  })
-  .meta({ id: 'DuplicateResponseDto' });
 
 const DuplicateResolveGroupSchema = z
   .object({
@@ -18,12 +10,14 @@ const DuplicateResolveGroupSchema = z
   })
   .meta({ id: 'DuplicateResolveGroupDto' });
 
-const DuplicateResolveSchema = z
-  .object({
-    groups: z.array(DuplicateResolveGroupSchema).min(1).describe('List of duplicate groups to resolve'),
-  })
-  .meta({ id: 'DuplicateResolveDto' });
+export class DuplicateResponseDto extends createZodDto({
+  duplicateId: z.uuidv4().describe('Duplicate group ID'),
+  assets: z.array(AssetResponseSchema).describe('Duplicate assets'),
+  suggestedKeepAssetIds: z.array(z.uuidv4()).describe('Suggested asset IDs to keep based on file size and EXIF data'),
+}) {}
 
-export class DuplicateResponseDto extends createZodDto(DuplicateResponseSchema) {}
 export class DuplicateResolveGroupDto extends createZodDto(DuplicateResolveGroupSchema) {}
-export class DuplicateResolveDto extends createZodDto(DuplicateResolveSchema) {}
+
+export class DuplicateResolveDto extends createZodDto({
+  groups: z.array(DuplicateResolveGroupSchema).min(1).describe('List of duplicate groups to resolve'),
+}) {}

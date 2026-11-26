@@ -7,7 +7,7 @@ Immich uses Postgres as its search database for both metadata and contextual CLI
 
 Contextual CLIP search is powered by the [VectorChord](https://github.com/tensorchord/VectorChord) extension, utilizing machine learning models like [CLIP](https://openai.com/research/clip) to provide relevant search results. This allows for freeform searches without requiring specific keywords in the image or video metadata.
 
-## Advanced Search Filters
+## Advanced search filters
 
 In addition, Immich offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.immich.app).
 

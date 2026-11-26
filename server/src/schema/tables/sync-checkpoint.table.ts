@@ -2,11 +2,11 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
-  type Generated,
   PrimaryColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
+  type Generated,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { SyncEntityType } from 'src/enum.js';
@@ -32,4 +32,7 @@ export class SessionSyncCheckpointTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column({ type: 'boolean', default: false })
+  isPendingReset!: Generated<boolean>;
 }

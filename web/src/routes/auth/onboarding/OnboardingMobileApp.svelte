@@ -1,6 +1,6 @@
 <script lang="ts">
-  import AppDownloadModal from '$lib/modals/AppDownloadModal.svelte';
-  import ObtainiumConfigModal from '$lib/modals/ObtainiumConfigModal.svelte';
+  import AppDownloadModal from '#lib/modals/AppDownloadModal.svelte';
+  import ObtainiumConfigModal from '#lib/modals/ObtainiumConfigModal.svelte';
   import { Button, HStack, modalManager } from '@immich/ui';
   import { mdiCellphoneArrowDownVariant, mdiLinkEdit } from '@mdi/js';
   import { t } from 'svelte-i18n';

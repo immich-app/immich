@@ -1,15 +1,15 @@
-import { Check } from '@immich/sql-tools';
 import {
   AfterInsertTrigger,
+  Check,
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
   ForeignKeyConstraint,
-  type Generated,
   PrimaryColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
+  type Generated,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { PersonUserRole } from 'src/dtos/person.dto.js';

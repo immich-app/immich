@@ -1,18 +1,35 @@
-import {
-  deleteDatabaseBackup,
-  getBaseUrl,
-  MaintenanceAction,
-  setMaintenanceMode,
-  type DatabaseBackupUploadDto,
-} from '@immich/sdk';
-import { modalManager, type ActionItem } from '@immich/ui';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { deleteDatabaseBackupMutation } from '#lib/queries/database-backup.query.ts';
+import { setMaintenanceModeMutation } from '#lib/queries/maintenance.query.ts';
+import { uploadRequest } from '#lib/utils.ts';
+import { openFilePicker } from '#lib/utils/file-uploader.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import { MaintenanceAction, getBaseUrl, type DatabaseBackupDto, type DatabaseBackupUploadDto } from '@immich/sdk';
+import type { ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
+import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { uploadRequest } from '$lib/utils';
-import { openFilePicker } from '$lib/utils/file-uploader';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
+
+export const getDatabaseBackupDateTime = (filename: string, zone?: string): DateTime | undefined => {
+  const dateMatch = /\d+T\d+/.exec(filename);
+  if (!dateMatch) {
+    return;
+  }
+
+  return DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone });
+};
+
+const getBackupTimestamp = (backup: DatabaseBackupDto): number =>
+  getDatabaseBackupDateTime(backup.filename, backup.timezone)?.toMillis() ?? 0;
+
+export const getLatestBackup = (backups: DatabaseBackupDto[]): DatabaseBackupDto | undefined => {
+  if (backups.length === 0) {
+    return undefined;
+  }
+  return [...backups].sort((a, b) => getBackupTimestamp(b) - getBackupTimestamp(a))[0];
+};
 
 export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string) => {
   const Download: ActionItem = {
@@ -33,61 +50,30 @@ export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string)
 
 export const handleRestoreDatabaseBackup = async (filename: string) => {
   const $t = await getFormatter();
-  const confirm = await modalManager.showDialog({
-    confirmText: $t('restore'),
-    title: $t('admin.maintenance_restore_backup'),
-    prompt: $t('admin.maintenance_restore_backup_description'),
-  });
 
-  if (!confirm) {
-    return;
-  }
-
-  try {
-    await setMaintenanceMode({
-      setMaintenanceModeDto: {
-        action: MaintenanceAction.RestoreDatabase,
-        restoreBackupFilename: filename,
+  await executeMutation(
+    setMaintenanceModeMutation,
+    [{ setMaintenanceModeDto: { action: MaintenanceAction.RestoreDatabase, restoreBackupFilename: filename } }],
+    {
+      confirm: {
+        confirmText: $t('restore'),
+        title: $t('admin.maintenance_restore_backup'),
+        prompt: $t('admin.maintenance_restore_backup_description'),
       },
-    });
-  } catch (error) {
-    handleError(error, $t('admin.maintenance_start_error'));
-  }
+    },
+  );
 };
 
-export const handleDeleteDatabaseBackup = async (...filenames: string[]) => {
+const handleDeleteDatabaseBackup = async (filename: string) => {
   const $t = await getFormatter();
-  const confirm = await modalManager.showDialog({
-    confirmText: $t('delete'),
-    title: $t('admin.maintenance_delete_backup'),
-    prompt: $t('admin.maintenance_delete_backup_description'),
+
+  await executeMutation(deleteDatabaseBackupMutation, [{ databaseBackupDeleteDto: { backups: [filename] } }], {
+    confirm: {
+      confirmText: $t('delete'),
+      title: $t('admin.maintenance_delete_backup'),
+      prompt: $t('admin.maintenance_delete_backup_description'),
+    },
   });
-
-  if (!confirm) {
-    return;
-  }
-
-  try {
-    for (const filename of filenames) {
-      eventManager.emit('BackupDeleteStatus', { filename, isDeleting: true });
-    }
-
-    await deleteDatabaseBackup({
-      databaseBackupDeleteDto: {
-        backups: filenames,
-      },
-    });
-
-    for (const filename of filenames) {
-      eventManager.emit('BackupDeleted', { filename });
-    }
-  } catch (error) {
-    handleError(error, $t('admin.maintenance_delete_error'));
-
-    for (const filename of filenames) {
-      eventManager.emit('BackupDeleteStatus', { filename, isDeleting: false });
-    }
-  }
 };
 
 export const handleDownloadDatabaseBackup = (filename: string) => {

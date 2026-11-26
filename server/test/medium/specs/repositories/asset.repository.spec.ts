@@ -1,18 +1,22 @@
-import { Kysely } from 'kysely';
-import { AssetFileType, AssetOrder, AssetOrderBy, AssetVisibility } from 'src/enum.js';
+import { Insertable, Kysely } from 'kysely';
+import { chunk } from 'lodash-es';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
+import { AssetFileType, AssetOrder, AssetOrderBy, AssetStatus, AssetType, AssetVisibility } from 'src/enum.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { LibraryRepository } from 'src/repositories/library.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { DB } from 'src/schema/index.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
-import { newMediumService } from 'test/medium.factory.js';
+import { mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
-const setup = (db?: Kysely<DB>) => {
+const setup = () => {
   const { ctx } = newMediumService(BaseService, {
-    database: db || defaultDatabase,
+    database: defaultDatabase,
     real: [],
     mock: [LoggingRepository],
   });
@@ -22,6 +26,21 @@ const setup = (db?: Kysely<DB>) => {
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
+
+const newExternalLibrary = async (ctx: ReturnType<typeof setup>['ctx']) => {
+  const { user } = await ctx.newUser();
+  return ctx
+    .get(LibraryRepository)
+    .create({ ownerId: user.id, name: 'library', importPaths: [], exclusionPatterns: [] });
+};
+
+const collectPaths = async (assets: AsyncIterable<{ originalPath: string }[]>) => {
+  const batches: string[][] = [];
+  for await (const batch of assets) {
+    batches.push(batch.map(({ originalPath }) => originalPath));
+  }
+  return batches;
+};
 
 // Metadata extraction is repeatable: probing improves, files get repaired,
 // and a re-run has to be able to correct what an earlier run stored.
@@ -51,6 +70,7 @@ const videoRow = (assetId: string, n: number) => ({
   formatName: `format-${n}`,
   formatLongName: `format long ${n}`,
   pixelFormat: `pixfmt-${n}`,
+  isFragmented: n % 2 === 0,
 });
 
 const keyframeRow = (assetId: string, n: number) => ({
@@ -527,10 +547,211 @@ describe(AssetRepository.name, () => {
     });
   });
 
+  describe('findLivePhotoMatch', () => {
+    type LibraryKind = 'upload' | 'external' | 'other external';
+
+    const setupLivePhoto = async ({ still, motion }: { still: LibraryKind; motion: LibraryKind }) => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const newLibrary = () =>
+        ctx
+          .get(LibraryRepository)
+          .create({ ownerId: user.id, name: 'library', importPaths: [], exclusionPatterns: [] });
+      const [external, otherExternal] = await Promise.all([newLibrary(), newLibrary()]);
+      const libraryIds = { upload: null, external: external.id, 'other external': otherExternal.id };
+      const livePhotoCID = 'live-photo-cid';
+
+      const [{ asset: stillAsset }, { asset: motionAsset }] = await Promise.all([
+        ctx.newAsset({ ownerId: user.id, type: AssetType.Image, libraryId: libraryIds[still] }),
+        ctx.newAsset({ ownerId: user.id, type: AssetType.Video, libraryId: libraryIds[motion] }),
+      ]);
+      await Promise.all([
+        ctx.newExif({ assetId: stillAsset.id, livePhotoCID }),
+        ctx.newExif({ assetId: motionAsset.id, livePhotoCID }),
+      ]);
+
+      const match = await sut.findLivePhotoMatch({
+        ownerId: user.id,
+        libraryId: libraryIds[still],
+        livePhotoCID,
+        otherAssetId: stillAsset.id,
+        type: AssetType.Video,
+      });
+
+      return { match, motionAsset };
+    };
+
+    it.each<LibraryKind>(['upload', 'external'])(
+      'should match a motion video in the same %s library',
+      async (library) => {
+        const { match, motionAsset } = await setupLivePhoto({ still: library, motion: library });
+
+        expect(match).toEqual({ id: motionAsset.id, ownerId: motionAsset.ownerId });
+      },
+    );
+
+    it.each<{ still: LibraryKind; motion: LibraryKind }>([
+      { still: 'upload', motion: 'external' },
+      { still: 'external', motion: 'upload' },
+      { still: 'external', motion: 'other external' },
+    ])('should not match a still in the $still library to a motion video in the $motion library', async (libraries) => {
+      const { match } = await setupLivePhoto(libraries);
+
+      expect(match).toBeUndefined();
+    });
+  });
+
   describe('createAll', () => {
     it('should return an empty array when given an empty input', async () => {
       const { sut } = setup();
       await expect(sut.createAll([])).resolves.toStrictEqual([]);
+    });
+  });
+
+  describe('streamLibraryScan', () => {
+    it('should stream the external assets of the library in UTF-8 byte order', async () => {
+      const { ctx, sut } = setup();
+      const [library, otherLibrary] = await Promise.all([newExternalLibrary(ctx), newExternalLibrary(ctx)]);
+      const paths = [
+        '/lib/a.jpg',
+        '/lib/B.jpg',
+        '/lib/a-b.jpg',
+        '/lib/a/b.jpg',
+        '/lib/\u{1F4F7}.jpg',
+        '/lib/\u{FFFD}.jpg',
+      ];
+      for (const originalPath of paths) {
+        await ctx.newAsset({ ownerId: library.ownerId, libraryId: library.id, isExternal: true, originalPath });
+      }
+      await ctx.newAsset({
+        ownerId: otherLibrary.ownerId,
+        libraryId: otherLibrary.id,
+        isExternal: true,
+        originalPath: '/lib/other.jpg',
+      });
+      await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        isExternal: false,
+        originalPath: '/upload/motion.mp4',
+      });
+
+      await expect(collectPaths(sut.streamLibraryScan(library.id))).resolves.toEqual([
+        paths.toSorted((a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b))),
+      ]);
+    });
+
+    it('should stream the assets in batches of 10000', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const assets = Array.from({ length: JOBS_LIBRARY_PAGINATION_SIZE + 1 }, (_, index) =>
+        mediumFactory.assetInsert({
+          ownerId: library.ownerId,
+          libraryId: library.id,
+          isExternal: true,
+          originalPath: `/lib/${index}.jpg`,
+        }),
+      );
+      for (const batch of chunk(assets, 1000)) {
+        await sut.createAll(batch);
+      }
+
+      const batches = await collectPaths(sut.streamLibraryScan(library.id));
+
+      expect(batches.map((batch) => batch.length)).toEqual([10_000, 1]);
+    }, 60_000);
+
+    it('should stream an asset created after the batch before it was read', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const newExternalAsset = (originalPath: string) =>
+        ctx.newAsset({ ownerId: library.ownerId, libraryId: library.id, isExternal: true, originalPath });
+      await newExternalAsset('/lib/a.jpg');
+
+      const paths: string[] = [];
+      for await (const batch of sut.streamLibraryScan(library.id)) {
+        if (paths.length === 0) {
+          await newExternalAsset('/lib/b.jpg');
+        }
+        paths.push(...batch.map(({ originalPath }) => originalPath));
+      }
+
+      expect(paths).toEqual(['/lib/a.jpg', '/lib/b.jpg']);
+    });
+  });
+
+  describe('setOffline', () => {
+    it('should offline assets and keep the trash date of a trashed asset', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const deletedAt = new Date('2020-01-01T00:00:00.000Z');
+      const newExternalAsset = (originalPath: string, dto: Partial<Insertable<AssetTable>> = {}) =>
+        ctx.newAsset({ ownerId: library.ownerId, libraryId: library.id, isExternal: true, originalPath, ...dto });
+      const [{ asset: kept }, { asset: rejected }, { asset: trashed }, { asset: alreadyOffline }] = await Promise.all([
+        newExternalAsset('/keep/a.jpg'),
+        newExternalAsset('/reject/b.jpg'),
+        newExternalAsset('/reject/c.jpg', { status: AssetStatus.Trashed, deletedAt }),
+        newExternalAsset('/reject/d.jpg', { isOffline: true, deletedAt }),
+      ]);
+
+      await sut.setOffline([rejected.id, trashed.id, alreadyOffline.id], new Date(Date.now() + 60_000));
+
+      await expect(sut.getById(kept.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
+      await expect(sut.getById(rejected.id)).resolves.toMatchObject({ isOffline: true, deletedAt: expect.any(Date) });
+      await expect(sut.getById(trashed.id)).resolves.toMatchObject({
+        isOffline: true,
+        status: AssetStatus.Trashed,
+        deletedAt,
+      });
+      await expect(sut.getById(alreadyOffline.id)).resolves.toMatchObject({ isOffline: true, deletedAt });
+    });
+
+    it('should leave an asset created after the given time online', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        isExternal: true,
+        originalPath: '/lib/a.jpg',
+      });
+
+      await sut.setOffline([asset.id], new Date(Date.now() - 60_000));
+
+      await expect(sut.getById(asset.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
+    });
+  });
+
+  describe('setOnline', () => {
+    it('should bring assets online and keep a trashed asset in the trash', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const deletedAt = new Date('2020-01-01T00:00:00.000Z');
+      const newOfflineAsset = (originalPath: string, dto: Partial<Insertable<AssetTable>> = {}) =>
+        ctx.newAsset({
+          ownerId: library.ownerId,
+          libraryId: library.id,
+          isExternal: true,
+          isOffline: true,
+          deletedAt,
+          originalPath,
+          ...dto,
+        });
+      const [{ asset: restored }, { asset: trashed }, { asset: untouched }] = await Promise.all([
+        newOfflineAsset('/lib/a.jpg'),
+        newOfflineAsset('/lib/b.jpg', { status: AssetStatus.Trashed }),
+        newOfflineAsset('/lib/c.jpg'),
+      ]);
+
+      await sut.setOnline([restored.id, trashed.id]);
+
+      await expect(sut.getById(restored.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
+      await expect(sut.getById(trashed.id)).resolves.toMatchObject({
+        isOffline: false,
+        status: AssetStatus.Trashed,
+        deletedAt,
+      });
+      await expect(sut.getById(untouched.id)).resolves.toMatchObject({ isOffline: true, deletedAt });
     });
   });
 });

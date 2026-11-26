@@ -7,24 +7,17 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
-import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/pages/edit/editor.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 
 final _stateProvider = Provider.family.autoDispose<RemoteAsset?, ActionSource>((ref, source) {
-  final isSupported = ref.watch(serverInfoProvider.select((state) => state.serverVersion.supports(.syncAssetEditsV1)));
-  if (!isSupported) {
-    return null;
-  }
-
   final assets = ref.watch(ownedAssetsActionProvider(source));
   return assets.where((asset) => asset.isEditable).singleOrNull;
 }, dependencies: [ownedAssetsActionProvider]);

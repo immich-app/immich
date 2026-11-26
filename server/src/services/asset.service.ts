@@ -1,9 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { isUndefined, omitBy } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
+import { ASSET_VISIBILITY_DEPENDENT_PATHS } from 'src/constants.js';
 import type { AssetFile } from 'src/database.js';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
-import type { JobItem, JobOf } from 'src/types.js';
 import { OnJob } from 'src/decorators.js';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto.js';
 import {
@@ -21,11 +20,12 @@ import {
   UpdateAssetDto,
   mapStats,
 } from 'src/dtos/asset.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   AssetEditAction,
-  type AssetEditActionItem,
   AssetEditsCreateDto,
   AssetEditsResponseDto,
+  type AssetEditActionItem,
 } from 'src/dtos/editing.dto.js';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
 import {
@@ -38,7 +38,9 @@ import {
   Permission,
   QueueName,
 } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
+import type { JobItem, JobOf } from 'src/types.js';
 import { requireElevatedPermission } from 'src/utils/access.js';
 import {
   getAssetFiles,
@@ -80,21 +82,7 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
-    if (auth.sharedLink && !auth.sharedLink.showExif) {
-      return mapAsset(asset, { stripMetadata: true, withStack: true, auth });
-    }
-
-    const data = mapAsset(asset, { withStack: true, auth });
-
-    if (auth.sharedLink) {
-      delete data.owner;
-    }
-
-    if (auth.sharedLink) {
-      data.people = [];
-    }
-
-    return data;
+    return mapAsset(asset, { withStack: true, auth });
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
@@ -105,6 +93,7 @@ export class AssetService extends BaseService {
 
     let previousMotion: { id: string } | null = null;
     if (rest.livePhotoVideoId) {
+      await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [rest.livePhotoVideoId] });
       await onBeforeLink(repos, { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId });
     } else if (rest.livePhotoVideoId === null) {
       const asset = await this.findOrFail(id);
@@ -127,6 +116,20 @@ export class AssetService extends BaseService {
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
+    }
+
+    if (Object.values(dto).some((value) => value !== undefined)) {
+      const { isFavorite, visibility, livePhotoVideoId } = rest;
+      const changesVisibility = visibility !== undefined || livePhotoVideoId !== undefined;
+      this.resourceRepository.send({
+        userIds: [auth.user.id],
+        changed: [
+          Resource.asset({ id }),
+          (isFavorite !== undefined || changesVisibility) && Resource.assetStatistics(),
+          ...(changesVisibility ? ASSET_VISIBILITY_DEPENDENT_PATHS : []),
+          (isFavorite !== undefined || latitude !== undefined || longitude !== undefined) && Resource.mapMarkers(),
+        ],
+      });
     }
 
     if (!wroteMetadata) {
@@ -189,6 +192,18 @@ export class AssetService extends BaseService {
       await this.albumRepository.removeAssetsFromAll(ids);
     }
 
+    if (shouldWriteSidecar || Object.keys(assetDto).length > 0) {
+      this.resourceRepository.send({
+        userIds: [auth.user.id],
+        changed: [
+          Resource.assets(),
+          ...(visibility === undefined ? [] : ASSET_VISIBILITY_DEPENDENT_PATHS),
+          (isFavorite !== undefined || latitude !== undefined || longitude !== undefined) && Resource.mapMarkers(),
+          duplicateId !== undefined && Resource.duplicates(),
+        ],
+      });
+    }
+
     if (shouldWriteSidecar) {
       await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
     } else {
@@ -242,6 +257,17 @@ export class AssetService extends BaseService {
     if (sidecar) {
       await this.copySidecar({ sourceAsset, targetAsset });
     }
+
+    this.resourceRepository.send({
+      userIds: [auth.user.id],
+      changed: [
+        Resource.asset({ id: targetId }),
+        albums && Resource.albums(),
+        sharedLinks && Resource.sharedLinks(),
+        stack && !!sourceAsset.stackId && Resource.stacks(),
+        favorite && Resource.assetStatistics(),
+      ],
+    });
   }
 
   private async copyStack({
@@ -300,7 +326,7 @@ export class AssetService extends BaseService {
     let count = 0;
     for await (const assets of batched(this.assetJobRepository.streamForDeletedJob(trashedBefore))) {
       await this.jobRepository.queueAll(
-        assets.map(({ id, isOffline }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: !isOffline } })),
+        assets.map(({ id }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: true } })),
       );
       count += assets.length;
     }
@@ -313,13 +339,16 @@ export class AssetService extends BaseService {
 
   @OnJob({ name: JobName.AssetDelete, queue: QueueName.BackgroundTask })
   async handleAssetDeletion(job: JobOf<JobName.AssetDelete>): Promise<JobStatus> {
-    const { id, deleteOnDisk } = job;
+    const { id, deleteOnDisk: isDeleteOnDiskRequest } = job;
 
     const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
       return JobStatus.Failed;
     }
+
+    // isOffline is an alias for excluded library assets
+    const deleteOnDisk = isDeleteOnDiskRequest && !asset.isOffline;
 
     if (asset.stack) {
       // asset.stack.assets only includes timeline visible assets and excludes the primary asset
@@ -372,7 +401,7 @@ export class AssetService extends BaseService {
       assetFiles.encodedVideoFile?.path,
     ];
 
-    if (deleteOnDisk && !asset.isOffline) {
+    if (deleteOnDisk) {
       files.push(assetFiles.sidecarFile?.path, asset.originalPath);
     }
 
@@ -388,6 +417,10 @@ export class AssetService extends BaseService {
     await this.assetRepository.updateAll(ids, {
       deletedAt: new Date(),
       status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
+    });
+    this.resourceRepository.send({
+      userIds: [auth.user.id],
+      changed: [Resource.assets(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
     });
     await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
       assetIds: ids,
@@ -461,12 +494,14 @@ export class AssetService extends BaseService {
 
   async deleteMetadataByKey(auth: AuthDto, id: string, key: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
-    return this.assetRepository.deleteMetadataByKey(id, key);
+    await this.assetRepository.deleteMetadataByKey(id, key);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.asset({ id })] });
   }
 
   async deleteBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkDeleteDto) {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.items.map((item) => item.assetId) });
     await this.assetRepository.deleteBulkMetadata(dto.items);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.assets()] });
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
@@ -607,6 +642,7 @@ export class AssetService extends BaseService {
     }
 
     const newEdits = await this.assetEditRepository.replaceAll(id, edits);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.asset({ id })] });
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
 
     // Return the asset and its applied edits
@@ -625,6 +661,7 @@ export class AssetService extends BaseService {
     }
 
     await this.assetEditRepository.replaceAll(id, []);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.asset({ id })] });
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
   }
 }

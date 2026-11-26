@@ -57,11 +57,7 @@ export class LibraryController {
   @Endpoint({
     summary: 'Update a library',
     description: 'Update an existing external library.',
-    history: new HistoryBuilder()
-      .added('v1')
-      .beta('v1')
-      .stable('v2')
-      .deprecated('v3', { replacementId: 'updateLibrary' }),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').v3PatchMigration(),
   })
   updateLibrary(@Param() { id }: UUIDParamDto, @Body() dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     return this.service.update(id, dto);

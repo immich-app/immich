@@ -1,6 +1,6 @@
 import { Mocked, vitest } from 'vitest';
-import type { RepositoryInterface } from 'src/types.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
+import type { RepositoryInterface } from 'src/types.js';
 
 export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaRepository>> => {
   return {
@@ -9,7 +9,7 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     copyTagGroup: vitest.fn().mockImplementation(() => Promise.resolve()),
     generateThumbhash: vitest.fn().mockResolvedValue(Buffer.from('')),
     decodeImage: vitest.fn().mockResolvedValue({ data: Buffer.from(''), info: {} }),
-    extract: vitest.fn().mockResolvedValue(null),
+    getEmbeddedImages: vitest.fn().mockResolvedValue([]),
     probe: vitest.fn(),
     probePackets: vitest.fn().mockResolvedValue({
       totalDuration: 0,

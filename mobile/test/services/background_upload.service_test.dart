@@ -7,6 +7,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -55,6 +56,7 @@ void main() {
     mockAssetMediaRepository = MockAssetMediaRepository();
     mockAssetService = MockAssetService();
     when(() => mockAssetService.stackEditedUpload(any(), any(), any())).thenAnswer((_) async {});
+    when(() => mockBackupRepository.markIfUnsupported(any(), any())).thenAnswer((_) async => false);
 
     sut = BackgroundUploadService(
       mockUploadRepository,
@@ -186,6 +188,29 @@ void main() {
       final task = await sut.getUploadTask(asset);
       expect(task, isNotNull);
       expect(task!.fields['filename'], equals('DJI_0001.jpg'));
+    });
+
+    test('builds no task for an extension the server does not accept, and checks a live photo by its video', () async {
+      final photo = LocalAssetStub.image1;
+      final livePhoto = LocalAssetStub.image2;
+      final photoEntity = MockAssetEntity();
+      final liveEntity = MockAssetEntity();
+
+      when(() => photoEntity.isLivePhoto).thenReturn(false);
+      when(() => liveEntity.isLivePhoto).thenReturn(true);
+      when(() => mockStorageRepository.getAssetEntityForAsset(photo)).thenAnswer((_) async => photoEntity);
+      when(() => mockStorageRepository.getAssetEntityForAsset(livePhoto)).thenAnswer((_) async => liveEntity);
+      when(() => mockStorageRepository.getFileForAsset(photo.id)).thenAnswer((_) async => File('/path/AAAAA.djvu'));
+      when(
+        () => mockStorageRepository.getMotionFileForAsset(livePhoto),
+      ).thenAnswer((_) async => File('/path/IMG_0001.mov'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(photo.id)).thenAnswer((_) async => 'AAAAA');
+      when(() => mockAssetMediaRepository.getOriginalFilename(livePhoto.id)).thenAnswer((_) async => 'IMG_0001.HEIC');
+      when(() => mockBackupRepository.markIfUnsupported(photo.id, '.djvu')).thenAnswer((_) async => true);
+
+      expect(await sut.getUploadTask(photo), isNull);
+      expect(await sut.getUploadTask(livePhoto), isNotNull);
+      verify(() => mockBackupRepository.markIfUnsupported(livePhoto.id, '.mov')).called(1);
     });
   });
 
@@ -458,6 +483,20 @@ void main() {
 
       verify(() => mockAssetService.stackEditedUpload(asset.id, 'still', 'sha')).called(1);
       verifyNoMoreInteractions(mockAssetService);
+    });
+  });
+
+  group('cancel', () {
+    test('also cancels the live photo still group', () async {
+      when(() => mockStorageRepository.clearCache()).thenAnswer((_) async {});
+      when(() => mockUploadRepository.reset(any())).thenAnswer((_) async => 0);
+      when(() => mockUploadRepository.deleteDatabaseRecords(any())).thenAnswer((_) async {});
+      when(() => mockUploadRepository.getActiveTasks(any())).thenAnswer((_) async => []);
+
+      await sut.cancel();
+
+      verify(() => mockUploadRepository.reset(kBackupLivePhotoGroup)).called(1);
+      verify(() => mockUploadRepository.deleteDatabaseRecords(kBackupLivePhotoGroup)).called(1);
     });
   });
 }

@@ -1,0 +1,173 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { QueryKeys } from '#lib/queries/query-keys.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import { modalManager, toastManager } from '@immich/ui';
+import {
+  MutationCache,
+  MutationObserver,
+  QueryCache,
+  QueryClient,
+  createQuery,
+  hashKey,
+  mutationOptions,
+  type CreateMutationOptions,
+  type DefaultError,
+  type DefinedCreateQueryResult,
+  type MutateOptions,
+  type NonUndefinedGuard,
+  type QueryKey,
+  type UndefinedInitialDataOptions,
+} from '@tanstack/svelte-query';
+import { noop } from 'lodash-es';
+import type { Translations } from 'svelte-i18n';
+
+type ToastMeta =
+  true | Translations | { color: 'primary' | 'success' | 'info' | 'warning' | 'danger'; description: Translations };
+
+declare module '@tanstack/svelte-query' {
+  interface Register {
+    queryMeta: {
+      error?: { toast?: Translations };
+    };
+    mutationMeta: {
+      success?: { toast?: ToastMeta };
+      error?: { toast?: Translations | false; values?: Record<string, string | number | boolean> };
+    };
+  }
+}
+
+export class MutationCancelledError extends Error {
+  constructor() {
+    super('Mutation cancelled');
+    this.name = 'MutationCancelledError';
+  }
+}
+
+const createQueryClient = () => {
+  const client = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        staleTime: Infinity,
+      },
+    },
+    queryCache: new QueryCache({
+      onError: (error, { meta }) => {
+        const toast = meta?.error?.toast;
+        if (!toast) {
+          return;
+        }
+
+        void getFormatter().then(($t) => handleError(error, $t(toast)));
+      },
+    }),
+    mutationCache: new MutationCache({
+      onSuccess: async (_data, _variables, _onMutateResult, { meta }) => {
+        const toast = meta?.success?.toast;
+        if (!toast) {
+          return;
+        }
+
+        if (toast === true) {
+          toastManager.primary();
+          return;
+        }
+
+        const $t = await getFormatter();
+        if (typeof toast === 'string') {
+          toastManager.primary($t(toast));
+          return;
+        }
+
+        toastManager[toast.color]($t(toast.description));
+      },
+      onError: async (error, _variables, _onMutateResult, { meta }) => {
+        const toast = meta?.error?.toast;
+        if (toast === false || error instanceof MutationCancelledError) {
+          return;
+        }
+
+        const $t = await getFormatter();
+        handleError(error, $t(toast ?? 'errors.something_went_wrong', { values: meta?.error?.values }));
+      },
+    }),
+  });
+
+  const publicQueryHashes = new Set(
+    [QueryKeys.serverConfig(), QueryKeys.publicConfig()].map((queryKey) => hashKey(queryKey)),
+  );
+  eventManager.on({
+    AuthLogout: () => {
+      client.removeQueries({ predicate: ({ queryHash }) => !publicQueryHashes.has(queryHash) });
+      client.getMutationCache().clear();
+    },
+  });
+
+  return client;
+};
+
+export const queryClient = createQueryClient();
+
+export const asMutation = <TArgs extends unknown[], TData, TError = DefaultError, TOnMutateResult = unknown>(
+  fn: (...args: TArgs) => Promise<TData>,
+  options?: Omit<CreateMutationOptions<TData, TError, TArgs, TOnMutateResult>, 'mutationFn'>,
+) => mutationOptions({ ...options, mutationFn: (args: TArgs) => fn(...args) });
+
+const getPreloadedData = <TQueryFnData>(queryKey: QueryKey) => {
+  const data = queryClient.getQueryData<TQueryFnData, QueryKey, NonUndefinedGuard<TQueryFnData>>(queryKey);
+  if (data === undefined) {
+    const error = new Error(`${queryKey.join('/')} must be loaded first`);
+    console.error(error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const readPreloadedQuery = <TQueryFnData, TError, TData, TQueryKey extends QueryKey>(
+  options: UndefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>,
+): TData => {
+  const data = getPreloadedData<TQueryFnData>(options.queryKey);
+  return options.select ? options.select(data) : (data as unknown as TData);
+};
+
+export const createPreloadedQuery = <TQueryFnData, TError, TData, TQueryKey extends QueryKey>(
+  optionsFn: () => UndefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>,
+): DefinedCreateQueryResult<TData, TError> =>
+  createQuery(
+    () => {
+      const options = optionsFn();
+      return { ...options, initialData: getPreloadedData<TQueryFnData>(options.queryKey) };
+    },
+    () => queryClient,
+  );
+
+export type ConfirmOptions = Parameters<typeof modalManager.showDialog>[0];
+
+type ExecuteMutationOptions<TData, TError, TVariables, TOnMutateResult> = MutateOptions<
+  TData,
+  TError,
+  TVariables,
+  TOnMutateResult
+> & { confirm?: ConfirmOptions | false };
+
+type MutationArgs<TData, TError, TVariables, TOnMutateResult> = TVariables extends void
+  ? [variables?: TVariables, mutateOptions?: ExecuteMutationOptions<TData, TError, TVariables, TOnMutateResult>]
+  : [variables: TVariables, mutateOptions?: ExecuteMutationOptions<TData, TError, TVariables, TOnMutateResult>];
+
+export const executeMutation = async <TData, TError, TVariables, TOnMutateResult>(
+  options: () => CreateMutationOptions<TData, TError, TVariables, TOnMutateResult>,
+  ...[variables, { confirm, ...mutateOptions } = {}]: MutationArgs<TData, TError, TVariables, TOnMutateResult>
+) => {
+  if (confirm && !(await modalManager.showDialog(confirm))) {
+    return;
+  }
+
+  const observer = new MutationObserver(queryClient, options());
+  const unsubscribe = observer.subscribe(noop);
+  return observer
+    .mutate(variables as TVariables, mutateOptions)
+    .catch(noop)
+    .finally(unsubscribe);
+};

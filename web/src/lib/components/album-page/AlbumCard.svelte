@@ -1,9 +1,10 @@
 <script lang="ts">
-  import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getShortDateRange } from '$lib/utils/date-time';
+  import AlbumCover from '#lib/components/album-page/AlbumCover.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getShortDateRange } from '#lib/utils/date-time.ts';
   import { type AlbumResponseDto } from '@immich/sdk';
-  import { ContextMenuButton, type MenuItems } from '@immich/ui';
+  import { ContextMenuButton, Icon, type MenuItems } from '@immich/ui';
+  import { mdiPin } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -23,6 +24,8 @@
     preload = false,
     contextMenuItems,
   }: Props = $props();
+
+  const owner = $derived(album.albumUsers[0].user);
 </script>
 
 <div
@@ -45,7 +48,17 @@
     </div>
   {/if}
 
-  <AlbumCover {album} {preload} class="transition-all duration-300 hover:shadow-lg" />
+  <div class="relative">
+    <AlbumCover {album} {preload} class="transition-all duration-300 hover:shadow-lg" />
+    {#if album.isPinned}
+      <span
+        class="absolute inset-e-1.5 top-1.5 z-10 rounded-full bg-white/90 p-0.5 shadow-sm"
+        title={$t('pinned_album')}
+      >
+        <Icon icon={mdiPin} size="1em" />
+      </span>
+    {/if}
+  </div>
 
   <div class="mt-4">
     <p
@@ -74,7 +87,6 @@
       {/if}
 
       {#if showOwner}
-        {@const owner = album.albumUsers[0].user}
         {#if owner.id === authManager.user.id}
           <p>{$t('owned')}</p>
         {:else}

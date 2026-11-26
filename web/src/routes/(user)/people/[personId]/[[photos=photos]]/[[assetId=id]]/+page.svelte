@@ -1,43 +1,44 @@
 <script lang="ts">
-  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
-  import { page } from '$app/stores';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { listNavigation } from '$lib/actions/list-navigation';
-  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
-  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import PersonEditModal from '$lib/modals/PersonEditModal.svelte';
-  import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
-  import { Route } from '$lib/route';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { getPersonActions, handleUpdatePersonName } from '$lib/services/person.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { AssetVisibility, PersonUserRole, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import { listNavigation } from '#lib/actions/list-navigation.ts';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.svelte.ts';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import ImageThumbnail from '#lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import PersonIndicator from '#lib/components/faces-page/PersonIndicator.svelte';
+  import ControlAppBar from '#lib/components/shared-components/ControlAppBar.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '#lib/components/timeline/Timeline.svelte';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
+  import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '#lib/constants.ts';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
+  import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
+  import { createPreloadedQuery, executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { getPersonQuery, getPersonStatisticsQuery, updatePersonMutation } from '#lib/queries/person.query.ts';
+  import { searchPersonQuery } from '#lib/queries/search.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { getPersonActions } from '#lib/services/person.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { websocketEvents } from '#lib/stores/websocket.ts';
+  import { getPeopleThumbnailUrl } from '#lib/utils.ts';
+  import { withUpdateStrategy } from '#lib/utils/person.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
+  import { AssetVisibility, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
     CommandPaletteDefaultProvider,
@@ -45,7 +46,6 @@
     IconButton,
     LoadingSpinner,
     modalManager,
-    toastManager,
     type ActionItem,
   } from '@immich/ui';
   import {
@@ -58,24 +58,32 @@
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import type { PageData } from './$types';
+  import { afterNavigate, goto, refreshAll } from '$app/navigation';
+  import { page } from '$app/state';
+  import type { PageProps } from './$types';
   import EditNameInput from './EditNameInput.svelte';
   import MergeFaceSelector from './MergeFaceSelector.svelte';
   import UnmergeFaceSelector from './UnmergeFaceSelector.svelte';
 
-  interface Props {
-    data: PageData;
-  }
+  const { params }: PageProps = $props();
 
-  let { data }: Props = $props();
-
-  let numberOfAssets = $derived(data.statistics.assets);
-  let person = $derived(data.person);
-  const altItems = $derived(person.otherPeople.filter(({ name }) => !!name && name !== person.name));
+  const queries = {
+    person: createPreloadedQuery(() => getPersonQuery(params.personId)),
+    statistics: createPreloadedQuery(() => getPersonStatisticsQuery(params.personId)),
+  };
+  const numberOfAssets = $derived(queries.statistics.data.assets);
+  const person = $derived(queries.person.data);
+  onResourceDelete(
+    () => `/people/${person.id}`,
+    () => void goto(Route.people()),
+  );
+  const altNames = $derived([
+    ...new Set(person.otherPeople.map(({ name }) => name ?? '').filter((name) => !!name && name !== person.name)),
+  ]);
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id, withPartners: true });
+  const options = $derived({ visibility: AssetVisibility.Timeline, personId: person.id, withPartners: true });
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
@@ -89,20 +97,20 @@
   let suggestedPeople: PersonResponseDto[] = $state([]);
 
   /**
-   * Save the word used to search people name: for example,
-   * if searching 'r' and the server returns 15 people with names starting with 'r',
-   * there's no need to search again people with name starting with 'ri'.
-   * However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
-   * or if the new search word starts with another word / letter
-   **/
+  Save the word used to search people name: for example,
+  if searching 'r' and the server returns 15 people with names starting with 'r',
+  there's no need to search again people with name starting with 'ri'.
+  However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
+  or if the new search word starts with another word / letter
+  */
   let isSearchingPeople = $state(false);
   let suggestionContainer: HTMLElement | undefined = $state();
 
   onMount(() => {
-    const action = $page.url.searchParams.get(QueryParameter.ACTION);
+    const action = page.url.searchParams.get(QueryParameter.ACTION);
+    const fallbackRoute = page.params.assetId ? Route.viewPerson(person) : Route.explore();
 
-    const fallbackRoute = $page.params.assetId ? Route.viewPerson(data.person) : Route.explore();
-    previousRoute = Route.continue($page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE), fallbackRoute).toString();
+    previousRoute = Route.continue(page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE), fallbackRoute).toString();
 
     if (action === 'merge') {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
@@ -126,12 +134,14 @@
   };
 
   const updateAssetCount = async () => {
-    await invalidateAll();
+    await refreshAll();
   };
 
-  afterNavigate(({ from }) => {
+  afterNavigate(({ from, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     // Prevent setting previousRoute to the current page.
-    if (from?.url && from.route.id !== $page.route.id) {
+    if (from?.url && from.route.id !== page.route.id) {
       previousRoute = from.url.href;
     }
   });
@@ -146,23 +156,18 @@
     viewMode = PersonPageViewMode.UNASSIGN_ASSETS;
   };
 
-  const handleMerge = async (person: PersonResponseDto) => {
-    await updateAssetCount();
-    await handleGoBack();
-
-    data = { ...data, person };
-  };
-
   const handleSelectFeaturePhoto = async (asset: TimelineAsset) => {
     if (viewMode !== PersonPageViewMode.SELECT_PERSON) {
       return;
     }
-    try {
-      person = await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
-      toastManager.primary($t('feature_photo_updated'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_set_feature_photo'));
-    }
+    await executeMutation(
+      () =>
+        updatePersonMutation({
+          success: { toast: 'feature_photo_updated' },
+          error: { toast: 'errors.unable_to_set_feature_photo' },
+        }),
+      [{ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } }],
+    );
 
     assetMultiSelectManager.clear();
 
@@ -187,6 +192,7 @@
     const [, personToBeMergedInto] = result;
 
     if (personToBeMergedInto.name !== personName && person.id === personToBeMergedInto.id) {
+      await updateName();
       await updateAssetCount();
       return { merged: true };
     }
@@ -208,7 +214,6 @@
 
   const changeName = async () => {
     viewMode = PersonPageViewMode.VIEW_ASSETS;
-    person.name = personName;
     isEditingName = false;
 
     if (isSuggestionSelectedByUser) {
@@ -217,8 +222,14 @@
       return;
     }
 
-    person = (await handleUpdatePersonName({ id: person.id, name: personName }, { notify: true })) ?? person;
+    await updateName();
   };
+
+  const updateName = () =>
+    executeMutation(
+      () => updatePersonMutation({ success: { toast: 'change_name_successfully' } }),
+      [{ id: person.id, personUpdateDto: withUpdateStrategy({ name: personName || null }) }],
+    );
 
   const handleCancelEditName = () => {
     isSearchingPeople = false;
@@ -238,7 +249,7 @@
       return;
     }
 
-    const result = await searchPerson({ name: personName, withHidden: true });
+    const result = await queryClient.query(searchPersonQuery({ name: personName, withHidden: true }));
 
     const normalizedPersonName = normalizeSearchString(personName);
     const existingPerson = result.find(
@@ -267,9 +278,10 @@
 
   const handleGoBack = async () => {
     viewMode = PersonPageViewMode.VIEW_ASSETS;
-    if ($page.url.searchParams.has(QueryParameter.ACTION)) {
-      $page.url.searchParams.delete(QueryParameter.ACTION);
-      await goto($page.url);
+    if (page.url.searchParams.has(QueryParameter.ACTION)) {
+      const url = new URL(page.url.href);
+      url.searchParams.delete(QueryParameter.ACTION);
+      await goto(url);
     }
   };
 
@@ -288,19 +300,6 @@
     assetMultiSelectManager.clear();
   };
 
-  const onPersonUpdate = async (response: PersonResponseDto) => {
-    if (response.id !== person.id) {
-      return;
-    }
-
-    if (response.isHidden) {
-      await goto(previousRoute);
-      return;
-    }
-
-    person = response;
-  };
-
   const handlePersonAssetDelete = async ({ id, assetId }: { id: string; assetId: string }) => {
     if (id !== person.id) {
       return;
@@ -309,7 +308,9 @@
     await updateAssetCount();
   };
 
-  const { Edit, Favorite, Unfavorite, HidePerson, ShowPerson, Access } = $derived(getPersonActions($t, person));
+  const { Edit, Favorite, Unfavorite, HidePerson, ShowPerson, Access } = $derived(
+    getPersonActions($t, person, { onHide: () => void goto(previousRoute) }),
+  );
   const SelectFeaturePhoto: ActionItem = {
     title: $t('select_featured_photo'),
     icon: mdiAccountBoxOutline,
@@ -324,25 +325,31 @@
     onAction: () => {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
     },
+    shortcuts: { key: 'm' },
   };
+
+  const personActionsEnabled = $derived(!assetViewerManager.isViewing && !assetMultiSelectManager.selectionActive);
 </script>
 
 <OnEvents
-  {onPersonUpdate}
   onPersonAssetDelete={handlePersonAssetDelete}
   onAssetsDelete={updateAssetCount}
   onAssetsArchive={updateAssetCount}
   onAssetsUnarchive={updateAssetCount}
 />
+<CommandPaletteDefaultProvider
+  name={$t('person')}
+  actions={personActionsEnabled ? [SelectFeaturePhoto, Edit, HidePerson, ShowPerson, Merge, Favorite, Unfavorite] : []}
+/>
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 pt-(--navbar-height) md:px-6 md:pt-(--navbar-height-md)"
-  use:scrollMemoryClearer={{
+  {@attach scrollMemoryClearer({
     routeStartsWith: Route.people(),
     beforeClear: () => {
       sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
     },
-  }}
+  })}
 >
   {#key person.id}
     <Timeline
@@ -360,32 +367,35 @@
         <!-- Person information block -->
         <div
           class="relative w-fit p-4 pt-12 sm:px-6"
-          use:clickOutside={{
+          {@attach clickOutside({
             onOutclick: handleCancelEditName,
-            onEscape: handleCancelEditName,
-          }}
-          use:listNavigation={suggestionContainer}
+            onEscape: isEditingName ? handleCancelEditName : undefined,
+          })}
+          {@attach listNavigation(suggestionContainer)}
         >
           <section class="flex w-64 place-items-center border-black sm:w-96">
             {#if isEditingName}
               <EditNameInput
                 {person}
                 bind:suggestedPeople
-                name={person.name}
+                name={person.name ?? ''}
                 bind:isSearchingPeople
                 onChange={handleNameChange}
                 {thumbnailData}
               />
             {:else}
               <div class="relative flex gap-4">
-                <ImageThumbnail
-                  circle
-                  shadow
-                  url={thumbnailData}
-                  altText={person.name}
-                  widthStyle="3.375rem"
-                  heightStyle="3.375rem"
-                />
+                <div class="@container relative size-13.5">
+                  <ImageThumbnail
+                    circle
+                    shadow
+                    url={thumbnailData}
+                    altText={person.name}
+                    widthStyle="100%"
+                    hidden={person.isHidden}
+                  />
+                  <PersonIndicator {person} />
+                </div>
                 <div class="flex flex-col text-start text-primary">
                   <div class="flex gap-2">
                     <button type="button" title={$t('edit_name')} onclick={() => (isEditingName = true)}>
@@ -402,28 +412,10 @@
                       aria-label={$t('edit')}
                     />
                   </div>
-                  {#if altItems.length > 0}
-                    {@const parts = new Intl.ListFormat($locale).formatToParts(
-                      altItems.map(({ sharedById }) => sharedById),
-                    )}
+                  {#if altNames.length > 0}
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {#each parts as { type, value } (value)}
-                        {#if type === 'element'}
-                          {@const altItem = altItems.find(({ sharedById }) => sharedById === value)!}
-                          {#if [PersonUserRole.Write, PersonUserRole.Admin].includes(altItem.role)}
-                            <button
-                              type="button"
-                              onclick={() =>
-                                modalManager.show(PersonEditModal, { person, targetUserId: altItem.sharedById })}
-                              class="underline">{altItem.name}</button
-                            >
-                          {:else}
-                            {altItem.name}
-                          {/if}
-                        {:else}
-                          {value}
-                        {/if}
-                      {/each}
+                      {$t('also_known_as')}
+                      {new Intl.ListFormat($locale).format(altNames)}
                     </p>
                   {/if}
                   <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -494,10 +486,12 @@
 <header>
   {#if assetMultiSelectManager.selectionActive}
     <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t)}
+      {const Actions = $derived(getAssetBulkActions($t))}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
-      <CreateSharedLink />
+      <ActionButton action={Actions.CreateSharedLink} />
+
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
+
       <ActionButton action={Actions.AddToAlbum} />
       <FavoriteAction
         removeFavorite={assetMultiSelectManager.isAllFavorite}
@@ -513,17 +507,9 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction
-          menuItem
-          unarchive={assetMultiSelectManager.isAllArchived}
-          onArchive={(ids, visibility) =>
-            timelineManager.update(ids, (asset) => {
-              asset.visibility = visibility;
-            })}
-        />
-        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.Archive} />
+        <ActionMenuItem action={Actions.Unarchive} />
+        <ActionMenuItem action={Actions.Tag} />
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         <DeleteAssets
           menuItem
@@ -565,5 +551,5 @@
 {/if}
 
 {#if viewMode === PersonPageViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
+  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleGoBack} />
 {/if}

@@ -1,33 +1,33 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import BirthdayConfetti from '$lib/components/memories/BirthdayConfetti.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { memoryManager } from '$lib/managers/memory-manager.svelte';
-  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
-  import { Route } from '$lib/route';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
-  import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, AssetTypeEnum, getAssetInfo, MemoryType } from '@immich/sdk';
-  import { ActionButton, Icon, IconButton, Text } from '@immich/ui';
+  import { scrollMemoryClearer } from '#lib/actions/scroll-memory.svelte.ts';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import BirthdayConfetti from '#lib/components/memories/BirthdayConfetti.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import GalleryViewer from '#lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
+  import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
+  import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { searchMemoriesQuery } from '#lib/queries/memory.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '#lib/utils.ts';
+  import { fromISODateTimeUTC, toTimelineAsset } from '#lib/utils/timeline-util.ts';
+  import { AssetMediaSize, AssetTypeEnum, MemoryType, getAssetInfo } from '@immich/sdk';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text, shortcuts } from '@immich/ui';
   import {
     mdiCakeVariant,
     mdiCardsOutline,
@@ -53,6 +53,7 @@
   import { t } from 'svelte-i18n';
   import type { Attachment } from 'svelte/attachments';
   import { Tween } from 'svelte/motion';
+  import { goto } from '$app/navigation';
   import MemoryPhotoViewer from './MemoryPhotoViewer.svelte';
   import MemoryVideoViewer from './MemoryVideoViewer.svelte';
 
@@ -62,7 +63,13 @@
   let galleryFirstLoad = $state(true);
   let playerInitialized = $state(false);
   let paused = $state(false);
-  const current = $derived(memoryManager.current);
+  const filters = memoryManager.filters;
+  const memories = createPreloadedQuery(() => searchMemoriesQuery(filters));
+  const current = $derived(memoryManager.getCurrent(memories.data));
+  onResourceDelete(
+    () => current && `/memories/${current.memory.id}`,
+    () => void goto(memoryManager.memoriesHref, { replace: true, reset: false }),
+  );
   const currentAssetId = $derived(current?.asset.id);
   // where the asset sits in its memory, for the progress bar and counter
   const assetIndex = $derived(current ? current.memory.assets.findIndex(({ id }) => id === currentAssetId) : -1);
@@ -92,7 +99,7 @@
       return;
     }
 
-    await goto(href, { noScroll: true, keepFocus: true, ...options });
+    await goto(href, { reset: false, ...options });
   };
 
   const setProgressDuration = (asset: TimelineAsset) => {
@@ -173,7 +180,7 @@
     return progressBarController.current * 100;
   };
 
-  const handleHideAssets = (ids: string[]) => handlePromiseError(memoryManager.hideAssets(ids));
+  const handleHideAssets = (ids: string[]) => handlePromiseError(memoryManager.hideAssets(current, ids));
 
   const handleGalleryScrollsIntoView = () => {
     galleryInView = true;
@@ -247,7 +254,7 @@
       return;
     }
 
-    handlePromiseError(goto(memoryManager.memoriesHref, { replaceState: true, noScroll: true }));
+    handlePromiseError(goto(memoryManager.memoriesHref, { replace: true, reset: false }));
   });
 
   $effect(() => {
@@ -263,23 +270,29 @@
   });
 </script>
 
-<svelte:document
-  use:shortcuts={assetViewerManager.isViewing
-    ? []
-    : [
-        { shortcut: { key: 'ArrowRight' }, onShortcut: () => handleNavigate(current?.nextHref) },
-        { shortcut: { key: 'd' }, onShortcut: () => handleNavigate(current?.nextHref) },
-        { shortcut: { key: 'ArrowLeft' }, onShortcut: () => handleNavigate(current?.previousHref) },
-        { shortcut: { key: 'a' }, onShortcut: () => handleNavigate(current?.previousHref) },
-        { shortcut: { key: 'Escape' }, onShortcut: () => handleEscape() },
-      ]}
+<svelte:window
+  {@attach shortcuts(
+    assetViewerManager.isViewing
+      ? []
+      : [
+          { shortcut: { key: 'ArrowRight' }, onShortcut: () => handleNavigate(current?.nextHref) },
+          { shortcut: { key: 'd' }, onShortcut: () => handleNavigate(current?.nextHref) },
+          { shortcut: { key: 'ArrowLeft' }, onShortcut: () => handleNavigate(current?.previousHref) },
+          { shortcut: { key: 'a' }, onShortcut: () => handleNavigate(current?.previousHref) },
+          { shortcut: { key: 'Escape' }, onShortcut: () => handleEscape() },
+        ],
+  )}
 />
+
+<OnEvents onAssetsArchive={handleHideAssets} onAssetsDelete={handleHideAssets} />
 
 {#if assetMultiSelectManager.selectionActive}
   <div class="dark sticky top-0 z-1">
     <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t)}
-      <CreateSharedLink />
+      {const Actions = $derived(getAssetBulkActions($t))}
+      <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+
+      <ActionButton action={Actions.CreateSharedLink} />
       <IconButton
         shape="round"
         color="secondary"
@@ -298,10 +311,8 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={handleHideAssets} />
-        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.Archive} />
+        <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets menuItem onAssetDelete={handleHideAssets} />
       </ButtonContextMenu>
     </AssetSelectControlBar>
@@ -309,10 +320,10 @@
 {/if}
 
 <section
-  id="memory-viewer"
-  data-sveltekit-noscroll
+  data-testid="memory-viewer"
+  data-sveltekit-reset={false}
   class="dark w-full bg-immich-dark-gray text-white"
-  use:scrollMemoryClearer={{ routeStartsWith: Route.memories() }}
+  {@attach scrollMemoryClearer({ routeStartsWith: Route.memories() })}
   bind:this={memoryWrapper}
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
@@ -483,7 +494,7 @@
                   variant="ghost"
                   color="secondary"
                   aria-label={current.memory.isSaved ? $t('unfavorite') : $t('favorite')}
-                  onclick={() => memoryManager.toggleCurrentMemorySaved()}
+                  onclick={() => memoryManager.toggleSaved(current)}
                 />
                 <!-- <IconButton
                   icon={mdiShareVariantOutline}
@@ -502,12 +513,12 @@
                   align="bottom-right"
                 >
                   <MenuOption
-                    onClick={() => memoryManager.deleteCurrentMemory()}
+                    onClick={() => memoryManager.deleteCurrentMemory(current)}
                     text={$t('remove_memory')}
                     icon={mdiCardsOutline}
                   />
                   <MenuOption
-                    onClick={() => memoryManager.deleteCurrentAsset()}
+                    onClick={() => memoryManager.deleteCurrentAsset(current)}
                     text={$t('remove_photo_from_memory')}
                     icon={mdiImageMinusOutline}
                   />
@@ -625,7 +636,7 @@
       />
     </div>
 
-    <div id="gallery-memory" {@attach galleryObserver} bind:this={memoryGallery}>
+    <div data-testid="memory-gallery" {@attach galleryObserver} bind:this={memoryGallery}>
       <GalleryViewer
         assets={currentTimelineAssets}
         viewerAssets={current.viewerAssets}

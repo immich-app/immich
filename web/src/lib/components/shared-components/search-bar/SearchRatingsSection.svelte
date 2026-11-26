@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import SearchButton from './SearchButton.svelte';
@@ -12,6 +12,7 @@
     { value: 3, label: '★★★' },
     { value: 2, label: '★★' },
     { value: 1, label: '★' },
+    { value: null, label: $t('none') },
   ];
 </script>
 

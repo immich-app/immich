@@ -1,40 +1,38 @@
 <script lang="ts">
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
-  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
-  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
-  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
-  import LinkLivePhotoAction from '$lib/components/timeline/actions/LinkLivePhotoAction.svelte';
-  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
-  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
-  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AssetAction } from '$lib/constants';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { memoryManager } from '$lib/managers/memory-manager.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import { Route } from '$lib/route';
-  import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { getStackBulkActions } from '$lib/services/stack.service';
-  import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
-  import { type OnLink, type OnUnlink } from '$lib/utils/actions';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import MemoryCard from '#lib/components/memories/MemoryCard.svelte';
+  import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
+  import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '#lib/components/timeline/Timeline.svelte';
+  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
+  import LinkLivePhotoAction from '#lib/components/timeline/actions/LinkLivePhotoAction.svelte';
+  import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
+  import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
+  import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { searchMemoriesQuery } from '#lib/queries/memory.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
+  import { getStackBulkActions } from '#lib/services/stack.service.ts';
+  import { getAssetMediaUrl, memoryLaneTitle } from '#lib/utils.ts';
+  import { type OnLink, type OnUnlink } from '#lib/utils/actions.ts';
+  import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { AssetVisibility } from '@immich/sdk';
-  import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
   import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -77,8 +75,12 @@
     assetMultiSelectManager.clear();
   };
 
+  const memoryLaneFilters = { $for: DateTime.now().toISODate() };
+  memoryManager.setFilters(memoryLaneFilters);
+  const memoryLane = createQuery(() => searchMemoriesQuery(memoryLaneFilters));
+
   const items = $derived(
-    memoryManager.memories.map((memory) => ({
+    (memoryLane.data ?? []).map((memory) => ({
       id: memory.id,
       title: $memoryLaneTitle(memory),
       href: Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }),
@@ -87,8 +89,6 @@
       type: memory.type,
     })),
   );
-
-  memoryManager.setFilters({ $for: DateTime.now().toISODate() });
 </script>
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>
@@ -97,7 +97,6 @@
     bind:timelineManager
     {options}
     assetInteraction={assetMultiSelectManager}
-    removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked
   >
@@ -116,11 +115,11 @@
 
 {#if assetMultiSelectManager.selectionActive}
   <AssetSelectControlBar>
-    {@const Actions = getAssetBulkActions($t)}
-    {@const StackActions = getStackBulkActions($t)}
+    {const Actions = $derived(getAssetBulkActions($t))}
+    {const StackActions = $derived(getStackBulkActions($t))}
     <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 
-    <CreateSharedLink />
+    <ActionButton action={Actions.CreateSharedLink} />
     <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
     <ActionButton action={Actions.AddToAlbum} />
 
@@ -145,13 +144,9 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction
-          menuItem
-          onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
-        />
-        {#if authManager.preferences.tags.enabled}
-          <TagAction menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.Archive} />
+        <ActionMenuItem action={Actions.Unarchive} />
+        <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets
           menuItem
           onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}

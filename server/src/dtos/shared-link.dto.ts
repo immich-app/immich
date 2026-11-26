@@ -1,22 +1,12 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { SharedLink } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto.js';
 import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum.js';
 import { isoDatetimeToDate } from 'src/validation.js';
-
-const SharedLinkSearchSchema = z
-  .object({
-    albumId: z.uuidv4().optional().describe('Filter by album ID'),
-    id: z
-      .uuidv4()
-      .optional()
-      .describe('Filter by shared link ID')
-      .meta(new HistoryBuilder().added('v2.5.0').getExtensions()),
-  })
-  .meta({ id: 'SharedLinkSearchDto' });
 
 const SharedLinkCreateSchema = z
   .object({
@@ -27,7 +17,7 @@ const SharedLinkCreateSchema = z
     password: z.string().nullable().optional().describe('Link password'),
     slug: z.string().nullable().optional().describe('Custom URL slug'),
     expiresAt: isoDatetimeToDate.nullable().describe('Expiration date').default(null).optional(),
-    allowUpload: z.boolean().optional().describe('Allow uploads'),
+    allowUpload: z.boolean().default(false).optional().describe('Allow uploads'),
     allowDownload: z.boolean().default(true).optional().describe('Allow downloads'),
     showMetadata: z.boolean().default(true).optional().describe('Show metadata'),
   })
@@ -56,24 +46,6 @@ const SharedLinkCreateSchema = z
   })
   .meta({ id: 'SharedLinkCreateDto' });
 
-const SharedLinkEditSchema = z
-  .object({
-    description: z.string().nullable().optional().describe('Link description'),
-    password: z.string().nullable().optional().describe('Link password'),
-    slug: z.string().nullable().optional().describe('Custom URL slug'),
-    expiresAt: isoDatetimeToDate.nullish().describe('Expiration date'),
-    allowUpload: z.boolean().optional().describe('Allow uploads'),
-    allowDownload: z.boolean().optional().describe('Allow downloads'),
-    showMetadata: z.boolean().optional().describe('Show metadata'),
-  })
-  .meta({ id: 'SharedLinkEditDto' });
-
-const SharedLinkLoginSchema = z
-  .object({
-    password: z.string().describe('Shared link password').meta({ example: 'password' }),
-  })
-  .meta({ id: 'SharedLinkLoginDto' });
-
 const SharedLinkResponseSchema = z
   .object({
     id: z.uuidv4().describe('Shared link ID'),
@@ -94,13 +66,37 @@ const SharedLinkResponseSchema = z
   .describe('Shared link response')
   .meta({ id: 'SharedLinkResponseDto' });
 
-export class SharedLinkSearchDto extends createZodDto(SharedLinkSearchSchema) {}
+export class SharedLinkSearchDto extends createZodDto({
+  albumId: z.uuidv4().optional().describe('Filter by album ID'),
+  id: z
+    .uuidv4()
+    .optional()
+    .describe('Filter by shared link ID')
+    .meta(new HistoryBuilder().added('v2.5.0').getExtensions()),
+}) {}
+
 export class SharedLinkCreateDto extends createZodDto(SharedLinkCreateSchema) {}
-export class SharedLinkEditDto extends createZodDto(SharedLinkEditSchema) {}
-export class SharedLinkLoginDto extends createZodDto(SharedLinkLoginSchema) {}
+
+export class SharedLinkEditDto extends createZodDto({
+  description: z.string().nullable().optional().describe('Link description'),
+  password: z.string().nullable().optional().describe('Link password'),
+  slug: z.string().nullable().optional().describe('Custom URL slug'),
+  expiresAt: isoDatetimeToDate.nullish().describe('Expiration date'),
+  allowUpload: z.boolean().optional().describe('Allow uploads'),
+  allowDownload: z.boolean().optional().describe('Allow downloads'),
+  showMetadata: z.boolean().optional().describe('Show metadata'),
+}) {}
+
+export class SharedLinkLoginDto extends createZodDto({
+  password: z.string().describe('Shared link password').meta({ example: 'password' }),
+}) {}
+
 export class SharedLinkResponseDto extends createZodDto(SharedLinkResponseSchema) {}
 
-export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetadata: boolean }): SharedLinkResponseDto {
+export function mapSharedLink(
+  sharedLink: Omit<SharedLink, 'assets'> & Partial<Pick<SharedLink, 'assets'>>,
+  { auth }: { auth: AuthDto },
+): SharedLinkResponseDto {
   const assets = sharedLink.assets || [];
 
   const response = {
@@ -112,8 +108,8 @@ export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetad
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: assets.map((asset) => mapAsset(asset, { stripMetadata: options.stripAssetMetadata })),
-    album: sharedLink.album ? mapAlbum(sharedLink.album) : undefined,
+    assets: assets.map((asset) => mapAsset(asset, { auth })),
+    album: sharedLink.album ? mapAlbum(sharedLink.album, { auth }) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
-  import type { SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import type { StorageTemplateOptionsResponseDto } from '@immich/sdk';
   import { Card, CardBody, CardHeader, Heading, Text } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    options: SystemConfigTemplateStorageOptionDto;
+    options: StorageTemplateOptionsResponseDto;
   }
 
   let { options }: Props = $props();
@@ -30,9 +30,9 @@
 <Card class="bg-light-50 text-sm shadow-none">
   <CardHeader>
     <Text class="mb-1">{$t('admin.storage_template_date_time_description')}</Text>
-    <Text color="primary"
-      >{$t('admin.storage_template_date_time_sample', { values: { date: getExampleDate().toISO() } })}</Text
-    >
+    <Text color="primary">
+      {$t('admin.storage_template_date_time_sample', { values: { date: getExampleDate().toISO() } })}
+    </Text>
   </CardHeader>
   <CardBody>
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-3 md:grid-cols-4">

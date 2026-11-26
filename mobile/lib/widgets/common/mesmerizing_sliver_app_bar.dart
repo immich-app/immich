@@ -36,64 +36,63 @@ class _MesmerizingSliverAppBarState extends ConsumerState<MesmerizingSliverAppBa
   @override
   Widget build(BuildContext context) {
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    Widget hideWhenSelecting(Widget child) => IgnorePointer(
+      ignoring: isMultiSelectEnabled,
+      child: AnimatedOpacity(duration: Durations.medium1, opacity: isMultiSelectEnabled ? 0 : 1, child: child),
+    );
 
-    return isMultiSelectEnabled
-        ? SliverToBoxAdapter(
-            child: switch (_scrollProgress) {
-              < 0.8 => const SizedBox(height: 120),
-              _ => const SizedBox(height: 352),
-            },
-          )
-        : SliverAppBar(
-            expandedHeight: 300.0,
-            floating: false,
-            pinned: true,
-            snap: false,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(
-                Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
-                color: Color.lerp(Colors.white, context.primaryColor, _scrollProgress),
-                shadows: [
-                  _scrollProgress < 0.95
-                      ? Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
-                      : const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
-                ],
-              ),
-              onPressed: () {
-                context.pop();
-              },
+    return SliverAppBar(
+      expandedHeight: 300.0,
+      floating: false,
+      pinned: true,
+      snap: false,
+      elevation: 0,
+      leading: hideWhenSelecting(
+        IconButton(
+          icon: Icon(
+            Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
+            color: Color.lerp(Colors.white, context.primaryColor, _scrollProgress),
+            shadows: [
+              _scrollProgress < 0.95
+                  ? Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
+                  : const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
+            ],
+          ),
+          onPressed: () {
+            context.pop();
+          },
+        ),
+      ),
+      flexibleSpace: Builder(
+        builder: (context) {
+          final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+          final scrollProgress = _calculateScrollProgress(settings);
+
+          // Update scroll progress for the leading button
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _scrollProgress != scrollProgress) {
+              setState(() {
+                _scrollProgress = scrollProgress;
+              });
+            }
+          });
+
+          return FlexibleSpaceBar(
+            centerTitle: true,
+            title: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: scrollProgress > 0.95
+                  ? Text(
+                      widget.title,
+                      style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
+                    )
+                  : null,
             ),
-            flexibleSpace: Builder(
-              builder: (context) {
-                final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-                final scrollProgress = _calculateScrollProgress(settings);
-
-                // Update scroll progress for the leading button
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted && _scrollProgress != scrollProgress) {
-                    setState(() {
-                      _scrollProgress = scrollProgress;
-                    });
-                  }
-                });
-
-                return FlexibleSpaceBar(
-                  centerTitle: true,
-                  title: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: scrollProgress > 0.95
-                        ? Text(
-                            widget.title,
-                            style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
-                          )
-                        : null,
-                  ),
-                  background: _ExpandedBackground(scrollProgress: scrollProgress, title: widget.title),
-                );
-              },
-            ),
+            background: _ExpandedBackground(scrollProgress: scrollProgress, title: widget.title),
           );
+        },
+      ),
+    );
   }
 }
 

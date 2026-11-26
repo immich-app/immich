@@ -1,16 +1,5 @@
 export const UUID_REGEX = /^[\dA-Fa-f]{8}(?:\b-[\dA-Fa-f]{4}){3}\b-[\dA-Fa-f]{12}$/;
 
-export enum AssetAction {
-  ARCHIVE = 'archive',
-  UNARCHIVE = 'unarchive',
-  TRASH = 'trash',
-  DELETE = 'delete',
-  RESTORE = 'restore',
-  SET_VISIBILITY_LOCKED = 'set-visibility-locked',
-  SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
-  RATING = 'rating',
-}
-
 export type SharedLinkTab = 'all' | 'album' | 'individual';
 
 export enum ProjectionType {
@@ -85,6 +74,9 @@ export const timeToLoadTheMap: number = 100;
 export const timeBeforeShowLoadingSpinner: number = 100;
 
 export const timeDebounceOnSearch: number = 300;
+export const resourceUpdateBatchDelay = 500;
+export const correlationIdHeader = 'X-Correlation-ID';
+export const workflowLogsPageSize = 50;
 
 export const fallbackLocale = {
   code: 'en-US',
@@ -251,7 +243,7 @@ export interface Lang {
   rtl?: boolean;
 }
 
-export const defaultLang: Lang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
+export const defaultLang: Lang = { name: 'English', code: 'en', loader: () => import('#i18n/en.json') };
 
 export enum ImmichProduct {
   Client = 'immich-client',
@@ -311,3 +303,12 @@ export enum BackupFileStatus {
 }
 
 export const assetViewerFadeDuration: number = 150;
+
+export const libraryTableClasses = {
+  column1: 'w-4/12',
+  column2: 'w-4/12',
+  column3: 'w-1/12',
+  column4: 'w-1/12',
+  column5: 'w-1/12',
+  column6: 'w-1/12 flex justify-end',
+};

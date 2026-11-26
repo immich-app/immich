@@ -1,8 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { parse } from 'node:path';
-import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AuthDto, isEditedOnly } from 'src/dtos/auth.dto.js';
 import {
   DownloadArchiveDto,
   DownloadArchiveInfo,
@@ -13,6 +11,7 @@ import { Permission } from 'src/enum.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
+import { getDownloadFile } from 'src/utils/file.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
@@ -45,7 +44,7 @@ export class DownloadService extends BaseService {
 
     const addToArchive = ({ id, size }: { id: string; size: number | null }) => {
       archive.assetIds.push(id);
-      archive.size += Number(size || 0);
+      archive.size += size || 0;
 
       if (archive.size <= targetSize) {
         return;
@@ -90,8 +89,11 @@ export class DownloadService extends BaseService {
   async downloadArchive(auth: AuthDto, dto: DownloadArchiveDto): Promise<ImmichReadStream> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
 
+    const config = await this.getConfig({ withCache: true });
+
+    const edited = isEditedOnly(auth, dto.edited);
     const zip = this.storageRepository.createZipStream();
-    const assets = await this.assetRepository.getForOriginals(dto.assetIds, dto.edited ?? false);
+    const assets = await this.assetRepository.getForOriginals(dto.assetIds, edited);
     const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
@@ -101,22 +103,20 @@ export class DownloadService extends BaseService {
         continue;
       }
 
-      const { originalPath, editedPath, originalFileName } = asset;
+      const { path, name, extension } = getDownloadFile(asset, config);
+      let filename = name + extension;
 
-      let filename = sanitize(originalFileName) || 'unnamed';
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
-        const parsedFilename = parse(filename);
-        filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
+        filename = `${name}+${count}${extension}`;
       }
 
-      let realpath = dto.edited && editedPath ? editedPath : originalPath;
-
+      let realpath = path;
       try {
-        realpath = await this.storageRepository.realpath(realpath);
+        realpath = await this.storageRepository.realpath(path);
       } catch {
-        this.logger.warn('Unable to resolve realpath', { originalPath });
+        this.logger.warn('Unable to resolve realpath', { realpath });
       }
 
       zip.addFile(realpath, filename);

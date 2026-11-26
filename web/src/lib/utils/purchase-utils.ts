@@ -1,6 +1,7 @@
-import { updateMyPreferences } from '@immich/sdk';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { updateMyPreferencesMutation } from '#lib/queries/user.query.ts';
 import { DateTime } from 'luxon';
-import { authManager } from '$lib/managers/auth-manager.svelte';
 
 export const getButtonVisibility = (): boolean => {
   if (!authManager.authenticated) {
@@ -14,7 +15,8 @@ export const getButtonVisibility = (): boolean => {
   return dayLeft > 0;
 };
 
-export const setSupportBadgeVisibility = async (value: boolean) => {
-  const response = await updateMyPreferences({ userPreferencesUpdateDto: { purchase: { showSupportBadge: value } } });
-  authManager.setPreferences(response);
-};
+export const setSupportBadgeVisibility = (showSupportBadge: boolean) =>
+  executeMutation(
+    () => updateMyPreferencesMutation({}),
+    [{ userPreferencesUpdateDto: { purchase: { showSupportBadge } } }],
+  );

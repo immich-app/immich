@@ -2,38 +2,38 @@ import { DateTime, Duration } from 'luxon';
 
 export type ZoneOption = {
   /**
-   * Timezone name with offset
-   *
-   * e.g. Asia/Jerusalem (+03:00)
-   */
+  Timezone name with offset
+  
+  e.g. Asia/Jerusalem (+03:00)
+  */
   label: string;
 
   /**
-   * Timezone name
-   *
-   * e.g. Asia/Jerusalem
-   */
+  Timezone name
+  
+  e.g. Asia/Jerusalem
+  */
   value: string;
 
   /**
-   * Timezone offset in minutes
-   *
-   * e.g. 300
-   */
+  Timezone offset in minutes
+  
+  e.g. 300
+  */
   offsetMinutes: number;
 
   /**
-   * True iff the date is valid
-   *
-   * Dates may be invalid for various reasons, for example setting a day that does not exist (30 Feb 2024).
-   * Due to daylight saving time, 2:30am is invalid for Europe/Berlin on Mar 31 2024.The two following local times
-   * are one second apart:
-   *
-   * - Mar 31 2024 01:59:59 (GMT+0100, unix timestamp 1725058799)
-   * - Mar 31 2024 03:00:00 (GMT+0200, unix timestamp 1711846800)
-   *
-   * Mar 31 2024 02:30:00 does not exist in Europe/Berlin, this is an invalid date/time/time zone combination.
-   */
+  True iff the date is valid
+  
+  Dates may be invalid for various reasons, for example setting a day that does not exist (30 Feb 2024).
+  Due to daylight saving time, 2:30am is invalid for Europe/Berlin on Mar 31 2024.The two following local times
+  are one second apart:
+  
+  - Mar 31 2024 01:59:59 (GMT+0100, unix timestamp 1725058799)
+  - Mar 31 2024 03:00:00 (GMT+0200, unix timestamp 1711846800)
+  
+  Mar 31 2024 02:30:00 does not exist in Europe/Berlin, this is an invalid date/time/time zone combination.
+  */
   valid: boolean;
 };
 

@@ -1,20 +1,9 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { WorkflowTrigger } from '@immich/plugin-sdk';
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import { JsonSchemaDto } from 'src/dtos/json-schema.dto.js';
 import { WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum.js';
 import { asPluginKey } from 'src/utils/workflow.js';
-
-const PluginSearchSchema = z
-  .object({
-    id: z.uuidv4().optional().describe('Plugin ID'),
-    enabled: z.boolean().optional().describe('Whether the plugin is enabled'),
-    name: z.string().optional(),
-    version: z.string().optional(),
-    title: z.string().optional(),
-    description: z.string().optional(),
-  })
-  .meta({ id: 'PluginSearchDto' });
 
 const PluginMethodResponseSchema = z
   .object({
@@ -30,20 +19,6 @@ const PluginMethodResponseSchema = z
   })
   .meta({ id: 'PluginMethodResponseDto' });
 
-const PluginResponseSchema = z
-  .object({
-    id: z.uuidv4().describe('Plugin ID'),
-    name: z.string().describe('Plugin name'),
-    title: z.string().describe('Plugin title'),
-    description: z.string().describe('Plugin description'),
-    author: z.string().describe('Plugin author'),
-    version: z.string().describe('Plugin version'),
-    createdAt: z.string().describe('Creation date'),
-    updatedAt: z.string().describe('Last update date'),
-    methods: z.array(PluginMethodResponseSchema).describe('Plugin methods'),
-  })
-  .meta({ id: 'PluginResponseDto' });
-
 const PluginTemplateStepResponseSchema = z
   .object({
     method: z.string().describe('Step plugin method'),
@@ -52,36 +27,49 @@ const PluginTemplateStepResponseSchema = z
   })
   .meta({ id: 'PluginTemplateStepResponseDto' });
 
-const PluginTemplateResponseSchema = z
-  .object({
-    key: z.string().describe('Template key (unique across all templates)'),
-    title: z.string().describe('Template title'),
-    description: z.string().describe('Template description'),
-    trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
-    steps: z.array(PluginTemplateStepResponseSchema).describe('Workflow steps'),
-    uiHints: z.array(z.string()).describe('Ui hints, for example "smart-album"'),
-  })
-  .meta({ id: 'PluginTemplateResponseDto' });
+export class PluginSearchDto extends createZodDto({
+  id: z.uuidv4().optional().describe('Plugin ID'),
+  enabled: z.boolean().optional().describe('Whether the plugin is enabled'),
+  name: z.string().optional(),
+  version: z.string().optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+}) {}
 
-const PluginMethodSearchSchema = z
-  .object({
-    id: z.uuidv4().optional().describe('Plugin method ID'),
-    enabled: z.boolean().optional().describe('Whether the plugin method is enabled'),
-    name: z.string().optional(),
-    title: z.string().optional(),
-    description: z.string().optional(),
-    type: WorkflowTypeSchema.optional().describe('Workflow types'),
-    trigger: WorkflowTriggerSchema.optional().describe('Workflow trigger'),
-    pluginName: z.string().optional().describe('Plugin name'),
-    pluginVersion: z.string().optional().describe('Plugin version'),
-  })
-  .meta({ id: 'PluginMethodSearchDto' });
+export class PluginResponseDto extends createZodDto({
+  id: z.uuidv4().describe('Plugin ID'),
+  name: z.string().describe('Plugin name'),
+  title: z.string().describe('Plugin title'),
+  description: z.string().describe('Plugin description'),
+  author: z.string().describe('Plugin author'),
+  version: z.string().describe('Plugin version'),
+  createdAt: z.string().describe('Creation date'),
+  updatedAt: z.string().describe('Last update date'),
+  methods: z.array(PluginMethodResponseSchema).describe('Plugin methods'),
+}) {}
 
-export class PluginSearchDto extends createZodDto(PluginSearchSchema) {}
-export class PluginResponseDto extends createZodDto(PluginResponseSchema) {}
-export class PluginMethodSearchDto extends createZodDto(PluginMethodSearchSchema) {}
+export class PluginMethodSearchDto extends createZodDto({
+  id: z.uuidv4().optional().describe('Plugin method ID'),
+  enabled: z.boolean().optional().describe('Whether the plugin method is enabled'),
+  name: z.string().optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  type: WorkflowTypeSchema.optional().describe('Workflow types'),
+  trigger: WorkflowTriggerSchema.optional().describe('Workflow trigger'),
+  pluginName: z.string().optional().describe('Plugin name'),
+  pluginVersion: z.string().optional().describe('Plugin version'),
+}) {}
+
 export class PluginMethodResponseDto extends createZodDto(PluginMethodResponseSchema) {}
-export class PluginTemplateResponseDto extends createZodDto(PluginTemplateResponseSchema) {}
+
+export class PluginTemplateResponseDto extends createZodDto({
+  key: z.string().describe('Template key (unique across all templates)'),
+  title: z.string().describe('Template title'),
+  description: z.string().describe('Template description'),
+  trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
+  steps: z.array(PluginTemplateStepResponseSchema).describe('Workflow steps'),
+  uiHints: z.array(z.string()).describe('Ui hints, for example "smart-album"'),
+}) {}
 
 export type PluginTemplate = {
   name: string;

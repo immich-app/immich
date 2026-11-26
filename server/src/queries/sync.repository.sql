@@ -27,8 +27,8 @@ order by
   "album_audit"."id" asc
 
 -- SyncRepository.album.getUpserts
-select distinct
-  on ("album"."id", "album"."updateId") "album"."id",
+select
+  "album"."id",
   "album"."albumName" as "name",
   "album"."description",
   "album"."createdAt",
@@ -40,22 +40,13 @@ select distinct
   "album"."updateId"
 from
   "album" as "album"
-  left join "album_user" as "album_users" on "album"."id" = "album_users"."albumId"
+  inner join "album_user" as "album_users" on "album_users"."albumId" = "album"."id"
+  and "album_users"."userId" = $1
 where
-  "album"."updateId" < $1
-  and "album"."updateId" > $2
-  and "album_users"."userId" = $3
+  "album"."updateId" < $2
+  and "album"."updateId" > $3
 order by
   "album"."updateId" asc
-
--- SyncRepository.album.getAlbumUsers
-select
-  "userId",
-  "role"
-from
-  "album_user"
-where
-  "albumId" = $1
 
 -- SyncRepository.albumAsset.getBackfill
 select
@@ -80,17 +71,17 @@ select
   "asset"."isEdited",
   case
     when "asset"."ownerId" = $1 then "asset"."isFavorite"
-    else $2
+    else false
   end as "isFavorite",
   "album_asset"."updateId"
 from
   "album_asset" as "album_asset"
   inner join "asset" on "asset"."id" = "album_asset"."assetId"
 where
-  "album_asset"."updateId" < $3
-  and "album_asset"."updateId" <= $4
-  and "album_asset"."updateId" > $5
-  and "album_asset"."albumId" = $6
+  "album_asset"."updateId" < $2
+  and "album_asset"."updateId" <= $3
+  and "album_asset"."updateId" > $4
+  and "album_asset"."albumId" = $5
 order by
   "album_asset"."updateId" asc
 
@@ -117,7 +108,7 @@ select
   "asset"."isEdited",
   case
     when "asset"."ownerId" = $1 then "asset"."isFavorite"
-    else $2
+    else false
   end as "isFavorite",
   "asset"."updateId"
 from
@@ -125,10 +116,10 @@ from
   inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
   inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
-  "asset"."updateId" < $3
-  and "asset"."updateId" > $4
-  and "album_asset"."updateId" <= $5
-  and "album_user"."userId" = $6
+  "asset"."updateId" < $2
+  and "asset"."updateId" > $3
+  and "album_asset"."updateId" <= $4
+  and "album_user"."userId" = $5
 order by
   "asset"."updateId" asc
 
@@ -156,16 +147,16 @@ select
   "asset"."isEdited",
   case
     when "asset"."ownerId" = $1 then "asset"."isFavorite"
-    else $2
+    else false
   end as "isFavorite"
 from
   "album_asset" as "album_asset"
   inner join "asset" on "asset"."id" = "album_asset"."assetId"
   inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
-  "album_asset"."updateId" < $3
-  and "album_asset"."updateId" > $4
-  and "album_user"."userId" = $5
+  "album_asset"."updateId" < $2
+  and "album_asset"."updateId" > $3
+  and "album_user"."userId" = $4
 order by
   "album_asset"."updateId" asc
 
@@ -769,6 +760,28 @@ where
 order by
   "memory_asset_audit"."id" asc
 
+-- SyncRepository.memoryToAsset.getUpsertsV1
+select
+  "memoriesId" as "memoryId",
+  "assetId" as "assetId",
+  "updateId"
+from
+  "memory_asset" as "memory_asset"
+where
+  "memory_asset"."updateId" < $1
+  and "memory_asset"."updateId" > $2
+  and "memoriesId" in (
+    select
+      "id"
+    from
+      "memory"
+    where
+      "ownerId" = $3
+      and "type" = 'on_this_day'
+  )
+order by
+  "memory_asset"."updateId" asc
+
 -- SyncRepository.memoryToAsset.getUpserts
 select
   "memoriesId" as "memoryId",
@@ -859,15 +872,15 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
-  $1 as "isFavorite",
+  false as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
 where
-  "asset"."updateId" < $2
-  and "asset"."updateId" <= $3
-  and "asset"."updateId" > $4
-  and "ownerId" = $5
+  "asset"."updateId" < $1
+  and "asset"."updateId" <= $2
+  and "asset"."updateId" > $3
+  and "ownerId" = $4
 order by
   "asset"."updateId" asc
 
@@ -912,20 +925,20 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
-  $1 as "isFavorite",
+  false as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
 where
-  "asset"."updateId" < $2
-  and "asset"."updateId" > $3
+  "asset"."updateId" < $1
+  and "asset"."updateId" > $2
   and "ownerId" in (
     select
       "sharedById"
     from
       "partner"
     where
-      "sharedWithId" = $4
+      "sharedWithId" = $3
   )
 order by
   "asset"."updateId" asc

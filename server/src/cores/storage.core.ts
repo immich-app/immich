@@ -1,5 +1,4 @@
-import { dirname, join, resolve } from 'node:path';
-import type { VideoInterfaces } from 'src/types.js';
+import { dirname, extname, join, resolve } from 'node:path';
 import { StorageAsset } from 'src/database.js';
 import {
   AssetFileType,
@@ -19,6 +18,7 @@ import { MoveRepository } from 'src/repositories/move.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
+import type { VideoInterfaces } from 'src/types.js';
 import { getAssetFile } from 'src/utils/asset.util.js';
 import { getConfig } from 'src/utils/config.js';
 
@@ -117,8 +117,8 @@ export class StorageCore {
     return join(StorageCore.getMediaLocation(), folder);
   }
 
-  static getPersonThumbnailPath(person: PersonThumbnailPathEntity) {
-    return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.personGroupId}.jpeg`);
+  static getPersonThumbnailPath(person: PersonThumbnailPathEntity, format: ImageFormat) {
+    return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.personGroupId}.${format}`);
   }
 
   static getImagePath(asset: ThumbnailPathEntity, { fileType, format, isEdited }: ImagePathOptions) {
@@ -189,7 +189,7 @@ export class StorageCore {
           ownerId,
           pathType,
           oldPath: thumbnailPath,
-          newPath: StorageCore.getPersonThumbnailPath(person),
+          newPath: StorageCore.getPersonThumbnailPath(person, extname(thumbnailPath).slice(1) as ImageFormat),
         });
       }
     }

@@ -1,10 +1,10 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 
-const OnboardingSchema = z.object({
+export class OnboardingDto extends createZodDto({
   isOnboarded: z.boolean().describe('Is user onboarded'),
-});
+}) {}
 
-export class OnboardingDto extends createZodDto(OnboardingSchema) {}
-
-export class OnboardingResponseDto extends OnboardingDto {}
+export class OnboardingResponseDto extends createZodDto({
+  isOnboarded: z.boolean().describe('Is user onboarded'),
+}) {}

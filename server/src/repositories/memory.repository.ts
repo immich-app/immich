@@ -1,22 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import {
+  sql,
   type ExpressionBuilder,
   type Insertable,
   type Kysely,
   type OrderByDirection,
   type Updateable,
-  sql,
 } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
-import type { IBulkAsset } from 'src/types.js';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
 import { MemorySearchDto } from 'src/dtos/memory.dto.js';
 import { AssetFileType, AssetOrderWithRandom, AssetVisibility } from 'src/enum.js';
 import { type YearMonthDay } from 'src/repositories/asset.repository.js';
 import { DB } from 'src/schema/index.js';
 import { MemoryTable } from 'src/schema/tables/memory.table.js';
+import type { IBulkAsset } from 'src/types.js';
+import { asLocalTime } from 'src/utils/date.js';
 
 const asMakeDate = (eb: ExpressionBuilder<DB, 'asset'>, { year, month, day }: YearMonthDay) =>
   eb.fn('make_date', [sql`${year}::int`, sql`${month}::int`, sql`${day}::int`]);
@@ -51,7 +52,7 @@ export class MemoryRepository implements IBulkAsset {
           .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
       )
       .$if(dto.isUpcoming !== undefined, (qb) => {
-        const now = DateTime.now().toJSDate();
+        const now = asLocalTime(DateTime.now());
         return dto.isUpcoming
           ? qb.where('showAt', '>', now)
           : qb.where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', now)]));
@@ -97,7 +98,7 @@ export class MemoryRepository implements IBulkAsset {
                         .onRef('person.personGroupId', '=', 'asset_face.personGroupId')
                         .onRef('person.ownerId', '=', 'asset.ownerId'),
                     )
-                    .select((eb) => eb.val(1).as('one'))
+                    .select((eb) => eb.lit(1).as('one'))
                     .whereRef('asset_face.assetId', '=', 'asset.id')
                     .where('person.isHidden', '=', true),
                 ),

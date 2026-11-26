@@ -57,6 +57,7 @@ You can access the web from `http://your-machine-ip:3000` or `http://localhost:3
 **Notes:**
 
 - The "web" development container runs with uid 1000. If that uid does not have read/write permissions on the mounted volumes, you may encounter errors
+- The server includes a Rust addon (`native/`) that the development container builds when it starts, so the first start takes a little longer. To run server tests or tasks outside the container, build it for your machine with `mise //native:node:build` (`mise //server:build` does this for you).
 
 #### Connect web to a remote backend
 
@@ -103,6 +104,8 @@ To see local changes to `@immich/ui` in Immich, do the following:
 :::important Workflow
 Always run `mise //mobile:checkout` after switching branches.
 :::
+
+The app includes a small Rust core (`native/`) that is compiled from source during the build. With mise the Rust toolchain is installed for you; with your own Flutter install, install [rustup](https://rustup.rs) once and the build fetches the pinned toolchain itself. The first build takes a little longer because of this.
 
 ##### iOS Code Signing
 

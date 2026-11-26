@@ -1,20 +1,21 @@
 import {
   AfterDeleteTrigger,
+  AfterUpdateTrigger,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
-  type Generated,
   Index,
   PrimaryGeneratedColumn,
   Table,
-  type Timestamp,
   UpdateDateColumn,
+  type Generated,
+  type Timestamp,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum.js';
 import { asset_checksum_algorithm_enum, asset_visibility_enum, assets_status_enum } from 'src/schema/enums.js';
-import { asset_delete_audit } from 'src/schema/functions.js';
+import { asset_delete_audit, asset_face_update_asset_state } from 'src/schema/functions.js';
 import { LibraryTable } from 'src/schema/tables/library.table.js';
 import { StackTable } from 'src/schema/tables/stack.table.js';
 import { UserTable } from 'src/schema/tables/user.table.js';
@@ -27,6 +28,11 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database.js';
   function: asset_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
+})
+@AfterUpdateTrigger({
+  scope: 'row',
+  function: asset_face_update_asset_state,
+  when: '(OLD."ownerId", OLD."visibility", OLD."deletedAt") IS DISTINCT FROM (NEW."ownerId", NEW."visibility", NEW."deletedAt")',
 })
 // Checksums must be unique per user and library
 @Index({
@@ -48,8 +54,12 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database.js';
   name: 'asset_localDateTime_month_idx',
   expression: `date_trunc('MONTH'::text, ("localDateTime" AT TIME ZONE 'UTC'::text)) AT TIME ZONE 'UTC'::text`,
 })
-@Index({ columns: ['originalPath', 'libraryId'] })
+@Index({
+  name: 'asset_libraryId_originalPath_idx',
+  columns: ['libraryId', 'originalPath', 'id', 'isOffline', 'isExternal', 'status', 'fileModifiedAt'],
+})
 @Index({ columns: ['id', 'stackId'] })
+@Index({ columns: ['ownerId', 'updateId'] })
 @Index({
   name: 'asset_originalFilename_trigram_idx',
   using: 'gin',

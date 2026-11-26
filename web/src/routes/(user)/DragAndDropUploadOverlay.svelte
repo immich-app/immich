@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { page } from '$app/state';
-  import { shouldIgnoreEvent } from '$lib/actions/shortcut';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { fileUploadHandler } from '$lib/utils/file-uploader';
-  import { isAlbumsRoute, isLockedFolderRoute } from '$lib/utils/navigation';
-  import { Logo } from '@immich/ui';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { dragAndDropFilesStore } from '#lib/stores/drag-and-drop-files.store.ts';
+  import { fileUploadHandler } from '#lib/utils/file-uploader.ts';
+  import { isAlbumsRoute, isLockedFolderRoute } from '#lib/utils/navigation.ts';
+  import { Logo, shouldIgnoreEvent } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import { page } from '$app/state';
 
   let albumId = $derived(isAlbumsRoute(page.route?.id) ? page.params.albumId : undefined);
   let isInLockedFolder = $derived(isLockedFolderRoute(page.route.id));
@@ -52,7 +51,6 @@
     const entries: FileSystemEntry[] = [];
     const files: File[] = [];
     for (const item of dataTransfer.items) {
-      // eslint-disable-next-line tscompat/tscompat
       const entry = item.webkitGetAsEntry();
       if (entry) {
         entries.push(entry);
@@ -69,7 +67,6 @@
     return handleFiles([...files, ...directoryFiles]);
   };
 
-  // eslint-disable-next-line tscompat/tscompat
   const browserSupportsDirectoryUpload = () => typeof DataTransferItem.prototype.webkitGetAsEntry === 'function';
 
   const getAllFilesFromTransferEntries = async (transferEntries: FileSystemEntry[]): Promise<File[]> => {

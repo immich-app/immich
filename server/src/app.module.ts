@@ -1,24 +1,29 @@
+import { OrchestrationApiModule, controllers as futoBackupsControllers } from '@futo-org/backups-orchestrator-api';
+import { registerSchemas } from '@immich/nestjs-standard-schema';
 import { BullModule } from '@nestjs/bullmq';
-import { Inject, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Module, OnModuleDestroy, OnModuleInit, applyDecorators, forwardRef } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
-import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { commandsAndQuestions } from 'src/commands/index.js';
 import { IWorker } from 'src/constants.js';
 import { controllers } from 'src/controllers/index.js';
-import { ImmichWorker } from 'src/enum.js';
+import { ImmichEnvironment, ImmichWorker } from 'src/enum.js';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard.js';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository.js';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository.js';
 import { MaintenanceWorkerController } from 'src/maintenance/maintenance-worker.controller.js';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service.js';
-import { AuthGuard } from 'src/middleware/auth.guard.js';
+import { AuthGuard, Authenticated } from 'src/middleware/auth.guard.js';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor.js';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor.js';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter.js';
+import { GlobalValidationPipe } from 'src/middleware/global-validation.pipe.js';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -39,13 +44,13 @@ import { services } from 'src/services/index.js';
 import { QueueService } from 'src/services/queue.service.js';
 import { getKyselyConfig } from 'src/utils/database.js';
 import { configureUserAgent } from 'src/utils/fetch.js';
+import { detectMediaLocation, getBackupsStatePath } from 'src/utils/storage.js';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
 const commonMiddleware = [
   { provide: APP_FILTER, useClass: GlobalExceptionFilter },
-  { provide: APP_PIPE, useClass: ZodValidationPipe },
-  { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
+  { provide: APP_PIPE, useClass: GlobalValidationPipe },
   { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
 ];
@@ -53,7 +58,15 @@ const commonMiddleware = [
 const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
 
 const configRepository = new ConfigRepository();
-const { bull, cls, database, otel } = configRepository.getEnv();
+const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
+
+const isFutoBackupsDevelopmentMode = environment !== ImmichEnvironment.Production;
+const futoBackupsStatePath = getBackupsStatePath(storage.mediaLocation);
+const futoBackupsCachePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'restic-cache');
+
+for (const controller of futoBackupsControllers) {
+  applyDecorators(Authenticated({ admin: true }), ApiExcludeController())(controller);
+}
 
 const commonImports = [
   ClsModule.forRoot(cls.config),
@@ -63,7 +76,6 @@ const commonImports = [
 
 const bullImports = [BullModule.forRoot(bull.config), BullModule.registerQueue(...bull.queues)];
 
-// eslint-disable-next-line unicorn/no-top-level-side-effects
 configureUserAgent();
 
 export class BaseModule implements OnModuleInit, OnModuleDestroy {
@@ -88,7 +100,7 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
       this.authService.authenticate({
         headers: client.request.headers,
         queryParams: {},
-        metadata: { adminRoute: false, sharedLinkRoute: false, uri: '/api/socket.io' },
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: '/api/socket.io', method: client.request.method },
       }),
     );
 
@@ -103,14 +115,65 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
 }
 
 @Module({
-  imports: [...bullImports, ...commonImports, ScheduleModule.forRoot()],
+  imports: [
+    ...bullImports,
+    ...commonImports,
+    ScheduleModule.forRoot(),
+    OrchestrationApiModule.forRootAsync({
+      imports: [forwardRef(() => ApiModule)],
+      inject: [AuthService],
+      useFactory: (authService: AuthService) => ({
+        dialect: getKyselyConfig(database.config).dialect,
+        statePath: futoBackupsStatePath,
+        cachePath: futoBackupsCachePath,
+        requireWsAuth: true,
+        requireLock: true,
+        developmentMode: isFutoBackupsDevelopmentMode,
+        authenticate: (client) =>
+          authService.authenticate({
+            headers: client.request.headers,
+            queryParams: {},
+            metadata: {
+              adminRoute: true,
+              sharedLinkRoute: false,
+              uri: '/api/futo-backups/socket.io',
+              method: client.request.method,
+            },
+          }),
+      }),
+    }),
+  ],
   controllers: [...controllers],
   providers: [...common, ...apiMiddleware, { provide: IWorker, useValue: ImmichWorker.Api }],
+  exports: [AuthService, WebsocketRepository],
 })
-export class ApiModule extends BaseModule {}
+export class ApiModule extends BaseModule {
+  static {
+    registerSchemas({ controllers });
+  }
+}
 
 @Module({
-  imports: [...commonImports],
+  imports: [
+    ...commonImports,
+    OrchestrationApiModule.forRootAsync({
+      imports: [forwardRef(() => MaintenanceModule)],
+      inject: [MaintenanceWorkerService],
+      useFactory: (maintenanceWorkerService: MaintenanceWorkerService) => ({
+        dialect: getKyselyConfig(database.config).dialect,
+        statePath: futoBackupsStatePath,
+        cachePath: futoBackupsCachePath,
+        externalBaseUrl: 'https://my.immich.app',
+        requireWsAuth: true,
+        requireLock: true,
+        developmentMode: isFutoBackupsDevelopmentMode,
+        authenticate: async (client) => {
+          await maintenanceWorkerService.authenticate(client.request.headers, client.request.method);
+          return { user: { isAdmin: true } };
+        },
+      }),
+    }),
+  ],
   controllers: [MaintenanceWorkerController],
   providers: [
     ConfigRepository,
@@ -121,6 +184,7 @@ export class ApiModule extends BaseModule {}
     UserRepository,
     SystemMetadataRepository,
     AppRepository,
+    EventRepository,
     MaintenanceHealthRepository,
     MaintenanceWebsocketRepository,
     DatabaseBackupService,
@@ -129,17 +193,24 @@ export class ApiModule extends BaseModule {}
     { provide: APP_GUARD, useClass: MaintenanceAuthGuard },
     { provide: IWorker, useValue: ImmichWorker.Maintenance },
   ],
+  exports: [MaintenanceWorkerService, MaintenanceWebsocketRepository],
 })
 export class MaintenanceModule {
+  static {
+    registerSchemas({ controllers: [MaintenanceWorkerController] });
+  }
+
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
+    private eventRepository: EventRepository,
     private maintenanceWorkerService: MaintenanceWorkerService,
   ) {
     logger.setAppName(this.worker);
   }
 
   async onModuleInit() {
+    this.eventRepository.setup({ services: [MaintenanceWorkerService] });
     await this.maintenanceWorkerService.init();
   }
 }

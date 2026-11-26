@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { dateFormats } from '$lib/constants';
-  import Portal from '$lib/elements/Portal.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { getAlbumActions } from '$lib/services/album.service';
-  import { locale } from '$lib/stores/preferences.store';
+  import { dateFormats } from '#lib/constants.ts';
+  import Portal from '#lib/elements/Portal.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { Route } from '#lib/route.ts';
+  import { getAlbumActions } from '#lib/services/album.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import { AlbumUserRole, type AlbumResponseDto } from '@immich/sdk';
   import { Icon, menuManager } from '@immich/ui';
-  import { mdiShareVariantOutline } from '@mdi/js';
+  import { mdiPin, mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
 
   type Props = {
     album: AlbumResponseDto;
@@ -19,8 +19,8 @@
 
   let contextMenuAnchor: HTMLDivElement | undefined = $state();
   const items = $derived.by(() => {
-    const { Edit, Share, Download, Leave, Delete } = getAlbumActions($t, album);
-    return [Edit, Share, Download, Leave, Delete];
+    const { Edit, Share, Pin, Download, Leave, Delete } = getAlbumActions($t, album);
+    return [Edit, Share, Pin, Download, Leave, Delete];
   });
 
   const dateLocaleString = (dateString: string) => {
@@ -59,6 +59,9 @@
               values: { user: album.albumUsers[0].user.name },
             })}
       />
+    {/if}
+    {#if album.isPinned}
+      <Icon icon={mdiPin} size="16" class="ms-1 inline opacity-70" title={$t('pinned_album')} />
     {/if}
   </td>
   <td class="text-md text-center text-ellipsis sm:w-2/12 md:w-2/12 xl:w-[15%] 2xl:w-[12%]">

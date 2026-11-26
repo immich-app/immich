@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import type { SessionResponseDto } from '@immich/sdk';
   import { Icon, IconButton } from '@immich/ui';
   import {
@@ -36,9 +36,9 @@
       <Icon icon={mdiAndroid} size="40" />
     {:else if session.deviceOS === 'iOS' || session.deviceOS === 'macOS'}
       <Icon icon={mdiApple} size="40" />
-    {:else if session.deviceOS.includes('Safari')}
+    {:else if session.deviceOS?.includes('Safari')}
       <Icon icon={mdiAppleSafari} size="40" />
-    {:else if session.deviceOS.includes('Windows')}
+    {:else if session.deviceOS?.includes('Windows')}
       <Icon icon={mdiMicrosoftWindows} size="40" />
     {:else if session.deviceOS === 'Linux'}
       <Icon icon={mdiLinux} size="40" />
@@ -56,11 +56,11 @@
     <div class="flex flex-col justify-center gap-1 dark:text-white">
       <span class="text-sm">
         {#if session.deviceType || session.deviceOS}
-          <span
-            >{session.deviceOS || $t('unknown')} • {session.deviceType || $t('unknown')}{session.appVersion
+          <span>
+            {session.deviceOS || $t('unknown')} • {session.deviceType || $t('unknown')}{session.appVersion
               ? ` (v${session.appVersion})`
-              : ''}</span
-          >
+              : ''}
+          </span>
         {:else}
           <span>{$t('unknown')}</span>
         {/if}

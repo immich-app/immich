@@ -9,15 +9,17 @@
 </script>
 
 <script lang="ts">
-  import { afterNavigate } from '$app/navigation';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
-  import { mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
-  import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
-  import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import MapSettingsModal from '#lib/modals/MapSettingsModal.svelte';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+  import { getMapMarkersQuery } from '#lib/queries/map.query.ts';
+  import { QueryKeys } from '#lib/queries/query-keys.ts';
+  import { mapSettings } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, handlePromiseError } from '#lib/utils.ts';
+  import type { MapMarkerResponseDto } from '@immich/sdk';
+  import { Alert, Container, Icon, Text, Theme, modalManager, themeManager } from '@immich/ui';
   import { mdiCog, mdiImageMultiple, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
@@ -47,7 +49,11 @@
     Popup,
     ScaleControl,
   } from 'svelte-maplibre';
+  import { afterNavigate } from '$app/navigation';
   import type { SelectionBBox } from './types';
+
+  const query = createPreloadedQuery(getPublicConfigQuery);
+  const publicConfig = $derived(query.data);
 
   interface Props {
     mapMarkers?: MapMarkerResponseDto[];
@@ -108,12 +114,9 @@
 
   let map: Map | undefined = $state();
   let marker: Marker | null = null;
-  let abortController: AbortController;
 
   const mapTheme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.Light);
-  const styleUrl = $derived(
-    mapTheme === Theme.Dark ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
-  );
+  const styleUrl = $derived(mapTheme === Theme.Dark ? publicConfig.map.darkStyle : publicConfig.map.lightStyle);
 
   export function addClipMapMarker(lng: number, lat: number) {
     if (!map) {
@@ -230,26 +233,20 @@
   }
 
   async function loadMapMarkers() {
-    if (abortController) {
-      abortController.abort();
-    }
-    abortController = new AbortController();
+    await queryClient.cancelQueries({ queryKey: QueryKeys.mapMarkers() });
 
     const { includeArchived, onlyFavorites, withPartners, withSharedAlbums } = $mapSettings;
     const { fileCreatedAfter, fileCreatedBefore } = getFileCreatedDates();
 
-    return await getMapMarkers(
-      {
+    return queryClient.query(
+      getMapMarkersQuery({
         isArchived: includeArchived || undefined,
         isFavorite: onlyFavorites || undefined,
         fileCreatedAfter,
         fileCreatedBefore,
         withPartners: withPartners || undefined,
         withSharedAlbums: withSharedAlbums || undefined,
-      },
-      {
-        signal: abortController.signal,
-      },
+      }),
     );
   }
 
@@ -265,7 +262,9 @@
     }
   };
 
-  afterNavigate(() => {
+  afterNavigate(({ shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     if (!map) {
       return;
     }
@@ -295,7 +294,7 @@
   });
 
   onDestroy(() => {
-    abortController?.abort();
+    void queryClient.cancelQueries({ queryKey: QueryKeys.mapMarkers() });
   });
 
   $effect(() => {

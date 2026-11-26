@@ -130,6 +130,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   double? _rotationBefore;
 
   late final AnimationController _scaleAnimationController;
+  Tween<double>? _scaleTween;
   Animation<double>? _scaleAnimation;
 
   late final AnimationController _positionAnimationController;
@@ -241,7 +242,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     if (!mounted) {
       return Future.value();
     }
-    _scaleAnimation = Tween<double>(begin: from, end: to).animate(_scaleAnimationController);
+    _scaleTween = Tween<double>(begin: from, end: to);
+    _scaleAnimation = _scaleTween!.animate(_scaleAnimationController);
     _scaleAnimationController.value = 0.0;
     return _scaleAnimationController.fling(velocity: 0.4);
   }
@@ -301,7 +303,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     controller.scaleAnimationBuilder(_animateControllerScale);
     controller.rotationAnimationBuilder(_animateControllerRotation);
 
-    _updateScaleBoundaries();
+    _syncScaleBoundaries();
 
     _scaleAnimationController = AnimationController(vsync: this)
       ..addListener(handleScaleAnimation)
@@ -324,7 +326,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     super.dispose();
   }
 
-  void _updateScaleBoundaries() {
+  void _syncScaleBoundaries() {
     final prev = controller.scaleBoundaries;
     if (prev == widget.scaleBoundaries) {
       return;
@@ -333,6 +335,16 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     if (prev != null && controller.scale != null && prev.initialScale > 0) {
       final ratio = widget.scaleBoundaries.initialScale / prev.initialScale;
       controller.setScaleInvisibly(controller.scale! * ratio);
+
+      if (_scaleBefore != null) {
+        _scaleBefore = _scaleBefore! * ratio;
+      }
+
+      final tween = _scaleTween;
+      if (tween != null && _scaleAnimationController.isAnimating) {
+        tween.begin = tween.begin! * ratio;
+        tween.end = tween.end! * ratio;
+      }
     } else {
       markNeedsScaleRecalc = true;
     }
@@ -342,7 +354,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   @override
   void didUpdateWidget(PhotoViewCore oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _updateScaleBoundaries();
+    _syncScaleBoundaries();
   }
 
   @override

@@ -28,6 +28,15 @@ final Map<String, Map<String, Object?>> openApiPatches = {
     'albums': {'defaultAssetOrder': 'desc'},
     'recentlyAdded': RecentlyAddedResponse(sidebarWeb: false).toJson(),
   },
+  'PublicConfigDto': {
+    'map': PublicConfigMapDto(
+      enabled: true,
+      lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+      darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+    ).toJson(),
+    'ffmpeg': PublicConfigFFmpegDto(realtime: PublicConfigFFmpegRealtimeDto(enabled: false)).toJson(),
+    'passkey': {'enabled': false},
+  },
   'ServerConfigDto': {
     'mapLightStyleUrl': 'https://tiles.immich.cloud/v1/style/light.json',
     'mapDarkStyleUrl': 'https://tiles.immich.cloud/v1/style/dark.json',
@@ -41,12 +50,22 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'SyncUserV1': {'profileChangedAt': _now, 'hasProfileImage': false},
   'SyncAssetV1': {'isEdited': false},
   'SyncAlbumV3': {'isPinned': false},
-  'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
+  'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false, 'backups': false},
   'SearchAssetResponseDto': {'nextCursor': null},
   'MemoriesResponse': {'duration': 5, 'sidebarWeb': false},
   'PeopleResponse': {'updateStrategy': 'everyone'},
   'PersonResponseDto': {'otherPeople': const [], 'sharedBy': const [], 'sharedWith': const []},
+  'ServerVersionResponseDto': {'featureLevel': 0},
   'WorkflowResponseDto': {'logging': false},
+  'AdminConfigDto': {
+    'passkey': {'enabled': false, 'domain': null, 'additionalDomains': const []},
+  },
+  'AdminConfigGeneratedImageDto': {'effort': 'medium'},
+  'AdminConfigGeneratedFullsizeImageDto': {'effort': 'medium'},
+  'UserConfigDto': {
+    'notifications': UserConfigNotificationsDto(smtp: UserConfigSmtpDto(enabled: false)).toJson(),
+    'passkey': {'enabled': false},
+  },
 };
 
 // ignore: unused-code

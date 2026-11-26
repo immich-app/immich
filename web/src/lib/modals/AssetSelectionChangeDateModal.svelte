@@ -1,13 +1,13 @@
 <script lang="ts">
-  import Combobox from '$lib/components/shared-components/Combobox.svelte';
-  import DateInput from '$lib/elements/DateInput.svelte';
-  import DurationInput from '$lib/elements/DurationInput.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '$lib/modals/timezone-utils';
-  import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAssets } from '@immich/sdk';
+  import Combobox from '#lib/components/shared-components/Combobox.svelte';
+  import DateInput from '#lib/elements/DateInput.svelte';
+  import DurationInput from '#lib/elements/DurationInput.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '#lib/modals/timezone-utils.ts';
+  import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { getOwnedAssetsWithWarning } from '#lib/utils/asset-utils.ts';
   import { Field, FormModal, Label, Switch } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -32,25 +32,15 @@
 
   const onSubmit = async () => {
     const ids = getOwnedAssetsWithWarning(assets, authManager.user);
-    try {
-      if (showRelative && (selectedDuration || selectedOption)) {
-        await updateAssets({
-          assetBulkUpdateDto: {
-            ids,
-            dateTimeRelative: selectedDuration,
-            timeZone: selectedOption?.value,
-          },
-        });
-        onClose(true);
-        return;
-      }
-      const isoDate = toIsoDate(selectedDate, selectedOption);
-      await updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal: isoDate } });
-      onClose(true);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_date'));
-      onClose(false);
-    }
+    const assetBulkUpdateDto =
+      showRelative && (selectedDuration || selectedOption)
+        ? { ids, dateTimeRelative: selectedDuration, timeZone: selectedOption?.value }
+        : { ids, dateTimeOriginal: toIsoDate(selectedDate, selectedOption) };
+    await executeMutation(
+      () => updateAssetsMutation({ error: { toast: 'errors.unable_to_change_date' } }),
+      [{ assetBulkUpdateDto }],
+      { onSuccess: () => onClose(true), onError: () => onClose(false) },
+    );
   };
 
   // let before = $derived(DateTime.fromObject(assets[0].localDateTime).toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));

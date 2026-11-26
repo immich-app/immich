@@ -1,12 +1,18 @@
 <script lang="ts">
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { AssetOrder, PersonUpdateStrategy, updateMyPreferences } from '@immich/sdk';
-  import { Button, Field, NumberInput, Select, Switch, toastManager } from '@immich/ui';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { updateMyPreferencesMutation } from '#lib/queries/user.query.ts';
+  import { AssetOrder, PersonUpdateStrategy } from '@immich/sdk';
+  import { Button, Field, NumberInput, Select, Switch } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
+  const updatePreferences = createMutation(() => updateMyPreferencesMutation());
 
   // Albums
   let defaultAssetOrder = $state(authManager.preferences.albums?.defaultAssetOrder ?? AssetOrder.Desc);
@@ -23,7 +29,9 @@
   // People
   let peopleEnabled = $state(authManager.preferences.people?.enabled ?? false);
   let peopleSidebar = $state(authManager.preferences.people?.sidebarWeb ?? false);
-  let peopleMinFaces = $state(authManager.preferences.people?.minimumFaces ?? serverConfigManager.value.minFaces);
+  let peopleMinFaces = $state(
+    authManager.preferences.people?.minimumFaces ?? config.machineLearning.facialRecognition.minFaces,
+  );
   let peopleUpdateStrategy = $state(authManager.preferences.people?.updateStrategy ?? PersonUpdateStrategy.Everyone);
 
   // Ratings
@@ -43,9 +51,9 @@
   // Recently added
   let recentlyAddedSidebar = $state(authManager.preferences.recentlyAdded?.sidebarWeb ?? false);
 
-  const handleSave = async () => {
-    try {
-      const response = await updateMyPreferences({
+  const handleSave = () =>
+    updatePreferences.mutate([
+      {
         userPreferencesUpdateDto: {
           albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
@@ -62,14 +70,8 @@
           cast: { gCastEnabled },
           recentlyAdded: { sidebarWeb: recentlyAddedSidebar },
         },
-      });
-
-      authManager.setPreferences(response);
-      toastManager.primary($t('saved_settings'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_settings'));
-    }
-  };
+      },
+    ]);
 
   const onsubmit = (event: Event) => {
     event.preventDefault();

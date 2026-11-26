@@ -1,11 +1,14 @@
-import { Insertable, Kysely } from 'kysely';
+import { DefaultExifToolOptions } from 'exiftool-vendored';
+import { ReadTask } from 'exiftool-vendored/dist/ReadTask.js';
+import { Insertable, Kysely, sql } from 'kysely';
+import { omit } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { createHash, randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { Writable } from 'node:stream';
-import { Mocked } from 'vitest';
-import type { ClassConstructor, ClassConstructorsToInstances, UploadFile } from 'src/types.js';
+import { Mocked, vi } from 'vitest';
+import { StorageCore } from 'src/cores/storage.core.js';
 import { AssetFace } from 'src/database.js';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
@@ -30,6 +33,7 @@ import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
 import { AssetFileRepository } from 'src/repositories/asset-file.repository.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { AuthChallengeRepository } from 'src/repositories/auth-challenge.repository.js';
 import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
@@ -46,13 +50,15 @@ import { MachineLearningRepository } from 'src/repositories/machine-learning.rep
 import { MapRepository } from 'src/repositories/map.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { MemoryRepository } from 'src/repositories/memory.repository.js';
-import { MetadataRepository } from 'src/repositories/metadata.repository.js';
+import { ImmichTags, MetadataRepository, exiftoolOptions } from 'src/repositories/metadata.repository.js';
 import { NotificationRepository } from 'src/repositories/notification.repository.js';
 import { OcrRepository } from 'src/repositories/ocr.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { PasskeyRepository } from 'src/repositories/passkey.repository.js';
 import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
 import { SessionRepository } from 'src/repositories/session.repository.js';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository.js';
@@ -66,6 +72,8 @@ import { TagRepository } from 'src/repositories/tag.repository.js';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository.js';
+import { ViewRepository } from 'src/repositories/view-repository.js';
+import { WebAuthnRepository } from 'src/repositories/webauthn.repository.js';
 import { WebsocketRepository } from 'src/repositories/websocket.repository.js';
 import { WorkflowRepository } from 'src/repositories/workflow.repository.js';
 import { DB } from 'src/schema/index.js';
@@ -74,9 +82,11 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table.js';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table.js';
+import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { MemoryTable } from 'src/schema/tables/memory.table.js';
+import { PasskeyTable } from 'src/schema/tables/passkey.table.js';
 import { PersonUserTable } from 'src/schema/tables/person-user.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
 import { SessionTable } from 'src/schema/tables/session.table.js';
@@ -87,6 +97,7 @@ import { UserTable } from 'src/schema/tables/user.table.js';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service.js';
 import { MetadataService } from 'src/services/metadata.service.js';
 import { SyncService } from 'src/services/sync.service.js';
+import type { ClassConstructor, ClassConstructorsToInstances, UploadFile } from 'src/types.js';
 import { getConfig, updateConfig } from 'src/utils/config.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock.js';
@@ -177,6 +188,12 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     return { user, result };
   }
 
+  async newPasskey(dto: Partial<Insertable<PasskeyTable>> & { userId: string }) {
+    const passkey = mediumFactory.passkeyInsert(dto);
+    const result = await this.get(PasskeyRepository).create(passkey);
+    return { passkey, result };
+  }
+
   async newPartner(dto: { sharedById: string; sharedWithId: string; inTimeline?: boolean }) {
     const partner = { inTimeline: true, ...dto };
     const result = await this.get(PartnerRepository).create(partner);
@@ -217,6 +234,28 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     const assetFace = mediumFactory.assetFaceInsert(dto);
     const result = await this.get(PersonRepository).createAssetFace(assetFace);
     return { assetFace, result };
+  }
+
+  async newAssetOcr(
+    dto: (Partial<Insertable<AssetOcrTable>> & { assetId: string; text: string; textScore: number })[],
+  ) {
+    const result = await this.get(OcrRepository).upsert(
+      dto[0].assetId,
+      dto.map((item) => ({
+        ...item,
+        x1: 0,
+        y1: 0,
+        x2: 1,
+        y2: 1,
+        x3: 2,
+        y3: 2,
+        x4: 3,
+        y4: 3,
+        boxScore: item.textScore,
+      })),
+      '',
+    );
+    return { ocr: dto, result };
   }
 
   async newMemory(dto: Partial<Insertable<MemoryTable>> = {}) {
@@ -377,7 +416,7 @@ export class SyncTestContext extends MediumTestContext<typeof SyncService> {
   constructor(database: Kysely<DB>) {
     super(SyncService, {
       database,
-      real: [SyncRepository, SyncCheckpointRepository, SessionRepository],
+      real: [DatabaseRepository, SyncRepository, SyncCheckpointRepository, SessionRepository],
       mock: [LoggingRepository],
     });
   }
@@ -391,10 +430,17 @@ export class SyncTestContext extends MediumTestContext<typeof SyncService> {
     return stream.getResponse();
   }
 
+  assertSyncResponse(response: unknown[], records: unknown[]) {
+    const completeAck = response.at(-1);
+    const items = response.slice(0, -1);
+
+    expect(completeAck).toEqual(expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }));
+    expect(items).toEqual(expect.arrayContaining(records));
+    expect(items).toHaveLength(records.length);
+  }
+
   async assertSyncIsComplete(auth: AuthDto, types: SyncRequestType[]) {
-    await expect(this.syncStream(auth, types)).resolves.toEqual([
-      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
-    ]);
+    this.assertSyncResponse(await this.syncStream(auth, types), []);
   }
 
   async syncAckAll(auth: AuthDto, response: Array<{ type: string; ack: string }>) {
@@ -476,6 +522,153 @@ export class ExifTestContext extends MediumTestContext<typeof MetadataService> {
   }
 }
 
+export type MetadataFixture = {
+  id: string;
+  path: string;
+  raw: string;
+  size: number;
+};
+
+const VOLATILE_ASSET_COLUMNS = [
+  'id',
+  'ownerId',
+  'checksum',
+  'livePhotoVideoId',
+  'originalPath',
+  'originalFileName',
+  'createdAt',
+  'updatedAt',
+  'updateId',
+] as const;
+
+const VOLATILE_EXIF_COLUMNS = ['assetId', 'updatedAt', 'updateId'] as const;
+
+export class MetadataTestContext extends MediumTestContext<typeof MetadataService> {
+  private fixturesByPath: Map<string, MetadataFixture>;
+
+  constructor(
+    database: Kysely<DB>,
+    private fixtures: MetadataFixture[],
+  ) {
+    super(MetadataService, {
+      database,
+      real: [
+        AssetRepository,
+        AssetJobRepository,
+        CryptoRepository,
+        MediaRepository,
+        MetadataRepository,
+        SystemMetadataRepository,
+        TagRepository,
+        UserRepository,
+      ],
+      mock: [ConfigRepository, EventRepository, JobRepository, LoggingRepository, MapRepository, StorageRepository],
+    });
+
+    this.fixturesByPath = new Map(fixtures.map((fixture) => [fixture.path, fixture]));
+    StorageCore.setMediaLocation('/data');
+
+    this.getMock(ConfigRepository).getEnv.mockReturnValue(mockEnvData({}));
+    this.getMock(EventRepository).emit.mockResolvedValue();
+    this.getMock(MapRepository).reverseGeocode.mockResolvedValue({ country: null, state: null, city: null });
+
+    const storage = this.getMock(StorageRepository);
+    storage.stat.mockImplementation((path) =>
+      Promise.resolve({ ...mockStats, size: this.getFixture(path).size } as Stats),
+    );
+    storage.checkFileExists.mockResolvedValue(true);
+    storage.readFile.mockImplementation((path, options) =>
+      Promise.resolve(Buffer.from(`${path}:${options?.position}:${options?.length}`)),
+    );
+
+    const metadata = this.get(MetadataRepository);
+    vi.spyOn(metadata, 'readTags').mockImplementation((path) => Promise.resolve(this.parseFixture(path)));
+    vi.spyOn(metadata, 'extractBinaryTag').mockImplementation((path, tagName) =>
+      Promise.resolve(Buffer.from(`${path}:${tagName}`)),
+    );
+  }
+
+  async newFixtureAssets(ownerId: string) {
+    const assets = this.fixtures.map(({ id, path }) =>
+      mediumFactory.assetInsert({
+        id,
+        ownerId,
+        originalPath: path,
+        originalFileName: basename(path),
+        checksum: createHash('sha1').update(id).digest(),
+      }),
+    );
+    await this.database.insertInto('asset').values(assets).execute();
+  }
+
+  async extractAll({ concurrency }: { concurrency: number }) {
+    const queue = this.fixtures.values();
+    const worker = async () => {
+      for (const { id } of queue) {
+        await this.sut.handleMetadataExtraction({ id });
+      }
+    };
+    await Promise.all(Array.from({ length: concurrency }, worker));
+  }
+
+  async getSnapshot() {
+    const rows = await this.database
+      .selectFrom('asset')
+      .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .leftJoin('asset as motion', 'motion.id', 'asset.livePhotoVideoId')
+      .select((eb) => [
+        'asset.originalFileName',
+        eb.fn.toJson('asset').as('asset'),
+        eb.fn.toJson('asset_exif').as('exif'),
+        eb.fn<string>('encode', ['motion.checksum', sql.lit('hex')]).as('motionChecksum'),
+        eb
+          .selectFrom('tag_asset')
+          .innerJoin('tag', 'tag.id', 'tag_asset.tagId')
+          .select((eb) => eb.fn.jsonAgg(eb.ref('tag.value')).orderBy('tag.value').as('tags'))
+          .whereRef('tag_asset.assetId', '=', 'asset.id')
+          .as('tags'),
+      ])
+      .where(
+        'asset.id',
+        'in',
+        this.fixtures.map(({ id }) => id),
+      )
+      .orderBy('asset.originalFileName')
+      .execute();
+
+    const warnings = this.getMock(LoggingRepository).warn.mock.calls.map(([message]) => `warn ${message}`);
+    const lines = rows.map(({ originalFileName, asset, exif, motionChecksum, tags }) => {
+      const snapshot = {
+        asset: withoutNulls({ ...omit(asset, VOLATILE_ASSET_COLUMNS), motionChecksum, tags }),
+        exif: withoutNulls(omit(exif, VOLATILE_EXIF_COLUMNS)),
+      };
+      return `${originalFileName} ${JSON.stringify(snapshot)}`;
+    });
+    return [...lines, ...warnings.toSorted()].join('\n') + '\n';
+  }
+
+  private parseFixture(path: string) {
+    const { raw } = this.getFixture(path);
+    return ReadTask.for(path, { ...DefaultExifToolOptions, ...exiftoolOptions }).parse(raw) as ImmichTags;
+  }
+
+  private getFixture(path: string) {
+    const fixture = this.fixturesByPath.get(path);
+    if (!fixture) {
+      throw new Error(`Metadata fixture not found: ${path}`);
+    }
+
+    return fixture;
+  }
+}
+
+const withoutNulls = (row: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(row)
+      .filter(([, value]) => value !== null)
+      .toSorted(([a], [b]) => a.localeCompare(b)),
+  );
+
 const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely<DB>): InstanceType<T> => {
   switch (key) {
     case AccessRepository:
@@ -494,7 +687,9 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case LibraryRepository:
     case NotificationRepository:
     case OcrRepository:
+    case AuthChallengeRepository:
     case PartnerRepository:
+    case PasskeyRepository:
     case PersonRepository:
     case PersonUserRepository:
     case SearchRepository:
@@ -507,12 +702,14 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case SystemMetadataRepository:
     case UserRepository:
     case VersionHistoryRepository:
+    case ViewRepository:
     case WorkflowRepository: {
       return new key(db) as InstanceType<T>;
     }
 
     case ConfigRepository:
-    case CryptoRepository: {
+    case CryptoRepository:
+    case WebAuthnRepository: {
       return new key() as InstanceType<T>;
     }
 
@@ -557,6 +754,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case AlbumRepository:
     case AssetRepository:
     case AssetJobRepository:
+    case AuthChallengeRepository:
     case ConfigRepository:
     case CryptoRepository:
     case LibraryRepository:
@@ -565,6 +763,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case NotificationRepository:
     case OcrRepository:
     case PartnerRepository:
+    case PasskeyRepository:
     case PersonRepository:
     case SessionRepository:
     case SyncRepository:
@@ -623,6 +822,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
 
     case MachineLearningRepository: {
       return automock(MachineLearningRepository, { args: [{ setContext: () => {} }] });
+    }
+
+    case ResourceRepository: {
+      return automock(ResourceRepository, { strict: false });
     }
 
     case StorageRepository: {
@@ -779,6 +982,30 @@ const sessionInsert = ({
   };
 };
 
+const passkeyInsert = ({
+  id = newUuid(),
+  userId,
+  ...passkey
+}: Partial<Insertable<PasskeyTable>> & { userId: string }) => {
+  const defaults: Insertable<PasskeyTable> = {
+    id,
+    userId,
+    name: 'Passkey',
+    credentialId: `credential-${id}`,
+    publicKey: Buffer.from('public-key'),
+    counter: 0,
+    transports: ['internal'],
+    backedUp: false,
+    deviceType: 'singleDevice',
+  };
+
+  return {
+    ...defaults,
+    ...passkey,
+    id,
+  };
+};
+
 const userInsert = (user: Partial<Insertable<UserTable>> & { clusterGroupId: string }) => {
   const id = user.id || newUuid();
 
@@ -899,6 +1126,7 @@ export const mediumFactory = {
   faceInsert,
   personInsert,
   personUserInsert,
+  passkeyInsert,
   sessionInsert,
   syncStream,
   userInsert,

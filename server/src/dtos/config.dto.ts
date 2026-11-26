@@ -1,8 +1,7 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { CronExpression } from '@nestjs/schedule';
 import { validateCronExpression } from 'cron';
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
-import type { DeepPartial } from 'src/types.js';
 import {
   AudioCodec,
   AudioCodecSchema,
@@ -13,6 +12,8 @@ import {
   ConfigVisibility,
   HlsVideoResolution,
   HlsVideoResolutionSchema,
+  ImageEffort,
+  ImageEffortSchema,
   ImageFormat,
   ImageFormatSchema,
   LogLevel,
@@ -32,6 +33,7 @@ import {
   VideoContainer,
   VideoContainerSchema,
 } from 'src/enum.js';
+import type { DeepPartial } from 'src/types.js';
 
 const { Admin, User, Public } = ConfigVisibility;
 
@@ -58,8 +60,19 @@ const cronExpressionSchema = z
   })
   .describe('Cron expression');
 
-const emptyOrUrl = (error: string) =>
-  z.string().refine((url) => url.length === 0 || z.url().safeParse(url).success, { error });
+const httpsDomain = (label: string) =>
+  z
+    .url({ protocol: /^https$/, hostname: z.regexes.domain })
+    .normalize()
+    .refine((url) => {
+      try {
+        return new URL(url).href === `${new URL(url).origin}/`;
+      } catch {
+        return true;
+      }
+    }, `${label} must not include a path, query, or fragment`);
+
+const emptyOrUrl = (error: string) => z.string().refine((url) => url.length === 0 || z.url().validate(url), { error });
 
 const AdminConfigIntegrityJobSchema = z
   .object({
@@ -87,6 +100,7 @@ const AdminConfigGeneratedImageSchema = z
     quality: z.int().min(1).max(100).describe('Quality'),
     size: z.int().min(1).describe('Size').meta({ visibility: User }),
     progressive: configBool.default(false).optional().describe('Progressive'),
+    effort: ImageEffortSchema,
   })
   .meta({ id: 'AdminConfigGeneratedImageDto' });
 
@@ -115,7 +129,7 @@ const AdminConfigFFmpegSchema = z
     tonemap: ToneMappingSchema,
     realtime: z
       .object({
-        enabled: configBool.describe('Enable real-time HLS transcoding (alpha)').meta({ visibility: User }),
+        enabled: configBool.describe('Enable real-time HLS transcoding (alpha)').meta({ visibility: Public }),
         videoCodecs: z
           .array(VideoCodecSchema)
           .describe('Video codecs to use for real-time HLS transcoding')
@@ -131,7 +145,7 @@ const AdminConfigFFmpegSchema = z
 
 const AdminConfigSmtpSchema = z
   .object({
-    enabled: configBool.describe('Whether SMTP email notifications are enabled'),
+    enabled: configBool.describe('Whether SMTP email notifications are enabled').meta({ visibility: User }),
     from: z.string().describe('Email address to send from'),
     replyTo: z.string().describe('Email address for replies'),
     transport: z
@@ -151,6 +165,7 @@ const AdminConfigSchemaWithVisibility = z
   .object({
     backup: z
       .object({
+        beta: configBool.default(false).optional().describe('Whether the backups feature is enabled'),
         database: z
           .object({
             enabled: configBool.describe('Enabled'),
@@ -262,9 +277,9 @@ const AdminConfigSchemaWithVisibility = z
       .meta({ id: 'AdminConfigMachineLearningDto' }),
     map: z
       .object({
-        enabled: configBool.describe('Enabled').meta({ visibility: User }),
-        lightStyle: z.url().describe('Light map style URL').meta({ visibility: User }),
-        darkStyle: z.url().describe('Dark map style URL').meta({ visibility: User }),
+        enabled: configBool.describe('Enabled').meta({ visibility: Public }),
+        lightStyle: z.url().describe('Light map style URL').meta({ visibility: Public }),
+        darkStyle: z.url().describe('Dark map style URL').meta({ visibility: Public }),
       })
       .meta({ id: 'AdminConfigMapDto' }),
     reverseGeocoding: z
@@ -291,7 +306,8 @@ const AdminConfigSchemaWithVisibility = z
         accountManagementUrl: emptyOrUrl('Account management URL must be an empty string or a valid URL')
           .describe('Account management URL')
           .optional()
-          .default(''),
+          .default('')
+          .meta({ visibility: User }),
         scope: z.string().describe('Scope'),
         prompt: z.string().describe('OAuth prompt parameter (e.g. select_account, login, consent)'),
         endSessionEndpoint: emptyOrUrl('endSessionEndpoint must be an empty string or a valid URL').describe(
@@ -310,7 +326,7 @@ const AdminConfigSchemaWithVisibility = z
           return value;
         }
 
-        if (!z.url().safeParse(value.mobileRedirectUri).success) {
+        if (!z.url().validate(value.mobileRedirectUri)) {
           ctx.issues.push({
             code: 'custom',
             message: 'Mobile redirect URI must be an empty string or a valid URL',
@@ -322,6 +338,29 @@ const AdminConfigSchemaWithVisibility = z
         return value;
       })
       .meta({ id: 'AdminConfigOAuthDto' }),
+    passkey: z
+      .object({
+        enabled: configBool.describe('Enabled').meta({ visibility: Public }),
+        domain: httpsDomain('Passkey domain').nullable().describe('Passkey domain'),
+        additionalDomains: z
+          .array(httpsDomain('Additional domain'))
+          .refine(
+            (domains) => domains.length === new Set(domains.map((domain) => new URL(domain).origin)).size,
+            'Duplicate domain',
+          )
+          .describe('Additional domains'),
+      })
+      .superRefine((value, ctx) => {
+        const origin = value.domain && new URL(value.domain).origin;
+        if (origin && value.additionalDomains.some((domain) => new URL(domain).origin === origin)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'The passkey domain is always allowed and must not be listed as an additional domain',
+            input: value.additionalDomains,
+          });
+        }
+      })
+      .meta({ id: 'AdminConfigPasskeyDto' }),
     passwordLogin: z
       .object({ enabled: configBool.describe('Enabled').meta({ visibility: Public }) })
       .meta({ id: 'AdminConfigPasswordLoginDto' }),
@@ -342,6 +381,7 @@ const AdminConfigSchemaWithVisibility = z
             format: ImageFormatSchema,
             quality: z.int().min(1).max(100).describe('Quality'),
             progressive: configBool.default(false).optional().describe('Progressive'),
+            effort: ImageEffortSchema,
           })
           .meta({ id: 'AdminConfigGeneratedFullsizeImageDto' }),
         colorspace: ColorspaceSchema,
@@ -372,9 +412,7 @@ const AdminConfigSchemaWithVisibility = z
         days: z.int().min(0).describe('Days').meta({ visibility: User }),
       })
       .meta({ id: 'AdminConfigTrashDto' }),
-    theme: z
-      .object({ customCss: z.string().describe('Custom CSS for theming').meta({ visibility: Public }) })
-      .meta({ id: 'AdminConfigThemeDto' }),
+    theme: z.object({ customCss: z.string().describe('Custom CSS for theming') }).meta({ id: 'AdminConfigThemeDto' }),
     library: z
       .object({
         scan: z
@@ -471,7 +509,12 @@ const applyVisibilityRecursive = (
 
   let visible: z.ZodType | undefined;
   if (Object.keys(shape).length > 0) {
-    visible = z.object(shape).meta({
+    const isComplete = Object.keys(shape).length === Object.keys(object.shape).length;
+    const rebuilt =
+      schema instanceof z.ZodPipe && isComplete
+        ? z.object(shape).pipe(schema.def.out as z.ZodTransform<unknown, Record<string, unknown>>)
+        : z.object(shape);
+    visible = rebuilt.meta({
       ...(id && { id: `${visibility}${id.slice(Admin.length)}` }),
       ...((override ?? description) && { description: override ?? description }),
     });
@@ -500,12 +543,11 @@ const stripVisibilityMetadata = <T extends z.ZodType>(schema: T): T => {
   return schema;
 };
 
-const AdminConfigSchema = applyVisibility(Admin)! as z.ZodType<SystemConfig>;
+const AdminConfigSchema = AdminConfigSchemaWithVisibility;
 const UserConfigSchema = applyVisibility(User)! as z.ZodType<DeepPartial<SystemConfig>>;
 const PublicConfigSchema = applyVisibility(Public)! as z.ZodType<DeepPartial<SystemConfig>>;
 
 // prevent visibility metadata from leaking to openapi spec
-// eslint-disable-next-line unicorn/no-top-level-side-effects
 stripVisibilityMetadata(AdminConfigSchemaWithVisibility);
 
 const ConfigTemplateStorageOptionSchema = z
@@ -521,12 +563,40 @@ const ConfigTemplateStorageOptionSchema = z
   })
   .meta({ id: 'SystemConfigTemplateStorageOptionDto' });
 
+const StorageTemplatePresetSchema = z
+  .object({
+    template: z.string().describe('Preset storage template'),
+    preview: z.string().describe('Example path rendered from the preset'),
+  })
+  .meta({ id: 'StorageTemplatePresetDto' });
+
+const StorageTemplateOptionsResponseSchema = ConfigTemplateStorageOptionSchema.omit({ presetOptions: true })
+  .extend({
+    presets: z.array(StorageTemplatePresetSchema).describe('Preset storage templates with an example path'),
+  })
+  .meta({ id: 'StorageTemplateOptionsResponseDto' });
+
 export class AdminConfigDto extends createZodDto(AdminConfigSchema) {}
+
 export class UserConfigDto extends createZodDto(UserConfigSchema) {}
+
 export class PublicConfigDto extends createZodDto(PublicConfigSchema) {}
+
 export class ConfigFFmpegDto extends createZodDto(AdminConfigFFmpegSchema) {}
+
 export class ConfigSmtpDto extends createZodDto(AdminConfigSmtpSchema) {}
+
 export class ConfigTemplateStorageOptionDto extends createZodDto(ConfigTemplateStorageOptionSchema) {}
+
+export class StorageTemplateOptionsResponseDto extends createZodDto(StorageTemplateOptionsResponseSchema) {}
+
+export class StorageTemplatePreviewDto extends createZodDto({
+  template: z.string().describe('Storage template'),
+}) {}
+
+export class StorageTemplatePreviewResponseDto extends createZodDto({
+  preview: z.string().describe('Example path rendered from the template'),
+}) {}
 
 /** @deprecated the `/system-config` endpoints these are named after are on their way out */
 export { AdminConfigDto as SystemConfigDto, ConfigSmtpDto as SystemConfigSmtpDto };
@@ -545,6 +615,7 @@ export function mapPublicConfig(config: SystemConfig): PublicConfigDto {
 
 export const defaults = Object.freeze<SystemConfig>({
   backup: {
+    beta: false,
     database: {
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_2AM,
@@ -684,6 +755,11 @@ export const defaults = Object.freeze<SystemConfig>({
     timeout: 30_000,
     allowInsecureRequests: false,
   },
+  passkey: {
+    enabled: true,
+    domain: null,
+    additionalDomains: [],
+  },
   passwordLogin: {
     enabled: true,
   },
@@ -695,15 +771,17 @@ export const defaults = Object.freeze<SystemConfig>({
   image: {
     thumbnail: {
       format: ImageFormat.Webp,
-      size: 250,
+      size: 360,
       quality: 80,
       progressive: false,
+      effort: ImageEffort.Medium,
     },
     preview: {
       format: ImageFormat.Jpeg,
       size: 1440,
       quality: 80,
       progressive: false,
+      effort: ImageEffort.Medium,
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
@@ -712,6 +790,7 @@ export const defaults = Object.freeze<SystemConfig>({
       format: ImageFormat.Jpeg,
       quality: 80,
       progressive: false,
+      effort: ImageEffort.Medium,
     },
   },
   newVersionCheck: {

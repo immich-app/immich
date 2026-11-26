@@ -1,15 +1,15 @@
 <script lang="ts">
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import SettingTextarea from './SettingTextarea.svelte';
-  import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { type AdminConfigDto, type AdminConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
-  import { Button, Icon, LoadingSpinner, modalManager } from '@immich/ui';
+  import SettingAccordion from '#lib/components/shared-components/settings/SettingAccordion.svelte';
+  import FormatMessage from '#lib/elements/FormatMessage.svelte';
+  import EmailTemplatePreviewModal from '#lib/modals/EmailTemplatePreviewModal.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+  import type { AdminConfigDto, AdminConfigTemplateEmailsDto } from '@immich/sdk';
+  import { Button, Icon, modalManager } from '@immich/ui';
   import { mdiEyeOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import SettingTextarea from './SettingTextarea.svelte';
 
   interface Props {
     config: AdminConfigDto;
@@ -17,19 +17,7 @@
 
   let { config = $bindable() }: Props = $props();
 
-  let loadingPreview = $state(false);
-
-  const getTemplate = async (name: string, template: string) => {
-    try {
-      loadingPreview = true;
-      const { html } = await getNotificationTemplateAdmin({ name, templateDto: { template } });
-      await modalManager.show(EmailTemplatePreviewModal, { html });
-    } catch (error) {
-      handleError(error, 'Could not load template.');
-    } finally {
-      loadingPreview = false;
-    }
-  };
+  const query = createPreloadedQuery(getAdminConfigQuery);
 
   const templateConfigs = [
     {
@@ -53,7 +41,7 @@
   ];
 
   const isEdited = (templateKey: keyof AdminConfigTemplateEmailsDto) =>
-    config.templates.email[templateKey] !== systemConfigManager.value.templates.email[templateKey];
+    config.templates.email[templateKey] !== query.data.templates.email[templateKey];
 
   const onsubmit = (event: Event) => {
     event.preventDefault();
@@ -75,10 +63,6 @@
             </FormatMessage>
           </p>
           <hr />
-          {#if loadingPreview}
-            <LoadingSpinner />
-          {/if}
-
           {#each templateConfigs as { label, templateKey, descriptionTags, templateName } (templateKey)}
             <SettingTextarea
               {label}
@@ -91,7 +75,11 @@
               <Button
                 size="small"
                 shape="round"
-                onclick={() => getTemplate(templateName, config.templates.email[templateKey])}
+                onclick={() =>
+                  modalManager.show(EmailTemplatePreviewModal, {
+                    name: templateName,
+                    template: config.templates.email[templateKey],
+                  })}
                 title={$t('admin.template_email_preview')}
               >
                 <Icon icon={mdiEyeOutline} class="me-1" />

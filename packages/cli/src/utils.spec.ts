@@ -1,5 +1,7 @@
-import mockfs from 'mock-fs';
 import { readFileSync } from 'node:fs';
+import { mkdir, mkdtempDisposable, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, isAbsolute, join } from 'node:path';
 import { Batcher, CrawlOptions, crawl } from 'src/utils.js';
 import { Mock } from 'vitest';
 
@@ -9,8 +11,6 @@ interface Test {
   files: Record<string, boolean>;
   skipOnWin32?: boolean;
 }
-
-const cwd = process.cwd();
 
 const readContent = (path: string) => {
   return readFileSync(path).toString();
@@ -60,7 +60,7 @@ const tests: Test[] = [
       '/photo"s/image2.jpg': true,
       '/photo`s/image3.jpg': true,
     },
-    skipOnWin32: true, // single quote interferes with mockfs root on Windows
+    skipOnWin32: true,
   },
   {
     test: 'should crawl a single file',
@@ -191,15 +191,15 @@ const tests: Test[] = [
       pathsToCrawl: ['/photos/'],
     },
     files: {
-      '/photos/image.jpg': true,
-      '/photos/image.Jpg': true,
-      '/photos/image.jpG': true,
-      '/photos/image.JPG': true,
-      '/photos/image.jpEg': true,
-      '/photos/image.TIFF': true,
-      '/photos/image.tif': true,
-      '/photos/image.dng': true,
-      '/photos/image.NEF': true,
+      '/photos/image1.jpg': true,
+      '/photos/image2.Jpg': true,
+      '/photos/image3.jpG': true,
+      '/photos/image4.JPG': true,
+      '/photos/image5.jpEg': true,
+      '/photos/image6.TIFF': true,
+      '/photos/image7.tif': true,
+      '/photos/image8.dng': true,
+      '/photos/image9.NEF': true,
     },
   },
   {
@@ -218,9 +218,9 @@ const tests: Test[] = [
       pathsToCrawl: ['photos'],
     },
     files: {
-      [`${cwd}/photos/1.jpg`]: true,
-      [`${cwd}/photos/2.jpg`]: true,
-      [`/photos/3.jpg`]: false,
+      '/cwd/photos/1.jpg': true,
+      '/cwd/photos/2.jpg': true,
+      '/photos/3.jpg': false,
     },
   },
   {
@@ -280,7 +280,7 @@ const tests: Test[] = [
 
 describe('crawl', () => {
   afterEach(() => {
-    mockfs.restore();
+    vi.restoreAllMocks();
   });
 
   describe('crawl', () => {
@@ -290,10 +290,18 @@ describe('crawl', () => {
         continue;
       }
       it(name, async () => {
-        // The file contents is the same as the path.
-        mockfs(Object.fromEntries(Object.keys(files).map((file) => [file, file])));
+        await using root = await mkdtempDisposable(join(tmpdir(), 'immich-cli-'));
+        vi.spyOn(process, 'cwd').mockReturnValue(join(root.path, 'cwd'));
 
-        const actual = await crawl({ ...options, extensions });
+        // The file contents is the same as the path.
+        for (const file of Object.keys(files)) {
+          const path = join(root.path, file);
+          await mkdir(dirname(path), { recursive: true });
+          await writeFile(path, file);
+        }
+
+        const pathsToCrawl = options.pathsToCrawl.map((path) => (isAbsolute(path) ? `${root.path}${path}` : path));
+        const actual = await crawl({ ...options, pathsToCrawl, extensions });
         const expected = Object.entries(files)
           .filter((entry) => entry[1])
           .map(([file]) => file);

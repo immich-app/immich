@@ -1,65 +1,18 @@
-import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
-import { assetFactory } from '@test-data/factories/asset-factory';
-import DetailPanelDescription from './DetailPanelDescription.svelte';
+import DetailPanelDescription from '#lib/components/asset-viewer/DetailPanelDescription.svelte';
+import { factory } from '#test/unit/factories.ts';
+import { test } from '#test/unit/fixtures.ts';
+import { expect } from 'vitest';
+import { render } from 'vitest-browser-svelte';
+import { userEvent } from 'vitest/browser';
 
-describe('DetailPanelDescription', () => {
-  it('clears unsaved draft on asset change', async () => {
-    const user = userEvent.setup();
+test('clearing the description saves null', async ({ data, settle, api, app }) => {
+  const asset = factory.asset({ exifInfo: { description: 'sunset' } });
+  data.addAssets(asset);
 
-    const assetA = assetFactory.build({
-      id: 'asset-a',
-      exifInfo: { description: '' },
-    });
-    const assetB = assetFactory.build({
-      id: 'asset-b',
-      exifInfo: { description: '' },
-    });
+  await render(DetailPanelDescription, { asset, isOwner: true });
+  await app.assetViewer.descriptionInput.fill('');
+  await userEvent.tab();
+  await settle();
 
-    const { rerender } = render(DetailPanelDescription, {
-      props: {
-        asset: assetA,
-        isOwner: true,
-      },
-    });
-
-    const textarea = screen.getByTestId('autogrow-textarea') as HTMLTextAreaElement;
-    await user.type(textarea, 'unsaved draft');
-    expect(textarea).toHaveValue('unsaved draft');
-
-    await rerender({
-      asset: assetB,
-      isOwner: true,
-    });
-
-    expect(screen.getByTestId('autogrow-textarea')).toHaveValue('');
-  });
-
-  it('updates description on asset switch', async () => {
-    const assetA = assetFactory.build({
-      id: 'asset-a',
-      exifInfo: { description: 'first description' },
-    });
-    const assetB = assetFactory.build({
-      id: 'asset-b',
-      exifInfo: { description: 'second description' },
-    });
-
-    const { rerender } = render(DetailPanelDescription, {
-      props: {
-        asset: assetA,
-        isOwner: true,
-      },
-    });
-
-    expect(screen.getByTestId('autogrow-textarea')).toHaveValue('first description');
-
-    await rerender({
-      asset: assetB,
-      isOwner: true,
-    });
-
-    expect(screen.getByTestId('autogrow-textarea')).toHaveValue('second description');
-  });
+  expect(api.updateAsset).toHaveBeenCalledWith({ params: { id: asset.id }, body: { description: null } });
 });

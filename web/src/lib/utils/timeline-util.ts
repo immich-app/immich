@@ -1,10 +1,10 @@
-import { AssetTypeEnum, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
+import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '#lib/managers/timeline-manager/types.ts';
+import { locale } from '#lib/stores/preferences.store.ts';
+import { getAssetRatio } from '#lib/utils/asset-utils.ts';
+import { AssetOrderBy, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
-import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
-import { locale } from '$lib/stores/preferences.store';
-import { getAssetRatio } from '$lib/utils/asset-utils';
 
 // Move type definitions to the top
 export type TimelineYearMonth = {
@@ -138,7 +138,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   const ratio = getAssetRatio(assetResponse) ?? 1;
   const city = assetResponse.exifInfo?.city;
   const country = assetResponse.exifInfo?.country;
-  const people = assetResponse.people?.map((person) => person.name) || [];
+  const people = assetResponse.people?.map((person) => person.name ?? '') || [];
 
   const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
   // Keep this consistent with the bucket loader (getTimes), which stores fileCreatedAt as UTC

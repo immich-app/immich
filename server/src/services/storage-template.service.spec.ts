@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { AssetPathType, AssetType, JobStatus } from 'src/enum.js';
@@ -91,6 +92,43 @@ describe(StorageTemplateService.name, () => {
         weekOptions: ['W', 'WW'],
         yearOptions: ['y', 'yy'],
       });
+    });
+  });
+
+  describe('getAdminStorageTemplateOptions', () => {
+    it('should send back an example path for each preset', () => {
+      const { presets } = sut.getAdminStorageTemplateOptions();
+
+      expect(presets.map(({ template }) => template)).toEqual(sut.getStorageTemplateOptions().presetOptions);
+      expect(presets).toEqual(
+        expect.arrayContaining([
+          { template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}', preview: '2022/2022-02-03/IMAGE_56437' },
+          {
+            template: '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
+            preview: '2022/Album Name/IMAGE_56437',
+          },
+          {
+            template: '{{#if album}}{{album-startDate-y}}/{{album}}{{else}}{{y}}/Other/{{MM}}{{/if}}/{{filename}}',
+            preview: '2021/Album Name/IMAGE_56437',
+          },
+          {
+            template: '{{make}}/{{model}}/{{lensModel}}/{{filename}}',
+            preview: 'FUJIFILM/X-T50/XF27mm F2.8 R WR/IMAGE_56437',
+          },
+        ]),
+      );
+    });
+  });
+
+  describe('previewStorageTemplate', () => {
+    it('should render an example path', () => {
+      expect(sut.previewStorageTemplate({ template: '{{y}}/{{MM}}/{{filename}}.{{ext}}' })).toEqual({
+        preview: '2022/02/IMAGE_56437.jpg',
+      });
+    });
+
+    it('should fail for an invalid template', () => {
+      expect(() => sut.previewStorageTemplate({ template: '{{foo}}' })).toThrow(BadRequestException);
     });
   });
 
@@ -235,6 +273,45 @@ describe(StorageTemplateService.name, () => {
         oldPath: asset.originalPath,
         pathType: AssetPathType.Original,
       });
+    });
+
+    it('should sanitize the make, model and lensModel variables', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from()
+        .owner(user)
+        .exif({ make: '../../sibling', model: 'a/b', lensModel: 'XF27mm F2.8' })
+        .build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{make}}/{{model}}/{{lensModel}}/{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: `/data/library/${user.id}/....sibling/ab/XF27mm F2.8/${asset.originalFileName}`,
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.Original,
+      });
+    });
+
+    it('should not move an asset to a sibling of the library folder', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from().owner(user).exif().build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '../{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
     it('should use handlebar else condition for album', async () => {

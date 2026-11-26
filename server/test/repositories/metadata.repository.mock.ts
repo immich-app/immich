@@ -1,6 +1,6 @@
 import { Mocked, vitest } from 'vitest';
-import type { RepositoryInterface } from 'src/types.js';
 import { MetadataRepository } from 'src/repositories/metadata.repository.js';
+import type { RepositoryInterface } from 'src/types.js';
 
 export const newMetadataRepositoryMock = (): Mocked<RepositoryInterface<MetadataRepository>> => {
   return {

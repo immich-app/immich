@@ -1,20 +1,8 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 import { Session } from 'src/database.js';
-
-const SessionCreateSchema = z
-  .object({
-    duration: z.int().min(1).optional().describe('Session duration in seconds'),
-    deviceType: z.string().optional().describe('Device type'),
-    deviceOS: z.string().optional().describe('Device OS'),
-  })
-  .meta({ id: 'SessionCreateDto' });
-
-const SessionUpdateSchema = z
-  .object({
-    isPendingSyncReset: z.boolean().optional().describe('Reset pending sync state'),
-  })
-  .meta({ id: 'SessionUpdateDto' });
+import { HistoryBuilder } from 'src/decorators.js';
+import { nullAsEmptyString } from 'src/validation.js';
 
 const SessionResponseSchema = z
   .object({
@@ -23,8 +11,16 @@ const SessionResponseSchema = z
     updatedAt: z.string().describe('Last update date'),
     expiresAt: z.string().optional().describe('Expiration date'),
     current: z.boolean().describe('Is current session'),
-    deviceType: z.string().describe('Device type'),
-    deviceOS: z.string().describe('Device OS'),
+    deviceType: z
+      .string()
+      .nullable()
+      .describe('Device type')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
+    deviceOS: z
+      .string()
+      .nullable()
+      .describe('Device OS')
+      .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
     appVersion: z.string().nullable().describe('App version'),
     isPendingSyncReset: z.boolean().describe('Is pending sync reset'),
   })
@@ -34,9 +30,24 @@ const SessionCreateResponseSchema = SessionResponseSchema.extend({
   token: z.string().describe('Session token'),
 }).meta({ id: 'SessionCreateResponseDto' });
 
-export class SessionCreateDto extends createZodDto(SessionCreateSchema) {}
-export class SessionUpdateDto extends createZodDto(SessionUpdateSchema) {}
+export class SessionCreateDto extends createZodDto({
+  duration: z.int().min(1).optional().describe('Session duration in seconds'),
+  deviceType: nullAsEmptyString
+    .optional()
+    .describe('Device type')
+    .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
+  deviceOS: nullAsEmptyString
+    .optional()
+    .describe('Device OS')
+    .meta(new HistoryBuilder().noMoreMrEmptyString().getExtensions()),
+}) {}
+
+export class SessionUpdateDto extends createZodDto({
+  isPendingSyncReset: z.boolean().optional().describe('Reset pending sync state'),
+}) {}
+
 export class SessionResponseDto extends createZodDto(SessionResponseSchema) {}
+
 export class SessionCreateResponseDto extends createZodDto(SessionCreateResponseSchema) {}
 
 export const mapSession = (entity: Session, currentId?: string): SessionResponseDto => ({

@@ -1,7 +1,7 @@
+import { Matcher, WalkOrderedBatch, walk, walkOrdered } from '@immich/walkrs';
 import { Injectable } from '@nestjs/common';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
-import fastGlob from 'fast-glob';
 import {
   Dirent,
   ReadOptionsWithBuffer,
@@ -16,8 +16,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
-import picomatch from 'picomatch';
-import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
+import { CrawlOptionsDto, MatchOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 
@@ -30,6 +29,8 @@ export interface WatchEvents {
 }
 
 export type WatchOptions = Omit<ChokidarOptions, 'ignored'> & { ignored?: string[] };
+
+export type WalkedFiles = Pick<WalkOrderedBatch, 'files' | 'modified'>;
 
 export interface ImmichReadStream {
   stream: Readable;
@@ -100,7 +101,7 @@ export class StorageRepository {
   }
 
   createZipStream(): ImmichZipStream {
-    const archive = archiver('zip', { store: true });
+    const archive = new ZipArchive({ store: true });
 
     const addFile = (input: string, filename: string) => {
       archive.file(input, { name: filename, mode: 0o644 });
@@ -218,57 +219,51 @@ export class StorageRepository {
   async checkDiskUsage(folder: string): Promise<DiskUsage> {
     const stats = await fs.statfs(folder);
     return {
-      available: stats.bavail * stats.bsize,
-      free: stats.bfree * stats.bsize,
-      total: stats.blocks * stats.bsize,
+      available: stats.bavail * stats.frsize,
+      free: stats.bfree * stats.frsize,
+      total: stats.blocks * stats.frsize,
     };
   }
 
-  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
-    if (pathsToCrawl.length === 0) {
-      return Promise.resolve([]);
-    }
-
-    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
-
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    return fastGlob.glob(globbedPaths, {
-      absolute: true,
-      caseSensitiveMatch: false,
-      onlyFiles: true,
-      dot: includeHidden,
-      ignore: exclusionPatterns,
-    });
-  }
-
   async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[]> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = walkOptions;
+    const { pathsToCrawl, exclusionPatterns, includeHidden, take } = walkOptions;
     if (pathsToCrawl.length === 0) {
-      async function* emptyGenerator() {}
-      return emptyGenerator();
+      return;
     }
 
-    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
-
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    const stream = fastGlob.globStream(globbedPaths, {
-      absolute: true,
-      caseSensitiveMatch: false,
-      onlyFiles: true,
-      dot: includeHidden,
-      ignore: exclusionPatterns,
+    const batches = walk({
+      paths: pathsToCrawl,
+      exclusionPatterns,
+      includeHidden,
+      extensions: mimeTypes.getSupportedFileExtensions(),
     });
+
+    const isOverlapping = this.asOverlapMatcher(pathsToCrawl);
+    const overlappingPaths = new Set<string>();
 
     let batch: string[] = [];
-    for await (const value of stream) {
-      batch.push(value.toString());
-      if (batch.length !== walkOptions.take) {
-        continue;
+    for await (const { files, errors } of batches) {
+      for (const error of errors) {
+        this.logger.warn(`Unable to walk: ${error.message}`);
       }
 
-      yield batch;
-      batch = [];
+      for (const file of files) {
+        if (isOverlapping(file)) {
+          if (overlappingPaths.has(file)) {
+            continue;
+          }
+
+          overlappingPaths.add(file);
+        }
+
+        batch.push(file);
+        if (batch.length !== take) {
+          continue;
+        }
+
+        yield batch;
+        batch = [];
+      }
     }
 
     if (batch.length > 0) {
@@ -276,15 +271,46 @@ export class StorageRepository {
     }
   }
 
+  async *walkOrdered({ pathsToCrawl, exclusionPatterns, includeHidden }: CrawlOptionsDto): AsyncGenerator<WalkedFiles> {
+    for await (const { files, modified, errors } of walkOrdered({
+      paths: pathsToCrawl,
+      exclusionPatterns,
+      includeHidden,
+      extensions: mimeTypes.getSupportedFileExtensions(),
+    })) {
+      for (const { path, message } of errors) {
+        this.logger.warn(path ? `Unable to walk ${path}: ${message}` : `Unable to walk: ${message}`);
+      }
+
+      if (files.length > 0) {
+        yield { files, modified };
+      }
+    }
+  }
+
+  createMatcher({ pathsToCrawl, exclusionPatterns, includeHidden, extensions }: MatchOptionsDto): Matcher {
+    return new Matcher({
+      paths: pathsToCrawl.filter((pathToCrawl) => path.isAbsolute(pathToCrawl)),
+      exclusionPatterns,
+      includeHidden,
+      extensions,
+    });
+  }
+
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
-    const matchesIgnoredPath = picomatch(options.ignored ?? [], {
-      dot: true, // Match the behavior of fast-glob's micromatch by using these settings
-      nocase: true,
-      posix: true,
-      strictSlashes: false,
+    const roots = paths.map((root) => path.resolve(root));
+    const matcher = this.createMatcher({
+      pathsToCrawl: roots,
+      exclusionPatterns: options.ignored,
+      includeHidden: true,
     });
 
-    const watcher = chokidarWatch(paths, { ...options, ignored: (path) => matchesIgnoredPath(path) });
+    const watcher = chokidarWatch(roots, {
+      ...options,
+      followSymlinks: false,
+      // Chokidar still emits events for symlinks when followSymlinks is false.
+      ignored: (path, stats) => !!stats?.isSymbolicLink() || !matcher.includes(path),
+    });
 
     watcher.on('ready', () => events.onReady?.());
     watcher.on('add', (path) => events.onAdd?.(path));
@@ -297,14 +323,12 @@ export class StorageRepository {
 
   watchDir = watch; // Native fs.watch without chokidar overhead
 
-  private asGlob(pathToCrawl: string): string {
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    const escapedPath = fastGlob
-      .escapePath(pathToCrawl)
-      .replaceAll('"', '["]')
-      .replaceAll("'", "[']")
-      .replaceAll('`', '[`]');
-    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
-    return `${escapedPath}/**/${extensions}`;
+  private asOverlapMatcher(pathsToCrawl: string[]) {
+    const folders = pathsToCrawl.map((pathToCrawl) => `${path.resolve(pathToCrawl)}${path.sep}`);
+    const overlappingFolders = folders.filter((folder, index) =>
+      folders.some((other, otherIndex) => index !== otherIndex && folder.startsWith(other)),
+    );
+
+    return (filePath: string) => overlappingFolders.some((folder) => filePath.startsWith(folder));
   }
 }

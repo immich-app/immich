@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { updateMyUser } from '@immich/sdk';
+  import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { changePasswordMutation } from '#lib/queries/auth.query.ts';
+  import { Route } from '#lib/route.ts';
   import { Alert, Button, Field, HelperText, PasswordInput, Stack, Text } from '@immich/ui';
+  import { createMutation } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
   import type { PageData } from './$types';
 
   interface Props {
@@ -14,18 +15,24 @@
 
   let { data }: Props = $props();
 
+  const changePassword = createMutation(changePasswordMutation);
+
+  let currentPassword = $state('');
   let password = $state('');
   let passwordConfirm = $state('');
-  const valid = $derived(password === passwordConfirm && passwordConfirm.length > 0);
+  const valid = $derived(currentPassword.length > 0 && password === passwordConfirm && passwordConfirm.length > 0);
   const errorMessage = $derived(passwordConfirm.length === 0 || valid ? '' : $t('password_does_not_match'));
 
-  const onSubmit = async () => {
+  const onSubmit = (event: Event) => {
+    event.preventDefault();
+
     if (!valid) {
       return;
     }
 
-    await updateMyUser({ userUpdateMeDto: { password } });
-    await goto(Route.logout());
+    changePassword.mutate([{ changePasswordDto: { password: currentPassword, newPassword: password } }], {
+      onSuccess: () => void goto(Route.logout()),
+    });
   };
 </script>
 
@@ -38,6 +45,10 @@
       </Stack>
     </Alert>
 
+    <Field label={$t('password')} required>
+      <PasswordInput bind:value={currentPassword} autocomplete="current-password" />
+    </Field>
+
     <Field label={$t('new_password')} required>
       <PasswordInput bind:value={password} autocomplete="new-password" />
     </Field>
@@ -47,8 +58,8 @@
       <HelperText color="danger">{errorMessage}</HelperText>
     </Field>
 
-    <Button class="mt-2" type="submit" size="large" shape="round" fullWidth disabled={!valid}
-      >{$t('to_change_password')}</Button
-    >
+    <Button class="mt-2" type="submit" size="large" shape="round" fullWidth disabled={!valid}>
+      {$t('to_change_password')}
+    </Button>
   </form>
 </AuthPageLayout>

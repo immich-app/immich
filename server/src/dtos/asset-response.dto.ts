@@ -1,10 +1,9 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { Selectable, ShallowDehydrateObject } from 'kysely';
-import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
-import type { MaybeDehydrated } from 'src/types.js';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import { ExifResponseSchema, mapExif } from 'src/dtos/exif.dto.js';
 import { PersonResponseDto, PersonResponseSchema, mapPerson } from 'src/dtos/person.dto.js';
@@ -18,6 +17,7 @@ import {
   AssetVisibilitySchema,
   ChecksumAlgorithm,
 } from 'src/enum.js';
+import type { MaybeDehydrated } from 'src/types.js';
 import { hexOrBufferToBase64 } from 'src/utils/bytes.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -104,11 +104,6 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
     checksum: z.string().describe('Base64 encoded SHA1 hash'),
     stack: AssetStackResponseSchema.nullish(),
     duplicateId: z.uuidv4().nullish().describe('Duplicate group ID'),
-    resized: z
-      .boolean()
-      .optional()
-      .describe('Is resized')
-      .meta(new HistoryBuilder().added('v1').deprecated('v1.113.0').getExtensions()),
     isEdited: z
       .boolean()
       .describe('Is edited')
@@ -157,7 +152,6 @@ export type MapAsset = {
 };
 
 export type AssetMapOptions = {
-  stripMetadata?: boolean;
   withStack?: boolean;
   auth?: AuthDto;
 };
@@ -191,9 +185,9 @@ const mapStack = (entity: { stack?: Stack | null }) => {
 };
 
 export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOptions = {}): AssetResponseDto {
-  const { stripMetadata = false, withStack = false } = options;
+  const { withStack = false, auth } = options;
 
-  if (stripMetadata) {
+  if (isMetadataHidden(auth)) {
     const sanitizedAssetResponse: SanitizedAssetResponseDto = {
       id: entity.id,
       type: entity.type,
@@ -213,7 +207,7 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     id: entity.id,
     createdAt: asDateTimeString(entity.createdAt),
     ownerId: entity.ownerId,
-    owner: entity.owner ? mapUser(entity.owner) : undefined,
+    owner: entity.owner && !auth?.sharedLink ? mapUser(entity.owner) : undefined,
     libraryId: entity.libraryId,
     type: entity.type,
     originalPath: entity.originalPath,
@@ -232,13 +226,12 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
-    people: peopleFromFaces(entity.faces),
+    people: auth?.sharedLink ? [] : peopleFromFaces(entity.faces),
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
-    resized: true,
     width: entity.width,
     height: entity.height,
     isEdited: entity.isEdited,

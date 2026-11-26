@@ -1,4 +1,4 @@
-# Partner Sharing
+# Partner sharing
 
 Immich allows you to share your library with other users. They can then view your library and download the assets. You can manage Partner Sharing from the [User Settings](docs/features/user-settings.md) page on the web.
 
@@ -21,7 +21,7 @@ Partner sharing does _not_ include:
 
 :::
 
-## Sharing with a Partner
+## Sharing with a partner
 
 <img src={require('./img/partner-sharing-1.webp').default} width="70%" title='Add Partner 1' />
 
@@ -29,13 +29,13 @@ Partner sharing does _not_ include:
 
 <img src={require('./img/partner-sharing-4.webp').default} width="70%" title='Add Partner 4' />
 
-## Viewing Partner Assets
+## Viewing partner assets
 
 Access partner assets via the Sharing page.
 
 <img src={require('./img/partner-sharing-3.webp').default} width="70%" title='Access to the Shared Library' />
 
-## Timeline Integration
+## Timeline integration
 
 Partner shared photos can be displayed in the main timeline. This feature can be enabled on a per-partner basis and can be viewed and updated on both the web and mobile app.
 
@@ -45,7 +45,7 @@ The option can be found at [`Account Settings > Partner Sharing > Show in timeli
 
 <img src={require('./img/partner-sharing-5.webp').default} width="70%" title='Partner Sharing for the web interface' />
 
-### Mobile App
+### Mobile app
 
 From the partner’s view, toggle the button
 
@@ -53,7 +53,7 @@ From the partner’s view, toggle the button
 
 <img src={require('./img/partner-sharing-8.webp').default} width="30%" title='Partner Sharing for the mobile app' />
 
-## Removing Access
+## Removing access
 
 In order to remove a partner, you can go to `User > Account Settings > Sharing` and click on the X button.
 

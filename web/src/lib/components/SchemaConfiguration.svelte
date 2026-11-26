@@ -1,8 +1,8 @@
 <script lang="ts">
-  import SchemaAlbumPicker from '$lib/components/SchemaAlbumPicker.svelte';
-  import Self from '$lib/components/SchemaConfiguration.svelte';
-  import SchemaTagPicker from '$lib/components/SchemaTagPicker.svelte';
-  import type { JSONSchemaProperty, SchemaConfig } from '$lib/types';
+  import SchemaAlbumPicker from '#lib/components/SchemaAlbumPicker.svelte';
+  import Self from '#lib/components/SchemaConfiguration.svelte';
+  import SchemaTagPicker from '#lib/components/SchemaTagPicker.svelte';
+  import type { JSONSchemaProperty, SchemaConfig } from '#lib/types.ts';
   import {
     CodeBlock,
     Field,
@@ -82,7 +82,9 @@
 {:else if schema.uiHint?.type === 'AlbumId'}
   <SchemaAlbumPicker {label} {description} array={schema.array} bind:albumIds={getUiHintValue, setUiHintValue} />
 {:else if schema.uiHint?.type === 'TagId'}
-  <SchemaTagPicker bind:tagIds={getUiHintValue, setUiHintValue} />
+  <SchemaTagPicker {label} {description} bind:selectedTags={getUiHintValue, setUiHintValue} type="ids" />
+{:else if schema.uiHint?.type === 'TagValue'}
+  <SchemaTagPicker {label} {description} bind:selectedTags={getUiHintValue, setUiHintValue} type="values" />
 {:else if schema.enum && schema.array}
   <Field {label} {description}>
     <MultiSelect options={schema.enum} bind:values={getEnum, setValue} />
@@ -92,7 +94,7 @@
     <Select options={schema.enum} bind:value={getString, setValue} />
   </Field>
 {:else if schema.array}
-  {@const values = getValue<string[]>([])}
+  {const values = $derived(getValue<string[]>([]))}
   <Field {label} {description}>
     <Input value={values.join(',')} disabled />
     <HelperText>{$t('unsupported_field_type')}</HelperText>

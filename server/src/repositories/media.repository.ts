@@ -7,18 +7,6 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp, { Sharp } from 'sharp';
-import type {
-  Bitmap,
-  DecodeToBufferOptions,
-  GenerateThumbhashOptions,
-  GenerateThumbnailOptions,
-  ImageDimensions,
-  ProbeOptions,
-  TranscodeCommand,
-  TransformOptions,
-  VideoInfo,
-  VideoPacketInfo,
-} from 'src/types.js';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants.js';
 import { Exif } from 'src/database.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
@@ -33,20 +21,47 @@ import {
   DvSignalCompatibility,
   H264Profile,
   HevcProfile,
+  ImageEffort,
+  ImageFormat,
   LogLevel,
-  RawExtractedFormat,
 } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import type {
+  Bitmap,
+  DecodeToBufferOptions,
+  GenerateThumbhashOptions,
+  GenerateThumbnailOptions,
+  ImageDimensions,
+  ProbeOptions,
+  TranscodeCommand,
+  TransformOptions,
+  VideoInfo,
+  VideoPacketInfo,
+} from 'src/types.js';
 import { handlePromiseError } from 'src/utils/misc.js';
 import { createAffineMatrix } from 'src/utils/transform.js';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
-    // eslint-disable-next-line import-x/no-named-as-default-member
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
 
 const pascalCase = (str: string) => upperFirst(camelCase(str.toLowerCase()));
+
+const IMAGE_EFFORT: Partial<Record<ImageFormat, Record<ImageEffort, number>>> = {
+  [ImageFormat.Jxl]: {
+    [ImageEffort.Low]: 3,
+    [ImageEffort.Medium]: 5,
+    [ImageEffort.High]: 7,
+    [ImageEffort.Max]: 9,
+  },
+  [ImageFormat.Webp]: {
+    [ImageEffort.Low]: 2,
+    [ImageEffort.Medium]: 4,
+    [ImageEffort.High]: 5,
+    [ImageEffort.Max]: 6,
+  },
+};
 
 type ProgressEvent = {
   frames: number;
@@ -57,9 +72,10 @@ type ProgressEvent = {
   percent?: number;
 };
 
-export type ExtractResult = {
+export type EmbeddedImage = {
+  tag: string;
   buffer: Buffer;
-  format: RawExtractedFormat;
+  photometricInterpretation?: number;
 };
 
 @Injectable()
@@ -73,26 +89,31 @@ export class MediaRepository {
   }
 
   /**
-   *
-   * @param input file path to the input image
-   * @returns ExtractResult if succeeded, or null if failed
-   */
-  async extract(input: string): Promise<ExtractResult | null> {
-    for (const { tag, format } of [
-      { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
-      { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg },
-      { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl },
-      { tag: 'PreviewImage', format: RawExtractedFormat.Jpeg },
-    ]) {
-      try {
-        const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
-        this.logger.debug(`Successfully extracted ${tag} buffer from image`);
-        return { buffer, format };
-      } catch (error: any) {
-        this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);
-      }
-    }
-    return null;
+  @param input file path to the input image
+  @param tags binary tags to read, e.g. `PreviewImage`
+  @returns every copy of each tag across the file's IFDs and maker notes, ordered by `tags`, then by file order
+  @throws if the file cannot be read
+  */
+  async getEmbeddedImages(input: string, tags: string[]): Promise<EmbeddedImage[]> {
+    // tags are named explicitly because -all skips some, e.g. JpgFromRaw in RW2
+    const result = await exiftool.read(input, {
+      readArgs: ['-g1', '-a', '-n', '-b', '-PhotometricInterpretation', ...tags.map((tag) => `-${tag}`)],
+    });
+    const groups = Object.values(result).filter(
+      (value): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value),
+    );
+
+    return tags.flatMap((tag) =>
+      groups.flatMap((group) => {
+        const data = group[tag];
+        if (typeof data !== 'string') {
+          return [];
+        }
+
+        const buffer = Buffer.from(data.replace(/^base64:/, ''), 'base64');
+        return { tag, buffer, photometricInterpretation: group.PhotometricInterpretation as number | undefined };
+      }),
+    );
   }
 
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {
@@ -186,6 +207,8 @@ export class MediaRepository {
         // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
         chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
         progressive: options.progressive,
+        effort: IMAGE_EFFORT[options.format]?.[options.effort],
+        decodingTier: options.decodingTier,
       })
       .toFile(output);
   }
@@ -260,6 +283,7 @@ export class MediaRepository {
         formatLongName: results.format.format_long_name,
         duration: this.parseFloat(results.format.duration),
         bitrate: this.parseInt(results.format.bit_rate),
+        isFragmented: this.isFragmented(results),
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video' && !stream.disposition?.attached_pic)
@@ -291,7 +315,7 @@ export class MediaRepository {
           };
         }),
       audioStreams: results.streams
-        .filter((stream) => stream.codec_type === 'audio')
+        .filter((stream) => stream.codec_type === 'audio' && stream.codec_name !== 'unknown')
         .sort((a, b) => this.compareStreams(a, b))
         .map((stream) => ({
           index: stream.index,
@@ -304,9 +328,9 @@ export class MediaRepository {
   }
 
   /**
-   * Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
-   * Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
-   */
+  Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
+  Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
+  */
   probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
     const ffprobe = spawn(
       'ffprobe',
@@ -468,6 +492,11 @@ export class MediaRepository {
     return ffmpegCall;
   }
 
+  private isFragmented({ format, streams }: FfprobeData): boolean {
+    const video = streams.find((stream) => stream.codec_type === 'video' && !stream.disposition?.attached_pic);
+    return format.format_long_name === 'QuickTime / MOV' && !!video && this.parseInt(video.nb_frames) === 0;
+  }
+
   private parseInt(value: string | number | undefined): number {
     return Number.parseInt(value as string) || 0;
   }
@@ -483,7 +512,9 @@ export class MediaRepository {
   }
 
   private parseEnum<E extends Record<string, number | string>>(enumObj: E, value?: string) {
-    return value ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null) : null;
+    return value && typeof value === 'string'
+      ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null)
+      : null;
   }
 
   /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */

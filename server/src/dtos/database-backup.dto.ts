@@ -1,4 +1,4 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import z from 'zod';
 
 const DatabaseBackupSchema = z
@@ -9,24 +9,14 @@ const DatabaseBackupSchema = z
   })
   .meta({ id: 'DatabaseBackupDto' });
 
-const DatabaseBackupListResponseSchema = z
-  .object({
-    backups: z.array(DatabaseBackupSchema).describe('List of backups'),
-  })
-  .meta({ id: 'DatabaseBackupListResponseDto' });
+export class DatabaseBackupListResponseDto extends createZodDto({
+  backups: z.array(DatabaseBackupSchema).describe('List of backups'),
+}) {}
 
-const DatabaseBackupUploadSchema = z
-  .object({
-    file: z.file().optional().describe('Database backup file'),
-  })
-  .meta({ id: 'DatabaseBackupUploadDto' });
+export class DatabaseBackupUploadDto extends createZodDto({
+  file: z.file().optional().describe('Database backup file'),
+}) {}
 
-const DatabaseBackupDeleteSchema = z
-  .object({
-    backups: z.array(z.string()).describe('Backup filenames to delete'),
-  })
-  .meta({ id: 'DatabaseBackupDeleteDto' });
-
-export class DatabaseBackupListResponseDto extends createZodDto(DatabaseBackupListResponseSchema) {}
-export class DatabaseBackupUploadDto extends createZodDto(DatabaseBackupUploadSchema) {}
-export class DatabaseBackupDeleteDto extends createZodDto(DatabaseBackupDeleteSchema) {}
+export class DatabaseBackupDeleteDto extends createZodDto({
+  backups: z.array(z.string()).describe('Backup filenames to delete'),
+}) {}

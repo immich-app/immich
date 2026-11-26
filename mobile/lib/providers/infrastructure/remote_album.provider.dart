@@ -180,12 +180,6 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return updateAlbum(albumId, order: newOrder);
   }
 
-  Future<RemoteAlbum?> togglePinned(String albumId) async {
-    final currentAlbum = state.albums.firstWhere((album) => album.id == albumId);
-
-    return updateAlbum(albumId, isPinned: !currentAlbum.isPinned);
-  }
-
   Future<void> deleteAlbum(String albumId) async {
     await _remoteAlbumService.deleteAlbum(albumId);
 

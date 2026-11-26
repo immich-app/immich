@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -22,18 +24,17 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline_pinch_zoom.
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/system_occlusions.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
-import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
 class Timeline extends ConsumerWidget {
   const Timeline({
     super.key,
     this.topSliverWidget,
-    this.topSliverWidgetHeight,
     this.bottomSliverWidget,
     this.showStorageIndicator = false,
     this.withStack = false,
@@ -48,7 +49,6 @@ class Timeline extends ConsumerWidget {
   });
 
   final Widget? topSliverWidget;
-  final double? topSliverWidgetHeight;
   final Widget? bottomSliverWidget;
   final bool showStorageIndicator;
   final Widget? appBar;
@@ -84,7 +84,6 @@ class Timeline extends ConsumerWidget {
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
-            topSliverWidgetHeight: topSliverWidgetHeight,
             bottomSliverWidget: bottomSliverWidget,
             appBar: appBar,
             bottomSheet: bottomSheet,
@@ -114,7 +113,6 @@ class _AlwaysReadOnlyNotifier extends ReadOnlyModeNotifier {
 class _SliverTimeline extends ConsumerStatefulWidget {
   const _SliverTimeline({
     this.topSliverWidget,
-    this.topSliverWidgetHeight,
     this.bottomSliverWidget,
     this.appBar,
     this.bottomSheet,
@@ -126,7 +124,6 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   });
 
   final Widget? topSliverWidget;
-  final double? topSliverWidgetHeight;
   final Widget? bottomSliverWidget;
   final Widget? appBar;
   final Widget? bottomSheet;
@@ -142,6 +139,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBindingObserver {
   late final ScrollController _scrollController;
+  final _segmentedListKey = GlobalKey();
   StreamSubscription? _eventSubscription;
 
   int? _restoreAssetIndex;
@@ -195,6 +193,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         _scrollToTop();
       case final ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
+      case ViewerClosedEvent(:final asset):
+        final routeData = context.findAncestorWidgetOfExactType<RouteDataScope>()?.routeData;
+        final index = ref.read(timelineServiceProvider).getIndex(asset.heroTag);
+        if (routeData != null && routeData.router.root.topRoute == routeData && index != null) {
+          _scrollToAssetIfOffScreen(index);
+        }
       case TimelineReloadEvent():
         setState(() {});
       default:
@@ -209,13 +213,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
     final asyncSegments = ref.read(timelineSegmentProvider);
     asyncSegments.whenData((segments) {
-      final targetSegment = segments.lastWhereOrNull((segment) => segment.firstAssetIndex <= _restoreAssetIndex!);
-      if (targetSegment != null) {
-        final assetIndexInSegment = _restoreAssetIndex! - targetSegment.firstAssetIndex;
-        final newColumnCount = ref.read(timelineArgsProvider).columnCount;
-        final rowIndexInSegment = (assetIndexInSegment / newColumnCount).floor();
-        final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
-        final targetOffset = targetSegment.indexToLayoutOffset(targetRowIndex);
+      final targetOffset = _getAssetRowPosition(segments, _restoreAssetIndex!)?.top;
+      if (targetOffset != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             _scrollController.jumpTo(targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent));
@@ -224,6 +223,71 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
       }
     });
     _restoreAssetIndex = null;
+  }
+
+  ({double top, double bottom})? _getAssetRowPosition(List<Segment> segments, int assetIndex) {
+    final targetSegment = segments.firstWhereOrNull(
+      (segment) => assetIndex < segment.firstAssetIndex + segment.bucket.assetCount,
+    );
+    if (targetSegment == null) {
+      return null;
+    }
+
+    final assetIndexInSegment = assetIndex - targetSegment.firstAssetIndex;
+    final columnCount = ref.read(timelineArgsProvider).columnCount;
+    final rowIndexInSegment = (assetIndexInSegment / columnCount).floor();
+    final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
+    return (
+      top: targetSegment.indexToLayoutOffset(targetRowIndex),
+      bottom: targetSegment.indexToLayoutOffset(targetRowIndex + 1) - targetSegment.spacing,
+    );
+  }
+
+  void _scrollToAssetIfOffScreen(int index) {
+    final row = _getAssetRowPosition(ref.read(timelineSegmentProvider).valueOrNull ?? const [], index);
+    if (row == null) {
+      return;
+    }
+
+    final list = _segmentedListKey.currentContext?.findRenderObject() as RenderSliver?;
+    if (list == null) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    final topInset = math.max(list.constraints.overlap, context.padding.top);
+    final bottomInset = context.padding.bottom;
+    final top = list.constraints.precedingScrollExtent + row.top;
+    final visibleTop = position.pixels + topInset;
+    final bottom = list.constraints.precedingScrollExtent + row.bottom;
+    final visibleBottom = position.pixels + position.viewportDimension - bottomInset;
+    if (top >= visibleTop && bottom <= visibleBottom) {
+      return;
+    }
+
+    final target = top < visibleTop ? top - topInset : bottom - position.viewportDimension + bottomInset;
+    _scrollController.jumpTo(target.clamp(0.0, position.maxScrollExtent));
+  }
+
+  void _scrollSegmentToTop(Segment segment) {
+    if (segment.firstIndex == 0) {
+      _scrollController.jumpTo(0);
+      return;
+    }
+
+    final list = _segmentedListKey.currentContext?.findRenderObject() as RenderSliver?;
+    if (list == null) {
+      return;
+    }
+
+    final header = Rect.fromLTWH(0, segment.startOffset, 0, 0);
+    final headerBelowPinnedBars = RenderAbstractViewport.of(list).getOffsetToReveal(list, 0, rect: header).offset;
+    final headerTop = list.constraints.precedingScrollExtent + segment.startOffset;
+    final headerBelowTopBars = headerTop - math.max(list.constraints.overlap, context.padding.top);
+    final headerBelowStatusBar = headerTop - context.padding.top;
+    final scrollsUp = headerBelowTopBars < _scrollController.position.pixels;
+    final target = math.min(headerBelowPinnedBars, scrollsUp ? headerBelowTopBars : headerBelowStatusBar);
+    _scrollController.jumpTo(target.clamp(0.0, _scrollController.position.maxScrollExtent));
   }
 
   void _onMultiSelectionToggled(_, bool isEnabled) {
@@ -325,9 +389,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final systemOcclusions = ref.watch(systemOcclusionsProvider);
     final isMultiSelectStatusVisible = !isSelectionMode && isMultiSelectEnabled;
     final isBottomWidgetVisible =
         widget.bottomSheet != null && (isMultiSelectStatusVisible || widget.persistentBottomBar);
+    final smoothScrubbing = ref.watch(appConfigProvider.select((config) => config.timeline.smoothScrubbing));
+    final snapToMonth = widget.snapToMonth && !smoothScrubbing;
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
@@ -356,15 +423,17 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
               onLoading: widget.loadingWidget != null ? () => widget.loadingWidget! : null,
               onData: (segments) {
                 final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
-                final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
-                    ? 200
-                    : 0;
-                final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
+                final systemUiOverScrubber = _systemUiOverScrubber(context, systemOcclusions, maxHeight);
+                final topPadding = math.max(
+                  context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10,
+                  systemUiOverScrubber.top,
+                );
 
                 const bottomSheetOpenModifier = 120.0;
                 final contentBottomPadding =
                     context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
-                final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;
+                final scrubberBottomPadding =
+                    math.max(contentBottomPadding, systemUiOverScrubber.bottom) + kScrubberThumbHeight;
 
                 return TimelinePinchZoom(
                   onColumnCountWillChange: () {
@@ -386,6 +455,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                             widget.appBar!,
                           if (widget.topSliverWidget != null) widget.topSliverWidget!,
                           SliverSegmentedList(
+                            key: _segmentedListKey,
                             segments: segments,
                             delegate: SliverChildBuilderDelegate(
                               (ctx, index) {
@@ -409,12 +479,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                       final Widget timeline;
                       if (widget.withScrubber) {
                         timeline = Scrubber(
-                          snapToMonth: widget.snapToMonth,
+                          snapToMonth: snapToMonth,
                           layoutSegments: segments,
                           timelineHeight: maxHeight,
                           topPadding: topPadding,
                           bottomPadding: scrubberBottomPadding,
-                          monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+                          scrollSegmentToTop: _scrollSegmentToTop,
                           hasAppBar: widget.appBar != null,
                           child: grid,
                         );
@@ -449,6 +519,33 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
           ),
         ),
       ),
+    );
+  }
+
+  /// An offset of system UI separate from safe area
+  ///
+  /// iPhone Duo puts the status bar and cameras outside of Flutter 3.47.9 safe area
+  ({double top, double bottom}) _systemUiOverScrubber(
+    BuildContext context,
+    List<Rect> systemOcclusions,
+    double timelineHeight,
+  ) {
+    final screen = MediaQuery.sizeOf(context);
+    final isScrubberOnLeft = Directionality.of(context) == TextDirection.rtl;
+
+    // Connected to the side
+    final onScrubberEdge = systemOcclusions.where(
+      (occlusion) => isScrubberOnLeft ? occlusion.left <= 0 : occlusion.right >= screen.width,
+    );
+
+    return (
+      top: onScrubberEdge
+          .where((occlusion) => occlusion.top <= 0)
+          .fold(0.0, (inset, occlusion) => math.max(inset, occlusion.bottom)),
+
+      bottom: onScrubberEdge
+          .where((occlusion) => occlusion.bottom >= screen.height)
+          .fold(0.0, (inset, occlusion) => math.max(inset, timelineHeight - occlusion.top)),
     );
   }
 }

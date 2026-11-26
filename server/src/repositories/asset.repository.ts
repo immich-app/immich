@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  sql,
   type ExpressionBuilder,
   type Insertable,
   type Kysely,
@@ -7,16 +8,15 @@ import {
   type SelectQueryBuilder,
   type Selectable,
   type ShallowDehydrateObject,
-  UpdateResult,
   type Updateable,
-  sql,
 } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { LockableProperty, Stack } from 'src/database.js';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
+import { isMetadataHidden, type AuthDto } from 'src/dtos/auth.dto.js';
 import {
   AssetFileType,
   AssetOrder,
@@ -40,7 +40,7 @@ import {
   inSharedAlbum,
   removeUndefinedKeys,
   truncatedDate,
-  unnest,
+  withCoordinatesFilter,
   withDefaultVisibility,
   withEdits,
   withExif,
@@ -54,7 +54,6 @@ import {
   withTagId,
   withTags,
 } from 'src/utils/database.js';
-import { globToPostgresRegex } from 'src/utils/misc.js';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -93,6 +92,7 @@ interface AssetBuilderOptions {
   assetType?: AssetType;
   visibility?: AssetVisibility;
   withCoordinates?: boolean;
+  hasCoordinates?: boolean;
   bbox?: BoundingBox;
 }
 
@@ -174,6 +174,8 @@ const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T
   );
 };
 
+export type LibraryScanAsset = Awaited<ReturnType<AssetRepository['getLibraryScanPage']>>[number];
+
 @Injectable()
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -227,6 +229,7 @@ export class AssetRepository {
               formatName: ref('excluded.formatName'),
               formatLongName: ref('excluded.formatLongName'),
               pixelFormat: ref('excluded.pixelFormat'),
+              isFragmented: ref('excluded.isFragmented'),
             })),
           ),
       );
@@ -453,7 +456,14 @@ export class AssetRepository {
     if (assets.length === 0) {
       return [];
     }
-    const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
+    const ids = await this.db
+      .insertInto('asset')
+      .values(assets)
+      .onConflict((oc) =>
+        oc.columns(['ownerId', 'libraryId', 'checksum']).where('libraryId', 'is not', null).doNothing(),
+      )
+      .returning('id')
+      .execute();
     return ids.map(({ id }) => id);
   }
 
@@ -694,13 +704,14 @@ export class AssetRepository {
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions) {
-    const { ownerId, otherAssetId, livePhotoCID, type } = options;
+    const { ownerId, libraryId, otherAssetId, livePhotoCID, type } = options;
     return this.db
       .selectFrom('asset')
       .select(['asset.id', 'asset.ownerId'])
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .where('id', '!=', asUuid(otherAssetId))
       .where('ownerId', '=', asUuid(ownerId))
+      .$call((qb) => (libraryId ? qb.where('libraryId', '=', asUuid(libraryId)) : qb.where('libraryId', 'is', null)))
       .where('type', '=', type)
       .where('asset_exif.livePhotoCID', '=', livePhotoCID)
       .limit(1)
@@ -791,7 +802,7 @@ export class AssetRepository {
             qb.where((eb) => {
               // TODO this should become a shared `hasAccess` style helper once implement sharing in more places
               const isOwner = eb('asset.ownerId', '=', anyUuid(options.userIds!));
-              return options.personId ? eb.or([isOwner, inSharedAlbum(eb, auth.user.id)]) : isOwner;
+              return options.personId ? eb.or([isOwner, inSharedAlbum(auth.user.id, 'asset.id')]) : isOwner;
             }),
           )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
@@ -799,7 +810,8 @@ export class AssetRepository {
           .$if(options.isDuplicate !== undefined, (qb) =>
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
           )
-          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .$if(options.hasCoordinates !== undefined, (qb) => withCoordinatesFilter(qb, options.hasCoordinates!)),
       )
       .selectFrom('asset')
       .select(sql<string>`("timeBucket" AT TIME ZONE 'UTC')::date::text`.as('timeBucket'))
@@ -814,6 +826,7 @@ export class AssetRepository {
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const order = options.order ?? 'desc';
+    const bucket = timeBucket.replace(/^[+-]/, '');
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -848,9 +861,7 @@ export class AssetRepository {
               )
               .as('ratio'),
           ])
-          .$if(!auth.sharedLink || auth.sharedLink.showExif, (qb) =>
-            qb.select(['asset_exif.city', 'asset_exif.country']),
-          )
+          .$if(!isMetadataHidden(auth), (qb) => qb.select(['asset_exif.city', 'asset_exif.country']))
           .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility === undefined, withDefaultVisibility)
@@ -867,7 +878,14 @@ export class AssetRepository {
 
             return withBoundingBox(withBoundingCircle, bbox);
           })
-          .where(truncatedDate(options.orderBy), '=', timeBucket.replace(/^[+-]/, ''))
+          .$if(options.orderBy === AssetOrderBy.CreatedAt, (qb) =>
+            qb
+              .where('asset.createdAt', '>=', sql<Date>`${bucket}::timestamp AT TIME ZONE 'UTC'`)
+              .where('asset.createdAt', '<', sql<Date>`(${bucket}::timestamp + interval '1 month') AT TIME ZONE 'UTC'`),
+          )
+          .$if(options.orderBy !== AssetOrderBy.CreatedAt, (qb) =>
+            qb.where(truncatedDate(options.orderBy), '=', bucket),
+          )
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
               eb.exists(
@@ -882,10 +900,11 @@ export class AssetRepository {
           .$if(!!options.userIds, (qb) =>
             qb.where((eb) => {
               const isOwner = eb('asset.ownerId', '=', anyUuid(options.userIds!));
-              return options.personId ? eb.or([isOwner, inSharedAlbum(eb, auth.user.id)]) : isOwner;
+              return options.personId ? eb.or([isOwner, inSharedAlbum(auth.user.id, 'asset.id')]) : isOwner;
             }),
           )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
+          .$if(options.hasCoordinates !== undefined, (qb) => withCoordinatesFilter(qb, options.hasCoordinates!))
           .$if(!!options.withStacked, (qb) =>
             qb
               .where((eb) =>
@@ -948,7 +967,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
           ])
-          .$if(!auth.sharedLink || auth.sharedLink.showExif, (qb) =>
+          .$if(!isMetadataHidden(auth), (qb) =>
             qb.select((eb) => [
               eb.fn.coalesce(eb.fn('array_agg', ['city']), sql.lit('{}')).as('city'),
               eb.fn.coalesce(eb.fn('array_agg', ['country']), sql.lit('{}')).as('country'),
@@ -1081,63 +1100,53 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING], [DummyValue.STRING]] })
-  async detectOfflineExternalAssets(
-    libraryId: string,
-    importPaths: string[],
-    exclusionPatterns: string[],
-  ): Promise<UpdateResult> {
-    const paths = importPaths.map((importPath) => `${importPath}%`);
-    const exclusions = exclusionPatterns.map((pattern) => globToPostgresRegex(pattern));
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getLibraryScanPage(libraryId: string, after: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id', 'originalPath', 'isOffline', 'status', 'fileModifiedAt'])
+      .where('libraryId', '=', libraryId)
+      .where('isExternal', '=', true)
+      .where('originalPath', '>', after)
+      .orderBy('originalPath')
+      .limit(JOBS_LIBRARY_PAGINATION_SIZE)
+      .execute();
+  }
 
+  async *streamLibraryScan(libraryId: string) {
+    let after = '';
+    while (true) {
+      const page = await this.getLibraryScanPage(libraryId, after);
+      const last = page.at(-1);
+      if (!last) {
+        return;
+      }
+
+      yield page;
+      after = last.originalPath;
+    }
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.DATE] })
+  setOffline(ids: string[], createdBefore: Date): Promise<unknown> {
     return this.db
       .updateTable('asset')
-      .set({
-        isOffline: true,
-        deletedAt: new Date(),
-      })
-      .where('isOffline', '=', false)
-      .where('isExternal', '=', true)
-      .where('libraryId', '=', asUuid(libraryId))
-      .where((eb) =>
-        eb.or([
-          eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
-          eb.or(exclusions.map((pattern) => eb('originalPath', '~', pattern))),
-        ]),
-      )
-      .executeTakeFirstOrThrow();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
-  async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
-    const result = await this.db
-      .selectFrom(unnest(paths).as('path'))
-      .select('path')
-      .where((eb) =>
-        eb.not(
-          eb.exists(
-            this.db
-              .selectFrom('asset')
-              .select('originalPath')
-              .whereRef('asset.originalPath', '=', eb.ref('path'))
-              .where('libraryId', '=', asUuid(libraryId))
-              .where('isExternal', '=', true),
-          ),
-        ),
-      )
+      .set((eb) => ({ isOffline: true, deletedAt: eb.fn.coalesce('deletedAt', eb.val(createdBefore)) }))
+      .where('id', '=', anyUuid(ids))
+      .where('createdAt', '<', createdBefore)
       .execute();
-
-    return result.map((row) => row.path as string);
   }
 
-  async getLibraryAssetCount(libraryId: string): Promise<number> {
-    const { count } = await this.db
-      .selectFrom('asset')
-      .select((eb) => eb.fn.countAll<number>().as('count'))
-      .where('libraryId', '=', asUuid(libraryId))
-      .executeTakeFirstOrThrow();
-
-    return count;
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  setOnline(ids: string[]): Promise<unknown> {
+    return this.db
+      .updateTable('asset')
+      .set((eb) => ({
+        isOffline: false,
+        deletedAt: eb.case().when('status', '=', sql.lit(AssetStatus.Trashed)).then(eb.ref('deletedAt')).end(),
+      }))
+      .where('id', '=', anyUuid(ids))
+      .execute();
   }
 
   private buildGetForOriginal(ids: string[], isEdited: boolean) {

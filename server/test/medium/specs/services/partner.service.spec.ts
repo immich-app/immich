@@ -3,6 +3,7 @@ import { SharingDirection } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { PartnerRepository } from 'src/repositories/partner.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
 import { DB } from 'src/schema/index.js';
 import { PartnerService } from 'src/services/partner.service.js';
@@ -12,11 +13,12 @@ import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(PartnerService, {
     database: db || defaultDatabase,
     real: [AccessRepository, PartnerRepository, UserRepository],
-    mock: [LoggingRepository],
+    mock: [LoggingRepository, ResourceRepository],
   });
 };
 

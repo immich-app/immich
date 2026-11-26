@@ -38,7 +38,48 @@ select
           and "asset_file"."type" = $1
       ) as agg
   ) as "files",
-  to_json("asset_exif") as "exifInfo"
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_exif"."assetId",
+          "asset_exif"."autoStackId",
+          "asset_exif"."bitsPerSample",
+          "asset_exif"."city",
+          "asset_exif"."colorspace",
+          "asset_exif"."country",
+          "asset_exif"."dateTimeOriginal",
+          "asset_exif"."description",
+          "asset_exif"."exifImageHeight",
+          "asset_exif"."exifImageWidth",
+          "asset_exif"."exposureTime",
+          "asset_exif"."fileSizeInByte",
+          "asset_exif"."fNumber",
+          "asset_exif"."focalLength",
+          "asset_exif"."fps",
+          "asset_exif"."iso",
+          "asset_exif"."latitude",
+          "asset_exif"."lensModel",
+          "asset_exif"."livePhotoCID",
+          "asset_exif"."longitude",
+          "asset_exif"."make",
+          "asset_exif"."model",
+          "asset_exif"."modifyDate",
+          "asset_exif"."orientation",
+          "asset_exif"."profileDescription",
+          "asset_exif"."projectionType",
+          "asset_exif"."rating",
+          "asset_exif"."state",
+          "asset_exif"."tags",
+          "asset_exif"."timeZone"
+        from
+          "asset_exif"
+        where
+          "asset_exif"."assetId" = "asset"."id"
+      ) as obj
+  ) as "exifInfo"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
@@ -239,7 +280,48 @@ select
           "asset_edit"."assetId" = "asset"."id"
       ) as agg
   ) as "edits",
-  to_json("asset_exif") as "exifInfo",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_exif"."assetId",
+          "asset_exif"."autoStackId",
+          "asset_exif"."bitsPerSample",
+          "asset_exif"."city",
+          "asset_exif"."colorspace",
+          "asset_exif"."country",
+          "asset_exif"."dateTimeOriginal",
+          "asset_exif"."description",
+          "asset_exif"."exifImageHeight",
+          "asset_exif"."exifImageWidth",
+          "asset_exif"."exposureTime",
+          "asset_exif"."fileSizeInByte",
+          "asset_exif"."fNumber",
+          "asset_exif"."focalLength",
+          "asset_exif"."fps",
+          "asset_exif"."iso",
+          "asset_exif"."latitude",
+          "asset_exif"."lensModel",
+          "asset_exif"."livePhotoCID",
+          "asset_exif"."longitude",
+          "asset_exif"."make",
+          "asset_exif"."model",
+          "asset_exif"."modifyDate",
+          "asset_exif"."orientation",
+          "asset_exif"."profileDescription",
+          "asset_exif"."projectionType",
+          "asset_exif"."rating",
+          "asset_exif"."state",
+          "asset_exif"."tags",
+          "asset_exif"."timeZone"
+        from
+          "asset_exif"
+        where
+          "asset_exif"."assetId" = "asset"."id"
+      ) as obj
+  ) as "exifInfo",
   (
     select
       to_json(obj)
@@ -287,7 +369,8 @@ select
           "asset_video"."formatName",
           "asset_video"."formatLongName",
           "asset"."duration",
-          "asset_video"."bitrate"
+          "asset_video"."bitrate",
+          "asset_video"."isFragmented"
         from
           (
             select
@@ -449,7 +532,48 @@ where
 select
   "asset"."id",
   "asset"."visibility",
-  to_json("asset_exif") as "exifInfo",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_exif"."assetId",
+          "asset_exif"."autoStackId",
+          "asset_exif"."bitsPerSample",
+          "asset_exif"."city",
+          "asset_exif"."colorspace",
+          "asset_exif"."country",
+          "asset_exif"."dateTimeOriginal",
+          "asset_exif"."description",
+          "asset_exif"."exifImageHeight",
+          "asset_exif"."exifImageWidth",
+          "asset_exif"."exposureTime",
+          "asset_exif"."fileSizeInByte",
+          "asset_exif"."fNumber",
+          "asset_exif"."focalLength",
+          "asset_exif"."fps",
+          "asset_exif"."iso",
+          "asset_exif"."latitude",
+          "asset_exif"."lensModel",
+          "asset_exif"."livePhotoCID",
+          "asset_exif"."longitude",
+          "asset_exif"."make",
+          "asset_exif"."model",
+          "asset_exif"."modifyDate",
+          "asset_exif"."orientation",
+          "asset_exif"."profileDescription",
+          "asset_exif"."projectionType",
+          "asset_exif"."rating",
+          "asset_exif"."state",
+          "asset_exif"."tags",
+          "asset_exif"."timeZone"
+        from
+          "asset_exif"
+        where
+          "asset_exif"."assetId" = "asset"."id"
+      ) as obj
+  ) as "exifInfo",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -492,6 +616,7 @@ where
 
 -- AssetJobRepository.getForOcr
 select
+  "asset"."ownerId",
   "asset"."visibility",
   (
     select
@@ -507,19 +632,6 @@ from
   "asset"
 where
   "asset"."id" = $1
-
--- AssetJobRepository.getForSyncAssets
-select
-  "asset"."id",
-  "asset"."isOffline",
-  "asset"."libraryId",
-  "asset"."originalPath",
-  "asset"."status",
-  "asset"."fileModifiedAt"
-from
-  "asset"
-where
-  "asset"."id" = any ($1::uuid[])
 
 -- AssetJobRepository.getForAssetDeletion
 select
@@ -567,8 +679,8 @@ from
             where
               "stack_asset"."stackId" = "stack"."id"
               and "stack_asset"."id" != "stack"."primaryAssetId"
-              and "stack_asset"."visibility" = $1
-              and "stack_asset"."status" != $2
+              and "stack_asset"."visibility" = 'timeline'
+              and "stack_asset"."status" != 'deleted'
           ) as agg
       ) as "assets"
     from
@@ -577,7 +689,7 @@ from
       "stack"."id" = "asset"."stackId"
   ) as "stack_result" on true
 where
-  "asset"."id" = $3
+  "asset"."id" = $1
 
 -- AssetJobRepository.streamForVideoConversion
 select
@@ -684,7 +796,8 @@ select
           "asset_video"."formatName",
           "asset_video"."formatLongName",
           "asset"."duration",
-          "asset_video"."bitrate"
+          "asset_video"."bitrate",
+          "asset_video"."isFragmented"
         from
           (
             select
@@ -801,8 +914,7 @@ where
 
 -- AssetJobRepository.streamForDeletedJob
 select
-  "id",
-  "isOffline"
+  "id"
 from
   "asset"
 where

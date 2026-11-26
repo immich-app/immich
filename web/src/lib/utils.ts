@@ -1,17 +1,21 @@
+import { defaultLang, locales } from '#lib/constants.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { executeMutation } from '#lib/queries/client.ts';
+import { startOAuthMutation } from '#lib/queries/oauth.query.ts';
+import { alwaysLoadOriginalFile, lang, locale } from '#lib/stores/preferences.store.ts';
+import { isWebCompatibleImage } from '#lib/utils/asset-utils.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { convertBCP47, langs } from '#lib/utils/i18n.ts';
 import {
   AssetMediaSize,
   AssetTypeEnum,
   MemoryType,
-  finishOAuth,
   getAssetOriginalPath,
   getAssetPlaybackPath,
   getAssetThumbnailPath,
   getBaseUrl,
   getPeopleThumbnailPath,
   getUserProfileImagePath,
-  linkOAuthAccount,
-  startOAuth,
-  unlinkOAuthAccount,
   type AssetResponseDto,
   type MemoryResponseDto,
   type PersonResponseDto,
@@ -23,12 +27,6 @@ import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
 import { DateTime } from 'luxon';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
-import { defaultLang, locales } from '$lib/constants';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { alwaysLoadOriginalFile, lang, locale } from '$lib/stores/preferences.store';
-import { isWebCompatibleImage } from '$lib/utils/asset-utils';
-import { handleError } from '$lib/utils/handle-error';
-import { convertBCP47, langs } from '$lib/utils/i18n';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -132,7 +130,7 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
     options = { url: options };
   }
 
-  const { signal, method, url, data: body, onDownloadProgress: onProgress } = options;
+  const { signal, method = 'GET', url, data: body, onDownloadProgress: onProgress } = options;
 
   return new Promise<{ data: Blob; status: number }>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -155,7 +153,7 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
       signal.addEventListener('abort', () => xhr.abort());
     }
 
-    xhr.open(method || 'GET', url);
+    xhr.open(method, url);
     xhr.responseType = 'blob';
 
     if (body) {
@@ -187,7 +185,7 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize };
+type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize | 'original' };
 
 export const getAssetUrl = ({
   asset,
@@ -224,16 +222,14 @@ const forceUseOriginal = (asset: AssetResponseDto) => {
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset)
-      ? AssetMediaSize.Original
-      : AssetMediaSize.Fullsize;
+    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
   }
   return AssetMediaSize.Preview;
 };
 
 export const getAssetMediaUrl = (options: AssetUrlOptions) => {
   const { id, size, cacheKey: c, edited = true } = options;
-  const isOriginal = size === AssetMediaSize.Original;
+  const isOriginal = size === 'original';
   const path = isOriginal ? getAssetOriginalPath(id) : getAssetThumbnailPath(id);
   return createUrl(path, { ...authManager.params, size: isOriginal ? undefined : size, c, edited });
 };
@@ -345,27 +341,8 @@ export const oauth = {
     const value = 'autoLaunch=1';
     return location.search.includes(value);
   },
-  authorize: async (location: Location) => {
-    const $t = get(t);
-    try {
-      const redirectUri = location.href.split('?', 1)[0];
-      const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
-      globalThis.location.assign(url);
-      return true;
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_login_with_oauth'));
-      return false;
-    }
-  },
-  login: (location: Location) => {
-    return finishOAuth({ oAuthCallbackDto: { url: location.href } });
-  },
-  link: (location: Location) => {
-    return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
-  },
-  unlink: () => {
-    return unlinkOAuthAccount();
-  },
+  authorize: (location: Location) =>
+    executeMutation(startOAuthMutation, [{ oAuthConfigDto: { redirectUri: location.href.split('?', 1)[0] } }]),
 };
 
 export const findLocale = (code: string | undefined) => {
@@ -470,4 +447,21 @@ export const transformToTitleCase = (text: string) => {
     result += word.charAt(0).toUpperCase() + word.slice(1) + ' ';
   }
   return result.trim();
+};
+
+export const truncateMiddle = (text: string, maxLength = 50): string => {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  const lastSlash = text.lastIndexOf('/');
+  const tail = lastSlash === -1 ? text : text.slice(lastSlash);
+
+  if (tail.length >= maxLength - 3) {
+    const half = Math.floor((maxLength - 3) / 2);
+    return text.slice(0, half) + '...' + text.slice(-half);
+  }
+
+  const headLength = maxLength - 3 - tail.length;
+  return text.slice(0, headLength) + '...' + tail;
 };

@@ -44,6 +44,21 @@ void main() {
     });
   });
 
+  group('updateAlbum', () {
+    test('persists the pinned state', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: user.id);
+
+      final before = await sut.get(album.id);
+      expect(before?.isPinned, isFalse);
+
+      await sut.updateAlbum(before!.copyWith(isPinned: true));
+
+      final after = await sut.get(album.id);
+      expect(after?.isPinned, isTrue);
+    });
+  });
+
   group('getAll', () {
     test('returns album when all of its assets are trashed', () async {
       final user = await ctx.newUser();

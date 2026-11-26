@@ -1,22 +1,19 @@
 <script lang="ts">
-  import { detectPriorInstall, type MaintenanceDetectInstallResponseDto } from '@immich/sdk';
-  import { Button, Heading, HStack, Icon, Stack, Text } from '@immich/ui';
+  import { detectPriorInstallQuery } from '#lib/queries/maintenance.query.ts';
+  import { Button, HStack, Heading, Icon, Stack, Text } from '@immich/ui';
   import { mdiAlert, mdiArrowRight, mdiCheck, mdiClose, mdiRefresh } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
   type Props = {
     next: () => void;
-    end: () => void;
+    previous: () => void;
   };
 
-  const { next, end }: Props = $props();
+  const { next, previous }: Props = $props();
 
-  let detectedInstall: MaintenanceDetectInstallResponseDto | undefined = $state();
-
-  const reload = async () => {
-    detectedInstall = await detectPriorInstall();
-  };
+  const detectedInstallQuery = createQuery(detectPriorInstallQuery);
+  const detectedInstall = $derived(detectedInstallQuery.data);
 
   const getLibraryFolderCheckStatus = (writable: boolean, readable: boolean) => {
     if (writable) {
@@ -26,8 +23,6 @@
       ? $t('maintenance_restore_library_folder_write_fail')
       : $t('maintenance_restore_library_folder_read_fail');
   };
-
-  onMount(() => reload());
 </script>
 
 <Heading size="large" color="primary" tag="h1">{$t('maintenance_restore_library')}</Heading>
@@ -81,7 +76,9 @@
         {/if}
       {/each}
 
-      <Button leadingIcon={mdiRefresh} variant="ghost" onclick={reload}>{$t('refresh')}</Button>
+      <Button leadingIcon={mdiRefresh} variant="ghost" onclick={() => detectedInstallQuery.refetch()}>
+        {$t('refresh')}
+      </Button>
     {:else}
       <HStack>
         <Icon icon={mdiRefresh} color="rgb(var(--immich-ui-primary))" />
@@ -92,6 +89,6 @@
 </div>
 <Text>{$t('maintenance_restore_library_confirm')}</Text>
 <HStack>
-  <Button onclick={end} variant="ghost">{$t('cancel')}</Button>
+  <Button onclick={previous} variant="ghost">{$t('back')}</Button>
   <Button onclick={next} trailingIcon={mdiArrowRight}>{$t('next')}</Button>
 </HStack>

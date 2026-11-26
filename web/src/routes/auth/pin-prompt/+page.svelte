@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import PinCodeCreateForm from '$lib/components/user-settings-page/PinCodeCreateForm.svelte';
-  import { Route } from '$lib/route';
-  import { handleError } from '$lib/utils/handle-error';
-  import { unlockAuthSession } from '@immich/sdk';
+  import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
+  import PinCodeCreateForm from '#lib/components/user-settings-page/PinCodeCreateForm.svelte';
+  import { getAuthStatusQuery, unlockAuthSessionMutation } from '#lib/queries/auth.query.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { Route } from '#lib/route.ts';
   import { Button, Icon, PinInput } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline, mdiLockSmart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import { goto } from '$app/navigation';
   import type { PageData } from './$types';
 
   interface Props {
@@ -19,23 +19,18 @@
 
   let isVerified = $state(false);
   let isBadPinCode = $state(false);
-  let hasPinCode = $derived(data.hasPinCode);
+  const query = createPreloadedQuery(getAuthStatusQuery);
+  const hasPinCode = $derived(query.data.pinCode);
   let pinCode = $state('');
 
-  const handleUnlockSession = async (code: string) => {
-    try {
-      await unlockAuthSession({ sessionUnlockDto: { pinCode: code } });
-
-      isVerified = true;
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      await goto(data.continueUrl);
-    } catch (error) {
-      handleError(error, $t('wrong_pin_code'));
-      isBadPinCode = true;
-    }
-  };
+  const handleUnlockSession = (code: string) =>
+    executeMutation(unlockAuthSessionMutation, [{ sessionUnlockDto: { pinCode: code } }], {
+      onSuccess: () => {
+        isVerified = true;
+        setTimeout(() => void goto(data.continueUrl), 1000);
+      },
+      onError: () => (isBadPinCode = true),
+    });
 </script>
 
 <AuthPageLayout withHeader={false}>
@@ -62,7 +57,7 @@
         <p class="mb-4 text-center text-sm" style="text-wrap: pretty;">
           {$t('new_pin_code_subtitle')}
         </p>
-        <PinCodeCreateForm showLabel={false} onCreated={() => (hasPinCode = true)} />
+        <PinCodeCreateForm showLabel={false} />
       {/if}
 
       <div class={hasPinCode ? '' : 'flex w-full items-start'}>

@@ -1,12 +1,38 @@
+import { ProjectionType } from '#lib/constants.ts';
+import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import AssetAddToAlbumModal from '#lib/modals/AssetAddToAlbumModal.svelte';
+import AssetDeleteConfirmModal from '#lib/modals/AssetDeleteConfirmModal.svelte';
+import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
+import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
+import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
+import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
+import {
+  deleteAssetsMutation,
+  runAssetJobsMutation,
+  updateAssetMutation,
+  updateAssetsMutation,
+} from '#lib/queries/asset.query.ts';
+import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { restoreAssetsMutation } from '#lib/queries/trash.query.ts';
+import { Route } from '#lib/route.ts';
+import { showDeleteModal } from '#lib/stores/preferences.store.ts';
+import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
+import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
+import type { OnFavorite } from '#lib/utils/actions.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetJobName,
-  AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
   getAssetInfo,
-  removeAssetFromAlbum,
-  runAssetJobs,
-  updateAsset,
   type AlbumResponseDto,
   type AssetJobsDto,
   type AssetResponseDto,
@@ -15,20 +41,27 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountCircleOutline,
   mdiAlertOutline,
+  mdiArchiveArrowDownOutline,
+  mdiArchiveArrowUpOutline,
   mdiCogRefreshOutline,
   mdiCompare,
   mdiContentCopy,
   mdiDatabaseRefreshOutline,
+  mdiDeleteForeverOutline,
+  mdiDeleteOutline,
   mdiDownload,
   mdiDownloadBox,
   mdiFaceRecognition,
   mdiHeadSyncOutline,
   mdiHeart,
   mdiHeartOutline,
+  mdiHistory,
   mdiImageRefreshOutline,
   mdiImageRemoveOutline,
   mdiImageSearch,
   mdiInformationOutline,
+  mdiLockOpenVariantOutline,
+  mdiLockOutline,
   mdiMagnifyMinusOutline,
   mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
@@ -36,29 +69,16 @@ import {
   mdiPlus,
   mdiPresentationPlay,
   mdiShareVariantOutline,
+  mdiTagMultipleOutline,
   mdiTagPlusOutline,
   mdiTune,
 } from '@mdi/js';
-import type { MessageFormatter } from 'svelte-i18n';
+import { t, type MessageFormatter } from 'svelte-i18n';
+import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
-import { ProjectionType } from '$lib/constants';
-import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
-import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
-import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
-import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { Route } from '$lib/route';
-import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
-import { downloadUrl } from '$lib/utils';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
+  const assetIds = assetMultiSelectManager.assets.map((asset) => asset.id);
   const ownedAssets = assetMultiSelectManager.ownedAssets;
   const isAlbumOwner = album?.albumUsers[0].user.id === authManager.user.id;
 
@@ -71,19 +91,53 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
+    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds }),
+  };
+
+  const Archive: ActionItem = {
+    title: $t('to_archive'),
+    icon: mdiArchiveArrowDownOutline,
+    shortcuts: [{ key: 'a', shift: true }],
+    $if: () => assetMultiSelectManager.isAllUserOwned && !assetMultiSelectManager.isAllArchived,
     onAction: () =>
-      modalManager.show(AssetAddToAlbumModal, { assetIds: assetMultiSelectManager.assets.map((asset) => asset.id) }),
+      handleSetVisibility(
+        ownedAssets.filter((asset) => asset.visibility !== AssetVisibility.Archive),
+        AssetVisibility.Archive,
+      ),
+  };
+
+  const CreateSharedLink: ActionItem = {
+    title: $t('share'),
+    icon: mdiShareVariantOutline,
+    onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds }),
   };
 
   const RemoveFromAlbum: ActionItem = {
     title: $t('remove_from_album'),
     icon: mdiImageRemoveOutline,
+    shortcuts: [{ key: 'l', shift: true }],
     $if: () => !!album && (isAlbumOwner || assetMultiSelectManager.isAllUserOwned),
-    onAction: () =>
-      handleBulkRemoveAssetsFromAlbum(
-        assetMultiSelectManager.assets.map((asset) => asset.id),
-        album!,
-      ),
+    onAction: () => handleBulkRemoveAssetsFromAlbum(assetIds, album!),
+  };
+
+  const Tag: ActionItem = {
+    title: $t('tag'),
+    icon: mdiTagMultipleOutline,
+    $if: () => authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned,
+    onAction: async () => {
+      if (await modalManager.show(AssetTagModal, { assetIds })) {
+        assetMultiSelectManager.clear();
+      }
+    },
+    shortcuts: { key: 't' },
+  };
+
+  const Unarchive: ActionItem = {
+    title: $t('unarchive'),
+    icon: mdiArchiveArrowUpOutline,
+    shortcuts: [{ key: 'a', shift: true }],
+    $if: () => assetMultiSelectManager.isAllUserOwned && assetMultiSelectManager.isAllArchived,
+    onAction: () => handleSetVisibility(ownedAssets, AssetVisibility.Timeline),
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -113,7 +167,11 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
 
   return {
     AddToAlbum,
+    Archive,
+    CreateSharedLink,
     RemoveFromAlbum,
+    Tag,
+    Unarchive,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
@@ -129,8 +187,10 @@ export const getAssetActions = (
   const sharedLink = getSharedLink();
   const authUser = authManager.authenticated ? authManager.user : undefined;
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
-  const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers[0].user.id);
-  const smartSearchEnabled = featureFlagsManager.value.smartSearch;
+  const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers.at(0)?.user.id);
+  const smartSearchEnabled = !!authUser && readPreloadedQuery(getUserConfigQuery()).machineLearning.clip.enabled;
+  const isLocked = asset.visibility === AssetVisibility.Locked;
+  const isDeletePermanent = asset.isTrashed || !featureFlagsManager.value.trash;
 
   const Share: ActionItem = {
     title: $t('share'),
@@ -219,6 +279,7 @@ export const getAssetActions = (
   const RemoveFromAlbum: ActionItem = {
     title: $t('remove_from_album'),
     icon: mdiImageRemoveOutline,
+    shortcuts: [{ key: 'l', shift: true }],
     $if: () => !!album && (isOwner || isAlbumOwner),
     onAction: () => handleRemoveAssetsFromAlbum([asset.id], album!),
   };
@@ -227,7 +288,7 @@ export const getAssetActions = (
     title: $t('asset_offline'),
     icon: mdiAlertOutline,
     color: 'danger',
-    $if: () => !!asset.isOffline,
+    $if: () => asset.isOffline,
     onAction: () => assetViewerManager.toggleDetailPanel(),
   };
 
@@ -290,6 +351,59 @@ export const getAssetActions = (
       !asset.originalPath.toLowerCase().endsWith('.svg'),
     onAction: () => assetViewerManager.openEditor(),
     shortcuts: [{ key: 'e' }],
+  };
+
+  const Trash: ActionItem = {
+    title: $t('delete'),
+    icon: mdiDeleteOutline,
+    $if: () => isOwner && !isDeletePermanent,
+    onAction: ({ event }) => (isShiftDelete(event) ? handlePermanentlyDelete(asset) : handleTrash(asset)),
+    shortcuts: [{ key: 'Delete' }, { key: 'Delete', shift: true }],
+  };
+
+  const PermanentlyDelete: ActionItem = {
+    title: $t('permanently_delete'),
+    icon: mdiDeleteForeverOutline,
+    $if: () => isOwner && isDeletePermanent,
+    onAction: () => handlePermanentlyDelete(asset),
+    shortcuts: [{ key: 'Delete' }, { key: 'Delete', shift: true }],
+  };
+
+  const Restore: ActionItem = {
+    title: $t('restore'),
+    icon: mdiHistory,
+    $if: () => !sharedLink && !isLocked && asset.isTrashed,
+    onAction: () => handleRestore(asset),
+  };
+
+  const Archive: ActionItem = {
+    title: $t('to_archive'),
+    icon: mdiArchiveArrowDownOutline,
+    $if: () => !sharedLink && isOwner && !isLocked && !asset.isArchived,
+    onAction: () => handleArchive(asset),
+    shortcuts: [{ key: 'a', shift: true }],
+  };
+
+  const Unarchive: ActionItem = {
+    title: $t('unarchive'),
+    icon: mdiArchiveArrowUpOutline,
+    $if: () => !sharedLink && isOwner && !isLocked && asset.isArchived,
+    onAction: () => handleUnarchive(asset),
+    shortcuts: [{ key: 'a', shift: true }],
+  };
+
+  const Lock: ActionItem = {
+    title: $t('move_to_locked_folder'),
+    icon: mdiLockOutline,
+    $if: () => !sharedLink && isOwner && !asset.isTrashed && !isLocked,
+    onAction: () => handleToggleLocked(asset),
+  };
+
+  const Unlock: ActionItem = {
+    title: $t('move_off_locked_folder'),
+    icon: mdiLockOpenVariantOutline,
+    $if: () => !sharedLink && isOwner && !asset.isTrashed && isLocked,
+    onAction: () => handleToggleLocked(asset),
   };
 
   const SetProfilePicture: ActionItem = {
@@ -360,6 +474,13 @@ export const getAssetActions = (
     Tag,
     TagPeople,
     Edit,
+    Trash,
+    PermanentlyDelete,
+    Restore,
+    Archive,
+    Unarchive,
+    Lock,
+    Unlock,
     SetProfilePicture,
     ViewInTimeline,
     ViewSimilar,
@@ -413,35 +534,177 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
 
     try {
       toastManager.primary($t('downloading_asset_filename', { values: { filename } }));
-      downloadUrl(getAssetMediaUrl({ id, size: AssetMediaSize.Original, edited, cacheKey }), filename);
+      downloadUrl(getAssetMediaUrl({ id, size: 'original', edited, cacheKey }), filename);
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
     }
   }
 };
 
-const handleFavorite = async (asset: AssetResponseDto) => {
+const handleFavorite = (asset: AssetResponseDto) =>
+  executeMutation(
+    () =>
+      updateAssetMutation({
+        success: { toast: 'added_to_favorites' },
+        error: { toast: 'errors.unable_to_add_remove_favorites', values: { favorite: asset.isFavorite } },
+      }),
+    [{ id: asset.id, updateAssetDto: { isFavorite: true } }],
+  );
+
+const handleUnfavorite = (asset: AssetResponseDto) =>
+  executeMutation(
+    () =>
+      updateAssetMutation({
+        success: { toast: 'removed_from_favorites' },
+        error: { toast: 'errors.unable_to_add_remove_favorites', values: { favorite: asset.isFavorite } },
+      }),
+    [{ id: asset.id, updateAssetDto: { isFavorite: false } }],
+  );
+
+const isShiftDelete = (event: Event) => event instanceof KeyboardEvent && event.key === 'Delete' && event.shiftKey;
+
+const handleTrash = async (asset: AssetResponseDto) => {
+  assetViewerManager.emit('AssetLeave', { asset, reason: 'trash' });
   const $t = await getFormatter();
 
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
-    toastManager.primary($t('added_to_favorites'));
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
-  }
+  await executeMutation(deleteAssetsMutation, [{ assetBulkDeleteDto: { ids: [asset.id], force: false } }], {
+    onSuccess: () =>
+      toastManager.primary(
+        {
+          description: $t('assets_trashed_count', { values: { count: 1 } }),
+          button: assetViewerManager.hasListeners('AssetReturn')
+            ? { label: $t('undo'), color: 'secondary', onclick: () => handleUndoTrash(asset) }
+            : undefined,
+        },
+        { timeout: 5000 },
+      ),
+  });
 };
 
-const handleUnfavorite = async (asset: AssetResponseDto) => {
+const handleUndoTrash = (asset: AssetResponseDto) =>
+  executeMutation(restoreAssetsMutation, [{ bulkIdsDto: { ids: [asset.id] } }], {
+    onSuccess: () => assetViewerManager.emit('AssetReturn', asset),
+  });
+
+const handlePermanentlyDelete = async (asset: AssetResponseDto) => {
+  if (get(showDeleteModal) && !(await modalManager.show(AssetDeleteConfirmModal, { size: 1 }))) {
+    return;
+  }
+
+  assetViewerManager.emit('AssetLeave', { asset, reason: 'delete' });
+  await executeMutation(
+    () =>
+      deleteAssetsMutation({
+        success: { toast: 'permanently_deleted_asset' },
+        error: { toast: 'errors.unable_to_delete_asset' },
+      }),
+    [{ assetBulkDeleteDto: { ids: [asset.id], force: true } }],
+  );
+};
+
+const handleRestore = async (asset: AssetResponseDto) => {
   const $t = await getFormatter();
 
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
-    toastManager.primary($t('removed_from_favorites'));
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+  await executeMutation(restoreAssetsMutation, [{ bulkIdsDto: { ids: [asset.id] } }], {
+    onSuccess: () => {
+      eventManager.emit('AssetsRestore', [asset.id]);
+      toastManager.primary($t('restored_asset'));
+    },
+  });
+};
+
+const handleArchive = async (asset: AssetResponseDto) => {
+  assetViewerManager.emit('AssetLeave', { asset, reason: 'archive' });
+  const $t = await getFormatter();
+
+  await executeMutation(
+    () => updateAssetMutation({ error: { toast: 'errors.unable_to_add_remove_archive', values: { archived: false } } }),
+    [{ id: asset.id, updateAssetDto: { visibility: AssetVisibility.Archive } }],
+    {
+      onSuccess: (response) => {
+        toastManager.primary({
+          description: $t('added_to_archive'),
+          button: (close) => ({
+            label: $t('undo'),
+            onclick: () => {
+              close();
+              void undoArchiveAssets([toTimelineAsset(response)]);
+            },
+          }),
+        });
+        eventManager.emit('AssetsArchive', [asset.id]);
+      },
+    },
+  );
+};
+
+const handleUnarchive = (asset: AssetResponseDto) =>
+  executeMutation(
+    () =>
+      updateAssetMutation({
+        success: { toast: 'removed_from_archive' },
+        error: { toast: 'errors.unable_to_add_remove_archive', values: { archived: true } },
+      }),
+    [{ id: asset.id, updateAssetDto: { visibility: AssetVisibility.Timeline } }],
+  );
+
+const handleToggleLocked = async (asset: AssetResponseDto) => {
+  const $t = await getFormatter();
+  const isLocked = asset.visibility === AssetVisibility.Locked;
+
+  const isConfirmed = await modalManager.showDialog({
+    title: isLocked ? $t('remove_from_locked_folder') : $t('move_to_locked_folder'),
+    prompt: isLocked ? $t('remove_from_locked_folder_confirmation') : $t('move_to_locked_folder_confirmation'),
+    confirmText: $t('move'),
+    confirmColor: isLocked ? 'danger' : 'primary',
+    icon: isLocked ? mdiLockOpenVariantOutline : mdiLockOutline,
+  });
+  if (!isConfirmed) {
+    return;
   }
+
+  const visibility = isLocked ? AssetVisibility.Timeline : AssetVisibility.Locked;
+  assetViewerManager.emit('AssetLeave', { asset, reason: isLocked ? 'unlock' : 'lock' });
+  await executeMutation(
+    () => updateAssetsMutation({ error: { toast: 'errors.unable_to_save_settings' } }),
+    [{ assetBulkUpdateDto: { ids: [asset.id], visibility } }],
+  );
+};
+
+export const toggleFavoriteAssets = async (
+  assets: Pick<AssetResponseDto, 'id' | 'isFavorite'>[],
+  isFavorite: boolean,
+  onFavorite?: OnFavorite,
+) => {
+  const ids = assets.map((a) => a.id);
+  const $t = get(t);
+  const onSuccess = () => {
+    for (const asset of assets) {
+      asset.isFavorite = isFavorite;
+    }
+
+    onFavorite?.(ids, isFavorite);
+
+    toastManager.primary(
+      isFavorite
+        ? $t('added_to_favorites_count', { values: { count: ids.length } })
+        : $t('removed_from_favorites_count', { values: { count: ids.length } }),
+    );
+  };
+
+  if (ids.length === 0) {
+    onSuccess();
+    return;
+  }
+
+  await executeMutation(
+    () =>
+      updateAssetsMutation({
+        error: { toast: 'errors.unable_to_add_remove_favorites', values: { favorite: isFavorite } },
+      }),
+    [{ assetBulkUpdateDto: { ids, isFavorite } }],
+    { onSuccess },
+  );
 };
 
 const handleRate = async (asset: AssetResponseDto, rating: number) => {
@@ -457,45 +720,88 @@ const handleRate = async (asset: AssetResponseDto, rating: number) => {
     return;
   }
 
-  try {
-    const response = await updateAsset({ id: asset.id, updateAssetDto: { rating: newRating } });
-    eventManager.emit('AssetUpdate', response);
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_set_rating'));
-  }
+  await executeMutation(
+    () => updateAssetMutation({ error: { toast: 'errors.unable_to_set_rating' } }),
+    [{ id: asset.id, updateAssetDto: { rating: newRating } }],
+  );
+};
+
+const handleSetVisibility = async (assets: TimelineAsset[], visibility: AssetVisibility) => {
+  const $t = await getFormatter();
+  const ids = assets.map((asset) => asset.id);
+  const archived = visibility === AssetVisibility.Archive;
+
+  await executeMutation(
+    () => updateAssetsMutation({ error: { toast: 'errors.unable_to_archive_unarchive', values: { archived } } }),
+    [{ assetBulkUpdateDto: { ids, visibility } }],
+    {
+      onSuccess: () => {
+        assetMultiSelectManager.clear();
+        if (!archived) {
+          toastManager.primary($t('unarchived_count', { values: { count: assets.length } }));
+          eventManager.emit('AssetsUnarchive', assets);
+          return;
+        }
+
+        toastManager.primary({
+          description: $t('archived_count', { values: { count: assets.length } }),
+          button: (close) => ({
+            label: $t('undo'),
+            onclick: () => {
+              close();
+              void undoArchiveAssets(assets);
+            },
+          }),
+        });
+        eventManager.emit('AssetsArchive', ids);
+      },
+    },
+  );
+};
+
+const undoArchiveAssets = async (assets: TimelineAsset[]) => {
+  const $t = await getFormatter();
+
+  await executeMutation(
+    () => updateAssetsMutation({ error: { toast: 'errors.unable_to_archive_unarchive', values: { archived: false } } }),
+    [{ assetBulkUpdateDto: { ids: assets.map((a) => a.id), visibility: AssetVisibility.Timeline } }],
+    {
+      onSuccess: () => {
+        for (const asset of assets) {
+          asset.visibility = AssetVisibility.Timeline;
+        }
+        toastManager.success($t('unarchived_count', { values: { count: assets.length } }));
+        eventManager.emit('AssetsUnarchive', assets);
+        eventManager.emit('AssetsUndoArchive', assets);
+      },
+    },
+  );
 };
 
 const handleBulkRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
   const $t = await getFormatter();
 
-  const isConfirmed = await modalManager.showDialog({
-    prompt: $t('remove_assets_album_confirmation', { values: { count: assetIds.length } }),
+  await handleRemoveAssetsFromAlbum(assetIds, album, {
+    confirm: { prompt: $t('remove_assets_album_confirmation', { values: { count: assetIds.length } }) },
+    onSettled: () => assetMultiSelectManager.clear(),
   });
-
-  if (!isConfirmed) {
-    return;
-  }
-
-  await handleRemoveAssetsFromAlbum(assetIds, album);
-  assetMultiSelectManager.clear();
 };
 
-const handleRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumResponseDto) => {
+const handleRemoveAssetsFromAlbum = async (
+  assetIds: string[],
+  album: AlbumResponseDto,
+  options: { confirm?: ConfirmOptions | false; onSettled?: () => void } = {},
+) => {
   const $t = await getFormatter();
 
-  try {
-    const results = await removeAssetFromAlbum({
-      id: album.id,
-      bulkIdsDto: { ids: assetIds },
-    });
-
-    const count = results.filter(({ success }) => success).length;
-
-    toastManager.primary($t('assets_removed_count', { values: { count } }));
-    eventManager.emit('AlbumRemoveAssets', { assetIds, albumIds: [album.id] });
-  } catch (error) {
-    handleError(error, $t('errors.error_removing_assets_from_album'));
-  }
+  await executeMutation(removeAssetFromAlbumMutation, [{ id: album.id, bulkIdsDto: { ids: assetIds } }], {
+    ...options,
+    onSuccess: (results) => {
+      const count = results.filter(({ success }) => success).length;
+      toastManager.primary($t('assets_removed_count', { values: { count } }));
+      eventManager.emit('AlbumRemoveAssets', { assetIds, albumIds: [album.id] });
+    },
+  });
 };
 
 const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
@@ -512,10 +818,7 @@ const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
 const handleRunAssetJob = async (dto: AssetJobsDto) => {
   const $t = await getFormatter();
 
-  try {
-    await runAssetJobs({ assetJobsDto: dto });
-    toastManager.primary(getAssetJobMessage($t, dto.name));
-  } catch (error) {
-    handleError(error, $t('errors.unable_to_submit_job'));
-  }
+  await executeMutation(runAssetJobsMutation, [{ assetJobsDto: dto }], {
+    onSuccess: () => toastManager.primary(getAssetJobMessage($t, dto.name)),
+  });
 };

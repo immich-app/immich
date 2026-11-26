@@ -1,22 +1,22 @@
 <script lang="ts">
-  import type { ComboBoxOption } from '$lib/components/shared-components/Combobox.svelte';
-  import SettingCombobox from './SettingCombobox.svelte';
-  import SettingsLanguageSelector from '$lib/components/shared-components/settings/SettingsLanguageSelector.svelte';
-  import { fallbackLocale, locales } from '$lib/constants';
+  import type { ComboBoxOption } from '#lib/components/shared-components/Combobox.svelte';
+  import SettingsLanguageSelector from '#lib/components/shared-components/settings/SettingsLanguageSelector.svelte';
+  import { fallbackLocale, locales } from '#lib/constants.ts';
   import {
     alwaysLoadOriginalFile,
     alwaysLoadOriginalVideo,
     autoPlayVideo,
-    locale,
+    localeSetting,
     loopVideo,
     playVideoThumbnailOnHover,
     showDeleteModal,
-  } from '$lib/stores/preferences.store';
-  import { createDateFormatter, findLocale } from '$lib/utils';
-  import { Field, Switch, Text, Theme, themeManager, ThemePreference } from '@immich/ui';
+  } from '#lib/stores/preferences.store.ts';
+  import { createDateFormatter, findLocale } from '#lib/utils.ts';
+  import { Field, Switch, Text, Theme, ThemePreference, themeManager } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import SettingCombobox from './SettingCombobox.svelte';
 
   let time = $state(new Date());
 
@@ -40,15 +40,15 @@
   };
 
   const handleToggleLocaleBrowser = () => {
-    $locale = $locale === 'default' ? fallbackLocale.code : 'default';
+    $localeSetting = $localeSetting === 'default' ? fallbackLocale.code : 'default';
   };
 
   const handleLocaleChange = (newLocale: string | undefined) => {
     if (newLocale) {
-      $locale = newLocale;
+      $localeSetting = newLocale;
     }
   };
-  let editedLocale = $derived(findLocale($locale).code);
+  let editedLocale = $derived(findLocale($localeSetting).code);
   let selectedDate: string = $derived(createDateFormatter(editedLocale).formatDateTime(time));
   let selectedOption = $derived({
     value: findLocale(editedLocale).code || fallbackLocale.code,
@@ -74,11 +74,11 @@
       <SettingsLanguageSelector showSettingDescription />
 
       <Field label={$t('use_browser_locale')} description={$t('use_browser_locale_description')}>
-        <Switch checked={$locale === 'default'} onCheckedChange={handleToggleLocaleBrowser} />
+        <Switch checked={$localeSetting === 'default'} onCheckedChange={handleToggleLocaleBrowser} />
         <Text size="small" class="mt-2 font-mono text-sm">{selectedDate}</Text>
       </Field>
 
-      {#if $locale !== 'default'}
+      {#if $localeSetting !== 'default'}
         <SettingCombobox
           comboboxPlaceholder={$t('searching_locales')}
           {selectedOption}
@@ -112,8 +112,11 @@
         <Switch bind:checked={$alwaysLoadOriginalVideo} />
       </Field>
 
-      <Field label={$t('permanent_deletion_warning')} description={$t('permanent_deletion_warning_setting_description')}
-        ><Switch bind:checked={$showDeleteModal} />
+      <Field
+        label={$t('permanent_deletion_warning')}
+        description={$t('permanent_deletion_warning_setting_description')}
+      >
+        <Switch bind:checked={$showDeleteModal} />
       </Field>
     </div>
   </div>

@@ -1,24 +1,23 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { zoomImageAction } from '$lib/actions/zoom-image';
-  import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
-  import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
-  import OcrBoundingBox from '$lib/components/asset-viewer/OcrBoundingBox.svelte';
-  import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
-  import Thumbhash from '$lib/components/Thumbhash.svelte';
-  import { assetViewerManager, type Faces } from '$lib/managers/asset-viewer-manager.svelte';
-  import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { faceManager } from '$lib/stores/face.svelte';
-  import { ocrManager } from '$lib/stores/ocr.svelte';
-  import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { handlePromiseError } from '$lib/utils';
-  import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
-  import { getNaturalSize, scaleToFit, type Size } from '$lib/utils/container-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
-  import { getBoundingBox, type BoundingBox } from '$lib/utils/people-utils';
-  import { type SharedLinkResponseDto } from '@immich/sdk';
-  import { toastManager } from '@immich/ui';
+  import { zoomImageAction } from '#lib/actions/zoom-image.ts';
+  import AdaptiveImage from '#lib/components/AdaptiveImage.svelte';
+  import AssetViewerEvents from '#lib/components/AssetViewerEvents.svelte';
+  import Thumbhash from '#lib/components/Thumbhash.svelte';
+  import OcrBoundingBox from '#lib/components/asset-viewer/OcrBoundingBox.svelte';
+  import FaceEditor from '#lib/components/asset-viewer/face-editor/FaceEditor.svelte';
+  import { assetViewerManager, type Faces } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { castManager } from '#lib/managers/cast-manager.svelte.ts';
+  import { faceManager } from '#lib/stores/face.svelte.ts';
+  import { ocrManager } from '#lib/stores/ocr.svelte.ts';
+  import { SlideshowLook, SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { canCopyImageToClipboard, copyImageToClipboard } from '#lib/utils/asset-utils.ts';
+  import { getNaturalSize, scaleToFit, type Size } from '#lib/utils/container-utils.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { getOcrBoundingBoxes } from '#lib/utils/ocr-utils.ts';
+  import { getBoundingBox, type BoundingBox } from '#lib/utils/people-utils.ts';
+  import { type AssetOcrResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { shortcuts, toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
@@ -28,12 +27,13 @@
     cursor: AssetCursor;
     element?: HTMLDivElement;
     sharedLink?: SharedLinkResponseDto;
+    ocrData?: AssetOcrResponseDto[];
     onReady?: () => void;
     onError?: () => void;
     onSwipe?: (event: SwipeCustomEvent) => void;
   };
 
-  let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
+  let { cursor, element = $bindable(), sharedLink, ocrData = [], onReady, onError, onSwipe }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
   const asset = $derived(cursor.current);
@@ -61,6 +61,7 @@
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  const faceLabelOffset = 32;
 
   const container = $derived({
     width: containerWidth,
@@ -85,7 +86,7 @@
     }
   });
 
-  const ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlaySize) : []);
+  const ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrData, overlaySize) : []);
 
   const onCopy = async () => {
     if (!canCopyImageToClipboard() || !assetViewerManager.imgRef) {
@@ -166,16 +167,19 @@
       if (face.person.isHidden && !assetViewerManager.isShowingHiddenPeople) {
         continue;
       }
-      map.set(face, face.person.name);
+      map.set(face, face.person.name ?? '');
     }
     return map;
   });
 
   const faces = $derived(Array.from(faceToNameMap.keys()));
 
-  const boundingBoxes = $derived.by(() => {
+  // we want to bind to `boundingbox.labelWidth`, which requires deep reactivity
+  // $derived does not currently support that, only $state does.
+  let boundingBoxes = $state<Array<BoundingBox & { name?: string; face: Faces }>>([]);
+  $effect(() => {
     if (assetViewerManager.isFaceEditMode || ocrManager.showOverlay) {
-      return [];
+      return;
     }
 
     const knownBoxes = getBoundingBox(faces, overlaySize);
@@ -186,7 +190,7 @@
     }));
 
     if (assetViewerManager.highlightedFaces.length === 0) {
-      return result;
+      boundingBoxes = result;
     }
 
     const knownIds = new Set(faces.map((f) => f.id));
@@ -196,19 +200,19 @@
       result.push({ ...unassignedBoxes[i], face: unassignedFaces[i], name: undefined });
     }
 
-    return result;
+    boundingBoxes = result;
   });
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} {onFaceEditModeChange} />
 
-<svelte:document
-  use:shortcuts={[
+<svelte:window
+  {@attach shortcuts([
     { shortcut: { key: 'z' }, onShortcut: onZoom, preventDefault: true },
     { shortcut: { key: 's' }, onShortcut: onPlaySlideshow, preventDefault: true },
     { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
-  ]}
+  ])}
 />
 
 <div
@@ -218,7 +222,7 @@
   bind:clientHeight={containerHeight}
   role="presentation"
   ondblclick={onZoom}
-  use:zoomImageAction={{ zoomTarget: adaptiveImage }}
+  {@attach zoomImageAction({ zoomTarget: adaptiveImage })}
   {...useSwipe((event) => onSwipe?.(event))}
 >
   <AdaptiveImage
@@ -261,7 +265,7 @@
         </svg>
       </div>
       {#each boundingBoxes as boundingbox (boundingbox.id)}
-        {@const isActive = assetViewerManager.highlightedFaces.some((f) => f.id === boundingbox.id)}
+        {const isActive = $derived(assetViewerManager.highlightedFaces.some((f) => f.id === boundingbox.id))}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
           class="pointer-events-auto absolute rounded-lg {isActive && 'border-3 border-solid border-white'}"
@@ -270,11 +274,15 @@
           onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
         >
           {#if isActive && boundingbox.name}
+            {const labelAbove = $derived(
+              boundingbox.top + boundingbox.height + faceLabelOffset > overlaySize.height &&
+                boundingbox.top >= faceLabelOffset,
+            )}
             <div
               aria-hidden="true"
               class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
               bind:clientWidth={boundingbox.labelWidth}
-              style="top: {boundingbox.height + 4}px; {assetViewerManager.imgRef
+              style="{labelAbove ? 'bottom' : 'top'}: {boundingbox.height + 4}px; {assetViewerManager.imgRef
                 ? boundingbox.left >= boundingbox.labelWidth - boundingbox.width
                   ? `right: ${Math.max(boundingbox.left + boundingbox.width - assetViewerManager.imgRef.clientWidth, 0)}px;`
                   : `left: ${-boundingbox.left}px;`

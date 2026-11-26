@@ -14,8 +14,10 @@ import { DatabaseRepository } from 'src/repositories/database.repository.js';
 import { JobRepository } from 'src/repositories/job.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository.js';
+import { PartnerRepository } from 'src/repositories/partner.repository.js';
 import { PersonUserRepository } from 'src/repositories/person-user.repository.js';
 import { PersonRepository } from 'src/repositories/person.repository.js';
+import { ResourceRepository } from 'src/repositories/resource.repository.js';
 import { StorageRepository } from 'src/repositories/storage.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';
@@ -42,8 +44,9 @@ const setup = (db?: Kysely<DB>) => {
       SystemMetadataRepository,
       UserRepository,
       ClusterGroupRepository,
+      PartnerRepository,
     ],
-    mock: [JobRepository, LoggingRepository, StorageRepository, MachineLearningRepository],
+    mock: [ResourceRepository, JobRepository, LoggingRepository, StorageRepository, MachineLearningRepository],
   });
 };
 
@@ -124,6 +127,7 @@ describe(PersonService.name, () => {
       const { person: sharedWithMe } = await ctx.newPerson({ ownerId: user3.id, name: 'Shared with me' });
       await ctx.newAssetFace({ assetId: asset.id, personGroupId: sharedByMe.personGroupId });
       await ctx.newAssetFace({ assetId: asset.id, personGroupId: notShared.personGroupId });
+      await ctx.newAssetFace({ assetId: asset.id, personGroupId: sharedWithMe.personGroupId });
       await ctx.newPersonUser({
         personGroupId: sharedByMe.personGroupId,
         sharedById: user1.id,
@@ -341,13 +345,13 @@ describe(PersonService.name, () => {
         sut.update(factory.auth({ user }), personGroupId, { name: 'New name', birthDate: '2000-01-01' }),
       ).resolves.toEqual(expect.objectContaining({ name: 'New name', birthDate: '2000-01-01' }));
 
-      await expect(personRepo.getForUser({ userId: user.id, personGroupId })).resolves.toEqual(
-        expect.objectContaining({ name: 'New name', birthDate: '2000-01-01' }),
+      await expect(personRepo.getByGroupId({ ownerId: user.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'New name', birthDate: new Date('2000-01-01') }),
       );
-      await expect(personRepo.getForUser({ userId: writer.id, personGroupId })).resolves.toEqual(
-        expect.objectContaining({ name: 'New name', birthDate: '2000-01-01' }),
+      await expect(personRepo.getByGroupId({ ownerId: writer.id, personGroupId })).resolves.toEqual(
+        expect.objectContaining({ name: 'New name', birthDate: new Date('2000-01-01') }),
       );
-      await expect(personRepo.getForUser({ userId: reader.id, personGroupId })).resolves.toEqual(
+      await expect(personRepo.getByGroupId({ ownerId: reader.id, personGroupId })).resolves.toEqual(
         expect.objectContaining({ name: 'Old name', birthDate: null }),
       );
     });
@@ -370,10 +374,10 @@ describe(PersonService.name, () => {
         sut.update(factory.auth({ user }), personGroupId, { name: 'New name', userId: writer.id }),
       ).resolves.toEqual(expect.objectContaining({ name: 'New name' }));
 
-      await expect(personRepo.getForUser({ userId: writer.id, personGroupId })).resolves.toEqual(
+      await expect(personRepo.getByGroupId({ ownerId: writer.id, personGroupId })).resolves.toEqual(
         expect.objectContaining({ name: 'New name' }),
       );
-      await expect(personRepo.getForUser({ userId: user.id, personGroupId })).resolves.toEqual(
+      await expect(personRepo.getByGroupId({ ownerId: user.id, personGroupId })).resolves.toEqual(
         expect.objectContaining({ name: 'Old name' }),
       );
     });
@@ -396,7 +400,7 @@ describe(PersonService.name, () => {
         sut.update(factory.auth({ user }), personGroupId, { name: 'New name', isFavorite: true, isHidden: true }),
       ).resolves.toEqual(expect.objectContaining({ name: 'New name', isFavorite: true, isHidden: true }));
 
-      await expect(personRepo.getForUser({ userId: writer.id, personGroupId })).resolves.toEqual(
+      await expect(personRepo.getByGroupId({ ownerId: writer.id, personGroupId })).resolves.toEqual(
         expect.objectContaining({ name: 'New name', isFavorite: false, isHidden: false }),
       );
     });
@@ -515,7 +519,7 @@ describe(PersonService.name, () => {
       const jobRepo = ctx.getMock(JobRepository);
       ctx.getMock(StorageRepository).unlink.mockResolvedValue();
       jobRepo.waitForQueueCompletion.mockResolvedValue();
-      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0, paused: 0 });
+      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0 });
       jobRepo.queueAll.mockResolvedValue();
 
       const { user } = await ctx.newUser();
@@ -546,7 +550,7 @@ describe(PersonService.name, () => {
       const jobRepo = ctx.getMock(JobRepository);
       ctx.getMock(StorageRepository).unlink.mockResolvedValue();
       jobRepo.waitForQueueCompletion.mockResolvedValue();
-      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0, paused: 0 });
+      jobRepo.getJobCounts.mockResolvedValue({ active: 0, waiting: 0, completed: 0, delayed: 0, failed: 0 });
       jobRepo.queueAll.mockResolvedValue();
 
       const { user } = await ctx.newUser();
@@ -1361,7 +1365,7 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('addUsersToPeople', () => {
+  describe('upsertPeopleUsers', () => {
     it('should throw error for sharedWith users that are not in the same cluster group', async () => {
       const { sut, ctx } = setup();
       const { user: owner } = await ctx.newUser();
@@ -1370,7 +1374,7 @@ describe(PersonService.name, () => {
       const auth = factory.auth({ user: owner });
 
       await expect(
-        sut.addUsersToPeople(auth, {
+        sut.upsertPeopleUsers(auth, {
           personIds: [person.personGroupId],
           sharedWithIds: [user1.id],
           role: PersonUserRole.Read,
@@ -1387,7 +1391,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
+      await sut.upsertPeopleUsers(auth, {
         personIds: [person.personGroupId],
         sharedWithIds: [user1.id],
         role: PersonUserRole.Read,
@@ -1408,7 +1412,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: owner.id, name: 'Owner name', birthDate: '1990-01-01' });
       await ctx.newPerson({ ownerId: user1.id, personGroupId: person.personGroupId, name: '', birthDate: null });
 
-      await sut.addUsersToPeople(factory.auth({ user: owner }), {
+      await sut.upsertPeopleUsers(factory.auth({ user: owner }), {
         personIds: [person.personGroupId],
         sharedWithIds: [user1.id],
         role: PersonUserRole.Read,
@@ -1431,7 +1435,7 @@ describe(PersonService.name, () => {
         birthDate: '2000-02-02',
       });
 
-      await sut.addUsersToPeople(factory.auth({ user: owner }), {
+      await sut.upsertPeopleUsers(factory.auth({ user: owner }), {
         personIds: [person.personGroupId],
         sharedWithIds: [user1.id],
         role: PersonUserRole.Read,
@@ -1451,7 +1455,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
+      await sut.upsertPeopleUsers(auth, {
         personIds: [person.personGroupId],
         sharedWithIds: [sharedWith.id],
         role: PersonUserRole.Read,
@@ -1483,7 +1487,7 @@ describe(PersonService.name, () => {
       const { person: person2 } = await ctx.newPerson({ ownerId: owner.id });
       const auth = factory.auth({ user: owner });
 
-      await sut.addUsersToPeople(auth, {
+      await sut.upsertPeopleUsers(auth, {
         personIds: [person1.personGroupId, person2.personGroupId],
         sharedWithIds: [user1.id, user2.id],
         role: PersonUserRole.Read,
@@ -1518,8 +1522,8 @@ describe(PersonService.name, () => {
       const otherAuth = factory.auth({ user: otherOwner });
       const dto = { personIds: [person.personGroupId], sharedWithIds: [sharedWith.id], role: PersonUserRole.Read };
 
-      await sut.addUsersToPeople(auth, dto);
-      await sut.addUsersToPeople(otherAuth, dto);
+      await sut.upsertPeopleUsers(auth, dto);
+      await sut.upsertPeopleUsers(otherAuth, dto);
 
       await sut.removeUsersFromPeople(auth, [{ personId: person.personGroupId, sharedWithId: sharedWith.id }]);
 
