@@ -54,6 +54,18 @@ test.describe('shared link', () => {
     });
   });
 
+  test('guest loads the album timeline with the link key', async ({ page, context, data, api, app }) => {
+    const { link, album, assets } = setup(data);
+    await context.clearCookies();
+
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+
+    await expect(app.timeline.thumbnail(assets[0])).toBeVisible();
+    const params = expect.objectContaining({ albumId: album.id, key: link.key });
+    expect(api.getTimeBuckets).toHaveBeenCalledWith({ params });
+    expect(api.getTimeBucket).toHaveBeenCalledWith({ params });
+  });
+
   test('password link asks for it and can show or hide it', async ({ page, context, data, api, logger, app }) => {
     const { link } = setup(data, { password: 'test-password' });
     await context.clearCookies();
@@ -176,6 +188,60 @@ test.describe('shared link', () => {
       params: { id: link.id },
       body: { assetIds: [first.id] },
     });
+  });
+
+  test('a link to a single asset opens it in the viewer', async ({ page, context, data, api, app }) => {
+    const asset = factory.asset();
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset] });
+    data.addSharedLinks(link);
+    await context.clearCookies();
+
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+
+    await app.viewer.waitForAsset(asset);
+    expect(api.getAssetInfo).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id, key: link.key }) });
+  });
+
+  test('the owner trashing the asset of a single asset link goes to the timeline', async ({ page, data, api, app }) => {
+    const asset = factory.asset();
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset] });
+    data.addSharedLinks(link);
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+    await app.viewer.waitForAsset(asset);
+
+    await app.viewer.deleteButton.click();
+
+    await expect(page).toHaveURL(Route.photos());
+    expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
+  });
+
+  test('the owner sees full metadata after opening the asset from a link without it', async ({ page, data, app }) => {
+    const asset = factory.asset({ exifInfo: { make: 'Canon', model: 'EOS R5' } });
+    const other = factory.asset();
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset, other], showMetadata: false });
+    data.addSharedLinks(link);
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.backButton.click();
+    await expect(app.viewer.root).toHaveCount(0);
+    await app.sharedLink.homeLink.click();
+    await page.waitForURL(Route.photos());
+
+    await app.timeline.thumbnail(asset).click();
+    await app.viewer.openDetailPanel();
+
+    await expect(app.viewer.detailPanel.getByText('Canon EOS R5')).toBeVisible();
+  });
+
+  test('individual link renders only the thumbnails near the viewport', async ({ page, data, app }) => {
+    const assets = Array.from({ length: 200 }, () => factory.asset());
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets });
+    data.addSharedLinks(link);
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+    await expect(app.timeline.thumbnail(assets[0])).toBeVisible();
+
+    await expect(app.timeline.thumbnail(assets.at(-1)!)).toHaveCount(0);
   });
 
   test('deletes a shared link', async ({ page, data, api, app }) => {

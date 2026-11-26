@@ -12,6 +12,7 @@
     { value: 3, label: '★★★' },
     { value: 2, label: '★★' },
     { value: 1, label: '★' },
+    { value: null, label: $t('none') },
   ];
 </script>
 

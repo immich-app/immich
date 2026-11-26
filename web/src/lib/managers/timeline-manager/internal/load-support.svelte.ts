@@ -1,6 +1,7 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getTimeBucketQuery } from '#lib/queries/timeline.query.ts';
 import { toISOYearMonthUTC } from '#lib/utils/timeline-util.ts';
-import { getTimeBucket } from '@immich/sdk';
 import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineMonth } from '../timeline-month.svelte';
 import type { TimelineManagerOptions } from '../types';
@@ -16,27 +17,16 @@ export async function loadFromTimeBuckets(
   }
 
   const timeBucket = toISOYearMonthUTC(timelineMonth.yearMonth);
-  const bucketResponse = await getTimeBucket(
-    {
-      ...authManager.params,
-      ...options,
-      timeBucket,
-    },
-    { signal },
-  );
+  const bucketResponse = await queryTimeBucket({ ...authManager.params, ...options, timeBucket }, signal);
 
   if (!bucketResponse || signal.aborted) {
     return;
   }
 
   if (options.timelineAlbumId) {
-    const albumAssets = await getTimeBucket(
-      {
-        ...authManager.params,
-        albumId: options.timelineAlbumId,
-        timeBucket,
-      },
-      { signal },
+    const albumAssets = await queryTimeBucket(
+      { ...authManager.params, albumId: options.timelineAlbumId, timeBucket },
+      signal,
     );
     if (!albumAssets || signal.aborted) {
       return;
@@ -56,5 +46,16 @@ export async function loadFromTimeBuckets(
         })),
       )}`,
     );
+  }
+}
+
+async function queryTimeBucket(params: Parameters<typeof getTimeBucketQuery>[0], signal: AbortSignal) {
+  const query = getTimeBucketQuery(params);
+  const cancel = () => void queryClient.cancelQueries({ queryKey: query.queryKey, exact: true });
+  signal.addEventListener('abort', cancel);
+  try {
+    return await queryClient.query(query);
+  } finally {
+    signal.removeEventListener('abort', cancel);
   }
 }

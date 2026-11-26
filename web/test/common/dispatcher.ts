@@ -22,6 +22,7 @@ export type Response = {
   body?: Uint8Array<ArrayBuffer> | string;
   contentType?: string;
   headers?: Record<string, string>;
+  networkError?: boolean;
 };
 
 export class OperationSpy<K extends OperationId> extends Spy<Call<K>> {
@@ -106,7 +107,7 @@ export class Dispatcher {
   }
 
   async dispatch(method: string, url: URL, body: unknown): Promise<Response> {
-    const activation = url.pathname.match(activationPattern);
+    const activation = activationPattern.exec(url.pathname);
     if (activation) {
       return this.activate(decodeURIComponent(activation[1]));
     }
@@ -135,6 +136,9 @@ export class Dispatcher {
       const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
       this.failures.push(`${operation.operationId}: ${message}`);
       return { status: 500, json: { message: `Mock handler for ${operation.operationId} threw` } };
+    }
+    if (result && 'networkError' in result) {
+      return { status: 0, networkError: true };
     }
     if (result && 'body' in result && result.body !== undefined) {
       return {

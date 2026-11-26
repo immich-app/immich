@@ -1,6 +1,6 @@
 [tools]
-rust = { version = "1.99.1", components = "rustfmt,clippy" } # keep in sync with crates/native_core_ffi/rust-toolchain.toml
-"conda:nasm" = "2.16.03" # assembles rav1d's x86 kernels
+rust = { version = "1.99.1", components = "rustfmt,clippy", profile = "minimal" } # keep in sync with crates/native_core_ffi/rust-toolchain.toml and server/Dockerfile
+"conda:nasm" = "2.16.03"                                                          # assembles rav1d's x86 kernels
 
 [tasks.build]
 description = "Build the native crates for the host"
@@ -17,3 +17,12 @@ run = "cargo fmt --all --check"
 [tasks.lint]
 description = "Run clippy with warnings as errors"
 run = "cargo clippy --workspace --all-targets --locked -- -D warnings"
+
+[tasks."node:install"]
+description = "Install the Node addon's build tooling"
+run = "pnpm --filter @immich/native-core install --frozen-lockfile"
+
+[tasks."node:build"]
+description = "Build the Node addon for the server"
+depends = ["node:install"]
+run = "pnpm --filter @immich/native-core build"

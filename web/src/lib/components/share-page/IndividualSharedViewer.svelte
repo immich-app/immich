@@ -1,9 +1,8 @@
 <script lang="ts">
-  import type { Action } from '#lib/components/asset-viewer/actions/action.ts';
+  import OnEvents from '#lib/components/OnEvents.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import RemoveFromSharedLink from '#lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
-  import { AssetAction } from '#lib/constants.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import type { Viewport } from '#lib/managers/timeline-manager/types.ts';
@@ -63,15 +62,9 @@
     assetMultiSelectManager.selectAssets(assets.map((asset) => toTimelineAsset(asset)));
   };
 
-  const handleAction = async (action: Action) => {
-    switch (action.type) {
-      case AssetAction.ARCHIVE:
-      case AssetAction.DELETE:
-      case AssetAction.TRASH: {
-        await goto(Route.photos());
-        break;
-      }
-      // no default
+  const onAssetsDelete = async (assetIds: string[]) => {
+    if (assetIds.includes(assets[0].id)) {
+      await goto(Route.photos());
     }
   };
 </script>
@@ -138,9 +131,10 @@
     {/if}
   </header>
 {:else if assets.length === 1}
+  <OnEvents {onAssetsDelete} />
   {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
     {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
-      <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
+      <AssetViewer cursor={{ current: asset }} />
     {/await}
   {/await}
 {/if}

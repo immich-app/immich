@@ -1,9 +1,12 @@
 <script lang="ts">
-  import { EditToolType, editManager } from '#lib/managers/edit/edit-manager.svelte.ts';
+  import { EditToolType, editManager, type EditActions } from '#lib/managers/edit/edit-manager.svelte.ts';
+  import { editAssetMutation, getAssetEditsQuery, removeAssetEditsMutation } from '#lib/queries/asset.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
   import { websocketEvents } from '#lib/stores/websocket.ts';
-  import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { Button, HStack, IconButton, shortcuts } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
+  import { createMutation } from '@tanstack/svelte-query';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -21,7 +24,7 @@
   }
 
   onMount(async () => {
-    const edits = await getAssetEdits({ id: asset.id });
+    const edits = await queryClient.query(getAssetEditsQuery(asset.id));
     await editManager.activateTool(EditToolType.Transform, asset, edits);
   });
 
@@ -29,8 +32,16 @@
     editManager.cleanup();
   });
 
+  const editAsset = createMutation(editAssetMutation);
+  const removeAssetEdits = createMutation(removeAssetEditsMutation);
+
+  const saveEdits = (id: string, edits: EditActions) =>
+    edits.length === 0
+      ? removeAssetEdits.mutateAsync([{ id }])
+      : editAsset.mutateAsync([{ id, assetEditsCreateDto: { edits } }]);
+
   async function applyEdits() {
-    const success = await editManager.applyEdits();
+    const success = await editManager.applyEdits(saveEdits);
 
     if (success) {
       onClose();

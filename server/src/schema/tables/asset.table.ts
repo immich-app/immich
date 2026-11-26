@@ -54,7 +54,10 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database.js';
   name: 'asset_localDateTime_month_idx',
   expression: `date_trunc('MONTH'::text, ("localDateTime" AT TIME ZONE 'UTC'::text)) AT TIME ZONE 'UTC'::text`,
 })
-@Index({ columns: ['originalPath', 'libraryId'] })
+@Index({
+  name: 'asset_libraryId_originalPath_idx',
+  columns: ['libraryId', 'originalPath', 'id', 'isOffline', 'isExternal', 'status', 'fileModifiedAt'],
+})
 @Index({ columns: ['id', 'stackId'] })
 @Index({ columns: ['ownerId', 'updateId'] })
 @Index({

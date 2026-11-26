@@ -845,7 +845,6 @@ describe(MetadataService.name, () => {
         birthtimeMs: asset.fileCreatedAt.valueOf(),
       } as Stats);
       mockReadTags({
-        Directory: 'foo/bar/',
         MotionPhoto: 1,
         MotionPhotoVideo: new BinaryField(0, ''),
         // The below two are included to ensure that the MotionPhotoVideo tag is extracted
@@ -900,7 +899,6 @@ describe(MetadataService.name, () => {
       } as Stats);
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mockReadTags({
-        Directory: 'foo/bar/',
         EmbeddedVideoFile: new BinaryField(0, ''),
         EmbeddedVideoType: 'MotionPhoto_Data',
         MotionPhoto: 1,
@@ -952,7 +950,6 @@ describe(MetadataService.name, () => {
         birthtimeMs: asset.fileCreatedAt.valueOf(),
       } as Stats);
       mockReadTags({
-        Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
         MicroVideoOffset: 1,
@@ -1017,7 +1014,6 @@ describe(MetadataService.name, () => {
         mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
         mocks.asset.getById.mockImplementation((id) => Promise.resolve(id === motionAsset.id ? oldMotion : undefined));
         mockReadTags({
-          Directory: 'foo/bar/',
           MotionPhoto: 1,
           MicroVideo: 1,
           MicroVideoOffset: 1,
@@ -1039,7 +1035,6 @@ describe(MetadataService.name, () => {
       const asset = AssetFactory.create();
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mockReadTags({
-        Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
         MicroVideoOffset: 2_147_483_647,
@@ -1057,7 +1052,6 @@ describe(MetadataService.name, () => {
       const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mockReadTags({
-        Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
         MicroVideoOffset: 1,
@@ -1081,7 +1075,6 @@ describe(MetadataService.name, () => {
       const asset = AssetFactory.create();
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mockReadTags({
-        Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
         MicroVideoOffset: 1,
@@ -1108,7 +1101,6 @@ describe(MetadataService.name, () => {
       const asset = AssetFactory.create({ isExternal: true });
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mockReadTags({
-        Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
         MicroVideoOffset: 1,
@@ -1142,7 +1134,6 @@ describe(MetadataService.name, () => {
         MediaGroupUUID: 'livePhoto',
         Make: 'test-factory.js',
         Model: "'mockel'",
-        ModifyDate: ExifDateTime.fromISO(dateForTest.toISOString()),
         Orientation: 0,
         ProfileDescription: 'extensive description',
         ProjectionType: 'equirectangular',
@@ -1668,22 +1659,6 @@ describe(MetadataService.name, () => {
             },
           ]);
         },
-      );
-    });
-
-    it('should handle invalid modify date', async () => {
-      const asset = AssetFactory.create();
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
-      mockReadTags({ ModifyDate: '00:00:00.000' });
-
-      await sut.handleMetadataExtraction({ id: asset.id });
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({
-          exif: expect.objectContaining({
-            modifyDate: expect.any(Date),
-          }),
-          lockedPropertiesBehavior: 'skip',
-        }),
       );
     });
 

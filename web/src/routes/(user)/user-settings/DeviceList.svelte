@@ -53,9 +53,9 @@
         </div>
 
         <div class="flex justify-end">
-          <Button shape="round" color="danger" size="small" onclick={handleDeleteAll}
-            >{$t('log_out_all_devices')}</Button
-          >
+          <Button shape="round" color="danger" size="small" onclick={handleDeleteAll}>
+            {$t('log_out_all_devices')}
+          </Button>
         </div>
       {/if}
     </div>

@@ -1,6 +1,7 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { uploadManager } from '#lib/managers/upload-manager.svelte.ts';
 import { addAssetsToAlbumsMutation } from '#lib/queries/album.query.ts';
+import { checkBulkUploadMutation } from '#lib/queries/asset.query.ts';
 import { executeMutation } from '#lib/queries/client.ts';
 import { uploadAssetsStore } from '#lib/stores/upload.ts';
 import { UploadState } from '#lib/types.ts';
@@ -11,7 +12,6 @@ import {
   AssetMediaStatus,
   AssetUploadAction,
   AssetVisibility,
-  checkBulkUpload,
   getBaseUrl,
   type AssetMediaResponseDto,
 } from '@immich/sdk';
@@ -179,21 +179,22 @@ async function fileUploader({
     if (!authManager.isSharedLink) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
-      try {
-        const checksum = await hashFile(assetFile);
-
-        const {
-          results: [checkUploadResult],
-        } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: assetFile.name, checksum }] } });
-        if (checkUploadResult.action === AssetUploadAction.Reject && checkUploadResult.assetId) {
-          responseData = {
-            status: AssetMediaStatus.Duplicate,
-            id: checkUploadResult.assetId,
-            isTrashed: checkUploadResult.isTrashed,
-          };
-        }
-      } catch (error) {
-        console.error(`Error calculating sha1 file=${assetFile.name})`, error);
+      const onError = (error: unknown) => console.error(`Error calculating sha1 file=${assetFile.name})`, error);
+      const checksum = await hashFile(assetFile).catch(onError);
+      const response = checksum
+        ? await executeMutation(
+            checkBulkUploadMutation,
+            [{ assetBulkUploadCheckDto: { assets: [{ id: assetFile.name, checksum }] } }],
+            { onError },
+          )
+        : undefined;
+      const checkUploadResult = response?.results[0];
+      if (checkUploadResult?.action === AssetUploadAction.Reject && checkUploadResult.assetId) {
+        responseData = {
+          status: AssetMediaStatus.Duplicate,
+          id: checkUploadResult.assetId,
+          isTrashed: checkUploadResult.isTrashed,
+        };
       }
     }
 

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
 import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -19,7 +18,6 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -43,8 +41,6 @@ class _SyncStatusAndActionsState extends ConsumerState<SyncStatusAndActions> {
 
   @override
   Widget build(BuildContext context) {
-    final serverVersion = ref.watch(serverInfoProvider.select((value) => value.serverVersion));
-
     Future<void> exportDatabase() async {
       try {
         // WAL Checkpoint to ensure all changes are written to the database
@@ -197,7 +193,7 @@ class _SyncStatusAndActionsState extends ConsumerState<SyncStatusAndActions> {
             unawaited(ref.read(backgroundSyncProvider).syncRemote());
           },
         ),
-        if (CurrentPlatform.isIOS && serverVersion.supports(.cloudIdMetadata))
+        if (CurrentPlatform.isIOS)
           SettingListTile(
             title: 'Sync Cloud Ids',
             leading: const Icon(Icons.cloud_circle_rounded),

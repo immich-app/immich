@@ -1,8 +1,11 @@
+import { BadRequestException } from '@nestjs/common';
 import { Writable } from 'node:stream';
 import { SyncEntityType } from 'src/enum.js';
-import { send } from 'src/services/sync.service.js';
+import { SyncService, send } from 'src/services/sync.service.js';
 import { ClientDisconnectedError } from 'src/utils/response.js';
 import { serialize } from 'src/utils/sync.js';
+import { factory } from 'test/small.factory.js';
+import { newTestService } from 'test/utils.js';
 
 type TestStream = {
   stream: Writable;
@@ -107,5 +110,20 @@ describe('send', () => {
     stream.emit('error', error);
 
     await expect(sendPromise).rejects.toBe(error);
+  });
+});
+
+describe(SyncService.name, () => {
+  describe('setAcks', () => {
+    it('should reject a pending reset ack for a type that cannot reset', async () => {
+      const { sut, mocks } = newTestService(SyncService);
+      const auth = factory.auth({ session: {} });
+
+      await expect(sut.setAcks(auth, { acks: ['SyncPendingResetV1|AssetsV2'] })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.syncCheckpoint.deletePendingReset).not.toHaveBeenCalled();
+    });
   });
 });

@@ -30,9 +30,9 @@
 <Card class="bg-light-50 text-sm shadow-none">
   <CardHeader>
     <Text class="mb-1">{$t('admin.storage_template_date_time_description')}</Text>
-    <Text color="primary"
-      >{$t('admin.storage_template_date_time_sample', { values: { date: getExampleDate().toISO() } })}</Text
-    >
+    <Text color="primary">
+      {$t('admin.storage_template_date_time_sample', { values: { date: getExampleDate().toISO() } })}
+    </Text>
   </CardHeader>
   <CardBody>
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-3 md:grid-cols-4">

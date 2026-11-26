@@ -119,6 +119,7 @@ export const createApp = () => {
         backupRestoreButton: page.getByRole('list').getByRole('button', { name: 'restore', exact: true }),
         backupMenuButton: page.getByRole('list').getByRole('button', { name: 'open', exact: true }),
         deleteMenuItem: page.getByRole('menuitem', { name: 'delete', exact: true }),
+        differentVersionWarning: page.getByText('admin.maintenance_restore_backup_different_version', { exact: true }),
       },
       integrityReport: {
         row: tableRow,
@@ -169,6 +170,13 @@ export const createApp = () => {
           testEmailButton: button('admin.notification_email_test_email'),
         },
       },
+    },
+    assetViewer: {
+      descriptionInput: page.getByTestId('autogrow-textarea'),
+    },
+    sharedLinkForm: {
+      descriptionInput: dialog.getByLabelText('description', { exact: true }),
+      passwordInput: dialog.getByLabelText('password', { exact: true }),
     },
     albums: {
       createAlbumButton: button('create_album'),
@@ -235,6 +243,12 @@ export const createApp = () => {
       emptyTrashButton: button('empty_trash'),
       restoreAllButton: button('restore_all'),
       restoreSelectedButton: button('restore'),
+      permanentlyDeleteButton: button('permanently_delete'),
+      emptyPlaceholder: page.getByText('trash_no_results_message', { exact: true }),
+    },
+    purchase: {
+      activatedTitle: page.getByText('purchase_activated_title', { exact: true }),
+      failedAlert: page.getByText('purchase_failed_activation', { exact: true }),
     },
     maintenanceMode: {
       title: page.getByRole('heading', { name: 'maintenance_title', exact: true }),
@@ -273,6 +287,8 @@ export const createApp = () => {
         productKeyInput: main.getByPlaceholder(/^IMCL-/),
         removeKeyButton: button('purchase_button_remove_key'),
         removeButton: page.getByRole('dialog').getByRole('button', { name: 'remove', exact: true }),
+        activatedTime: main.getByText('purchase_activated_time', { exact: true }),
+        serverActivated: main.getByText('purchase_settings_server_activated', { exact: true }),
       },
       partners: {
         addButton: button('add_partner'),
@@ -294,6 +310,7 @@ export const createApp = () => {
       menuButton: button('open'),
       openNameEditor: () => (page.getByTitle('edit_name', { exact: true }).element() as HTMLElement).click(),
       nameInput: page.getByPlaceholder('name_or_nickname', { exact: true }),
+      editNameInput: dialog.getByLabelText('name', { exact: true }),
       menuItem: (name: string) => page.getByRole('menuitem', { name, exact: true }),
       altNames: (names: string) => main.getByText(`also_known_as ${names}`, { exact: true }),
       birthDateSegments: dialog.getByRole('spinbutton'),

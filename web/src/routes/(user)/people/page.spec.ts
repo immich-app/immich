@@ -65,6 +65,20 @@ test('renaming a person to a new name saves it', async ({ data, router, render, 
   await expect.element(app.people.mergeDialog('Alice')).not.toBeInTheDocument();
 });
 
+test('clearing a name saves null', async ({ data, router, render, settle, app, api }) => {
+  const alice = factory.person({ name: 'Alice' });
+  data.addPeople(alice);
+  await router.goto(Route.people());
+  await render(Page, load);
+  await settle();
+
+  await app.people.nameInput(0).fill('');
+  await userEvent.keyboard('{Enter}');
+  await settle();
+
+  expect(api.updatePerson).toHaveBeenCalledWith({ params: { id: alice.id }, body: { name: null } });
+});
+
 test('saves the shown name when renamed elsewhere', async ({ data, router, render, settle, app, api }) => {
   const ariel = factory.person({ name: 'Ariel' });
   data.addPeople(ariel);

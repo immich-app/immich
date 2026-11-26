@@ -51,8 +51,8 @@
               disabled={disabled || !configToEdit.map.enabled}
               isEdited={configToEdit.map.darkStyle !== config.map.darkStyle}
             />
-          </div></SettingAccordion
-        >
+          </div>
+        </SettingAccordion>
 
         <SettingAccordion key="reverse-geocoding" title={$t('admin.map_reverse_geocoding_settings')}>
           {#snippet subtitleSnippet()}
@@ -70,8 +70,8 @@
               {disabled}
               bind:checked={configToEdit.reverseGeocoding.enabled}
             />
-          </div></SettingAccordion
-        >
+          </div>
+        </SettingAccordion>
 
         <SettingButtonsRow bind:configToEdit keys={['map', 'reverseGeocoding']} {disabled} />
       </div>

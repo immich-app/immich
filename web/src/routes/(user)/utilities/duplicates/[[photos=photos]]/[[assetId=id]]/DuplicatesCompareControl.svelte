@@ -122,16 +122,18 @@
   <div class="mb-4 flex w-full flex-wrap place-content-end justify-between gap-y-6 px-6">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
-      <Button class="rounded-s-full" size="small" color="primary" leadingIcon={mdiCheck} onclick={onSelectAll}
-        >{$t('select_keep_all')}</Button
-      >
+      <Button class="rounded-s-full" size="small" color="primary" leadingIcon={mdiCheck} onclick={onSelectAll}>
+        {$t('select_keep_all')}
+      </Button>
       <Button
         class="rounded-e-full"
         size="small"
         color="secondary"
         leadingIcon={mdiTrashCanOutline}
-        onclick={onSelectNone}>{$t('select_trash_all')}</Button
+        onclick={onSelectNone}
       >
+        {$t('select_trash_all')}
+      </Button>
     </div>
 
     <!-- CONFIRM BUTTONS -->

@@ -65,7 +65,7 @@ const toOperation = (path: string, method: string, operation: SpecOperation, sha
   const source = path
     .split('/')
     .map((segment) => {
-      const match = segment.match(/^\{(.+)\}$/);
+      const match = /^\{(.+)\}$/.exec(segment);
       if (match) {
         pathParameters.push(match[1]);
         return '([^/]+)';
