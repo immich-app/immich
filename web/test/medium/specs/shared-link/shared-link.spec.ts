@@ -233,7 +233,7 @@ test.describe('shared link', () => {
     expect(api.getAssetInfo).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id, key: link.key }) });
   });
 
-  test('a single asset link that fails to load shows nothing', async ({ page, context, data, api, logger, app }) => {
+  test('a single asset link that fails to load shows an error', async ({ page, context, data, api, logger, app }) => {
     const asset = factory.asset();
     const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset] });
     data.addSharedLinks(link);
@@ -242,10 +242,10 @@ test.describe('shared link', () => {
 
     await page.goto(Route.viewSharedLink({ key: link.key }));
 
-    await expect.poll(() => logger.error.calls).toContainEqual(expect.stringMatching(/Failed to fetch/));
+    await expect(app.toast('error_retrieving_asset_information')).toBeVisible();
     await expect(app.viewer.root).toHaveCount(0);
     expect(api.getAssetInfo).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id, key: link.key }) });
-    expect(logger.error).toHaveBeenCalledWith(/Failed to fetch/);
+    expect(logger.error).toHaveBeenCalledWith(/handleError/);
     expect(logger.error).toHaveBeenCalledWith(/ERR_FAILED/);
   });
 

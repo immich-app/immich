@@ -236,7 +236,7 @@ test.describe('memory viewer', () => {
     expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: asset.id } });
   });
 
-  test('a failed full asset load hides the location', async ({ page, data, api, logger, app }) => {
+  test('a failed full asset load shows an error', async ({ page, data, api, logger, app }) => {
     const [memory] = addMemories(data, [1]);
     const [asset] = memory.assets;
     data.addAssets({ ...asset, exifInfo: { city: 'Paris', country: 'France' } });
@@ -244,12 +244,12 @@ test.describe('memory viewer', () => {
 
     await page.goto(Route.viewMemory({ id: memory.id, assetId: asset.id }));
 
-    await expect.poll(() => logger.error.calls).toContainEqual(expect.stringMatching(/Failed to fetch/));
+    await expect(app.toast('error_retrieving_asset_information')).toBeVisible();
     await expect(app.memory.photo).toBeVisible();
     await expect(app.memory.place('Paris')).toHaveCount(0);
     await expect(app.memory.viewInTimelineLink).toHaveCount(0);
     expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: asset.id } });
-    expect(logger.error).toHaveBeenCalledWith(/Failed to fetch/);
+    expect(logger.error).toHaveBeenCalledWith(/handleError/);
     expect(logger.error).toHaveBeenCalledWith(/ERR_FAILED/);
   });
 
@@ -274,9 +274,7 @@ test.describe('memory viewer', () => {
     await page.keyboard.press('ArrowRight');
     await expect(app.memory.place('Tokyo')).toBeVisible();
 
-    const firstResponse = page.waitForResponse(new RegExp(`/api/assets/${first.id}`));
     finishFirstLookup();
-    await firstResponse;
     await page.evaluate(() => new Promise(requestAnimationFrame));
 
     await expect(app.memory.place('Tokyo')).toBeVisible();

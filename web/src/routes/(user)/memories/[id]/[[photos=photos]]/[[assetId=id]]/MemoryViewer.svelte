@@ -20,7 +20,7 @@
   import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
   import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
   import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
-  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
   import { searchMemoriesQuery } from '#lib/queries/memory.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
@@ -48,6 +48,7 @@
     mdiVolumeHigh,
     mdiVolumeOff,
   } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { DateTime } from 'luxon';
   import 'media-chrome/media-mute-button';
   import { untrack } from 'svelte';
@@ -74,11 +75,13 @@
   const currentAssetId = $derived(current?.asset.id);
   // where the asset sits in its memory, for the progress bar and counter
   const assetIndex = $derived(current ? current.memory.assets.findIndex(({ id }) => id === currentAssetId) : -1);
-  const currentMemoryAssetFull = $derived.by(async () =>
-    currentAssetId
-      ? await queryClient.query(getAssetInfoQuery({ ...authManager.params, id: currentAssetId }))
-      : undefined,
-  );
+  const queries = {
+    asset: createQuery(() => ({
+      ...getAssetInfoQuery({ ...authManager.params, id: currentAssetId ?? '' }),
+      enabled: !!currentAssetId,
+      meta: { error: { toast: 'error_retrieving_asset_information' } },
+    })),
+  };
   let currentTimelineAssets = $derived(current?.memory.assets ?? []);
 
   const birthdayAge = $derived.by(() => {
@@ -530,18 +533,17 @@
               </div>
 
               <div>
-                {#await currentMemoryAssetFull then asset}
-                  {#if asset}
-                    <IconButton
-                      href={Route.photos({ at: asset.stack?.primaryAssetId ?? asset.id })}
-                      icon={mdiImageSearch}
-                      aria-label={$t('view_in_timeline')}
-                      color="secondary"
-                      variant="ghost"
-                      shape="round"
-                    />
-                  {/if}
-                {/await}
+                {#if queries.asset.data}
+                  {const asset = $derived(queries.asset.data)}
+                  <IconButton
+                    href={Route.photos({ at: asset.stack?.primaryAssetId ?? asset.id })}
+                    icon={mdiImageSearch}
+                    aria-label={$t('view_in_timeline')}
+                    color="secondary"
+                    variant="ghost"
+                    shape="round"
+                  />
+                {/if}
               </div>
             </div>
             <!-- CONTROL BUTTONS -->
@@ -583,10 +585,8 @@
                 )}
               </p>
               <p>
-                {#await currentMemoryAssetFull then asset}
-                  {asset?.exifInfo?.city || ''}
-                  {asset?.exifInfo?.country || ''}
-                {/await}
+                {queries.asset.data?.exifInfo?.city || ''}
+                {queries.asset.data?.exifInfo?.country || ''}
               </p>
               {#if birthdayAge !== undefined}
                 <p class="mt-1 flex items-center gap-2">
