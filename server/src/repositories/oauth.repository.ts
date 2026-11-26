@@ -7,6 +7,7 @@ import {
   allowInsecureRequests as allowInsecureRequestsExecute,
   authorizationCodeGrant,
   buildAuthorizationUrl,
+  buildAuthorizationUrlWithPAR,
   calculatePKCECodeChallenge,
   discovery,
   fetchUserInfo,
@@ -75,7 +76,10 @@ export class OAuthRepository {
       params.code_challenge_method = 'S256';
     }
 
-    const url = buildAuthorizationUrl(client, params).href;
+     const metadata = client.serverMetadata();
+     const url = metadata.pushed_authorization_request_endpoint
+       ? (await buildAuthorizationUrlWithPAR(client, params)).href
+       : buildAuthorizationUrl(client, params).href; 
 
     return { url, state, codeVerifier };
   }
