@@ -1,4 +1,4 @@
-# Remote Machine Learning
+# Remote machine learning
 
 import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
 

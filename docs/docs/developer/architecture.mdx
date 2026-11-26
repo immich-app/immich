@@ -9,7 +9,7 @@ import MobileArchitecture from './img/immich_mobile_architecture.svg';
 
 Immich uses a traditional client-server design, with a dedicated database for data persistence. The frontend clients communicate with backend services over HTTP using REST APIs. Below is a high level diagram of the architecture.
 
-## High Level Diagram
+## High-level diagram
 
 <img alt="Immich Architecture" src={AppArchitecture} className="p-4 dark:bg-immich-dark-primary my-4" />
 
@@ -27,7 +27,7 @@ Immich has three main clients:
 All three clients use [OpenAPI](/api.md) to auto-generate rest clients for easy integration. For more information about this process, see [OpenAPI](/api.md).
 :::
 
-### Mobile App
+### Mobile app
 
 The mobile app is written in [Dart](https://dart.dev/) using [Flutter](https://flutter.dev/). Below is an architecture overview:
 
@@ -55,11 +55,11 @@ The Immich backend is divided into several services, which are run as individual
 1. `postgres` - Persistent data storage
 1. `redis`- Queue management for background jobs
 
-### Immich Server
+### Immich server
 
 The Immich Server is a [TypeScript](https://www.typescriptlang.org/) project written for [Node.js](https://nodejs.org/). It uses the [Nest.js](https://nestjs.com) framework, [Express](https://expressjs.com/) server, and the query builder [Kysely](https://kysely.dev/). The server codebase also loosely follows the [Hexagonal Architecture](<https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)>). Specifically, we aim to separate technology specific implementations (`src/repositories`) from core business logic (`src/services`).
 
-### API Endpoints
+### API endpoints
 
 An incoming HTTP request is mapped to a controller (`src/controllers`). Controllers are collections of HTTP endpoints. Each controller usually implements the following CRUD operations for its respective resource type:
 
@@ -73,7 +73,7 @@ An incoming HTTP request is mapped to a controller (`src/controllers`). Controll
 
 The server uses [Domain Transfer Objects](https://en.wikipedia.org/wiki/Data_transfer_object) as public interfaces for the inputs (query, params, and body) and outputs (response) for each endpoint. DTOs translate to [OpenAPI](/api.md) schemas and control the generated code used by each client.
 
-### Background Jobs
+### Background jobs
 
 Immich uses a [worker](https://github.com/immich-app/immich/blob/main/server/src/utils/misc.ts#L266) to run background jobs. These jobs include:
 
@@ -90,7 +90,7 @@ Immich uses a [worker](https://github.com/immich-app/immich/blob/main/server/src
 This list closely matches what is available on the [Administration > Jobs](/administration/jobs-workers/#jobs) page, which provides some remote queue management capabilities.
 :::
 
-### Machine Learning
+### Machine learning
 
 The machine learning service is written in [Python](https://www.python.org/) and uses [FastAPI](https://fastapi.tiangolo.com/) for HTTP communication.
 

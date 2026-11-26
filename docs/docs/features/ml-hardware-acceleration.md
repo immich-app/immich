@@ -1,4 +1,4 @@
-# Hardware-Accelerated Machine Learning
+# Hardware-accelerated machine learning
 
 import ComposeBuilder from '/docs/partials/_compose-builder.mdx';
 
@@ -9,7 +9,7 @@ As this is a new feature, it is still experimental and may not work on all syste
 You do not need to redo any machine learning jobs after enabling hardware acceleration. The acceleration device will be used for any jobs that run after enabling it.
 :::
 
-## Supported Backends
+## Supported backends
 
 - ARM NN (Mali)
 - CUDA (NVIDIA GPUs with [compute capability](https://developer.nvidia.com/cuda-gpus) 5.2 or higher)
@@ -98,13 +98,13 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 3. Still in the `docker-compose.yml` under `immich-machine-learning`, uncomment the `extends` section and change `cpu` to the appropriate backend.
 4. Redeploy the `immich-machine-learning` container with these updated settings.
 
-### Confirming Device Usage
+### Confirming device usage
 
 You can confirm the device is being recognized and used by checking its utilization. There are many tools to display this, such as `nvtop` for NVIDIA or Intel, `intel_gpu_top` for Intel, and `radeontop` for AMD.
 
 You can also check the logs of the `immich-machine-learning` container. When a Smart Search or Face Detection job begins, or when you search with text in Immich, you should either see a log for `Available ORT providers` containing the relevant provider (e.g. `CUDAExecutionProvider` in the case of CUDA), a `Loaded ANN model` log entry without errors in the case of ARM NN, or a `Loaded RKNN model ... threads sharing its weights` log entry for RKNN.
 
-#### Single Compose File
+#### Single compose file
 
 Some platforms, including Unraid and Portainer, do not support multiple Compose files as of writing. As an alternative, you can "inline" the relevant contents of the [`hwaccel.ml.yml`][hw-file] file into the `immich-machine-learning` service directly.
 

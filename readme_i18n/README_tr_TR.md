@@ -9,9 +9,13 @@
 </p>
 
 <p align="center">
-  <a href="#">
-    <img src="../design/immich-logo-stacked-light.svg" width="300" alt="Immich Logo">
-  </a>
+  <picture>
+    <img
+      src="../design/immich-logo-stacked-light.svg"
+      alt="Immich Logo"
+      width="300"
+    />
+  </picture>
 </p>
 <h3 align="center">Immich - Yüksek performanslı, kendine ait barındırılan fotoğraf ve video yedekleme çözümü</h3>
 <br/>

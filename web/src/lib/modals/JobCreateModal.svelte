@@ -1,6 +1,7 @@
 <script lang="ts">
   import Combobox, { type ComboBoxOption } from '#lib/components/shared-components/Combobox.svelte';
-  import { handleCreateJob } from '#lib/services/job.service.ts';
+  import { executeMutation } from '#lib/queries/client.ts';
+  import { createJobMutation } from '#lib/queries/queue.query.ts';
   import { ManualJobName } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -49,10 +50,9 @@
       return;
     }
 
-    const success = await handleCreateJob({ name: selectedJob.value as ManualJobName });
-    if (success) {
-      onClose();
-    }
+    await executeMutation(createJobMutation, [{ jobCreateDto: { name: selectedJob.value as ManualJobName } }], {
+      onSuccess: onClose,
+    });
   };
 </script>
 

@@ -1,8 +1,10 @@
+import { queryClient } from '#lib/queries/client.ts';
+import { getMySharedLinkQuery } from '#lib/queries/shared-link.query.ts';
 import { getSharedLink as getCachedSharedLink, setSharedLink } from '#lib/utils.ts';
 import { authenticate } from '#lib/utils/auth.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { getAssetInfoFromParam } from '#lib/utils/navigation.ts';
-import { getMySharedLink, isHttpError } from '@immich/sdk';
+import { isHttpError } from '@immich/sdk';
 
 export const asQueryString = ({ slug, key }: { slug?: string; key?: string }) => {
   const params = new URLSearchParams();
@@ -34,7 +36,7 @@ export const loadSharedLink = async ({
   const sharedLinkPromise =
     cachedSharedLink && (key === cachedSharedLink.key || slug === cachedSharedLink.slug)
       ? Promise.resolve(cachedSharedLink)
-      : getMySharedLink({ key, slug });
+      : queryClient.query(getMySharedLinkQuery({ key, slug }));
 
   try {
     const [sharedLink, asset] = await Promise.all([sharedLinkPromise, getAssetInfoFromParam(params)]);

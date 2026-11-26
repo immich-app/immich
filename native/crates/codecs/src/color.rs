@@ -1,11 +1,11 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
 
-pub use moxcms::{CicpColorPrimaries, CicpProfile, TransferCharacteristics};
 use moxcms::{
-    ColorProfile, DataColorSpace, Layout, MatrixCoefficients, RenderingIntent,
-    Transform16BitExecutor, TransformOptions,
+    BarycentricWeightScale, ColorProfile, DataColorSpace, Layout, MatrixCoefficients,
+    RenderingIntent, Transform16BitExecutor, TransformOptions,
 };
+pub use moxcms::{CicpColorPrimaries, CicpProfile, TransferCharacteristics};
 use quick_cache::sync::Cache;
 
 use crate::image::Pixels;
@@ -66,10 +66,10 @@ pub(crate) fn profile_to_srgb(
         _ => Layout::Rgba,
     };
     let options = TransformOptions {
-        // Profiles that tone-map HDR, like those jxl-rs makes, may only have a perceptual table.
-        rendering_intent: RenderingIntent::Perceptual,
+        rendering_intent: RenderingIntent::RelativeColorimetric,
         // The fixed-point path loses precision with the narrower samples it reads.
         prefer_fixed_point: false,
+        barycentric_weight_scale: BarycentricWeightScale::High,
         ..Default::default()
     };
     // Going past 12-bit makes the transform's tables much slower to build for negligible benefit.

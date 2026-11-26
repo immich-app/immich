@@ -65,7 +65,7 @@ const toOperation = (path: string, method: string, operation: SpecOperation, sha
   const source = path
     .split('/')
     .map((segment) => {
-      const match = segment.match(/^\{(.+)\}$/);
+      const match = /^\{(.+)\}$/.exec(segment);
       if (match) {
         pathParameters.push(match[1]);
         return '([^/]+)';
@@ -153,7 +153,10 @@ export const toCall = (
   body: unknown,
 ): Record<string, unknown> => {
   const call: Record<string, unknown> = {};
-  const params: Record<string, unknown> = { ...pathParams };
+  const params: Record<string, unknown> = {};
+  for (const [name, value] of Object.entries(pathParams)) {
+    params[toSdkParameterName(name)] = value;
+  }
   for (const name of new Set(query.keys())) {
     params[toSdkParameterName(name)] = coerce(operation.queryParameters[name] ?? 'string', query.getAll(name));
   }

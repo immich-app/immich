@@ -53,6 +53,22 @@ test('a group that fails to resolve stays', async ({ data, router, render, settl
   await expect.element(app.duplicates.groupPosition(1, 1)).toBeVisible();
 });
 
+test('a group that fails to stack stays', async ({ data, router, render, settle, api, logger, app }) => {
+  data.addDuplicates([factory.asset(), factory.asset()]).addDuplicates([factory.asset(), factory.asset()]);
+  api.on({ updateAssets: () => ({ status: 500, json: { message: 'Unable to update', statusCode: 500 } }) });
+  await router.goto(Route.duplicatesUtility());
+  await render(Page, load);
+
+  await app.duplicates.stackButton.click();
+  await settle();
+  await settle();
+
+  expect(api.createStack).toHaveBeenCalled();
+  expect(api.updateAssets).toHaveBeenCalled();
+  expect(logger.error).toHaveBeenCalledWith(/handleError/);
+  await expect.element(app.duplicates.groupPosition(1, 2)).toBeVisible();
+});
+
 test('deduplicate all keeps the suggested assets', async ({ data, router, render, settle, api, app }) => {
   const groups = [
     [factory.asset(), factory.asset()],

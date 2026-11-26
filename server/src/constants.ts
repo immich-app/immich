@@ -1,3 +1,4 @@
+import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
@@ -10,6 +11,7 @@ import {
   VectorIndex,
   VideoCodec,
 } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 
 export const IMMICH_SERVER_START = 'Immich Server is listening';
 
@@ -24,8 +26,21 @@ export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORCHORD_VERSION_RANGE = '>=0.3 <2';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
+export const ASSET_VISIBILITY_DEPENDENT_PATHS = [
+  Resource.albums(),
+  Resource.duplicates(),
+  Resource.mapMarkers(),
+  Resource.memories(),
+  Resource.people(),
+  Resource.search(),
+  Resource.view(),
+];
+
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
+export const JOBS_CLEAN_BATCH_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
+
+export const UTF16_SURROGATE_OR_ABOVE = /[\u{D800}-\u{10FFFF}]/u;
 
 export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   cube: 'cube',
@@ -46,6 +61,7 @@ export const VECTORCHORD_LIST_SLACK_FACTOR = 1.2;
 export const SALT_ROUNDS = 10;
 // Syntactically valid bcrypt hash used in login() preventing timing-based user enumeration.
 export const LOGIN_DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZabcde';
+export const AUTH_CODE_TTL = Duration.fromObject({ minutes: 1 });
 
 export const IWorker = 'IWorker';
 

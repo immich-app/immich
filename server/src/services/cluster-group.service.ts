@@ -8,6 +8,7 @@ import {
 } from 'src/dtos/cluster-group.dto.js';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto.js';
 import { JobName, Permission } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { findOrFail } from 'src/utils/misc.js';
 
@@ -51,6 +52,12 @@ export class ClusterGroupService extends BaseService {
     );
 
     if (request.isInserted) {
+      const { readerIds } = await this.getAudience(auth, clusterGroupId);
+      this.resourceRepository.send({
+        userIds: readerIds,
+        changed: [Resource.clusterGroupRequestsForGroup({ id: clusterGroupId })],
+      });
+      this.resourceRepository.send({ userIds: [userId], changed: [Resource.clusterGroupRequests()] });
       await this.eventRepository.emit('ClusterGroupRequest', { clusterGroupId, userId, senderName: auth.user.name });
     }
 
@@ -61,15 +68,43 @@ export class ClusterGroupService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.ClusterGroupRequestRead, ids: [id] });
 
     const request = await findOrFail(() => this.clusterGroupRepository.getRequest(id), 'Request');
+    const { clusterGroupId: oldClusterGroupId } = await findOrFail(
+      () => this.userRepository.get(auth.user.id, {}),
+      'User',
+    );
+    const oldGroup = await this.getAudience(auth, oldClusterGroupId);
+    const newGroup = await this.getAudience(auth, request.clusterGroupId);
 
     await this.personRepository.reassignCluster({ userId: auth.user.id, newClusterId: request.clusterGroupId });
     await this.userRepository.update(auth.user.id, { clusterGroupId: request.clusterGroupId });
     await this.clusterGroupRepository.deleteRequest(request.id);
+
+    this.resourceRepository.send({
+      userIds: oldGroup.readerIds,
+      changed: [Resource.clusterGroup({ id: oldClusterGroupId })],
+    });
+    this.resourceRepository.send({ userIds: oldGroup.memberIds, changed: [Resource.people()] });
+    this.resourceRepository.send({
+      userIds: newGroup.readerIds,
+      changed: [Resource.clusterGroup({ id: request.clusterGroupId })],
+    });
+    this.resourceRepository.send({
+      userIds: [auth.user.id],
+      changed: [Resource.clusterGroupRequests(), Resource.myUser()],
+    });
   }
 
   async deleteRequest(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ClusterGroupRequestDelete, ids: [id] });
+    const request = await findOrFail(() => this.clusterGroupRepository.getRequest(id), 'Request');
+    const { readerIds } = await this.getAudience(auth, request.clusterGroupId);
+
     await this.clusterGroupRepository.deleteRequest(id);
+    this.resourceRepository.send({
+      userIds: readerIds,
+      changed: [Resource.clusterGroupRequestsForGroup({ id: request.clusterGroupId })],
+    });
+    this.resourceRepository.send({ userIds: [request.userId], changed: [Resource.clusterGroupRequests()] });
   }
 
   async regeneratePeople(auth: AuthDto, id: string) {
@@ -92,8 +127,25 @@ export class ClusterGroupService extends BaseService {
       throw new BadRequestException('Cannot leave a cluster group without any other members');
     }
 
+    const oldGroup = await this.getAudience(auth, clusterGroupId);
     const clusterGroup = await this.clusterGroupRepository.create();
     await this.personRepository.reassignCluster({ userId: auth.user.id, newClusterId: clusterGroup.id });
     await this.userRepository.update(auth.user.id, { clusterGroupId: clusterGroup.id });
+
+    this.resourceRepository.send({
+      userIds: oldGroup.readerIds,
+      changed: [Resource.clusterGroup({ id: clusterGroupId })],
+    });
+    this.resourceRepository.send({ userIds: oldGroup.memberIds, changed: [Resource.people()] });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myUser()] });
+  }
+
+  private async getAudience(auth: AuthDto, clusterGroupId: string) {
+    const [members, requests] = await Promise.all([
+      this.clusterGroupRepository.getUsers({ clusterGroupId, userId: auth.user.id }),
+      this.clusterGroupRepository.searchRequests({ clusterGroupId }),
+    ]);
+    const memberIds = members.map(({ id }) => id);
+    return { memberIds, readerIds: [...memberIds, ...requests.map(({ userId }) => userId)] };
   }
 }

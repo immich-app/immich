@@ -2,13 +2,14 @@ import { BadRequestException, NotFoundException, UnauthorizedException } from '@
 import { VerifiedAuthenticationResponse, VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { InsertResult } from 'kysely';
 import { AuthChallengeType, JobStatus } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { PasskeyService } from 'src/services/passkey.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { PasskeyFactory } from 'test/factories/passkey.factory.js';
 import { SessionFactory } from 'test/factories/session.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const loginDetails = {
   isSecure: true,
@@ -247,6 +248,7 @@ describe(PasskeyService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.webAuthn.verifyRegistrationResponse).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should throw an error if passkeys are disabled', async () => {
@@ -275,6 +277,7 @@ describe(PasskeyService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.passkey.create).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should reject an unverified response', async () => {
@@ -290,6 +293,7 @@ describe(PasskeyService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.passkey.create).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should reject a credential that is already registered', async () => {
@@ -306,6 +310,7 @@ describe(PasskeyService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.passkey.create).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should verify against the mobile app origins when the origin header is missing', async () => {
@@ -409,6 +414,17 @@ describe(PasskeyService.name, () => {
         backedUp: true,
         deviceType: 'multiDevice',
       });
+    });
+
+    it('should tell the user about the new passkey', async () => {
+      const auth = AuthFactory.from().session().build();
+      mocks.webAuthn.verifyRegistrationResponse.mockResolvedValue(registrationResult);
+      mocks.passkey.getByCredentialId.mockResolvedValue(void 0);
+      mocks.passkey.create.mockResolvedValue(PasskeyFactory.create({ userId: auth.user.id }));
+
+      await sut.finishRegistration(auth, { response: registrationResponse }, headers, loginDetails);
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.passkeys()] });
     });
 
     it('should use a default name', async () => {
@@ -655,6 +671,7 @@ describe(PasskeyService.name, () => {
       );
 
       expect(mocks.passkey.update).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should update a passkey', async () => {
@@ -670,6 +687,17 @@ describe(PasskeyService.name, () => {
 
       expect(mocks.passkey.update).toHaveBeenCalledWith(passkey.id, { name: 'New name' });
     });
+
+    it('should tell the owner about the renamed passkey', async () => {
+      const auth = AuthFactory.create();
+      const passkey = PasskeyFactory.create({ userId: auth.user.id });
+      mocks.access.passkey.checkOwnerAccess.mockResolvedValue(new Set([passkey.id]));
+      mocks.passkey.update.mockResolvedValue(passkey);
+
+      await sut.update(auth, passkey.id, { name: 'New name' });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.passkey(passkey)] });
+    });
   });
 
   describe('delete', () => {
@@ -677,6 +705,7 @@ describe(PasskeyService.name, () => {
       await expect(sut.delete(AuthFactory.create(), newUuid())).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.passkey.delete).not.toHaveBeenCalled();
+      expect(mocks.resource.send).not.toHaveBeenCalled();
     });
 
     it('should delete a passkey', async () => {
@@ -689,6 +718,16 @@ describe(PasskeyService.name, () => {
       await sut.delete(auth, passkey.id);
 
       expect(mocks.passkey.delete).toHaveBeenCalledWith(passkey.id);
+    });
+
+    it('should tell the owner about the deleted passkey', async () => {
+      const auth = AuthFactory.create();
+      const passkey = PasskeyFactory.create({ userId: auth.user.id });
+      mocks.access.passkey.checkOwnerAccess.mockResolvedValue(new Set([passkey.id]));
+      mocks.passkey.delete.mockResolvedValue();
+
+      await sut.delete(auth, passkey.id);
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.passkey(passkey)] });
     });
   });
 });

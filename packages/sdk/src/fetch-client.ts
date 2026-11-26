@@ -21,11 +21,11 @@ export type UserResponseDto = {
     /** User ID */
     id: string;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
 };
 export type ActivityResponseDto = {
     /** Asset ID (if activity is for an asset) */
@@ -115,6 +115,7 @@ export type AdminConfigFFmpegDto = {
     twoPass: boolean;
 };
 export type AdminConfigGeneratedFullsizeImageDto = {
+    effort: ImageEffort;
     /** Enabled */
     enabled: boolean;
     format: ImageFormat;
@@ -124,6 +125,7 @@ export type AdminConfigGeneratedFullsizeImageDto = {
     quality: number;
 };
 export type AdminConfigGeneratedImageDto = {
+    effort: ImageEffort;
     format: ImageFormat;
     /** Progressive */
     progressive?: boolean;
@@ -441,6 +443,38 @@ export type AdminConfigDto = {
     trash: AdminConfigTrashDto;
     user: AdminConfigUserDto;
 };
+export type StorageTemplatePresetDto = {
+    /** Example path rendered from the preset */
+    preview: string;
+    /** Preset storage template */
+    template: string;
+};
+export type StorageTemplateOptionsResponseDto = {
+    /** Available day format options for storage template */
+    dayOptions: string[];
+    /** Available hour format options for storage template */
+    hourOptions: string[];
+    /** Available minute format options for storage template */
+    minuteOptions: string[];
+    /** Available month format options for storage template */
+    monthOptions: string[];
+    /** Preset storage templates with an example path */
+    presets: StorageTemplatePresetDto[];
+    /** Available second format options for storage template */
+    secondOptions: string[];
+    /** Available week format options for storage template */
+    weekOptions: string[];
+    /** Available year format options for storage template */
+    yearOptions: string[];
+};
+export type StorageTemplatePreviewDto = {
+    /** Storage template */
+    template: string;
+};
+export type StorageTemplatePreviewResponseDto = {
+    /** Example path rendered from the template */
+    preview: string;
+};
 export type DatabaseBackupDeleteDto = {
     /** Backup filenames to delete */
     backups: string[];
@@ -586,13 +620,13 @@ export type UserAdminResponseDto = {
     isAdmin: boolean;
     license: UserLicense | null;
     /** User name */
-    name: string;
+    name: string | null;
     /** OAuth ID */
-    oauthId: string;
+    oauthId: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Storage quota in bytes */
     quotaSizeInBytes: number | null;
     /** Storage usage in bytes */
@@ -612,7 +646,7 @@ export type UserAdminCreateDto = {
     /** Grant admin privileges */
     isAdmin?: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** Send notification email */
     notify?: boolean;
     /** User password */
@@ -637,7 +671,7 @@ export type UserAdminUpdateDto = {
     /** Grant admin privileges */
     isAdmin?: boolean;
     /** User name */
-    name?: string;
+    name?: string | null;
     /** User password */
     password?: string;
     /** PIN code */
@@ -843,9 +877,9 @@ export type SessionResponseDto = {
     /** Is current session */
     current: boolean;
     /** Device OS */
-    deviceOS: string;
+    deviceOS: string | null;
     /** Device type */
-    deviceType: string;
+    deviceType: string | null;
     /** Expiration date */
     expiresAt?: string;
     /** Session ID */
@@ -886,7 +920,7 @@ export type AlbumResponseDto = {
     /** Creation date */
     createdAt: string;
     /** Album description */
-    description: string;
+    description: string | null;
     /** UTC representation of (local) end date (latest asset) */
     endDate?: string;
     /** Has shared link */
@@ -1091,7 +1125,7 @@ export type AssetBulkUpdateDto = {
     /** Relative time offset in minutes */
     dateTimeRelative?: number;
     /** Asset description */
-    description?: string;
+    description?: string | null;
     /** Duplicate ID */
     duplicateId?: string | null;
     /** Asset IDs to update */
@@ -1237,7 +1271,7 @@ export type ExifResponseDto = {
 };
 export type PersonOtherResponseDto = {
     birthDate: string | null;
-    name: string;
+    name: string | null;
     role: PersonUserRole;
     sharedById: string;
 };
@@ -1248,11 +1282,11 @@ export type PeopleUserResponseDto = {
     /** User ID */
     id: string;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Access role */
     role: PersonUserRole;
 };
@@ -1268,14 +1302,14 @@ export type PersonResponseDto = {
     /** Is hidden */
     isHidden: boolean;
     /** Person name */
-    name: string;
+    name: string | null;
     otherPeople: PersonOtherResponseDto[];
     /** Users that gave the current user access to this person */
     sharedBy: PeopleUserResponseDto[];
     /** Users the current user gave access to this person */
     sharedWith: PeopleUserResponseDto[];
     /** Thumbnail path */
-    thumbnailPath: string;
+    thumbnailPath: string | null;
     /** Last update date */
     updatedAt?: string;
 };
@@ -1349,8 +1383,6 @@ export type AssetResponseDto = {
     /** Owner user ID */
     ownerId: string;
     people?: PersonResponseDto[];
-    /** Is resized */
-    resized?: boolean;
     stack?: AssetStackResponseDto | null;
     tags?: TagResponseDto[];
     /** Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting. */
@@ -1366,7 +1398,7 @@ export type UpdateAssetDto = {
     /** Original date and time */
     dateTimeOriginal?: string;
     /** Asset description */
-    description?: string;
+    description?: string | null;
     /** Mark as favorite */
     isFavorite?: boolean;
     /** Latitude coordinate */
@@ -1462,7 +1494,7 @@ export type SignUpDto = {
     /** User email */
     email: string;
     /** User name */
-    name: string;
+    name: string | null;
     /** User password */
     password: string;
 };
@@ -1474,11 +1506,19 @@ export type ChangePasswordDto = {
     /** Current password */
     password: string;
 };
-export type LoginCredentialDto = {
-    /** User email */
-    email: string;
-    /** User password */
-    password: string;
+export type AuthCodeCreateDto = {
+    /** PKCE code challenge (S256, base64url) */
+    codeChallenge: string;
+};
+export type AuthCodeResponseDto = {
+    /** One-time code */
+    code: string;
+};
+export type AuthCodeExchangeDto = {
+    /** One-time code */
+    code: string;
+    /** PKCE code verifier (base64url) */
+    codeVerifier: string;
 };
 export type LoginResponseDto = {
     /** Access token */
@@ -1488,15 +1528,21 @@ export type LoginResponseDto = {
     /** Is onboarded */
     isOnboarded: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Should change password */
     shouldChangePassword: boolean;
     /** User email */
     userEmail: string;
     /** User ID */
     userId: string;
+};
+export type LoginCredentialDto = {
+    /** User email */
+    email: string;
+    /** User password */
+    password: string;
 };
 export type LogoutResponseDto = {
     /** Redirect URI */
@@ -2007,11 +2053,11 @@ export type PartnerResponseDto = {
     /** Show in timeline */
     inTimeline?: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
 };
 export type PartnerCreateDto = {
     /** User ID to share with */
@@ -2086,7 +2132,7 @@ export type PersonCreateDto = {
     /** Person visibility (hidden) */
     isHidden?: boolean;
     /** Person name */
-    name?: string;
+    name?: string | null;
 };
 export type PeopleUpdateItem = {
     /** Person date of birth */
@@ -2102,7 +2148,7 @@ export type PeopleUpdateItem = {
     /** Person visibility (hidden) */
     isHidden?: boolean;
     /** Person name */
-    name?: string;
+    name?: string | null;
     /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
@@ -2160,7 +2206,7 @@ export type PersonUpdateDto = {
     /** Person visibility (hidden) */
     isHidden?: boolean;
     /** Person name */
-    name?: string;
+    name?: string | null;
     /** Restrict the update to the person record of this User ID */
     userId?: string;
 };
@@ -2596,8 +2642,6 @@ export type SearchAssetResponseDto = {
     nextCursor: string | null;
     /** Next page token */
     nextPage: string | null;
-    /** Total number of matching assets */
-    total: number;
 };
 export type SearchResponseDto = {
     albums: SearchAlbumResponseDto;
@@ -3021,9 +3065,9 @@ export type ServerVersionHistoryResponseDto = {
 };
 export type SessionCreateDto = {
     /** Device OS */
-    deviceOS?: string;
+    deviceOS?: string | null;
     /** Device type */
-    deviceType?: string;
+    deviceType?: string | null;
     /** Session duration in seconds */
     duration?: number;
 };
@@ -3035,9 +3079,9 @@ export type SessionCreateResponseDto = {
     /** Is current session */
     current: boolean;
     /** Device OS */
-    deviceOS: string;
+    deviceOS: string | null;
     /** Device type */
-    deviceType: string;
+    deviceType: string | null;
     /** Expiration date */
     expiresAt?: string;
     /** Session ID */
@@ -3277,7 +3321,7 @@ export type UserUpdateMeDto = {
     /** User email */
     email?: string;
     /** User name */
-    name?: string;
+    name?: string | null;
 };
 export type OnboardingResponseDto = {
     /** Is user onboarded */
@@ -3872,6 +3916,10 @@ export type SyncPartnerV1 = {
     /** Shared with ID */
     sharedWithId: string;
 };
+export type SyncPendingResetV1 = {
+    /** Sync request type to reset */
+    "type": SyncRequestType;
+};
 export type SyncPersonDeleteV1 = {
     /** Person ID */
     personId: string;
@@ -4059,6 +4107,32 @@ export function getAdminConfigDefaults(opts?: Oazapfts.RequestOpts) {
     }>("/admin/config/defaults", {
         ...opts
     }));
+}
+/**
+ * Get storage template options
+ */
+export function getAdminStorageTemplateOptions(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTemplateOptionsResponseDto;
+    }>("/admin/config/storage-template", {
+        ...opts
+    }));
+}
+/**
+ * Preview a storage template
+ */
+export function previewStorageTemplate({ storageTemplatePreviewDto }: {
+    storageTemplatePreviewDto: StorageTemplatePreviewDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTemplatePreviewResponseDto;
+    }>("/admin/config/storage-template/preview", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: storageTemplatePreviewDto
+    })));
 }
 /**
  * Delete database backup
@@ -4259,6 +4333,19 @@ export function getNotificationTemplateAdmin({ name, templateDto }: {
         status: 200;
         data: TemplateResponseDto;
     }>(`/admin/notifications/templates/${encodeURIComponent(name)}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: templateDto
+    })));
+}
+/**
+ * Preview email template
+ */
+export function previewNotificationTemplateAdmin({ name, templateDto }: {
+    name: EmailTemplate;
+    templateDto: TemplateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/notifications/templates/${encodeURIComponent(name)}/preview`, oazapfts.json({
         ...opts,
         method: "POST",
         body: templateDto
@@ -5257,6 +5344,36 @@ export function changePassword({ changePasswordDto }: {
     })));
 }
 /**
+ * Create app login code
+ */
+export function createAuthCode({ authCodeCreateDto }: {
+    authCodeCreateDto: AuthCodeCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AuthCodeResponseDto;
+    }>("/auth/code", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: authCodeCreateDto
+    })));
+}
+/**
+ * Exchange app login code
+ */
+export function exchangeAuthCode({ authCodeExchangeDto }: {
+    authCodeExchangeDto: AuthCodeExchangeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: LoginResponseDto;
+    }>("/auth/exchange", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: authCodeExchangeDto
+    })));
+}
+/**
  * Login
  */
 export function login({ loginCredentialDto }: {
@@ -6164,20 +6281,6 @@ export function removePartner({ id }: {
     return oazapfts.ok(oazapfts.fetchText(`/partners/${encodeURIComponent(id)}`, {
         ...opts,
         method: "DELETE"
-    }));
-}
-/**
- * Create a partner
- */
-export function createPartnerDeprecated({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: PartnerResponseDto;
-    }>(`/partners/${encodeURIComponent(id)}`, {
-        ...opts,
-        method: "POST"
     }));
 }
 /**
@@ -7672,9 +7775,10 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, hasCoordinates, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
+    hasCoordinates?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -7696,6 +7800,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
     }>(`/timeline/bucket${QS.query(QS.explode({
         albumId,
         bbox,
+        hasCoordinates,
         isFavorite,
         isTrashed,
         key,
@@ -7717,9 +7822,10 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, hasCoordinates, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
+    hasCoordinates?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -7740,6 +7846,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
     }>(`/timeline/buckets${QS.query(QS.explode({
         albumId,
         bbox,
+        hasCoordinates,
         isFavorite,
         isTrashed,
         key,
@@ -8222,6 +8329,12 @@ export enum Colorspace {
     Srgb = "srgb",
     P3 = "p3"
 }
+export enum ImageEffort {
+    Low = "low",
+    Medium = "medium",
+    High = "high",
+    Max = "max"
+}
 export enum ImageFormat {
     Jpeg = "jpeg",
     Jxl = "jxl",
@@ -8277,6 +8390,13 @@ export enum NotificationType {
     AlbumUpdate = "AlbumUpdate",
     ClusterGroupRequest = "ClusterGroupRequest",
     Custom = "Custom"
+}
+export enum EmailTemplate {
+    Test = "test",
+    Welcome = "welcome",
+    ResetPassword = "reset-password",
+    AlbumInvite = "album-invite",
+    AlbumUpdate = "album-update"
 }
 export enum UserStatus {
     Active = "active",
@@ -8533,7 +8653,6 @@ export enum MirrorAxis {
     Vertical = "vertical"
 }
 export enum AssetMediaSize {
-    Original = "original",
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
@@ -8650,8 +8769,6 @@ export enum JobName {
     LibraryDeleteCheck = "LibraryDeleteCheck",
     LibraryDelete = "LibraryDelete",
     LibraryRemoveAsset = "LibraryRemoveAsset",
-    LibraryScanAssetsQueueAll = "LibraryScanAssetsQueueAll",
-    LibrarySyncAssets = "LibrarySyncAssets",
     LibrarySyncFilesQueueAll = "LibrarySyncFilesQueueAll",
     LibrarySyncFiles = "LibrarySyncFiles",
     LibraryScanQueueAll = "LibraryScanQueueAll",
@@ -8779,17 +8896,15 @@ export enum SyncEntityType {
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
     SyncResetV1 = "SyncResetV1",
-    SyncCompleteV1 = "SyncCompleteV1"
+    SyncCompleteV1 = "SyncCompleteV1",
+    SyncPendingResetV1 = "SyncPendingResetV1"
 }
 export enum SyncRequestType {
-    AlbumsV1 = "AlbumsV1",
     AlbumsV2 = "AlbumsV2",
     AlbumUsersV1 = "AlbumUsersV1",
     AlbumToAssetsV1 = "AlbumToAssetsV1",
-    AlbumAssetsV1 = "AlbumAssetsV1",
     AlbumAssetsV2 = "AlbumAssetsV2",
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
-    AssetsV1 = "AssetsV1",
     AssetsV2 = "AssetsV2",
     AssetExifsV1 = "AssetExifsV1",
     AssetEditsV1 = "AssetEditsV1",
@@ -8802,17 +8917,16 @@ export enum SyncRequestType {
     MemoryToAssetsV1 = "MemoryToAssetsV1",
     MemoryToAssetsV2 = "MemoryToAssetsV2",
     PartnersV1 = "PartnersV1",
-    PartnerAssetsV1 = "PartnerAssetsV1",
     PartnerAssetsV2 = "PartnerAssetsV2",
     PartnerAssetExifsV1 = "PartnerAssetExifsV1",
     PartnerStacksV1 = "PartnerStacksV1",
     StacksV1 = "StacksV1",
     UsersV1 = "UsersV1",
     PeopleV1 = "PeopleV1",
-    AssetFacesV1 = "AssetFacesV1",
     AssetFacesV2 = "AssetFacesV2",
     AssetFacesV3 = "AssetFacesV3",
-    UserMetadataV1 = "UserMetadataV1"
+    UserMetadataV1 = "UserMetadataV1",
+    PendingResetV1 = "PendingResetV1"
 }
 export enum AssetOrderBy {
     TakenAt = "takenAt",
@@ -8837,7 +8951,8 @@ export enum ReleaseType {
 }
 export enum ServerFeatureLevel {
     FeatureLevel = 1,
-    Passkeys = 2
+    Passkeys = 2,
+    SyncPendingReset = 3
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

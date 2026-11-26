@@ -13,6 +13,7 @@ import {
   mapTag,
 } from 'src/dtos/tag.dto.js';
 import { JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { addAssets, removeAssets } from 'src/utils/asset.util.js';
@@ -52,6 +53,7 @@ export class TagService extends BaseService {
 
     const { color } = dto;
     const tag = await this.tagRepository.create({ userId, value, color, parentId: parent?.id });
+    this.resourceRepository.send({ userIds: [userId], changed: [Resource.tags()] });
 
     return mapTag(tag);
   }
@@ -74,11 +76,17 @@ export class TagService extends BaseService {
     const assetIds = value === existing.value ? [] : await this.tagRepository.getAssetIdsByTagId(id);
     const tag = await this.tagRepository.update(id, { value, color });
     await this.syncAssetTags(assetIds);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tag({ id })] });
+
     return mapTag(tag);
   }
 
   async upsert(auth: AuthDto, dto: TagUpsertDto) {
     const tags = await upsertTags(this.tagRepository, { userId: auth.user.id, tags: dto.tags });
+    if (tags.length > 0) {
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tags()] });
+    }
+
     return tags.map((tag) => mapTag(tag));
   }
 
@@ -88,6 +96,7 @@ export class TagService extends BaseService {
     const assetIds = await this.tagRepository.getAssetIdsByTagId(id);
     await this.tagRepository.delete(id);
     await this.syncAssetTags(assetIds);
+    this.resourceRepository.send({ userIds: [auth.user.id], deleted: [Resource.tag({ id })] });
   }
 
   async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
@@ -107,6 +116,10 @@ export class TagService extends BaseService {
     for (const assetId of new Set(results.map((item) => item.assetId))) {
       await this.updateTags(assetId);
       await this.eventRepository.emit('AssetTag', { assetId, userId: auth.user.id });
+    }
+
+    if (results.length > 0) {
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tags()] });
     }
 
     return { count: results.length };
@@ -130,6 +143,10 @@ export class TagService extends BaseService {
       await this.eventRepository.emit('AssetTag', { assetId, userId: auth.user.id });
     }
 
+    if (results.some(({ success }) => success)) {
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tag({ id })] });
+    }
+
     return results;
   }
 
@@ -149,6 +166,10 @@ export class TagService extends BaseService {
 
       await this.updateTags(assetId);
       await this.eventRepository.emit('AssetUntag', { assetId });
+    }
+
+    if (results.some(({ success }) => success)) {
+      this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.tag({ id })] });
     }
 
     return results;

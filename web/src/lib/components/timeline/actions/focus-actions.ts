@@ -23,7 +23,7 @@ const queryHTMLElement = (query: string) => document.querySelector(query) as HTM
 
 export const focusAsset = (assetId: string) => {
   const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${assetId}"]`);
-  element?.focus();
+  element?.focus({ focusVisible: true });
 };
 
 export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean, asset: TimelineAsset) => {

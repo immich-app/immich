@@ -2,13 +2,17 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { parseCookie } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import { LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants.js';
+import { AUTH_CODE_TTL, LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants.js';
 import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database.js';
 import {
+  AuthCodeCreateDto,
+  AuthCodeExchangeDto,
+  AuthCodeResponseDto,
   AuthDto,
   AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
+  LoginResponseDto,
   LogoutResponseDto,
   OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
@@ -23,12 +27,13 @@ import {
 } from 'src/dtos/auth.dto.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
+import { AuthChallengeType, AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
 import { OAuthConfig, OAuthRawProfile } from 'src/repositories/oauth.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import { isGranted } from 'src/utils/access.js';
 import { generateProfileImage } from 'src/utils/profile-image.js';
-import { getUserAgentDetails } from 'src/utils/request.js';
+import { getUserAgentDetails, isCrossOriginRequest } from 'src/utils/request.js';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -52,6 +57,7 @@ export type ValidateRequest = {
     /** `false` explicitly means no permission is required, which otherwise defaults to `all` */
     permission?: Permission | false;
     uri: string;
+    method?: string;
   };
 };
 
@@ -74,6 +80,41 @@ export class AuthService extends BaseService {
     }
 
     return this.createLoginResponse(user, details);
+  }
+
+  async createCode(auth: AuthDto, dto: AuthCodeCreateDto): Promise<AuthCodeResponseDto> {
+    if (!auth.session) {
+      throw new BadRequestException('This endpoint can only be used with a session token');
+    }
+
+    const code = this.cryptoRepository.randomBytesAsText(32);
+    await this.authChallengeRepository.create({
+      type: AuthChallengeType.AppLogin,
+      challenge: this.hashCode(code),
+      userId: auth.user.id,
+      codeChallenge: dto.codeChallenge,
+      expiresAt: DateTime.now().plus(AUTH_CODE_TTL).toJSDate(),
+    });
+
+    return { code };
+  }
+
+  async exchangeCode(dto: AuthCodeExchangeDto, loginDetails: LoginDetails): Promise<LoginResponseDto> {
+    const record = await this.authChallengeRepository.consume({
+      type: AuthChallengeType.AppLogin,
+      challenge: this.hashCode(dto.code),
+      codeChallenge: this.hashCode(dto.codeVerifier),
+    });
+    const user = record?.userId ? await this.userRepository.get(record.userId, {}) : undefined;
+    if (!user) {
+      throw new UnauthorizedException('Invalid code');
+    }
+
+    return this.createLoginResponse(user, loginDetails);
+  }
+
+  private hashCode(value: string) {
+    return this.cryptoRepository.hashSha256(value).toString('base64url');
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
@@ -145,6 +186,7 @@ export class AuthService extends BaseService {
       currentSessionId: auth.session?.id,
       invalidateSessions: dto.invalidateSessions,
     });
+    this.resourceRepository.send({ userIds: [user.id], changed: [Resource.myUser(), Resource.sessions()] });
 
     return mapUserAdmin(updatedUser);
   }
@@ -161,6 +203,7 @@ export class AuthService extends BaseService {
 
     const hashed = await this.cryptoRepository.hashBcrypt(pinCode, SALT_ROUNDS);
     await this.userRepository.update(auth.user.id, { pinCode: hashed });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.authStatus()] });
   }
 
   async resetPinCode(auth: AuthDto, dto: PinCodeResetDto) {
@@ -169,6 +212,7 @@ export class AuthService extends BaseService {
 
     await this.userRepository.update(auth.user.id, { pinCode: null });
     await this.sessionRepository.lockAll(auth.user.id);
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.authStatus()] });
   }
 
   async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
@@ -213,8 +257,8 @@ export class AuthService extends BaseService {
   }
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
-    const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, uri } = metadata;
+    const { adminRoute, sharedLinkRoute, uri, method } = metadata;
+    const authDto = await this.validate({ headers, queryParams, method });
     const requestedPermission = metadata.permission ?? Permission.All;
 
     if (!authDto.user.isAdmin && adminRoute) {
@@ -238,14 +282,18 @@ export class AuthService extends BaseService {
     return authDto;
   }
 
-  private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {
+  private async validate({
+    headers,
+    queryParams,
+    method,
+  }: Omit<ValidateRequest, 'metadata'> & { method?: string }): Promise<AuthDto> {
     const shareKey = (headers[ImmichHeader.SharedLinkKey] || queryParams[ImmichQuery.SharedLinkKey]) as string;
     const shareSlug = (headers[ImmichHeader.SharedLinkSlug] || queryParams[ImmichQuery.SharedLinkSlug]) as string;
-    const session = (headers[ImmichHeader.UserToken] ||
+    const explicitSession = (headers[ImmichHeader.UserToken] ||
       headers[ImmichHeader.SessionToken] ||
       queryParams[ImmichQuery.SessionKey] ||
-      this.getBearerToken(headers) ||
-      this.getCookieToken(headers)) as string;
+      this.getBearerToken(headers)) as string;
+    const session = explicitSession || this.getCookieToken(headers);
     const apiKey = (headers[ImmichHeader.ApiKey] || queryParams[ImmichQuery.ApiKey]) as string;
 
     if (shareKey) {
@@ -257,6 +305,13 @@ export class AuthService extends BaseService {
     }
 
     if (session) {
+      if (!explicitSession && isCrossOriginRequest(headers, method)) {
+        this.logger.warn(
+          `Blocked cross-origin request: origin=${headers.origin}, host=${headers.host}, sec-fetch-site=${headers['sec-fetch-site']}`,
+        );
+        throw new ForbiddenException('Cross-origin request blocked');
+      }
+
       return this.validateSession(session, headers);
     }
 
@@ -438,6 +493,7 @@ export class AuthService extends BaseService {
     }
 
     const user = await this.userRepository.update(auth.user.id, { oauthId });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myUser()] });
     return mapUserAdmin(user);
   }
 
@@ -447,6 +503,7 @@ export class AuthService extends BaseService {
     }
 
     const user = await this.userRepository.update(auth.user.id, { oauthId: null });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.myUser()] });
     return mapUserAdmin(user);
   }
 
@@ -605,6 +662,7 @@ export class AuthService extends BaseService {
     await this.sessionRepository.update(auth.session.id, {
       pinExpiresAt: DateTime.now().plus({ minutes: 15 }).toJSDate(),
     });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.authStatus()] });
   }
 
   async lockSession(auth: AuthDto): Promise<void> {
@@ -613,6 +671,7 @@ export class AuthService extends BaseService {
     }
 
     await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
+    this.resourceRepository.send({ userIds: [auth.user.id], changed: [Resource.authStatus()] });
   }
 
   private async syncOAuthClaims(user: UserAdmin, profile: OAuthProfile, oauth: OAuthClaimsConfig): Promise<UserAdmin> {

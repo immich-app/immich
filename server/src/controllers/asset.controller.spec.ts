@@ -51,6 +51,15 @@ describe(AssetController.name, () => {
 
       expect(service.updateAll).toHaveBeenCalledWith(undefined, expect.objectContaining({ duplicateId: null }));
     });
+
+    it.each([null, ''])('should store %j as an empty description', async (description) => {
+      const id = factory.uuid();
+      const { status } = await request(ctx.getHttpServer())
+        .put(`/assets`)
+        .send({ ids: [id], description });
+      expect(status).toBe(204);
+      expect(service.updateAll).toHaveBeenCalledWith(undefined, { ids: [id], description: '' });
+    });
   });
 
   describe('DELETE /assets', () => {
@@ -227,6 +236,13 @@ describe(AssetController.name, () => {
         expect(service.update).toHaveBeenCalledWith(undefined, assetId, test);
         expect(status).toBe(200);
       }
+    });
+
+    it.each([null, ''])('should store %j as an empty description', async (description) => {
+      const id = factory.uuid();
+      const { status } = await request(ctx.getHttpServer()).put(`/assets/${id}`).send({ description });
+      expect(status).toBe(200);
+      expect(service.update).toHaveBeenCalledWith(undefined, id, { description: '' });
     });
   });
 

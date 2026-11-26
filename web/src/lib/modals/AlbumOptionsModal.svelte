@@ -20,6 +20,7 @@
   import { Field, HStack, Modal, ModalBody, Select, Stack, Switch, Text, type SelectOption } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
+  import { SvelteMap } from 'svelte/reactivity';
 
   type Props = {
     album: AlbumResponseDto;
@@ -35,19 +36,38 @@
   );
   const album = $derived(query.data ?? initialAlbum);
 
+  // TODO: migrate the pending values to optimistic query updates
+  const pendingRoles = new SvelteMap<string, AlbumUserRole>();
+  let pendingSettings = $state<UpdateAlbumDto>({});
+
   const handleRoleSelect = async (user: UserResponseDto, role: AlbumUserRole | 'none') => {
     if (role === 'none') {
       await handleRemoveUserFromAlbum(album, user);
       return;
     }
 
-    await handleUpdateUserAlbumRole({ albumId: album.id, userId: user.id, role });
+    pendingRoles.set(user.id, role);
+    try {
+      await handleUpdateUserAlbumRole({ albumId: album.id, userId: user.id, role });
+    } finally {
+      if (pendingRoles.get(user.id) === role) {
+        pendingRoles.delete(user.id);
+      }
+    }
   };
 
   const { AddUsers, CreateSharedLink } = $derived(getAlbumActions($t, album));
 
-  const updateAlbum = (updateAlbumDto: UpdateAlbumDto) =>
-    executeMutation(updateAlbumInfoMutation, [{ id: album.id, updateAlbumDto }]);
+  const updateAlbum = async (updateAlbumDto: UpdateAlbumDto) => {
+    pendingSettings = { ...pendingSettings, ...updateAlbumDto };
+    try {
+      await executeMutation(updateAlbumInfoMutation, [{ id: album.id, updateAlbumDto }]);
+    } finally {
+      pendingSettings = Object.fromEntries(
+        Object.entries(pendingSettings).filter(([key, value]) => updateAlbumDto[key as keyof UpdateAlbumDto] !== value),
+      );
+    }
+  };
 
   const sharedLinksQuery = createQuery(
     () => getAllSharedLinksQuery({ albumId: album.id }),
@@ -65,19 +85,20 @@
           {#if album.order}
             <Field label={$t('display_order')} disabled={readOnly}>
               <Select
-                value={album.order}
+                bind:value={() => pendingSettings.order ?? album.order, (order) => updateAlbum({ order })}
                 options={[
                   { label: $t('newest_first'), value: AssetOrder.Desc },
                   { label: $t('oldest_first'), value: AssetOrder.Asc },
                 ]}
-                onChange={(value) => updateAlbum({ order: value })}
               />
             </Field>
           {/if}
           <Field label={$t('comments_and_likes')} description={$t('let_others_respond')} disabled={readOnly}>
             <Switch
-              checked={album.isActivityEnabled}
-              onCheckedChange={(checked) => updateAlbum({ isActivityEnabled: checked })}
+              bind:checked={
+                () => pendingSettings.isActivityEnabled ?? album.isActivityEnabled,
+                (isActivityEnabled) => updateAlbum({ isActivityEnabled })
+              }
             />
           </Field>
         </div>
@@ -101,14 +122,13 @@
               </div>
               <Field class="w-32" disabled={readOnly || role === AlbumUserRole.Owner}>
                 <Select
-                  value={role}
+                  bind:value={() => pendingRoles.get(user.id) ?? role, (value) => handleRoleSelect(user, value)}
                   options={[
                     { label: $t('role_editor'), value: AlbumUserRole.Editor },
                     { label: $t('role_viewer'), value: AlbumUserRole.Viewer },
                     { label: $t('owner'), value: AlbumUserRole.Owner, disabled: true },
                     { label: $t('remove_user'), value: 'none' },
                   ] as SelectOption<AlbumUserRole | 'none'>[]}
-                  onChange={(value) => handleRoleSelect(user, value)}
                 />
               </Field>
             </div>

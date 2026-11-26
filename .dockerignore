@@ -30,6 +30,8 @@ machine-learning/
 misc/
 mobile/
 
+native/target/
+
 packages/sdk/build/
 
 server/upload/

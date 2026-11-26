@@ -1,14 +1,22 @@
-import { loadMaintenanceAuth, loadMaintenanceStatus } from '#lib/utils/maintenance.ts';
-import { getServerVersion } from '@immich/sdk';
-import type { PageLoad } from '../admin/$types';
+import { executeMutation, queryClient } from '#lib/queries/client.ts';
+import { getMaintenanceStatusQuery, maintenanceLoginMutation } from '#lib/queries/maintenance.query.ts';
+import { getServerVersionQuery } from '#lib/queries/server-info.query.ts';
+import { websocketStore } from '#lib/stores/websocket.ts';
+import { MaintenanceAction } from '@immich/sdk';
+import { noop } from 'lodash-es';
+import type { PageLoad } from './$types';
 
 export const load = (async () => {
-  await Promise.allSettled([loadMaintenanceAuth(), loadMaintenanceStatus()]);
+  const token = new URLSearchParams(location.search).get('token') ?? undefined;
+  const [auth, status] = await Promise.all([
+    executeMutation(maintenanceLoginMutation, [{ maintenanceLoginDto: { token } }]),
+    queryClient.query(getMaintenanceStatusQuery()).catch(noop),
+  ]);
 
-  try {
-    const { major, minor, patch } = await getServerVersion();
-    return { expectedVersion: `${major}.${minor}.${patch}` };
-  } catch {
-    return { expectedVersion: '0.0.0' };
+  if (status?.action === MaintenanceAction.End) {
+    websocketStore.serverRestarting.set({ isMaintenanceMode: false });
   }
+
+  const expectedVersion = await queryClient.query(getServerVersionQuery()).catch(() => '0.0.0');
+  return { auth, expectedVersion };
 }) satisfies PageLoad;

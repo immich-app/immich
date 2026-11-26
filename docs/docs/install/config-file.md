@@ -55,19 +55,22 @@ The default configuration looks like this:
     "colorspace": "p3",
     "extractEmbedded": false,
     "fullsize": {
+      "effort": "medium",
       "enabled": false,
       "format": "jpeg",
       "quality": 80
     },
     "preview": {
+      "effort": "medium",
       "format": "jpeg",
       "quality": 80,
       "size": 1440
     },
     "thumbnail": {
+      "effort": "medium",
       "format": "webp",
       "quality": 80,
-      "size": 250
+      "size": 360
     }
   },
   "job": {

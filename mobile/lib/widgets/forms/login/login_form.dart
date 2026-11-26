@@ -27,11 +27,13 @@ import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -130,6 +132,26 @@ class LoginForm extends HookConsumerWidget {
         oAuthButtonLabel.value = config.oauthButtonText.isNotEmpty ? config.oauthButtonText : 'OAuth';
 
         serverEndpoint.value = endpoint;
+      } on ServerRedirectException catch (redirect) {
+        if (!context.mounted) {
+          return;
+        }
+
+        final origin = redirect.to.origin;
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (_) => ConfirmDialog(
+            title: context.t.warning,
+            content: context.t.login_form_server_redirect(from: sanitizeServerUrl, to: origin),
+            ok: context.t.continue$,
+          ),
+        );
+        if (confirmed != true || !context.mounted) {
+          return;
+        }
+
+        serverEndpointController.text = origin;
+        await getServerAuthSettings();
       } on ApiException catch (e) {
         if (!context.mounted) {
           return;

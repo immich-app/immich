@@ -1,9 +1,10 @@
 <script lang="ts">
   import AssetViewerEvents from '#lib/components/AssetViewerEvents.svelte';
   import { assetViewerManager, type Faces } from '#lib/managers/asset-viewer-manager.svelte.ts';
-  import { ocrManager, type OcrBoundingBox } from '#lib/stores/ocr.svelte.ts';
+  import { ocrManager } from '#lib/stores/ocr.svelte.ts';
   import { alwaysLoadOriginalFile } from '#lib/stores/preferences.store.ts';
   import { calculateBoundingBoxMatrix, getOcrBoundingBoxes, type Point } from '#lib/utils/ocr-utils.ts';
+  import type { AssetOcrResponseDto } from '@immich/sdk';
   import { shortcuts } from '@immich/ui';
   import {
     EquirectangularAdapter,
@@ -46,9 +47,17 @@
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
     plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
     navbar?: boolean;
+    ocrData?: AssetOcrResponseDto[];
   };
 
-  let { panorama, originalPanorama, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
+  let {
+    panorama,
+    originalPanorama,
+    adapter = EquirectangularAdapter,
+    plugins = [],
+    navbar = false,
+    ocrData = [],
+  }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state();
   let viewer: Viewer;
@@ -105,11 +114,11 @@
   });
 
   $effect(() => {
-    updateOcrBoxes(ocrManager.showOverlay, ocrManager.data);
+    updateOcrBoxes(ocrManager.showOverlay && ocrData.length > 0);
   });
 
   /** Use updateOnly=true on zoom, pan, or resize. */
-  const updateOcrBoxes = (showOverlay: boolean, ocrData: OcrBoundingBox[], updateOnly = false) => {
+  const updateOcrBoxes = (showOverlay: boolean, updateOnly = false) => {
     if (!viewer || !viewer.state.textureData || !viewer.getPlugin(MarkersPlugin)) {
       return;
     }
@@ -221,8 +230,8 @@
       viewer.addEventListener(events.ZoomUpdatedEvent.type, zoomHandler, { passive: true });
     }
 
-    const onReadyHandler = () => updateOcrBoxes(ocrManager.showOverlay, ocrManager.data, false);
-    const updateHandler = () => updateOcrBoxes(ocrManager.showOverlay, ocrManager.data, true);
+    const onReadyHandler = () => updateOcrBoxes(ocrManager.showOverlay, false);
+    const updateHandler = () => updateOcrBoxes(ocrManager.showOverlay, true);
     viewer.addEventListener(events.ReadyEvent.type, onReadyHandler);
     viewer.addEventListener(events.PositionUpdatedEvent.type, updateHandler);
     viewer.addEventListener(events.SizeUpdatedEvent.type, updateHandler);

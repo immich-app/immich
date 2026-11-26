@@ -47,6 +47,7 @@ export default typescriptEslint.config([
       'unicorn/prefer-smaller-scope': 'off',
       'unicorn/prefer-simple-condition-first': 'off',
       'unicorn/single-line-block-comment-style': ['error', 'single-line'],
+      'unicorn/prefer-options-parameter': 'off',
       curly: 2,
       'prettier/prettier': 0,
       'unicorn/name-replacements': 'off',

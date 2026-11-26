@@ -75,11 +75,25 @@ test.describe('face editor', () => {
     });
   });
 
+  test('lists the tagged person in the detail panel', async ({ api, app }) => {
+    const [alice] = people;
+    await expect(app.viewer.personThumbnail(alice.name)).toHaveCount(0);
+
+    await app.viewer.faceEditor.person(alice.name).click();
+    await app.viewer.faceEditor.confirmButton.click();
+
+    await expect(app.viewer.personThumbnail(alice.name)).toBeVisible();
+    expect(api.createFace).toHaveBeenCalledWith({
+      body: expect.objectContaining({ assetId: asset.id, personId: alice.id }),
+    });
+  });
+
   test('tags the face with a newly created person', async ({ data, api, app }) => {
     await app.viewer.faceEditor.createPersonButton.click();
     await app.viewer.faceEditor.newPersonNameInput.fill('Grace Hopper');
     await app.viewer.faceEditor.tagFaceButton.click();
 
+    await expect(app.viewer.faceEditor.person('Grace Hopper')).toBeVisible();
     await expect(app.viewer.faceEditor.canvas).toBeHidden();
     const created = data.getPeople().find(({ name }) => name === 'Grace Hopper');
     expect(api.createPerson).toHaveBeenCalledWith({ body: { name: 'Grace Hopper' } });

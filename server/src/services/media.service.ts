@@ -26,6 +26,7 @@ import {
 } from 'src/enum.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { BoundingBox } from 'src/repositories/machine-learning.repository.js';
+import { EmbeddedImage } from 'src/repositories/media.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import type {
   AudioStreamInfo,
@@ -56,6 +57,16 @@ interface UpsertFileOptions {
 }
 
 type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForGenerateThumbnailJob']>>>;
+
+const EMBEDDED_IMAGE_FORMATS: Record<string, RawExtractedFormat> = {
+  JpgFromRaw2: RawExtractedFormat.Jpeg,
+  JpgFromRaw: RawExtractedFormat.Jpeg,
+  PreviewJXL: RawExtractedFormat.Jxl,
+  PreviewImage: RawExtractedFormat.Jpeg,
+};
+
+//Raw sensor data
+const RAW_PHOTOMETRIC_INTERPRETATIONS: ReadonlySet<number | undefined> = new Set([32_803, 34_892]);
 
 @Injectable()
 export class MediaService extends BaseService {
@@ -231,12 +242,26 @@ export class MediaService extends BaseService {
   }
 
   private async extractImage(originalPath: string, minSize: number) {
-    let extracted = await this.mediaRepository.extract(originalPath);
-    if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, minSize))) {
-      extracted = null;
+    let images: EmbeddedImage[];
+    try {
+      images = await this.mediaRepository.getEmbeddedImages(originalPath, Object.keys(EMBEDDED_IMAGE_FORMATS));
+    } catch (error) {
+      this.logger.debug(`Could not read embedded images from ${originalPath}: ${error}`);
+      return null;
     }
 
-    return extracted;
+    const candidates = await Promise.all(
+      images
+        .filter(({ photometricInterpretation }) => !RAW_PHOTOMETRIC_INTERPRETATIONS.has(photometricInterpretation))
+        .map(async ({ tag, buffer }) => ({
+          buffer,
+          format: EMBEDDED_IMAGE_FORMATS[tag],
+          size: await this.getImageSize(buffer),
+        })),
+    );
+
+    const best = candidates.filter(({ size }) => size >= minSize).sort((a, b) => b.size - a.size)[0];
+    return best ? { buffer: best.buffer, format: best.format } : null;
   }
 
   private async decodeImage(thumbSource: string | Buffer, exifInfo: ThumbnailAsset['exifInfo'], targetSize?: number) {
@@ -348,6 +373,7 @@ export class MediaService extends BaseService {
         format: fullsizeFormat,
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
+        effort: image.fullsize.effort,
         decodingTier: 0,
       } as const;
       promises.push(this.mediaRepository.generateThumbnail(decoded, fullsizeOptions, fullsizeFile.path));
@@ -428,14 +454,15 @@ export class MediaService extends BaseService {
       orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
     });
 
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ ownerId, personGroupId });
+    const thumbnailPath = StorageCore.getPersonThumbnailPath({ ownerId, personGroupId }, image.thumbnail.format);
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions: GenerateThumbnailOptions = {
       colorspace: image.colorspace,
-      format: ImageFormat.Jpeg,
+      format: image.thumbnail.format,
       quality: image.thumbnail.quality,
-      progressive: false,
+      progressive: image.thumbnail.progressive,
+      effort: image.thumbnail.effort,
       processInvalidImages: false,
       size: FACE_THUMBNAIL_SIZE,
       edits: [
@@ -455,6 +482,9 @@ export class MediaService extends BaseService {
 
     await this.mediaRepository.generateThumbnail(decoded, thumbnailOptions, thumbnailPath);
     await this.personRepository.update({ ownerId, personGroupId, thumbnailPath });
+    if (data.thumbnailPath && data.thumbnailPath !== thumbnailPath) {
+      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [data.thumbnailPath] } });
+    }
 
     return JobStatus.Success;
   }
@@ -723,7 +753,10 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isRemuxRequired(ffmpegConfig: ConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
+  private isRemuxRequired(
+    ffmpegConfig: ConfigFFmpegDto,
+    { formatName, formatLongName, isFragmented }: VideoFormat,
+  ): boolean {
     if (ffmpegConfig.transcode === TranscodePolicy.Disabled) {
       return false;
     }
@@ -735,7 +768,7 @@ export class MediaService extends BaseService {
 
     const name = (formatLongName ? formatLongNameMapping[formatLongName] : undefined) ?? (formatName as VideoContainer);
 
-    return name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name);
+    return isFragmented || (name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name));
   }
 
   isSRGB({
@@ -775,10 +808,14 @@ export class MediaService extends BaseService {
     return bitrateValue;
   }
 
-  private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
-    const { width, height } = await this.mediaRepository.getImageMetadata(extractedPathOrBuffer);
-    const extractedSize = Math.min(width, height);
-    return extractedSize >= targetSize;
+  private async getImageSize(image: Buffer) {
+    try {
+      const { width, height } = await this.mediaRepository.getImageMetadata(image);
+      return Math.min(width, height);
+    } catch (error) {
+      this.logger.debug(`Could not read embedded image dimensions: ${error}`);
+      return 0;
+    }
   }
 
   private async syncFiles(

@@ -31,7 +31,6 @@ class PartnerDetailPage extends StatelessWidget {
       child: Timeline(
         appBar: MesmerizingSliverAppBar(title: partner.name),
         topSliverWidget: _InfoBox(partner: partner),
-        topSliverWidgetHeight: 110,
         bottomSheet: const PartnerDetailBottomSheet(),
       ),
     );

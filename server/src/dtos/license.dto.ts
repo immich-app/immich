@@ -1,5 +1,5 @@
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { UserLicenseSchema } from 'src/dtos/user.dto.js';
-import { createZodDto } from 'src/zod.js';
 
 const LicenseKeySchema = UserLicenseSchema.pick({
   licenseKey: true,
@@ -9,4 +9,5 @@ const LicenseKeySchema = UserLicenseSchema.pick({
 const LicenseResponseSchema = UserLicenseSchema.meta({ id: 'LicenseResponseDto' });
 
 export class LicenseKeyDto extends createZodDto(LicenseKeySchema) {}
+
 export class LicenseResponseDto extends createZodDto(LicenseResponseSchema) {}

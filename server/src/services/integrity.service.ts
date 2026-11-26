@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { basename } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
+import { ASSET_VISIBILITY_DEPENDENT_PATHS, JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import {
@@ -24,6 +24,7 @@ import {
   SystemMetadataKey,
 } from 'src/enum.js';
 import type { ArgOf } from 'src/repositories/event.repository.js';
+import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
 import type {
   IIntegrityDeleteReportTypeJob,
@@ -176,10 +177,17 @@ export class IntegrityService extends BaseService {
     const { path, assetId, fileAssetId } = await this.integrityRepository.getById(id);
 
     if (assetId) {
+      const asset = await this.assetRepository.getById(assetId);
       await this.assetRepository.updateAll([assetId], {
         deletedAt: new Date(),
         status: AssetStatus.Trashed,
       });
+      if (asset) {
+        this.resourceRepository.send({
+          userIds: [asset.ownerId],
+          changed: [Resource.asset({ id: assetId }), Resource.assetStatistics(), ...ASSET_VISIBILITY_DEPENDENT_PATHS],
+        });
+      }
 
       await this.eventRepository.emit('AssetTrashAll', {
         assetIds: [assetId],
@@ -196,6 +204,11 @@ export class IntegrityService extends BaseService {
       }
       await this.integrityRepository.deleteById(id);
     }
+
+    this.resourceRepository.send({
+      userIds: await this.userRepository.getAdminIds(),
+      changed: [Resource.integrityReport(), Resource.integrityReportSummary()],
+    });
   }
 
   private async queueRefreshAllUntrackedFiles() {

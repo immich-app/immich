@@ -73,8 +73,11 @@ export class TimelineService extends BaseService {
       await this.requireAccess({ auth, permission: Permission.TagRead, ids: [dto.tagId] });
     }
 
-    if (isMetadataHidden(auth)) {
-      dto.withCoordinates = false;
+    if (!isMetadataHidden(auth)) {
+      return;
     }
+
+    dto.withCoordinates = false;
+    dto.hasCoordinates = undefined;
   }
 }

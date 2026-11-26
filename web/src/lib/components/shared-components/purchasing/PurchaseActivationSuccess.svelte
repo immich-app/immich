@@ -22,7 +22,7 @@
     <SettingSwitch
       title={$t('show_supporter_badge')}
       subtitle={$t('show_supporter_badge_description')}
-      bind:checked={authManager.preferences.purchase.showSupportBadge}
+      checked={authManager.preferences.purchase.showSupportBadge}
       onToggle={setSupportBadgeVisibility}
     />
   </div>

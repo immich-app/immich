@@ -37,6 +37,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     await getServerVersion();
     await getServerFeatures();
     await getServerConfig();
+    await _serverInfoService.refreshSupportedFileExtensions();
     return state;
   }
 

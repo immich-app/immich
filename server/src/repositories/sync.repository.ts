@@ -1,43 +1,49 @@
 import { Injectable } from '@nestjs/common';
 import { sql, type Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database.js';
+import { TransactionHandle, columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { MemoryType } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import type { SyncAck } from 'src/types.js';
 
 export type SyncBackfillOptions = {
+  trx: TransactionHandle;
   nowId: string;
   afterUpdateId?: string;
   beforeUpdateId: string;
 };
 
 const dummyBackfillOptions = {
+  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   beforeUpdateId: DummyValue.UUID,
   afterUpdateId: DummyValue.UUID,
 };
 
 export type SyncCreatedAfterOptions = {
+  trx: TransactionHandle;
   nowId: string;
   userId: string;
   afterCreateId?: string;
 };
 
 const dummyCreateAfterOptions = {
+  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   userId: DummyValue.UUID,
   afterCreateId: DummyValue.UUID,
 };
 
 export type SyncQueryOptions = {
+  trx: TransactionHandle;
   nowId: string;
   userId: string;
   ack?: SyncAck;
 };
 
 const dummyQueryOptions = {
+  trx: DummyValue.TRANSACTION,
   nowId: DummyValue.UUID,
   userId: DummyValue.UUID,
   ack: {
@@ -101,11 +107,15 @@ export class SyncRepository {
 export class BaseSync {
   constructor(protected db: Kysely<DB>) {}
 
-  protected backfillQuery<T extends keyof DB>(t: T, { nowId, beforeUpdateId, afterUpdateId }: SyncBackfillOptions) {
+  protected backfillQuery<T extends keyof DB>(
+    t: T,
+    { trx, nowId, beforeUpdateId, afterUpdateId }: SyncBackfillOptions,
+  ) {
     const { table, ref } = this.db.dynamic;
     const updateIdRef = ref(`${t}.updateId`);
 
-    return this.db
+    return trx
+      .unwrap()
       .selectFrom(table(t).as(t))
       .where(updateIdRef, '<', nowId)
       .where(updateIdRef, '<=', beforeUpdateId)
@@ -113,11 +123,12 @@ export class BaseSync {
       .orderBy(updateIdRef, 'asc');
   }
 
-  protected auditQuery<T extends keyof DB>(t: T, { nowId, ack }: SyncQueryOptions) {
+  protected auditQuery<T extends keyof DB>(t: T, { trx, nowId, ack }: SyncQueryOptions) {
     const { table, ref } = this.db.dynamic;
     const idRef = ref(`${t}.id`);
 
-    return this.db
+    return trx
+      .unwrap()
       .selectFrom(table(t).as(t))
       .where(idRef, '<', nowId)
       .$if(!!ack, (qb) => qb.where(idRef, '>', ack!.updateId))
@@ -133,11 +144,12 @@ export class BaseSync {
       .execute();
   }
 
-  protected upsertQuery<T extends keyof DB>(t: T, { nowId, ack }: SyncQueryOptions) {
+  protected upsertQuery<T extends keyof DB>(t: T, { trx, nowId, ack }: SyncQueryOptions) {
     const { table, ref } = this.db.dynamic;
     const updateIdRef = ref(`${t}.updateId`);
 
-    return this.db
+    return trx
+      .unwrap()
       .selectFrom(table(t).as(t))
       .where(updateIdRef, '<', nowId)
       .$if(!!ack, (qb) => qb.where(updateIdRef, '>', ack!.updateId))
@@ -147,8 +159,9 @@ export class BaseSync {
 
 class AlbumSync extends BaseSync {
   @GenerateSql({ params: [dummyCreateAfterOptions] })
-  getCreatedAfter({ nowId, userId, afterCreateId }: SyncCreatedAfterOptions) {
-    return this.db
+  getCreatedAfter({ trx, nowId, userId, afterCreateId }: SyncCreatedAfterOptions) {
+    return trx
+      .unwrap()
       .selectFrom('album_user')
       .select(['albumId as id', 'createId'])
       .where('userId', '=', userId)
@@ -172,11 +185,10 @@ class AlbumSync extends BaseSync {
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
-    const userId = options.userId;
     return this.upsertQuery('album', options)
-      .distinctOn(['album.id', 'album.updateId'])
-      .leftJoin('album_user as album_users', 'album.id', 'album_users.albumId')
-      .where('album_users.userId', '=', userId)
+      .innerJoin('album_user as album_users', (join) =>
+        join.onRef('album_users.albumId', '=', 'album.id').on('album_users.userId', '=', options.userId),
+      )
       .select([
         'album.id',
         'album.albumName as name',
@@ -189,11 +201,6 @@ class AlbumSync extends BaseSync {
         'album.updateId',
       ])
       .stream();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getAlbumUsers(albumId: string) {
-    return this.db.selectFrom('album_user').select(['userId', 'role']).where('albumId', '=', albumId).execute();
   }
 }
 
@@ -208,7 +215,7 @@ class AlbumAssetSync extends BaseSync {
           .case()
           .when('asset.ownerId', '=', userId)
           .then(eb.ref('asset.isFavorite'))
-          .else(eb.val(false))
+          .else(eb.lit(false))
           .end()
           .as('isFavorite'),
       )
@@ -228,7 +235,7 @@ class AlbumAssetSync extends BaseSync {
           .case()
           .when('asset.ownerId', '=', userId)
           .then(eb.ref('asset.isFavorite'))
-          .else(eb.val(false))
+          .else(eb.lit(false))
           .end()
           .as('isFavorite'),
       )
@@ -251,7 +258,7 @@ class AlbumAssetSync extends BaseSync {
           .case()
           .when('asset.ownerId', '=', userId)
           .then(eb.ref('asset.isFavorite'))
-          .else(eb.val(false))
+          .else(eb.lit(false))
           .end()
           .as('isFavorite'),
       )
@@ -624,8 +631,9 @@ class MemoryToAssetSync extends BaseSync {
 
 class PartnerSync extends BaseSync {
   @GenerateSql({ params: [dummyCreateAfterOptions] })
-  getCreatedAfter({ nowId, userId, afterCreateId }: SyncCreatedAfterOptions) {
-    return this.db
+  getCreatedAfter({ trx, nowId, userId, afterCreateId }: SyncCreatedAfterOptions) {
+    return trx
+      .unwrap()
       .selectFrom('partner')
       .select(['sharedById', 'createId'])
       .where('sharedWithId', '=', userId)
@@ -663,7 +671,7 @@ class PartnerAssetsSync extends BaseSync {
   getBackfill(options: SyncBackfillOptions, partnerId: string) {
     return this.backfillQuery('asset', options)
       .select(columns.syncPartnerAsset)
-      .select(sql.val(false).as('isFavorite'))
+      .select(sql.lit(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', '=', partnerId)
       .stream();
@@ -683,7 +691,7 @@ class PartnerAssetsSync extends BaseSync {
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
       .select(columns.syncPartnerAsset)
-      .select(sql.val(false).as('isFavorite'))
+      .select(sql.lit(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),

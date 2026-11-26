@@ -15,12 +15,12 @@
   import LinkLivePhotoAction from '#lib/components/timeline/actions/LinkLivePhotoAction.svelte';
   import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
-  import { AssetAction } from '#lib/constants.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
+  import { searchMemoriesQuery } from '#lib/queries/memory.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { getStackBulkActions } from '#lib/services/stack.service.ts';
@@ -32,6 +32,7 @@
   import { AssetVisibility } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -74,8 +75,12 @@
     assetMultiSelectManager.clear();
   };
 
+  const memoryLaneFilters = { $for: DateTime.now().toISODate() };
+  memoryManager.setFilters(memoryLaneFilters);
+  const memoryLane = createQuery(() => searchMemoriesQuery(memoryLaneFilters));
+
   const items = $derived(
-    memoryManager.memories.map((memory) => ({
+    (memoryLane.data ?? []).map((memory) => ({
       id: memory.id,
       title: $memoryLaneTitle(memory),
       href: Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }),
@@ -84,8 +89,6 @@
       type: memory.type,
     })),
   );
-
-  memoryManager.setFilters({ $for: DateTime.now().toISODate() });
 </script>
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>
@@ -94,7 +97,6 @@
     bind:timelineManager
     {options}
     assetInteraction={assetMultiSelectManager}
-    removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked
   >

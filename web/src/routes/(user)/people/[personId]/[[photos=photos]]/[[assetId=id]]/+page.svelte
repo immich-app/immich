@@ -22,21 +22,23 @@
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '#lib/constants.ts';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import PersonEditModal from '#lib/modals/PersonEditModal.svelte';
   import PersonMergeSuggestionModal from '#lib/modals/PersonMergeSuggestionModal.svelte';
-  import { queryClient } from '#lib/queries/client.ts';
+  import { createPreloadedQuery, executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { getPersonQuery, getPersonStatisticsQuery, updatePersonMutation } from '#lib/queries/person.query.ts';
   import { searchPersonQuery } from '#lib/queries/search.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
-  import { getPersonActions, handleUpdatePersonName } from '#lib/services/person.service.ts';
+  import { getPersonActions } from '#lib/services/person.service.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { websocketEvents } from '#lib/stores/websocket.ts';
   import { getPeopleThumbnailUrl } from '#lib/utils.ts';
-  import { handleError } from '#lib/utils/handle-error.ts';
+  import { withUpdateStrategy } from '#lib/utils/person.ts';
   import { normalizeSearchString } from '#lib/utils/string-utils.ts';
-  import { AssetVisibility, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import { AssetVisibility, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
     CommandPaletteDefaultProvider,
@@ -44,7 +46,6 @@
     IconButton,
     LoadingSpinner,
     modalManager,
-    toastManager,
     type ActionItem,
   } from '@immich/ui';
   import {
@@ -59,26 +60,30 @@
   import { t } from 'svelte-i18n';
   import { afterNavigate, goto, refreshAll } from '$app/navigation';
   import { page } from '$app/state';
-  import type { PageData } from './$types';
+  import type { PageProps } from './$types';
   import EditNameInput from './EditNameInput.svelte';
   import MergeFaceSelector from './MergeFaceSelector.svelte';
   import UnmergeFaceSelector from './UnmergeFaceSelector.svelte';
 
-  interface Props {
-    data: PageData;
-  }
+  const { params }: PageProps = $props();
 
-  let { data }: Props = $props();
-
-  let numberOfAssets = $derived(data.statistics.assets);
-  let person = $derived(data.person);
+  const queries = {
+    person: createPreloadedQuery(() => getPersonQuery(params.personId)),
+    statistics: createPreloadedQuery(() => getPersonStatisticsQuery(params.personId)),
+  };
+  const numberOfAssets = $derived(queries.statistics.data.assets);
+  const person = $derived(queries.person.data);
+  onResourceDelete(
+    () => `/people/${person.id}`,
+    () => void goto(Route.people()),
+  );
   const altNames = $derived([
-    ...new Set(person.otherPeople.map(({ name }) => name).filter((name) => !!name && name !== person.name)),
+    ...new Set(person.otherPeople.map(({ name }) => name ?? '').filter((name) => !!name && name !== person.name)),
   ]);
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id, withPartners: true });
+  const options = $derived({ visibility: AssetVisibility.Timeline, personId: person.id, withPartners: true });
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
@@ -103,7 +108,7 @@
 
   onMount(() => {
     const action = page.url.searchParams.get(QueryParameter.ACTION);
-    const fallbackRoute = page.params.assetId ? Route.viewPerson(data.person) : Route.explore();
+    const fallbackRoute = page.params.assetId ? Route.viewPerson(person) : Route.explore();
 
     previousRoute = Route.continue(page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE), fallbackRoute).toString();
 
@@ -151,23 +156,18 @@
     viewMode = PersonPageViewMode.UNASSIGN_ASSETS;
   };
 
-  const handleMerge = async (person: PersonResponseDto) => {
-    await updateAssetCount();
-    await handleGoBack();
-
-    data = { ...data, person };
-  };
-
   const handleSelectFeaturePhoto = async (asset: TimelineAsset) => {
     if (viewMode !== PersonPageViewMode.SELECT_PERSON) {
       return;
     }
-    try {
-      person = await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
-      toastManager.primary($t('feature_photo_updated'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_set_feature_photo'));
-    }
+    await executeMutation(
+      () =>
+        updatePersonMutation({
+          success: { toast: 'feature_photo_updated' },
+          error: { toast: 'errors.unable_to_set_feature_photo' },
+        }),
+      [{ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } }],
+    );
 
     assetMultiSelectManager.clear();
 
@@ -192,6 +192,7 @@
     const [, personToBeMergedInto] = result;
 
     if (personToBeMergedInto.name !== personName && person.id === personToBeMergedInto.id) {
+      await updateName();
       await updateAssetCount();
       return { merged: true };
     }
@@ -213,7 +214,6 @@
 
   const changeName = async () => {
     viewMode = PersonPageViewMode.VIEW_ASSETS;
-    person.name = personName;
     isEditingName = false;
 
     if (isSuggestionSelectedByUser) {
@@ -222,8 +222,14 @@
       return;
     }
 
-    person = (await handleUpdatePersonName({ id: person.id, name: personName }, { notify: true })) ?? person;
+    await updateName();
   };
+
+  const updateName = () =>
+    executeMutation(
+      () => updatePersonMutation({ success: { toast: 'change_name_successfully' } }),
+      [{ id: person.id, personUpdateDto: withUpdateStrategy({ name: personName || null }) }],
+    );
 
   const handleCancelEditName = () => {
     isSearchingPeople = false;
@@ -294,19 +300,6 @@
     assetMultiSelectManager.clear();
   };
 
-  const onPersonUpdate = async (response: PersonResponseDto) => {
-    if (response.id !== person.id) {
-      return;
-    }
-
-    if (response.isHidden) {
-      await goto(previousRoute);
-      return;
-    }
-
-    person = response;
-  };
-
   const handlePersonAssetDelete = async ({ id, assetId }: { id: string; assetId: string }) => {
     if (id !== person.id) {
       return;
@@ -315,7 +308,9 @@
     await updateAssetCount();
   };
 
-  const { Edit, Favorite, Unfavorite, HidePerson, ShowPerson, Access } = $derived(getPersonActions($t, person));
+  const { Edit, Favorite, Unfavorite, HidePerson, ShowPerson, Access } = $derived(
+    getPersonActions($t, person, { onHide: () => void goto(previousRoute) }),
+  );
   const SelectFeaturePhoto: ActionItem = {
     title: $t('select_featured_photo'),
     icon: mdiAccountBoxOutline,
@@ -337,7 +332,6 @@
 </script>
 
 <OnEvents
-  {onPersonUpdate}
   onPersonAssetDelete={handlePersonAssetDelete}
   onAssetsDelete={updateAssetCount}
   onAssetsArchive={updateAssetCount}
@@ -384,7 +378,7 @@
               <EditNameInput
                 {person}
                 bind:suggestedPeople
-                name={person.name}
+                name={person.name ?? ''}
                 bind:isSearchingPeople
                 onChange={handleNameChange}
                 {thumbnailData}
@@ -557,5 +551,5 @@
 {/if}
 
 {#if viewMode === PersonPageViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
+  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleGoBack} />
 {/if}

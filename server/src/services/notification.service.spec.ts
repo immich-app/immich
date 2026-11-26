@@ -1,15 +1,17 @@
 import { AdminConfigDto, SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum.js';
+import { Resource } from 'src/resource-paths.js';
 import { NotificationService } from 'src/services/notification.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AssetFileFactory } from 'test/factories/asset-file.factory.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
+import { AuthFactory } from 'test/factories/auth.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { notificationStub } from 'test/fixtures/notification.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { getForAlbum } from 'test/mappers.js';
 import { newUuid } from 'test/small.factory.js';
-import { ServiceMocks, newTestService } from 'test/utils.js';
+import { ServiceMocks, expectResourceEvents, newTestService } from 'test/utils.js';
 
 const configs = {
   smtpDisabled: Object.freeze<SystemConfig>({
@@ -59,6 +61,57 @@ describe(NotificationService.name, () => {
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('updateAll', () => {
+    it('should tell only the notification owner', async () => {
+      const auth = AuthFactory.create();
+      const ids = [newUuid(), newUuid()];
+      mocks.access.notification.checkOwnerAccess.mockResolvedValue(new Set(ids));
+      mocks.notification.updateAll.mockResolvedValue();
+
+      await sut.updateAll(auth, { ids, readAt: new Date() });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.notifications()] });
+    });
+  });
+
+  describe('deleteAll', () => {
+    it('should tell only the notification owner', async () => {
+      const auth = AuthFactory.create();
+      const ids = [newUuid(), newUuid()];
+      mocks.access.notification.checkOwnerAccess.mockResolvedValue(new Set(ids));
+      mocks.notification.deleteAll.mockResolvedValue();
+
+      await sut.deleteAll(auth, { ids });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: ids.map((id) => Resource.notification({ id })) });
+    });
+  });
+
+  describe('update', () => {
+    it('should tell only the notification owner', async () => {
+      const auth = AuthFactory.create();
+      const id = newUuid();
+      mocks.access.notification.checkOwnerAccess.mockResolvedValue(new Set([id]));
+      mocks.notification.update.mockResolvedValue({ ...notificationStub.albumEvent, id });
+
+      await sut.update(auth, id, { readAt: new Date() });
+
+      expectResourceEvents(mocks, { userIds: [auth.user.id], changed: [Resource.notification({ id })] });
+    });
+  });
+
+  describe('delete', () => {
+    it('should tell only the notification owner', async () => {
+      const auth = AuthFactory.create();
+      const id = newUuid();
+      mocks.access.notification.checkOwnerAccess.mockResolvedValue(new Set([id]));
+      mocks.notification.delete.mockResolvedValue();
+
+      await sut.delete(auth, id);
+      expectResourceEvents(mocks, { userIds: [auth.user.id], deleted: [Resource.notification({ id })] });
+    });
   });
 
   describe('onConfigUpdate', () => {

@@ -1,11 +1,6 @@
-import z from 'zod';
+import { createZodDto } from '@immich/nestjs-standard-schema/zod';
 import { ManualJobNameSchema } from 'src/enum.js';
-import { createZodDto } from 'src/zod.js';
 
-const JobCreateSchema = z
-  .object({
-    name: ManualJobNameSchema,
-  })
-  .meta({ id: 'JobCreateDto' });
-
-export class JobCreateDto extends createZodDto(JobCreateSchema) {}
+export class JobCreateDto extends createZodDto({
+  name: ManualJobNameSchema,
+}) {}
