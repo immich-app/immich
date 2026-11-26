@@ -17,7 +17,7 @@ services:
   immich-app-base:
     profiles: ['_base']
     tmpfs:
-      - /tmp
+      - /tmp:exec
     volumes:
       - ..:/usr/src/app
       # - ../../ui:/usr/src/ui
