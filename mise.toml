@@ -26,7 +26,7 @@ opentofu = "1.13.9"
 "github:webassembly/binaryen" = "version_124"
 "github:extism/js-pdk" = "v1.7.0"
 restic = "0.19.1"
-java = "21.0.13+9.0.LTS"
+java = "21.0.13+100000002.0.LTS"
 
 [tools."github:jellyfin/jellyfin-ffmpeg"]
 version = "7.1.3-6"
