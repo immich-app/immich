@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/local_media_observer.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -312,6 +313,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
       final backgroundManager = ref.read(backgroundSyncProvider);
+      final mediaObserver = ref.read(localMediaObserverProvider);
       final backupNotifier = ref.read(backupProvider.notifier);
       final lifeCycle = ref.read(appStateProvider.notifier);
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
@@ -340,6 +342,10 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                 try {
                   wsProvider.connect();
                   unawaited(infoProvider.getServerInfo());
+
+                  if (!_isIOSBackgroundLaunch) {
+                    mediaObserver.start();
+                  }
 
                   bool syncSuccess = false;
                   await Future.wait([
@@ -391,6 +397,9 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     }
   }
 
+  bool get _isIOSBackgroundLaunch =>
+      CurrentPlatform.isIOS && WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed;
+
   Future<void> _resumeBackup(BackupNotifier notifier, AppLifeCycleNotifier lifeCycle) async {
     final isEnableBackup = SettingsRepository.instance.appConfig.backup.enabled;
 
@@ -400,7 +409,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
         // TODO(rewrite): Remove this check and requestFullResume once the splash no longer runs in background launches
         // iOS also runs the splash in background launches, where the app is never resumed.
         // there the foreground backup waits for the first resume instead of uploading off screen
-        if (CurrentPlatform.isIOS && WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+        if (_isIOSBackgroundLaunch) {
           lifeCycle.requestFullResume();
           return;
         }
