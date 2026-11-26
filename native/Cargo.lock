@@ -879,8 +879,7 @@ dependencies = [
 [[package]]
 name = "rs-vips"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52bff86a769bb29a4a68a54ca68dfb8e713aa5e6c6a380d26d6878393007528c"
+source = "git+https://github.com/mrdkprj/rs-vips?rev=1593b645f0f90b23989f7263137e96a69e886461#1593b645f0f90b23989f7263137e96a69e886461"
 dependencies = [
  "num-derive",
  "num-traits",

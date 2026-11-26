@@ -75,3 +75,7 @@ strip = true
 # rav1d decodes untiled images on the caller's thread, whose stack it overflows on Android when unoptimized.
 [profile.dev.package.rav1d]
 opt-level = 3
+
+[patch.crates-io]
+# Builds on Linux arm64 from this commit, which no release has yet.
+rs-vips = { git = "https://github.com/mrdkprj/rs-vips", rev = "1593b645f0f90b23989f7263137e96a69e886461" }
