@@ -1143,7 +1143,7 @@ export class AssetRepository {
       .updateTable('asset')
       .set((eb) => ({
         isOffline: false,
-        deletedAt: eb.case().when('status', '=', AssetStatus.Trashed).then(eb.ref('deletedAt')).end(),
+        deletedAt: eb.case().when('status', '=', sql.lit(AssetStatus.Trashed)).then(eb.ref('deletedAt')).end(),
       }))
       .where('id', '=', anyUuid(ids))
       .execute();

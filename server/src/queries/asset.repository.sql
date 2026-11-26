@@ -553,7 +553,7 @@ update "asset"
 set
   "isOffline" = $1,
   "deletedAt" = case
-    when "status" = $2 then "deletedAt"
+    when "status" = 'trashed' then "deletedAt"
   end
 where
   "id" = any ($3::uuid[])
