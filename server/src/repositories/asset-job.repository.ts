@@ -288,8 +288,8 @@ export class AssetJobRepository {
                   .select(['stack_asset.id'])
                   .whereRef('stack_asset.stackId', '=', 'stack.id')
                   .whereRef('stack_asset.id', '!=', 'stack.primaryAssetId')
-                  .where('stack_asset.visibility', '=', sql.val(AssetVisibility.Timeline))
-                  .where('stack_asset.status', '!=', sql.val(AssetStatus.Deleted)),
+                  .where('stack_asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                  .where('stack_asset.status', '!=', sql.lit(AssetStatus.Deleted)),
               ).as('assets'),
             ])
             .as('stack_result'),

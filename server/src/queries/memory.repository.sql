@@ -44,14 +44,14 @@ select
           and "asset"."deletedAt" is null
           and not exists (
             select
-              $1 as "one"
+              1 as "one"
             from
               "asset_face"
               inner join "person" on "person"."personGroupId" = "asset_face"."personGroupId"
               and "person"."ownerId" = "asset"."ownerId"
             where
               "asset_face"."assetId" = "asset"."id"
-              and "person"."isHidden" = $2
+              and "person"."isHidden" = $1
           )
         order by
           "asset"."fileCreatedAt" asc
@@ -62,7 +62,7 @@ from
   "memory"
 where
   "deletedAt" is null
-  and "ownerId" = $3
+  and "ownerId" = $2
 order by
   "showAt" desc nulls last,
   "memoryAt" desc
@@ -85,14 +85,14 @@ select
           and "asset"."deletedAt" is null
           and not exists (
             select
-              $1 as "one"
+              1 as "one"
             from
               "asset_face"
               inner join "person" on "person"."personGroupId" = "asset_face"."personGroupId"
               and "person"."ownerId" = "asset"."ownerId"
             where
               "asset_face"."assetId" = "asset"."id"
-              and "person"."isHidden" = $2
+              and "person"."isHidden" = $1
           )
         order by
           "asset"."fileCreatedAt" asc
@@ -104,14 +104,14 @@ from
 where
   (
     "showAt" is null
-    or "showAt" <= $3
+    or "showAt" <= $2
   )
   and (
     "hideAt" is null
-    or "hideAt" >= $4
+    or "hideAt" >= $3
   )
   and "deletedAt" is null
-  and "ownerId" = $5
+  and "ownerId" = $4
 order by
   "showAt" desc nulls last,
   "memoryAt" desc
@@ -134,14 +134,14 @@ select
           and "asset"."deletedAt" is null
           and not exists (
             select
-              $1 as "one"
+              1 as "one"
             from
               "asset_face"
               inner join "person" on "person"."personGroupId" = "asset_face"."personGroupId"
               and "person"."ownerId" = "asset"."ownerId"
             where
               "asset_face"."assetId" = "asset"."id"
-              and "person"."isHidden" = $2
+              and "person"."isHidden" = $1
           )
         order by
           "asset"."fileCreatedAt" asc
@@ -151,9 +151,9 @@ select
 from
   "memory"
 where
-  "showAt" > $3
+  "showAt" > $2
   and "deletedAt" is null
-  and "ownerId" = $4
+  and "ownerId" = $3
 order by
   "showAt" desc nulls last,
   "memoryAt" desc
@@ -176,14 +176,14 @@ select
           and "asset"."deletedAt" is null
           and not exists (
             select
-              $1 as "one"
+              1 as "one"
             from
               "asset_face"
               inner join "person" on "person"."personGroupId" = "asset_face"."personGroupId"
               and "person"."ownerId" = "asset"."ownerId"
             where
               "asset_face"."assetId" = "asset"."id"
-              and "person"."isHidden" = $2
+              and "person"."isHidden" = $1
           )
         order by
           "asset"."fileCreatedAt" asc
@@ -195,10 +195,10 @@ from
 where
   (
     "showAt" is null
-    or "showAt" <= $3
+    or "showAt" <= $2
   )
   and "deletedAt" is null
-  and "ownerId" = $4
+  and "ownerId" = $3
 order by
   "showAt" desc nulls last,
   "memoryAt" desc

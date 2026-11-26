@@ -72,7 +72,7 @@ shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
   - '@immich/ui'
-  - '@immich/sql-tools@0.7.0'
+  - '@immich/sql-tools@0.8.0'
   - '@nestjs/cli@12.0.1'
   - '@futo-org/*'
   - '@immich/nestjs-standard-schema@0.1.0'
