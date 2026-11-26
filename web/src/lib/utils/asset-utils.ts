@@ -142,7 +142,7 @@ export const isFirefox = typeof navigator !== 'undefined' && navigator.userAgent
 async function addSupportedMimeTypes(): Promise<void> {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
   if (isSafari) {
-    const match = navigator.userAgent.match(/Version\/(\d+)/);
+    const match = /Version\/(\d+)/.exec(navigator.userAgent);
 
     if (!match) {
       return;
