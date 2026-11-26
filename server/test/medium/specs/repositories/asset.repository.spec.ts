@@ -1,4 +1,4 @@
-import { Insertable, Kysely, sql } from 'kysely';
+import { Insertable, Kysely } from 'kysely';
 import { chunk } from 'lodash-es';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { AssetFileType, AssetOrder, AssetOrderBy, AssetStatus, AssetType, AssetVisibility } from 'src/enum.js';
@@ -10,13 +10,13 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
-import { getKyselyDB, getSingleConnectionKyselyDB } from 'test/utils.js';
+import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
 
-const setup = (db?: Kysely<DB>) => {
+const setup = () => {
   const { ctx } = newMediumService(BaseService, {
-    database: db || defaultDatabase,
+    database: defaultDatabase,
     real: [],
     mock: [LoggingRepository],
   });
@@ -608,7 +608,7 @@ describe(AssetRepository.name, () => {
     });
   });
 
-  describe('scanLibraryAssets', () => {
+  describe('streamLibraryScan', () => {
     it('should stream the external assets of the library in UTF-8 byte order', async () => {
       const { ctx, sut } = setup();
       const [library, otherLibrary] = await Promise.all([newExternalLibrary(ctx), newExternalLibrary(ctx)]);
@@ -636,7 +636,7 @@ describe(AssetRepository.name, () => {
         originalPath: '/upload/motion.mp4',
       });
 
-      await expect(sut.scanLibraryAssets(library.id, ({ assets }) => collectPaths(assets))).resolves.toEqual([
+      await expect(collectPaths(sut.streamLibraryScan(library.id))).resolves.toEqual([
         paths.toSorted((a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b))),
       ]);
     });
@@ -656,11 +656,31 @@ describe(AssetRepository.name, () => {
         await sut.createAll(batch);
       }
 
-      const batches = await sut.scanLibraryAssets(library.id, ({ assets }) => collectPaths(assets));
+      const batches = await collectPaths(sut.streamLibraryScan(library.id));
 
       expect(batches.map((batch) => batch.length)).toEqual([10_000, 1]);
     }, 60_000);
 
+    it('should stream an asset created after the batch before it was read', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const newExternalAsset = (originalPath: string) =>
+        ctx.newAsset({ ownerId: library.ownerId, libraryId: library.id, isExternal: true, originalPath });
+      await newExternalAsset('/lib/a.jpg');
+
+      const paths: string[] = [];
+      for await (const batch of sut.streamLibraryScan(library.id)) {
+        if (paths.length === 0) {
+          await newExternalAsset('/lib/b.jpg');
+        }
+        paths.push(...batch.map(({ originalPath }) => originalPath));
+      }
+
+      expect(paths).toEqual(['/lib/a.jpg', '/lib/b.jpg']);
+    });
+  });
+
+  describe('setOffline', () => {
     it('should offline assets and keep the trash date of a trashed asset', async () => {
       const { ctx, sut } = setup();
       const library = await newExternalLibrary(ctx);
@@ -674,9 +694,7 @@ describe(AssetRepository.name, () => {
         newExternalAsset('/reject/d.jpg', { isOffline: true, deletedAt }),
       ]);
 
-      await sut.scanLibraryAssets(library.id, ({ setOffline }) =>
-        setOffline([rejected.id, trashed.id, alreadyOffline.id]),
-      );
+      await sut.setOffline([rejected.id, trashed.id, alreadyOffline.id], new Date(Date.now() + 60_000));
 
       await expect(sut.getById(kept.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
       await expect(sut.getById(rejected.id)).resolves.toMatchObject({ isOffline: true, deletedAt: expect.any(Date) });
@@ -688,6 +706,23 @@ describe(AssetRepository.name, () => {
       await expect(sut.getById(alreadyOffline.id)).resolves.toMatchObject({ isOffline: true, deletedAt });
     });
 
+    it('should leave an asset created after the given time online', async () => {
+      const { ctx, sut } = setup();
+      const library = await newExternalLibrary(ctx);
+      const { asset } = await ctx.newAsset({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        isExternal: true,
+        originalPath: '/lib/a.jpg',
+      });
+
+      await sut.setOffline([asset.id], new Date(Date.now() - 60_000));
+
+      await expect(sut.getById(asset.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
+    });
+  });
+
+  describe('setOnline', () => {
     it('should bring assets online and keep a trashed asset in the trash', async () => {
       const { ctx, sut } = setup();
       const library = await newExternalLibrary(ctx);
@@ -708,7 +743,7 @@ describe(AssetRepository.name, () => {
         newOfflineAsset('/lib/c.jpg'),
       ]);
 
-      await sut.scanLibraryAssets(library.id, ({ setOnline }) => setOnline([restored.id, trashed.id]));
+      await sut.setOnline([restored.id, trashed.id]);
 
       await expect(sut.getById(restored.id)).resolves.toMatchObject({ isOffline: false, deletedAt: null });
       await expect(sut.getById(trashed.id)).resolves.toMatchObject({
@@ -717,68 +752,6 @@ describe(AssetRepository.name, () => {
         deletedAt,
       });
       await expect(sut.getById(untouched.id)).resolves.toMatchObject({ isOffline: true, deletedAt });
-    });
-
-    it('should commit an offline mark without locking the asset while the scan runs', async () => {
-      const { ctx, sut } = setup();
-      const library = await newExternalLibrary(ctx);
-      const { asset } = await ctx.newAsset({
-        ownerId: library.ownerId,
-        libraryId: library.id,
-        isExternal: true,
-        originalPath: '/reject/a.jpg',
-      });
-
-      const seen = await sut.scanLibraryAssets(library.id, async ({ setOffline }) => {
-        await setOffline([asset.id]);
-        return ctx.database
-          .selectFrom('asset')
-          .select('isOffline')
-          .where('id', '=', asset.id)
-          .forUpdate()
-          .noWait()
-          .executeTakeFirst();
-      });
-
-      expect(seen).toEqual({ isOffline: true });
-    });
-
-    it('should keep offline marks and close the cursor when the scan fails', async () => {
-      const database = await getSingleConnectionKyselyDB();
-      onTestFinished(() => database.destroy());
-      const { ctx, sut } = setup(database);
-      const library = await newExternalLibrary(ctx);
-      const { asset } = await ctx.newAsset({
-        ownerId: library.ownerId,
-        libraryId: library.id,
-        isExternal: true,
-        originalPath: '/reject/a.jpg',
-      });
-
-      await expect(
-        sut.scanLibraryAssets(library.id, async ({ setOffline }) => {
-          await setOffline([asset.id]);
-          throw new Error('Scan failed');
-        }),
-      ).rejects.toThrow('Scan failed');
-
-      await expect(sql`select name from pg_cursors where is_holdable`.execute(database)).resolves.toEqual({ rows: [] });
-      await expect(sut.getById(asset.id)).resolves.toMatchObject({ isOffline: true, deletedAt: expect.any(Date) });
-    });
-
-    it('should not stream assets inserted after the scan started', async () => {
-      const { ctx, sut } = setup();
-      const library = await newExternalLibrary(ctx);
-      const newExternalAsset = (originalPath: string) =>
-        ctx.newAsset({ ownerId: library.ownerId, libraryId: library.id, isExternal: true, originalPath });
-      await newExternalAsset('/lib/a.jpg');
-
-      const batches = await sut.scanLibraryAssets(library.id, async ({ assets }) => {
-        await newExternalAsset('/lib/b.jpg');
-        return collectPaths(assets);
-      });
-
-      expect(batches).toEqual([['/lib/a.jpg']]);
     });
   });
 });

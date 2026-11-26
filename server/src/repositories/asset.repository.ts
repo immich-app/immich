@@ -174,19 +174,7 @@ const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T
   );
 };
 
-export type LibraryScanAsset = {
-  id: string;
-  originalPath: string;
-  isOffline: boolean;
-  status: AssetStatus;
-  fileModifiedAt: Date;
-};
-
-export type LibraryScan = {
-  assets: AsyncIterable<LibraryScanAsset[]>;
-  setOffline: (ids: string[]) => Promise<unknown>;
-  setOnline: (ids: string[]) => Promise<unknown>;
-};
+export type LibraryScanAsset = Awaited<ReturnType<AssetRepository['getLibraryScanPage']>>[number];
 
 @Injectable()
 export class AssetRepository {
@@ -1112,62 +1100,53 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({
-    params: [
-      DummyValue.UUID,
-      async ({ assets, setOffline, setOnline }: LibraryScan) => {
-        await Array.fromAsync(assets);
-        await setOffline([DummyValue.UUID]);
-        await setOnline([DummyValue.UUID]);
-      },
-    ],
-  })
-  scanLibraryAssets<T>(libraryId: string, onScan: (scan: LibraryScan) => Promise<T>): Promise<T> {
-    return this.db.connection().execute(async (connection) => {
-      const query = connection
-        .selectFrom('asset')
-        .select(['asset.id', 'asset.originalPath', 'asset.isOffline', 'asset.status', 'asset.fileModifiedAt'])
-        .where('asset.libraryId', '=', asUuid(libraryId))
-        .where('asset.isExternal', '=', sql.lit(true))
-        .orderBy(sql`"originalPath" collate "C"`);
-      await sql`declare library_scan no scroll cursor with hold for ${query}`.execute(connection);
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getLibraryScanPage(libraryId: string, after: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id', 'originalPath', 'isOffline', 'status', 'fileModifiedAt'])
+      .where('libraryId', '=', libraryId)
+      .where('isExternal', '=', true)
+      .where('originalPath', '>', after)
+      .orderBy('originalPath')
+      .limit(JOBS_LIBRARY_PAGINATION_SIZE)
+      .execute();
+  }
 
-      async function* fetchBatches() {
-        for (;;) {
-          const { rows } = await sql<LibraryScanAsset>`
-            fetch ${sql.lit(JOBS_LIBRARY_PAGINATION_SIZE)} from library_scan
-          `.execute(connection);
-          if (rows.length === 0) {
-            return;
-          }
-
-          yield rows;
-        }
+  async *streamLibraryScan(libraryId: string) {
+    let after = '';
+    while (true) {
+      const page = await this.getLibraryScanPage(libraryId, after);
+      const last = page.at(-1);
+      if (!last) {
+        return;
       }
 
-      const scannedAt = new Date();
-      const setOffline = (ids: string[]) =>
-        connection
-          .updateTable('asset')
-          .set((eb) => ({ isOffline: true, deletedAt: eb.fn.coalesce('deletedAt', eb.val(scannedAt)) }))
-          .where('id', '=', anyUuid(ids))
-          .execute();
-      const setOnline = (ids: string[]) =>
-        connection
-          .updateTable('asset')
-          .set((eb) => ({
-            isOffline: false,
-            deletedAt: eb.case().when('status', '=', AssetStatus.Trashed).then(eb.ref('deletedAt')).end(),
-          }))
-          .where('id', '=', anyUuid(ids))
-          .execute();
+      yield page;
+      after = last.originalPath;
+    }
+  }
 
-      try {
-        return await onScan({ assets: fetchBatches(), setOffline, setOnline });
-      } finally {
-        await sql`close library_scan`.execute(connection);
-      }
-    });
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.DATE] })
+  setOffline(ids: string[], createdBefore: Date): Promise<unknown> {
+    return this.db
+      .updateTable('asset')
+      .set((eb) => ({ isOffline: true, deletedAt: eb.fn.coalesce('deletedAt', eb.val(createdBefore)) }))
+      .where('id', '=', anyUuid(ids))
+      .where('createdAt', '<', createdBefore)
+      .execute();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  setOnline(ids: string[]): Promise<unknown> {
+    return this.db
+      .updateTable('asset')
+      .set((eb) => ({
+        isOffline: false,
+        deletedAt: eb.case().when('status', '=', AssetStatus.Trashed).then(eb.ref('deletedAt')).end(),
+      }))
+      .where('id', '=', anyUuid(ids))
+      .execute();
   }
 
   private buildGetForOriginal(ids: string[], isEdited: boolean) {

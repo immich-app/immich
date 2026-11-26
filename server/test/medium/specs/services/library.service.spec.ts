@@ -1,11 +1,10 @@
-import { Kysely, sql } from 'kysely';
+import { Kysely } from 'kysely';
 import { chunk } from 'lodash-es';
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { chmod, mkdir, mkdtemp, rename, rm, symlink, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import type { SystemConfig } from 'src/dtos/config.dto.js';
 import { AssetFileType, AssetStatus, AssetType, JobName, JobStatus } from 'src/enum.js';
@@ -29,7 +28,7 @@ import { JobItem, JobOf } from 'src/types.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { MediumTestContext, mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { newUuid } from 'test/small.factory.js';
-import { getKyselyDB, getSingleConnectionKyselyDB } from 'test/utils.js';
+import { getKyselyDB } from 'test/utils.js';
 
 // `validateImportPath` checks candidate paths against the media location
 StorageCore.setMediaLocation('/photos');
@@ -188,7 +187,7 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
       .selectFrom('asset')
       .select(['id', 'isOffline'])
       .where('libraryId', '=', libraryId)
-      .orderBy(sql`"originalPath" collate "C"`)
+      .orderBy('originalPath')
       .execute();
   }
 
@@ -254,8 +253,8 @@ class LibraryTestContext extends MediumTestContext<typeof LibraryService> {
   }
 }
 
-const setup = (db?: Kysely<DB>) => {
-  const ctx = new LibraryTestContext(db || defaultDatabase);
+const setup = () => {
+  const ctx = new LibraryTestContext(defaultDatabase);
   return { sut: ctx.sut, ctx };
 };
 
@@ -1351,27 +1350,6 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleQueueSyncFiles', () => {
-    it('should not exhaust the database pool when more libraries are scanned at once than it has connections', async () => {
-      const { sut, ctx } = setup();
-      // the pool has 10 connections, and each library spans more than one batch so it offlines assets mid-read
-      const libraries = await Promise.all(
-        Array.from({ length: 10 }, () => ctx.createLibrary({ importPaths: [importPath] })),
-      );
-      for (const library of libraries) {
-        await ctx.createAssets(
-          library,
-          Array.from({ length: JOBS_LIBRARY_PAGINATION_SIZE + 1 }, (_, index) => join(outsidePath, `${index}.jpg`)),
-        );
-      }
-
-      await expect(Promise.all(libraries.map(({ id }) => sut.handleQueueSyncFiles({ id })))).resolves.toEqual(
-        libraries.map(() => JobStatus.Success),
-      );
-      for (const { id } of libraries) {
-        await expect(ctx.getAssetPaths(id)).resolves.toEqual([]);
-      }
-    }, 60_000);
-
     it('should not queue anything for an empty library and an empty folder', async () => {
       const { sut, ctx } = setup();
       await mkdir(importPath, { recursive: true });
@@ -1414,10 +1392,8 @@ describe(LibraryService.name, () => {
       await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([]);
     });
 
-    it('should fail without leaving a cursor open when the library has a path twice', async () => {
-      const database = await getSingleConnectionKyselyDB();
-      onTestFinished(() => database.destroy());
-      const { sut, ctx } = setup(database);
+    it('should fail when the library has a path twice', async () => {
+      const { sut, ctx } = setup();
       await mkdir(importPath, { recursive: true });
       const library = await ctx.createLibrary({ importPaths: [importPath] });
       const duplicate = join(importPath, 'asset.png');
@@ -1426,8 +1402,6 @@ describe(LibraryService.name, () => {
       await expect(sut.handleQueueSyncFiles({ id: library.id })).rejects.toThrow(
         `Library asset stream is not in ascending order: ${JSON.stringify(duplicate)} after ${JSON.stringify(duplicate)}`,
       );
-
-      await expect(sql`select name from pg_cursors where is_holdable`.execute(database)).resolves.toEqual({ rows: [] });
     });
 
     it('should not queue anything for unchanged files spanning several batches', async () => {

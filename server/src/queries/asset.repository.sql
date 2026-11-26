@@ -521,33 +521,34 @@ order by
 limit
   $4
 
--- AssetRepository.scanLibraryAssets
-declare library_scan no scroll cursor
-with
-  hold for (
-    select
-      "asset"."id",
-      "asset"."originalPath",
-      "asset"."isOffline",
-      "asset"."status",
-      "asset"."fileModifiedAt"
-    from
-      "asset"
-    where
-      "asset"."libraryId" = $1::uuid
-      and "asset"."isExternal" = true
-    order by
-      "originalPath" collate "C"
-  )
-fetch 10000
+-- AssetRepository.getLibraryScanPage
+select
+  "id",
+  "originalPath",
+  "isOffline",
+  "status",
+  "fileModifiedAt"
 from
-  library_scan
+  "asset"
+where
+  "libraryId" = $1
+  and "isExternal" = $2
+  and "originalPath" > $3
+order by
+  "originalPath"
+limit
+  $4
+
+-- AssetRepository.setOffline
 update "asset"
 set
   "isOffline" = $1,
   "deletedAt" = coalesce("deletedAt", $2)
 where
   "id" = any ($3::uuid[])
+  and "createdAt" < $4
+
+-- AssetRepository.setOnline
 update "asset"
 set
   "isOffline" = $1,
@@ -556,7 +557,6 @@ set
   end
 where
   "id" = any ($3::uuid[])
-close library_scan
 
 -- AssetRepository.getForOriginal
 select

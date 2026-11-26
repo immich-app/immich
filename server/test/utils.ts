@@ -7,7 +7,6 @@ import { transformException } from '@nestjs/platform-express/multer/multer/multe
 import { Test } from '@nestjs/testing';
 import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import multer, { memoryStorage } from 'multer';
 import { ClsService } from 'nestjs-cls';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
@@ -517,7 +516,7 @@ const templateName = 'mich';
 
 const withDatabase = (url: string, name: string) => url.replace(`/${templateName}`, () => `/${name}`);
 
-const createTestDatabase = async (suffix?: string): Promise<DatabaseConnectionParams> => {
+export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
   const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;
   const connection = { connectionType: 'url', url: withDatabase(testUrl, 'postgres') } as DatabaseConnectionParams;
   const sql = createPostgres({ maxConnections: 1, connection });
@@ -526,19 +525,7 @@ const createTestDatabase = async (suffix?: string): Promise<DatabaseConnectionPa
   const dbName = `immich_${suffix ?? randomSuffix}`;
   await sql.unsafe(`CREATE DATABASE ${dbName} WITH TEMPLATE ${templateName} OWNER postgres;`);
 
-  return { connectionType: 'url', url: withDatabase(testUrl, dbName) };
-};
-
-export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
-  return new Kysely<DB>(getKyselyConfig(await createTestDatabase(suffix)));
-};
-
-export const getSingleConnectionKyselyDB = async (): Promise<Kysely<DB>> => {
-  const connection = await createTestDatabase();
-  return new Kysely<DB>({
-    ...getKyselyConfig(connection),
-    dialect: new PostgresJSDialect({ postgres: createPostgres({ maxConnections: 1, connection }) }),
-  });
+  return new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: withDatabase(testUrl, dbName) }));
 };
 
 export const newRandomImage = () => {

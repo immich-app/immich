@@ -599,11 +599,13 @@ export class LibraryService extends BaseService {
       this.logger.warn(`No valid import paths found for library ${library.id}`);
     }
 
+    const startedAt = new Date();
     const files = this.storageRepository.walkOrdered({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
     });
+    const assets = this.assetRepository.streamLibraryScan(library.id);
 
     this.logger.log(`Starting scan of ${validImportPaths.length} import path(s) for library ${library.id}`);
 
@@ -613,20 +615,31 @@ export class LibraryService extends BaseService {
       [LibraryChange.Online]: 0,
       [LibraryChange.Refresh]: 0,
     };
-    await this.assetRepository.scanLibraryAssets(library.id, async ({ assets, setOffline, setOnline }) => {
-      const apply: Record<LibraryChange, (items: string[]) => Promise<unknown>> = {
-        [LibraryChange.Import]: (paths) =>
-          this.jobRepository.queue({ name: JobName.LibrarySyncFiles, data: { libraryId: library.id, paths } }),
-        [LibraryChange.Offline]: setOffline,
-        [LibraryChange.Online]: setOnline,
-        [LibraryChange.Refresh]: (assetIds) => this.queuePostSyncJobs(assetIds),
-      };
 
-      for await (const [change, items] of diffLibrary(files, assets)) {
-        counts[change] += items.length;
-        await apply[change](items);
+    for await (const [change, items] of diffLibrary(files, assets)) {
+      counts[change] += items.length;
+      switch (change) {
+        case LibraryChange.Import: {
+          await this.jobRepository.queue({
+            name: JobName.LibrarySyncFiles,
+            data: { libraryId: library.id, paths: items },
+          });
+          break;
+        }
+        case LibraryChange.Offline: {
+          await this.assetRepository.setOffline(items, startedAt);
+          break;
+        }
+        case LibraryChange.Online: {
+          await this.assetRepository.setOnline(items);
+          break;
+        }
+        case LibraryChange.Refresh: {
+          await this.queuePostSyncJobs(items);
+          break;
+        }
       }
-    });
+    }
 
     this.logger.log(
       `Finished scan of library ${library.id}: queued ${counts[LibraryChange.Import]} file(s) for import, offlined ${counts[LibraryChange.Offline]}, onlined ${counts[LibraryChange.Online]} and refreshed ${counts[LibraryChange.Refresh]} asset(s)`,
