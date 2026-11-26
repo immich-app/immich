@@ -72,12 +72,12 @@
   class="relative isolate flex h-16 place-items-center justify-between px-3 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)] transition-transform duration-200"
 >
   <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-24 bg-black/40 mask-smoothstep-to-bottom"></div>
-  <div class="dark">
+  <div class="dark pointer-events-auto">
     <ActionButton action={Close} />
   </div>
 
   <div
-    class="dark -m-1 flex items-center gap-2 overflow-x-auto p-1 *:shrink-0"
+    class="dark pointer-events-auto -m-1 flex items-center gap-2 overflow-x-auto p-1 *:shrink-0"
     data-testid="asset-viewer-navbar-actions"
   >
     {#if assetViewerManager.isImageLoading}

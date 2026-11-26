@@ -9,6 +9,7 @@ import type { Page } from '@playwright/test';
 
 const helloWorld = { text: 'Hello World', x1: 0.1, y1: 0.1, x2: 0.4, y2: 0.1, x3: 0.4, y3: 0.15, x4: 0.1, y4: 0.15 };
 const immichPhoto = { text: 'Immich Photo', x1: 0.2, y1: 0.3, x2: 0.6, y2: 0.3, x3: 0.6, y3: 0.36, x4: 0.2, y4: 0.36 };
+const topText = { text: 'Top text', x1: 0.4, y1: 0.01, x2: 0.6, y2: 0.01, x3: 0.6, y3: 0.08, x4: 0.4, y4: 0.08 };
 const secondText = {
   text: 'Second Asset Text',
   x1: 0.15,
@@ -66,6 +67,27 @@ const dispatchSplitTouch = (page: Page, box: { x: number; y: number; width: numb
   );
 
 test.describe('OCR bounding boxes', () => {
+  test('can select text in the empty area of the navigation bar', async ({ page, data, app }) => {
+    await page.setViewportSize({ width: 1600, height: 600 });
+    const asset = setup(data);
+    data.addOcr(factory.ocr({ assetId: asset.id, ...topText }));
+    await page.goto(Route.viewAsset({ id: asset.id }));
+    await app.viewer.waitForAsset(asset);
+    await app.viewer.ocr.button.click();
+
+    const box = app.viewer.ocr.boxes.filter({ hasText: topText.text });
+    const bounds = (await box.boundingBox())!;
+    const navigationBarHeight = 64;
+    const centerY = bounds.y + bounds.height / 2;
+    expect(centerY).toBeLessThan(navigationBarHeight);
+
+    await page.mouse.move(bounds.x + 3, centerY);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + bounds.width - 3, centerY, { steps: 10 });
+    await page.mouse.up();
+    await expect.poll(() => page.evaluate(() => getSelection()?.toString())).toBe(topText.text);
+  });
+
   test('toggle with the OCR button and show the recognized text', async ({ page, data, app }) => {
     const asset = setup(data);
     await page.goto(Route.viewAsset({ id: asset.id }));
