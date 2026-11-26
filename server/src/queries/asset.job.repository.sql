@@ -679,8 +679,8 @@ from
             where
               "stack_asset"."stackId" = "stack"."id"
               and "stack_asset"."id" != "stack"."primaryAssetId"
-              and "stack_asset"."visibility" = $1
-              and "stack_asset"."status" != $2
+              and "stack_asset"."visibility" = 'timeline'
+              and "stack_asset"."status" != 'deleted'
           ) as agg
       ) as "assets"
     from
@@ -689,7 +689,7 @@ from
       "stack"."id" = "asset"."stackId"
   ) as "stack_result" on true
 where
-  "asset"."id" = $3
+  "asset"."id" = $1
 
 -- AssetJobRepository.streamForVideoConversion
 select
