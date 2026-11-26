@@ -215,7 +215,7 @@ class AlbumAssetSync extends BaseSync {
           .case()
           .when('asset.ownerId', '=', userId)
           .then(eb.ref('asset.isFavorite'))
-          .else(eb.val(false))
+          .else(eb.lit(false))
           .end()
           .as('isFavorite'),
       )
@@ -235,7 +235,7 @@ class AlbumAssetSync extends BaseSync {
           .case()
           .when('asset.ownerId', '=', userId)
           .then(eb.ref('asset.isFavorite'))
-          .else(eb.val(false))
+          .else(eb.lit(false))
           .end()
           .as('isFavorite'),
       )
@@ -258,7 +258,7 @@ class AlbumAssetSync extends BaseSync {
           .case()
           .when('asset.ownerId', '=', userId)
           .then(eb.ref('asset.isFavorite'))
-          .else(eb.val(false))
+          .else(eb.lit(false))
           .end()
           .as('isFavorite'),
       )
@@ -671,7 +671,7 @@ class PartnerAssetsSync extends BaseSync {
   getBackfill(options: SyncBackfillOptions, partnerId: string) {
     return this.backfillQuery('asset', options)
       .select(columns.syncPartnerAsset)
-      .select(sql.val(false).as('isFavorite'))
+      .select(sql.lit(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', '=', partnerId)
       .stream();
@@ -691,7 +691,7 @@ class PartnerAssetsSync extends BaseSync {
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
       .select(columns.syncPartnerAsset)
-      .select(sql.val(false).as('isFavorite'))
+      .select(sql.lit(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),

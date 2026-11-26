@@ -98,7 +98,7 @@ export class MemoryRepository implements IBulkAsset {
                         .onRef('person.personGroupId', '=', 'asset_face.personGroupId')
                         .onRef('person.ownerId', '=', 'asset.ownerId'),
                     )
-                    .select((eb) => eb.val(1).as('one'))
+                    .select((eb) => eb.lit(1).as('one'))
                     .whereRef('asset_face.assetId', '=', 'asset.id')
                     .where('person.isHidden', '=', true),
                 ),

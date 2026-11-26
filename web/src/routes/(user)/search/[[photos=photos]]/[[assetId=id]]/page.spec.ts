@@ -493,3 +493,24 @@ describe('ahead of UTC', () => {
     expect(submittedTerms(router)).toMatchObject({ takenAfter: '2024-03-10T00:00:00.000Z' });
   });
 });
+
+test('ratings filter sets appropriate filters', async ({ data, router, render, settle, app }) => {
+  data.setPreferences(factory.preferences({ tags: { enabled: true, sidebarWeb: true }, ratings: { enabled: true } }));
+  await router.goto(Route.search({ isFavorite: true }));
+  await render(Page, load);
+  await settle();
+  await app.search.open();
+  await app.search.showAdvanced();
+
+  expect(searchManager.filter.rating).toBeUndefined();
+  const three_star = app.search.filters.getByRole('button', { name: '★★★', exact: true });
+  await three_star.click();
+
+  expect(searchManager.filter.rating).toEqual(3);
+
+  const none = app.search.filters.getByRole('button', { name: 'none', exact: true });
+  await none.click();
+  expect(searchManager.filter.rating).toBeNull();
+  await none.click();
+  expect(searchManager.filter.rating).toBeUndefined();
+});
