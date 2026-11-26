@@ -999,7 +999,7 @@ importers:
         specifier: ^7946.0.16
         version: 7946.0.16
       '@zoom-image/core':
-        specifier: ^0.43.0
+        specifier: ^0.43.1
         version: 0.43.1
       '@zoom-image/svelte':
         specifier: ^0.3.0
