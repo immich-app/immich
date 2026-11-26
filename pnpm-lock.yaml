@@ -587,8 +587,8 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0
       '@immich/walkrs':
-        specifier: 0.0.16
-        version: 0.0.16
+        specifier: 0.0.17
+        version: 0.0.17
       '@nestjs/bullmq':
         specifier: ^12.0.0
         version: 12.0.2(@nestjs/common@12.5.1(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.5.1)(bullmq@6.7.8(ioredis@6.0.0(supports-color@7.2.0))(pg@8.23.1))
@@ -3222,8 +3222,8 @@ packages:
       '@sveltejs/kit': ^2.13.0 || ^3.0.0
       svelte: ^5.29.0
 
-  '@immich/walkrs@0.0.16':
-    resolution: {integrity: sha512-NYEbrFOkqi2R4OA23LREZYoj8pXG7Z4+TDFqXmRBXKq3D7NmzUMFXKNeK6e93xOqOM1i7W5VKsqWrQ3rlsnpYw==}
+  '@immich/walkrs@0.0.17':
+    resolution: {integrity: sha512-IIardZ5qFCgiQS0R3eaK7vN1Qj23hM1crUNtS1Yo84PgH53vM2IMI6VNPdXyQoFBv2JC2ZCCwThA4P2RmZ4kFQ==}
     engines: {pnpm: '>=10.0.0'}
 
   '@inquirer/ansi@2.1.0':
@@ -16515,7 +16515,7 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
-  '@immich/walkrs@0.0.16': {}
+  '@immich/walkrs@0.0.17': {}
 
   '@inquirer/ansi@2.1.0': {}
 
