@@ -15,7 +15,7 @@
   let { album, onClose }: Props = $props();
 
   let albumName = $state(album.albumName);
-  let description = $state(album.description);
+  let description = $state(album.description ?? '');
 
   const onSubmit = async () => {
     await executeMutation(

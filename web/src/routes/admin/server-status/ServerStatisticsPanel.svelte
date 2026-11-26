@@ -102,9 +102,9 @@
           <div class="relative flex text-center font-mono text-2xl font-medium">
             {#if stats}
               {const storageUsageWithUnit = $derived(getStorageUsageWithUnit(stats.usage))}
-              <span class="text-light-300">{zeros(storageUsageWithUnit[0])}</span><span class="text-primary"
-                >{storageUsageWithUnit[0]}</span
-              >
+              <span class="text-light-300">{zeros(storageUsageWithUnit[0])}</span><span class="text-primary">
+                {storageUsageWithUnit[0]}
+              </span>
 
               <div class="absolute -inset-e-1.5 -bottom-4">
                 <Code color="muted" class="font-mono text-xs font-light">{storageUsageWithUnit[1]}</Code>
@@ -134,14 +134,11 @@
             {const userStats = $derived(getUserStats(user.id))}
             {#if userStats}
               <TableCell class="w-1/4">
-                {userStats.photos.toLocaleString($locale)} (<FormatBytes bytes={userStats.usagePhotos} />)</TableCell
-              >
+                {userStats.photos.toLocaleString($locale)} (<FormatBytes bytes={userStats.usagePhotos} />)
+              </TableCell>
               <TableCell class="w-1/4">
-                {userStats.videos.toLocaleString($locale)} (<FormatBytes
-                  bytes={userStats.usageVideos}
-                  precision={0}
-                />)</TableCell
-              >
+                {userStats.videos.toLocaleString($locale)} (<FormatBytes bytes={userStats.usageVideos} precision={0} />)
+              </TableCell>
               <TableCell class="w-1/4">
                 <FormatBytes bytes={userStats.usage} precision={0} />
                 {#if userStats.quotaSizeInBytes !== null}

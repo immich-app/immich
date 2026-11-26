@@ -111,8 +111,10 @@
             }
           }}
           class="mt-1 self-end"
-          disabled={activeJobs.size > 0}>{$t('admin.maintenance_integrity_check_all')}</Button
+          disabled={activeJobs.size > 0}
         >
+          {$t('admin.maintenance_integrity_check_all')}
+        </Button>
         <Button
           size="tiny"
           variant="ghost"
@@ -122,9 +124,11 @@
             }
           }}
           class="mt-1 self-end"
-          disabled={activeJobs.size > 0}>{$t('refresh')}</Button
-        ></HStack
-      >
+          disabled={activeJobs.size > 0}
+        >
+          {$t('refresh')}
+        </Button>
+      </HStack>
 
       <div class="mt-5 flex justify-between gap-4 max-lg:flex-wrap">
         {#each reportTypes as reportType (reportType)}
@@ -140,14 +144,18 @@
                     onclick={() => handleCreateJob(jobNames[reportType])}
                     size="tiny"
                     variant="ghost"
-                    disabled={activeJobs.has(jobNames[reportType])}>{$t('admin.maintenance_integrity_check')}</Button
+                    disabled={activeJobs.has(jobNames[reportType])}
                   >
+                    {$t('admin.maintenance_integrity_check')}
+                  </Button>
                   <Button
                     onclick={() => handleCreateJob(refreshJobNames[reportType])}
                     size="tiny"
                     variant="ghost"
-                    disabled={activeJobs.has(refreshJobNames[reportType])}>{$t('refresh')}</Button
+                    disabled={activeJobs.has(refreshJobNames[reportType])}
                   >
+                    {$t('refresh')}
+                  </Button>
                 </HStack>
                 <Button href={Route.systemMaintenanceIntegrityReport({ reportType })} size="tiny">{$t('view')}</Button>
               </HStack>

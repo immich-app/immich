@@ -7,13 +7,13 @@
 
   interface Props {
     id: string;
-    description: string;
+    description: string | null;
     isEditor: boolean;
   }
 
   let { id, description, isEditor }: Props = $props();
 
-  const draft = new Draft(() => description);
+  const draft = new Draft(() => description ?? '');
 
   const handleFocusOut = () =>
     executeMutation(

@@ -101,3 +101,4 @@ backend = "core:rust"
 
 [tools.rust.options]
 components = "clippy,rustfmt"
+profile = "minimal"

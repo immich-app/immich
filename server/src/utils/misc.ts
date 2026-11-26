@@ -11,7 +11,6 @@ import {
 import { get, isArray, isDate, isEmpty, isObject, orderBy, unset } from 'lodash-es';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
-import picomatch from 'picomatch';
 import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants.js';
 import { extraModels } from 'src/decorators.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
@@ -370,18 +369,6 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
   writeFileSync(outputPath, JSON.stringify(canonicalize(patchOpenAPI(specification)), null, 2), { encoding: 'utf8' });
-};
-
-// Offline detection and the re-online check must share one matcher, or an asset flips state on every scan
-export const createLibraryMatcher = ({
-  importPaths,
-  exclusionPatterns,
-}: {
-  importPaths: string[];
-  exclusionPatterns: string[];
-}) => {
-  const isExcluded = picomatch(exclusionPatterns, { nocase: true });
-  return (path: string) => importPaths.some((importPath) => path.startsWith(importPath)) && !isExcluded(path);
 };
 
 export function clamp(value: number, min: number, max: number) {

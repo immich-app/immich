@@ -7,13 +7,6 @@ import { AssetType, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { LibraryTable } from 'src/schema/tables/library.table.js';
 
-export enum AssetSyncResult {
-  DO_NOTHING,
-  UPDATE,
-  OFFLINE,
-  CHECK_OFFLINE,
-}
-
 @Injectable()
 export class LibraryRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -91,7 +84,7 @@ export class LibraryRepository {
           )
           .as('videos'),
       )
-      .select((eb) => eb.fn.coalesce((eb) => eb.fn.sum('asset_exif.fileSizeInByte'), eb.val(0)).as('usage'))
+      .select((eb) => eb.fn.coalesce((eb) => eb.fn.sum('asset_exif.fileSizeInByte'), eb.lit(0)).as('usage'))
       .where('asset.deletedAt', 'is', null)
       .groupBy('library.id')
       .where('library.id', '=', id)

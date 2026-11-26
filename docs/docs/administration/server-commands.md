@@ -1,4 +1,4 @@
-# Server Commands
+# Server commands
 
 The `immich-server` docker image comes preinstalled with an administrative CLI (`immich-admin`) that supports the following commands:
 

@@ -2,6 +2,7 @@
 run = "pnpm install --filter immich --frozen-lockfile"
 
 [tasks.build]
+depends = ["//native:node:build"]
 env._.path = "./node_modules/.bin"
 run = "nest build"
 
@@ -57,6 +58,7 @@ run = "email dev -p 3050 --dir src/emails"
 run = [
   { task = ":install" },
   { task = "//:plugins" },
+  { task = "//native:node:build" },
   { task = ":format" },
   { task = ":lint" },
   { task = ":check" },
@@ -67,6 +69,7 @@ run = [
 run = [
   { task = ":install" },
   { task = "//:plugins" },
+  { task = "//native:node:build" },
   { task = "//packages/plugin-core:build" },
   { task = ":test-medium --run" },
 ]

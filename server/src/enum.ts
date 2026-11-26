@@ -6,11 +6,13 @@ export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
   Passkey = 'passkey',
+  Code = 'code',
 }
 
 export enum AuthChallengeType {
   PasskeyRegistration = 'PasskeyRegistration',
   PasskeyAuthentication = 'PasskeyAuthentication',
+  AppLogin = 'AppLogin',
 }
 
 export enum ImmichCookie {
@@ -449,6 +451,13 @@ export enum AssetStatus {
   Active = 'active',
   Trashed = 'trashed',
   Deleted = 'deleted',
+}
+
+export enum LibraryChange {
+  Import = 'import',
+  Offline = 'offline',
+  Online = 'online',
+  Refresh = 'refresh',
 }
 
 export enum SourceType {
@@ -924,8 +933,6 @@ export enum JobName {
   LibraryDeleteCheck = 'LibraryDeleteCheck',
   LibraryDelete = 'LibraryDelete',
   LibraryRemoveAsset = 'LibraryRemoveAsset',
-  LibrarySyncAssetsQueueAll = 'LibraryScanAssetsQueueAll',
-  LibrarySyncAssets = 'LibrarySyncAssets',
   LibrarySyncFilesQueueAll = 'LibrarySyncFilesQueueAll',
   LibrarySyncFiles = 'LibrarySyncFiles',
   LibraryScanQueueAll = 'LibraryScanQueueAll',
@@ -1061,16 +1068,11 @@ export enum ExitCode {
 }
 
 export enum SyncRequestType {
-  AlbumsV1 = 'AlbumsV1',
   AlbumsV2 = 'AlbumsV2',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
-  /** @deprecated */
-  AlbumAssetsV1 = 'AlbumAssetsV1',
   AlbumAssetsV2 = 'AlbumAssetsV2',
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
-  /** @deprecated */
-  AssetsV1 = 'AssetsV1',
   AssetsV2 = 'AssetsV2',
   AssetExifsV1 = 'AssetExifsV1',
   AssetEditsV1 = 'AssetEditsV1',
@@ -1083,8 +1085,6 @@ export enum SyncRequestType {
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
   MemoryToAssetsV2 = 'MemoryToAssetsV2',
   PartnersV1 = 'PartnersV1',
-  /** @deprecated */
-  PartnerAssetsV1 = 'PartnerAssetsV1',
   PartnerAssetsV2 = 'PartnerAssetsV2',
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
   PartnerStacksV1 = 'PartnerStacksV1',
@@ -1092,11 +1092,10 @@ export enum SyncRequestType {
   UsersV1 = 'UsersV1',
   PeopleV1 = 'PeopleV1',
   /** @deprecated */
-  AssetFacesV1 = 'AssetFacesV1',
-  /** @deprecated */
   AssetFacesV2 = 'AssetFacesV2',
   AssetFacesV3 = 'AssetFacesV3',
   UserMetadataV1 = 'UserMetadataV1',
+  PendingResetV1 = 'PendingResetV1',
 }
 
 export const SyncRequestTypeSchema = z
@@ -1191,6 +1190,7 @@ export enum SyncEntityType {
   SyncAckV1 = 'SyncAckV1',
   SyncResetV1 = 'SyncResetV1',
   SyncCompleteV1 = 'SyncCompleteV1',
+  SyncPendingResetV1 = 'SyncPendingResetV1',
 }
 
 export const SyncEntityTypeSchema = z.enum(SyncEntityType).describe('Sync entity type').meta({ id: 'SyncEntityType' });
@@ -1352,6 +1352,7 @@ export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'Searc
 export enum ServerFeatureLevel {
   FeatureLevel = 1,
   Passkeys = 2,
+  SyncPendingReset = 3,
 }
 
 export const ServerFeatureLevelSchema = z

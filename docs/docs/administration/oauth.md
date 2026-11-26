@@ -1,4 +1,4 @@
-# OAuth Authentication
+# OAuth authentication
 
 This page contains details about using OAuth in Immich.
 
@@ -98,12 +98,12 @@ The Issuer URL should look something like the following, and return a valid json
 The `.well-known/openid-configuration` part of the url is optional and will be automatically added during discovery.
 :::
 
-## Auto Launch
+## Auto launch
 
 When Auto Launch is enabled, the login page will automatically redirect the user to the OAuth authorization url, to login with OAuth. To access the login screen again, use the browser's back button, or navigate directly to `/auth/login?autoLaunch=0`.
 Auto Launch can also be enabled on a per-request basis by navigating to `/auth/login?autoLaunch=1`, this can be useful in situations where Immich is called from e.g. Nextcloud using the _External sites_ app and the _oidc_ app so as to enable users to directly interact with a logged-in instance of Immich.
 
-## Mobile Redirect URI
+## Mobile redirect URI
 
 The redirect URI for the mobile app is `app.immich:///oauth-callback`, which is a [Custom Scheme](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app). If this custom scheme is an invalid redirect URI for your OAuth Provider, you can work around this by doing the following:
 
@@ -117,12 +117,12 @@ With these steps in place, you should be able to use OAuth from the [Mobile App]
 Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to forward requests to `app.immich:///oauth-callback`, and can be used for step 1.
 :::
 
-## Example Configuration
+## Example configuration
 
 <details>
-<summary>Authelia Example</summary>
+<summary>Authelia example</summary>
 
-### Authelia Example
+### Authelia example
 
 Here's an example of OAuth configured for Authelia:
 
@@ -205,9 +205,9 @@ Configuration of OAuth in Immich System Settings
 </details>
 
 <details>
-<summary>Authentik Example</summary>
+<summary>Authentik example</summary>
 
-### Authentik Example
+### Authentik example
 
 Here's an example of OAuth configured for Authentik:
 
@@ -236,9 +236,9 @@ Configuration of OAuth in Immich System Settings
 </details>
 
 <details>
-<summary>Google Example</summary>
+<summary>Google example</summary>
 
-### Google Example
+### Google example
 
 Here's an example of OAuth configured for Google:
 
@@ -267,9 +267,9 @@ Configuration of OAuth in Immich System Settings
 </details>
 
 <details>
-<summary>Keycloak Example</summary>
+<summary>Keycloak example</summary>
 
-### Keycloak Example
+### Keycloak example
 
 Here's an example of OAuth configured for Keycloak:
 

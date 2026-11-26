@@ -38,7 +38,7 @@
   let { users, people, onClose }: Props = $props();
 
   const user = $derived(users.find(({ id }) => id === selectedUserId) ?? users[0]);
-  const userOptions = users.map(({ id, name }) => ({ label: name, value: id }));
+  const userOptions = users.map(({ id, name }) => ({ label: name ?? '', value: id }));
 
   let selectedUserId = $state(users[0].id);
   let shareEveryone = $state(false);

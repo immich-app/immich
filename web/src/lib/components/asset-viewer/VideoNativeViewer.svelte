@@ -87,7 +87,7 @@
     }
 
     if (playOriginalVideo) {
-      return getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey });
+      return getAssetMediaUrl({ id: assetId, size: 'original', cacheKey });
     }
 
     return getAssetPlaybackUrl({ id: assetId, cacheKey });

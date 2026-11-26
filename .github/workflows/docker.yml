@@ -43,6 +43,7 @@ jobs:
           filters: |
             server:
               - 'server/**'
+              - 'native/**'
               - 'web/**'
               - 'i18n/**'
               - 'packages/sdk/**'

@@ -18,7 +18,7 @@ Immich can easily be installed on a Qnap NAS using [Container Station](https://w
   - To enable, open Control Panel, Privilege, Users to verify admin status is Enabled.
   - If not, login with another administrator user and uncheck the Disable this account checkbox in the Edit Account Profile window.
 
-### Optional - Store Immich Data Outside Containers Folder
+### Optional - Store Immich data outside containers folder
 
 - To store Immich data outside the default Containers folder, providing easier direct access to the files or sharing by other services.
 - Enable Advanced Folder Permissions.
@@ -48,11 +48,11 @@ In the Qnap application menu open Container Station. Complete the Welcome screen
 
 If the welcome screen keeps appearing when opening Container Station restart the NAS. If it keeps happening, try to uninstall and reinstall Container Station.
 
-## Step 3 - Download docker compose files
+## Step 3 - Download Docker Compose files
 
 Download [`docker-compose.yml`](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) and [`example.env`](https://github.com/immich-app/immich/releases/latest/download/example.env) to your computer.
 
-## Step 4 - Populate the docker compose file with .env and custom values
+## Step 4 - Populate the Docker Compose file with .env and custom values
 
 Qnap Container Station's Application wizard cannot process env_file statements in a docker compose file. Values from the .env file must be moved into the compose file.
 
@@ -103,13 +103,13 @@ Open the docker-compose and .env files in text editors on your computer.
       target: /userpictures
     ```
 
-## Step 6 - Upload docker compose to Containers folder
+## Step 6 - Upload Docker Compose to Containers folder
 
 With Qnap File Station, open the Containers folder and create a folder for storing docker compose files.
 
 Upload your edited compose file to the folder.
 
-## Step 7 - Create Application in Container Station
+## Step 7 - Create application in Container Station
 
 Open Container Station, and select the "**Applications**" action on the left navigation bar and then click "**+ Create**".
 

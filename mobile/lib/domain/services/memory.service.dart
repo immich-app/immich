@@ -8,7 +8,7 @@ class MemoryService {
   const MemoryService(this._repository);
 
   Future<List<Memory>> getMemoryLane(String ownerId) {
-    return _repository.getAll(ownerId);
+    return _repository.getAll(ownerId, birthdaysFirst: true);
   }
 
   Future<List<Memory>> getAll(String ownerId, {bool onlyFavorites = false}) {
