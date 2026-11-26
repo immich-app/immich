@@ -21,6 +21,7 @@ ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml:/usr/src/app/native/mise.to
 ENV RUSTUP_HOME=/buildcache/rustup
 ENV CARGO_HOME=/buildcache/cargo
 ENV CARGO_TARGET_DIR=/buildcache/native-target
+ENV TMPDIR=/var/tmp
 ENV PATH="${MISE_DATA_DIR}/shims:${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin"
 ENV IMMICH_ENV=development
 ENV NVIDIA_DRIVER_CAPABILITIES=all
