@@ -9,6 +9,7 @@
     activeColor?: string;
     textColor?: string;
     onClick: (event: KeyboardEvent | MouseEvent) => void;
+    disabled?: boolean;
     shortcut?: Shortcut | null;
     shortcutLabel?: string;
   }
@@ -20,6 +21,7 @@
     activeColor = 'bg-slate-300',
     textColor = 'text-immich-fg dark:text-immich-dark-bg',
     onClick,
+    disabled = false,
     shortcut = null,
     shortcutLabel = '',
   }: Props = $props();
@@ -28,6 +30,10 @@
   const isActive = $derived($selectedIdStore === id);
 
   const handleClick = (event: MouseEvent) => {
+    if (disabled) {
+      return;
+    }
+
     // eslint-disable-next-line unicorn/no-optional-chaining-on-undeclared-variable
     $optionClickCallbackStore?.();
     onClick(event);
@@ -38,7 +44,7 @@
   }
 </script>
 
-<svelte:window {@attach shortcuts(shortcut ? [{ shortcut, onShortcut: onClick }] : [])} />
+<svelte:window {@attach shortcuts(shortcut && !disabled ? [{ shortcut, onShortcut: onClick }] : [])} />
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
@@ -47,9 +53,14 @@
   onclick={handleClick}
   onmouseover={() => ($selectedIdStore = id)}
   onmouseleave={() => ($selectedIdStore = undefined)}
-  class="w-full p-4 text-start text-sm font-medium {textColor} flex cursor-pointer items-center gap-2 border-gray-200 focus:ring-2 focus:outline-none focus:ring-inset {isActive
-    ? activeColor
-    : 'bg-slate-100'}"
+  class={[
+    'w-full p-4 text-start text-sm font-medium',
+    textColor,
+    'flex items-center gap-2 border-gray-200 focus:ring-2 focus:outline-none focus:ring-inset',
+    disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
+    isActive && !disabled ? activeColor : 'bg-slate-100',
+  ]}
+  aria-disabled={disabled ? 'true' : undefined}
   role="menuitem"
 >
   {#if icon}
