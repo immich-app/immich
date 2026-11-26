@@ -2,11 +2,12 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Request, Response } from 'express';
 import { Observable, finalize } from 'rxjs';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
+import { REDACTED, isSensitiveKey, redactUrl } from 'src/utils/request.js';
 
 const maxArrayLength = 100;
 const replacer = (key: string, value: unknown) => {
-  if (key.toLowerCase().includes('password')) {
-    return '********';
+  if (isSensitiveKey(key)) {
+    return REDACTED;
   }
 
   if (Array.isArray(value) && value.length > maxArrayLength) {
@@ -37,7 +38,7 @@ export class LoggingInterceptor implements NestInterceptor {
         const duration = (finish - start).toFixed(2);
         const { statusCode } = res;
 
-        this.logger.debug(`${method} ${url} ${statusCode} ${duration}ms ${ip}`);
+        this.logger.debug(`${method} ${redactUrl(url)} ${statusCode} ${duration}ms ${ip}`);
         if (req.body && Object.keys(req.body).length > 0) {
           this.logger.verbose(JSON.stringify(req.body, replacer));
         }
