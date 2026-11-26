@@ -157,3 +157,11 @@ abstract class NativeSyncApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<CloudIdResult> getCloudIdForAssetIds(List<String> assetIds);
 }
+
+/// Empty for now. A class so fields can be added later.
+class PlatformMediaChange {}
+
+@EventChannelApi()
+abstract class NativeSyncEvents {
+  PlatformMediaChange streamMediaChanges();
+}
