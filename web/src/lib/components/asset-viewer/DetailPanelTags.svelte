@@ -2,11 +2,12 @@
   import HeaderActionButton from '#lib/components/HeaderActionButton.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { executeMutation } from '#lib/queries/client.ts';
+  import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
   import { untagAssetsMutation } from '#lib/queries/tag.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetActions } from '#lib/services/asset.service.ts';
-  import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { Badge, Link, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -21,12 +22,12 @@
 
   const handleRemove = (tagId: string) =>
     executeMutation(untagAssetsMutation, [{ id: tagId, bulkIdsDto: { ids: [asset.id] } }], {
-      onSuccess: () => void getAssetInfo({ id: asset.id }).then((updated) => (asset = updated)),
+      onSuccess: () => void queryClient.query(getAssetInfoQuery({ id: asset.id })).then((updated) => (asset = updated)),
     });
 
   const onAssetsTag = async (ids: string[]) => {
     if (ids.includes(asset.id)) {
-      asset = await getAssetInfo({ id: asset.id });
+      asset = await queryClient.query(getAssetInfoQuery({ id: asset.id }));
     }
   };
 

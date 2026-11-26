@@ -11,13 +11,13 @@
   import GeolocationHelpModal from '#lib/modals/GeolocationHelpModal.svelte';
   import GeolocationPointPickerModal from '#lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '#lib/modals/GeolocationUpdateConfirmModal.svelte';
-  import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
-  import { executeMutation } from '#lib/queries/client.ts';
+  import { getAssetInfoQuery, updateAssetsMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
   import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
   import type { LatLng } from '#lib/types.ts';
   import { setQueryValue } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { AssetVisibility, getAssetInfo, reverseGeocode } from '@immich/sdk';
+  import { AssetVisibility, reverseGeocode } from '@immich/sdk';
   import { Button, IconButton, LoadingSpinner, Text, modalManager } from '@immich/ui';
   import { mdiInformationOutline, mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -85,7 +85,7 @@
   const refreshUpdatedAssets = async () => {
     const updatedAssets = await Promise.all(
       assetMultiSelectManager.assets.map(async (asset) => {
-        const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
+        const updatedAsset = await queryClient.query(getAssetInfoQuery({ ...authManager.params, id: asset.id }));
         return toTimelineAsset(updatedAsset);
       }),
     );

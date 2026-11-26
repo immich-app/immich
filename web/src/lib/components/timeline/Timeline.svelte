@@ -22,12 +22,13 @@
     ViewportTopMonth,
   } from '#lib/managers/timeline-manager/types.ts';
   import { assetsSnapshot } from '#lib/managers/timeline-manager/utils.svelte.ts';
+  import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
   import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
   import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
   import { isAssetViewerRoute, navigate } from '#lib/utils/navigation.ts';
   import { getTimes, toTimelineAsset, type ScrubberListener } from '#lib/utils/timeline-util.ts';
   import {
-    getAssetInfo,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -100,7 +101,7 @@
 
   const onAssetReturn = async (asset: AssetResponseDto) => {
     timelineManager.upsertAssets([toTimelineAsset(asset)]);
-    assetViewerManager.setAsset(await getAssetInfo({ ...authManager.params, id: asset.id }));
+    assetViewerManager.setAsset(await queryClient.query(getAssetInfoQuery({ ...authManager.params, id: asset.id })));
     await navigate({ targetRoute: 'current', assetId: asset.id });
   };
 

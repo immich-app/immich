@@ -9,7 +9,8 @@
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { getAlbumsByAssetQuery } from '#lib/queries/album.query.ts';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
   import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
   import { Route } from '#lib/route.ts';
   import { faceManager } from '#lib/stores/face.svelte.ts';
@@ -19,7 +20,7 @@
   import { getByteUnitString } from '#lib/utils/byte-units.ts';
   import { getCameraName } from '#lib/utils/camera-utils.ts';
   import { getParentPath } from '#lib/utils/tree-utils.ts';
-  import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { Icon, IconButton, Link, LoadingSpinner, Text } from '@immich/ui';
   import { mdiCamera, mdiCameraIris, mdiClose, mdiImageOutline, mdiInformationOutline } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
@@ -86,7 +87,7 @@
   };
 
   const handleRefreshPeople = async () => {
-    asset = await getAssetInfo({ id: asset.id });
+    asset = await queryClient.query(getAssetInfoQuery({ id: asset.id }));
     assetViewerManager.closeEditFacesPanel();
     faceManager.clear();
     await faceManager.getAssetFaces(asset.id);

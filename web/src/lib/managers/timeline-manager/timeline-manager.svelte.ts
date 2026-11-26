@@ -15,6 +15,7 @@ import {
 } from '#lib/managers/timeline-manager/internal/search-support.svelte.ts';
 import { WebsocketSupport } from '#lib/managers/timeline-manager/internal/websocket-support.svelte.ts';
 import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
+import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
 import { queryClient } from '#lib/queries/client.ts';
 import { getTimeBucketsQuery } from '#lib/queries/timeline.query.ts';
 import { updateStackedAssetInTimeline } from '#lib/utils/actions.ts';
@@ -27,7 +28,7 @@ import {
   type TimelineDateTime,
   type TimelineYearMonth,
 } from '#lib/utils/timeline-util.ts';
-import { AssetOrder, AssetOrderBy, AssetVisibility, getAssetInfo, type AssetResponseDto } from '@immich/sdk';
+import { AssetOrder, AssetOrderBy, AssetVisibility, type AssetResponseDto } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { isMismatched, updateObject } from './internal/utils.svelte';
@@ -440,7 +441,7 @@ export class TimelineManager extends VirtualScrollManager {
 
     const response = isAssetResponseDto(asset)
       ? asset
-      : await getAssetInfo({ ...authManager.params, id }).catch(() => null);
+      : await queryClient.query(getAssetInfoQuery({ ...authManager.params, id })).catch(() => null);
     if (!response) {
       return;
     }

@@ -19,14 +19,15 @@
   import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
   import { onResourceDelete } from '#lib/managers/resource-manager.svelte.ts';
   import type { TimelineAsset, Viewport } from '#lib/managers/timeline-manager/types.ts';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
   import { searchMemoriesQuery } from '#lib/queries/memory.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '#lib/utils.ts';
   import { fromISODateTimeUTC, toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { AssetMediaSize, AssetTypeEnum, MemoryType, getAssetInfo } from '@immich/sdk';
+  import { AssetMediaSize, AssetTypeEnum, MemoryType } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text, shortcuts } from '@immich/ui';
   import {
     mdiCakeVariant,
@@ -74,7 +75,9 @@
   // where the asset sits in its memory, for the progress bar and counter
   const assetIndex = $derived(current ? current.memory.assets.findIndex(({ id }) => id === currentAssetId) : -1);
   const currentMemoryAssetFull = $derived.by(async () =>
-    currentAssetId ? await getAssetInfo({ ...authManager.params, id: currentAssetId }) : undefined,
+    currentAssetId
+      ? await queryClient.query(getAssetInfoQuery({ ...authManager.params, id: currentAssetId }))
+      : undefined,
   );
   let currentTimelineAssets = $derived(current?.memory.assets ?? []);
 

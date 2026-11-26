@@ -2,9 +2,10 @@
   import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
   import { handleDownloadAsset } from '#lib/services/asset.service.ts';
   import { downloadArchive } from '#lib/utils/asset-utils.ts';
-  import { getAssetInfo } from '@immich/sdk';
   import { IconButton, shortcut } from '@immich/ui';
   import { mdiDownload } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -20,7 +21,7 @@
     const assets = assetMultiSelectManager.assets;
     if (assets.length === 1) {
       assetMultiSelectManager.clear();
-      let asset = await getAssetInfo({ ...authManager.params, id: assets[0].id });
+      let asset = await queryClient.query(getAssetInfoQuery({ ...authManager.params, id: assets[0].id }));
       await handleDownloadAsset(asset, { edited: true });
       return;
     }

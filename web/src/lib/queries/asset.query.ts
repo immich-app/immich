@@ -6,6 +6,7 @@ import {
   deleteAssets,
   editAsset,
   getAssetEdits,
+  getAssetInfo,
   getAssetOcr,
   getAssetStatistics,
   removeAssetEdits,
@@ -21,6 +22,15 @@ export const getAssetStatisticsQuery = (filter: AssetStatisticsFilter) =>
   queryOptions({
     queryKey: QueryKeys.assetStatistics(filter),
     queryFn: ({ signal }) => getAssetStatistics(filter, { signal }),
+    staleTime: 0,
+  });
+
+export type AssetInfoParams = Parameters<typeof getAssetInfo>[0];
+
+export const getAssetInfoQuery = (params: AssetInfoParams) =>
+  queryOptions({
+    queryKey: QueryKeys.asset(params),
+    queryFn: ({ signal }) => getAssetInfo(params, { signal }),
     staleTime: 0,
   });
 

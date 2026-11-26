@@ -2,6 +2,8 @@
   import Portal from '#lib/elements/Portal.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
   import { handlePromiseError } from '#lib/utils.ts';
   import { getNextAsset, getPreviousAsset } from '#lib/utils/asset-utils.ts';
   import {
@@ -10,7 +12,7 @@
     type DifferingMetadataFields,
   } from '#lib/utils/duplicate-utils.ts';
   import { navigate } from '#lib/utils/navigation.ts';
-  import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { Button, Icon, shortcuts } from '@immich/ui';
   import { mdiCheck, mdiChevronDown, mdiChevronUp, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
@@ -81,7 +83,7 @@
   };
 
   const onViewAsset = async ({ id }: AssetResponseDto) => {
-    const asset = await getAssetInfo({ ...authManager.params, id });
+    const asset = await queryClient.query(getAssetInfoQuery({ ...authManager.params, id }));
     assetViewerManager.setAsset(asset);
     await navigate({ targetRoute: 'current', assetId: asset.id });
   };
