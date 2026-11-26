@@ -80,6 +80,25 @@ test.describe('asset viewer navigation', () => {
       await app.viewer.waitForAsset(uploaded);
     });
 
+    test('next shows an error when the asset after it fails to load', async ({ page, data, api, logger, app }) => {
+      const [asset, next, failing] = data.addTimeline({ years: 1 });
+      api.on({
+        getAssetInfo: ({ params }) =>
+          params.id === failing.id ? { networkError: true } : { json: data.getAsset(params.id)! },
+      });
+      await page.goto(Route.viewAsset({ id: asset.id }));
+      await app.viewer.waitForAsset(asset);
+
+      await app.viewer.nextButton.click();
+
+      await expect(app.toast('error_retrieving_asset_information')).toBeVisible();
+      await app.viewer.waitForAsset(next);
+      await expect(app.viewer.nextButton).toHaveCount(0);
+      expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: failing.id } });
+      expect(logger.error).toHaveBeenCalledWith(/handleError/);
+      expect(logger.error).toHaveBeenCalledWith(/ERR_FAILED/);
+    });
+
     test('delete advances to the next asset', async ({ page, data, api, app }) => {
       const assets = data.addTimeline({ years: 1 });
       await page.goto(Route.viewAsset({ id: assets[40].id }));

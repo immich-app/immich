@@ -85,3 +85,70 @@ test('face editor shows faces detected in the meantime', async ({ page, data, ap
   await expect(app.viewer.deleteFaceButton).toHaveCount(2);
   expect(api.getFaces.calls.length).toBeGreaterThan(requests);
 });
+
+test('viewer shows changes made elsewhere to an asset viewed before', async ({ page, data, api, app }) => {
+  const asset = factory.asset();
+  data.addAssets(asset);
+  await page.goto(Route.photos());
+  await app.timeline.thumbnail(asset).click();
+  await expect(app.viewer.favoriteButton).toBeVisible();
+  await app.viewer.backButton.click();
+  await expect(app.viewer.root).toHaveCount(0);
+  data.updateAsset(asset.id, { isFavorite: true });
+  const requests = api.getAssetInfo.calls.length;
+
+  await app.timeline.thumbnail(asset).click();
+
+  await expect(app.viewer.unfavoriteButton).toBeVisible();
+  expect(api.getAssetInfo.calls.length).toBeGreaterThan(requests);
+});
+
+test('download of an asset viewed before uses the name it got elsewhere', async ({ page, data, api, app }) => {
+  const asset = factory.asset({ originalFileName: 'holiday.jpg' });
+  data.addAssets(asset);
+  await page.goto(Route.photos());
+  await app.timeline.thumbnail(asset).click();
+  await app.viewer.waitForAsset(asset);
+  await app.viewer.backButton.click();
+  await expect(app.viewer.root).toHaveCount(0);
+  data.addAssets({ ...asset, originalFileName: 'renamed.jpg' });
+  await app.timeline.select(asset);
+
+  const [download] = await Promise.all([page.waitForEvent('download'), app.timeline.selectionBar.download()]);
+
+  expect(download.suggestedFilename()).toBe('renamed.jpg');
+  expect(api.downloadAsset).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id }) });
+});
+
+test('memory shows the location an asset got elsewhere while another was shown', async ({ page, data, app }) => {
+  const [first, second] = [
+    factory.asset({ exifInfo: { city: 'Paris' } }),
+    factory.asset({ exifInfo: { city: 'Tokyo' } }),
+  ];
+  const memory = factory.memory({ assets: [first, second] });
+  data.addAssets([first, second]).addMemories(memory);
+  await page.goto(Route.viewMemory({ id: memory.id, assetId: first.id }));
+  await expect(app.memory.place('Paris')).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+  await expect(app.memory.place('Tokyo')).toBeVisible();
+  data.addAssets({ ...first, exifInfo: { city: 'London' } });
+
+  await page.keyboard.press('ArrowLeft');
+
+  await expect(app.memory.place('London')).toBeVisible();
+});
+
+test('duplicates viewer shows changes made elsewhere to an asset viewed before', async ({ page, data, app }) => {
+  const assets = [factory.asset(), factory.asset()];
+  data.addDuplicates(assets);
+  await page.goto(Route.duplicatesUtility());
+  await app.duplicates.viewButton.first().click();
+  await expect(app.viewer.favoriteButton).toBeVisible();
+  await app.viewer.backButton.click();
+  await expect(app.viewer.root).toHaveCount(0);
+  data.updateAssets({ ids: assets.map(({ id }) => id), isFavorite: true });
+
+  await app.duplicates.viewButton.first().click();
+
+  await expect(app.viewer.unfavoriteButton).toBeVisible();
+});
