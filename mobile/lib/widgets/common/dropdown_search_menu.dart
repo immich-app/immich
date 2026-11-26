@@ -31,9 +31,7 @@ class DropdownSearchMenu<T> extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedItem = useState<DropdownMenuEntry<T>?>(
-      dropdownMenuEntries.firstWhereOrNull((item) => item.value == initialSelection),
-    );
+    final selectedItem = dropdownMenuEntries.firstWhereOrNull((item) => item.value == initialSelection);
     final showTimeZoneDropdown = useState<bool>(false);
 
     final effectiveConstraints =
@@ -54,8 +52,8 @@ class DropdownSearchMenu<T> extends HookWidget {
           onTap: () => showTimeZoneDropdown.value = true,
           child: InputDecorator(
             decoration: inputDecoration,
-            child: selectedItem.value != null
-                ? Text(selectedItem.value!.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle)
+            child: selectedItem != null
+                ? Text(selectedItem.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle)
                 : null,
           ),
         ),
@@ -72,7 +70,6 @@ class DropdownSearchMenu<T> extends HookWidget {
           );
         },
         onSelected: (option) {
-          selectedItem.value = option;
           showTimeZoneDropdown.value = false;
           onSelected?.call(option.value);
         },
