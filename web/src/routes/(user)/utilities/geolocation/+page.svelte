@@ -15,6 +15,7 @@
   import { executeMutation } from '#lib/queries/client.ts';
   import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
   import type { LatLng } from '#lib/types.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import { setQueryValue } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { AssetVisibility, getAssetInfo, reverseGeocode } from '@immich/sdk';
@@ -67,31 +68,47 @@
       return;
     }
 
+    const selectedAssets = [...assetMultiSelectManager.assets];
+
     await executeMutation(
       () => updateAssetsMutation({ error: { toast: 'errors.unable_to_change_location' } }),
       [
         {
           assetBulkUpdateDto: {
-            ids: assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
+            ids: selectedAssets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
             latitude: point.lat,
             longitude: point.lng,
           },
         },
       ],
-      { onSuccess: () => void refreshUpdatedAssets() },
+      { onSuccess: () => void refreshUpdatedAssets(selectedAssets) },
     );
   };
 
-  const refreshUpdatedAssets = async () => {
-    const updatedAssets = await Promise.all(
-      assetMultiSelectManager.assets.map(async (asset) => {
-        const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
-        return toTimelineAsset(updatedAsset);
-      }),
-    );
+  const refreshUpdatedAssets = async (selectedAssets: TimelineAsset[]) => {
+    try {
+      const results = await Promise.allSettled(
+        selectedAssets.map(async (asset) => {
+          const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
+          return toTimelineAsset(updatedAsset);
+        }),
+      );
 
-    timelineManager.upsertAssets(updatedAssets);
-    assetMultiSelectManager.clear();
+      const updatedAssets = results
+        .filter((result): result is PromiseFulfilledResult<TimelineAsset> => result.status === 'fulfilled')
+        .map((result) => result.value);
+
+      if (updatedAssets.length > 0) {
+        timelineManager.upsertAssets(updatedAssets);
+      }
+
+      const failedRefresh = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+      if (failedRefresh) {
+        handleError(failedRefresh.reason, $t('errors.unable_to_change_location'));
+      }
+    } finally {
+      assetMultiSelectManager.clear();
+    }
   };
 
   const onKeyDown = (event: KeyboardEvent) => {

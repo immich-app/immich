@@ -77,6 +77,41 @@ test.describe('geolocation', () => {
     });
   });
 
+  test('clears the selection and updates refreshed assets even when a refresh fails after saving', async ({
+    page,
+    data,
+    api,
+    logger,
+    app,
+  }) => {
+    const [first, second] = [factory.asset({ fileCreatedAt: atNoon(1) }), factory.asset({ fileCreatedAt: atNoon(0) })];
+    data.addAssets([first, second]);
+    api.on({
+      getAssetInfo: ({ params }) => {
+        if (params.id === second.id) {
+          return { status: 500, json: { message: 'Refresh error', statusCode: 500 } };
+        }
+        return { json: { ...first, exifInfo: { ...first.exifInfo, latitude: 48.8566, longitude: 2.3522 } } };
+      },
+    });
+    await page.goto(Route.geolocationUtility());
+    await pickLocation(app, '48.8566', '2.3522');
+    await app.timeline.thumbnail(first).click();
+    await app.timeline.thumbnail(second).click();
+
+    await app.geolocation.applyButton.click();
+    await app.dialogButton('confirm').click();
+
+    await expect(app.geolocation.gpsBadge(first)).toBeVisible();
+    await expect(app.timeline.selected).toHaveCount(0);
+    await expect(app.geolocation.unselectAllButton).toBeDisabled();
+    await expect(app.toast(/Refresh error/)).toBeVisible();
+    expect(logger.error).toHaveBeenCalledWith(/500/);
+    expect(api.updateAssets).toHaveBeenCalledWith({
+      body: { ids: [first.id, second.id], latitude: 48.8566, longitude: 2.3522 },
+    });
+  });
+
   test('shows only assets without a location by default', async ({ page, data, app }) => {
     const located = factory.asset({ fileCreatedAt: atNoon(1), exifInfo: { latitude: 48.85, longitude: 2.35 } });
     const missing = factory.asset({ fileCreatedAt: atNoon(0) });
