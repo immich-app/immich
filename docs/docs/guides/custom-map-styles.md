@@ -26,6 +26,6 @@ Customizing the map style can be done easily using MapTiler, if you do not want 
 6. MapTiler will warn you that changing the map will change it across all apps using the map. Since no apps are using the map yet, this is okay.
 7. Clicking on the name of your new map at the top left will bring you to the item's **details** page. From here, copy the link to the JSON style under **Use vector style**. This link will automatically contain your personal API key to MapTiler.
 
-## Content Security Policy
+## Content security policy
 
 With [`IMMICH_HELMET_FILE=true`](/install/environment-variables.md), the bundled policy only lets the map load from Immich's own tile servers. To use a custom style, point `IMMICH_HELMET_FILE` at your own helmet file and add the host of the style, and every host it loads tiles, sprites and fonts from, to `connect-src`.
