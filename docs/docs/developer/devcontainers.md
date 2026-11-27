@@ -121,7 +121,7 @@ Unlike the Immich developer setup based on Docker Compose which uses `.env` file
 
 ```json
 "remoteEnv": {
-    "UPLOAD_LOCATION": "${localEnv:UPLOAD_LOCATION:./Library}",
+    "UPLOAD_LOCATION": "${localEnv:UPLOAD_LOCATION:./library}",
     "DB_PASSWORD": "${localEnv:DB_PASSWORD:postgres}",
     "DB_USERNAME": "${localEnv:DB_USERNAME:postgres}",
     "DB_DATABASE_NAME": "${localEnv:DB_DATABASE_NAME:immich}"
@@ -134,15 +134,15 @@ The `${localEnv:VARIABLE:default}` syntax reads from your shell environment with
 
 The `UPLOAD_LOCATION` environment variable controls where files are stored:
 
-**Default:** `./Library` (relative to the `docker` directory)
-**Resolved to:** `<immich-root>/docker/Library`
+**Default:** `./library` (relative to the `docker` directory)
+**Resolved to:** `<immich-root>/docker/library`
 
 **Bind Mounts Created:**
 
 ```yaml
 # From .devcontainer/server/container-compose-overrides.yml
-- ${UPLOAD_LOCATION-./Library}/photos:/workspaces/immich/server/upload
-- ${UPLOAD_LOCATION-./Library}/postgres:/var/lib/postgresql/data
+- ${UPLOAD_LOCATION-./library}/photos:/workspaces/immich/server/upload
+- ${UPLOAD_LOCATION-./library}/postgres:/var/lib/postgresql/data
 ```
 
 ### Database Configuration
@@ -157,11 +157,11 @@ These variables have sensible defaults (for development) but can be customized:
 
 ### Setting Environment Variables
 
-Add these to your shell profile (`~/.bashrc`, `~/.zshrc`, `~/.bash_profile`, etc.):
+To customize the default environment variables, add these exports to your shell profile (`~/.bashrc`, `~/.zshrc`, `~/.bash_profile`, etc.):
 
 ```bash
-# Required
-export UPLOAD_LOCATION=./Library  # or absolute path
+# Upload Location Path Resolution
+export UPLOAD_LOCATION=./library  # or absolute path
 
 # Optional (only if using non-default values)
 export DB_PASSWORD=your_password
@@ -330,15 +330,6 @@ The Dev Container is pre-configured for debugging:
 1. Check for conflicting services: `lsof -i :3000` (macOS/Linux)
 2. Stop conflicting services or change port mappings
 3. Restart Docker Desktop
-
-#### Upload Location Not Set
-
-**Problem**: Errors about missing UPLOAD_LOCATION  
-**Solution**:
-
-1. Set the environment variable: `export UPLOAD_LOCATION=./Library`
-2. Add to your shell profile for persistence
-3. Restart your terminal and VS Code
 
 #### Database Connection Failed
 
