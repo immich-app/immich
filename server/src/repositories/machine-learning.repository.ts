@@ -26,7 +26,7 @@ export enum ModelType {
   OCR = 'ocr',
 }
 
-export type ModelPayload = { imagePath: string } | { text: string };
+export type ModelPayload = { imagePath: string } | { imageBuffer: Buffer } | { text: string };
 
 type ModelOptions = { modelName: string };
 
@@ -187,14 +187,15 @@ export class MachineLearningRepository {
     throw new Error(`Machine learning request '${JSON.stringify(config)}' failed for all URLs`);
   }
 
-  async detectFaces(imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
+  async detectFaces(image: string | Buffer, { modelName, minScore }: FaceDetectionOptions) {
     const request = {
       [ModelTask.FACIAL_RECOGNITION]: {
         [ModelType.DETECTION]: { modelName, options: { minScore } },
         [ModelType.RECOGNITION]: { modelName },
       },
     };
-    const response = await this.predict<FacialRecognitionResponse>({ imagePath }, request);
+    const payload = typeof image === 'string' ? { imagePath: image } : { imageBuffer: image };
+    const response = await this.predict<FacialRecognitionResponse>(payload, request);
     return {
       imageHeight: response.imageHeight,
       imageWidth: response.imageWidth,
@@ -229,8 +230,8 @@ export class MachineLearningRepository {
     const formData = new FormData();
     formData.append('entries', JSON.stringify(config));
 
-    if ('imagePath' in payload) {
-      const fileBuffer = await readFile(payload.imagePath);
+    if ('imagePath' in payload || 'imageBuffer' in payload) {
+      const fileBuffer = 'imageBuffer' in payload ? payload.imageBuffer : await readFile(payload.imagePath);
       formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
     } else if ('text' in payload) {
       formData.append('text', payload.text);

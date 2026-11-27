@@ -7362,6 +7362,62 @@
         "x-immich-state": "Stable"
       }
     },
+    "/faces/recognize": {
+      "post": {
+        "description": "Match faces against existing, non-hidden people using only the authenticated user's timeline and archived photos. The image is processed without being saved. Uses the configured facial recognition model and distance threshold.",
+        "operationId": "recognizeFaces",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FaceRecognitionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaceRecognitionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Recognize faces in an image",
+        "tags": [
+          "Faces"
+        ],
+        "x-immich-history": [
+          {
+            "state": "Added",
+            "version": "v3.4.0"
+          },
+          {
+            "state": "Alpha",
+            "version": "v3.4.0"
+          }
+        ],
+        "x-immich-permission": "person.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/faces/{id}": {
       "delete": {
         "description": "Delete a face identified by the id. Optionally can be force deleted.",
@@ -23408,6 +23464,117 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "FaceRecognitionDto": {
+        "properties": {
+          "file": {
+            "contentEncoding": "binary",
+            "description": "JPEG, PNG or WebP image, up to 20 MiB",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "FaceRecognitionResponseDto": {
+        "properties": {
+          "faces": {
+            "description": "One result per detected face, or an empty array if none were detected",
+            "items": {
+              "$ref": "#/components/schemas/FaceRecognitionResultDto"
+            },
+            "type": "array"
+          },
+          "imageHeight": {
+            "description": "Height of the decoded image",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "imageWidth": {
+            "description": "Width of the decoded image",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "faces",
+          "imageHeight",
+          "imageWidth"
+        ],
+        "type": "object"
+      },
+      "FaceRecognitionResultDto": {
+        "properties": {
+          "boundingBox": {
+            "description": "Face coordinates in the decoded image",
+            "properties": {
+              "x1": {
+                "format": "double",
+                "type": "number"
+              },
+              "x2": {
+                "format": "double",
+                "type": "number"
+              },
+              "y1": {
+                "format": "double",
+                "type": "number"
+              },
+              "y2": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "required": [
+              "x1",
+              "x2",
+              "y1",
+              "y2"
+            ],
+            "type": "object"
+          },
+          "distance": {
+            "description": "Cosine distance to the matching face; lower is more similar",
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "matched": {
+            "description": "Whether a sufficiently similar face belongs to an existing person",
+            "type": "boolean"
+          },
+          "person": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonResponseDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Matching person, or null when no match was found"
+          },
+          "score": {
+            "description": "Face detection score, not identity confidence",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "boundingBox",
+          "distance",
+          "matched",
+          "person",
+          "score"
         ],
         "type": "object"
       },
