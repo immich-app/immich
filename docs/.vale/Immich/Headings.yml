@@ -1,0 +1,14 @@
+extends: capitalization
+message: "'%s' should use sentence case. If it contains a proper noun, add it to .vale/config/vocabularies/Immich/accept.txt."
+level: error
+scope: heading
+match: $sentence
+threshold: 1
+prefix: '^(?:Step \d+|Optional) - '
+indicators:
+  - ':'
+  - '.'
+  - '?'
+exceptions:
+  - I
+  - Multi-GPU
