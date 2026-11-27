@@ -17,10 +17,14 @@ export type OnArchive = (ids: string[], visibility: AssetVisibility) => void;
 export type OnFavorite = (ids: string[], favorite: boolean) => void;
 export type OnSetVisibility = (ids: string[]) => void;
 
-type UndoableDelete = { assets: TimelineAsset[]; onUndoDelete: OnUndoDelete };
+type UndoableDelete = {
+  assets: TimelineAsset[];
+  onUndoDelete: OnUndoDelete;
+  state: 'trashed' | 'restoring' | 'restored';
+};
 
-// Trash operations that can still be undone, the most recent last.
-const undoableDeletes: UndoableDelete[] = [];
+// Trash operations that Ctrl+Z can still undo, the most recent last.
+let undoableDeletes: UndoableDelete[] = [];
 
 export const deleteAssets = async (
   force: boolean,
@@ -34,7 +38,8 @@ export const deleteAssets = async (
     onSuccess: () => {
       onAssetDelete(ids);
 
-      const undoable = onUndoDelete && !force ? { assets, onUndoDelete } : undefined;
+      const undoable: UndoableDelete | undefined =
+        onUndoDelete && !force ? { assets, onUndoDelete, state: 'trashed' } : undefined;
       if (undoable) {
         undoableDeletes.push(undoable);
       }
@@ -52,29 +57,40 @@ export const deleteAssets = async (
   });
 };
 
-/** Restores the assets trashed by the most recent delete that has not been undone yet. */
+/** Restores the assets trashed by the most recent delete not undone yet; resolves whether it succeeded. */
 export const undoLastDelete = async () => {
-  const undoable = undoableDeletes.at(-1);
+  const undoable = undoableDeletes.findLast(({ state }) => state === 'trashed');
   if (!undoable) {
     return false;
   }
-  await undoDelete(undoable);
-  return true;
+  return undoDelete(undoable);
 };
 
+// A failed restore leaves the delete undoable, so Ctrl+Z or the toast button can try it again.
 const undoDelete = async (undoable: UndoableDelete) => {
-  const index = undoableDeletes.indexOf(undoable);
-  if (index === -1) {
-    return;
+  if (undoable.state !== 'trashed') {
+    return false;
   }
-  undoableDeletes.splice(index, 1);
-  await undoDeleteAssets(undoable.onUndoDelete, undoable.assets);
+  undoable.state = 'restoring';
+  const restored = await undoDeleteAssets(undoable.onUndoDelete, undoable.assets);
+  undoable.state = restored ? 'restored' : 'trashed';
+  if (restored) {
+    undoableDeletes = undoableDeletes.filter((other) => other !== undoable);
+  }
+  return restored;
 };
 
-const undoDeleteAssets = (onUndoDelete: OnUndoDelete, assets: TimelineAsset[]) =>
-  executeMutation(restoreAssetsMutation, [{ bulkIdsDto: { ids: assets.map((a) => a.id) } }], {
-    onSuccess: () => onUndoDelete(assets),
+// executeMutation swallows a failed mutation, which the mutation cache already reports, so onSuccess tells them apart.
+const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsset[]) => {
+  let restored = false;
+  await executeMutation(restoreAssetsMutation, [{ bulkIdsDto: { ids: assets.map((a) => a.id) } }], {
+    onSuccess: () => {
+      restored = true;
+      onUndoDelete(assets);
+    },
   });
+  return restored;
+};
 
 /**
 Update the asset stack state in the asset store based on the provided stack response.
