@@ -24,8 +24,9 @@ import { restoreAssetsMutation } from '#lib/queries/trash.query.ts';
 import { Route } from '#lib/route.ts';
 import { showDeleteModal } from '#lib/stores/preferences.store.ts';
 import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
-import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
+import { downloadUrl, getAssetMediaUrl, getSharedLink } from '#lib/utils.ts';
 import type { OnFavorite } from '#lib/utils/actions.ts';
+import { delay } from '#lib/utils/asset-utils.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
 import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
@@ -531,7 +532,7 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
   for (const [i, { filename, id, cacheKey }] of assets.entries()) {
     if (i !== 0) {
       // play nice with Safari
-      await sleep(500);
+      await delay(500);
     }
 
     try {

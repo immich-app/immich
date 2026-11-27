@@ -74,10 +74,6 @@ class ApiError extends Error {
   }
 }
 
-export const sleep = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
 let unsubscribeId = 0;
 const uploads: Record<number, () => void> = {};
 
