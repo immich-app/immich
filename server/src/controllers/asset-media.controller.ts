@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { type NextFunction, type Request, type Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { CrossOriginWithSessionKey, Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
@@ -92,6 +92,7 @@ export class AssetMediaController {
   @Get(':id/original')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
+  @CrossOriginWithSessionKey()
   @Endpoint({
     summary: 'Download original asset',
     description: 'Downloads the original file of the specified asset.',
@@ -110,6 +111,7 @@ export class AssetMediaController {
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @CrossOriginWithSessionKey()
   @Endpoint({
     summary: 'View asset thumbnail',
     description:
@@ -153,6 +155,7 @@ export class AssetMediaController {
   @Get(':id/video/playback')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @CrossOriginWithSessionKey()
   @Endpoint({
     summary: 'Play asset video',
     description: 'Streams the video file for the specified asset. This endpoint also supports byte range requests.',

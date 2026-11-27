@@ -1,10 +1,11 @@
 import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { CallHandler, ExecutionContext, SetMetadata, UseInterceptors, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
+import type { Request, Response } from 'express';
 import { contentSecurityPolicy } from 'helmet';
 import { chunk, flatten } from 'lodash-es';
 import type { TransactionHandle } from 'src/database.js';
-import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
+import { ApiCustomExtension, ApiTag, ImmichQuery, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
 import { EmitEvent } from 'src/repositories/event.repository.js';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
 import { restrictiveCspDirectives, type CspDirectives } from 'src/utils/helmet.js';
@@ -180,6 +181,17 @@ export const ContentSecurityPolicy = (directives: CspDirectives = {}) => {
     },
   });
 };
+
+export const CrossOriginWithSessionKey = () =>
+  UseInterceptors({
+    intercept: (context: ExecutionContext, next: CallHandler) => {
+      const http = context.switchToHttp();
+      if (typeof http.getRequest<Request>().query[ImmichQuery.SessionKey] === 'string') {
+        http.getResponse<Response>().header('Cross-Origin-Resource-Policy', 'cross-origin');
+      }
+      return next.handle();
+    },
+  });
 
 export const Endpoint = ({ history, ...options }: EndpointOptions) => {
   const decorators: MethodDecorator[] = [];
