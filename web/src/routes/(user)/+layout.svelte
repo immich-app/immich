@@ -1,5 +1,8 @@
 <script lang="ts">
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { undoLastDelete } from '#lib/utils/actions.ts';
+  import { shortcuts } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { page } from '$app/state';
   import UploadCover from './DragAndDropUploadOverlay.svelte';
@@ -22,6 +25,13 @@
     assetViewerManager.gridScrollTarget = { at: asset };
   });
 </script>
+
+<svelte:document
+  {@attach shortcuts([
+    { shortcut: { key: 'z', ctrl: true }, onShortcut: () => handlePromiseError(undoLastDelete()) },
+    { shortcut: { key: 'z', meta: true }, onShortcut: () => handlePromiseError(undoLastDelete()) },
+  ])}
+/>
 
 <div class:display-none={assetViewerManager.isViewing}>
   {@render children?.()}

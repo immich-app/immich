@@ -17,6 +17,11 @@ export type OnArchive = (ids: string[], visibility: AssetVisibility) => void;
 export type OnFavorite = (ids: string[], favorite: boolean) => void;
 export type OnSetVisibility = (ids: string[]) => void;
 
+type UndoableDelete = { assets: TimelineAsset[]; onUndoDelete: OnUndoDelete };
+
+// Trash operations that can still be undone, the most recent last.
+const undoableDeletes: UndoableDelete[] = [];
+
 export const deleteAssets = async (
   force: boolean,
   onAssetDelete: OnDelete,
@@ -28,20 +33,42 @@ export const deleteAssets = async (
   await executeMutation(deleteAssetsMutation, [{ assetBulkDeleteDto: { ids, force } }], {
     onSuccess: () => {
       onAssetDelete(ids);
+
+      const undoable = onUndoDelete && !force ? { assets, onUndoDelete } : undefined;
+      if (undoable) {
+        undoableDeletes.push(undoable);
+      }
+
       toastManager.primary(
         {
           description: force
             ? $t('assets_permanently_deleted_count', { values: { count: ids.length } })
             : $t('assets_trashed_count', { values: { count: ids.length } }),
-          button:
-            onUndoDelete && !force
-              ? { label: $t('undo'), color: 'secondary', onclick: () => undoDeleteAssets(onUndoDelete, assets) }
-              : undefined,
+          button: undoable ? { label: $t('undo'), color: 'secondary', onclick: () => undoDelete(undoable) } : undefined,
         },
         { timeout: 5000 },
       );
     },
   });
+};
+
+/** Restores the assets trashed by the most recent delete that has not been undone yet. */
+export const undoLastDelete = async () => {
+  const undoable = undoableDeletes.at(-1);
+  if (!undoable) {
+    return false;
+  }
+  await undoDelete(undoable);
+  return true;
+};
+
+const undoDelete = async (undoable: UndoableDelete) => {
+  const index = undoableDeletes.indexOf(undoable);
+  if (index === -1) {
+    return;
+  }
+  undoableDeletes.splice(index, 1);
+  await undoDeleteAssets(undoable.onUndoDelete, undoable.assets);
 };
 
 const undoDeleteAssets = (onUndoDelete: OnUndoDelete, assets: TimelineAsset[]) =>
