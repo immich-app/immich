@@ -111,6 +111,18 @@ describe('TimelineManager', () => {
       expect(api.getTimeBucket.calls).toHaveLength(2);
     });
 
+    test('destroy cancels in-flight month loads', () => {
+      const pendingMonths = timelineManager.months.filter((month) => month.loader?.loading);
+      expect(pendingMonths.length).toBeGreaterThan(0);
+
+      timelineManager.destroy();
+
+      expect(timelineManager.isInitialized).toBe(false);
+      for (const month of timelineManager.months) {
+        expect(month.loader?.loading).toBe(false);
+      }
+    });
+
     test('calculates month height', () => {
       const plainMonths = timelineManager.months.map((month) => ({
         year: month.yearMonth.year,

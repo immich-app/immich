@@ -294,8 +294,18 @@ export class TimelineManager extends VirtualScrollManager {
     }
   }
 
+  #cancelMonthLoaders() {
+    for (const month of this.months) {
+      month.loader?.cancel();
+    }
+  }
+
   async #initializeTimelineMonths() {
-    const timebuckets = await queryClient.query(getTimeBucketsQuery({ ...authManager.params, ...this.#options }));
+    const requestedOptions = this.#options;
+    const timebuckets = await queryClient.query(getTimeBucketsQuery({ ...authManager.params, ...requestedOptions }));
+    if (this.#options !== requestedOptions) {
+      return;
+    }
 
     this.months = timebuckets.map((timeBucket) => {
       const date = new SvelteDate(timeBucket.timeBucket);
@@ -304,8 +314,8 @@ export class TimelineManager extends VirtualScrollManager {
         { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 },
         timeBucket.count,
         false,
-        this.#options.order,
-        this.#options.orderBy,
+        requestedOptions.order,
+        requestedOptions.orderBy,
       );
     });
     this.albumAssets.clear();
@@ -333,6 +343,7 @@ export class TimelineManager extends VirtualScrollManager {
 
   async #init(options: TimelineManagerOptions) {
     this.isInitialized = false;
+    this.#cancelMonthLoaders();
     this.months = [];
     this.albumAssets.clear();
     await this.initTask.execute(async () => {
@@ -344,6 +355,8 @@ export class TimelineManager extends VirtualScrollManager {
   public override destroy() {
     this.disconnect();
     this.isInitialized = false;
+    this.initTask.cancel();
+    this.#cancelMonthLoaders();
 
     for (const unsubscribe of this.#unsubscribes) {
       unsubscribe();
