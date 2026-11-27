@@ -219,18 +219,9 @@ checksum = "sha256:b6c17e747ae78cdd6de4d7532b3164b277daee97c007d3eaa2b39cca99882
 url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip"
 
 [[tools.ruby]]
-version = "3.4.12"
+version = "4.0.10"
 backend = "core:ruby"
-specifiers = ["3.4.12"]
-
-[tools.ruby."platforms.windows-x64"]
-checksum = "sha256:3806f164377824bcb17e1cf39b17d967e2bdc01e8547ce0254cd786dbe2cfe13"
-url = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.4.12-1/rubyinstaller-3.4.12-1-x64.7z"
-
-[[tools.ruby]]
-version = "3.4.12"
-backend = "core:ruby"
-specifiers = ["3.4.12"]
+specifiers = ["4.0.10"]
 
 [tools.ruby.options]
 compile = "false"
@@ -239,23 +230,32 @@ ruby_build_repo = "https://github.com/rbenv/ruby-build.git"
 ruby_install = "false"
 
 [tools.ruby."platforms.linux-arm64"]
-checksum = "sha256:c098862e9416148e0d5c8851ce222323ef93c23d6176e12ab5c0effc06268f49"
-url = "https://github.com/jdx/ruby/releases/download/3.4.12-1/ruby-3.4.12.arm64_linux.tar.gz"
+checksum = "sha256:9439219164752a53618cbb09bf32a685770f2cbc230c28784293e38440a8a382"
+url = "https://github.com/jdx/ruby/releases/download/4.0.10-1/ruby-4.0.10.arm64_linux.tar.gz"
 provenance = "github-attestations"
 
 [tools.ruby."platforms.linux-x64"]
-checksum = "sha256:12bbaa27dd857892daa21d5c57e1a48908c37b03540388474cf96974d03770d1"
-url = "https://github.com/jdx/ruby/releases/download/3.4.12-1/ruby-3.4.12.x86_64_linux.tar.gz"
+checksum = "sha256:ca54d2d9204f9f9724f7aa1620b30538723da3a9365d9195951b82fa6765fd4e"
+url = "https://github.com/jdx/ruby/releases/download/4.0.10-1/ruby-4.0.10.x86_64_linux.tar.gz"
 provenance = "github-attestations"
 
 [tools.ruby."platforms.macos-arm64"]
-checksum = "sha256:865b429c511c40a96fe3c25466bbf9b300e5cae22c70c7dd68e0af003b849de4"
-url = "https://github.com/jdx/ruby/releases/download/3.4.12-1/ruby-3.4.12.macos.tar.gz"
+checksum = "sha256:624211a09a77f20e7a7f6f743c4b6e0727e10240027ae40c8f369748459b9c9b"
+url = "https://github.com/jdx/ruby/releases/download/4.0.10-1/ruby-4.0.10.macos.tar.gz"
 provenance = "github-attestations"
 
 [tools.ruby."platforms.macos-x64"]
-checksum = "sha256:5e5d85ad93b0adcccbad47733680f4892bd0078e3342437f7babce01c1872479"
-url = "https://cache.ruby-lang.org/pub/ruby/3.4/ruby-3.4.12.tar.gz"
+checksum = "sha256:b53eef3371fa5d3e3b74340edcd015f06d5d8853968d4e539a5264fce41ed9f1"
+url = "https://cache.ruby-lang.org/pub/ruby/4.0/ruby-4.0.10.tar.gz"
+
+[[tools.ruby]]
+version = "4.0.10"
+backend = "core:ruby"
+specifiers = ["4.0.10"]
+
+[tools.ruby."platforms.windows-x64"]
+checksum = "sha256:0d8f693bb4027378d2c92c285c0bb405f9825623bfbf2caad0d52acabbd4978c"
+url = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-4.0.10-1/rubyinstaller-4.0.10-1-x64.7z"
 
 [[tools.rust]]
 version = "1.99.1"
