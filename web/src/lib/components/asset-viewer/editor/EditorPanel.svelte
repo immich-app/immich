@@ -59,7 +59,7 @@
 
 <svelte:window
   {@attach shortcuts([
-    { shortcut: { key: 'Escape' }, onShortcut: onClose },
+    { shortcut: { key: 'Escape' }, onShortcut: closeEditor },
     { shortcut: { key: 'Enter' }, onShortcut: applyEdits },
   ])}
 />

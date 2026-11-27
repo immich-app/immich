@@ -29,7 +29,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 #### ARM NN
 
-- Make sure you have the appropriate linux kernel driver installed
+- Make sure you have the appropriate Linux kernel driver installed
   - This is usually pre-installed on the device vendor's Linux images
 - `/dev/mali0` must be available in the host server
   - You may confirm this by running `ls /dev` to check that it exists
@@ -80,7 +80,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 #### RKNN
 
 - You must have a supported Rockchip SoC: only RK3566, RK3568, RK3576 and RK3588 are supported at this moment.
-- Make sure you have the appropriate linux kernel driver installed
+- Make sure you have the appropriate Linux kernel driver installed
   - This is usually pre-installed on the device vendor's Linux images
 - RKNPU driver V0.9.8 or later must be available in the host server
   - You may confirm this by running `cat /sys/kernel/debug/rknpu/version` to check the version
@@ -94,7 +94,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 <ComposeBuilder />
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
-2. In `immich-machine-learning`, add one of -[armnn, cuda, rocm, openvino, rknn] to the `image` section's tag at the end of the line.
+2. In `immich-machine-learning`, add one of `-[armnn, cuda, rocm, openvino, rknn]` to the `image` section's tag at the end of the line.
 3. Still in the `docker-compose.yml` under `immich-machine-learning`, uncomment the `extends` section and change `cpu` to the appropriate backend.
 4. Redeploy the `immich-machine-learning` container with these updated settings.
 

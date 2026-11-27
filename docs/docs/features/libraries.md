@@ -35,7 +35,7 @@ Sometimes, an external library will not scan correctly. This can happen if Immic
 - In the docker-compose file, are the volumes mounted correctly?
 - Are the volumes also mounted to any worker containers?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
-- Make sure you don't use symlinks in your import libraries, and that you aren't linking across docker mounts.
+- Make sure you don't use symlinks in your import libraries, and that you aren't linking across Docker mounts.
 - Are the permissions set correctly?
 - Make sure you are using forward slashes (`/`) and not backward slashes.
 
@@ -73,13 +73,13 @@ If your photos are on a network drive, automatic file watching likely won't work
 
 #### Troubleshooting
 
-If you encounter an `ENOSPC` error, you need to increase your file watcher limit. In sysctl, this key is called `fs.inotify.max_user_watches` and has a default value of 8192. Increase this number to a suitable value greater than the number of files you will be watching. Note that Immich has to watch all files in your import paths including any ignored files.
+If you encounter an `ENOSPC` error, you need to increase your file watcher limit. In `sysctl`, this key is called `fs.inotify.max_user_watches` and has a default value of 8192. Increase this number to a suitable value greater than the number of files you will be watching. Note that Immich has to watch all files in your import paths including any ignored files.
 
 ```
 ERROR [LibraryService] Library watcher for library c69faf55-f96d-4aa0-b83b-2d80cbc27d98 encountered error: Error: ENOSPC: System limit for number of file watchers reached, watch '/media/photo.jpg'
 ```
 
-In rare cases, the library watcher can hang, preventing Immich from starting up. In this case, disable the library watcher in the configuration file. If the watcher is enabled from within Immich, the app must be started without the microservices. Disable the microservices in the docker compose file, start Immich, disable the library watcher in the admin settings, close Immich, re-enable the microservices, and then Immich can be started normally.
+In rare cases, the library watcher can hang, preventing Immich from starting up. In this case, disable the library watcher in the configuration file. If the watcher is enabled from within Immich, the app must be started without the microservices. Disable the microservices in the Docker Compose file, start Immich, disable the library watcher in the admin settings, close Immich, re-enable the microservices, and then Immich can be started normally.
 
 ### Nightly job
 
@@ -96,16 +96,16 @@ When deleting an external library, all assets inside are immediately deleted alo
 Let's show a concrete example where we add an existing gallery to Immich. Here, we have the following folders we want to add:
 
 - `/home/user/old-pics`: a folder containing childhood photos.
-- `/mnt/nas/christmas-trip`: photos from a christmas trip. The subfolder `/mnt/nas/christmas-trip/Raw` contains the raw files directly from the DSLR. We don't want to import the raw files to Immich
-- `/mnt/media/videos`: Videos from the same christmas trip.
+- `/mnt/nas/christmas-trip`: photos from a Christmas trip. The subfolder `/mnt/nas/christmas-trip/Raw` contains the raw files directly from the DSLR. We don't want to import the raw files to Immich
+- `/mnt/media/videos`: Videos from the same Christmas trip.
 
-First, we need to plan how we want to organize the libraries. The christmas trip photos should belong to its own library since we want to exclude the raw files. The videos and old photos can be in the same library since we want to import all files. We could also add all three folders to the same library if there are no files matching the Raw exclusion pattern in the other folders.
+First, we need to plan how we want to organize the libraries. The Christmas trip photos should belong to its own library since we want to exclude the raw files. The videos and old photos can be in the same library since we want to import all files. We could also add all three folders to the same library if there are no files matching the Raw exclusion pattern in the other folders.
 
 ### Mount Docker volumes
 
 <ComposeBuilder query="storage.externalLibraries.0.path=&storage.externalLibraries.0.readOnly=true" />
 
-The `immich-server` container will need access to the gallery. Modify your docker compose file as follows
+The `immich-server` container will need access to the gallery. Modify your Docker Compose file as follows
 
 ```diff title="docker-compose.yml"
   immich-server:
@@ -148,7 +148,7 @@ Next, we'll add an exclusion pattern to filter out raw files.
 - Enter `**/Raw/**` and click Add.
 - Click on `Scan`
 
-The christmas trip library will now be scanned in the background. In the meantime, let's add the videos and old photos to another library.
+The Christmas trip library will now be scanned in the background. In the meantime, let's add the videos and old photos to another library.
 
 - Go back to `Administration -> External Libraries`.
 - Click on `Create Library`.

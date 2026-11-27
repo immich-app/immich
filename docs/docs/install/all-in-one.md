@@ -7,12 +7,12 @@ sidebar_position: 70
 :::note
 This is a community contribution and not officially supported by the Immich team, but included here for convenience.
 
-**Please report issues to the corresponding [Github repository][github].**
+**Please report issues to the corresponding [GitHub repository][github].**
 :::
 
 ## Installation
 
-For installation instructions, refer to the [Github repository][github].
+For installation instructions, refer to the [GitHub repository][github].
 
 ## Issues
 

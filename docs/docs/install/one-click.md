@@ -8,7 +8,7 @@ sidebar_position: 65
 This version of Immich is provided via cloud service providers' one-click marketplaces. Hosting costs are set by the cloud service providers.
 Support for these are provided by the individual cloud service providers.
 
-**Please report issues to the corresponding [Github repository][github].**
+**Please report issues to the corresponding [GitHub repository][github].**
 :::
 
 ## Installation

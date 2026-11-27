@@ -81,7 +81,7 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 
 **Memory (MiB)**: The peak RSS usage of the process after performing the above timing benchmark. Does not include image decoding, concurrent processing, the web server, etc., which are relatively constant factors.
 
-**Recall (%)**: Evaluated on Crossmodal-3600, the average of the recall@1, recall@5 and recall@10 results for zeroshot image retrieval. Chinese (Simplified), English, French, German, Italian, Japanese, Korean, Polish, Russian, Spanish and Turkish are additionally tested on XTD-10. Chinese (Simplified) and English are additionally tested on Flickr30k. The recall metrics are the average across all tested datasets.
+**Recall (%)**: Evaluated on Crossmodal-3600, the average of the recall@1, recall@5 and recall@10 results for zero-shot image retrieval. Chinese (Simplified), English, French, German, Italian, Japanese, Korean, Polish, Russian, Spanish and Turkish are additionally tested on XTD-10. Chinese (Simplified) and English are additionally tested on Flickr30k. The recall metrics are the average across all tested datasets.
 
 **Pareto Optimal**: Whether the model is not completely outclassed by another model. Try to use models that are optimal for the languages relevant to you. Specifically, for a given model and language, if there's another model that's better for that language in at least one respect (memory usage, execution time, recall) while being at least as good for that language in every other way, then the model is not optimal for that language.
 
