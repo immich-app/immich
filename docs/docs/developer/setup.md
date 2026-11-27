@@ -33,6 +33,7 @@ This environment includes the services below. Additional details are available i
 All the services are packaged to run with a single Docker Compose command.
 
 :::tip mise
+
 [mise](https://mise.jdx.dev) is used throughout the project to manage tool versions and run tasks. [Install mise](https://mise.jdx.dev/installing-mise.html), then from the repo root run `mise trust` and `mise install` to get all required tools. Tasks for each service can be run from the repo root using `mise //namespace:task` (e.g. `mise //server:lint`). To list all available tasks, run `mise tasks ls --all`.
 :::
 
@@ -56,7 +57,7 @@ You can access the web from `http://your-machine-ip:3000` or `http://localhost:3
 
 **Notes:**
 
-- The "web" development container runs with uid 1000. If that uid does not have read/write permissions on the mounted volumes, you may encounter errors
+- The "web" development container runs with UID 1000. If that UID does not have read/write permissions on the mounted volumes, you may encounter errors
 - The server includes a Rust addon (`native/`) that the development container builds when it starts, so the first start takes a little longer. To run server tests or tasks outside the container, build it for your machine with `mise //native:node:build` (`mise //server:build` does this for you).
 
 #### Connect web to a remote backend
@@ -107,7 +108,7 @@ Always run `mise //mobile:checkout` after switching branches.
 
 The app includes a small Rust core (`native/`) that is compiled from source during the build. With mise the Rust toolchain is installed for you; with your own Flutter install, install [rustup](https://rustup.rs) once and the build fetches the pinned toolchain itself. The first build takes a little longer because of this.
 
-##### iOS Code Signing
+##### iOS code signing
 
 The Immich Apple Team ID and bundle IDs are specified in `mobile/ios/Signing.xcconfig`. For local development, we provide an override mechanism.
 
@@ -124,7 +125,7 @@ The environment values are used across Immich's targets and schemes to prevent r
 
 #### Translation
 
-To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then run:
+To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the Immich project. Then run:
 
 ```bash
 mise //mobile:translation
@@ -162,7 +163,7 @@ The mobile app uses DCM (Dart Code Metrics) for linting and metrics calculation.
 
 Note: Activating the license is not required.
 
-### VSCode
+### VS Code
 
 Install `Flutter`, `DCM`, `Prettier`, `ESLint` and `Svelte` extensions. These extensions are listed in the `extensions.json` file under `.vscode/` and should appear as workspace recommendations.
 

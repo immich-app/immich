@@ -28,20 +28,20 @@ You can always use the [Server CLI](/administration/server-commands) to re-enabl
 - Previews - Used in the asset viewer.
 
 By default Immich creates 3 thumbnails for each asset,
-Blurred (thumbhash) , Small - thumbnails (webp) , and Large - previews (jpeg/webp), using these settings you can change the quality for the thumbnails and previews files that are created.
+Blurred (thumbhash) , Small - thumbnails (WebP) , and Large - previews (JPEG/WebP), using these settings you can change the quality for the thumbnails and previews files that are created.
 
 **Thumbnail format**  
-Allows you to choose the type of format you want for the Thumbnail images, Webp produces smaller files than jpeg, but is slower to encode.
+Allows you to choose the type of format you want for the Thumbnail images, WebP produces smaller files than JPEG, but is slower to encode.
 
 :::tip
-You can read in detail about the advantages and disadvantages of using webp over jpeg on [Adobe's website](https://www.adobe.com/creativecloud/file-types/image/raster/webp-file.html)
+You can read in detail about the advantages and disadvantages of using WebP over JPEG on [Adobe's website](https://www.adobe.com/creativecloud/file-types/image/raster/webp-file.html)
 :::
 
 **Thumbnail resolution**  
 Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
 
 **Preview format**  
-Allows you to choose the type of format you want for the Preview images, Webp produces smaller files than jpeg, but is slower to encode.
+Allows you to choose the type of format you want for the Preview images, WebP produces smaller files than JPEG, but is slower to encode.
 
 **Preview resolution**  
 Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.

@@ -38,9 +38,9 @@ Currently, it uses [Drift](https://drift.simonbinder.eu/) (SQLite) for a local d
 Entities and Models are the two types of data classes used. While entities are stored in the on-device database, models are ephemeral and only kept in memory.
 The Repositories should be the only place where other data classes are used internally (such as OpenAPI DTOs). However, their interfaces must not use foreign data classes!
 
-### Web Client
+### Web client
 
-The web app is a [TypeScript](https://www.typescriptlang.org/) project that uses [SvelteKit](https://kit.svelte.dev) and [Tailwindcss](https://tailwindcss.com/).
+The web app is a [TypeScript](https://www.typescriptlang.org/) project that uses [SvelteKit](https://kit.svelte.dev) and [Tailwind CSS](https://tailwindcss.com/).
 
 ### CLI
 
@@ -48,7 +48,7 @@ The Immich CLI is an [npm](https://www.npmjs.com/) package that lets users contr
 
 ## Server
 
-The Immich backend is divided into several services, which are run as individual docker containers.
+The Immich backend is divided into several services, which are run as individual Docker containers.
 
 1. `immich-server` - Handle and respond to REST API requests, execute background jobs (thumbnail generation, metadata extraction, transcoding, etc.)
 1. `immich-machine-learning` - Execute machine learning models
@@ -69,7 +69,7 @@ An incoming HTTP request is mapped to a controller (`src/controllers`). Controll
 - `PUT` `/<type>/:id` - **Updated** (by id)
 - `DELETE` `/<type>/:id` - **Delete** (by id)
 
-### Domain Transfer Objects (DTOs)
+### Domain transfer objects (DTOs)
 
 The server uses [Domain Transfer Objects](https://en.wikipedia.org/wiki/Data_transfer_object) as public interfaces for the inputs (query, params, and body) and outputs (response) for each endpoint. DTOs translate to [OpenAPI](/api.md) schemas and control the generated code used by each client.
 

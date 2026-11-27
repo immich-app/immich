@@ -1,6 +1,6 @@
 # Errors
 
-## TypeORM Upgrade
+## TypeORM upgrade
 
 If you encountered "Migrations failed: Error: Invalid upgrade path" then perform an intermediate upgrade to `v1.132.3` first.
 
@@ -14,7 +14,7 @@ In order to update to Immich `v1.137.0` or above, the application must be starte
 Avoid `v1.136.0` if upgrading from `v1.131.0` (or earlier) due to a bug blocking this upgrade in some installations.
 :::
 
-## Inconsistent Media Location
+## Inconsistent media location
 
 :::caution
 This error is related to the location of media files _inside the container_. Never move files on the host system when you run into this error message.

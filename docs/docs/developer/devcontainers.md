@@ -1,17 +1,17 @@
 ---
-title: Devcontainers
+title: Dev containers
 sidebar_position: 3
 ---
 
-# Development with Dev Containers
+# Development with dev containers
 
-Dev Containers provide a consistent, reproducible development environment using Docker containers. With a single click, you can get started with an Immich development environment on Mac, Linux, Windows, or in the cloud using GitHub Codespaces.
+Dev containers provide a consistent, reproducible development environment using Docker containers. With a single click, you can get started with an Immich development environment on Mac, Linux, Windows, or in the cloud using GitHub Codespaces.
 
 Get started fast!
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/immich-app/immich/)
 
-[Learn more about Dev Containers](https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers)
+[Learn more about dev containers](https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers)
 
 ## Prerequisites
 
@@ -27,19 +27,19 @@ Before getting started, ensure you have:
 - **20GB of free disk space**
 
 :::tip Alternative Development Environments
-While this guide focuses on VS Code, you have many options for Dev Container development:
+While this guide focuses on VS Code, you have many options for dev container development:
 
 **Local Editors:**
 
 - [IntelliJ IDEA](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html) - Full JetBrains IDE support
-- [neovim](https://github.com/jamestthompson3/nvim-remote-containers) - Lightweight terminal-based editor
+- [Neovim](https://github.com/jamestthompson3/nvim-remote-containers) - Lightweight terminal-based editor
 - [Emacs](https://github.com/emacs-lsp/lsp-docker) - Extensible text editor
 - [DevContainer CLI](https://github.com/devcontainers/cli) - Command-line interface
 
 **Cloud-Based Solutions:**
 
 - [GitHub Codespaces](https://github.com/features/codespaces) - Fully integrated with GitHub, excellent devcontainer.json support
-- [GitPod](https://www.gitpod.io) - SaaS platform with recent Dev Container support (historically used gitpod.yml)
+- [GitPod](https://www.gitpod.io) - SaaS platform with recent dev container support (historically used gitpod.yml)
 
 **Self-Hostable Options:**
 
@@ -47,9 +47,9 @@ While this guide focuses on VS Code, you have many options for Dev Container dev
 - [DevPod](https://devpod.sh) - Client-only tool with excellent devcontainer.json support, works with any provider (local, cloud, or on-premise). Check [quick-start guide](#quick-start-guide-for-devpod-with-docker)
   :::
 
-## Dev Container Services
+## Dev container services
 
-The Dev Container environment consists of the following services:
+The dev container environment consists of the following services:
 
 | Service          | Container Name            | Description                                               | Ports                                                                   |
 | ---------------- | ------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -58,21 +58,21 @@ The Dev Container environment consists of the following services:
 | Cache            | `redis`                   | Valkey cache server                                       | 6379                                                                    |
 | Machine Learning | `immich-machine-learning` | Immich ML model inference server                          | 3003                                                                    |
 
-## Getting Started
+## Getting started
 
-### Step 1: Clone the Repository
+### Step 1: Clone the repository
 
 ```bash
 git clone https://github.com/immich-app/immich.git
 cd immich
 ```
 
-### Step 2: Configure Environment Variables
+### Step 2: Configure environment variables
 
-The immich dev containers read environment variables from your shell environment, not from `.env` files. This allows them to work in cloud environments without pre-configuration.
+The Immich dev containers read environment variables from your shell environment, not from `.env` files. This allows them to work in cloud environments without pre-configuration.
 
 :::important Configuration
-When running locally, and if you want to create (or use an existing) DB and/or photo storage folder, you must set the `UPLOAD_LOCATION` variable in your shell environment before launching the Dev Container. This determines where uploaded files are stored and also where the DB stores it data.
+When running locally, and if you want to create (or use an existing) DB and/or photo storage folder, you must set the `UPLOAD_LOCATION` variable in your shell environment before launching the dev container. This determines where uploaded files are stored and also where the DB stores it data.
 
 ```bash
 # Set temporarily for current session
@@ -86,10 +86,10 @@ source ~/.bashrc
 
 :::
 
-### Step 3: Launch the Dev Container
+### Step 3: Launch the dev container
 
 :::tip
-Immich development makes extensive use of specialized [base images](https://github.com/immich-app/base-images) for its docker-compose based development. For this reason, you won't be able to use VSCode's **_Clone Repository in a Container Volume_** command.
+Immich development makes extensive use of specialized [base images](https://github.com/immich-app/base-images) for its docker-compose based development. For this reason, you won't be able to use VS Code's **_Clone Repository in a Container Volume_** command.
 :::
 
 #### Using VS Code UI:
@@ -100,22 +100,22 @@ Immich development makes extensive use of specialized [base images](https://gith
 4. Select "Immich - Backend, Frontend and ML" from the list
 5. Wait for the container to build and start (this may take several minutes on first run)
 
-#### Using VS Code Quick Actions:
+#### Using VS Code quick actions:
 
 1. Open the repository in VS Code
 2. You should see a popup asking if you want to reopen in a container
 3. Click "Reopen in Container"
 
-#### Using Command Line:
+#### Using command line:
 
 ```bash
 # Using the DevContainer CLI
 devcontainer up --workspace-folder .
 ```
 
-## Environment Variable Details
+## Environment variable details
 
-### How Dev Containers Handle Environment Variables
+### How dev containers handle environment variables
 
 Unlike the Immich developer setup based on Docker Compose which uses `.env` files, Immich Dev Containers read environment variables from your shell environment. This is configured in `.devcontainer/devcontainer.json`:
 
@@ -130,7 +130,7 @@ Unlike the Immich developer setup based on Docker Compose which uses `.env` file
 
 The `${localEnv:VARIABLE:default}` syntax reads from your shell environment with optional defaults.
 
-### Upload Location Path Resolution
+### Upload location path resolution
 
 The `UPLOAD_LOCATION` environment variable controls where files are stored:
 
@@ -145,7 +145,7 @@ The `UPLOAD_LOCATION` environment variable controls where files are stored:
 - ${UPLOAD_LOCATION-./Library}/postgres:/var/lib/postgresql/data
 ```
 
-### Database Configuration
+### Database configuration
 
 These variables have sensible defaults (for development) but can be customized:
 
@@ -155,7 +155,7 @@ These variables have sensible defaults (for development) but can be customized:
 | `DB_USERNAME`      | `postgres` | PostgreSQL username |
 | `DB_DATABASE_NAME` | `immich`   | Database name       |
 
-### Setting Environment Variables
+### Setting environment variables
 
 Add these to your shell profile (`~/.bashrc`, `~/.zshrc`, `~/.bash_profile`, etc.):
 
@@ -175,9 +175,9 @@ Remember to reload your shell configuration:
 source ~/.bashrc  # or ~/.zshrc, etc.
 ```
 
-## Git Configuration
+## Git configuration
 
-### SSH Keys and Authentication
+### SSH keys and authentication
 
 To use your SSH keys for GitHub access inside the Dev Container:
 
@@ -192,13 +192,13 @@ To use your SSH keys for GitHub access inside the Dev Container:
 
 For detailed instructions, see the [VS Code guide on sharing Git credentials](https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials).
 
-### Commit Signing
+### Commit signing
 
 To use your SSH key for commit signing, see the [GitHub guide on SSH commit signing](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key#telling-git-about-your-ssh-key).
 
-## Development Workflow
+## Development workflow
 
-### Automatic Setup
+### Automatic setup
 
 When the Dev Container starts, it automatically:
 
@@ -221,7 +221,7 @@ When the Dev Container starts, it automatically:
 The Dev Container setup replaces the `mise dev` command from the traditional setup. All services start automatically when you open the container.
 :::
 
-### Accessing Services
+### Accessing services
 
 Once running, you can access:
 
@@ -231,7 +231,7 @@ Once running, you can access:
 | API      | http://localhost:2283 | REST API endpoints (Not used directly, web UI will expose this over http://localhost:3000/api) |
 | Database | localhost:5432        | PostgreSQL (username: `postgres`) (Not used directly)                                          |
 
-### Connecting Mobile Apps
+### Connecting mobile apps
 
 To connect the mobile app to your Dev Container:
 
@@ -239,7 +239,7 @@ To connect the mobile app to your Dev Container:
 2. In the mobile app, use: `http://YOUR_IP:3000/api`
 3. Ensure your firewall allows connections on port 2283
 
-### Making Code Changes
+### Making code changes
 
 - **Server code** (`/server`): Changes trigger automatic restart
 - **Web code** (`/web`): Changes trigger hot module replacement
@@ -248,7 +248,7 @@ To connect the mobile app to your Dev Container:
 
 ## Testing
 
-### Running Tests
+### Running tests
 
 The Dev Container supports multiple ways to run tests:
 
@@ -269,7 +269,7 @@ mise //server:checklist
 mise //web:checklist
 ```
 
-### Additional Commands
+### Additional commands
 
 ```bash
 # API generation
@@ -301,9 +301,9 @@ The Dev Container is pre-configured for debugging:
 
 ## Troubleshooting
 
-### Common Issues
+### Common issues
 
-#### Permission Errors
+#### Permission errors
 
 **Problem**: `EACCES` or permission denied errors  
 **Solution**:
@@ -312,7 +312,7 @@ The Dev Container is pre-configured for debugging:
 - If your host UID differs, you may see permission issues
 - Try rebuilding the container: "Dev Containers: Rebuild Container"
 
-#### Container Won't Start
+#### Container won't start
 
 **Problem**: Dev Container fails to start or build  
 **Solution**:
@@ -322,7 +322,7 @@ The Dev Container is pre-configured for debugging:
 3. Check available disk space
 4. Review Docker Desktop resource limits
 
-#### Port Already in Use
+#### Port already in use
 
 **Problem**: "Port 3000/2283 is already in use"  
 **Solution**:
@@ -331,7 +331,7 @@ The Dev Container is pre-configured for debugging:
 2. Stop conflicting services or change port mappings
 3. Restart Docker Desktop
 
-#### Upload Location Not Set
+#### Upload location not set
 
 **Problem**: Errors about missing UPLOAD_LOCATION  
 **Solution**:
@@ -340,7 +340,7 @@ The Dev Container is pre-configured for debugging:
 2. Add to your shell profile for persistence
 3. Restart your terminal and VS Code
 
-#### Database Connection Failed
+#### Database connection failed
 
 **Problem**: Cannot connect to PostgreSQL  
 **Solution**:
@@ -349,7 +349,7 @@ The Dev Container is pre-configured for debugging:
 2. Check logs: "Dev Containers: Show Container Log"
 3. Verify database credentials match environment variables
 
-### Getting Help
+### Getting help
 
 If you encounter issues:
 
@@ -358,7 +358,7 @@ If you encounter issues:
 3. Review [common Docker issues](https://docs.docker.com/desktop/troubleshoot/)
 4. Ask in [Discord](https://discord.immich.app) `#contributing` channel
 
-### Quick-start guide for DevPod with docker
+### Quick-start guide for DevPod with Docker
 
 You will need DevPod CLI (check [DevPod CLI installation guide](https://devpod.sh/docs/getting-started/install)) and Docker Desktop.
 
@@ -378,11 +378,11 @@ docker build -f server/Dockerfile.dev -t immich-server-dev .
 devpod up .
 ```
 
-## Mobile Development
+## Mobile development
 
 While the Dev Container focuses on server and web development, you can connect mobile apps for testing:
 
-### Connecting iOS/Android Apps
+### Connecting iOS/Android apps
 
 1. **Ensure API is accessible**:
 
@@ -405,9 +405,9 @@ While the Dev Container focuses on server and web development, you can connect m
    - Running on simulators/devices
    - Mobile-specific debugging
 
-## Advanced Configuration
+## Advanced configuration
 
-### Custom VS Code Extensions
+### Custom VS Code extensions
 
 Add extensions to `.devcontainer/devcontainer.json`:
 
@@ -421,14 +421,14 @@ Add extensions to `.devcontainer/devcontainer.json`:
 }
 ```
 
-### Additional Services
+### Additional services
 
 To add services (e.g., Redis Commander), modify:
 
 1. `/docker/docker-compose.dev.yml` - Add service definition
 2. `/.devcontainer/server/container-compose-overrides.yml` - Add overrides if needed
 
-### Resource Limits
+### Resource limits
 
 Adjust Docker Desktop resources:
 
@@ -441,7 +441,7 @@ Recommended minimums:
 - Memory: 8GB
 - Disk: 20GB
 
-## Next Steps
+## Next steps
 
 - Read the [architecture overview](/developer/architecture)
 - Learn about [database migrations](/developer/database-migrations)

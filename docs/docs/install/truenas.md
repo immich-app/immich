@@ -203,7 +203,7 @@ className="border rounded-xl"
 ### Storage configuration
 
 :::danger Default Settings (not recommended)
-The default setting for datasets is **ixVolume (dataset created automatically by the system)**. This is not recommended as this results in your data being harder to access manually and can result in data loss if you delete the immich app. It is also harder to manage snapshots and replication tasks. It is recommended to use the **Host Path (Path that already exists on the system)** option instead.
+The default setting for datasets is **ixVolume (dataset created automatically by the system)**. This is not recommended as this results in your data being harder to access manually and can result in data loss if you delete the Immich app. It is also harder to manage snapshots and replication tasks. It is recommended to use the **Host Path (Path that already exists on the system)** option instead.
 :::
 
 The storage configuration section allows you to set up the storage locations for Immich data. You can select the datasets created in the previous step.

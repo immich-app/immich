@@ -1,4 +1,4 @@
-# Facial Recognition
+# Facial recognition
 
 ## Overview
 

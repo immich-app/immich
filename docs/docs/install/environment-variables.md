@@ -2,15 +2,15 @@
 sidebar_position: 15
 ---
 
-# Environment Variables
+# Environment variables
 
 :::caution
 
 To change environment variables, you must recreate the Immich containers.
 Just restarting the containers does not replace the environment within the container!
 
-In order to recreate the container using docker compose, run `docker compose up -d`.
-In most cases docker will recognize that the `.env` file has changed and recreate the affected containers.
+In order to recreate the container using Docker Compose, run `docker compose up -d`.
+In most cases Docker will recognize that the `.env` file has changed and recreate the affected containers.
 If this does not work, try running `docker compose up -d --force-recreate`.
 
 :::
@@ -37,7 +37,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_LOG_FORMAT`                 | Log output format (`console`, `json`)                                                                                                                  |          `console`           | server                   | api, microservices |
 | `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️                                                              |           `/data`            | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                                                                                                                                    |                              | server                   | api, microservices |
-| `IMMICH_HELMET_FILE`                | Path to a json file with [helmet](https://www.npmjs.com/package/helmet) options. Set to `false` to disable. Set to `true` to use `server/helmet.json`. |           `false`            | server                   | api                |
+| `IMMICH_HELMET_FILE`                | Path to a JSON file with [helmet](https://www.npmjs.com/package/helmet) options. Set to `false` to disable. Set to `true` to use `server/helmet.json`. |           `false`            | server                   | api                |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output                                                                                                        |           `false`            | server, machine learning |                    |
 | `CPU_CORES`                         | Number of cores available to the Immich server                                                                                                         | auto-detected CPU core count | server                   |                    |
 | `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                                                                                                                              |            `8081`            | server                   | api                |
@@ -50,7 +50,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.
 
-\*2: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
+\*2: This path is where the Immich code looks for the files, which is internal to the Docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
 
 ## Workers
 
@@ -89,14 +89,14 @@ Information on the current workers can be found [here](/administration/jobs-work
 
 \*2: If not provided, the appropriate extension to use is auto-detected at startup by inspecting the database. When multiple extensions are installed, the order of preference is VectorChord, pgvector.
 
-\*3: Uses either [`postgresql.ssd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.ssd.conf) or [`postgresql.hdd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.hdd.conf) which mainly controls the Postgres `effective_io_concurrency` setting to allow for concurrenct IO on SSDs and sequential IO on HDDs.
+\*3: Uses either [`postgresql.ssd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.ssd.conf) or [`postgresql.hdd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.hdd.conf) which mainly controls the Postgres `effective_io_concurrency` setting to allow for concurrent IO on SSDs and sequential IO on HDDs.
 
 :::info
 
 All `DB_` variables must be provided to all Immich workers, including `api` and `microservices`.
 
 `DB_URL` must be in the format `postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename`.
-You can require SSL by adding `?sslmode=require` to the end of the `DB_URL` string, or require SSL and skip certificate verification by adding `?sslmode=require&uselibpqcompat=true`. This allows both immich and `pg_dumpall` (the utility used for database backups) to [properly connect](https://github.com/brianc/node-postgres/tree/master/packages/pg-connection-string#tcp-connections) to your database.
+You can require SSL by adding `?sslmode=require` to the end of the `DB_URL` string, or require SSL and skip certificate verification by adding `?sslmode=require&uselibpqcompat=true`. This allows both Immich and `pg_dumpall` (the utility used for database backups) to [properly connect](https://github.com/brianc/node-postgres/tree/master/packages/pg-connection-string#tcp-connections) to your database.
 
 When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE_NAME` database variables are ignored.
 

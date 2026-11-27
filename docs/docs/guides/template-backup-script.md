@@ -18,10 +18,10 @@ If you are using this script, it is therefore safe to turn off the built-in auto
 ### Prerequisites
 
 - Borg needs to be installed on your server as well as the remote machine. You can find instructions to install Borg [here](https://borgbackup.readthedocs.io/en/latest/installation.html).
-- (Optional) To run this script as a non-root user, you should [add your username to the docker group](https://docs.docker.com/engine/install/linux-postinstall/).
+- (Optional) To run this script as a non-root user, you should [add your username to the Docker group](https://docs.docker.com/engine/install/linux-postinstall/).
 - To run this script non-interactively, set up [passwordless ssh](https://www.redhat.com/sysadmin/passwordless-ssh) to your remote machine from your server. If you skipped the previous step, make sure this step is done from your root account.
 
-To initialize the borg repository, run the following commands once.
+To initialize the Borg repository, run the following commands once.
 
 ```bash title='Borg set-up'
 UPLOAD_LOCATION="/path/to/immich/directory"       # Immich database location, as set in your .env file

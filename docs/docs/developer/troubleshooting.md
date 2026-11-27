@@ -12,4 +12,4 @@ Running Immich on Windows can be frustrating and there are lots of ways it can g
 
 ### NTFS mounted volumes
 
-The `docker-compose.dev.yml` and `docker-compose.prod.yml` use volume mounts for the postgres database. On start-up, postgres will try to `chown` the data directory, but fail. See [this post](https://forums.docker.com/t/data-directory-var-lib-postgresql-data-pgdata-has-wrong-ownership/17963/24) for more information about this issue and possible solutions.
+The `docker-compose.dev.yml` and `docker-compose.prod.yml` use volume mounts for the Postgres database. On start-up, Postgres will try to `chown` the data directory, but fail. See [this post](https://forums.docker.com/t/data-directory-var-lib-postgresql-data-pgdata-has-wrong-ownership/17963/24) for more information about this issue and possible solutions.
