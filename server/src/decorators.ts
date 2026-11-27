@@ -5,7 +5,7 @@ import type { Response } from 'express';
 import { contentSecurityPolicy } from 'helmet';
 import { chunk, flatten } from 'lodash-es';
 import type { TransactionHandle } from 'src/database.js';
-import { ApiCustomExtension, ApiTag, ImmichQuery, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
+import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum.js';
 import type { AuthRequest } from 'src/middleware/auth.guard.js';
 import { EmitEvent } from 'src/repositories/event.repository.js';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions.js';
