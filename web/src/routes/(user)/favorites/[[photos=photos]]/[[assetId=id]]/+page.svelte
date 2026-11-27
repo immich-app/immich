@@ -30,15 +30,6 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = { isFavorite: true, withStacked: true };
 
-  const handleEscape = () => {
-    if (!assetMultiSelectManager.selectionActive) {
-      return;
-    }
-
-    assetMultiSelectManager.clear();
-    return;
-  };
-
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
     assetMultiSelectManager.clear();
@@ -52,7 +43,6 @@
     bind:timelineManager
     {options}
     assetInteraction={assetMultiSelectManager}
-    onEscape={handleEscape}
   >
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_favorites_message')} class="mx-auto mt-10" />

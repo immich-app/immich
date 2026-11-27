@@ -30,15 +30,6 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = { visibility: AssetVisibility.Locked };
 
-  const handleEscape = () => {
-    if (!assetMultiSelectManager.selectionActive) {
-      return;
-    }
-
-    assetMultiSelectManager.clear();
-    return;
-  };
-
   const handleMoveOffLockedFolder = (assetIds: string[]) => {
     assetMultiSelectManager.clear();
     timelineManager.removeAssets(assetIds);
@@ -59,13 +50,7 @@
   hideNavbar={assetMultiSelectManager.selectionActive}
   scrollbar={false}
 >
-  <Timeline
-    enableRouting={true}
-    bind:timelineManager
-    {options}
-    assetInteraction={assetMultiSelectManager}
-    onEscape={handleEscape}
-  >
+  <Timeline enableRouting={true} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_locked_photos_message')} title={$t('nothing_here_yet')} class="mx-auto mt-10" />
     {/snippet}

@@ -82,3 +82,16 @@ for (const { page: name, action, expected } of rows) {
     actions[action].sent(api, asset);
   });
 }
+
+for (const name of ['photos', 'favorites', 'archive'] satisfies FilteredPage[]) {
+  test(`escape clears the selection on ${name}`, async ({ page, data, app }) => {
+    const { route, assets } = filteredPages[name](data);
+    await page.goto(route);
+    await app.timeline.select(assets[0]);
+    await expect(app.timeline.selected).toHaveCount(1);
+
+    await page.keyboard.press('Escape');
+
+    await expect(app.timeline.selected).toHaveCount(0);
+  });
+}
