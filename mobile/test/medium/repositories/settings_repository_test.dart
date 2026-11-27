@@ -60,6 +60,16 @@ void main() {
     });
   });
 
+  group('local wifi networks', () {
+    test('persists the ordered Wi-Fi networks map', () async {
+      await sut.write(SettingsKey.networkLocalWifiNetworks, {'wifi1': '', 'wifi2': 'http://10.0.1.22:2283'});
+      await SettingsRepository.instance.refresh();
+
+      expect(sut.appConfig.network.localWifiNetworks, {'wifi1': '', 'wifi2': 'http://10.0.1.22:2283'});
+      expect(sut.appConfig.network.localWifiNetworks.keys, ['wifi1', 'wifi2']);
+    });
+  });
+
   group('null values', () {
     test('writing null to a nullable key clears the row and reverts the cache to null', () async {
       await sut.write(SettingsKey.networkPreferredWifiName, 'home-wifi');

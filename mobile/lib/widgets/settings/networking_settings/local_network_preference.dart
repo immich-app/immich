@@ -44,18 +44,56 @@ class LocalNetworkPreference extends HookConsumerWidget {
     );
   }
 
+  //returns the Wi-Fi name and custom endpoint (empty to use the default endpoint)
+  Future<(String, String)?> _showWifiNetworkDialog(BuildContext context, {String wifiName = '', String endpoint = ''}) {
+    final wifiNameController = TextEditingController(text: wifiName);
+    final endpointController = TextEditingController(text: endpoint);
+
+    return showDialog<(String, String)>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.t.wifi_name),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ImmichTextInput(
+              controller: wifiNameController,
+              autofocus: wifiName.isEmpty,
+              keyboardAction: .next,
+              label: context.t.wifi_name,
+              hintText: context.t.your_wifi_name,
+            ),
+            const SizedBox(height: 16),
+            ImmichURLInput(
+              controller: endpointController,
+              keyboardAction: .done,
+              label: context.t.custom_endpoint,
+              hintText: context.t.custom_endpoint_hint,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(context.t.cancel.toUpperCase(), style: const TextStyle(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, (wifiNameController.text.trim(), endpointController.text.trim())),
+            child: Text(context.t.save.toUpperCase()),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wifiNameText = useState("");
+    final wifiNetworks = useState<Map<String, String>>({});
     final localEndpointText = useState("");
 
     useEffect(() {
-      final wifiName = ref.read(authProvider.notifier).getSavedWifiName();
+      wifiNetworks.value = {...ref.read(authProvider.notifier).getSavedWifiNetworks()};
       final localEndpoint = ref.read(authProvider.notifier).getSavedLocalEndpoint();
-
-      if (wifiName != null) {
-        wifiNameText.value = wifiName;
-      }
 
       if (localEndpoint != null) {
         localEndpointText.value = localEndpoint;
@@ -64,9 +102,9 @@ class LocalNetworkPreference extends HookConsumerWidget {
       return null;
     }, []);
 
-    Future<void> saveWifiName(String wifiName) {
-      wifiNameText.value = wifiName;
-      return ref.read(authProvider.notifier).saveWifiName(wifiName);
+    Future<void> saveWifiNetworks(Map<String, String> networks) {
+      wifiNetworks.value = networks;
+      return ref.read(authProvider.notifier).saveWifiNetworks(networks);
     }
 
     Future<void> saveLocalEndpoint(String url) {
@@ -74,17 +112,38 @@ class LocalNetworkPreference extends HookConsumerWidget {
       return ref.read(authProvider.notifier).saveLocalEndpoint(url);
     }
 
-    Future<void> handleEditWifiName() async {
-      final wifiName = await _showEditDialog(
+    Future<void> handleEditWifiNetwork({String? wifiName}) async {
+      final result = await _showWifiNetworkDialog(
         context,
-        context.t.wifi_name,
-        context.t.your_wifi_name,
-        wifiNameText.value,
+        wifiName: wifiName ?? '',
+        endpoint: wifiName == null ? '' : wifiNetworks.value[wifiName] ?? '',
       );
 
-      if (wifiName != null) {
-        await saveWifiName(wifiName);
+      if (result == null) {
+        return;
       }
+
+      final (newWifiName, endpoint) = result;
+      if (newWifiName.isEmpty) {
+        return;
+      }
+
+      //rebuild the map to keep the entry in place when the Wi-Fi name is changed
+      final networks = <String, String>{};
+      for (final MapEntry(:key, :value) in wifiNetworks.value.entries) {
+        if (key == wifiName) {
+          networks[newWifiName] = endpoint;
+        } else if (key != newWifiName) {
+          networks[key] = value;
+        }
+      }
+      networks[newWifiName] = endpoint;
+
+      await saveWifiNetworks(networks);
+    }
+
+    void handleRemoveWifiNetwork(String wifiName) {
+      unawaited(saveWifiNetworks({...wifiNetworks.value}..remove(wifiName)));
     }
 
     Future<void> handleEditServerEndpoint() async {
@@ -120,15 +179,45 @@ class LocalNetworkPreference extends HookConsumerWidget {
             backgroundColor: context.colorScheme.secondary,
           ),
         );
-      } else {
-        unawaited(saveWifiName(wifiName));
+      } else if (!wifiNetworks.value.containsKey(wifiName)) {
+        unawaited(saveWifiNetworks({...wifiNetworks.value, wifiName: ''}));
       }
 
       final serverEndpoint = ref.read(authProvider.notifier).getServerEndpoint();
 
-      if (serverEndpoint != null) {
+      if (serverEndpoint != null && localEndpointText.value.isEmpty) {
         unawaited(saveLocalEndpoint(serverEndpoint));
       }
+    }
+
+    final valueStyle = context.textTheme.labelLarge?.copyWith(
+      color: enabled ? context.primaryColor : context.colorScheme.onSurface.withAlpha(100),
+      fontFamily: 'GoogleSansCode',
+    );
+
+    Widget buildWifiNetworkTile(String wifiName, String endpoint) {
+      return Dismissible(
+        key: ValueKey('wifi_$wifiName'),
+        direction: enabled ? DismissDirection.endToStart : DismissDirection.none,
+        onDismissed: (_) => handleRemoveWifiNetwork(wifiName),
+        background: Container(
+          color: Colors.red,
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 16),
+          child: const Icon(Icons.delete, color: Colors.white),
+        ),
+        child: ListTile(
+          enabled: enabled,
+          contentPadding: const EdgeInsets.only(left: 24, right: 8),
+          leading: const Icon(Icons.wifi_rounded),
+          title: Text(wifiName, style: valueStyle?.copyWith(fontWeight: FontWeight.bold)),
+          subtitle: endpoint.isEmpty ? Text(context.t.uses_default_endpoint) : Text(endpoint, style: valueStyle),
+          trailing: IconButton(
+            onPressed: enabled ? () => handleEditWifiNetwork(wifiName: wifiName) : null,
+            icon: const Icon(Icons.edit_rounded),
+          ),
+        ),
+      );
     }
 
     return Padding(
@@ -163,43 +252,45 @@ class LocalNetworkPreference extends HookConsumerWidget {
                     ListTile(
                       enabled: enabled,
                       contentPadding: const EdgeInsets.only(left: 24, right: 8),
-                      leading: const Icon(Icons.wifi_rounded),
-                      title: Text(context.t.wifi_name),
-                      subtitle: wifiNameText.value.isEmpty
-                          ? Text(context.t.enter_wifi_name)
-                          : Text(
-                              wifiNameText.value,
-                              style: context.textTheme.labelLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: enabled ? context.primaryColor : context.colorScheme.onSurface.withAlpha(100),
-                                fontFamily: 'GoogleSansCode',
-                              ),
-                            ),
-                      trailing: IconButton(
-                        onPressed: enabled ? handleEditWifiName : null,
-                        icon: const Icon(Icons.edit_rounded),
-                      ),
-                    ),
-                    ListTile(
-                      enabled: enabled,
-                      contentPadding: const EdgeInsets.only(left: 24, right: 8),
                       leading: const Icon(Icons.lan_rounded),
                       title: Text(context.t.server_endpoint),
                       subtitle: localEndpointText.value.isEmpty
                           ? const Text("http://local-ip:2283")
-                          : Text(
-                              localEndpointText.value,
-                              style: context.textTheme.labelLarge?.copyWith(
-                                color: enabled ? context.primaryColor : context.colorScheme.onSurface.withAlpha(100),
-                                fontFamily: 'GoogleSansCode',
-                              ),
-                            ),
+                          : Text(localEndpointText.value, style: valueStyle),
                       trailing: IconButton(
                         onPressed: enabled ? handleEditServerEndpoint : null,
                         icon: const Icon(Icons.edit_rounded),
                       ),
                     ),
+                    Divider(color: context.colorScheme.surfaceContainerHighest),
+                    if (wifiNetworks.value.isEmpty)
+                      ListTile(
+                        enabled: enabled,
+                        contentPadding: const EdgeInsets.only(left: 24, right: 8),
+                        leading: const Icon(Icons.wifi_rounded),
+                        title: Text(context.t.wifi_name),
+                        subtitle: Text(context.t.enter_wifi_name),
+                        trailing: IconButton(
+                          onPressed: enabled ? handleEditWifiNetwork : null,
+                          icon: const Icon(Icons.edit_rounded),
+                        ),
+                      )
+                    else
+                      for (final MapEntry(:key, :value) in wifiNetworks.value.entries)
+                        buildWifiNetworkTile(key, value),
                     const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: SizedBox(
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: Text(context.t.add_wifi_network),
+                          onPressed: enabled ? handleEditWifiNetwork : null,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: SizedBox(

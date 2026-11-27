@@ -24,12 +24,8 @@ class AuthRepository {
     return _settings.appConfig.network.autoEndpointSwitching;
   }
 
-  String? getPreferredWifiName() {
-    return _settings.appConfig.network.preferredWifiName;
-  }
-
-  String? getLocalEndpoint() {
-    return _settings.appConfig.network.localEndpoint;
+  String? getLocalEndpointForWifi(String wifiName) {
+    return _settings.appConfig.network.endpointForWifi(wifiName);
   }
 
   List<AuxilaryEndpoint> getExternalEndpointList() {
