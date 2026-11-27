@@ -23,7 +23,9 @@ type UndoableDelete = {
   state: 'trashed' | 'restoring' | 'restored';
 };
 
-// Trash operations that Ctrl+Z can still undo, the most recent last.
+// Trash operations that Ctrl+Z can still undo, the most recent last. The user layout empties it
+// whenever the page changes: each callback belongs to the page that deleted the assets, and from
+// another page the assets may already have been restored or purged.
 let undoableDeletes: UndoableDelete[] = [];
 
 export const deleteAssets = async (
@@ -55,6 +57,11 @@ export const deleteAssets = async (
       );
     },
   });
+};
+
+/** Forgets every delete that Ctrl+Z could still undo. */
+export const forgetUndoableDeletes = () => {
+  undoableDeletes = [];
 };
 
 /** Restores the assets trashed by the most recent delete not undone yet; resolves whether it succeeded. */
