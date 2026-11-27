@@ -101,6 +101,8 @@ export const createApp = () => {
     explore: {
       recentlyAdded: page.getByRole('button', { name: 'image_alt_text_date', exact: true }),
       assetViewer: page.getByTestId('viewer-content'),
+      closeViewerButton: button('go_back'),
+      unfavoriteButton: button('unfavorite'),
       person: (name: string) => main.getByRole('link').filter({ hasText: name }),
     },
     places: {

@@ -28,6 +28,33 @@ test.describe('geolocation', () => {
     });
   });
 
+  test('a second save on the same assets shows its location', async ({ page, data, api, app }) => {
+    const [first, second] = [factory.asset({ fileCreatedAt: atNoon(1) }), factory.asset({ fileCreatedAt: atNoon(0) })];
+    data.addAssets([first, second]);
+    await page.goto(Route.geolocationUtility());
+    await pickLocation(app, '48.8566', '2.3522');
+    await app.timeline.thumbnail(first).click();
+    await app.timeline.thumbnail(second).click();
+    await app.geolocation.applyButton.click();
+    await app.dialogButton('confirm').click();
+    await expect(app.geolocation.gpsBadge(first)).toBeVisible();
+    await app.timeline.selectDay(first);
+    await pickLocation(app, '35.6762', '139.6503');
+
+    await app.geolocation.applyButton.click();
+    await app.dialogButton('confirm').click();
+
+    await expect(app.timeline.selected).toHaveCount(0);
+    await app.timeline.thumbnail(second).click();
+    await expect(app.geolocation.selectedLocation).toContainText('35.676, 139.650');
+    expect(api.updateAssets).toHaveBeenCalledWith({
+      body: { ids: [first.id, second.id], latitude: 48.8566, longitude: 2.3522 },
+    });
+    expect(api.updateAssets).toHaveBeenCalledWith({
+      body: { ids: [first.id, second.id], latitude: 35.6762, longitude: 139.6503 },
+    });
+  });
+
   test('assets of a partner are not selectable', async ({ page, data, app }) => {
     const partnerAsset = factory.asset({ ownerId: crypto.randomUUID(), fileCreatedAt: atNoon(1) });
     const ownAsset = factory.asset({ fileCreatedAt: atNoon(0) });
