@@ -9,14 +9,15 @@
   import Portal from '#lib/elements/Portal.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
-  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
+  import { createPreloadedQuery, queryClient } from '#lib/queries/client.ts';
   import { getAllPeopleQuery, updateCachedPerson } from '#lib/queries/person.query.ts';
   import { getExploreDataQuery } from '#lib/queries/search.query.ts';
   import { Route } from '#lib/route.ts';
   import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '#lib/utils.ts';
   import { getAltText } from '#lib/utils/thumbnail-util.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
+  import { AssetMediaSize } from '@immich/sdk';
   import { ImageCarousel } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -60,7 +61,7 @@
     updateCachedPerson(id, (person) => ({ ...person, updatedAt: new Date().toISOString() }));
 
   const onViewAsset = async (id: string) => {
-    const asset = await getAssetInfo({ ...authManager.params, id });
+    const asset = await queryClient.query(getAssetInfoQuery({ ...authManager.params, id }));
     assetViewerManager.setAsset(asset);
   };
 

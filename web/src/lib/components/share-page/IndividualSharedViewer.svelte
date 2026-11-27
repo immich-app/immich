@@ -6,6 +6,8 @@
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import type { Viewport } from '#lib/managers/timeline-manager/types.ts';
+  import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
+  import { queryClient } from '#lib/queries/client.ts';
   import { Route } from '#lib/route.ts';
   import { dragAndDropFilesStore } from '#lib/stores/drag-and-drop-files.store.ts';
   import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
@@ -14,7 +16,7 @@
   import { fileUploadHandler, openFileUploadDialog } from '#lib/utils/file-uploader.ts';
   import { handleError } from '#lib/utils/handle-error.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
+  import { type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Logo, toastManager } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -132,7 +134,7 @@
   </header>
 {:else if assets.length === 1}
   <OnEvents {onAssetsDelete} />
-  {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
+  {#await queryClient.query(getAssetInfoQuery({ ...authManager.params, id: assets[0].id })) then asset}
     {#await import('#lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
       <AssetViewer cursor={{ current: asset }} />
     {/await}

@@ -69,6 +69,7 @@ export const QueryKeys = {
 
   // assets
   assetStatistics: (params: Parameters<typeof getAssetStatistics>[0]) => ['assets', 'statistics', params],
+  asset: ({ id, ...params }: IdParams & { key?: string; slug?: string }) => ['assets', id, params],
   assetOcr: ({ id }: IdParams) => ['assets', id, 'ocr'],
   assetEdits: ({ id }: IdParams) => ['assets', id, 'edits'],
 

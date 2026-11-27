@@ -1,6 +1,8 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
-import { getAssetInfo, getFaces } from '@immich/sdk';
+import { getAssetInfoQuery, type AssetInfoParams } from '#lib/queries/asset.query.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getFaces } from '@immich/sdk';
 
 const defaultSerializer = <K>(params: K) => JSON.stringify(params);
 
@@ -36,7 +38,7 @@ class AsyncCache<K, V> {
 }
 
 class AssetCacheManager {
-  #assetCache = new AsyncCache(getAssetInfo);
+  #assetCache = new AsyncCache((params: AssetInfoParams) => queryClient.query(getAssetInfoQuery(params)));
   #faceCache = new AsyncCache(getFaces);
 
   constructor() {
