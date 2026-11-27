@@ -177,17 +177,37 @@ describe(AssetMediaController.name, () => {
       });
 
       it('should allow cross-origin embedding with a session key', async () => {
+        ctx.authenticate.mockResolvedValue(factory.auth({ session: { explicit: true } }));
         service.viewThumbnail.mockResolvedValue({ targetSize: AssetMediaSize.PREVIEW });
 
-        const { status, headers } = await request(ctx.getHttpServer()).get(
-          `/assets/${factory.uuid()}/thumbnail?sessionKey=key`,
-        );
+        const { status, headers } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
 
         expect(status).toBe(302);
         expect(headers['cross-origin-resource-policy']).toBe('cross-origin');
       });
 
-      it('should not allow cross-origin embedding without a session key', async () => {
+      it('should allow cross-origin embedding with a shared link', async () => {
+        ctx.authenticate.mockResolvedValue(factory.auth({ sharedLink: {} }));
+        service.viewThumbnail.mockResolvedValue({ targetSize: AssetMediaSize.PREVIEW });
+
+        const { status, headers } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
+
+        expect(status).toBe(302);
+        expect(headers['cross-origin-resource-policy']).toBe('cross-origin');
+      });
+
+      it('should allow cross-origin embedding with an api key', async () => {
+        ctx.authenticate.mockResolvedValue(factory.auth({ apiKey: {} }));
+        service.viewThumbnail.mockResolvedValue({ targetSize: AssetMediaSize.PREVIEW });
+
+        const { status, headers } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
+
+        expect(status).toBe(302);
+        expect(headers['cross-origin-resource-policy']).toBe('cross-origin');
+      });
+
+      it('should not allow cross-origin embedding with a session cookie', async () => {
+        ctx.authenticate.mockResolvedValue(factory.auth({ session: { explicit: false } }));
         service.viewThumbnail.mockResolvedValue({ targetSize: AssetMediaSize.PREVIEW });
 
         const { status, headers } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);

@@ -312,7 +312,7 @@ export class AuthService extends BaseService {
         throw new ForbiddenException('Cross-origin request blocked');
       }
 
-      return this.validateSession(session, headers);
+      return this.validateSession(session, headers, !!explicitSession);
     }
 
     if (apiKey) {
@@ -607,7 +607,7 @@ export class AuthService extends BaseService {
     return this.cryptoRepository.compareBcrypt(inputSecret, existingHash);
   }
 
-  private async validateSession(token: string, headers: IncomingHttpHeaders): Promise<AuthDto> {
+  private async validateSession(token: string, headers: IncomingHttpHeaders, explicit: boolean): Promise<AuthDto> {
     const hashed = this.cryptoRepository.hashSha256(token);
     const session = await this.sessionRepository.getByToken(hashed);
     if (session?.user) {
@@ -644,6 +644,7 @@ export class AuthService extends BaseService {
         session: {
           id: session.id,
           hasElevatedPermission,
+          explicit,
         },
       };
     }

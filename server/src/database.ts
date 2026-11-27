@@ -231,6 +231,7 @@ export type Album = Selectable<AlbumTable> & {
 export type AuthSession = {
   id: string;
   hasElevatedPermission: boolean;
+  explicit: boolean;
 };
 
 export type Partner = {

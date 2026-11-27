@@ -393,6 +393,7 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
+          explicit: true,
         },
       });
     });
@@ -560,6 +561,7 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
+          explicit: false,
         },
       });
     });
