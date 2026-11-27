@@ -14,6 +14,7 @@ import type {
   getTimeBucket,
   getTimeBuckets,
   getUsersForPeople,
+  reverseGeocode,
   searchMemories,
   searchPerson,
   searchPlaces,
@@ -100,6 +101,7 @@ export const QueryKeys = {
 
   // map
   mapMarkers: (...params: [Parameters<typeof getMapMarkers>[0]?]) => ['map', 'markers', ...params],
+  mapReverseGeocode: (params: Parameters<typeof reverseGeocode>[0]) => ['map', 'reverse-geocode', params],
 
   // memories
   memories: (...params: [MemoryParams?]) => ['memories', ...params],

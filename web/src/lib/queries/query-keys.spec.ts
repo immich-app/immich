@@ -35,7 +35,7 @@ import { getFacesQuery } from '#lib/queries/face.query.ts';
 import { getIntegrityReportQuery, getIntegrityReportSummaryQuery } from '#lib/queries/integrity-admin.query.ts';
 import { getAllLibrariesQuery, getLibraryQuery, getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
 import { detectPriorInstallQuery, getMaintenanceStatusQuery } from '#lib/queries/maintenance.query.ts';
-import { getMapMarkersQuery } from '#lib/queries/map.query.ts';
+import { getMapMarkersQuery, reverseGeocodeQuery } from '#lib/queries/map.query.ts';
 import { memoriesStatisticsQuery, searchMemoriesQuery } from '#lib/queries/memory.query.ts';
 import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
 import { getPartnersQuery } from '#lib/queries/partner.query.ts';
@@ -161,6 +161,7 @@ const queries: Record<string, QueryFactory> = {
   getMaintenanceStatusQuery: () => getMaintenanceStatusQuery(),
   detectPriorInstallQuery: () => detectPriorInstallQuery(),
   getMapMarkersQuery: () => getMapMarkersQuery({ isFavorite: true }),
+  reverseGeocodeQuery: () => reverseGeocodeQuery({ lat: 48.8566, lon: 2.3522 }),
   getNotificationsQuery: () => getNotificationsQuery(),
   getPartnersQuery: () => getPartnersQuery(PartnerDirection.SharedBy),
   searchPasskeysQuery: () => searchPasskeysQuery(),
