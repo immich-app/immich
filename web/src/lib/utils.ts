@@ -28,14 +28,6 @@ import { DateTime } from 'luxon';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
-interface DownloadRequestOptions<T = unknown> {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  url: string;
-  data?: T;
-  signal?: AbortSignal;
-  onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
-}
-
 interface DateFormatter {
   formatDate: (date: Date) => string;
   formatTime: (date: Date) => string;
@@ -56,10 +48,6 @@ interface UploadRequestOptions {
   method?: 'POST' | 'PUT';
   data: FormData;
   onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
-}
-
-export class AbortError extends Error {
-  override name = 'AbortError';
 }
 
 class ApiError extends Error {
@@ -122,46 +110,6 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
     xhr.open(options.method || 'POST', url);
     xhr.responseType = 'json';
     xhr.send(data);
-  });
-};
-
-export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions<TBody> | string) => {
-  if (typeof options === 'string') {
-    options = { url: options };
-  }
-
-  const { signal, method = 'GET', url, data: body, onDownloadProgress: onProgress } = options;
-
-  return new Promise<{ data: Blob; status: number }>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    xhr.addEventListener('error', (error) => reject(error));
-    xhr.addEventListener('abort', () => reject(new AbortError()));
-    xhr.addEventListener('load', () => {
-      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
-        resolve({ data: xhr.response as Blob, status: xhr.status });
-      } else {
-        reject(new ApiError(xhr.statusText, xhr.status, xhr.responseText));
-      }
-    });
-
-    if (onProgress) {
-      xhr.addEventListener('progress', (event) => onProgress(event));
-    }
-
-    if (signal) {
-      signal.addEventListener('abort', () => xhr.abort());
-    }
-
-    xhr.open(method, url);
-    xhr.responseType = 'blob';
-
-    if (body) {
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.send(JSON.stringify(body));
-    } else {
-      xhr.send();
-    }
   });
 };
 
@@ -353,12 +301,6 @@ export const findLocale = (code: string | undefined) => {
   };
 };
 
-export const asyncTimeout = (ms: number) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-};
-
 export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };
@@ -381,15 +323,6 @@ export const memoryLaneTitle = derived(t, ($t) => {
     return $t('unknown');
   };
 });
-
-export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T] | [unknown, undefined]> => {
-  try {
-    const result = await fn();
-    return [undefined, result];
-  } catch (error) {
-    return [error, undefined];
-  }
-};
 
 // eslint-disable-next-line unicorn/prefer-code-point
 export const decodeBase64 = (data: string) => Uint8Array.from(atob(data), (c) => c.charCodeAt(0));

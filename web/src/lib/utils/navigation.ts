@@ -133,15 +133,6 @@ export function navigate(change: ImmichRoute, options?: NavOptions): Promise<voi
   throw `Invalid navigation: ${JSON.stringify(change)}`;
 }
 
-export const clearQueryParam = async (queryParam: string, url: URL) => {
-  if (!url.searchParams.has(queryParam)) {
-    return;
-  }
-
-  url.searchParams.delete(queryParam);
-  await goto(url, { reset: false });
-};
-
 export const setQueryValue = async (queryKey: string, queryValue: string) => {
   const url = location.href;
   const urlObject = new URL(url);
