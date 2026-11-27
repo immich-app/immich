@@ -13,7 +13,7 @@
   } from '@immich/ui';
   import { mdiCodeJson } from '@mdi/js';
   import { isEqual } from 'lodash-es';
-  import { untrack } from 'svelte';
+  import { mount, unmount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { JSONEditor, Mode, type Content, type OnChangeStatus } from 'svelte-jsoneditor';
 
@@ -86,6 +86,38 @@
     }
   });
 
+  const copyDocumentStyles = (root: ShadowRoot) => {
+    root.adoptedStyleSheets = [...document.styleSheets].map((source) => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync([...source.cssRules].map(({ cssText }) => cssText).join('\n'));
+      return sheet;
+    });
+  };
+
+  const attachEditor = (host: HTMLElement) => {
+    const root = host.shadowRoot ?? host.attachShadow({ mode: 'open' });
+    copyDocumentStyles(root);
+    const editor = mount(JSONEditor, {
+      target: root,
+      props: {
+        get content() {
+          return content;
+        },
+        onChange: (updated: Content, previous: Content, status: OnChangeStatus) => {
+          content = updated;
+          handleChange(updated, previous, status);
+        },
+        mainMenuBar: false,
+        mode: Mode.text,
+      },
+    });
+
+    return () => {
+      void unmount(editor);
+      root.adoptedStyleSheets = [];
+    };
+  };
+
   const handleChange = (updated: Content, _: Content, status: OnChangeStatus) => {
     if (status.contentErrors) {
       return;
@@ -115,9 +147,7 @@
     </CardHeader>
     <CardBody>
       <VStack gap={2}>
-        <div class="h-[600px] w-full overflow-hidden rounded-lg border {editorClass}">
-          <JSONEditor bind:content onChange={handleChange} mainMenuBar={false} mode={Mode.text} />
-        </div>
+        <div class="h-[600px] w-full overflow-hidden rounded-lg border {editorClass}" {@attach attachEditor}></div>
       </VStack>
     </CardBody>
   </Card>
