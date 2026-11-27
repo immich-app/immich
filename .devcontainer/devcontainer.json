@@ -26,7 +26,9 @@
         "vkrishna04.cspell-sync",
         "vitest.explorer",
         "ms-playwright.playwright",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "typescriptteam.native-preview",
+        "editorconfig.editorconfig"
       ],
       "settings": {
         "tasks": {
