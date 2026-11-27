@@ -9,7 +9,12 @@ import {
   getRecentAlbumsQuery,
 } from '#lib/queries/album.query.ts';
 import { getApiKeysQuery } from '#lib/queries/api-key.query.ts';
-import { getAssetEditsQuery, getAssetOcrQuery, getAssetStatisticsQuery } from '#lib/queries/asset.query.ts';
+import {
+  getAssetEditsQuery,
+  getAssetInfoQuery,
+  getAssetOcrQuery,
+  getAssetStatisticsQuery,
+} from '#lib/queries/asset.query.ts';
 import { getAuthStatusQuery } from '#lib/queries/auth.query.ts';
 import {
   getClusterGroupRequestsForGroupQuery,
@@ -30,7 +35,7 @@ import { getFacesQuery } from '#lib/queries/face.query.ts';
 import { getIntegrityReportQuery, getIntegrityReportSummaryQuery } from '#lib/queries/integrity-admin.query.ts';
 import { getAllLibrariesQuery, getLibraryQuery, getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
 import { detectPriorInstallQuery, getMaintenanceStatusQuery } from '#lib/queries/maintenance.query.ts';
-import { getMapMarkersQuery } from '#lib/queries/map.query.ts';
+import { getMapMarkersQuery, reverseGeocodeQuery } from '#lib/queries/map.query.ts';
 import { memoriesStatisticsQuery, searchMemoriesQuery } from '#lib/queries/memory.query.ts';
 import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
 import { getPartnersQuery } from '#lib/queries/partner.query.ts';
@@ -132,6 +137,7 @@ const queries: Record<string, QueryFactory> = {
   searchMemoriesQuery: () => searchMemoriesQuery({ isSaved: true }),
   memoriesStatisticsQuery: () => memoriesStatisticsQuery({ isSaved: true }),
   getAssetStatisticsQuery: () => getAssetStatisticsQuery({ isFavorite: true }),
+  getAssetInfoQuery: () => getAssetInfoQuery({ id }),
   getAssetOcrQuery: () => getAssetOcrQuery(id),
   getAssetEditsQuery: () => getAssetEditsQuery(id),
   getAuthStatusQuery: () => getAuthStatusQuery(),
@@ -155,6 +161,7 @@ const queries: Record<string, QueryFactory> = {
   getMaintenanceStatusQuery: () => getMaintenanceStatusQuery(),
   detectPriorInstallQuery: () => detectPriorInstallQuery(),
   getMapMarkersQuery: () => getMapMarkersQuery({ isFavorite: true }),
+  reverseGeocodeQuery: () => reverseGeocodeQuery({ lat: 48.8566, lon: 2.3522 }),
   getNotificationsQuery: () => getNotificationsQuery(),
   getPartnersQuery: () => getPartnersQuery(PartnerDirection.SharedBy),
   searchPasskeysQuery: () => searchPasskeysQuery(),

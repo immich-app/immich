@@ -1,10 +1,12 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { userPreferencesManager } from '#lib/managers/user-preferences-manager.svelte.ts';
+import { getAssetInfoQuery } from '#lib/queries/asset.query.ts';
+import { queryClient } from '#lib/queries/client.ts';
 import type { ImageLoaderStatus } from '#lib/utils/adaptive-image-loader.svelte.ts';
 import { canCopyImageToClipboard } from '#lib/utils/asset-utils.ts';
 import { BaseEventManager } from '#lib/utils/base-event-manager.svelte.ts';
 import type { AssetGridRouteSearchParams } from '#lib/utils/navigation.ts';
-import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
+import { type AssetResponseDto } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 import { cubicOut } from 'svelte/easing';
 
@@ -253,7 +255,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
   }
 
   async setAssetId(id: string): Promise<AssetResponseDto> {
-    const asset = await getAssetInfo({ ...authManager.params, id });
+    const asset = await queryClient.query(getAssetInfoQuery({ ...authManager.params, id }));
     this.setAsset(asset);
     return asset;
   }

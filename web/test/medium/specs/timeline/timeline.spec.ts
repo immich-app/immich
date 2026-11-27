@@ -529,6 +529,22 @@ test.describe('timeline', () => {
       expect(api.downloadAsset).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id }) });
     });
 
+    test('a single download whose asset fails to load starts no download', async ({ page, data, api, logger, app }) => {
+      const asset = factory.asset();
+      data.addAssets(asset);
+      api.on({ getAssetInfo: () => ({ networkError: true }) });
+      await page.goto(Route.photos());
+      await app.timeline.select(asset);
+
+      await app.timeline.selectionBar.download();
+
+      await expect.poll(() => logger.error.calls).toContainEqual(expect.stringMatching(/Failed to fetch/));
+      await expect(app.timeline.selected).toHaveCount(0);
+      expect(api.downloadAsset).not.toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalledWith(/Failed to fetch/);
+      expect(logger.error).toHaveBeenCalledWith(/ERR_FAILED/);
+    });
+
     test('shift-click selects ranges', async ({ page, data, app }) => {
       const assets = data.addTimeline({ years: 1 });
       await page.goto(Route.photos());

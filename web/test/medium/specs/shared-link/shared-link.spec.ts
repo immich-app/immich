@@ -14,7 +14,38 @@ const setup = (data: MockData, overrides = {}) => {
   return { link, album, assets };
 };
 
+const linkParams = [
+  { field: 'key', slug: null },
+  { field: 'slug', slug: 'summer-trip' },
+] as const;
+
 test.describe('shared link', () => {
+  for (const { field, slug } of linkParams) {
+    test(`guest viewer loads every asset with the link ${field}`, async ({ page, context, data, api, app }) => {
+      const [first, second] = [
+        factory.asset({ fileCreatedAt: '2025-06-02T12:00:00.000Z' }),
+        factory.asset({ fileCreatedAt: '2025-06-01T12:00:00.000Z' }),
+      ];
+      data.addAssets([first, second]);
+      const album = factory.album();
+      data.addAlbums(album).addToAlbum(album.id, [first, second]);
+      const link = factory.sharedLink({ type: SharedLinkType.Album, album, slug });
+      data.addSharedLinks(link);
+      await context.clearCookies();
+      await page.goto(Route.viewSharedLink(link));
+      await app.timeline.thumbnail(first).click();
+      await app.viewer.waitForAsset(first);
+
+      await app.viewer.nextButton.click();
+
+      await app.viewer.waitForAsset(second);
+      const value = link[field]!;
+      expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: first.id, [field]: value } });
+      expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: second.id, [field]: value } });
+      expect(api.getAssetInfo.calls.filter(({ params }) => params[field] !== value)).toEqual([]);
+    });
+  }
+
   test('shows new shared links from another source', async ({ page, data, api, app }) => {
     const [existing, added] = [
       factory.sharedLink({ assets: [factory.asset()] }),
@@ -200,6 +231,22 @@ test.describe('shared link', () => {
 
     await app.viewer.waitForAsset(asset);
     expect(api.getAssetInfo).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id, key: link.key }) });
+  });
+
+  test('a single asset link that fails to load shows an error', async ({ page, context, data, api, logger, app }) => {
+    const asset = factory.asset();
+    const link = factory.sharedLink({ type: SharedLinkType.Individual, assets: [asset] });
+    data.addSharedLinks(link);
+    api.on({ getAssetInfo: () => ({ networkError: true }) });
+    await context.clearCookies();
+
+    await page.goto(Route.viewSharedLink({ key: link.key }));
+
+    await expect(app.toast('error_retrieving_asset_information')).toBeVisible();
+    await expect(app.viewer.root).toHaveCount(0);
+    expect(api.getAssetInfo).toHaveBeenCalledWith({ params: expect.objectContaining({ id: asset.id, key: link.key }) });
+    expect(logger.error).toHaveBeenCalledWith(/handleError/);
+    expect(logger.error).toHaveBeenCalledWith(/ERR_FAILED/);
   });
 
   test('the owner trashing the asset of a single asset link goes to the timeline', async ({ page, data, api, app }) => {

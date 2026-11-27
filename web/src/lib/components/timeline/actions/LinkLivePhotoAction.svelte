@@ -3,11 +3,10 @@
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
-  import { updateAssetMutation } from '#lib/queries/asset.query.ts';
-  import { executeMutation } from '#lib/queries/client.ts';
+  import { getAssetInfoQuery, updateAssetMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
   import type { OnLink, OnUnlink } from '#lib/utils/actions.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiLinkOff, mdiMotionPlayOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -63,7 +62,7 @@
       [{ id: still.id, updateAssetDto: { livePhotoVideoId: null } }],
     );
     if (stillResponse) {
-      const motionResponse = await getAssetInfo({ ...authManager.params, id: motionId });
+      const motionResponse = await queryClient.query(getAssetInfoQuery({ ...authManager.params, id: motionId }));
       onUnlink({ still: toTimelineAsset(stillResponse), motion: toTimelineAsset(motionResponse) });
       assetMultiSelectManager.clear();
     }

@@ -14,6 +14,7 @@ import type {
   getTimeBucket,
   getTimeBuckets,
   getUsersForPeople,
+  reverseGeocode,
   searchMemories,
   searchPerson,
   searchPlaces,
@@ -69,6 +70,7 @@ export const QueryKeys = {
 
   // assets
   assetStatistics: (params: Parameters<typeof getAssetStatistics>[0]) => ['assets', 'statistics', params],
+  asset: ({ id, ...params }: IdParams & { key?: string; slug?: string }) => ['assets', id, params],
   assetOcr: ({ id }: IdParams) => ['assets', id, 'ocr'],
   assetEdits: ({ id }: IdParams) => ['assets', id, 'edits'],
 
@@ -99,6 +101,7 @@ export const QueryKeys = {
 
   // map
   mapMarkers: (...params: [Parameters<typeof getMapMarkers>[0]?]) => ['map', 'markers', ...params],
+  mapReverseGeocode: (params: Parameters<typeof reverseGeocode>[0]) => ['map', 'reverse-geocode', params],
 
   // memories
   memories: (...params: [MemoryParams?]) => ['memories', ...params],

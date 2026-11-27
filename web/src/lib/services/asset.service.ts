@@ -13,11 +13,12 @@ import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
 import {
   deleteAssetsMutation,
+  getAssetInfoQuery,
   runAssetJobsMutation,
   updateAssetMutation,
   updateAssetsMutation,
 } from '#lib/queries/asset.query.ts';
-import { executeMutation, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
+import { executeMutation, queryClient, readPreloadedQuery, type ConfirmOptions } from '#lib/queries/client.ts';
 import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
 import { restoreAssetsMutation } from '#lib/queries/trash.query.ts';
 import { Route } from '#lib/route.ts';
@@ -32,7 +33,6 @@ import {
   AssetJobName,
   AssetTypeEnum,
   AssetVisibility,
-  getAssetInfo,
   type AlbumResponseDto,
   type AssetJobsDto,
   type AssetResponseDto,
@@ -507,7 +507,9 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
   };
 
   if (asset.livePhotoVideoId) {
-    const motionAsset = await getAssetInfo({ ...authManager.params, id: asset.livePhotoVideoId });
+    const motionAsset = await queryClient.query(
+      getAssetInfoQuery({ ...authManager.params, id: asset.livePhotoVideoId }),
+    );
     if (
       !isAndroidMotionVideo(motionAsset) ||
       (authManager.authenticated && authManager.preferences.download.includeEmbeddedVideos)

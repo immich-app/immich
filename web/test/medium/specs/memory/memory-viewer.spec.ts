@@ -236,6 +236,51 @@ test.describe('memory viewer', () => {
     expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: asset.id } });
   });
 
+  test('a failed full asset load shows an error', async ({ page, data, api, logger, app }) => {
+    const [memory] = addMemories(data, [1]);
+    const [asset] = memory.assets;
+    data.addAssets({ ...asset, exifInfo: { city: 'Paris', country: 'France' } });
+    api.on({ getAssetInfo: () => ({ networkError: true }) });
+
+    await page.goto(Route.viewMemory({ id: memory.id, assetId: asset.id }));
+
+    await expect(app.toast('error_retrieving_asset_information')).toBeVisible();
+    await expect(app.memory.photo).toBeVisible();
+    await expect(app.memory.place('Paris')).toHaveCount(0);
+    await expect(app.memory.viewInTimelineLink).toHaveCount(0);
+    expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: asset.id } });
+    expect(logger.error).toHaveBeenCalledWith(/handleError/);
+    expect(logger.error).toHaveBeenCalledWith(/ERR_FAILED/);
+  });
+
+  test('keeps the location of the current asset when an earlier one loads last', async ({ page, data, api, app }) => {
+    const [memory] = addMemories(data, [2]);
+    const [first, second] = memory.assets;
+    data.addAssets([
+      { ...first, exifInfo: { city: 'Paris' } },
+      { ...second, exifInfo: { city: 'Tokyo' } },
+    ]);
+    const { promise: firstLookup, resolve: finishFirstLookup } = Promise.withResolvers<void>();
+    api.on({
+      getAssetInfo: async ({ params }) => {
+        if (params.id === first.id) {
+          await firstLookup;
+        }
+        return { json: data.getAsset(params.id)! };
+      },
+    });
+    await page.goto(Route.viewMemory({ id: memory.id, assetId: first.id }));
+    await expect(app.memory.photo).toBeVisible();
+    await page.keyboard.press('ArrowRight');
+    await expect(app.memory.place('Tokyo')).toBeVisible();
+
+    finishFirstLookup();
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+
+    await expect(app.memory.place('Tokyo')).toBeVisible();
+    await expect(app.memory.place('Paris')).toHaveCount(0);
+  });
+
   test('closes a memory opened from a link', async ({ page, data, app }) => {
     const [memory] = addMemories(data, [1, 1]);
     await page.goto(Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }));

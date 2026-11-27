@@ -2,6 +2,7 @@ import { Route } from '#lib/route.ts';
 import { factory } from '#test/common/factories.ts';
 import type { App } from '#test/medium/app.ts';
 import { expect, test } from '#test/medium/fixtures.ts';
+import type { Request } from '@playwright/test';
 
 const atNoon = (second: number) => `2025-06-01T12:00:0${second}.000Z`;
 
@@ -25,6 +26,33 @@ test.describe('geolocation', () => {
     await expect(app.timeline.selected).toHaveCount(0);
     expect(api.updateAssets).toHaveBeenCalledWith({
       body: { ids: [first.id, second.id], latitude: 48.8566, longitude: 2.3522 },
+    });
+  });
+
+  test('a second save on the same assets shows its location', async ({ page, data, api, app }) => {
+    const [first, second] = [factory.asset({ fileCreatedAt: atNoon(1) }), factory.asset({ fileCreatedAt: atNoon(0) })];
+    data.addAssets([first, second]);
+    await page.goto(Route.geolocationUtility());
+    await pickLocation(app, '48.8566', '2.3522');
+    await app.timeline.thumbnail(first).click();
+    await app.timeline.thumbnail(second).click();
+    await app.geolocation.applyButton.click();
+    await app.dialogButton('confirm').click();
+    await expect(app.geolocation.gpsBadge(first)).toBeVisible();
+    await app.timeline.selectDay(first);
+    await pickLocation(app, '35.6762', '139.6503');
+
+    await app.geolocation.applyButton.click();
+    await app.dialogButton('confirm').click();
+
+    await expect(app.timeline.selected).toHaveCount(0);
+    await app.timeline.thumbnail(second).click();
+    await expect(app.geolocation.selectedLocation).toContainText('35.676, 139.650');
+    expect(api.updateAssets).toHaveBeenCalledWith({
+      body: { ids: [first.id, second.id], latitude: 48.8566, longitude: 2.3522 },
+    });
+    expect(api.updateAssets).toHaveBeenCalledWith({
+      body: { ids: [first.id, second.id], latitude: 35.6762, longitude: 139.6503 },
     });
   });
 
@@ -131,14 +159,21 @@ test.describe('geolocation', () => {
         return { json: [{ city: 'Tokyo', country: 'Japan', state: null }] };
       },
     });
+    const parisSettled = Promise.withResolvers<void>();
+    const onParisSettled = (request: Request) => {
+      if (/reverse-geocode\?lat=48\.8566/.test(request.url())) {
+        parisSettled.resolve();
+      }
+    };
+    page.on('requestfinished', onParisSettled);
+    page.on('requestfailed', onParisSettled);
     await page.goto(Route.geolocationUtility());
     await pickLocation(app, '48.8566', '2.3522');
     await pickLocation(app, '35.6762', '139.6503');
     await expect(app.geolocation.selectedLocation).toContainText('Tokyo, Japan');
 
-    const parisResponse = page.waitForResponse(/reverse-geocode\?lat=48\.8566/);
     finishParisLookup();
-    await parisResponse;
+    await parisSettled.promise;
     await page.evaluate(() => new Promise(requestAnimationFrame));
 
     await expect(app.geolocation.selectedLocation).toContainText('Tokyo, Japan');
