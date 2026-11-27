@@ -8,7 +8,7 @@ import createJustifiedLayout from 'justified-layout';
 
 const useWasm = TUNABLES.LAYOUT.WASM;
 
-export type CommonJustifiedLayout = {
+type CommonJustifiedLayout = {
   containerWidth: number;
   containerHeight: number;
   getTop(boxIdx: number): number;
@@ -97,7 +97,7 @@ class Adapter {
   }
 }
 
-export function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], options: CommonLayoutOptions) {
+function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], options: CommonLayoutOptions) {
   const adapter = {
     targetRowHeight: options.rowHeight,
     containerWidth: options.rowWidth,

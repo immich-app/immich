@@ -28,7 +28,7 @@ type AdjacentMemory = {
 };
 
 /** Everything the memory viewer renders, for the position currently in the url. */
-export type MemoryState = {
+type MemoryState = {
   memory: MemoryResponseDto;
   asset: TimelineAsset;
   /** The assets the asset viewer can navigate through, spanning the adjacent memories. */

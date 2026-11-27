@@ -220,7 +220,7 @@ const forceUseOriginal = (asset: AssetResponseDto) => {
   return asset.type === AssetTypeEnum.Image && asset.duration;
 };
 
-export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
+const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
     return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
   }
@@ -312,7 +312,7 @@ export const downloadUrlPost = (url: string, assetIds: string[], archiveName: st
   form.remove();
 };
 
-export const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.createObjectURL(data), filename);
+const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.createObjectURL(data), filename);
 
 export const downloadJson = (data: unknown, filename: string) => {
   const blob = new Blob([JSON.stringify(data, jsonReplacer, 2)], { type: 'application/json' });

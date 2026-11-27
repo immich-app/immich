@@ -3,7 +3,7 @@ import { Route } from '#lib/route.ts';
 import { redirect } from '@sveltejs/kit';
 import { DateTime } from 'luxon';
 
-export interface AuthOptions {
+interface AuthOptions {
   admin?: true;
   public?: boolean;
 }

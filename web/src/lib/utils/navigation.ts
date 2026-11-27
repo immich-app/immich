@@ -8,7 +8,7 @@ export type AssetGridRouteSearchParams = {
   at: string | null | undefined;
 };
 
-export const isPhotosRoute = (route?: string | null) => !!route?.startsWith('/(user)/photos/[[assetId=id]]');
+const isPhotosRoute = (route?: string | null) => !!route?.startsWith('/(user)/photos/[[assetId=id]]');
 const isSharedLinkSlugRoute = (route?: string | null) => !!route?.startsWith('/(user)/s/[slug]');
 export const isSharedLinkRoute = (route?: string | null) =>
   !!route?.startsWith('/(user)/share/[key]') || isSharedLinkSlugRoute(route);

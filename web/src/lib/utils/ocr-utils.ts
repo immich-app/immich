@@ -6,7 +6,7 @@ export type { Point } from '#lib/utils/container-utils.ts';
 
 const distance = (p1: Point, p2: Point) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
 
-export type VerticalMode = 'none' | 'cjk' | 'rotated';
+type VerticalMode = 'none' | 'cjk' | 'rotated';
 
 export type OcrBox = {
   id: string;

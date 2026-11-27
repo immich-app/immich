@@ -38,24 +38,24 @@ export enum OnboardingRole {
   USER = 'user',
 }
 
-export type SearchCameraFilter = {
+type SearchCameraFilter = {
   make?: string;
   model?: string;
   lensModel?: string;
 };
 
-export type SearchDateFilter = {
+type SearchDateFilter = {
   takenBefore?: DateTime;
   takenAfter?: DateTime;
 };
 
-export type SearchDisplayFilters = {
+type SearchDisplayFilters = {
   isNotInAlbum: boolean;
   isArchive: boolean;
   isFavorite: boolean;
 };
 
-export type SearchLocationFilter = {
+type SearchLocationFilter = {
   country?: string;
   state?: string;
   city?: string;
@@ -84,7 +84,7 @@ export type PeopleFilter = {
   name?: string;
 };
 
-export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
+type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
 
 export type JSONSchemaProperty = {
   type: JSONSchemaType;

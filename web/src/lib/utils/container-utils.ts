@@ -22,7 +22,7 @@ export type Size = {
   height: number;
 };
 
-export type ContentMetrics = {
+type ContentMetrics = {
   contentWidth: number;
   contentHeight: number;
   offsetX: number;
