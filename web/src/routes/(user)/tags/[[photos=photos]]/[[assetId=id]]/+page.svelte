@@ -75,11 +75,13 @@
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] immich-scrollbar overflow-auto">
     {#if tag.hasAssets}
-      <Timeline enableRouting={true} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
-        {#snippet empty()}
-          <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
-        {/snippet}
-      </Timeline>
+      {#key tag.id}
+        <Timeline enableRouting={true} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
+          {#snippet empty()}
+            <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
+          {/snippet}
+        </Timeline>
+      {/key}
     {:else}
       <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
     {/if}
