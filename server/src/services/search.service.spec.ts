@@ -2,7 +2,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { beforeEach, vitest } from 'vitest';
 import { mapAsset } from 'src/dtos/asset-response.dto.js';
 import { SearchSuggestionType } from 'src/dtos/search.dto.js';
-import { AssetVisibility } from 'src/enum.js';
+import { AssetOrder, AssetVisibility, SearchOrderField } from 'src/enum.js';
 import { SearchService } from 'src/services/search.service.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
@@ -244,10 +244,79 @@ describe(SearchService.name, () => {
       mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
       await sut.searchSmart(auth, { size: 100, filter: {}, query: 'test' });
       expect(mocks.search.searchSmartV3).toHaveBeenCalledWith(
-        { take: 100 },
+        { take: 100, cursor: undefined },
         expect.objectContaining({ embedding: '[1, 2, 3]' }),
         expect.objectContaining({ lockedOwnerId: expect.any(String) }),
       );
+    });
+
+    it('should paginate metadata search with a cursor at the last row', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.create();
+
+      mocks.search.searchMetadataV3.mockResolvedValue({
+        hasNextPage: true,
+        items: [{ ...getForAsset(asset), fileSizeInByte: null, rating: null }] as never,
+      });
+      const firstPage = await sut.searchMetadata(auth, { size: 1, filter: {} });
+      expect(firstPage.assets.nextPage).toBeNull();
+      expect(firstPage.assets.nextCursor).toEqual(expect.any(String));
+
+      mocks.search.searchMetadataV3.mockResolvedValue({ hasNextPage: false, items: [] });
+      const secondPage = await sut.searchMetadata(auth, { size: 1, cursor: firstPage.assets.nextCursor! });
+      expect(mocks.search.searchMetadataV3).toHaveBeenLastCalledWith(
+        {
+          take: 1,
+          cursor: {
+            field: SearchOrderField.FileCreatedAt,
+            direction: AssetOrder.Desc,
+            value: asset.fileCreatedAt,
+            id: asset.id,
+          },
+        },
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(secondPage.assets.nextCursor).toBeNull();
+    });
+
+    it('should reject a metadata cursor for a different order field', async () => {
+      mocks.search.searchMetadataV3.mockResolvedValue({
+        hasNextPage: true,
+        items: [{ ...getForAsset(AssetFactory.create()), fileSizeInByte: null, rating: null }] as never,
+      });
+      const { assets } = await sut.searchMetadata(AuthFactory.create(), { size: 1, filter: {} });
+
+      await expect(
+        sut.searchMetadata(AuthFactory.create(), {
+          size: 1,
+          cursor: assets.nextCursor!,
+          orderBy: { field: SearchOrderField.Rating, direction: AssetOrder.Desc },
+        }),
+      ).rejects.toThrowError(new BadRequestException('Cursor is for ordering by fileCreatedAt desc, not rating desc'));
+    });
+
+    it('should paginate smart search from the last asset', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.create();
+      mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
+
+      mocks.search.searchSmartV3.mockResolvedValue({
+        hasNextPage: true,
+        items: [getForAsset(asset)] as never,
+      });
+      const firstPage = await sut.searchSmart(auth, { size: 1, filter: {}, query: 'test' });
+      expect(firstPage.assets.nextPage).toBeNull();
+      expect(firstPage.assets.nextCursor).toEqual(expect.any(String));
+
+      mocks.search.searchSmartV3.mockResolvedValue({ hasNextPage: false, items: [] });
+      const secondPage = await sut.searchSmart(auth, { size: 1, query: 'test', cursor: firstPage.assets.nextCursor! });
+      expect(mocks.search.searchSmartV3).toHaveBeenLastCalledWith(
+        { take: 1, cursor: { id: asset.id } },
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(secondPage.assets.nextCursor).toBeNull();
     });
 
     it('should reject an invalid cursor', async () => {
