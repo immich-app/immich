@@ -125,15 +125,6 @@
     point = selected;
     assetPlace = undefined;
   };
-  const handleEscape = () => {
-    if (!assetMultiSelectManager.selectionActive) {
-      return;
-    }
-
-    assetMultiSelectManager.clear();
-    return;
-  };
-
   type AssetPoint = { latitude: number; longitude: number };
 
   const hasGps = (asset: TimelineAsset | AssetPoint): asset is AssetPoint =>
@@ -257,7 +248,6 @@
     bind:timelineManager
     {options}
     assetInteraction={assetMultiSelectManager}
-    onEscape={handleEscape}
     withStacked
     onThumbnailClick={handleThumbnailClick}
   >

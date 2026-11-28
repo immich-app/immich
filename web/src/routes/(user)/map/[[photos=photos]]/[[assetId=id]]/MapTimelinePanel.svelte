@@ -62,10 +62,6 @@
     assetMultiSelectManager.clear();
   };
 
-  const handleEscape = () => {
-    assetMultiSelectManager.clear();
-  };
-
   const timelineBoundingBox = $derived(
     `${floor(bbox.west, 6)},${floor(bbox.south, 6)},${ceil(bbox.east, 6)},${ceil(bbox.north, 6)}`,
   );
@@ -101,7 +97,6 @@
       bind:timelineManager
       enableRouting={false}
       options={timelineOptions}
-      onEscape={handleEscape}
       assetInteraction={assetMultiSelectManager}
       showArchiveIcon
       withStacked

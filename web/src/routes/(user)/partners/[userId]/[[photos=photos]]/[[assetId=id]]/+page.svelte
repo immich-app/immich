@@ -25,19 +25,10 @@
     visibility: AssetVisibility.Timeline,
     withStacked: true,
   });
-
-  const handleEscape = () => {
-    if (!assetMultiSelectManager.selectionActive) {
-      return;
-    }
-
-    assetMultiSelectManager.clear();
-    return;
-  };
 </script>
 
 <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
-  <Timeline enableRouting={true} {options} assetInteraction={assetMultiSelectManager} onEscape={handleEscape} />
+  <Timeline enableRouting={true} {options} assetInteraction={assetMultiSelectManager} />
 </main>
 
 {#if assetMultiSelectManager.selectionActive}
