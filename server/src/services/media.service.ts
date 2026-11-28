@@ -30,7 +30,6 @@ import { EmbeddedImage } from 'src/repositories/media.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import type {
   AudioStreamInfo,
-  Bitmap,
   GenerateThumbnailOptions,
   ImageDimensions,
   JobItem,
@@ -277,7 +276,7 @@ export class MediaService extends BaseService {
       size: isConvertFullsize ? undefined : image.preview.size,
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
-      orientation: extracted ? Number(asset.exifInfo.orientation) : undefined,
+      orientation: extracted && asset.exifInfo.orientation ? Number(asset.exifInfo.orientation) : undefined,
     });
 
     return {
