@@ -563,6 +563,55 @@ test.describe('timeline', () => {
       await page.mouse.move(0, 0);
       await expect(app.timeline.selected).toHaveCount(5);
     });
+
+    for (const { name, startGroup, endGroup, reverse } of [
+      { name: 'from a date group to a photo', startGroup: true, endGroup: false, reverse: false },
+      { name: 'from a photo to a date group', startGroup: false, endGroup: true, reverse: false },
+      { name: 'backwards between date groups', startGroup: true, endGroup: true, reverse: true },
+    ]) {
+      test(`shift-click selects ranges ${name}`, async ({ page, data, app }) => {
+        const assets = [
+          '2025-06-03T14:00:00Z',
+          '2025-06-03T12:00:00Z',
+          '2025-06-02T12:00:00Z',
+          '2025-06-01T14:00:00Z',
+          '2025-06-01T12:00:00Z',
+        ].map((fileCreatedAt) => factory.asset({ fileCreatedAt }));
+        const album = factory.album();
+        data.addAssets(assets);
+        data.addAlbums(album).addToAlbum(album.id, assets);
+        await page.goto(Route.viewAlbum({ id: album.id }));
+
+        const [start, end] = reverse ? [assets[3], assets[1]] : [assets[1], assets[3]];
+        const expected = assets.slice(startGroup ? 0 : 1, endGroup ? 5 : 4);
+        if (startGroup) {
+          await app.timeline.selectDay(start);
+        } else {
+          await app.timeline.select(start);
+        }
+
+        const endPhoto = app.timeline.thumbnail(end);
+        const endDay = page.getByTestId('timeline-day').filter({ has: endPhoto });
+        await page.keyboard.down('Shift');
+        if (endGroup) {
+          await endDay.locator('span[title]').first().hover();
+        } else {
+          await endPhoto.hover();
+        }
+        await expect(app.timeline.selectionCandidates).toHaveCount(expected.length);
+
+        if (endGroup) {
+          await endDay.getByTestId('select-day').click();
+        } else {
+          await endPhoto.getByRole('checkbox').click();
+        }
+        await page.keyboard.up('Shift');
+        await expect(app.timeline.selected).toHaveCount(expected.length);
+        for (const asset of expected) {
+          await expect(app.timeline.thumbnail(asset).and(app.timeline.selected)).toBeVisible();
+        }
+      });
+    }
   });
 
   test.describe('failed selection action', () => {

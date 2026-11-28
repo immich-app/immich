@@ -5,7 +5,7 @@
   import { TimelineDay } from '#lib/managers/timeline-manager/timeline-day.svelte.ts';
   import type { TimelineMonth } from '#lib/managers/timeline-manager/timeline-month.svelte.ts';
   import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
-  import { assetsSnapshot, filterIsInOrNearViewport } from '#lib/managers/timeline-manager/utils.svelte.ts';
+  import { filterIsInOrNearViewport } from '#lib/managers/timeline-manager/utils.svelte.ts';
   import { uploadAssetsStore } from '#lib/stores/upload.ts';
   import type { CommonPosition } from '#lib/utils/layout-utils.ts';
   import { fromTimelinePlainDate, getDateLocaleString } from '#lib/utils/timeline-util.ts';
@@ -29,7 +29,8 @@
     assetInteraction: AssetMultiSelectManager;
     timelineMonth: TimelineMonth;
     manager: VirtualScrollManager;
-    onTimelineDaySelect: (timelineDay: TimelineDay, assets: TimelineAsset[]) => void;
+    onTimelineDaySelect: (timelineDay: TimelineDay, shift: boolean) => void;
+    onTimelineDayHover: (timelineDay: TimelineDay | null) => void;
   };
   let {
     thumbnail: thumbnailWithGroup,
@@ -39,6 +40,7 @@
     timelineMonth,
     manager,
     onTimelineDaySelect,
+    onTimelineDayHover,
   }: Props = $props();
 
   let { isUploading } = uploadAssetsStore;
@@ -73,6 +75,9 @@
     <div
       class="flex h-6 place-items-center pt-7 pb-5 text-xs font-medium text-immich-fg max-md:pt-5 max-md:pb-3 md:text-sm dark:text-immich-dark-fg"
       style:width={timelineDay.width + 'px'}
+      role="presentation"
+      onmouseenter={() => !singleSelect && onTimelineDayHover(timelineDay)}
+      onmouseleave={() => !singleSelect && onTimelineDayHover(null)}
     >
       {#if !singleSelect}
         {const isTimelineDaySelected = $derived(assetInteraction.selectedGroup.has(timelineDay.groupTitle))}
@@ -80,8 +85,8 @@
           class="w-0 overflow-hidden transition-all duration-200 ease-out hover:cursor-pointer"
           class:w-8={hoveredTimelineDay === timelineDay.groupTitle || isTimelineDaySelected}
           data-testid="select-day"
-          onclick={() => onTimelineDaySelect(timelineDay, assetsSnapshot(timelineDay.getAssets()))}
-          onkeydown={() => onTimelineDaySelect(timelineDay, assetsSnapshot(timelineDay.getAssets()))}
+          onclick={(event) => onTimelineDaySelect(timelineDay, event.shiftKey)}
+          onkeydown={(event) => onTimelineDaySelect(timelineDay, event.shiftKey)}
         >
           {#if isTimelineDaySelected}
             <Icon icon={mdiCheckCircle} size="24" class="text-primary" />

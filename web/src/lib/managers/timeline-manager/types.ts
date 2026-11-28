@@ -12,6 +12,7 @@ export type TimelineManagerOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>
 };
 
 export type AssetDescriptor = { id: string };
+export type AssetRangeEndpoint = AssetDescriptor & { lastId?: string };
 
 export type Direction = 'earlier' | 'later';
 

@@ -17,6 +17,7 @@
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import type { TimelineMonth } from '#lib/managers/timeline-manager/timeline-month.svelte.ts';
   import type {
+    AssetRangeEndpoint,
     TimelineAsset,
     TimelineManagerOptions,
     ViewportTopMonth,
@@ -399,137 +400,114 @@
     }
   };
 
-  let lastAssetMouseEvent: TimelineAsset | null = $state(null);
+  let hoveredSelectionEnd = $state.raw<AssetRangeEndpoint | null>(null);
+  let selectionRequest = 0;
 
-  const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
-    if (asset) {
-      void selectAssetCandidates(asset);
-    }
-    lastAssetMouseEvent = asset;
+  const getDaySelectionEndpoint = (assets: TimelineAsset[]): AssetRangeEndpoint | null => {
+    const first = assets.at(0);
+    return first ? { id: first.id, lastId: assets.at(-1)?.id } : null;
   };
 
-  const handleGroupSelect = (timelineDay: TimelineDay, assets: TimelineAsset[]) => {
-    const group = timelineDay.groupTitle;
-    if (assetInteraction.selectedGroup.has(group)) {
-      assetInteraction.removeGroupFromMultiselectGroup(group);
-      for (const asset of assets) {
-        assetInteraction.removeAssetFromMultiselectGroup(asset.id);
-      }
+  const setGroupSelected = (groupTitle: string, selected: boolean) => {
+    if (selected) {
+      assetInteraction.addGroupToMultiselectGroup(groupTitle);
     } else {
-      assetInteraction.addGroupToMultiselectGroup(group);
-      for (const asset of assets) {
-        handleSelectAsset(asset);
-      }
+      assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
-
-    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.assets.length;
   };
 
-  const onSelectAssets = async (asset: TimelineAsset) => {
-    if (!asset) {
+  const updateSelectedGroup = (groupTitle: string, assets: TimelineAsset[]) => {
+    setGroupSelected(
+      groupTitle,
+      assets.every(({ id }) => assetInteraction.hasSelectedAsset(id)),
+    );
+  };
+
+  const updateRangeGroups = (range: TimelineAsset[]) => {
+    const firstAsset = range.at(0);
+    const lastAsset = range.at(-1);
+    if (!firstAsset || !lastAsset) {
       return;
     }
-    onSelect(asset);
+    const months = timelineManager.months;
+    const first = timelineManager.getTimelineMonthByAssetId(firstAsset.id);
+    const last = timelineManager.getTimelineMonthByAssetId(lastAsset.id);
+    if (!first || !last) {
+      return;
+    }
+    for (const month of months.slice(months.indexOf(first), months.indexOf(last) + 1)) {
+      for (const day of month.timelineDays) {
+        updateSelectedGroup(day.groupTitle, day.getAssets());
+      }
+    }
+  };
 
-    const rangeSelection = assetInteraction.candidates.length > 0;
-    const deselect = assetInteraction.hasSelectedAsset(asset.id);
+  const onSelectAssets = async (
+    assetsInDay: TimelineAsset[],
+    groupTitle: string,
+    asset?: TimelineAsset,
+    shift = keyboardManager.shift,
+  ) => {
+    const end = asset ? { id: asset.id } : getDaySelectionEndpoint(assetsInDay);
+    if (!end) {
+      return;
+    }
+    if (asset) {
+      onSelect(asset);
+    }
 
-    // Select/deselect already loaded assets
+    const request = ++selectionRequest;
+    const start = assetInteraction.startAsset;
+    const deselect = asset
+      ? assetInteraction.hasSelectedAsset(asset.id)
+      : assetInteraction.selectedGroup.has(groupTitle);
+    const range = shift && start ? await timelineManager.retrieveRange(start, end) : [];
+    if (request !== selectionRequest || start !== assetInteraction.startAsset) {
+      return;
+    }
+
+    const assets = range.length > 0 ? range : asset ? [asset] : assetsInDay;
     if (deselect) {
-      for (const candidate of assetInteraction.candidates) {
-        assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
+      for (const { id } of assets) {
+        assetInteraction.removeAssetFromMultiselectGroup(id);
       }
-      assetInteraction.removeAssetFromMultiselectGroup(asset.id);
     } else {
-      for (const candidate of assetInteraction.candidates) {
-        handleSelectAsset(candidate);
+      for (const selected of assetsSnapshot(assets)) {
+        handleSelectAsset(selected);
       }
-      handleSelectAsset(asset);
+    }
+
+    if (range.length > 0) {
+      updateRangeGroups(range);
+    } else if (asset) {
+      updateSelectedGroup(groupTitle, assetsInDay);
+    } else {
+      setGroupSelected(groupTitle, !deselect);
     }
 
     assetInteraction.clearCandidates();
-
-    if (assetInteraction.startAsset && rangeSelection) {
-      const startBucket = timelineManager.getTimelineMonthByAssetId(assetInteraction.startAsset.id);
-      const endBucket = timelineManager.getTimelineMonthByAssetId(asset.id);
-
-      if (!startBucket || !endBucket) {
-        return;
-      }
-
-      const timelineMonths = timelineManager.months;
-      const startBucketIndex = timelineMonths.indexOf(startBucket);
-      const endBucketIndex = timelineMonths.indexOf(endBucket);
-
-      if (startBucketIndex === -1 || endBucketIndex === -1) {
-        return;
-      }
-
-      const rangeStartIndex = Math.min(startBucketIndex, endBucketIndex);
-      const rangeEndIndex = Math.max(startBucketIndex, endBucketIndex);
-
-      // Select/deselect assets in range (start,end)
-      for (let index = rangeStartIndex + 1; index < rangeEndIndex; index++) {
-        const timelineMonth = timelineMonths[index];
-        await timelineManager.loadTimelineMonth(timelineMonth.yearMonth);
-        for (const monthAsset of timelineMonth.assetsIterator()) {
-          if (deselect) {
-            assetInteraction.removeAssetFromMultiselectGroup(monthAsset.id);
-          } else {
-            handleSelectAsset(monthAsset);
-          }
-        }
-      }
-
-      // Update date group selection in range [start,end]
-      for (let index = rangeStartIndex; index <= rangeEndIndex; index++) {
-        const timelineMonth = timelineMonths[index];
-
-        // Split month group into day groups and check each group
-        for (const timelineDay of timelineMonth.timelineDays) {
-          const timelineDayTitle = timelineDay.groupTitle;
-          if (timelineDay.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-            assetInteraction.addGroupToMultiselectGroup(timelineDayTitle);
-          } else {
-            assetInteraction.removeGroupFromMultiselectGroup(timelineDayTitle);
-          }
-        }
-      }
-    }
-
-    assetInteraction.setAssetSelectionStart(deselect ? null : asset);
-  };
-
-  const selectAssetCandidates = async (endAsset: TimelineAsset) => {
-    if (!keyboardManager.shift) {
-      return;
-    }
-
-    const startAsset = assetInteraction.startAsset;
-    if (!startAsset) {
-      return;
-    }
-
-    const assets = assetsSnapshot(await timelineManager.retrieveRange(startAsset, endAsset));
-    assetInteraction.setAssetSelectionCandidates(assets);
+    assetInteraction.setAssetSelectionStart(deselect ? null : end);
+    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.assets.length;
   };
 
   $effect(() => {
-    if (!lastAssetMouseEvent) {
-      assetInteraction.clearCandidates();
+    const start = assetInteraction.startAsset;
+    const end = hoveredSelectionEnd;
+    assetInteraction.clearCandidates();
+    if (!keyboardManager.shift || !start || !end) {
+      return;
     }
-  });
 
-  $effect(() => {
-    if (!keyboardManager.shift) {
-      assetInteraction.clearCandidates();
-    }
-  });
-
-  $effect(() => {
-    if (keyboardManager.shift && lastAssetMouseEvent) {
-      void selectAssetCandidates(lastAssetMouseEvent);
-    }
+    let active = true;
+    const request = selectionRequest;
+    void timelineManager.retrieveRange(start, end).then((assets) => {
+      if (active && request === selectionRequest) {
+        assetInteraction.setAssetSelectionCandidates(assetsSnapshot(assets));
+      }
+    });
+    return () => {
+      active = false;
+    };
   });
 
   $effect(() => {
@@ -541,37 +519,9 @@
     void timelineManager.loadTimelineMonth({ year: localDateTime.year, month: localDateTime.month });
   });
 
-  const assetSelectHandler = (
-    timelineManager: TimelineManager,
-    asset: TimelineAsset,
-    assetsInTimelineDay: TimelineAsset[],
-    groupTitle: string,
-  ) => {
-    void onSelectAssets(asset);
-
-    // Check if all assets are selected in a group to toggle the group selection's icon
-    let selectedAssetsInGroupCount = assetsInTimelineDay.filter(({ id }) =>
-      assetInteraction.hasSelectedAsset(id),
-    ).length;
-
-    // if all assets are selected in a group, add the group to selected group
-    if (selectedAssetsInGroupCount === assetsInTimelineDay.length) {
-      assetInteraction.addGroupToMultiselectGroup(groupTitle);
-    } else {
-      assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
-    }
-
-    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.assets.length;
-  };
-
-  const _onClick = (
-    timelineManager: TimelineManager,
-    assets: TimelineAsset[],
-    groupTitle: string,
-    asset: TimelineAsset,
-  ) => {
+  const _onClick = (_: TimelineManager, assets: TimelineAsset[], groupTitle: string, asset: TimelineAsset) => {
     if (isSelectionMode || assetInteraction.selectionActive) {
-      assetSelectHandler(timelineManager, asset, assets, groupTitle);
+      void onSelectAssets(assets, groupTitle, asset);
       return;
     }
     void navigate({ targetRoute: 'current', assetId: asset.id });
@@ -679,7 +629,8 @@
             {singleSelect}
             {timelineMonth}
             manager={timelineManager}
-            onTimelineDaySelect={handleGroupSelect}
+            onTimelineDaySelect={(day, shift) => void onSelectAssets(day.getAssets(), day.groupTitle, undefined, shift)}
+            onTimelineDayHover={(day) => (hoveredSelectionEnd = day ? getDaySelectionEndpoint(day.getAssets()) : null)}
           >
             {#snippet thumbnail({ asset, position, timelineDay, groupIndex })}
               {const isAssetSelectionCandidate = $derived(assetInteraction.hasSelectionCandidate(asset.id))}
@@ -700,14 +651,8 @@
                     _onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
                   }
                 }}
-                onSelect={() => {
-                  if (isSelectionMode || assetInteraction.selectionActive) {
-                    assetSelectHandler(timelineManager, asset, timelineDay.getAssets(), timelineDay.groupTitle);
-                    return;
-                  }
-                  void onSelectAssets(asset);
-                }}
-                onMouseEvent={() => handleSelectAssetCandidates(asset)}
+                onSelect={() => void onSelectAssets(timelineDay.getAssets(), timelineDay.groupTitle, asset)}
+                onMouseEvent={({ isMouseOver }) => (hoveredSelectionEnd = isMouseOver ? { id: asset.id } : null)}
                 onPreview={isSelectionMode || assetInteraction.selectionActive
                   ? (asset) => void navigate({ targetRoute: 'current', assetId: asset.id })
                   : undefined}
