@@ -1,12 +1,11 @@
 <script lang="ts">
+  import ActionMenuItem from '#lib/components/ActionMenuItem.svelte';
   import OnEvents from '#lib/components/OnEvents.svelte';
   import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
   import EmptyPlaceholder from '#lib/components/shared-components/EmptyPlaceholder.svelte';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
@@ -14,6 +13,7 @@
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
   import { Route } from '#lib/route.ts';
+  import { getAssetBulkActions } from '#lib/services/asset.service.ts';
   import { getUserActions } from '#lib/services/user.service.ts';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
@@ -60,12 +60,13 @@
 <!-- Multi-selection mode app bar -->
 {#if assetMultiSelectManager.selectionActive}
   <AssetSelectControlBar>
+    {const Actions = $derived(getAssetBulkActions($t))}
     <SelectAllAssets withText {timelineManager} assetInteraction={assetMultiSelectManager} />
     <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
-      <ChangeDate menuItem />
-      <ChangeLocation menuItem />
+      <ActionMenuItem action={Actions.ChangeDate} />
+      <ActionMenuItem action={Actions.ChangeLocation} />
       <DeleteAssets menuItem force onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
     </ButtonContextMenu>
   </AssetSelectControlBar>
