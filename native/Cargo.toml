@@ -77,5 +77,5 @@ strip = true
 opt-level = 3
 
 [patch.crates-io]
-# Builds on Linux arm64 from this commit, which no release has yet.
-rs-vips = { git = "https://github.com/mrdkprj/rs-vips", rev = "1593b645f0f90b23989f7263137e96a69e886461" }
+# Links libvips through pkg-config until mrdkprj/rs-vips#6 is released.
+rs-vips = { git = "https://github.com/mertalev/rs-vips", rev = "9bfc47697b704957fce3514e49acdfa60e312cd2" }
