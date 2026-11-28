@@ -70,6 +70,30 @@ class _TimelinePinchZoomState extends ConsumerState<TimelinePinchZoom> {
 
 /// accepts a gesture even though it should reject it (because child won)
 class _CustomScaleGestureRecognizer extends ScaleGestureRecognizer {
+  final Set<int> _pointers = {};
+
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    _pointers.add(event.pointer);
+    super.addAllowedPointer(event);
+  }
+
+  @override
+  void handleEvent(PointerEvent event) {
+    super.handleEvent(event);
+    if (event is PointerUpEvent || event is PointerCancelEvent) {
+      _pointers.remove(event.pointer);
+    }
+  }
+
+  @override
+  void resolve(GestureDisposition disposition) {
+    if (disposition == GestureDisposition.accepted && _pointers.length < 2) {
+      return;
+    }
+    super.resolve(disposition);
+  }
+
   @override
   void rejectGesture(int pointer) {
     acceptGesture(pointer);

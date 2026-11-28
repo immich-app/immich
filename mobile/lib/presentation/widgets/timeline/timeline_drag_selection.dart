@@ -27,6 +27,12 @@ class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
   TimelineAssetIndex? _dragAnchorIndex;
   final Set<BaseAsset> _draggedAssets = HashSet();
   ScrollPhysics? _scrollPhysics;
+  bool _touchStoppedScroll = false;
+  static const double _velocityThreshold = 10; //pixels/s
+  static const Duration _staleVelocityAge = Duration(milliseconds: 100);
+  final Stopwatch _clock = Stopwatch()..start();
+  Duration? _lastUpdateTime;
+  double _lastVelocity = 0;
 
   void _setDragStartIndex(TimelineAssetIndex index) {
     setState(() {
@@ -95,11 +101,47 @@ class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
     }
   }
 
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0) {
+      return false;
+    }
+
+    if (notification is ScrollStartNotification) {
+      _lastUpdateTime = null;
+      _lastVelocity = 0;
+      _touchStoppedScroll = false;
+    } else if (notification is ScrollUpdateNotification) {
+      final now = _clock.elapsed;
+      final last = _lastUpdateTime;
+      final delta = notification.scrollDelta;
+      if (last != null && delta != null) {
+        final seconds = (now - last).inMicroseconds / Duration.microsecondsPerSecond;
+        if (seconds > 0.001) {
+          _lastVelocity = delta / seconds;
+        }
+      }
+      _lastUpdateTime = now;
+      _touchStoppedScroll = false;
+    } else if (notification is ScrollEndNotification) {
+      final last = _lastUpdateTime;
+      final isFresh = last != null && _clock.elapsed - last < _staleVelocityAge;
+      _touchStoppedScroll = isFresh && _lastVelocity.abs() > _velocityThreshold;
+    }
+    return false;
+  }
+
+  bool _consumeTouchStoppedScroll() {
+    final stopped = _touchStoppedScroll;
+    _touchStoppedScroll = false;
+    return stopped;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     return TimelineDragRegion(
+      ignoreTouch: _consumeTouchStoppedScroll,
       onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
       onAssetEnter: _handleDragAssetEnter,
       onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
@@ -109,7 +151,10 @@ class _TimelineDragSelectionState extends ConsumerState<TimelineDragSelection> {
         // TODO(agg23): When isReadonlyModeEnabled, onEnd has not been set, so there is never a trailing setScrolling(false), sticking to isInteracting until the next interaction
         ref.read(timelineStateProvider.notifier).setScrolling(true);
       },
-      child: widget.builder(_scrollPhysics),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _onScrollNotification,
+        child: widget.builder(_scrollPhysics),
+      ),
     );
   }
 }
