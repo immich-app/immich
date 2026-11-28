@@ -1,4 +1,4 @@
-# Chromecast Support
+# Chromecast support
 
 Immich supports the Google's Cast protocol so that photos and videos can be cast to devices such as a Chromecast and a Nest Hub. This feature is considered experimental and has several important limitations listed below. Currently, this feature is only supported by the web client, support on Android and iOS is planned for the future.
 

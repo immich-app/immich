@@ -4,7 +4,7 @@ import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { AssetVisibility } from '@immich/sdk';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
-export type AssetMultiSelectOptions = {
+type AssetMultiSelectOptions = {
   resetOnNavigate?: boolean;
 };
 export class AssetMultiSelectManager {

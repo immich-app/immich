@@ -16,7 +16,7 @@ mise //server:migrations generate <migration-name>
 mise //server:migrations sync-order
 ```
 
-The last step adds the migration to the `ORDER` manifest, which records the order migrations run in. It is committed so that two branches adding a migration conflict in git instead of silently merging out of order, which would stop the server from starting for anyone who ran them in the wrong order.
+The last step adds the migration to the `ORDER` manifest, which records the order migrations run in. It is committed so that two branches adding a migration conflict in Git instead of silently merging out of order, which would stop the server from starting for anyone who ran them in the wrong order.
 
 The server will automatically detect `*.ts` file changes and restart. Part of the server start-up process includes running any new migrations, so it will be applied immediately.
 

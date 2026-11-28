@@ -98,7 +98,7 @@ Please discuss any large PRs with our dev team to ensure your time is not wasted
 
 ### Why isn't the mobile app updated yet?
 
-The app stores can take a few days to approve new builds of the app. If you're impatient, android APKs can be downloaded from the GitHub releases.
+The app stores can take a few days to approve new builds of the app. If you're impatient, Android APKs can be downloaded from the GitHub releases.
 
 ---
 
@@ -120,7 +120,7 @@ It is recommended to read about [Storage Template](/administration/storage-templ
 
 Yes, with an [External Library](/features/libraries.md).
 
-### What happens to existing files after I choose a new [Storage Template](/administration/storage-template.mdx)?
+### What happens to existing files after I choose a new [storage template](/administration/storage-template.mdx)?
 
 Template changes will only apply to _new_ assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/administration/jobs-workers/#jobs) page.
 
@@ -155,15 +155,15 @@ Yes, it creates new faces and persons from the imported asset metadata. For deta
 
 ### Does Immich support the filtering of NSFW images?
 
-No, it currently does not. There is an [open feature request on Github](https://github.com/immich-app/immich/discussions/2451).
+No, it currently does not. There is an [open feature request on GitHub](https://github.com/immich-app/immich/discussions/2451).
 
 ### Why are there so many thumbnail generation jobs?
 
 There are three thumbnail jobs for each asset:
 
 - Blurred (thumbhash)
-- Preview (Webp)
-- Thumbnail (Jpeg)
+- Preview (WebP)
+- Thumbnail (JPEG)
 
 Also, there are additional jobs for person (face) thumbnails.
 
@@ -204,7 +204,7 @@ If you aren't able to or prefer not to mount Samba on the host (such as Windows 
 Below is an example in the `docker-compose.yml`.
 
 Change your username, password, local IP, and share name, and see below where the line `- originals:/usr/src/app/originals`,
-correlates to the section where the volume `originals` was created. You can call this whatever you like, and map it to the docker container as you like.
+correlates to the section where the volume `originals` was created. You can call this whatever you like, and map it to the Docker container as you like.
 For example you could change `originals:` to `Photos:`, and change `- originals:/usr/src/app/originals` to `Photos:/usr/src/app/photos`.
 
 ```diff
@@ -294,11 +294,11 @@ You can delete the model cache volume, where models are downloaded. This will gi
 
 No, this is not supported. Only models listed in the [Hugging Face][huggingface] page are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.
 
-### I want to be able to search in other languages besides English. How can I do that?
+### I want to be able to search in other languages besides English, how can I do that?
 
 You can change to a multilingual CLIP model. See [here](/features/searching#clip-models) for instructions.
 
-### Does Immich support Facial Recognition for videos?
+### Does Immich support facial recognition for videos?
 
 Immich's machine learning feature operates on the generated thumbnail. If a face is visible in the video's thumbnail it will be picked up by facial recognition.
 Scanning the entire video for faces may be implemented in the future.
@@ -369,7 +369,7 @@ deploy:
 ```
 
 </details>
-For more details, you can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit).
+For more details, you can look at the [original Docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit).
 
 Note that memory constraints work by terminating the container, so this can introduce instability if set too low.
 
@@ -389,7 +389,7 @@ The concurrency can be increased more comfortably with a GPU, but should still n
 Do not exaggerate with the job concurrency because you're probably thoroughly overloading the server.
 :::
 
-### My server shows Server Status Offline | Version Unknown. What can I do?
+### My server shows `Server Status Offline | Version Unknown`. What can I do?
 
 You need to [enable WebSockets](/administration/reverse-proxy/) on your reverse proxy.
 
@@ -399,7 +399,7 @@ You need to [enable WebSockets](/administration/reverse-proxy/) on your reverse 
 
 ### How can I see Immich logs?
 
-Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/guides/docker-help.md).
+Immich components are typically deployed using Docker. To see logs for deployed Docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/guides/docker-help.md).
 
 ### How can I reduce the log verbosity of Redis?
 
@@ -415,7 +415,7 @@ You can change the user in the container by setting the `user` argument in `dock
 
 <ComposeBuilder query="rootless.enabled=true" />
 
-You may need to add mount points or docker volumes for the following internal container paths:
+You may need to add mount points or Docker volumes for the following internal container paths:
 
 - `redis:/data`
 
@@ -462,8 +462,8 @@ After removing the containers and volumes, there are a few directories that need
 - `UPLOAD_LOCATION` contains all the media uploaded to Immich.
 
 :::note Portainer
-If you use portainer, bring down the stack in portainer. Go into the volumes section  
-and remove all the volumes related to immich then restart the stack.
+If you use Portainer, bring down the stack in Portainer. Go into the volumes section  
+and remove all the volumes related to Immich then restart the stack.
 :::
 
 ### Why does the machine learning service report workers crashing?

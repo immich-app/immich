@@ -3,7 +3,7 @@ import { cancelImageUrl } from '#lib/utils/sw-messaging.ts';
 
 export type ImageQuality = 'thumbnail' | 'preview' | 'original';
 
-export type ImageStatus = 'unloaded' | 'success' | 'error';
+type ImageStatus = 'unloaded' | 'success' | 'error';
 
 export type ImageLoaderStatus = {
   urls: Record<ImageQuality, string | undefined>;
@@ -18,7 +18,7 @@ type ImageLoaderCallbacks = {
   onError?: () => void;
 };
 
-export type QualityConfig = {
+type QualityConfig = {
   url: string;
   quality: ImageQuality;
   onAfterLoad?: (loader: AdaptiveImageLoader) => void;

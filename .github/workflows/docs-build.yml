@@ -79,6 +79,9 @@ jobs:
       - name: Check formatting
         run: pnpm format
 
+      - name: Lint
+        run: mise //docs:lint
+
       - name: Run build
         run: pnpm build
 

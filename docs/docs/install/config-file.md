@@ -2,7 +2,7 @@
 sidebar_position: 100
 ---
 
-# Config File
+# Config file
 
 A config file can be provided as an alternative to the UI configuration.
 

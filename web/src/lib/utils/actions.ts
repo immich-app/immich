@@ -3,7 +3,7 @@ import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { deleteAssetsMutation } from '#lib/queries/asset.query.ts';
 import { executeMutation } from '#lib/queries/client.ts';
 import { restoreAssetsMutation } from '#lib/queries/trash.query.ts';
-import { AssetVisibility, type StackResponseDto } from '@immich/sdk';
+import { type StackResponseDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -13,7 +13,6 @@ export type OnUndoDelete = (assets: TimelineAsset[]) => void;
 export type OnRestore = (ids: string[]) => void;
 export type OnLink = (assets: { still: TimelineAsset; motion: TimelineAsset }) => void;
 export type OnUnlink = (assets: { still: TimelineAsset; motion: TimelineAsset }) => void;
-export type OnArchive = (ids: string[], visibility: AssetVisibility) => void;
 export type OnFavorite = (ids: string[], favorite: boolean) => void;
 export type OnSetVisibility = (ids: string[]) => void;
 

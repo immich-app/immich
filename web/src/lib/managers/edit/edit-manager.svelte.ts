@@ -10,7 +10,7 @@ import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
 import { mdiCropRotate } from '@mdi/js';
 import type { Component } from 'svelte';
 
-export type EditAction = AssetEditsCreateDto['edits'][number];
+type EditAction = AssetEditsCreateDto['edits'][number];
 export type EditActions = EditAction[];
 
 export interface EditToolManager {
@@ -26,14 +26,14 @@ export enum EditToolType {
   Transform = 'transform',
 }
 
-export interface EditTool {
+interface EditTool {
   type: EditToolType;
   icon: string;
   component: Component;
   manager: EditToolManager;
 }
 
-export class EditManager {
+class EditManager {
   tools: EditTool[] = [
     {
       type: EditToolType.Transform,

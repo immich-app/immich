@@ -11,15 +11,17 @@
   import GeolocationHelpModal from '#lib/modals/GeolocationHelpModal.svelte';
   import GeolocationPointPickerModal from '#lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '#lib/modals/GeolocationUpdateConfirmModal.svelte';
-  import { updateAssetsMutation } from '#lib/queries/asset.query.ts';
-  import { executeMutation } from '#lib/queries/client.ts';
+  import { getAssetInfoQuery, updateAssetsMutation } from '#lib/queries/asset.query.ts';
+  import { executeMutation, queryClient } from '#lib/queries/client.ts';
+  import { reverseGeocodeQuery } from '#lib/queries/map.query.ts';
   import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
   import type { LatLng } from '#lib/types.ts';
   import { setQueryValue } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
-  import { AssetVisibility, getAssetInfo, reverseGeocode } from '@immich/sdk';
+  import { AssetVisibility } from '@immich/sdk';
   import { Button, IconButton, LoadingSpinner, Text, modalManager } from '@immich/ui';
   import { mdiInformationOutline, mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -32,7 +34,7 @@
   let isLoading = $state(false);
   let point = $state.raw<LatLng>();
   let locationUpdated = $state(false);
-  let selectedPlace = $state.raw<Place>();
+  let assetPlace = $state.raw<Place>();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let showOnlyWithoutGps = $state(true);
@@ -49,6 +51,12 @@
   const formatPlace = ({ city, country }: Place) => [city, country].filter(Boolean).join(', ');
   const formatPoint = ({ lat, lng }: LatLng) => `${lat.toFixed(3)}, ${lng.toFixed(3)}`;
 
+  const placeQuery = createQuery(() => ({
+    ...reverseGeocodeQuery({ lat: point?.lat ?? 0, lon: point?.lng ?? 0 }),
+    enabled: !!point && !assetPlace,
+  }));
+
+  const selectedPlace = $derived(assetPlace ?? placeQuery.data?.[0]);
   const selectedPlaceName = $derived(selectedPlace ? formatPlace(selectedPlace) : '');
 
   const isOwnAsset = (asset: TimelineAsset) => asset.ownerId === authManager.user.id;
@@ -85,7 +93,7 @@
   const refreshUpdatedAssets = async () => {
     const updatedAssets = await Promise.all(
       assetMultiSelectManager.assets.map(async (asset) => {
-        const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
+        const updatedAsset = await queryClient.query(getAssetInfoQuery({ ...authManager.params, id: asset.id }));
         return toTimelineAsset(updatedAsset);
       }),
     );
@@ -115,21 +123,8 @@
     }
 
     point = selected;
-    selectedPlace = undefined;
-    const [place] = await reverseGeocode({ lat: selected.lat, lon: selected.lng }).catch(() => []);
-    if (point === selected) {
-      selectedPlace = place;
-    }
+    assetPlace = undefined;
   };
-  const handleEscape = () => {
-    if (!assetMultiSelectManager.selectionActive) {
-      return;
-    }
-
-    assetMultiSelectManager.clear();
-    return;
-  };
-
   type AssetPoint = { latitude: number; longitude: number };
 
   const hasGps = (asset: TimelineAsset | AssetPoint): asset is AssetPoint =>
@@ -154,7 +149,7 @@
         locationUpdated = false;
       }, 1500);
       point = { lat: asset.latitude, lng: asset.longitude };
-      selectedPlace = asset;
+      assetPlace = asset;
       void setQueryValue('at', asset.id);
     } else if (isOwnAsset(asset)) {
       onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
@@ -253,7 +248,6 @@
     bind:timelineManager
     {options}
     assetInteraction={assetMultiSelectManager}
-    onEscape={handleEscape}
     withStacked
     onThumbnailClick={handleThumbnailClick}
   >

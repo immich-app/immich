@@ -162,6 +162,10 @@ export const createApp = (page: Page, data: MockData) => {
       },
     },
 
+    map: {
+      markers: page.locator('.maplibregl-marker'),
+    },
+
     memories: {
       card: () => page.getByTestId('memory-card'),
       cover: (index: number) => page.getByTestId('memory-card').nth(index).getByRole('img'),
@@ -197,6 +201,8 @@ export const createApp = (page: Page, data: MockData) => {
       progressSteps: memoryRoot.getByRole('link', { name: 'view', exact: true }),
       favoriteButton: memoryRoot.getByRole('button', { name: 'favorite', exact: true }),
       unfavoriteButton: memoryRoot.getByRole('button', { name: 'unfavorite', exact: true }),
+      viewInTimelineLink: memoryRoot.getByRole('link', { name: 'view_in_timeline', exact: true }),
+      place: (name: string) => memoryRoot.getByText(name),
       removeMemory: async () => {
         await memoryRoot.getByRole('button', { name: 'menu', exact: true }).click();
         await page.getByRole('menuitem', { name: 'remove_memory', exact: true }).click();

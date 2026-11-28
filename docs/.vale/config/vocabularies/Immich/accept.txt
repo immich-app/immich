@@ -1,0 +1,114 @@
+(?i)api
+(?i)backchannel
+(?i)bitrate
+(?i)colorspaces?
+(?i)concurrencies
+(?i)devcontainers?
+(?i)distro
+(?i)docker(?:[-_.][a-z0-9]+)+
+(?i)env
+(?i)favorit(ed|ing)
+(?i)filesize
+(?i)geocod(e|ed|ing)
+(?i)gitignored
+(?i)healthcheck
+(?i)immich(?:[-_.][a-z0-9]+)+
+(?i)libre
+(?i)logfile
+(?i)metatags?
+(?i)microarchitecture
+(?i)offlined
+(?i)poweroffs
+(?i)preselection
+(?i)remux(ed)?
+(?i)rescan
+(?i)reupload
+(?i)thumbhash
+(?i)tonemapping
+(?i)topo
+(?i)transcod(e|ed|es|ing)
+(?i)unsalvageable
+(?i)untick(ed)?
+(?i)upscaled
+(?i)vibrance
+Android
+APKs
+Authelia
+Authentik
+Basic Auth
+Borg
+Chromecast
+Community Applications
+Container Manager
+Container Station
+Darktable
+Dart Code Metrics
+DevPod
+digiKam
+DigitalOcean
+Docker
+Docker Compose
+dockerman
+DTOs
+Elkhart
+English
+FFmpeg
+Git
+GitHub
+Gmail
+Google Cast
+HDDs
+iCloud
+iCloud Photos
+Immich
+ioredis
+iOS
+ixVolume
+Jellyfin
+Kysely
+Lightroom
+MapTiler
+Microsoft
+mypy
+Neovim
+Nextcloud
+NVIDIA
+OAuth
+Obtainium
+OpenAPI
+OpenVINO
+pgAdmin
+pgData
+pgvecto.rs
+Photoshop
+Pi-hole
+Picomatch
+Portainer
+Postgres
+PostgreSQL
+QNAP
+Raspberry Pi
+Recents
+Redis
+Restic
+Riverpod
+Rockchip
+ROCm
+rustup
+Samba
+Synology
+Tailscale
+Tailwind CSS
+Traefik
+TrueNAS
+TypeORM
+Unraid
+Valkey
+VectorChord
+VS Code
+Vultr
+Weblate
+WebP
+WhatsApp
+Windows
+WireGuard

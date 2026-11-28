@@ -10,6 +10,24 @@ Immich does not support being served on a sub-path such as `location /immich {`.
 If your reverse proxy uses the [Let's Encrypt](https://letsencrypt.org/) [http-01 challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge), you may want to verify that the Immich well-known endpoint (`/.well-known/immich`) gets correctly routed to Immich, otherwise it will likely be routed elsewhere and the mobile app may run into connection issues.
 :::
 
+:::caution
+The default compose file publishes `2283:2283` on every interface. If Immich is hosted on a server that is reachable from the internet (e.g. VPS), it remains reachable over plain HTTP at `http://<server-ip>:2283`, bypassing the proxy and its TLS.
+
+If you're using a reverse proxy in such a setup, publish it only on loopback, `127.0.0.1:2283:2283`, and point the proxy at `127.0.0.1:2283`.
+
+```yaml
+services:
+  immich-server:
+    ports:
+      - '127.0.0.1:2283:2283'
+```
+
+```nginx
+proxy_pass http://127.0.0.1:2283;
+```
+
+:::
+
 ### Nginx example config
 
 Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Immich server.
@@ -80,11 +98,11 @@ Below is an example config for Apache2 site configuration.
 </VirtualHost>
 ```
 
-### Traefik Proxy example config
+### Traefik proxy example config
 
 The example below is for Traefik version 3.
 
-The most important is to increase the `respondingTimeouts` of the entrypoint used by immich. In this example of entrypoint `websecure` for port `443`. Per default it's set to 60s which leeds to videos stop uploading after 1 minute (Error Code 499). With this config it will fail after 10 minutes which is in most cases enough. Increase it if needed.
+The most important is to increase the `respondingTimeouts` of the entrypoint used by Immich. In this example of entrypoint `websecure` for port `443`. Per default it's set to 60s which leads to videos stop uploading after 1 minute (Error Code 499). With this config it will fail after 10 minutes which is in most cases enough. Increase it if needed.
 
 `traefik.yaml`
 
@@ -100,7 +118,7 @@ entryPoints:
         idleTimeout: 600s
 ```
 
-The second part is in the `docker-compose.yml` file where immich is in. Add the Traefik specific labels like in the example.
+The second part is in the `docker-compose.yml` file where Immich is in. Add the Traefik specific labels like in the example.
 
 `docker-compose.yml`
 
@@ -116,5 +134,5 @@ services:
       traefik.http.services.immich.loadbalancer.server.port: 2283
 ```
 
-Keep in mind, that Traefik needs to communicate with the network where immich is in, usually done
+Keep in mind, that Traefik needs to communicate with the network where Immich is in, usually done
 by adding the Traefik network to the `immich-server`.

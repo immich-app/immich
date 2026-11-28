@@ -11,9 +11,6 @@
   import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
@@ -504,9 +501,9 @@
           text={$t('fix_incorrect_match')}
           onClick={handleReassignAssets}
         />
-        <ChangeDate menuItem />
-        <ChangeDescription menuItem />
-        <ChangeLocation menuItem />
+        <ActionMenuItem action={Actions.ChangeDate} />
+        <ActionMenuItem action={Actions.ChangeDescription} />
+        <ActionMenuItem action={Actions.ChangeLocation} />
         <ActionMenuItem action={Actions.Archive} />
         <ActionMenuItem action={Actions.Unarchive} />
         <ActionMenuItem action={Actions.Tag} />

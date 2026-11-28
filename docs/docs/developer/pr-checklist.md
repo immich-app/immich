@@ -48,7 +48,7 @@ Use `mise //server:lint-fix` and `mise //server:format-fix` to automatically cor
 
 ## Mobile checklist
 
-- [ ] `mise //mobile:codegen` (auto-generate files using build_runner)
+- [ ] `mise //mobile:codegen` (auto-generate files using `build_runner`)
 - [ ] `mise //mobile:lint` (static analysis via Dart Analyzer and DCM)
 - [ ] `mise //mobile:format` (formatting via Dart Formatter)
 - [ ] `mise //mobile:test` (unit tests)

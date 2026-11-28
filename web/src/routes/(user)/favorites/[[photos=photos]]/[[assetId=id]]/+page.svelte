@@ -5,9 +5,6 @@
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
@@ -30,15 +27,6 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = { isFavorite: true, withStacked: true };
 
-  const handleEscape = () => {
-    if (!assetMultiSelectManager.selectionActive) {
-      return;
-    }
-
-    assetMultiSelectManager.clear();
-    return;
-  };
-
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
     assetMultiSelectManager.clear();
@@ -52,7 +40,6 @@
     bind:timelineManager
     {options}
     assetInteraction={assetMultiSelectManager}
-    onEscape={handleEscape}
   >
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_favorites_message')} class="mx-auto mt-10" />
@@ -71,9 +58,9 @@
     <ActionButton action={Actions.AddToAlbum} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
-      <ChangeDate menuItem />
-      <ChangeDescription menuItem />
-      <ChangeLocation menuItem />
+      <ActionMenuItem action={Actions.ChangeDate} />
+      <ActionMenuItem action={Actions.ChangeDescription} />
+      <ActionMenuItem action={Actions.ChangeLocation} />
       <ActionMenuItem action={Actions.Archive} />
       <ActionMenuItem action={Actions.Unarchive} />
       <ActionMenuItem action={Actions.Tag} />

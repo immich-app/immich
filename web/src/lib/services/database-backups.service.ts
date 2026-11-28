@@ -76,7 +76,7 @@ const handleDeleteDatabaseBackup = async (filename: string) => {
   });
 };
 
-export const handleDownloadDatabaseBackup = (filename: string) => {
+const handleDownloadDatabaseBackup = (filename: string) => {
   location.assign(getBaseUrl() + '/admin/database-backups/' + filename);
 };
 

@@ -1,4 +1,4 @@
-export const removeAccents = (str: string) => {
+const removeAccents = (str: string) => {
   return str.normalize('NFD').replaceAll(/[\u{300}-\u{36F}]/gu, '');
 };
 

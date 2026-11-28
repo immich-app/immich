@@ -16,7 +16,7 @@ After creating an album, you can access the sharing options by clicking on the s
 
 <img src={require('./img/shared-album-user-selection.webp').default} width='30%' height='100%' title='Shared album user selection' />
 
-#### Mobile App
+#### Mobile app
 
 <img src={require('./img/shared-album-mobile.webp').default} width='33%' title='Shared album option' />
 
@@ -30,7 +30,7 @@ You can read this guide to learn more about [partner sharing](/features/partner-
 
 You can create a public link to share a group of photos or videos, or an album, with anyone. The public link can be shared via email, social media, or any other method. There are a variety of options to customize the public link, such as setting an expiration date, password protection, and more. Public shared link is handy when you want to share a group of photos or videos with someone who doesn't have an Immich account and allow the shared user to upload their photos or videos to your account.
 
-The public shared link is generated with a random URL, which acts as as a secret to avoid the link being guessed by unwanted parties, for instance.
+The public shared link is generated with a random URL, which acts as a secret to avoid the link being guessed by unwanted parties, for instance.
 
 ```
 https://my.immich.app/share/JUckRMxlgpo7F9BpyqGk_cZEwDzaU_U5LU5_oNZp1ETIBa9dpQ0b5ghNm_22QVJfn3k

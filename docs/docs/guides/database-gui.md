@@ -28,9 +28,9 @@ volumes:
 
 Change the values of `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD` in this file.
 
-Run `docker compose -f docker-compose.yml -f docker-compose-pgadmin.yml up` to start immich along with `pgAdmin`.
+Run `docker compose -f docker-compose.yml -f docker-compose-pgadmin.yml up` to start Immich along with `pgAdmin`.
 
-## 2. Add a Server
+## 2. Add a server
 
 Open [localhost:8888](http://localhost:8888) and login with the default credentials from above.
 

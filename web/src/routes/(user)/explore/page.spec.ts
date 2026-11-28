@@ -34,6 +34,24 @@ test('recently added preview opens the asset', async ({ data, router, render, se
   await expect.element(app.explore.assetViewer).toBeInTheDocument();
 });
 
+test('recently added preview shows changes made elsewhere', async ({ data, router, render, settle, app }) => {
+  const asset = factory.asset();
+  data.addAssets(asset);
+  await router.goto(Route.explore());
+  await render(Page, load);
+  await settle();
+  await app.explore.recentlyAdded.click();
+  await expect.element(app.explore.assetViewer).toBeInTheDocument();
+  await app.explore.closeViewerButton.click();
+  await expect.element(app.explore.assetViewer).not.toBeInTheDocument();
+  data.updateAsset(asset.id, { isFavorite: true });
+
+  await app.explore.recentlyAdded.click();
+  await settle();
+
+  await expect.element(app.explore.unfavoriteButton).toBeInTheDocument();
+});
+
 test('lists people without asking for hidden ones', async ({ data, router, render, settle, app, api }) => {
   data.addPeople(factory.person({ name: 'Alice' }));
   await router.goto(Route.explore());

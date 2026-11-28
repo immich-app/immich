@@ -6,9 +6,6 @@
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
@@ -16,7 +13,6 @@
   import SelectAllAssets from '#lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '#lib/components/timeline/actions/SetVisibilityAction.svelte';
   import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
-  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
   import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { memoryManager } from '#lib/managers/memory-manager.svelte.ts';
   import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
@@ -50,16 +46,6 @@
     return assetMultiSelectManager.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
 
-  const handleEscape = () => {
-    if (assetViewerManager.isViewing) {
-      return;
-    }
-    if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clear();
-      return;
-    }
-  };
-
   const handleLink: OnLink = ({ still, motion }) => {
     timelineManager.removeAssets([motion.id]);
     timelineManager.upsertAssets([still]);
@@ -92,14 +78,7 @@
 </script>
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>
-  <Timeline
-    enableRouting={true}
-    bind:timelineManager
-    {options}
-    assetInteraction={assetMultiSelectManager}
-    onEscape={handleEscape}
-    withStacked
-  >
+  <Timeline enableRouting={true} bind:timelineManager {options} assetInteraction={assetMultiSelectManager} withStacked>
     {#if authManager.preferences.memories.enabled}
       <ImageCarousel {items}>
         {#snippet child(item)}
@@ -141,9 +120,9 @@
             onUnlink={handleUnlink}
           />
         {/if}
-        <ChangeDate menuItem />
-        <ChangeDescription menuItem />
-        <ChangeLocation menuItem />
+        <ActionMenuItem action={Actions.ChangeDate} />
+        <ActionMenuItem action={Actions.ChangeDescription} />
+        <ActionMenuItem action={Actions.ChangeLocation} />
         <ActionMenuItem action={Actions.Archive} />
         <ActionMenuItem action={Actions.Unarchive} />
         <ActionMenuItem action={Actions.Tag} />

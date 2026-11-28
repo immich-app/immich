@@ -36,6 +36,8 @@ test.describe('trash from the viewer', () => {
     await app.undoButton.click();
 
     await app.viewer.waitForAsset(asset);
+    await expect(app.viewer.deleteButton).toBeVisible();
+    await expect(app.viewer.permanentlyDeleteButton).toHaveCount(0);
     expect(api.deleteAssets).toHaveBeenCalledWith({ body: { ids: [asset.id], force: false } });
     expect(api.restoreAssets).toHaveBeenCalledWith({ body: { ids: [asset.id] } });
     expect(api.getAssetInfo).toHaveBeenCalledWith({ params: { id: asset.id } });

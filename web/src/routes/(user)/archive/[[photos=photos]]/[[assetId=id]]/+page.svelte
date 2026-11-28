@@ -26,15 +26,6 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = { visibility: AssetVisibility.Archive };
 
-  const handleEscape = () => {
-    if (!assetMultiSelectManager.selectionActive) {
-      return;
-    }
-
-    assetMultiSelectManager.clear();
-    return;
-  };
-
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
     assetMultiSelectManager.clear();
@@ -42,13 +33,7 @@
 </script>
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} title={data.meta.title} scrollbar={false}>
-  <Timeline
-    enableRouting={true}
-    bind:timelineManager
-    {options}
-    assetInteraction={assetMultiSelectManager}
-    onEscape={handleEscape}
-  >
+  <Timeline enableRouting={true} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_archived_assets_message')} class="mx-auto mt-10" />
     {/snippet}

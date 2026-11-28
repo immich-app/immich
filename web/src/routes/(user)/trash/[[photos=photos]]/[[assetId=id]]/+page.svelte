@@ -34,15 +34,6 @@
     handlePromiseError(goto(Route.photos()));
   }
 
-  const handleEscape = () => {
-    if (!assetMultiSelectManager.selectionActive) {
-      return;
-    }
-
-    assetMultiSelectManager.clear();
-    return;
-  };
-
   const { Empty, RestoreAll } = $derived(getTrashActions($t, timelineManager?.assetCount ?? 0));
 </script>
 
@@ -53,13 +44,7 @@
     title={data.meta.title}
     scrollbar={false}
   >
-    <Timeline
-      enableRouting={true}
-      bind:timelineManager
-      {options}
-      assetInteraction={assetMultiSelectManager}
-      onEscape={handleEscape}
-    >
+    <Timeline enableRouting={true} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
       <p class="p-4 font-medium text-gray-500/60 dark:text-gray-300/60">
         {$t('trashed_items_will_be_permanently_deleted_after', {
           values: { days: config.trash.days },

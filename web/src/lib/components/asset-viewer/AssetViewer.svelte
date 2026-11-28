@@ -16,7 +16,7 @@
     getActivityStatisticsQuery,
     getMyLikeQuery,
   } from '#lib/queries/activity.query.ts';
-  import { getAssetOcrQuery } from '#lib/queries/asset.query.ts';
+  import { getAssetInfoQuery, getAssetOcrQuery } from '#lib/queries/asset.query.ts';
   import { executeMutation, queryClient } from '#lib/queries/client.ts';
   import { getStackQuery } from '#lib/queries/stack.query.ts';
   import { getAssetActions } from '#lib/services/asset.service.ts';
@@ -34,7 +34,6 @@
   import {
     AssetTypeEnum,
     ReactionType,
-    getAssetInfo,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -242,7 +241,7 @@
 
   const closeEditor = async () => {
     if (editManager.hasAppliedEdits) {
-      const refreshedAsset = await getAssetInfo({ id: asset.id });
+      const refreshedAsset = await queryClient.query(getAssetInfoQuery({ id: asset.id }));
       onAssetChange?.(refreshedAsset);
       assetViewerManager.setAsset(refreshedAsset);
     }

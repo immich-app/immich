@@ -50,7 +50,7 @@ Scroll to the bottom of the "**Details**" section and find the `IP Address` list
 
 ![Container details](../../static/img/synology-container-manager-container-details.png)
 
-## Step 4 - Configure Firewall Settings
+## Step 4 - Configure firewall settings
 
 Once your project completes the build process, your containers will start. In order to be able to access Immich from your browser, you need to configure the firewall settings for your Synology NAS to allow communication between the Immich containers.
 
@@ -152,11 +152,11 @@ networks:
           gateway: 172.20.0.1
 ```
 
-If your docker container is running on a different subnet then update accordingly.
+If your Docker container is running on a different subnet then update accordingly.
 
 ## Step 3 - Add network to each service
 
-Add the network to each service (immich-server, immich-machine-learning, redis, database):
+Add the network to each service (immich-server, immich-machine-learning, Redis, database):
 
 ```yaml
 services:
@@ -183,7 +183,7 @@ services:
 
 Save your changes. Synology will ask if you want to save changes only or rebuild containers. Select rebuild containers.
 
-## Step 4 - Update firewall Rules, if necessary
+## Step 4 - Update firewall rules, if necessary
 
 If your firewall rules were not already set for this subnet, the firewall rules will need to be updated. See [Step 4 - Configure Firewall Settings](#step-4---configure-firewall-settings).
 

@@ -159,7 +159,7 @@ export const handleStack = async (assetIds: string[]) => {
   });
 };
 
-export const handleDeleteStack = async (stack: StackResponseDto) => {
+const handleDeleteStack = async (stack: StackResponseDto) => {
   const $t = await getFormatter();
 
   await executeMutation(deleteStacksMutation, [{ bulkIdsDto: { ids: [stack.id] } }], {
