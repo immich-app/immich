@@ -986,6 +986,9 @@ jobs:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@caac7f7e4298458a14238959504f411fc6cc7f06 # use-mise-action-v3.2.3
         with:
@@ -1051,6 +1054,9 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
+
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@caac7f7e4298458a14238959504f411fc6cc7f06 # use-mise-action-v3.2.3
