@@ -39,4 +39,5 @@ The `/api/something` endpoint is now `/api/something-else`
 ## Please describe to which degree, if any, an LLM was used in creating this pull request.
 
 <!-- Be specific. Evasiveness or avoiding details will be read as being in conflict with our LLM guidelines. -->
+
 ...
