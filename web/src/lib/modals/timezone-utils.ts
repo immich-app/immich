@@ -50,7 +50,7 @@ export function getTimezones(selectedDate: string) {
     .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB));
 }
 
-export function getModernOffsetForZoneAndDate(
+function getModernOffsetForZoneAndDate(
   zone: string,
   dateString: string,
 ): { offsetMinutes: number; offsetFormat: string } {

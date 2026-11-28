@@ -3,7 +3,7 @@ import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
 
 export type ViewportTopMonth = TimelineYearMonth | undefined | 'lead-in' | 'lead-out';
 
-export type AssetApiGetTimeBucketsRequest = Parameters<typeof import('@immich/sdk').getTimeBuckets>[0];
+type AssetApiGetTimeBucketsRequest = Parameters<typeof import('@immich/sdk').getTimeBuckets>[0];
 
 export type TimelineManagerOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
@@ -47,22 +47,22 @@ export interface Viewport {
   height: number;
 }
 
-export interface AddAsset {
+interface AddAsset {
   type: 'add';
   values: TimelineAsset[];
 }
 
-export interface UpdateAsset {
+interface UpdateAsset {
   type: 'update';
   values: TimelineAsset[];
 }
 
-export interface DeleteAsset {
+interface DeleteAsset {
   type: 'delete';
   values: string[];
 }
 
-export interface TrashAssets {
+interface TrashAssets {
   type: 'trash';
   values: string[];
 }

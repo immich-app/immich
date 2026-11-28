@@ -31,7 +31,7 @@ export function getServerErrorMessage(error: unknown) {
   return data?.message || error.message;
 }
 
-export function standardizeError(error: unknown) {
+function standardizeError(error: unknown) {
   return error instanceof Error ? error : new Error(String(error));
 }
 

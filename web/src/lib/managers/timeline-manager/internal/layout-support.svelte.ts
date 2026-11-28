@@ -20,7 +20,7 @@ export function updateGeometry(timelineManager: TimelineManager, month: Timeline
   layoutTimelineMonth(timelineManager, month, noDefer);
 }
 
-export function layoutTimelineMonth(timelineManager: TimelineManager, month: TimelineMonth, noDefer: boolean = false) {
+function layoutTimelineMonth(timelineManager: TimelineManager, month: TimelineMonth, noDefer: boolean = false) {
   let cumulativeHeight = 0;
   let cumulativeWidth = 0;
   let currentRowHeight = 0;

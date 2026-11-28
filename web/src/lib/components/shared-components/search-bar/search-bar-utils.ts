@@ -44,7 +44,7 @@ export const getSearchDatePreset = (after: DateTime | undefined, before: DateTim
   return SearchDatePreset.Custom;
 };
 
-export const getSearchDateRange = (after: DateTime | undefined, before: DateTime | undefined) => {
+const getSearchDateRange = (after: DateTime | undefined, before: DateTime | undefined) => {
   const $t = get(t);
   const start = after?.toLocaleString(DateTime.DATE_MED);
   const end = before?.toLocaleString(DateTime.DATE_MED);

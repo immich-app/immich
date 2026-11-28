@@ -210,10 +210,10 @@ const metadataFields = [
   },
 ] as const satisfies readonly MetadataFieldDefinition[];
 
-export type MetadataFieldKey = (typeof metadataFields)[number]['keys'][number];
+type MetadataFieldKey = (typeof metadataFields)[number]['keys'][number];
 export type DifferingMetadataFields = Partial<Record<MetadataFieldKey, boolean>>;
 
-export const metadataKeys: readonly MetadataFieldKey[] = metadataFields.flatMap(({ keys }) => keys);
+const metadataKeys: readonly MetadataFieldKey[] = metadataFields.flatMap(({ keys }) => keys);
 
 export const countDifferingMetadataItems = (differing: DifferingMetadataFields): number =>
   metadataFields.filter(({ keys }) => keys.some((k) => differing[k as MetadataFieldKey])).length;

@@ -1,6 +1,6 @@
-export type Level = { videoCodec?: string; width: number; height: number; bitrate: number; frameRate: number };
+type Level = { videoCodec?: string; width: number; height: number; bitrate: number; frameRate: number };
 
-export const DEFAULT_DECODING_INFO: MediaCapabilitiesDecodingInfo = {
+const DEFAULT_DECODING_INFO: MediaCapabilitiesDecodingInfo = {
   powerEfficient: true,
   smooth: true,
   supported: true,

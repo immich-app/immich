@@ -166,7 +166,7 @@ export const handleUpdateUserAlbumRole = ({
   role: AlbumUserRole;
 }) => executeMutation(updateAlbumUserMutation, [{ id: albumId, userId, updateAlbumUserDto: { role } }]);
 
-export const handleAddUsersToAlbum = (album: AlbumResponseDto, users: UserResponseDto[], onSuccess?: () => void) =>
+const handleAddUsersToAlbum = (album: AlbumResponseDto, users: UserResponseDto[], onSuccess?: () => void) =>
   executeMutation(
     addUsersToAlbumMutation,
     [{ id: album.id, addUsersDto: { albumUsers: users.map(({ id }) => ({ userId: id })) } }],
@@ -185,7 +185,7 @@ export const handleRemoveUserFromAlbum = async (album: AlbumResponseDto, albumUs
   });
 };
 
-export const handleLeaveAlbum = async (album: AlbumResponseDto) => {
+const handleLeaveAlbum = async (album: AlbumResponseDto) => {
   const $t = await getFormatter();
 
   await executeMutation(removeUserFromAlbumMutation, [{ id: album.id, userId: 'me' }], {
