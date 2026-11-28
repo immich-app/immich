@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { AssetMediaController } from 'src/controllers/asset-media.controller.js';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto.js';
+import { AssetMediaSize } from 'src/dtos/asset-media.dto.js';
 import { AssetMetadataKey } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { AssetMediaService } from 'src/services/asset-media.service.js';
@@ -173,6 +174,46 @@ describe(AssetMediaController.name, () => {
         const { status } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail?size=original`);
         expect(status).toBe(400);
         expect(service.viewThumbnail).not.toHaveBeenCalled();
+      });
+
+      it('should allow cross-origin embedding with a session key', async () => {
+        ctx.authenticate.mockResolvedValue(factory.auth({ session: { explicit: true } }));
+        service.viewThumbnail.mockResolvedValue({ targetSize: AssetMediaSize.PREVIEW });
+
+        const { status, headers } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
+
+        expect(status).toBe(302);
+        expect(headers['cross-origin-resource-policy']).toBe('cross-origin');
+      });
+
+      it('should allow cross-origin embedding with a shared link', async () => {
+        ctx.authenticate.mockResolvedValue(factory.auth({ sharedLink: {} }));
+        service.viewThumbnail.mockResolvedValue({ targetSize: AssetMediaSize.PREVIEW });
+
+        const { status, headers } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
+
+        expect(status).toBe(302);
+        expect(headers['cross-origin-resource-policy']).toBe('cross-origin');
+      });
+
+      it('should allow cross-origin embedding with an api key', async () => {
+        ctx.authenticate.mockResolvedValue(factory.auth({ apiKey: {} }));
+        service.viewThumbnail.mockResolvedValue({ targetSize: AssetMediaSize.PREVIEW });
+
+        const { status, headers } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
+
+        expect(status).toBe(302);
+        expect(headers['cross-origin-resource-policy']).toBe('cross-origin');
+      });
+
+      it('should not allow cross-origin embedding with a session cookie', async () => {
+        ctx.authenticate.mockResolvedValue(factory.auth({ session: { explicit: false } }));
+        service.viewThumbnail.mockResolvedValue({ targetSize: AssetMediaSize.PREVIEW });
+
+        const { status, headers } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
+
+        expect(status).toBe(302);
+        expect(headers['cross-origin-resource-policy']).toBeUndefined();
       });
     });
   });
