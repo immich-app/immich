@@ -3,7 +3,7 @@ type PromiseLike<T> = Promise<T> | T;
 
 export type EventMap<E extends EventsBase> = { [K in keyof E]?: EventCallback<E, K> };
 export type EventCallback<E extends EventsBase, T extends keyof E> = (...args: E[T]) => PromiseLike<unknown>;
-export type EventItem<E extends EventsBase, T extends keyof E = keyof E> = {
+type EventItem<E extends EventsBase, T extends keyof E = keyof E> = {
   id: number;
   event: T;
   callback: EventCallback<E, T>;

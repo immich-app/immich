@@ -7,7 +7,10 @@ import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import AssetAddToAlbumModal from '#lib/modals/AssetAddToAlbumModal.svelte';
 import AssetDeleteConfirmModal from '#lib/modals/AssetDeleteConfirmModal.svelte';
+import AssetSelectionChangeDateModal from '#lib/modals/AssetSelectionChangeDateModal.svelte';
 import AssetTagModal from '#lib/modals/AssetTagModal.svelte';
+import AssetUpdateDescriptionConfirmModal from '#lib/modals/AssetUpdateDescriptionConfirmModal.svelte';
+import GeolocationPointPickerModal from '#lib/modals/GeolocationPointPickerModal.svelte';
 import ProfileImageCropperModal from '#lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '#lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '#lib/queries/album.query.ts';
@@ -24,11 +27,13 @@ import { restoreAssetsMutation } from '#lib/queries/trash.query.ts';
 import { Route } from '#lib/route.ts';
 import { showDeleteModal } from '#lib/stores/preferences.store.ts';
 import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
-import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
+import type { LatLng } from '#lib/types.ts';
+import { downloadUrl, getAssetMediaUrl, getSharedLink } from '#lib/utils.ts';
 import type { OnFavorite } from '#lib/utils/actions.ts';
+import { delay, getOwnedAssetsWithWarning } from '#lib/utils/asset-utils.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
-import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
+import { fromTimelinePlainDateTime, toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetJobName,
   AssetTypeEnum,
@@ -43,6 +48,7 @@ import {
   mdiAlertOutline,
   mdiArchiveArrowDownOutline,
   mdiArchiveArrowUpOutline,
+  mdiCalendarEditOutline,
   mdiCogRefreshOutline,
   mdiCompare,
   mdiContentCopy,
@@ -64,6 +70,7 @@ import {
   mdiLockOutline,
   mdiMagnifyMinusOutline,
   mdiMagnifyPlusOutline,
+  mdiMapMarkerMultipleOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiPlus,
@@ -71,8 +78,10 @@ import {
   mdiShareVariantOutline,
   mdiTagMultipleOutline,
   mdiTagPlusOutline,
+  mdiText,
   mdiTune,
 } from '@mdi/js';
+import { DateTime } from 'luxon';
 import { t, type MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
@@ -104,6 +113,54 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
         ownedAssets.filter((asset) => asset.visibility !== AssetVisibility.Archive),
         AssetVisibility.Archive,
       ),
+  };
+
+  const ChangeDate: ActionItem = {
+    title: $t('change_date'),
+    icon: mdiCalendarEditOutline,
+    onAction: async () => {
+      const initialDate =
+        ownedAssets.length === 1 ? fromTimelinePlainDateTime(ownedAssets[0].localDateTime) : DateTime.now();
+      if (await modalManager.show(AssetSelectionChangeDateModal, { initialDate, assets: ownedAssets })) {
+        assetMultiSelectManager.clear();
+      }
+    },
+  };
+
+  const ChangeDescription: ActionItem = {
+    title: $t('change_description'),
+    icon: mdiText,
+    onAction: async () => {
+      const description = (await modalManager.show(AssetUpdateDescriptionConfirmModal, {})) as string | undefined;
+      if (!description) {
+        return;
+      }
+
+      const ids = getOwnedAssetsWithWarning(assetMultiSelectManager.assets, authManager.user);
+      await executeMutation(
+        () => updateAssetsMutation({ error: { toast: 'errors.unable_to_change_description' } }),
+        [{ assetBulkUpdateDto: { ids, description } }],
+        { onSuccess: () => assetMultiSelectManager.clear() },
+      );
+    },
+  };
+
+  const ChangeLocation: ActionItem = {
+    title: $t('change_location'),
+    icon: mdiMapMarkerMultipleOutline,
+    onAction: async () => {
+      const point = (await modalManager.show(GeolocationPointPickerModal, {})) as LatLng | undefined;
+      if (!point) {
+        return;
+      }
+
+      const ids = getOwnedAssetsWithWarning(assetMultiSelectManager.assets, authManager.user);
+      await executeMutation(
+        () => updateAssetsMutation({ success: { toast: true }, error: { toast: 'errors.unable_to_update_location' } }),
+        [{ assetBulkUpdateDto: { ids, latitude: point.lat, longitude: point.lng } }],
+        { onSuccess: () => assetMultiSelectManager.clear() },
+      );
+    },
   };
 
   const CreateSharedLink: ActionItem = {
@@ -168,6 +225,9 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
   return {
     AddToAlbum,
     Archive,
+    ChangeDate,
+    ChangeDescription,
+    ChangeLocation,
     CreateSharedLink,
     RemoveFromAlbum,
     Tag,
@@ -531,7 +591,7 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
   for (const [i, { filename, id, cacheKey }] of assets.entries()) {
     if (i !== 0) {
       // play nice with Safari
-      await sleep(500);
+      await delay(500);
     }
 
     try {

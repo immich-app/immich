@@ -8,7 +8,7 @@ export type AssetGridRouteSearchParams = {
   at: string | null | undefined;
 };
 
-export const isPhotosRoute = (route?: string | null) => !!route?.startsWith('/(user)/photos/[[assetId=id]]');
+const isPhotosRoute = (route?: string | null) => !!route?.startsWith('/(user)/photos/[[assetId=id]]');
 const isSharedLinkSlugRoute = (route?: string | null) => !!route?.startsWith('/(user)/s/[slug]');
 export const isSharedLinkRoute = (route?: string | null) =>
   !!route?.startsWith('/(user)/share/[key]') || isSharedLinkSlugRoute(route);
@@ -132,15 +132,6 @@ export function navigate(change: ImmichRoute, options?: NavOptions): Promise<voi
   // future navigation requests here
   throw `Invalid navigation: ${JSON.stringify(change)}`;
 }
-
-export const clearQueryParam = async (queryParam: string, url: URL) => {
-  if (!url.searchParams.has(queryParam)) {
-    return;
-  }
-
-  url.searchParams.delete(queryParam);
-  await goto(url, { reset: false });
-};
 
 export const setQueryValue = async (queryKey: string, queryValue: string) => {
   const url = location.href;

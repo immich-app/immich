@@ -88,7 +88,7 @@
     albumUsers = [],
     person,
     onSelect = () => {},
-    onEscape = () => {},
+    onEscape = () => assetInteraction.clear(),
     children,
     empty,
     customThumbnailLayout,

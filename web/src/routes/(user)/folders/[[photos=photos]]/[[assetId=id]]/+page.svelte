@@ -9,9 +9,6 @@
   import TreeItems from '#lib/components/shared-components/tree/TreeItems.svelte';
   import Sidebar from '#lib/components/sidebar/Sidebar.svelte';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
-  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
@@ -169,9 +166,9 @@
 
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
-        <ChangeDate menuItem />
-        <ChangeDescription menuItem />
-        <ChangeLocation menuItem />
+        <ActionMenuItem action={Actions.ChangeDate} />
+        <ActionMenuItem action={Actions.ChangeDescription} />
+        <ActionMenuItem action={Actions.ChangeLocation} />
         <ActionMenuItem action={Actions.Archive} />
         <ActionMenuItem action={Actions.Unarchive} />
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />

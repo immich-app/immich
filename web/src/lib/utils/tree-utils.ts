@@ -112,10 +112,10 @@ export class TreeNode extends Map<string, TreeNode> {
   }
 }
 
-export const normalizeTreePath = (path: string) =>
+const normalizeTreePath = (path: string) =>
   path.length > 1 && path[path.length - 1] === '/' ? path.slice(0, -1) : path;
 
-export function getPathParts(path: string) {
+function getPathParts(path: string) {
   const parts = path.split('/');
   if (path[0] === '/') {
     parts[0] = '/';

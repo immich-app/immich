@@ -4,9 +4,6 @@
   import type { SelectionBBox } from '#lib/components/shared-components/map/types.ts';
   import AssetSelectControlBar from '#lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '#lib/components/timeline/Timeline.svelte';
-  import ChangeDate from '#lib/components/timeline/actions/ChangeDateAction.svelte';
-  import ChangeDescription from '#lib/components/timeline/actions/ChangeDescriptionAction.svelte';
-  import ChangeLocation from '#lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '#lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '#lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '#lib/components/timeline/actions/FavoriteAction.svelte';
@@ -62,10 +59,6 @@
     assetMultiSelectManager.clear();
   };
 
-  const handleEscape = () => {
-    assetMultiSelectManager.clear();
-  };
-
   const timelineBoundingBox = $derived(
     `${floor(bbox.west, 6)},${floor(bbox.south, 6)},${ceil(bbox.east, 6)},${ceil(bbox.north, 6)}`,
   );
@@ -101,7 +94,6 @@
       bind:timelineManager
       enableRouting={false}
       options={timelineOptions}
-      onEscape={handleEscape}
       assetInteraction={assetMultiSelectManager}
       showArchiveIcon
       withStacked
@@ -138,9 +130,9 @@
               onUnlink={handleUnlink}
             />
           {/if}
-          <ChangeDate menuItem />
-          <ChangeDescription menuItem />
-          <ChangeLocation menuItem />
+          <ActionMenuItem action={Actions.ChangeDate} />
+          <ActionMenuItem action={Actions.ChangeDescription} />
+          <ActionMenuItem action={Actions.ChangeLocation} />
           <ActionMenuItem action={Actions.Archive} />
           <ActionMenuItem action={Actions.Unarchive} />
           <ActionMenuItem action={Actions.Tag} />
