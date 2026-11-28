@@ -1101,8 +1101,6 @@ jobs:
 
       - name: Run SQL generation
         run: mise //:sql
-        env:
-          DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
