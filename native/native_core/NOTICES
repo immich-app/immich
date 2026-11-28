@@ -25,6 +25,7 @@ lock_api
 log
 memchr
 num-bigint
+num-derive
 num-integer
 num-rational
 num-traits
@@ -35,6 +36,7 @@ quick_cache
 raw-cpuid
 rayon
 rayon-core
+rs-vips
 scopeguard
 simd_cesu8
 simdutf8
@@ -45,6 +47,8 @@ thiserror
 zerocopy
 
 Copyright (c) 2018 Carl Lerche
+Copyright (c) 2019-2025 OLX
+Copyright (c) 2025 mrdkprj
 Copyright (c) 2014 Alex Crichton
 Copyright (c) 2015 Markus Westerlind
 Copyright (c) 2016 Prevoty, Inc. and jni-rs contributors

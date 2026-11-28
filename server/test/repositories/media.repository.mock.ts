@@ -8,7 +8,7 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     writeExif: vitest.fn().mockImplementation(() => Promise.resolve()),
     copyTagGroup: vitest.fn().mockImplementation(() => Promise.resolve()),
     generateThumbhash: vitest.fn().mockResolvedValue(Buffer.from('')),
-    decodeImage: vitest.fn().mockResolvedValue({ data: Buffer.from(''), info: {} }),
+    decodeImage: vitest.fn().mockResolvedValue({ [Symbol.dispose]: vitest.fn() }),
     getEmbeddedImages: vitest.fn().mockResolvedValue([]),
     probe: vitest.fn(),
     probePackets: vitest.fn().mockResolvedValue({
@@ -20,6 +20,7 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
       keyframeOwnDuration: [],
     }),
     transcode: vitest.fn(),
+    getVideoFrame: vitest.fn().mockResolvedValue(Buffer.from('')),
     getImageMetadata: vitest.fn(),
   };
 };

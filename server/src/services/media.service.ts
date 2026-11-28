@@ -30,7 +30,6 @@ import { EmbeddedImage } from 'src/repositories/media.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import type {
   AudioStreamInfo,
-  DecodeToBufferOptions,
   GenerateThumbnailOptions,
   ImageDimensions,
   JobItem,
@@ -181,12 +180,9 @@ export class MediaService extends BaseService {
 
     let thumbhash: Buffer | undefined = generated?.thumbhash;
     if (!thumbhash) {
-      const { info, data, colorspace } = await this.extractOriginalImage(asset, config.image);
-
-      thumbhash = await this.mediaRepository.generateThumbhash(
-        { data, info },
-        { colorspace, processInvalidImages: false, edits: [] },
-      );
+      const original = await this.extractOriginalImage(asset, config.image);
+      using bitmap = original.bitmap;
+      thumbhash = await this.mediaRepository.generateThumbhash(bitmap, {});
     }
 
     if (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbhash) !== 0) {
@@ -264,20 +260,6 @@ export class MediaService extends BaseService {
     return best ? { buffer: best.buffer, format: best.format } : null;
   }
 
-  private async decodeImage(thumbSource: string | Buffer, exifInfo: ThumbnailAsset['exifInfo'], targetSize?: number) {
-    const { image } = await this.getConfig({ withCache: true });
-    const colorspace = this.isSRGB(exifInfo) ? Colorspace.Srgb : image.colorspace;
-    const decodeOptions: DecodeToBufferOptions = {
-      colorspace,
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-      size: targetSize,
-      orientation: exifInfo.orientation ? Number(exifInfo.orientation) : undefined,
-    };
-
-    const { info, data } = await this.mediaRepository.decodeImage(thumbSource, decodeOptions);
-    return { info, data, colorspace };
-  }
-
   private async extractOriginalImage(asset: ThumbnailAsset, image: SystemConfig['image'], useEdits = false) {
     const isExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
     const extracted = isExtractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
@@ -288,35 +270,29 @@ export class MediaService extends BaseService {
     const isConvertFullsize =
       isGenerateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
-    const thumbSource = extracted ? extracted.buffer : asset.originalPath;
-    const { data, info, colorspace } = await this.decodeImage(
-      thumbSource,
+    const bitmap = await this.mediaRepository.decodeImage(extracted ? extracted.buffer : asset.originalPath, {
+      profile: this.isSRGB(asset.exifInfo) ? Colorspace.Srgb : image.colorspace,
+      strict: process.env.IMMICH_PROCESS_INVALID_IMAGES !== 'true',
+      size: isConvertFullsize ? undefined : image.preview.size,
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
-      extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
-      isConvertFullsize ? undefined : image.preview.size,
-    );
-
-    let isTransparent = false;
-    if (!extracted && mimeTypes.canBeTransparent(asset.originalPath)) {
-      ({ isTransparent } = await this.mediaRepository.getImageMetadata(asset.originalPath));
-    }
+      orientation: extracted && asset.exifInfo.orientation ? Number(asset.exifInfo.orientation) : undefined,
+    });
 
     return {
       extracted,
-      data,
-      info,
-      colorspace,
+      bitmap,
       convertFullsize: isConvertFullsize,
       generateFullsize: isGenerateFullsize,
-      isTransparent,
+      isTransparent: bitmap.isTransparent,
     };
   }
 
   private async generateImageThumbnails(asset: ThumbnailAsset, { image }: SystemConfig, useEdits: boolean = false) {
     // Handle embedded preview extraction for RAW files
-    const { info, data, colorspace, generateFullsize, convertFullsize, extracted, isTransparent } =
-      await this.extractOriginalImage(asset, image, useEdits);
+    const original = await this.extractOriginalImage(asset, image, useEdits);
+    using bitmap = original.bitmap;
+    const { generateFullsize, convertFullsize, extracted, isTransparent } = original;
 
     const previewFormat = image.preview.format;
     this.warnOnTransparencyLoss(isTransparent, previewFormat, asset.id);
@@ -341,19 +317,25 @@ export class MediaService extends BaseService {
     this.storageCore.ensureFolders(previewFile.path);
 
     // generate final images
-    const decoded = { data, info };
-    const baseOptions = { colorspace, processInvalidImages: false, edits: useEdits ? asset.edits : [] };
+    const baseOptions = { edits: useEdits ? asset.edits : [] };
     const thumbnailOptions = {
       ...image.thumbnail,
       ...baseOptions,
       format: thumbnailFormat,
+      progressive: !!image.thumbnail.progressive,
       decodingTier: THUMBNAIL_DECODING_TIER,
-    } as const;
-    const previewOptions = { ...image.preview, ...baseOptions, format: previewFormat, decodingTier: 0 } as const;
+    };
+    const previewOptions = {
+      ...image.preview,
+      ...baseOptions,
+      format: previewFormat,
+      progressive: !!image.preview.progressive,
+      decodingTier: 0,
+    };
     const promises = [
-      this.mediaRepository.generateThumbhash(decoded, baseOptions),
-      this.mediaRepository.generateThumbnail(decoded, thumbnailOptions, thumbnailFile.path),
-      this.mediaRepository.generateThumbnail(decoded, previewOptions, previewFile.path),
+      this.mediaRepository.generateThumbhash(bitmap, baseOptions),
+      this.mediaRepository.generateThumbnail(bitmap, thumbnailOptions, thumbnailFile.path),
+      this.mediaRepository.generateThumbnail(bitmap, previewOptions, previewFile.path),
     ];
 
     let fullsizeFile: UpsertFileOptions | undefined;
@@ -372,11 +354,11 @@ export class MediaService extends BaseService {
         ...baseOptions,
         format: fullsizeFormat,
         quality: image.fullsize.quality,
-        progressive: image.fullsize.progressive,
+        progressive: !!image.fullsize.progressive,
         effort: image.fullsize.effort,
         decodingTier: 0,
-      } as const;
-      promises.push(this.mediaRepository.generateThumbnail(decoded, fullsizeOptions, fullsizeFile.path));
+      };
+      promises.push(this.mediaRepository.generateThumbnail(bitmap, fullsizeOptions, fullsizeFile.path));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
@@ -410,7 +392,7 @@ export class MediaService extends BaseService {
       await Promise.all(promises);
     }
 
-    const decodedDimensions = { width: info.width, height: info.height };
+    const decodedDimensions = { width: bitmap.width, height: bitmap.height };
     const fullsizeDimensions = useEdits ? getOutputDimensions(asset.edits, decodedDimensions) : decodedDimensions;
 
     return {
@@ -447,9 +429,9 @@ export class MediaService extends BaseService {
       inputImage = originalPath;
     }
 
-    const decoded = await this.mediaRepository.decodeImage(inputImage, {
-      colorspace: image.colorspace,
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+    using decoded = await this.mediaRepository.decodeImage(inputImage, {
+      profile: image.colorspace,
+      strict: process.env.IMMICH_PROCESS_INVALID_IMAGES !== 'true',
       // if this is an extracted image, it may not have orientation metadata
       orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
     });
@@ -458,12 +440,10 @@ export class MediaService extends BaseService {
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions: GenerateThumbnailOptions = {
-      colorspace: image.colorspace,
       format: image.thumbnail.format,
       quality: image.thumbnail.quality,
-      progressive: image.thumbnail.progressive,
+      progressive: !!image.thumbnail.progressive,
       effort: image.thumbnail.effort,
-      processInvalidImages: false,
       size: FACE_THUMBNAIL_SIZE,
       edits: [
         {
@@ -471,7 +451,7 @@ export class MediaService extends BaseService {
           parameters: this.getCrop(
             {
               old: { width: oldWidth, height: oldHeight },
-              new: { width: decoded.info.width, height: decoded.info.height },
+              new: { width: decoded.width, height: decoded.height },
             },
             { x1, y1, x2, y2 },
           ),
@@ -528,45 +508,47 @@ export class MediaService extends BaseService {
   }
 
   private async generateVideoThumbnails(asset: ThumbnailAsset, { ffmpeg, image }: SystemConfig) {
-    const previewFile = this.getImageFile(asset, {
-      fileType: AssetFileType.Preview,
-      // TODO: write JPEG XL for video thumbnails
-      format: image.preview.format === ImageFormat.Jxl ? ImageFormat.Webp : image.preview.format,
-      isEdited: false,
-      isProgressive: false,
-      isTransparent: false,
-    });
-    const thumbnailFile = this.getImageFile(asset, {
-      fileType: AssetFileType.Thumbnail,
-      format: image.thumbnail.format === ImageFormat.Jxl ? ImageFormat.Webp : image.thumbnail.format,
-      isEdited: false,
-      isProgressive: false,
-      isTransparent: false,
-    });
-    this.storageCore.ensureFolders(previewFile.path);
-
     const { videoStream, format } = asset;
     if (!videoStream || !format) {
       throw new Error(`Missing video metadata for asset ${asset.id}`);
     }
 
-    const previewConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.preview.size.toString() });
-    const thumbConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
-    const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
-    const thumbnailOptions = thumbConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
-
-    await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
-    await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
-
-    const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
-    const preview = await this.mediaRepository.decodeImage(previewFile.path, {
-      colorspace: image.colorspace,
-      processInvalidImages,
+    const previewFile = this.getImageFile(asset, {
+      fileType: AssetFileType.Preview,
+      format: image.preview.format,
+      isEdited: false,
+      isProgressive: !!image.preview.progressive && image.preview.format === ImageFormat.Jpeg,
+      isTransparent: false,
     });
-    const thumbhash = await this.mediaRepository.generateThumbhash(preview, {
-      colorspace: image.colorspace,
-      processInvalidImages,
+    const thumbnailFile = this.getImageFile(asset, {
+      fileType: AssetFileType.Thumbnail,
+      format: image.thumbnail.format,
+      isEdited: false,
+      isProgressive: !!image.thumbnail.progressive && image.thumbnail.format === ImageFormat.Jpeg,
+      isTransparent: false,
     });
+    this.storageCore.ensureFolders(previewFile.path);
+
+    const command = ThumbnailConfig.create(ffmpeg).getCommand(TranscodeTarget.Video, videoStream, undefined, format);
+    const frame = await this.mediaRepository.getVideoFrame(asset.originalPath, command);
+    using bitmap = await this.mediaRepository.decodeImage(frame, {
+      profile: image.colorspace,
+      strict: process.env.IMMICH_PROCESS_INVALID_IMAGES !== 'true',
+      size: image.preview.size,
+    });
+
+    const thumbnailOptions = {
+      ...image.thumbnail,
+      edits: [],
+      progressive: !!image.thumbnail.progressive,
+      decodingTier: THUMBNAIL_DECODING_TIER,
+    };
+    const previewOptions = { ...image.preview, edits: [], progressive: !!image.preview.progressive, decodingTier: 0 };
+    const [thumbhash] = await Promise.all([
+      this.mediaRepository.generateThumbhash(bitmap, {}),
+      this.mediaRepository.generateThumbnail(bitmap, thumbnailOptions, thumbnailFile.path),
+      this.mediaRepository.generateThumbnail(bitmap, previewOptions, previewFile.path),
+    ]);
 
     return {
       files: [previewFile, thumbnailFile],

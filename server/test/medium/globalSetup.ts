@@ -36,7 +36,7 @@ const globalSetup = async () => {
     .start();
 
   const postgresPort = postgresContainer.getMappedPort(5432);
-  const postgresUrl = `postgres://postgres:postgres@localhost:${postgresPort}/${templateName}`;
+  const postgresUrl = `postgres://postgres:postgres@${postgresContainer.getHost()}:${postgresPort}/${templateName}`;
 
   process.env.IMMICH_TEST_POSTGRES_URL = postgresUrl;
 

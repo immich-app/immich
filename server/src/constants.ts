@@ -6,7 +6,6 @@ import {
   ApiTag,
   AudioCodec,
   DatabaseExtension,
-  ExifOrientation,
   TranscodeHardwareAcceleration,
   VectorIndex,
   VideoCodec,
@@ -144,22 +143,6 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-gopt-16-SigLIP2-256__webli': { dimSize: 1536 },
   'ViT-gopt-16-SigLIP2-384__webli': { dimSize: 1536 },
 };
-
-type SharpRotationData = {
-  angle?: number;
-  flip?: boolean;
-  flop?: boolean;
-};
-export const ORIENTATION_TO_SHARP_ROTATION: Record<ExifOrientation, SharpRotationData> = {
-  [ExifOrientation.Horizontal]: { angle: 0 },
-  [ExifOrientation.MirrorHorizontal]: { angle: 0, flop: true },
-  [ExifOrientation.Rotate180]: { angle: 180 },
-  [ExifOrientation.MirrorVertical]: { angle: 180, flop: true },
-  [ExifOrientation.MirrorHorizontalRotate270CW]: { angle: 270, flip: true },
-  [ExifOrientation.Rotate90CW]: { angle: 90 },
-  [ExifOrientation.MirrorHorizontalRotate90CW]: { angle: 90, flip: true },
-  [ExifOrientation.Rotate270CW]: { angle: 270 },
-} as const;
 
 export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Activities]: 'An activity is a like or a comment made by a user on an asset or album.',

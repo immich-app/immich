@@ -778,9 +778,6 @@ importers:
       semver:
         specifier: ^7.8.1
         version: 7.8.6
-      sharp:
-        specifier: ^0.35.3
-        version: 0.35.5(@types/node@26.6.6)
       sirv:
         specifier: ^3.0.0
         version: 3.0.2

@@ -12,6 +12,7 @@ import {
   ColorMatrix,
   ColorPrimaries,
   ColorTransfer,
+  DvSignalCompatibility,
   ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodeTarget,
@@ -519,19 +520,20 @@ export class ThumbnailConfig extends BaseConfig {
     return options;
   }
 
+  // The first frame, which playback starts on, as an uncompressed 16-bit PNG. Its cICP chunk keeps the frame's light,
+  // so the image pipeline makes HDR previews from it as it does from photos.
   getBaseOutputOptions() {
-    return ['-fps_mode', 'vfr', '-frames:v', '1', '-update', '1'];
+    return ['-frames:v', '1', '-c:v', 'png', '-compression_level', '0', '-f', 'image2pipe'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
-    return [
-      'fps=12:start_time=0:eof_action=pass:round=down',
-      'thumbnail=12',
-      String.raw`select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20)`,
-      'trim=end_frame=2',
-      'reverse',
-      ...super.getFilterOptions(videoStream),
-    ];
+    const filters = [];
+    if (videoStream.dvBlSignalCompatibilityId === DvSignalCompatibility.None) {
+      // Without a base layer of its own, the frame needs Dolby Vision's reshaping, which tonemapx applies.
+      filters.push('tonemapx=tonemap=none:p=bt2020:t=smpte2084:m=bt2020:r=pc:format=yuv420p10le');
+    }
+    filters.push('scale=flags=accurate_rnd+full_chroma_int:out_range=pc', 'format=rgb48be');
+    return filters;
   }
 
   getPresetOptions() {
@@ -544,10 +546,6 @@ export class ThumbnailConfig extends BaseConfig {
 
   eligibleForTwoPass() {
     return false;
-  }
-
-  getScaling(videoStream: VideoStreamInfo) {
-    return super.getScaling(videoStream) + ':flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc';
   }
 }
 

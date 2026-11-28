@@ -38,12 +38,45 @@ pub(crate) fn is_hdr(cicp: CicpProfile) -> bool {
     )
 }
 
-/// Builds the transform from an ICC profile to sRGB, and the layout of the 12-bit samples it reads.
-pub(crate) fn to_srgb(icc: &[u8]) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
-    profile_to_srgb(&ColorProfile::new_from_slice(icc).ok()?)
+#[cfg_attr(feature = "napi", napi_derive::napi(string_enum = "lowercase"))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Profile {
+    Srgb,
+    P3,
 }
 
-/// Reuse the transform to sRGB for a given source profile.
+impl Profile {
+    pub fn colorimetry(self) -> ColorProfile {
+        match self {
+            Self::Srgb => ColorProfile::new_srgb(),
+            Self::P3 => ColorProfile::new_display_p3(),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Output {
+    pub profile: Profile,
+    pub alpha: bool,
+    /// Going past 12-bit makes the transform's tables much slower to build for negligible benefit.
+    pub wide: bool,
+}
+
+pub(crate) const SRGB_RGBA: Output = Output {
+    profile: Profile::Srgb,
+    alpha: true,
+    wide: false,
+};
+
+/// Builds the transform from an ICC profile to `output`, and the layout of the samples it reads.
+pub(crate) fn transform(
+    icc: &[u8],
+    output: Output,
+) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
+    profile_transform(&ColorProfile::new_from_slice(icc).ok()?, output)
+}
+
+/// Reuse the transform for a given source profile.
 pub(crate) type Transforms<K> = Cache<K, (Arc<Transform16BitExecutor>, Layout)>;
 
 pub(crate) const TRANSFORMS: usize = 8;
@@ -51,19 +84,27 @@ pub(crate) const TRANSFORMS: usize = 8;
 /// Rows a transform converts at a time, which keeps a band's samples in cache.
 pub(crate) const BAND: usize = 64;
 
-/// [`to_srgb`], built once per distinct profile.
+/// [`transform`] to [`SRGB_RGBA`], built once per distinct profile.
 pub(crate) fn icc_to_srgb(icc: &[u8]) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
     static ICCS: LazyLock<Transforms<Vec<u8>>> = LazyLock::new(|| Cache::new(TRANSFORMS));
-    ICCS.get_or_insert_with(icc, || to_srgb(icc).ok_or(())).ok()
+    ICCS.get_or_insert_with(icc, || transform(icc, SRGB_RGBA).ok_or(()))
+        .ok()
 }
 
-/// [`to_srgb`] for a parsed profile.
-pub(crate) fn profile_to_srgb(
+/// [`transform`] for a parsed profile.
+pub(crate) fn profile_transform(
     source: &ColorProfile,
+    output: Output,
 ) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
-    let layout = match source.color_space {
-        DataColorSpace::Gray => Layout::GrayAlpha,
-        _ => Layout::Rgba,
+    let to = if output.alpha {
+        Layout::Rgba
+    } else {
+        Layout::Rgb
+    };
+    let from = match (source.color_space, output.alpha) {
+        (DataColorSpace::Gray, true) => Layout::GrayAlpha,
+        (DataColorSpace::Gray, false) => Layout::Gray,
+        _ => to,
     };
     let options = TransformOptions {
         rendering_intent: RenderingIntent::RelativeColorimetric,
@@ -72,11 +113,13 @@ pub(crate) fn profile_to_srgb(
         barycentric_weight_scale: BarycentricWeightScale::High,
         ..Default::default()
     };
-    // Going past 12-bit makes the transform's tables much slower to build for negligible benefit.
-    let transform = source
-        .create_transform_12bit(layout, &ColorProfile::new_srgb(), Layout::Rgba, options)
-        .ok()?;
-    Some((transform, layout))
+    let target = output.profile.colorimetry();
+    let transform = if output.wide {
+        source.create_transform_16bit(from, &target, to, options)
+    } else {
+        source.create_transform_12bit(from, &target, to, options)
+    };
+    Some((transform.ok()?, from))
 }
 
 /// Converts the 12-bit samples in `rgba`, `stride` bytes per row, to RGBA8 with `transform`.

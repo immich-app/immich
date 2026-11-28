@@ -5,13 +5,15 @@ use jxl::api::{
     AlphaMode, Endianness, Event, ExtraChannel, JxlColorEncoding, JxlColorProfile, JxlColorType,
     JxlDataFormat, JxlDecoder, JxlDecoderOptions, JxlOutputBuffer, JxlParallelRunner,
     JxlParallelRunnerFun, JxlPixelFormat, JxlPrimaries, JxlTransferFunction, JxlWhitePoint,
+    RenderingIntent,
 };
 use moxcms::{Layout, MatrixCoefficients, Transform16BitExecutor};
 use quick_cache::sync::Cache;
 use rayon::prelude::*;
 
 use crate::color::{
-    self, CicpColorPrimaries, CicpProfile, TRANSFORMS, Target, TransferCharacteristics, Transforms,
+    self, CicpColorPrimaries, CicpProfile, Output, SRGB_RGBA, TRANSFORMS, Target,
+    TransferCharacteristics, Transforms,
 };
 use crate::image::{self, Image, Pixels, Samples};
 use crate::resize;
@@ -243,17 +245,51 @@ fn cicp(profile: &JxlColorProfile) -> Option<CicpProfile> {
     })
 }
 
-/// [`color::to_srgb`] for `profile`, built once per distinct profile.
+fn encoding_transform(
+    encoding: &JxlColorEncoding,
+    output: Output,
+) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
+    static ENCODINGS: LazyLock<Transforms<(String, Output)>> =
+        LazyLock::new(|| Cache::new(TRANSFORMS));
+    let key = (encoding.get_color_encoding_description(), output);
+    ENCODINGS
+        .get_or_insert_with(&key, || {
+            let icc = encoding.maybe_create_profile().ok().flatten().ok_or(())?;
+            color::transform(&icc, output).ok_or(())
+        })
+        .ok()
+}
+
+/// jxl-rs writes a tone-mapping table into the profiles it makes for PQ and HLG.
+pub fn hdr_transform(
+    primaries: CicpColorPrimaries,
+    transfer: TransferCharacteristics,
+    output: Output,
+) -> Option<Arc<Transform16BitExecutor>> {
+    let encoding = JxlColorEncoding::RgbColorSpace {
+        white_point: JxlWhitePoint::D65,
+        primaries: match primaries {
+            CicpColorPrimaries::Bt709 => JxlPrimaries::SRGB,
+            CicpColorPrimaries::Smpte432 => JxlPrimaries::P3,
+            CicpColorPrimaries::Bt2020 => JxlPrimaries::BT2100,
+            _ => return None,
+        },
+        transfer_function: match transfer {
+            TransferCharacteristics::Smpte2084 => JxlTransferFunction::PQ,
+            TransferCharacteristics::Hlg => JxlTransferFunction::HLG,
+            _ => return None,
+        },
+        rendering_intent: RenderingIntent::Relative,
+    };
+    Some(encoding_transform(&encoding, output)?.0)
+}
+
+/// The transform from `profile` to [`color::SRGB_RGBA`], built once per distinct profile.
 pub(crate) fn srgb_transform(
     profile: &JxlColorProfile,
 ) -> Option<(Arc<Transform16BitExecutor>, Layout)> {
-    static ENCODINGS: LazyLock<Transforms<String>> = LazyLock::new(|| Cache::new(TRANSFORMS));
     match profile {
-        JxlColorProfile::Simple(encoding) => ENCODINGS
-            .get_or_insert_with(&encoding.get_color_encoding_description(), || {
-                color::to_srgb(&profile.try_as_icc().ok_or(())?).ok_or(())
-            })
-            .ok(),
+        JxlColorProfile::Simple(encoding) => encoding_transform(encoding, SRGB_RGBA),
         JxlColorProfile::Icc(icc) => color::icc_to_srgb(icc),
     }
 }

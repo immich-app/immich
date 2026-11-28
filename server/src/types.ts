@@ -1,3 +1,4 @@
+import type { Encode, Fit, Bitmap as NativeBitmap } from '@immich/native-core';
 import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { ShallowDehydrateObject } from 'kysely';
 import { Mocked } from 'vitest';
@@ -18,11 +19,8 @@ import {
   ColorTransfer,
   DvProfile,
   DvSignalCompatibility,
-  ExifOrientation,
   H264Profile,
   HevcProfile,
-  ImageEffort,
-  ImageFormat,
   IntegrityReport,
   JobName,
   MemoryType,
@@ -45,45 +43,16 @@ export type DeepPartial<T> = T extends Date
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
-export type ImageOptions = {
-  format: ImageFormat;
-  quality: number;
-  progressive?: boolean;
-  effort: ImageEffort;
-  decodingTier: 0 | 1 | 2 | 3 | 4;
-};
-
-export type FullsizeImageOptions = ImageOptions & { enabled: boolean };
-
-export type RawImageInfo = {
-  width: number;
-  height: number;
-  channels: 1 | 2 | 3 | 4;
-};
-
-export type Bitmap = {
-  data: Buffer;
-  info: RawImageInfo;
-};
-
-type ImageColorOptions = {
-  colorspace: string;
-  processInvalidImages: boolean;
-};
-
-export interface DecodeToBufferOptions extends ImageColorOptions {
-  size?: number;
-  orientation?: ExifOrientation;
-}
+export type Bitmap = NativeBitmap & Disposable;
 
 export type TransformOptions = {
   size?: number;
-  fit?: 'inside' | 'outside';
+  fit?: Fit;
   edits?: AssetEditActionItem[];
 };
 
-export type GenerateThumbnailOptions = ImageOptions & ImageColorOptions & TransformOptions;
-export type GenerateThumbhashOptions = ImageColorOptions & Pick<TransformOptions, 'edits'>;
+export type GenerateThumbnailOptions = Encode & TransformOptions;
+export type GenerateThumbhashOptions = Pick<TransformOptions, 'edits'>;
 
 export interface VideoStreamInfo {
   index: number;

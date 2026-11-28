@@ -1,5 +1,4 @@
 import { ShallowDehydrateObject } from 'kysely';
-import { OutputInfo } from 'sharp';
 import { Exif } from 'src/database.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
 import { AssetEditAction } from 'src/dtos/editing.dto.js';
@@ -10,7 +9,10 @@ import {
   AssetType,
   AssetVisibility,
   AudioCodec,
+  ColorTransfer,
   Colorspace,
+  DvProfile,
+  DvSignalCompatibility,
   ExifOrientation,
   ImageEffort,
   ImageFormat,
@@ -21,7 +23,7 @@ import {
   VideoCodec,
 } from 'src/enum.js';
 import { MediaService } from 'src/services/media.service.js';
-import type { AudioStreamInfo, JobCounts, RawImageInfo, VideoFormat, VideoStreamInfo } from 'src/types.js';
+import type { AudioStreamInfo, Bitmap, JobCounts, VideoFormat, VideoStreamInfo } from 'src/types.js';
 import { AssetFaceFactory } from 'test/factories/asset-face.factory.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { PersonFactory } from 'test/factories/person.factory.js';
@@ -32,8 +34,10 @@ import { getForGenerateThumbnail } from 'test/mappers.js';
 import { factory, newUuid } from 'test/small.factory.js';
 import { ServiceMocks, makeStream, newTestService } from 'test/utils.js';
 
-const fullsizeBuffer = Buffer.from('embedded image data');
-const rawBuffer = Buffer.from('raw image data');
+const stubBitmap = (properties: Partial<Bitmap>) =>
+  ({ isTransparent: false, [Symbol.dispose]: () => {}, ...properties }) as Bitmap;
+const fullsizeBuffer = stubBitmap({ width: 200, height: 200 });
+const rawBuffer = stubBitmap({ width: 100, height: 100 });
 const extractedBuffer = Buffer.from('embedded image file');
 
 describe(MediaService.name, () => {
@@ -352,20 +356,17 @@ describe(MediaService.name, () => {
   });
 
   describe('handleGenerateThumbnails', () => {
-    let rawInfo: RawImageInfo;
-
     beforeEach(() => {
-      rawInfo = { width: 100, height: 100, channels: 3 };
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
       mocks.media.decodeImage.mockImplementation((input) =>
         Promise.resolve(
           typeof input === 'string'
-            ? { data: rawBuffer, info: rawInfo as OutputInfo } // string implies original file
-            : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
+            ? rawBuffer // string implies original file
+            : fullsizeBuffer, // buffer implies embedded image extracted
         ),
       );
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 100, height: 100, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 100, height: 100 });
     });
 
     it('should skip thumbnail generation if asset not found', async () => {
@@ -438,37 +439,33 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
         size: 1440,
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
         expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           size: 360,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 4,
         },
@@ -476,14 +473,9 @@ describe(MediaService.name, () => {
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
-      expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
-        {
-          colorspace: Colorspace.P3,
-          processInvalidImages: false,
-          edits: [],
-        },
-      );
+      expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(rawBuffer, {
+        edits: [],
+      });
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
         {
@@ -512,29 +504,46 @@ describe(MediaService.name, () => {
         ...getForGenerateThumbnail(asset),
         ...probeStub.videoStream2160p,
       });
+      const frame = Buffer.from('a frame');
+      mocks.media.getVideoFrame.mockResolvedValue(frame);
+      mocks.media.decodeImage.mockResolvedValue(rawBuffer);
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledOnce();
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
           inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: expect.arrayContaining([
-            '-fps_mode',
-            'vfr',
             '-frames:v',
             '1',
-            '-update',
-            '1',
+            '-c:v',
+            'png',
+            '-compression_level',
+            '0',
+            '-f',
+            'image2pipe',
             '-v',
             'verbose',
             '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc`,
+            'scale=flags=accurate_rnd+full_chroma_int:out_range=pc,format=rgb48be',
           ]),
           twoPass: false,
         }),
       );
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(frame, { profile: Colorspace.P3, strict: true, size: 1440 });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({ format: ImageFormat.Jpeg, size: 1440, decodingTier: 0 }),
+        expect.stringMatching(/_preview\.jpeg$/),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({ format: ImageFormat.Webp, size: 360, decodingTier: 4 }),
+        expect.stringMatching(/_thumbnail\.webp$/),
+      );
+      expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(rawBuffer, {});
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
         {
           assetId: asset.id,
@@ -555,7 +564,7 @@ describe(MediaService.name, () => {
       ]);
     });
 
-    it('should generate WebP video thumbnails when JPEG XL is configured', async () => {
+    it('should generate JPEG XL video thumbnails when configured', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.systemMetadata.get.mockResolvedValue({
         image: { preview: { format: ImageFormat.Jxl }, thumbnail: { format: ImageFormat.Jxl } },
@@ -567,19 +576,19 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        expect.stringMatching(/_preview\.webp$/),
-        expect.any(Object),
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ format: ImageFormat.Jxl }),
+        expect.stringMatching(/_preview\.jxl$/),
       );
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        expect.stringMatching(/_thumbnail\.webp$/),
-        expect.any(Object),
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ format: ImageFormat.Jxl }),
+        expect.stringMatching(/_thumbnail\.jxl$/),
       );
     });
 
-    it('should tonemap thumbnail for hdr video', async () => {
+    it('should keep the light of an hdr video', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
         ...getForGenerateThumbnail(asset),
@@ -587,25 +596,23 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
-          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: expect.arrayContaining([
-            '-fps_mode',
-            'vfr',
             '-frames:v',
             '1',
-            '-update',
-            '1',
+            '-c:v',
+            'png',
+            '-compression_level',
+            '0',
+            '-f',
+            'image2pipe',
             '-v',
             'verbose',
             '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:360:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
+            'scale=flags=accurate_rnd+full_chroma_int:out_range=pc,format=rgb48be',
           ]),
-          twoPass: false,
         }),
       );
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
@@ -626,6 +633,43 @@ describe(MediaService.name, () => {
           isTransparent: false,
         },
       ]);
+    });
+
+    it('should apply dolby vision reshaping when the base layer does not stand alone', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
+      const { videoStream, ...streams } = probeStub.videoStreamHDR;
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...streams,
+        videoStream: {
+          ...videoStream!,
+          colorTransfer: ColorTransfer.Unknown,
+          dvProfile: DvProfile.Dvhe05,
+          dvBlSignalCompatibilityId: DvSignalCompatibility.None,
+        },
+      });
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([
+            '-frames:v',
+            '1',
+            '-c:v',
+            'png',
+            '-compression_level',
+            '0',
+            '-f',
+            'image2pipe',
+            '-v',
+            'verbose',
+            '-vf',
+            'tonemapx=tonemap=none:p=bt2020:t=smpte2084:m=bt2020:r=pc:format=yuv420p10le,' +
+              'scale=flags=accurate_rnd+full_chroma_int:out_range=pc,format=rgb48be',
+          ]),
+        }),
+      );
     });
 
     it('should always generate video thumbnail in one pass', async () => {
@@ -639,25 +683,9 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
-          outputOptions: expect.arrayContaining([
-            '-fps_mode',
-            'vfr',
-            '-frames:v',
-            '1',
-            '-update',
-            '1',
-            '-v',
-            'verbose',
-            '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:360:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
-          ]),
-          twoPass: false,
-        }),
+        expect.objectContaining({ twoPass: false }),
       );
     });
 
@@ -669,9 +697,8 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
           inputOptions: ['-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: expect.any(Array),
@@ -689,9 +716,8 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-bsf:0',
@@ -704,7 +730,7 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should use scaling divisible by 2 even when using quick sync', async () => {
+    it('should take the same frame with hardware acceleration', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHardwareAcceleration.Qsv } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
@@ -713,12 +739,24 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining([expect.stringContaining('scale=-2:1440')]),
+          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
+          outputOptions: expect.arrayContaining([
+            '-frames:v',
+            '1',
+            '-c:v',
+            'png',
+            '-compression_level',
+            '0',
+            '-f',
+            'image2pipe',
+            '-v',
+            'verbose',
+            '-vf',
+            'scale=flags=accurate_rnd+full_chroma_int:out_range=pc,format=rgb48be',
+          ]),
           twoPass: false,
         }),
       );
@@ -738,37 +776,33 @@ describe(MediaService.name, () => {
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.Srgb,
-        processInvalidImages: false,
+        profile: Colorspace.Srgb,
+        strict: true,
         size: 1440,
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.Srgb,
           format,
           size: 1440,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
         previewPath,
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.Srgb,
           format: ImageFormat.Webp,
           size: 360,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 4,
         },
@@ -790,37 +824,33 @@ describe(MediaService.name, () => {
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.Srgb,
-        processInvalidImages: false,
+        profile: Colorspace.Srgb,
+        strict: true,
         size: 1440,
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.Srgb,
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
         previewPath,
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.Srgb,
           format,
           size: 360,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 4,
         },
@@ -838,7 +868,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: true,
@@ -847,7 +877,7 @@ describe(MediaService.name, () => {
         expect.stringContaining('preview.jpeg'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         expect.objectContaining({
           format: ImageFormat.Webp,
           progressive: false,
@@ -879,7 +909,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: false,
@@ -888,7 +918,7 @@ describe(MediaService.name, () => {
         expect.stringContaining('preview.jpeg'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: true,
@@ -928,7 +958,7 @@ describe(MediaService.name, () => {
       ]);
     });
 
-    it('should never set isProgressive for videos', async () => {
+    it('should set isProgressive for video thumbnails as for images', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.systemMetadata.get.mockResolvedValue({
         image: { preview: { progressive: true }, thumbnail: { progressive: true } },
@@ -943,7 +973,7 @@ describe(MediaService.name, () => {
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
         expect.objectContaining({
           type: AssetFileType.Preview,
-          isProgressive: false,
+          isProgressive: true,
           isTransparent: false,
         }),
         expect.objectContaining({
@@ -974,7 +1004,7 @@ describe(MediaService.name, () => {
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
@@ -982,37 +1012,10 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
         size: 1440,
       });
-    });
-
-    it('should not check transparency metadata for raw files without extracted images', async () => {
-      const asset = AssetFactory.from({ originalFileName: 'file.dng' })
-        .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
-        .build();
-      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: false } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
-
-      await sut.handleGenerateThumbnails({ id: asset.id });
-
-      expect(mocks.media.getImageMetadata).not.toHaveBeenCalled();
-    });
-
-    it('should not check transparency metadata for raw files with extracted images', async () => {
-      const asset = AssetFactory.from({ originalFileName: 'file.dng' })
-        .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
-        .build();
-      mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
-      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
-
-      await sut.handleGenerateThumbnails({ id: asset.id });
-
-      expect(mocks.media.getImageMetadata).toHaveBeenCalledOnce();
-      expect(mocks.media.getImageMetadata).toHaveBeenCalledWith(extractedBuffer);
     });
 
     it('should resize original image if embedded image is too small', async () => {
@@ -1020,15 +1023,15 @@ describe(MediaService.name, () => {
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
         size: 1440,
       });
     });
@@ -1044,8 +1047,8 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
         size: 1440,
       });
     });
@@ -1061,11 +1064,7 @@ describe(MediaService.name, () => {
         mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
         mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
         mocks.media.getImageMetadata.mockImplementation((image) =>
-          Promise.resolve(
-            image === smaller
-              ? { width: 2160, height: 1440, isTransparent: false }
-              : { width: 6000, height: 4000, isTransparent: false },
-          ),
+          Promise.resolve(image === smaller ? { width: 2160, height: 1440 } : { width: 6000, height: 4000 }),
         );
       });
 
@@ -1127,7 +1126,7 @@ describe(MediaService.name, () => {
         mocks.media.getImageMetadata.mockImplementation((image) =>
           image === broken
             ? Promise.reject(new Error('unsupported image format'))
-            : Promise.resolve({ width: 6000, height: 4000, isTransparent: false }),
+            : Promise.resolve({ width: 6000, height: 4000 }),
         );
 
         await sut.handleGenerateThumbnails({ id: asset.id });
@@ -1156,8 +1155,8 @@ describe(MediaService.name, () => {
       expect(mocks.media.getEmbeddedImages).not.toHaveBeenCalled();
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
         size: 1440,
       });
     });
@@ -1175,25 +1174,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(
         asset.originalPath,
-        expect.objectContaining({ processInvalidImages: true }),
-      );
-
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
-        expect.objectContaining({ processInvalidImages: false }),
-        expect.any(String),
-      );
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
-        expect.objectContaining({ processInvalidImages: false }),
-        expect.any(String),
-      );
-
-      expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
-      expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
-        expect.objectContaining({ processInvalidImages: false }),
+        expect.objectContaining({ strict: false }),
       );
 
       vi.unstubAllEnvs();
@@ -1208,29 +1189,27 @@ describe(MediaService.name, () => {
         image: { fullsize: { enabled: true, format: ImageFormat.Webp }, extractEmbedded: true },
       });
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
         size: 1440, // capped to preview size as fullsize conversion is skipped
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: fullsizeBuffer, info: rawInfo },
+        fullsizeBuffer,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
@@ -1247,42 +1226,38 @@ describe(MediaService.name, () => {
         image: { fullsize: { enabled: true, format: ImageFormat.Webp }, extractEmbedded: true },
       });
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'PreviewJXL', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: fullsizeBuffer, info: rawInfo },
+        fullsizeBuffer,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
         expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: fullsizeBuffer, info: rawInfo },
+        fullsizeBuffer,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
@@ -1297,42 +1272,38 @@ describe(MediaService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
         expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
           size: 1440,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
@@ -1343,7 +1314,7 @@ describe(MediaService.name, () => {
     it('should generate full-size preview from non-web-friendly images', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       const asset = AssetFactory.from({ originalFileName: 'image.hif' })
         .exif({
@@ -1358,20 +1329,18 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
@@ -1383,15 +1352,15 @@ describe(MediaService.name, () => {
       const asset = AssetFactory.from().exif().build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.Srgb,
-        processInvalidImages: false,
+        profile: Colorspace.Srgb,
+        strict: true,
         size: 1440,
       });
 
@@ -1406,7 +1375,7 @@ describe(MediaService.name, () => {
     it('should always generate full-size preview from non-web-friendly panoramas', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.media.copyTagGroup.mockResolvedValue(true);
 
       const asset = AssetFactory.from({ originalFileName: 'panorama.tif' })
@@ -1422,22 +1391,20 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.Srgb,
+        profile: Colorspace.Srgb,
         orientation: undefined,
-        processInvalidImages: false,
+        strict: true,
         size: undefined,
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.Srgb,
           format: ImageFormat.Jpeg,
           quality: 80,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
@@ -1453,7 +1420,7 @@ describe(MediaService.name, () => {
         image: { fullsize: { enabled: true, format: ImageFormat.Webp, quality: 90 } },
       });
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       const asset = AssetFactory.from({ originalFileName: 'image.hif' })
         .exif({
@@ -1468,20 +1435,18 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
-        colorspace: Colorspace.P3,
-        processInvalidImages: false,
+        profile: Colorspace.P3,
+        strict: true,
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 90,
           progressive: false,
           effort: ImageEffort.Medium,
-          processInvalidImages: false,
           edits: [],
           decodingTier: 0,
         },
@@ -1494,7 +1459,7 @@ describe(MediaService.name, () => {
         image: { fullsize: { enabled: true, format: ImageFormat.Jpeg, progressive: true } },
       });
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extractedBuffer }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160 });
       const asset = AssetFactory.from({ originalFileName: 'image.hif' })
         .exif({
           fileSizeInByte: 5000,
@@ -1508,7 +1473,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         expect.objectContaining({
           format: ImageFormat.Jpeg,
           progressive: true,
@@ -1520,20 +1485,17 @@ describe(MediaService.name, () => {
   });
 
   describe('handleAssetEditThumbnailGeneration', () => {
-    let rawInfo: RawImageInfo;
-
     beforeEach(() => {
-      rawInfo = { width: 100, height: 100, channels: 3 };
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
       mocks.media.decodeImage.mockImplementation((input) =>
         Promise.resolve(
           typeof input === 'string'
-            ? { data: rawBuffer, info: rawInfo as OutputInfo } // string implies original file
-            : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
+            ? rawBuffer // string implies original file
+            : fullsizeBuffer, // buffer implies embedded image extracted
         ),
       );
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 100, height: 100, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 100, height: 100 });
     });
 
     it('should skip videos', async () => {
@@ -1583,7 +1545,7 @@ describe(MediaService.name, () => {
 
       await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         expect.objectContaining({
           edits: [
             expect.objectContaining({
@@ -1631,17 +1593,17 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         expect.anything(),
         expect.stringContaining('preview_edited.jpeg'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         expect.anything(),
         expect.stringContaining('thumbnail_edited.webp'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data: rawBuffer, info: rawInfo },
+        rawBuffer,
         expect.anything(),
         expect.stringContaining('fullsize_edited.jpeg'),
       );
@@ -1720,10 +1682,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
       mocks.media.generateThumbnail.mockResolvedValue();
-      mocks.media.decodeImage.mockResolvedValue({
-        data: Buffer.from(''),
-        info: { width: 1000, height: 1000 } as OutputInfo,
-      });
+      mocks.media.decodeImage.mockResolvedValue(stubBitmap({ width: 1000, height: 1000 }));
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: 'owner-1', personGroupId: 'person-group-1' }),
@@ -1752,9 +1711,8 @@ describe(MediaService.name, () => {
 
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
       mocks.media.generateThumbnail.mockResolvedValue();
-      const data = Buffer.from('');
-      const info = { width: 1000, height: 1000 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      const bitmap = stubBitmap({ width: 1000, height: 1000 });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
@@ -1766,14 +1724,13 @@ describe(MediaService.name, () => {
       });
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.originalPath, {
-        colorspace: Colorspace.P3,
+        profile: Colorspace.P3,
         orientation: undefined,
-        processInvalidImages: false,
+        strict: true,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data, info },
+        bitmap,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
@@ -1789,7 +1746,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          processInvalidImages: false,
           size: 250,
           decodingTier: 4,
         },
@@ -1810,10 +1766,7 @@ describe(MediaService.name, () => {
         thumbnailPath: '/data/thumbs/person.jpeg',
       });
       mocks.media.generateThumbnail.mockResolvedValue();
-      mocks.media.decodeImage.mockResolvedValue({
-        data: Buffer.from(''),
-        info: { width: 1000, height: 1000 } as OutputInfo,
-      });
+      mocks.media.decodeImage.mockResolvedValue(stubBitmap({ width: 1000, height: 1000 }));
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
@@ -1840,10 +1793,7 @@ describe(MediaService.name, () => {
       });
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
       mocks.media.generateThumbnail.mockResolvedValue();
-      mocks.media.decodeImage.mockResolvedValue({
-        data: Buffer.from(''),
-        info: { width: 1000, height: 1000 } as OutputInfo,
-      });
+      mocks.media.decodeImage.mockResolvedValue(stubBitmap({ width: 1000, height: 1000 }));
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
@@ -1866,9 +1816,8 @@ describe(MediaService.name, () => {
 
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.videoThumbnail);
       mocks.media.generateThumbnail.mockResolvedValue();
-      const data = Buffer.from('');
-      const info = { width: 1000, height: 1000 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      const bitmap = stubBitmap({ width: 1000, height: 1000 });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
@@ -1880,14 +1829,13 @@ describe(MediaService.name, () => {
       });
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.any(String), {
-        colorspace: Colorspace.P3,
+        profile: Colorspace.P3,
         orientation: undefined,
-        processInvalidImages: false,
+        strict: true,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data, info },
+        bitmap,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
@@ -1903,7 +1851,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          processInvalidImages: false,
           size: 250,
           decodingTier: 4,
         },
@@ -1921,23 +1868,21 @@ describe(MediaService.name, () => {
 
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailStart);
       mocks.media.generateThumbnail.mockResolvedValue();
-      const data = Buffer.from('');
-      const info = { width: 2160, height: 3840 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      const bitmap = stubBitmap({ width: 2160, height: 3840 });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
       ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailStart.originalPath, {
-        colorspace: Colorspace.P3,
+        profile: Colorspace.P3,
         orientation: undefined,
-        processInvalidImages: false,
+        strict: true,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data, info },
+        bitmap,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
@@ -1953,7 +1898,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          processInvalidImages: false,
           size: 250,
           decodingTier: 4,
         },
@@ -1967,23 +1911,21 @@ describe(MediaService.name, () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailEnd);
       mocks.person.update.mockResolvedValue(person);
       mocks.media.generateThumbnail.mockResolvedValue();
-      const data = Buffer.from('');
-      const info = { width: 1000, height: 1000 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      const bitmap = stubBitmap({ width: 1000, height: 1000 });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
       ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailEnd.originalPath, {
-        colorspace: Colorspace.P3,
+        profile: Colorspace.P3,
         orientation: undefined,
-        processInvalidImages: false,
+        strict: true,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data, info },
+        bitmap,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
@@ -1999,7 +1941,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          processInvalidImages: false,
           size: 250,
           decodingTier: 4,
         },
@@ -2013,23 +1954,21 @@ describe(MediaService.name, () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.negativeCoordinate);
       mocks.person.update.mockResolvedValue(person);
       mocks.media.generateThumbnail.mockResolvedValue();
-      const data = Buffer.from('');
-      const info = { width: 4624, height: 3080 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      const bitmap = stubBitmap({ width: 4624, height: 3080 });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
       ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.negativeCoordinate.originalPath, {
-        colorspace: Colorspace.P3,
+        profile: Colorspace.P3,
         orientation: undefined,
-        processInvalidImages: false,
+        strict: true,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data, info },
+        bitmap,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
@@ -2045,7 +1984,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          processInvalidImages: false,
           size: 250,
           decodingTier: 4,
         },
@@ -2059,23 +1997,21 @@ describe(MediaService.name, () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.overflowingCoordinate);
       mocks.person.update.mockResolvedValue(person);
       mocks.media.generateThumbnail.mockResolvedValue();
-      const data = Buffer.from('');
-      const info = { width: 4624, height: 3080 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      const bitmap = stubBitmap({ width: 4624, height: 3080 });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
       ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.overflowingCoordinate.originalPath, {
-        colorspace: Colorspace.P3,
+        profile: Colorspace.P3,
         orientation: undefined,
-        processInvalidImages: false,
+        strict: true,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data, info },
+        bitmap,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
@@ -2091,7 +2027,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          processInvalidImages: false,
           size: 250,
           decodingTier: 4,
         },
@@ -2107,11 +2042,10 @@ describe(MediaService.name, () => {
       mocks.person.update.mockResolvedValue(person);
       mocks.media.generateThumbnail.mockResolvedValue();
       const extracted = Buffer.from('');
-      const data = Buffer.from('');
-      const info = { width: 2160, height: 3840 } as OutputInfo;
+      const bitmap = stubBitmap({ width: 2160, height: 3840 });
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extracted }]);
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 2160, height: 3840, isTransparent: false });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 2160, height: 3840 });
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
@@ -2122,14 +2056,13 @@ describe(MediaService.name, () => {
         expect.any(Array),
       );
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extracted, {
-        colorspace: Colorspace.P3,
+        profile: Colorspace.P3,
         orientation: ExifOrientation.Horizontal,
-        processInvalidImages: false,
+        strict: true,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        { data, info },
+        bitmap,
         {
-          colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
           progressive: false,
@@ -2145,7 +2078,6 @@ describe(MediaService.name, () => {
               },
             },
           ],
-          processInvalidImages: false,
           size: 250,
           decodingTier: 4,
         },
@@ -2158,9 +2090,8 @@ describe(MediaService.name, () => {
 
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
       mocks.media.generateThumbnail.mockResolvedValue();
-      const data = Buffer.from('');
-      const info = { width: 2160, height: 3840 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      const bitmap = stubBitmap({ width: 2160, height: 3840 });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
@@ -2176,9 +2107,8 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
       mocks.media.generateThumbnail.mockResolvedValue();
-      const data = Buffer.from('');
-      const info = { width: 2160, height: 3840 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      const bitmap = stubBitmap({ width: 2160, height: 3840 });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
@@ -2189,9 +2119,9 @@ describe(MediaService.name, () => {
         expect.any(Array),
       );
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
-        colorspace: Colorspace.P3,
+        profile: Colorspace.P3,
         orientation: undefined,
-        processInvalidImages: false,
+        strict: true,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });
@@ -2203,11 +2133,10 @@ describe(MediaService.name, () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
       mocks.media.generateThumbnail.mockResolvedValue();
       const extracted = Buffer.from('');
-      const data = Buffer.from('');
-      const info = { width: 1000, height: 1000 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      const bitmap = stubBitmap({ width: 1000, height: 1000 });
+      mocks.media.decodeImage.mockResolvedValue(bitmap);
       mocks.media.getEmbeddedImages.mockResolvedValue([{ tag: 'JpgFromRaw', buffer: extracted }]);
-      mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000, isTransparent: false });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000 });
 
       await expect(
         sut.handleGeneratePersonThumbnail({ ownerId: person.ownerId, personGroupId: person.personGroupId }),
@@ -2218,9 +2147,9 @@ describe(MediaService.name, () => {
         expect.any(Array),
       );
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
-        colorspace: Colorspace.P3,
+        profile: Colorspace.P3,
         orientation: undefined,
-        processInvalidImages: false,
+        strict: true,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });

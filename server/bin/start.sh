@@ -18,6 +18,8 @@ log_message "Initializing Immich $IMMICH_SOURCE_REF"
 lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.3"
 if [ -f "$lib_path" ]; then
   export LD_PRELOAD="$lib_path"
+  # Otherwise it keeps the memory of freed images, even under memory pressure.
+  export MIMALLOC_PURGE_DELAY="${MIMALLOC_PURGE_DELAY:-0}"
 else
   echo "skipping libmimalloc - path not found $lib_path"
 fi

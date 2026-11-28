@@ -1143,11 +1143,11 @@ describe(AuthService.name, () => {
       expect(mocks.oauth.getProfilePicture).toHaveBeenCalledWith(rawProfile.picture);
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(
         Buffer.from(pictureBytes.buffer, pictureBytes.byteOffset, pictureBytes.byteLength),
-        expect.objectContaining({ processInvalidImages: false }),
+        expect.objectContaining({ strict: true }),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         expect.anything(),
-        expect.objectContaining({ format: 'webp', processInvalidImages: false }),
+        expect.objectContaining({ format: 'webp' }),
         expect.stringContaining(`/data/profile/${user.id}/${fileId}.webp`),
       );
     });

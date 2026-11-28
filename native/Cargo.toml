@@ -56,6 +56,7 @@ rav1d = { version = "1.1.1", git = "https://github.com/memorysafety/rav1d", rev 
     "bitdepth_16",
 ] }
 rayon = { version = "1.11", default-features = false }
+rs-vips = { version = "0.7", default-features = false }
 yuv = { version = "0.8", default-features = false, features = [
     "avx",
     "rdm",
@@ -74,3 +75,7 @@ strip = true
 # rav1d decodes untiled images on the caller's thread, whose stack it overflows on Android when unoptimized.
 [profile.dev.package.rav1d]
 opt-level = 3
+
+[patch.crates-io]
+# Links libvips through pkg-config until mrdkprj/rs-vips#6 is released.
+rs-vips = { git = "https://github.com/mertalev/rs-vips", rev = "9bfc47697b704957fce3514e49acdfa60e312cd2" }
