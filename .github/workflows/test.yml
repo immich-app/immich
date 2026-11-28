@@ -83,6 +83,8 @@ jobs:
     needs: pre-job
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).native == true }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/immich-app/base-server-dev:202611272241@sha256:890390fa025d3d5fcdd2a38c9b3b606534e305d3aaa49cc00f9d4acfa004d5e6
     permissions:
       contents: read
     steps:
@@ -177,6 +179,8 @@ jobs:
     needs: pre-job
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/immich-app/base-server-dev:202611272241@sha256:890390fa025d3d5fcdd2a38c9b3b606534e305d3aaa49cc00f9d4acfa004d5e6
     permissions:
       contents: read
     steps:
@@ -476,9 +480,10 @@ jobs:
     needs: pre-job
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/immich-app/base-server-dev:202611272241@sha256:890390fa025d3d5fcdd2a38c9b3b606534e305d3aaa49cc00f9d4acfa004d5e6
     permissions:
       contents: read
-      packages: read
     defaults:
       run:
         working-directory: ./server
@@ -489,7 +494,6 @@ jobs:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
           permission-contents: read
-          permission-packages: read
 
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -502,13 +506,6 @@ jobs:
         uses: immich-app/devtools/actions/use-mise@caac7f7e4298458a14238959504f411fc6cc7f06 # use-mise-action-v3.2.3
         with:
           github_token: ${{ steps.token.outputs.token }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ steps.token.outputs.token }}
 
       - name: Run ci-medium
         run: mise run ci-medium
@@ -970,6 +967,8 @@ jobs:
   generated-api-up-to-date:
     name: OpenAPI Clients
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/immich-app/base-server-dev:202611272241@sha256:890390fa025d3d5fcdd2a38c9b3b606534e305d3aaa49cc00f9d4acfa004d5e6
     permissions:
       contents: read
     steps:
@@ -1017,9 +1016,13 @@ jobs:
   sql-schema-up-to-date:
     name: SQL Schema Checks
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/immich-app/base-server-dev:202611272241@sha256:890390fa025d3d5fcdd2a38c9b3b606534e305d3aaa49cc00f9d4acfa004d5e6
     permissions:
       contents: read
       packages: read
+    env:
+      DB_URL: postgres://postgres:postgres@postgres:5432/immich
     services:
       postgres:
         image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:dbf18b3ffea4a81434c65b71e20d27203baf903a0275f4341e4c16dfd901fd67
