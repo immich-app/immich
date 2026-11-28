@@ -959,6 +959,7 @@ export enum JobName {
   SessionCleanup = 'SessionCleanup',
 
   SendMail = 'SendMail',
+  SendApprise = 'SendApprise',
 
   SidecarQueueAll = 'SidecarQueueAll',
   SidecarCheck = 'SidecarCheck',

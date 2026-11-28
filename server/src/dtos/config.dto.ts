@@ -161,6 +161,17 @@ const AdminConfigSmtpSchema = z
   })
   .meta({ id: 'AdminConfigSmtpDto' });
 
+const AdminConfigAppriseSchema = z
+  .object({
+    enabled: configBool.describe('Whether Apprise notifications are enabled').meta({ visibility: User }),
+    url: emptyOrUrl('Apprise URL must be an empty string or a valid URL').describe('Apprise API server URL'),
+    configId: z.string().describe('Apprise configuration ID the username and password belong to'),
+    username: z.string().describe('Apprise API username'),
+    password: z.string().describe('Apprise API password'),
+    timeout: z.int().min(1).max(300).describe('Request timeout in seconds'),
+  })
+  .meta({ id: 'AdminConfigAppriseDto' });
+
 const AdminConfigSchemaWithVisibility = z
   .object({
     backup: z
@@ -424,7 +435,9 @@ const AdminConfigSchemaWithVisibility = z
         watch: z.object({ enabled: configBool.describe('Enabled') }).meta({ id: 'AdminConfigLibraryWatchDto' }),
       })
       .meta({ id: 'AdminConfigLibraryDto' }),
-    notifications: z.object({ smtp: AdminConfigSmtpSchema }).meta({ id: 'AdminConfigNotificationsDto' }),
+    notifications: z
+      .object({ smtp: AdminConfigSmtpSchema, apprise: AdminConfigAppriseSchema })
+      .meta({ id: 'AdminConfigNotificationsDto' }),
     templates: z
       .object({
         email: z
@@ -586,6 +599,8 @@ export class ConfigFFmpegDto extends createZodDto(AdminConfigFFmpegSchema) {}
 
 export class ConfigSmtpDto extends createZodDto(AdminConfigSmtpSchema) {}
 
+export class ConfigAppriseDto extends createZodDto(AdminConfigAppriseSchema) {}
+
 export class ConfigTemplateStorageOptionDto extends createZodDto(ConfigTemplateStorageOptionSchema) {}
 
 export class StorageTemplateOptionsResponseDto extends createZodDto(StorageTemplateOptionsResponseSchema) {}
@@ -599,7 +614,11 @@ export class StorageTemplatePreviewResponseDto extends createZodDto({
 }) {}
 
 /** @deprecated the `/system-config` endpoints these are named after are on their way out */
-export { AdminConfigDto as SystemConfigDto, ConfigSmtpDto as SystemConfigSmtpDto };
+export {
+  AdminConfigDto as SystemConfigDto,
+  ConfigAppriseDto as SystemConfigAppriseDto,
+  ConfigSmtpDto as SystemConfigSmtpDto,
+};
 
 export function mapAdminConfig(config: SystemConfig): AdminConfigDto {
   return config;
@@ -839,6 +858,14 @@ export const defaults = Object.freeze<SystemConfig>({
         username: '',
         password: '',
       },
+    },
+    apprise: {
+      enabled: false,
+      url: '',
+      configId: '',
+      username: '',
+      password: '',
+      timeout: 20,
     },
   },
   templates: {
