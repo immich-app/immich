@@ -226,12 +226,16 @@ class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRep
     return _db.managers.remoteAssetEntity.count();
   }
 
-  Future<List<AssetEdit>> getAssetEdits(String assetId) {
+  Selectable<AssetEdit> _assetEditsQuery(String assetId) {
     final query = _db.assetEditEntity.select()
       ..where((row) => row.assetId.equals(assetId) & row.action.equals(AssetEditAction.other.index).not())
       ..orderBy([(row) => OrderingTerm.asc(row.sequence)]);
-    return query.map((row) => row.toDto()!).get();
+    return query.map((row) => row.toDto()!);
   }
+
+  Future<List<AssetEdit>> getAssetEdits(String assetId) => _assetEditsQuery(assetId).get();
+
+  Stream<List<AssetEdit>> watchAssetEdits(String assetId) => _assetEditsQuery(assetId).watch();
 
   Future<void> updateAssets(
     List<String> remoteIds, {

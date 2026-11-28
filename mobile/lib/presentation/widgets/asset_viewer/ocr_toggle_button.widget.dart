@@ -12,7 +12,7 @@ class OcrToggleButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = this.asset;
-    final hasOcr = asset is RemoteAsset && ref.watch(Store.ocr.forAsset(asset.id)).valueOrNull?.isNotEmpty == true;
+    final hasOcr = asset is RemoteAsset && ref.watch(Store.ocr.hasText(asset.id)).valueOrNull == true;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
     return AnimatedSwitcher(

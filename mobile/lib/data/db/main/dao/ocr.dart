@@ -10,12 +10,11 @@ class OcrRepository extends DatabaseAccessor<Drift> with $OcrRepositoryMixin {
 
   Drift get _db => attachedDatabase;
 
-  Future<List<Ocr>> get(String assetId) async {
+  Stream<List<Ocr>> watch(String assetId) {
     final query = _db.select(_db.assetOcrEntity)
       ..where((row) => row.assetId.equals(assetId) & row.isVisible.equals(true));
 
-    final result = await query.get();
-    return result.map((e) => e.toDto()).toList();
+    return query.map((e) => e.toDto()).watch();
   }
 }
 
