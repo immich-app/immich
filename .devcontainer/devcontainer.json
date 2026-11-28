@@ -15,21 +15,21 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "svelte.svelte-vscode",
-        "ms-vscode-remote.remote-containers",
-        "foxundermoon.shell-format",
-        "timonwong.shellcheck",
-        "rvest.vs-code-prettier-eslint",
         "bluebrown.yamlfmt",
-        "vkrishna04.cspell-sync",
-        "vitest.explorer",
-        "ms-playwright.playwright",
-        "ms-azuretools.vscode-docker",
-        "typescriptteam.native-preview",
+        "bradlc.vscode-tailwindcss",
+        "dbaeumer.vscode-eslint",
         "editorconfig.editorconfig",
-        "bradlc.vscode-tailwindcss"
+        "esbenp.prettier-vscode",
+        "foxundermoon.shell-format",
+        "ms-azuretools.vscode-docker",
+        "ms-playwright.playwright",
+        "ms-vscode-remote.remote-containers",
+        "rvest.vs-code-prettier-eslint",
+        "svelte.svelte-vscode",
+        "timonwong.shellcheck",
+        "typescriptteam.native-preview",
+        "vitest.explorer",
+        "vkrishna04.cspell-sync"
       ],
       "settings": {
         "tasks": {
