@@ -12,15 +12,12 @@
 
   let { asset, onViewAsset }: Props = $props();
 
-  let assetData = $derived(JSON.stringify(asset, null, 2));
-
   let boxWidth = $state(300);
 </script>
 
 <div
   class="aspect-square w-full rounded-xl border-4 border-gray-200 bg-gray-200 text-xs font-semibold transition-colors dark:border-gray-800 dark:bg-gray-800"
   bind:clientWidth={boxWidth}
-  title={assetData}
 >
   <div class="relative size-full overflow-hidden rounded-lg">
     <Thumbnail asset={toTimelineAsset(asset)} readonly onClick={() => onViewAsset(asset)} thumbnailSize={boxWidth} />
