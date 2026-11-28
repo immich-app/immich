@@ -15,20 +15,25 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "svelte.svelte-vscode",
-        "ms-vscode-remote.remote-containers",
-        "foxundermoon.shell-format",
-        "timonwong.shellcheck",
-        "rvest.vs-code-prettier-eslint",
         "bluebrown.yamlfmt",
-        "vkrishna04.cspell-sync",
-        "vitest.explorer",
+        "bradlc.vscode-tailwindcss",
+        "dbaeumer.vscode-eslint",
+        "editorconfig.editorconfig",
+        "esbenp.prettier-vscode",
+        "foxundermoon.shell-format",
+        "ms-azuretools.vscode-docker",
         "ms-playwright.playwright",
-        "ms-azuretools.vscode-docker"
+        "ms-vscode-remote.remote-containers",
+        "rvest.vs-code-prettier-eslint",
+        "svelte.svelte-vscode",
+        "timonwong.shellcheck",
+        "typescriptteam.native-preview",
+        "vitest.explorer",
+        "vkrishna04.cspell-sync"
       ],
       "settings": {
+        // Disable recommendations as some extensions are needed only for mobile development.
+        "extensions.ignoreRecommendations": true,
         "tasks": {
           "version": "2.0.0",
           "tasks": [
