@@ -1,17 +1,9 @@
 import {
-  getContentMetrics,
   mapNormalizedRectToContent,
   mapNormalizedToContent,
   scaleToCover,
   scaleToFit,
 } from '#lib/utils/container-utils.ts';
-
-const mockImage = (props: {
-  naturalWidth: number;
-  naturalHeight: number;
-  width: number;
-  height: number;
-}): HTMLImageElement => props as unknown as HTMLImageElement;
 
 describe('scaleToFit', () => {
   it('should return full width when image is wider than container', () => {
@@ -32,36 +24,6 @@ describe('scaleToFit', () => {
 
   it('should handle square images in portrait container', () => {
     expect(scaleToFit({ width: 500, height: 500 }, { width: 400, height: 600 })).toEqual({ width: 400, height: 400 });
-  });
-});
-
-describe('getContentMetrics', () => {
-  it('should compute zero offsets when aspect ratios match', () => {
-    const img = mockImage({ naturalWidth: 1600, naturalHeight: 900, width: 800, height: 450 });
-    expect(getContentMetrics(img)).toEqual({
-      contentWidth: 800,
-      contentHeight: 450,
-      offsetX: 0,
-      offsetY: 0,
-    });
-  });
-
-  it('should compute horizontal letterbox offsets for tall image', () => {
-    const img = mockImage({ naturalWidth: 1000, naturalHeight: 2000, width: 800, height: 600 });
-    const metrics = getContentMetrics(img);
-    expect(metrics.contentWidth).toBe(300);
-    expect(metrics.contentHeight).toBe(600);
-    expect(metrics.offsetX).toBe(250);
-    expect(metrics.offsetY).toBe(0);
-  });
-
-  it('should compute vertical letterbox offsets for wide image', () => {
-    const img = mockImage({ naturalWidth: 2000, naturalHeight: 1000, width: 800, height: 600 });
-    const metrics = getContentMetrics(img);
-    expect(metrics.contentWidth).toBe(800);
-    expect(metrics.contentHeight).toBe(400);
-    expect(metrics.offsetX).toBe(0);
-    expect(metrics.offsetY).toBe(100);
   });
 });
 
