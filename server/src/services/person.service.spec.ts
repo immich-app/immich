@@ -1617,6 +1617,40 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
     });
 
+    it('should keep the first detection with the greatest overlap for a manual face', async () => {
+      const face = AssetFaceFactory.create({ sourceType: SourceType.Manual, imageWidth: 1440 });
+      const asset = AssetFactory.from().face(face).file({ type: AssetFileType.Preview }).exif().build();
+      const detection = getAsDetectedFace(face);
+      const [match] = detection.faces;
+      const box = match.boundingBox;
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
+      mocks.machineLearning.detectFaces.mockResolvedValue({
+        ...detection,
+        faces: [
+          { ...match, boundingBox: { ...box, y2: box.y2 + 90 }, embedding: '[1, 0, 0, 0]' },
+          { ...match, boundingBox: { ...box, x2: box.x2 - 31 }, embedding: '[0, 1, 0, 0]' },
+          { ...match, boundingBox: { ...box, x1: box.x1 + 31 }, embedding: '[0, 0, 1, 0]' },
+        ],
+      });
+
+      await sut.handleDetectFaces({ id: asset.id });
+
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith([], [], [{ faceId: face.id, embedding: '[0, 1, 0, 0]' }]);
+    });
+
+    it('should skip refreshing a machine learning face matched twice', async () => {
+      const face = AssetFaceFactory.create({ sourceType: SourceType.MachineLearning });
+      const asset = AssetFactory.from().face(face).file({ type: AssetFileType.Preview }).exif().build();
+      const detection = getAsDetectedFace(face);
+      const [match] = detection.faces;
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
+      mocks.machineLearning.detectFaces.mockResolvedValue({ ...detection, faces: [match, match] });
+
+      await sut.handleDetectFaces({ id: asset.id });
+
+      expect(mocks.person.refreshFaces).not.toHaveBeenCalled();
+    });
+
     it('should match metadata face stored at a different resolution', async () => {
       const face = AssetFaceFactory.create({
         sourceType: SourceType.Exif,

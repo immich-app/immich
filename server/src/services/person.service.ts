@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Insertable } from 'kysely';
-import { isUndefined, omitBy } from 'lodash-es';
+import { isUndefined, omitBy, partition } from 'lodash-es';
 import { Chunked, OnJob } from 'src/decorators.js';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
@@ -59,6 +59,7 @@ import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, findOrFail, hasSomeDefined, isFacialRecognitionEnabled } from 'src/utils/misc.js';
 import { Point, transformPoints } from 'src/utils/transform.js';
 
+const FACE_OVERLAP_EPSILON = 1e-9;
 const personKey = ({ ownerId, personGroupId }: PersonId) => `${ownerId}/${personGroupId}`;
 const shareKey = ({ personId, sharedWithId }: { personId: string; sharedWithId: string }) =>
   `${personId}/${sharedWithId}`;
@@ -485,22 +486,30 @@ export class PersonService extends BaseService {
 
     const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
     const embeddings: FaceSearchTable[] = [];
-    const mlFaceIds = new Set<string>();
+    const bestTaggedMatches = new Map<string, { embedding: string; overlap: number }>();
+    const [mlFaces, taggedFaces] = partition(asset.faces, (face) => face.sourceType === SourceType.MachineLearning);
+    const unmatchedMlFaceIds = new Set(mlFaces.map((face) => face.id));
+    const facesByPriority = [...taggedFaces, ...mlFaces];
 
-    for (const face of asset.faces) {
-      if (face.sourceType === SourceType.MachineLearning) {
-        mlFaceIds.add(face.id);
+    const findMatch = (box: BoundingBox) => {
+      for (const face of facesByPriority) {
+        const overlap = this.iou(face, box, imageWidth, imageHeight);
+        if (overlap > 0.5) {
+          return { face, overlap };
+        }
       }
-    }
+    };
 
     for (const { boundingBox, embedding } of faces) {
-      const matches = asset.faces.filter((face) => this.iou(face, boundingBox, imageWidth, imageHeight) > 0.5);
-      // prefer metadata faces over machine learning duplicates
-      const match = matches.find((face) => face.sourceType !== SourceType.MachineLearning) ?? matches[0];
-
-      if (match && !mlFaceIds.delete(match.id)) {
-        embeddings.push({ faceId: match.id, embedding });
-      } else if (!match) {
+      const match = findMatch(boundingBox);
+      if (match?.face.sourceType === SourceType.MachineLearning) {
+        unmatchedMlFaceIds.delete(match.face.id);
+      } else if (match) {
+        const previous = bestTaggedMatches.get(match.face.id);
+        if (!previous || match.overlap > previous.overlap + FACE_OVERLAP_EPSILON) {
+          bestTaggedMatches.set(match.face.id, { embedding, overlap: match.overlap });
+        }
+      } else {
         const faceId = this.cryptoRepository.randomUUID();
         facesToAdd.push({
           id: faceId,
@@ -515,7 +524,10 @@ export class PersonService extends BaseService {
         embeddings.push({ faceId, embedding });
       }
     }
-    const faceIdsToRemove = [...mlFaceIds];
+    for (const [faceId, { embedding }] of bestTaggedMatches) {
+      embeddings.push({ faceId, embedding });
+    }
+    const faceIdsToRemove = [...unmatchedMlFaceIds];
 
     if (facesToAdd.length > 0 || faceIdsToRemove.length > 0 || embeddings.length > 0) {
       await this.personRepository.refreshFaces(facesToAdd, faceIdsToRemove, embeddings);
@@ -530,7 +542,7 @@ export class PersonService extends BaseService {
       const jobs = facesToAdd.map((face) => ({ name: JobName.FacialRecognition, data: { id: face.id } }) as const);
       await this.jobRepository.queueAll([{ name: JobName.FacialRecognitionQueueAll, data: { force: false } }, ...jobs]);
     } else if (embeddings.length > 0) {
-      this.logger.log(`Added ${embeddings.length} face embeddings for asset ${id}`);
+      this.logger.log(`Refreshed ${embeddings.length} face embeddings for asset ${id}`);
     }
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });

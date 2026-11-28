@@ -9,6 +9,7 @@ import {
   type Updateable,
 } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { sortBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace, PersonUser, columns } from 'src/database.js';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
@@ -829,7 +830,13 @@ export class PersonRepository {
     }
 
     if (embeddingsToAdd?.length) {
-      (query as any) = query.with('added_embeddings', (db) => db.insertInto('face_search').values(embeddingsToAdd));
+      const embeddingsInLockOrder = sortBy(embeddingsToAdd, (row) => row.faceId);
+      (query as any) = query.with('added_embeddings', (db) =>
+        db
+          .insertInto('face_search')
+          .values(embeddingsInLockOrder)
+          .onConflict((oc) => oc.column('faceId').doUpdateSet((eb) => ({ embedding: eb.ref('excluded.embedding') }))),
+      );
     }
 
     await query.selectFrom(dummy).execute();
