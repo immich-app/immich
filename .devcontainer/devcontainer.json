@@ -28,7 +28,8 @@
         "ms-playwright.playwright",
         "ms-azuretools.vscode-docker",
         "typescriptteam.native-preview",
-        "editorconfig.editorconfig"
+        "editorconfig.editorconfig",
+        "bradlc.vscode-tailwindcss"
       ],
       "settings": {
         "tasks": {
