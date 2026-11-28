@@ -508,41 +508,47 @@ export class MediaService extends BaseService {
   }
 
   private async generateVideoThumbnails(asset: ThumbnailAsset, { ffmpeg, image }: SystemConfig) {
-    const previewFile = this.getImageFile(asset, {
-      fileType: AssetFileType.Preview,
-      // TODO: write JPEG XL for video thumbnails
-      format: image.preview.format === ImageFormat.Jxl ? ImageFormat.Webp : image.preview.format,
-      isEdited: false,
-      isProgressive: false,
-      isTransparent: false,
-    });
-    const thumbnailFile = this.getImageFile(asset, {
-      fileType: AssetFileType.Thumbnail,
-      format: image.thumbnail.format === ImageFormat.Jxl ? ImageFormat.Webp : image.thumbnail.format,
-      isEdited: false,
-      isProgressive: false,
-      isTransparent: false,
-    });
-    this.storageCore.ensureFolders(previewFile.path);
-
     const { videoStream, format } = asset;
     if (!videoStream || !format) {
       throw new Error(`Missing video metadata for asset ${asset.id}`);
     }
 
-    const previewConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.preview.size.toString() });
-    const thumbConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
-    const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
-    const thumbnailOptions = thumbConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
+    const previewFile = this.getImageFile(asset, {
+      fileType: AssetFileType.Preview,
+      format: image.preview.format,
+      isEdited: false,
+      isProgressive: !!image.preview.progressive && image.preview.format === ImageFormat.Jpeg,
+      isTransparent: false,
+    });
+    const thumbnailFile = this.getImageFile(asset, {
+      fileType: AssetFileType.Thumbnail,
+      format: image.thumbnail.format,
+      isEdited: false,
+      isProgressive: !!image.thumbnail.progressive && image.thumbnail.format === ImageFormat.Jpeg,
+      isTransparent: false,
+    });
+    this.storageCore.ensureFolders(previewFile.path);
 
-    await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
-    await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
-
-    using preview = await this.mediaRepository.decodeImage(previewFile.path, {
+    const command = ThumbnailConfig.create(ffmpeg).getCommand(TranscodeTarget.Video, videoStream, undefined, format);
+    const frame = await this.mediaRepository.getVideoFrame(asset.originalPath, command);
+    using bitmap = await this.mediaRepository.decodeImage(frame, {
       profile: image.colorspace,
       strict: process.env.IMMICH_PROCESS_INVALID_IMAGES !== 'true',
+      size: image.preview.size,
     });
-    const thumbhash = await this.mediaRepository.generateThumbhash(preview, {});
+
+    const thumbnailOptions = {
+      ...image.thumbnail,
+      edits: [],
+      progressive: !!image.thumbnail.progressive,
+      decodingTier: THUMBNAIL_DECODING_TIER,
+    };
+    const previewOptions = { ...image.preview, edits: [], progressive: !!image.preview.progressive, decodingTier: 0 };
+    const [thumbhash] = await Promise.all([
+      this.mediaRepository.generateThumbhash(bitmap, {}),
+      this.mediaRepository.generateThumbnail(bitmap, thumbnailOptions, thumbnailFile.path),
+      this.mediaRepository.generateThumbnail(bitmap, previewOptions, previewFile.path),
+    ]);
 
     return {
       files: [previewFile, thumbnailFile],

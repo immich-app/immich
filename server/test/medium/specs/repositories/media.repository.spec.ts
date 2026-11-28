@@ -2,9 +2,11 @@ import { mkdtempDisposableSync, statSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { Colorspace, ImageEffort, ImageFormat } from 'src/enum.js';
+import { defaults } from 'src/dtos/config.dto.js';
+import { Colorspace, ImageEffort, ImageFormat, TranscodeTarget } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
+import { ThumbnailConfig } from 'src/utils/media.js';
 import { testAssetsDir } from 'test/medium.factory.js';
 import { automock } from 'test/utils.js';
 
@@ -27,6 +29,18 @@ describe(MediaRepository.name, () => {
         return { tag, photometricInterpretation, width, height };
       }),
     );
+  };
+
+  const frameOf = async (path: string) => {
+    const input = resolve(testAssetsDir, path);
+    const { videoStreams, format } = await sut.probe(input);
+    const config = ThumbnailConfig.create(defaults.ffmpeg);
+    const frame = await sut.getVideoFrame(
+      input,
+      config.getCommand(TranscodeTarget.Video, videoStreams[0], undefined, format),
+    );
+    const cicp = frame.indexOf('cICP');
+    return { size: await sut.getImageMetadata(frame), cicp: [...frame.subarray(cicp + 4, cicp + 8)] };
   };
 
   describe('generateThumbnail', () => {
@@ -81,6 +95,22 @@ describe(MediaRepository.name, () => {
 
     it('should throw if the file cannot be read', async () => {
       await expect(getEmbeddedImages('formats/raw/does-not-exist.dng')).rejects.toThrow();
+    });
+  });
+
+  describe('getVideoFrame', () => {
+    it('takes the first frame of an hdr video upright, in its own light', async () => {
+      await expect(frameOf('videos/train.mov')).resolves.toEqual({
+        size: { width: 1080, height: 1920 },
+        cicp: [9, 18, 0, 1],
+      });
+    });
+
+    it('takes the first frame of an sdr video upright', async () => {
+      await expect(frameOf('videos/waterfall.mp4')).resolves.toEqual({
+        size: { width: 2160, height: 3840 },
+        cicp: [1, 1, 0, 1],
+      });
     });
   });
 });

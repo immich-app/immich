@@ -9,7 +9,10 @@ import {
   AssetType,
   AssetVisibility,
   AudioCodec,
+  ColorTransfer,
   Colorspace,
+  DvProfile,
+  DvSignalCompatibility,
   ExifOrientation,
   ImageEffort,
   ImageFormat,
@@ -501,29 +504,46 @@ describe(MediaService.name, () => {
         ...getForGenerateThumbnail(asset),
         ...probeStub.videoStream2160p,
       });
+      const frame = Buffer.from('a frame');
+      mocks.media.getVideoFrame.mockResolvedValue(frame);
+      mocks.media.decodeImage.mockResolvedValue(rawBuffer);
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledOnce();
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
           inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: expect.arrayContaining([
-            '-fps_mode',
-            'vfr',
             '-frames:v',
             '1',
-            '-update',
-            '1',
+            '-c:v',
+            'png',
+            '-compression_level',
+            '0',
+            '-f',
+            'image2pipe',
             '-v',
             'verbose',
             '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc`,
+            'scale=flags=accurate_rnd+full_chroma_int:out_range=pc,format=rgb48be',
           ]),
           twoPass: false,
         }),
       );
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(frame, { profile: Colorspace.P3, strict: true, size: 1440 });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({ format: ImageFormat.Jpeg, size: 1440, decodingTier: 0 }),
+        expect.stringMatching(/_preview\.jpeg$/),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({ format: ImageFormat.Webp, size: 360, decodingTier: 4 }),
+        expect.stringMatching(/_thumbnail\.webp$/),
+      );
+      expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(rawBuffer, {});
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
         {
           assetId: asset.id,
@@ -544,7 +564,7 @@ describe(MediaService.name, () => {
       ]);
     });
 
-    it('should generate WebP video thumbnails when JPEG XL is configured', async () => {
+    it('should generate JPEG XL video thumbnails when configured', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.systemMetadata.get.mockResolvedValue({
         image: { preview: { format: ImageFormat.Jxl }, thumbnail: { format: ImageFormat.Jxl } },
@@ -556,19 +576,19 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        expect.stringMatching(/_preview\.webp$/),
-        expect.any(Object),
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ format: ImageFormat.Jxl }),
+        expect.stringMatching(/_preview\.jxl$/),
       );
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        expect.stringMatching(/_thumbnail\.webp$/),
-        expect.any(Object),
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ format: ImageFormat.Jxl }),
+        expect.stringMatching(/_thumbnail\.jxl$/),
       );
     });
 
-    it('should tonemap thumbnail for hdr video', async () => {
+    it('should keep the light of an hdr video', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
         ...getForGenerateThumbnail(asset),
@@ -576,25 +596,23 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
-          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: expect.arrayContaining([
-            '-fps_mode',
-            'vfr',
             '-frames:v',
             '1',
-            '-update',
-            '1',
+            '-c:v',
+            'png',
+            '-compression_level',
+            '0',
+            '-f',
+            'image2pipe',
             '-v',
             'verbose',
             '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:360:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
+            'scale=flags=accurate_rnd+full_chroma_int:out_range=pc,format=rgb48be',
           ]),
-          twoPass: false,
         }),
       );
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
@@ -615,6 +633,43 @@ describe(MediaService.name, () => {
           isTransparent: false,
         },
       ]);
+    });
+
+    it('should apply dolby vision reshaping when the base layer does not stand alone', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
+      const { videoStream, ...streams } = probeStub.videoStreamHDR;
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...streams,
+        videoStream: {
+          ...videoStream!,
+          colorTransfer: ColorTransfer.Unknown,
+          dvProfile: DvProfile.Dvhe05,
+          dvBlSignalCompatibilityId: DvSignalCompatibility.None,
+        },
+      });
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([
+            '-frames:v',
+            '1',
+            '-c:v',
+            'png',
+            '-compression_level',
+            '0',
+            '-f',
+            'image2pipe',
+            '-v',
+            'verbose',
+            '-vf',
+            'tonemapx=tonemap=none:p=bt2020:t=smpte2084:m=bt2020:r=pc:format=yuv420p10le,' +
+              'scale=flags=accurate_rnd+full_chroma_int:out_range=pc,format=rgb48be',
+          ]),
+        }),
+      );
     });
 
     it('should always generate video thumbnail in one pass', async () => {
@@ -628,25 +683,9 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
-          outputOptions: expect.arrayContaining([
-            '-fps_mode',
-            'vfr',
-            '-frames:v',
-            '1',
-            '-update',
-            '1',
-            '-v',
-            'verbose',
-            '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:360:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
-          ]),
-          twoPass: false,
-        }),
+        expect.objectContaining({ twoPass: false }),
       );
     });
 
@@ -658,9 +697,8 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
           inputOptions: ['-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: expect.any(Array),
@@ -678,9 +716,8 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-bsf:0',
@@ -693,7 +730,7 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should use scaling divisible by 2 even when using quick sync', async () => {
+    it('should take the same frame with hardware acceleration', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHardwareAcceleration.Qsv } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
@@ -702,12 +739,24 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.getVideoFrame).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining([expect.stringContaining('scale=-2:1440')]),
+          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
+          outputOptions: expect.arrayContaining([
+            '-frames:v',
+            '1',
+            '-c:v',
+            'png',
+            '-compression_level',
+            '0',
+            '-f',
+            'image2pipe',
+            '-v',
+            'verbose',
+            '-vf',
+            'scale=flags=accurate_rnd+full_chroma_int:out_range=pc,format=rgb48be',
+          ]),
           twoPass: false,
         }),
       );
@@ -909,7 +958,7 @@ describe(MediaService.name, () => {
       ]);
     });
 
-    it('should never set isProgressive for videos', async () => {
+    it('should set isProgressive for video thumbnails as for images', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.systemMetadata.get.mockResolvedValue({
         image: { preview: { progressive: true }, thumbnail: { progressive: true } },
@@ -924,7 +973,7 @@ describe(MediaService.name, () => {
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
         expect.objectContaining({
           type: AssetFileType.Preview,
-          isProgressive: false,
+          isProgressive: true,
           isTransparent: false,
         }),
         expect.objectContaining({

@@ -362,6 +362,18 @@ export class MediaRepository {
     });
   }
 
+  async getVideoFrame(input: string, options: TranscodeCommand): Promise<Buffer> {
+    const chunks: Buffer[] = [];
+    const output = new Writable({
+      write(chunk: Buffer, _encoding, callback) {
+        chunks.push(chunk);
+        callback();
+      },
+    });
+    await this.transcode(input, output, options);
+    return Buffer.concat(chunks);
+  }
+
   getImageMetadata(input: string | Buffer): Promise<ImageDimensions> {
     return imageDimensions(input);
   }
