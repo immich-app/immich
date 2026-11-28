@@ -544,7 +544,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
     }
   }
 
-  Future<void> updateAlbumsV2(Iterable<SyncAlbumV2> data) async {
+  Future<void> updateAlbumsV3(Iterable<SyncAlbumV3> data) async {
     try {
       await _db.batch((batch) {
         for (final album in data) {
@@ -552,6 +552,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
             name: Value(album.name),
             description: Value(album.description),
             isActivityEnabled: Value(album.isActivityEnabled),
+            isPinned: Value(album.isPinned),
             order: Value(album.order.toAlbumAssetOrder()),
             thumbnailAssetId: Value(album.thumbnailAssetId),
             createdAt: Value(album.createdAt),
@@ -566,7 +567,7 @@ class SyncStreamRepository extends DatabaseAccessor<Drift> with $SyncStreamRepos
         }
       });
     } catch (error, stack) {
-      _logger.severe('Error: updateAlbumsV2', error, stack);
+      _logger.severe('Error: updateAlbumsV3', error, stack);
       rethrow;
     }
   }

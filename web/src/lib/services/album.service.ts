@@ -26,6 +26,8 @@ import {
   mdiExitToApp,
   mdiImageOutline,
   mdiLink,
+  mdiPin,
+  mdiPinOutline,
   mdiPlus,
   mdiPlusBoxOutline,
   mdiRenameOutline,
@@ -117,7 +119,14 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     onAction: () => modalManager.show(AlbumOptionsModal, { album }),
   };
 
-  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Leave, Options, Share };
+  const Pin: ActionItem = {
+    title: album.isPinned ? $t('unpin_album') : $t('pin_album'),
+    icon: album.isPinned ? mdiPin : mdiPinOutline,
+    $if: () => isOwned,
+    onAction: () => handleToggleAlbumPin(album),
+  };
+
+  return { AddUsers, CreateSharedLink, Delete, Download, Edit, Leave, Options, Share, Pin };
 };
 
 export const getAlbumAssetActions = ($t: MessageFormatter, album: AlbumResponseDto, asset: { id: string }) => {
@@ -203,6 +212,9 @@ const handleUpdateThumbnail = (album: AlbumResponseDto, assetId: string) =>
       }),
     [{ id: album.id, updateAlbumDto: { albumThumbnailAssetId: assetId } }],
   );
+
+const handleToggleAlbumPin = (album: AlbumResponseDto) =>
+  executeMutation(() => updateAlbumInfoMutation(), [{ id: album.id, updateAlbumDto: { isPinned: !album.isPinned } }]);
 
 export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { prompt?: boolean; notify?: boolean }) => {
   const $t = await getFormatter();

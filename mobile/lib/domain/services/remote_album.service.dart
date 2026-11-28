@@ -79,7 +79,9 @@ class RemoteAlbumService {
     };
     final effectiveOrder = isReverse ? sortMode.defaultOrder.reverse() : sortMode.defaultOrder;
 
-    return (effectiveOrder == SortOrder.asc ? sorted : sorted.reversed).toList();
+    final ordered = effectiveOrder == SortOrder.asc ? sorted : sorted.reversed;
+
+    return ordered.sortedBy((album) => album.isPinned ? 0 : 1);
   }
 
   List<RemoteAlbum> searchAlbums(
@@ -138,6 +140,7 @@ class RemoteAlbumService {
     String? description,
     String? thumbnailAssetId,
     bool? isActivityEnabled,
+    bool? isPinned,
     AlbumAssetOrder? order,
   }) async {
     final owner = await _repository.getOwner(albumId);
@@ -148,6 +151,7 @@ class RemoteAlbumService {
       description: description,
       thumbnailAssetId: thumbnailAssetId,
       isActivityEnabled: isActivityEnabled,
+      isPinned: isPinned,
       order: order,
     );
 

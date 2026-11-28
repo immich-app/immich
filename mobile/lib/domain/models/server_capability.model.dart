@@ -2,6 +2,7 @@ import 'package:immich_mobile/utils/semver.dart';
 
 enum ServerCapability {
   // Sync
+  syncAlbumsV3(SemVer(major: 3, minor: 3, patch: 0)),
   syncAssetFacesV3(SemVer(major: 3, minor: 3, patch: 0)),
   syncAuthUsersV2(SemVer(major: 3, minor: 3, patch: 0)),
   syncMemoriesV2(SemVer(major: 3, minor: 3, patch: 0));

@@ -145,6 +145,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     String? description,
     String? thumbnailAssetId,
     bool? isActivityEnabled,
+    bool? isPinned,
     AlbumAssetOrder? order,
   }) async {
     try {
@@ -154,6 +155,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
         description: description,
         thumbnailAssetId: thumbnailAssetId,
         isActivityEnabled: isActivityEnabled,
+        isPinned: isPinned,
         order: order,
       );
 

@@ -91,6 +91,7 @@ export const AlbumResponseSchema = z
       .optional()
       .describe('UTC representation of (local) end date (latest asset)'),
     isActivityEnabled: z.boolean().describe('Activity feed enabled'),
+    isPinned: z.boolean().describe('Is album pinned'),
     order: AssetOrderSchema.optional(),
     contributorCounts: z.array(ContributorCountResponseSchema).optional(),
   })
@@ -160,8 +161,9 @@ export class UpdateAlbumDto extends createZodDto({
     ),
   albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
   isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
+  isPinned: z.boolean().optional().describe('Is album pinned'),
   order: AssetOrderSchema.optional(),
-}) {}
+  }) {}
 
 export class GetAlbumsDto extends createZodDto({
   id: z.uuidv4().optional().describe('Album ID'),
@@ -200,6 +202,7 @@ export type MapAlbumDto = {
   updatedAt: Date;
   id: string;
   isActivityEnabled: boolean;
+  isPinned: boolean;
   order: AssetOrder;
 };
 
@@ -242,6 +245,7 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>, { auth }: { auth?
     endDate: asDateTimeString(endDate),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
+    isPinned: entity.isPinned,
     order: entity.order,
   };
 };

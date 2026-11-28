@@ -76,6 +76,7 @@ class AlbumApiRepository extends ApiRepository {
     String? description,
     String? thumbnailAssetId,
     bool? isActivityEnabled,
+    bool? isPinned,
     AlbumAssetOrder? order,
   }) async {
     AssetOrder? apiOrder;
@@ -95,6 +96,7 @@ class AlbumApiRepository extends ApiRepository {
               ? const Optional.absent()
               : Optional.present(thumbnailAssetId),
           isActivityEnabled: isActivityEnabled == null ? const Optional.absent() : Optional.present(isActivityEnabled),
+          isPinned: isPinned == null ? const Optional.absent() : Optional.present(isPinned),
           order: apiOrder == null ? const Optional.absent() : Optional.present(apiOrder),
         ),
       ),
@@ -136,6 +138,7 @@ extension on AlbumResponseDto {
       updatedAt: updatedAt,
       thumbnailAssetId: albumThumbnailAssetId,
       isActivityEnabled: isActivityEnabled,
+      isPinned: isPinned,
       order: order.orElse(null) == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: assetCount,
       isShared: albumUsers.length > 2,

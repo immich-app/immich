@@ -502,6 +502,7 @@ describe('/albums', () => {
         assetCount: 0,
         isActivityEnabled: true,
         order: AssetOrder.Desc,
+        isPinned: false,
       });
     });
 

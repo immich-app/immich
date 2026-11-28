@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/album/pending_uploads_banner.widget.dart';
@@ -16,6 +17,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -104,6 +106,29 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     await ref.read(remoteAlbumProvider.notifier).toggleAlbumOrder(_album.id);
 
     ref.invalidate(timelineServiceProvider);
+  }
+
+  Future<void> togglePinned() async {
+    try {
+      final updated = await ref.read(remoteAlbumProvider.notifier).updateAlbum(_album.id, isPinned: !_album.isPinned);
+      if (!mounted || updated == null) {
+        return;
+      }
+
+      setState(() {
+        _album = updated;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ImmichToast.show(
+        context: context,
+        msg: context.t.errors.unable_to_update_album_info,
+        toastType: ToastType.error,
+      );
+    }
   }
 
   Future<void> deleteAlbum(BuildContext context) async {
@@ -217,6 +242,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
                 onToggleAlbumOrder: () => toggleAlbumOrder(),
                 onEditAlbum: canEdit ? () => showEditTitleAndDescription(context) : null,
                 onCreateSharedLink: () => unawaited(context.pushRoute(SharedLinkEditRoute(albumId: _album.id))),
+                onTogglePinned: isOwner ? () => togglePinned() : null,
                 onShowOptions: () => context.pushRoute(AlbumOptionsRoute(album: _album)),
               ),
               onEditTitle: canEdit ? () => showEditTitleAndDescription(context) : null,
@@ -388,6 +414,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
   final VoidCallback? onToggleAlbumOrder;
   final VoidCallback? onEditAlbum;
   final VoidCallback? onCreateSharedLink;
+  final VoidCallback? onTogglePinned;
   final VoidCallback? onShowOptions;
 
   const _AlbumKebabMenu({
@@ -398,6 +425,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
     this.onToggleAlbumOrder,
     this.onEditAlbum,
     this.onCreateSharedLink,
+    this.onTogglePinned,
     this.onShowOptions,
   });
 
@@ -430,6 +458,8 @@ class _AlbumKebabMenu extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null && user.id == album.ownerId;
 
+    final canPin = ref.watch(serverInfoProvider.select((state) => state.serverVersion.supports(.syncAlbumsV3)));
+
     return RemoteAlbumOption(
       iconColor: iconColor,
       iconShadows: iconShadows,
@@ -439,6 +469,8 @@ class _AlbumKebabMenu extends ConsumerWidget {
       onToggleAlbumOrder: isOwner ? onToggleAlbumOrder : null,
       onEditAlbum: onEditAlbum,
       onCreateSharedLink: isOwner ? onCreateSharedLink : null,
+      onTogglePinned: isOwner && canPin ? onTogglePinned : null,
+      isPinned: album.isPinned,
       onShowOptions: onShowOptions,
     );
   }
