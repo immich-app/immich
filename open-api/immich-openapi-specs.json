@@ -27245,12 +27245,21 @@
       },
       "PublicConfigPasskeyDto": {
         "properties": {
+          "domain": {
+            "description": "Passkey domain",
+            "format": "uri",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "enabled": {
             "description": "Enabled",
             "type": "boolean"
           }
         },
         "required": [
+          "domain",
           "enabled"
         ],
         "type": "object"
@@ -35230,12 +35239,21 @@
       },
       "UserConfigPasskeyDto": {
         "properties": {
+          "domain": {
+            "description": "Passkey domain",
+            "format": "uri",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "enabled": {
             "description": "Enabled",
             "type": "boolean"
           }
         },
         "required": [
+          "domain",
           "enabled"
         ],
         "type": "object"
