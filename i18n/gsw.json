@@ -860,7 +860,6 @@
     "cant_change_activity": "Aktivität cha nöd {enabled, select, true {deaktiviert} other {aktiviert}} werde",
     "cant_change_asset_favorite": "Favorit-Status für d’Datei cha nöd gänderet werde",
     "cant_change_metadata_assets_count": "Metadate für {count, plural, one {# Datei} other {# Dateie}} chönnd nöd gänderet werde",
-    "cant_get_faces": "Gsichter chönnd nöd abgruefä werde",
     "cant_get_number_of_comments": "Aazahl vo de Kommentär het nöd chönne abgrüefä wärde",
     "cant_search_people": "Persone händ nöd chenne gsuecht werde",
     "cant_search_places": "Orte händ nöd chönne gsuecht werde",
