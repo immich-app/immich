@@ -36,6 +36,7 @@ import { TimelineDay } from './timeline-day.svelte';
 import { TimelineMonth } from './timeline-month.svelte';
 import type {
   AssetDescriptor,
+  AssetRangeEndpoint,
   Direction,
   MoveAsset,
   ScrubberMonth,
@@ -651,7 +652,7 @@ export class TimelineManager extends VirtualScrollManager {
     }
   }
 
-  async retrieveRange(start: AssetDescriptor, end: AssetDescriptor) {
+  async retrieveRange(start: AssetRangeEndpoint, end: AssetRangeEndpoint) {
     return retrieveRangeUtil(this, start, end);
   }
 

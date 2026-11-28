@@ -1,9 +1,10 @@
-import { getOrderingDate, plainDateTimeCompare, type TimelineYearMonth } from '#lib/utils/timeline-util.ts';
-import { AssetOrder, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
+import type { TimelineYearMonth } from '#lib/utils/timeline-util.ts';
+import type { AssetResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { SvelteSet } from 'svelte/reactivity';
 import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineMonth } from '../timeline-month.svelte';
-import type { AssetDescriptor, Direction, TimelineAsset } from '../types';
+import type { AssetDescriptor, AssetRangeEndpoint, Direction, TimelineAsset } from '../types';
 
 export async function getAssetWithOffset(
   timelineManager: TimelineManager,
@@ -114,43 +115,48 @@ async function getAssetByYearOffset(timelineManager: TimelineManager, month: Tim
   }
 }
 
-export async function retrieveRange(timelineManager: TimelineManager, start: AssetDescriptor, end: AssetDescriptor) {
-  let { asset: startAsset, timelineMonth: startTimelineMonth } =
-    findTimelineMonthForAsset(timelineManager, start.id) ?? {};
-  if (!startTimelineMonth || !startAsset) {
-    return [];
+export async function retrieveRange(
+  timelineManager: TimelineManager,
+  start: AssetRangeEndpoint,
+  end: AssetRangeEndpoint,
+) {
+  const positions = [];
+  for (const id of new SvelteSet([start.id, start.lastId ?? start.id, end.id, end.lastId ?? end.id])) {
+    const match = findTimelineMonthForAsset(timelineManager, id);
+    const timelineDay = match?.timelineMonth.findTimelineDayForAsset(match.asset);
+    if (!match || !timelineDay) {
+      return [];
+    }
+
+    const { asset, timelineMonth } = match;
+    positions.push({
+      asset,
+      timelineMonth,
+      timelineDay,
+      monthIndex: timelineManager.months.indexOf(timelineMonth),
+      dayIndex: timelineMonth.timelineDays.indexOf(timelineDay),
+      assetIndex: timelineDay.viewerAssets.findIndex((viewerAsset) => viewerAsset.id === id),
+    });
   }
-  let { asset: endAsset, timelineMonth: endTimelineMonth } = findTimelineMonthForAsset(timelineManager, end.id) ?? {};
-  if (!endTimelineMonth || !endAsset) {
+  positions.sort((a, b) => a.monthIndex - b.monthIndex || a.dayIndex - b.dayIndex || a.assetIndex - b.assetIndex);
+  const first = positions[0];
+  const last = positions.at(-1);
+  if (!last) {
     return [];
-  }
-  const assetOrder: AssetOrder = timelineManager.getAssetOrder();
-  const orderBy: AssetOrderBy = timelineManager.getOrderBy();
-  if (
-    plainDateTimeCompare(
-      assetOrder === AssetOrder.Desc,
-      getOrderingDate(startAsset, orderBy),
-      getOrderingDate(endAsset, orderBy),
-    ) < 0
-  ) {
-    [startAsset, endAsset] = [endAsset, startAsset];
-    // eslint-disable-next-line no-useless-assignment
-    [startTimelineMonth, endTimelineMonth] = [endTimelineMonth, startTimelineMonth];
   }
 
   const range: TimelineAsset[] = [];
-  const startTimelineDay = startTimelineMonth.findTimelineDayForAsset(startAsset);
   for await (const targetAsset of timelineManager.assetsIterator({
-    startTimelineMonth,
-    startTimelineDay,
-    startAsset,
+    startTimelineMonth: first.timelineMonth,
+    startTimelineDay: first.timelineDay,
+    startAsset: first.asset,
   })) {
     range.push(targetAsset);
-    if (targetAsset.id === endAsset.id) {
-      break;
+    if (targetAsset.id === last.asset.id) {
+      return range;
     }
   }
-  return range;
+  return [];
 }
 
 export function findTimelineMonthForDate(timelineManager: TimelineManager, targetYearMonth: TimelineYearMonth) {

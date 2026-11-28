@@ -1,6 +1,6 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
-import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import type { AssetRangeEndpoint, TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
 import { AssetVisibility } from '@immich/sdk';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
@@ -11,7 +11,7 @@ export class AssetMultiSelectManager {
   #selectedMap = new SvelteMap<string, TimelineAsset>();
 
   selectAll = $state(false);
-  startAsset = $state<TimelineAsset | null>(null);
+  startAsset = $state.raw<AssetRangeEndpoint | null>(null);
 
   selectedGroup = new SvelteSet<string>();
 
@@ -80,8 +80,8 @@ export class AssetMultiSelectManager {
     this.selectedGroup.delete(group);
   }
 
-  setAssetSelectionStart(asset: TimelineAsset | null) {
-    this.startAsset = asset;
+  setAssetSelectionStart(endpoint: AssetRangeEndpoint | null) {
+    this.startAsset = endpoint && { id: endpoint.id, lastId: endpoint.lastId };
   }
 
   setAssetSelectionCandidates(assets: TimelineAsset[]) {
