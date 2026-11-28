@@ -2,7 +2,7 @@ import AsyncLock from 'async-lock';
 import { load as loadYaml } from 'js-yaml';
 import { cloneDeep, get, isEmpty, isEqual, set } from 'lodash-es';
 import { AdminConfigDto, SystemConfig, configFields, defaults } from 'src/dtos/config.dto.js';
-import { DatabaseLock, SystemMetadataKey } from 'src/enum.js';
+import { ConfigSource, DatabaseLock, SystemMetadataKey } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
@@ -15,36 +15,61 @@ type RepoDeps = {
   logger: LoggingRepository;
 };
 
+type ConfigField = { sources: { source: ConfigSource; value: unknown }[] };
+
+type ResolvedConfig = { config: SystemConfig; fields: Record<string, ConfigField> };
+
 const asyncLock = new AsyncLock();
-let config: SystemConfig | null = null;
+let resolved: ResolvedConfig | null = null;
 let lastUpdated: number | null = null;
 
 export const clearConfigCache = () => {
-  config = null;
+  resolved = null;
   lastUpdated = null;
 };
 
-export const getConfig = async (repos: RepoDeps, { withCache }: { withCache: boolean }): Promise<SystemConfig> => {
-  if (!withCache || !config) {
+export const getConfig = async (repos: RepoDeps, options: { withCache: boolean }): Promise<SystemConfig> => {
+  const { config } = await getResolvedConfig(repos, options);
+  return config;
+};
+
+export const getResolvedConfig = async (
+  repos: RepoDeps,
+  { withCache }: { withCache: boolean },
+): Promise<ResolvedConfig> => {
+  if (!withCache || !resolved) {
     const timestamp = lastUpdated;
     await asyncLock.acquire(DatabaseLock[DatabaseLock.GetSystemConfig], async () => {
       if (timestamp !== lastUpdated) {
         return;
       }
 
-      config = await buildConfig(repos);
+      resolved = await buildConfig(repos);
       lastUpdated = Date.now();
     });
   }
 
-  return config!;
+  return resolved!;
 };
+
+export const isLocked = ({ sources }: ConfigField) =>
+  ![ConfigSource.Default, ConfigSource.Database].includes(sources.at(-1)!.source);
 
 export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Promise<SystemConfig> => {
   const { metadataRepo } = repos;
+  const { fields } = await getResolvedConfig(repos, { withCache: false });
   // get the difference between the new config and the default config
   const partialConfig: DeepPartial<SystemConfig> = {};
   for (const { key: property } of configFields) {
+    if (isLocked(fields[property])) {
+      const database = fields[property].sources.find(({ source }) => source === ConfigSource.Database);
+      if (database) {
+        set(partialConfig, property, database.value);
+      }
+
+      continue;
+    }
+
     const newValue = get(newConfig, property);
     const isEmpty = [undefined, null, ''].includes(newValue);
     const defaultValue = get(defaults, property);
@@ -78,16 +103,19 @@ const buildConfig = async (repos: RepoDeps) => {
   const { configFile } = configRepo.getEnv();
 
   const rawConfig = cloneDeep(defaults);
+  const fields = Object.fromEntries(
+    configFields.map(({ key }) => [key, { sources: [{ source: ConfigSource.Default, value: get(defaults, key) }] }]),
+  );
 
   const databaseConfig = await metadataRepo.get(SystemMetadataKey.SystemConfig);
-  const databaseErrors = mergeLayer(repos, rawConfig, databaseConfig, 'database');
+  const databaseErrors = mergeLayer(repos, rawConfig, fields, databaseConfig, ConfigSource.Database);
   if (databaseErrors.length > 0) {
     logger.warn(['Ignoring invalid database config: ', ...databaseErrors].join('\n'));
   }
 
   if (configFile) {
     const fileConfig = await loadFromFile(repos, configFile);
-    const fileErrors = mergeLayer(repos, rawConfig, fileConfig, 'file');
+    const fileErrors = mergeLayer(repos, rawConfig, fields, fileConfig, ConfigSource.File);
     if (fileErrors.length > 0) {
       throw new Error(['Invalid system config: ', ...fileErrors].join('\n'));
     }
@@ -124,10 +152,16 @@ const buildConfig = async (repos: RepoDeps) => {
     config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec);
   }
 
-  return config;
+  return { config, fields };
 };
 
-const mergeLayer = ({ logger }: RepoDeps, target: SystemConfig, partial: unknown, layer: string) => {
+const mergeLayer = (
+  { logger }: RepoDeps,
+  target: SystemConfig,
+  fields: Record<string, ConfigField>,
+  partial: unknown,
+  layer: ConfigSource,
+) => {
   const unknownKeys = cloneDeep(partial);
   for (const { key } of configFields) {
     unsetDeep(unknownKeys, key);
@@ -147,6 +181,7 @@ const mergeLayer = ({ logger }: RepoDeps, target: SystemConfig, partial: unknown
     const result = schema.safeParse(value);
     if (result.success) {
       set(target, key, result.data);
+      fields[key].sources.push({ source: layer, value: result.data });
     } else {
       errors.push(...formatIssues(result.error.issues, [key]));
     }
