@@ -32,6 +32,8 @@
         "vkrishna04.cspell-sync"
       ],
       "settings": {
+        // Disable recommendations as some extensions are needed only for mobile development.
+        "extensions.ignoreRecommendations": true,
         "tasks": {
           "version": "2.0.0",
           "tasks": [
