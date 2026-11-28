@@ -285,7 +285,7 @@ export const oauth = {
     const value = 'autoLaunch=1';
     return location.search.includes(value);
   },
-  authorize: (location: Location) =>
+  authorize: (location: { href: string }) =>
     executeMutation(startOAuthMutation, [{ oAuthConfigDto: { redirectUri: location.href.split('?', 1)[0] } }]),
 };
 

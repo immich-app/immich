@@ -195,6 +195,10 @@ export class OAuthBackchannelLogoutDto extends createZodDto({
   logout_token: z.string().describe('OAuth logout token'),
 }) {}
 
+export class OAuthReLinkStartDto extends createZodDto({
+  token: z.string().describe('Plaintext OAuth re-link token issued by an administrator'),
+}) {}
+
 export class AuthCodeCreateDto extends createZodDto({
   codeChallenge: z.hash('sha256', { enc: 'base64url' }).describe('PKCE code challenge (S256, base64url)'),
 }) {}

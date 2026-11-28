@@ -1,13 +1,14 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { describe } from 'vitest';
 import { mapUserAdmin } from 'src/dtos/user.dto.js';
-import { AlbumUserRole, JobName, UserStatus } from 'src/enum.js';
+import { AlbumUserRole, AuthChallengeType, JobName, UserStatus } from 'src/enum.js';
 import { Resource } from 'src/resource-paths.js';
 import { UserAdminService } from 'src/services/user-admin.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
+import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { getForAlbum } from 'test/mappers.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
@@ -220,6 +221,37 @@ describe(UserAdminService.name, () => {
         name: JobName.UserDelete,
         data: { id: userStub.user1.id, force: true },
       });
+    });
+  });
+
+  describe('createOAuthReLinkToken', () => {
+    it('should throw when OAuth is not enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.disabled);
+      await expect(sut.createOAuthReLinkToken(authStub.admin, userStub.user1.id)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(mocks.authChallenge.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw when the target user is missing', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.user.get.mockResolvedValueOnce(void 0);
+      await expect(sut.createOAuthReLinkToken(authStub.admin, 'missing')).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.authChallenge.create).not.toHaveBeenCalled();
+    });
+
+    it('should create a re-link challenge for the target user', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.authChallenge.create.mockResolvedValue({} as any);
+
+      const result = await sut.createOAuthReLinkToken(authStub.admin, userStub.user1.id);
+
+      expect(mocks.authChallenge.create).toHaveBeenCalledWith(
+        expect.objectContaining({ type: AuthChallengeType.OAuthReLink, userId: userStub.user1.id }),
+      );
+      expect(result.token).toEqual(expect.any(String));
+      expect(result.expiresAt).toBeInstanceOf(Date);
+      expect(result.expiresAt.getTime()).toBeGreaterThan(Date.now());
     });
   });
 

@@ -7,6 +7,7 @@ import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calenda
 import { SessionResponseDto } from 'src/dtos/session.dto.js';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto.js';
 import {
+  OAuthReLinkTokenResponseDto,
   UserAdminCreateDto,
   UserAdminDeleteDto,
   UserAdminResponseDto,
@@ -173,6 +174,21 @@ export class UserAdminController {
     @Body() dto: UserPreferencesUpdateDto,
   ): Promise<UserPreferencesResponseDto> {
     return this.service.updatePreferences(auth, id, dto);
+  }
+
+  @Post(':id/oauth-relink-token')
+  @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
+  @Endpoint({
+    summary: 'Issue an OAuth re-link token',
+    description:
+      'Create a single-use token that lets a user re-link their account to a new OAuth sub (e.g. when migrating IdPs). Deliver the token to the user out-of-band.',
+    history: new HistoryBuilder().added('v4'),
+  })
+  createOAuthReLinkTokenAdmin(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<OAuthReLinkTokenResponseDto> {
+    return this.service.createOAuthReLinkToken(auth, id);
   }
 
   @Post(':id/restore')

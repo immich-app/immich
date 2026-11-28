@@ -116,6 +116,11 @@ export class UserAdminDeleteDto extends createZodDto({
   force: z.boolean().optional().describe('Force delete even if user has assets'),
 }) {}
 
+export class OAuthReLinkTokenResponseDto extends createZodDto({
+  token: z.string().describe('Single-use token; deliver to the user via /auth/link?token=<token>'),
+  expiresAt: isoDatetimeToDate.describe('Token expiration'),
+}) {}
+
 const UserAdminResponseSchema = UserResponseSchema.extend({
   clusterGroupId: z
     .uuidv4()

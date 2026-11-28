@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Put,
+  Req,
+  Res,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
@@ -22,6 +34,7 @@ import {
 import { UserAdminResponseDto } from 'src/dtos/user.dto.js';
 import { ApiTag, AuthType, ImmichCookie, Permission } from 'src/enum.js';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
+import { OAuthLinkCookieInterceptor } from 'src/middleware/oauth-link-cookie.interceptor.js';
 import { AuthService, type LoginDetails } from 'src/services/auth.service.js';
 import { respondWithCookie, respondWithoutCookie } from 'src/utils/response.js';
 
@@ -37,17 +50,43 @@ export class AuthController {
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   @Authenticated({ public: true })
+  @UseInterceptors(OAuthLinkCookieInterceptor)
   async login(
+    @Req() request: Request,
     @Res({ passthrough: true }) res: Response,
     @Body() loginCredential: LoginCredentialDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const body = await this.service.login(loginCredential, loginDetails);
+    const body = await this.service.login(loginCredential, loginDetails, request.headers);
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,
       values: [
         { key: ImmichCookie.AccessToken, value: body.accessToken },
         { key: ImmichCookie.AuthType, value: AuthType.Password },
+        { key: ImmichCookie.IsAuthenticated, value: 'true' },
+      ],
+    });
+  }
+
+  @Post('register')
+  @Authenticated({ public: true })
+  @UseInterceptors(OAuthLinkCookieInterceptor)
+  @Endpoint({
+    summary: 'Register via OAuth',
+    description: 'Create a new user from a pending OAuth link token (requires OAuth auto-register to be enabled).',
+    history: new HistoryBuilder().added('v4'),
+  })
+  async register(
+    @Req() request: Request,
+    @Res({ passthrough: true }) res: Response,
+    @GetLoginDetails() loginDetails: LoginDetails,
+  ): Promise<LoginResponseDto> {
+    const body = await this.service.register(loginDetails, request.headers);
+    return respondWithCookie(res, body, {
+      isSecure: loginDetails.isSecure,
+      values: [
+        { key: ImmichCookie.AccessToken, value: body.accessToken },
+        { key: ImmichCookie.AuthType, value: AuthType.OAuth },
         { key: ImmichCookie.IsAuthenticated, value: 'true' },
       ],
     });

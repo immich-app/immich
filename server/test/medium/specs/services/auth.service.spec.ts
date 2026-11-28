@@ -73,7 +73,7 @@ describe(AuthService.name, () => {
       const { user } = await ctx.newUser({ password: passwordHashed });
       const dto = { email: user.email, password: 'wrong-password' };
 
-      await expect(sut.login(dto, mediumFactory.loginDetails())).rejects.toThrow('Incorrect email or password');
+      await expect(sut.login(dto, mediumFactory.loginDetails(), {})).rejects.toThrow('Incorrect email or password');
     });
 
     it('should accept a correct password and return a login response', async () => {
@@ -83,7 +83,7 @@ describe(AuthService.name, () => {
       const { user } = await ctx.newUser({ password: passwordHashed });
       const dto = { email: user.email, password };
 
-      await expect(sut.login(dto, mediumFactory.loginDetails())).resolves.toEqual({
+      await expect(sut.login(dto, mediumFactory.loginDetails(), {})).resolves.toEqual({
         accessToken: expect.any(String),
         isAdmin: user.isAdmin,
         isOnboarded: false,
@@ -143,7 +143,7 @@ describe(AuthService.name, () => {
       expect((response as any).password).not.toBeDefined();
 
       await expect(
-        sut.login({ email: user.email, password: dto.newPassword }, mediumFactory.loginDetails()),
+        sut.login({ email: user.email, password: dto.newPassword }, mediumFactory.loginDetails(), {}),
       ).resolves.toBeDefined();
     });
 

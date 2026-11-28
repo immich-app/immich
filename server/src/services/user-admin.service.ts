@@ -1,11 +1,13 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { SALT_ROUNDS } from 'src/constants.js';
+import { DateTime } from 'luxon';
+import { OAUTH_RELINK_TTL, SALT_ROUNDS } from 'src/constants.js';
 import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto.js';
 import { SessionResponseDto, mapSession } from 'src/dtos/session.dto.js';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto.js';
 import {
+  OAuthReLinkTokenResponseDto,
   UserAdminCreateDto,
   UserAdminDeleteDto,
   UserAdminResponseDto,
@@ -13,7 +15,7 @@ import {
   UserAdminUpdateDto,
   mapUserAdmin,
 } from 'src/dtos/user.dto.js';
-import { JobName, UserMetadataKey, UserStatus } from 'src/enum.js';
+import { AuthChallengeType, JobName, UserMetadataKey, UserStatus } from 'src/enum.js';
 import { UserFindOptions } from 'src/repositories/user.repository.js';
 import { Resource } from 'src/resource-paths.js';
 import { BaseService } from 'src/services/base.service.js';
@@ -160,6 +162,26 @@ export class UserAdminService extends BaseService {
     await this.findOrFail(id, { withDeleted: true });
     const metadata = await this.userRepository.getMetadata(id);
     return mapPreferences(getPreferences(metadata));
+  }
+
+  async createOAuthReLinkToken(auth: AuthDto, id: string): Promise<OAuthReLinkTokenResponseDto> {
+    const { oauth } = await this.getConfig({ withCache: false });
+    if (!oauth.enabled) {
+      throw new BadRequestException('OAuth is not enabled');
+    }
+
+    const user = await this.findOrFail(id, {});
+    const plainToken = this.cryptoRepository.randomBytesAsText(32);
+    const expiresAt = DateTime.now().plus(OAUTH_RELINK_TTL).toJSDate();
+    await this.authChallengeRepository.create({
+      type: AuthChallengeType.OAuthReLink,
+      challenge: this.cryptoRepository.hashSha256(plainToken).toString('base64url'),
+      userId: user.id,
+      expiresAt,
+    });
+
+    this.logger.log(`Admin ${auth.user.id} issued an OAuth re-link token for user ${user.id}`);
+    return { token: plainToken, expiresAt };
   }
 
   async updatePreferences(auth: AuthDto, id: string, dto: UserPreferencesUpdateDto) {

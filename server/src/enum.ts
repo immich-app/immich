@@ -13,6 +13,8 @@ export enum AuthChallengeType {
   PasskeyRegistration = 'PasskeyRegistration',
   PasskeyAuthentication = 'PasskeyAuthentication',
   AppLogin = 'AppLogin',
+  OAuthLink = 'OAuthLink',
+  OAuthReLink = 'OAuthReLink',
 }
 
 export enum ImmichCookie {
@@ -23,6 +25,7 @@ export enum ImmichCookie {
   SharedLinkToken = 'immich_shared_link_token',
   OAuthState = 'immich_oauth_state',
   OAuthCodeVerifier = 'immich_oauth_code_verifier',
+  OAuthLinkToken = 'immich_oauth_link_token',
 }
 
 export enum ImmichHeader {

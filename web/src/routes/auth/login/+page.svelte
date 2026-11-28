@@ -1,5 +1,7 @@
 <script lang="ts">
   import AuthPageLayout from '#lib/components/layouts/AuthPageLayout.svelte';
+  import { OpenQueryParam } from '#lib/constants.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { eventManager } from '#lib/managers/event-manager.svelte.ts';
   import { loginMutation } from '#lib/queries/auth.query.ts';
   import { MutationCancelledError, createPreloadedQuery } from '#lib/queries/client.ts';
@@ -9,9 +11,10 @@
   import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
   import { Route } from '#lib/route.ts';
   import { oauth } from '#lib/utils.ts';
+  import { getFirstLoginRoute } from '#lib/utils/auth.ts';
   import { getServerErrorMessage, handleError } from '#lib/utils/handle-error.ts';
-  import type { LoginResponseDto } from '@immich/sdk';
-  import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
+  import { isHttpError, type LoginResponseDto } from '@immich/sdk';
+  import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
   import { mdiShieldKeyOutline } from '@mdi/js';
   import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
   import { createMutation } from '@tanstack/svelte-query';
@@ -51,7 +54,19 @@
   const oauthLogin = createMutation(() => ({
     ...finishOAuthMutation(),
     onSuccess: (user) => (user.isOnboarded ? onSuccess(user) : onOnboarding()),
-    onError: (error) => {
+    onError: async (error) => {
+      if (isHttpError(error) && error.data?.message === 'oauth_account_link_required') {
+        const errorData = error.data as unknown as Record<string, string>;
+        await goto(Route.authLink({ email: errorData.userEmail }));
+        return;
+      }
+
+      if (authManager.authenticated) {
+        await goto(Route.userSettings({ isOpen: OpenQueryParam.OAUTH }));
+        toastManager.warning(getServerErrorMessage(error) || $t('errors.unable_to_link_oauth_account'));
+        return;
+      }
+
       oauthError = getServerErrorMessage(error) || $t('errors.unable_to_complete_oauth_login');
       oauthLoading = false;
     },
@@ -70,25 +85,15 @@
     eventManager.emit('AuthLogin', user);
   };
 
-  const onFirstLogin = () => goto(Route.changePassword());
   const onOnboarding = () => goto(Route.onboarding());
 
   const onLogin = async (user: LoginResponseDto) => {
-    if (user.isAdmin && !serverConfig.isOnboarded) {
-      await onOnboarding();
-      return;
-    }
-
-    // change the user password before we onboard them
-    if (!user.isAdmin && user.shouldChangePassword && publicConfig.passwordLogin.enabled) {
-      await onFirstLogin();
-      return;
-    }
-
-    // We want to onboard after the first login since their password will change
-    // and handleLogin will be called again (relogin). We then do onboarding on that next call.
-    if (!user.isOnboarded) {
-      await onOnboarding();
+    const route = getFirstLoginRoute(user, {
+      isServerOnboarded: serverConfig.isOnboarded,
+      passwordLoginEnabled: publicConfig.passwordLogin.enabled,
+    });
+    if (route) {
+      await goto(route);
       return;
     }
 
@@ -102,6 +107,20 @@
     }
 
     if (oauth.isCallback(location)) {
+      const params = new URLSearchParams(location.search);
+      if (params.has('error')) {
+        if (authManager.authenticated) {
+          const message = params.get('error_description') || $t('errors.unable_to_link_oauth_account');
+          await goto(Route.userSettings({ isOpen: OpenQueryParam.OAUTH }));
+          toastManager.warning(message);
+        } else {
+          oauthError =
+            params.get('error_description') || params.get('error') || $t('errors.unable_to_complete_oauth_login');
+          oauthLoading = false;
+        }
+        return;
+      }
+
       oauthLogin.mutate([{ oAuthCallbackDto: { url: location.href } }]);
       return;
     }

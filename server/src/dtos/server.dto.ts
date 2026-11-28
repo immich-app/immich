@@ -159,6 +159,7 @@ export class ServerFeaturesDto extends createZodDto({
   importFaces: z.boolean().describe('Whether face import is enabled'),
   oauth: z.boolean().describe('Whether OAuth is enabled'),
   oauthAutoLaunch: z.boolean().describe('Whether OAuth auto-launch is enabled'),
+  oauthAutoRegister: z.boolean().describe('Whether OAuth auto-register is enabled'),
   passwordLogin: z.boolean().describe('Whether password login is enabled'),
   sidecar: z.boolean().describe('Whether sidecar files are supported'),
   search: z.boolean().describe('Whether search is enabled'),

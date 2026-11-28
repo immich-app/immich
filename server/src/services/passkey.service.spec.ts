@@ -101,7 +101,7 @@ describe(PasskeyService.name, () => {
       passkey: { enabled: true, domain: 'https://immich.example', additionalDomains: [] },
     });
     mocks.authChallenge.create.mockResolvedValue(new InsertResult(void 0, 1n));
-    mocks.authChallenge.consume.mockResolvedValue({ id: newUuid(), userId: null });
+    mocks.authChallenge.consume.mockResolvedValue({ id: newUuid(), userId: null, data: null });
   });
 
   describe('handleCleanup', () => {
@@ -147,7 +147,7 @@ describe(PasskeyService.name, () => {
     it('should use the origin hostname when no relying party ID is configured', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ passkey: { enabled: true, domain: null, additionalDomains: [] } });
       mocks.authChallenge.create.mockResolvedValue(new InsertResult(void 0, 1n));
-      mocks.authChallenge.consume.mockResolvedValue({ id: newUuid(), userId: null });
+      mocks.authChallenge.consume.mockResolvedValue({ id: newUuid(), userId: null, data: null });
       mocks.passkey.search.mockResolvedValue([]);
       mocks.webAuthn.generateRegistrationOptions.mockResolvedValue(registrationOptions);
 
@@ -342,7 +342,7 @@ describe(PasskeyService.name, () => {
       mocks.webAuthn.verifyRegistrationResponse.mockResolvedValue(registrationResult);
       mocks.passkey.getByCredentialId.mockResolvedValue(void 0);
       mocks.passkey.create.mockResolvedValue(PasskeyFactory.create({ userId: auth.user.id }));
-      mocks.authChallenge.consume.mockResolvedValue({ id: newUuid(), userId: auth.user.id });
+      mocks.authChallenge.consume.mockResolvedValue({ id: newUuid(), userId: auth.user.id, data: null });
 
       await sut.finishRegistration(auth, { response: registrationResponse }, headers, loginDetails);
 
@@ -359,7 +359,7 @@ describe(PasskeyService.name, () => {
       mocks.webAuthn.verifyRegistrationResponse.mockResolvedValue(registrationResult);
       mocks.passkey.getByCredentialId.mockResolvedValue(void 0);
       mocks.passkey.create.mockResolvedValue(PasskeyFactory.create({ userId: auth.user.id }));
-      mocks.authChallenge.consume.mockResolvedValue({ id: newUuid(), userId: newUuid() });
+      mocks.authChallenge.consume.mockResolvedValue({ id: newUuid(), userId: newUuid(), data: null });
 
       await sut.finishRegistration(auth, { response: registrationResponse }, headers, loginDetails);
 

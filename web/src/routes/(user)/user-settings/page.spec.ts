@@ -1,4 +1,4 @@
-import { OpenQueryParam, QueryParameter } from '#lib/constants.ts';
+import { OpenQueryParam } from '#lib/constants.ts';
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import PeopleFilterModal from '#lib/modals/PeopleFilterModal.svelte';
 import { Route } from '#lib/route.ts';
@@ -194,22 +194,15 @@ test('unlinks the OAuth account', async ({ data, router, render, settle, api, ap
   await expect.element(app.auth.button('link_to_oauth')).toBeVisible();
 });
 
-test('links the OAuth account from the callback url', async ({ data, router, render, settle, api }) => {
+test('starts linking an OAuth account from the login page', async ({ data, router, render, settle, app }) => {
   data.userConfig.oauth.enabled = true;
-  const path = location.pathname;
-  history.replaceState({}, '', '?code=oauth-code&state=oauth-state');
+  await router.goto(Route.userSettings({ isOpen: OpenQueryParam.OAUTH }));
+  await render(Page, load);
 
-  try {
-    await router.goto(Route.userSettings());
-    await render(Page, load);
-    await settle();
+  await app.auth.button('link_to_oauth').click();
+  await settle();
 
-    expect(api.linkOAuthAccount).toHaveBeenCalledWith({ body: { url: location.href } });
-    expect(router.url.pathname).toBe(Route.userSettings());
-    expect(router.url.searchParams.get(QueryParameter.IS_OPEN)).toBe(OpenQueryParam.OAUTH);
-  } finally {
-    history.replaceState({}, '', path);
-  }
+  expect(router.url.pathname + router.url.search).toBe(Route.login({ autoLaunch: 1 }));
 });
 
 test('adds a partner', async ({ data, router, render, settle, api, app }) => {
@@ -728,25 +721,6 @@ test('shows the supporter badge', async ({ data, router, render, settle, api, ap
   await settle();
 
   expect(api.updateMyPreferences).toHaveBeenCalledWith({ body: { purchase: { showSupportBadge: true } } });
-});
-
-test('shows an error when linking the OAuth account fails', async ({ data, router, render, settle, api, logger }) => {
-  data.userConfig.oauth.enabled = true;
-  api.on({ linkOAuthAccount: () => ({ status: 400, json: { message: 'Bad request', statusCode: 400 } }) });
-  const path = location.pathname;
-  history.replaceState({}, '', '?code=oauth-code&state=oauth-state');
-
-  try {
-    await router.goto(Route.userSettings());
-    await render(Page, load);
-    await settle();
-
-    expect(api.linkOAuthAccount).toHaveBeenCalled();
-    expect(logger.error).toHaveBeenCalledWith(/handleError/);
-    expect(router.url.searchParams.get(QueryParameter.IS_OPEN)).toBe(OpenQueryParam.OAUTH);
-  } finally {
-    history.replaceState({}, '', path);
-  }
 });
 
 test('keeps the OAuth account linked when unlinking fails', async ({
