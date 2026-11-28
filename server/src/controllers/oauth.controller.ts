@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { Endpoint, FormBody, HistoryBuilder } from 'src/decorators.js';
 import {
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
@@ -121,6 +121,7 @@ export class OAuthController {
   @Authenticated({ public: true })
   @HttpCode(HttpStatus.OK)
   @ApiConsumes('application/x-www-form-urlencoded')
+  @FormBody()
   @Endpoint({
     summary: 'Backchannel OAuth logout',
     description:

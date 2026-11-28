@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, StreamableFile } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { Endpoint, FormBody, HistoryBuilder } from 'src/decorators.js';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { DownloadArchiveDto, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
@@ -29,6 +29,7 @@ export class DownloadController {
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
   @FileResponse()
   @HttpCode(HttpStatus.OK)
+  @FormBody()
   @Endpoint({
     summary: 'Download asset archive',
     description:

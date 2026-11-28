@@ -1,6 +1,15 @@
 import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
-import { CallHandler, ExecutionContext, SetMetadata, UseInterceptors, applyDecorators } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  SetMetadata,
+  UseInterceptors,
+  applyDecorators,
+} from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
+import { urlencoded } from 'body-parser';
 import { contentSecurityPolicy } from 'helmet';
 import { chunk, flatten } from 'lodash-es';
 import type { TransactionHandle } from 'src/database.js';
@@ -180,6 +189,21 @@ export const ContentSecurityPolicy = (directives: CspDirectives = {}) => {
     },
   });
 };
+
+const formBodyParser = urlencoded({ limit: '10mb' });
+
+export const FormBody = () =>
+  UseInterceptors({
+    intercept: async (context: ExecutionContext, next: CallHandler) => {
+      const http = context.switchToHttp();
+      await new Promise<void>((resolve, reject) =>
+        formBodyParser(http.getRequest(), http.getResponse(), (error?: Error & { status?: number }) =>
+          error ? reject(new HttpException(error.message, error.status ?? HttpStatus.BAD_REQUEST)) : resolve(),
+        ),
+      );
+      return next.handle();
+    },
+  });
 
 export const Endpoint = ({ history, ...options }: EndpointOptions) => {
   const decorators: MethodDecorator[] = [];

@@ -5,6 +5,7 @@ import { CallHandler, ExecutionContext, Provider } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
 import { Test } from '@nestjs/testing';
+import { json } from 'body-parser';
 import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
 import multer, { memoryStorage } from 'multer';
@@ -147,9 +148,11 @@ export const controllerSetup = async (controller: ControllerClass | ControllerCl
     .useValue(noopInterceptor)
     .compile();
   const app = moduleRef.createNestApplication({
+    bodyParser: false,
     routeConflictPolicy: { duplicate: 'error' },
     routeResolutionStrategy: 'specificity',
   });
+  app.use(json());
   await app.init();
 
   // allow the AuthController to override the AuthService itself
