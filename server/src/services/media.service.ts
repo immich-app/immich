@@ -286,7 +286,7 @@ export class MediaService extends BaseService {
         !mimeTypes.isWebSupportedImage(asset.originalPath)) ||
       useEdits;
     const isConvertFullsize =
-      isGenerateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
+      isGenerateFullsize && (useEdits || !extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
     const thumbSource = extracted ? extracted.buffer : asset.originalPath;
     const { data, info, colorspace } = await this.decodeImage(

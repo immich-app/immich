@@ -1572,6 +1572,37 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should decode at full resolution and convert edited fullsize for raw assets with embedded preview', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'photo.dng' })
+        .exif({ exifImageWidth: 4032, exifImageHeight: 3024, orientation: '6' })
+        .edit({ action: AssetEditAction.Crop, parameters: { x: 0, y: 823, width: 3024, height: 2230 } })
+        .build();
+
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 4032, height: 3024, isTransparent: false });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.person.getFaces.mockResolvedValue([]);
+      mocks.ocr.getByAssetId.mockResolvedValue([]);
+
+      await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
+        colorspace: Colorspace.Srgb,
+        orientation: 6,
+        processInvalidImages: false,
+        size: undefined,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ type: AssetFileType.FullSize, isEdited: true }),
+          expect.objectContaining({ type: AssetFileType.Preview, isEdited: true }),
+          expect.objectContaining({ type: AssetFileType.Thumbnail, isEdited: true }),
+        ]),
+      );
+    });
+
     it('should apply edits when generating thumbnails', async () => {
       const asset = AssetFactory.from()
         .exif()
