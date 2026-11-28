@@ -162,7 +162,7 @@ async function main() {
 
   if (immichApp === 'immich-admin') {
     process.title = 'immich_admin_cli';
-    process.env.IMMICH_LOG_LEVEL = LogLevel.Warn;
+    process.env.IMMICH_CONFIG_LOGGING_LEVEL = LogLevel.Warn;
 
     // imported lazily, so that the supervisor process does not build the whole application
     // graph on every start.

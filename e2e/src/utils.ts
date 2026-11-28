@@ -653,8 +653,13 @@ export const utils = {
   },
 
   resetAdminConfig: async (accessToken: string) => {
-    const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(accessToken) });
-    await updateConfig({ adminConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
+    const headers = asBearerAuth(accessToken);
+    const [defaults, { machineLearning }] = await Promise.all([getConfigDefaults({ headers }), getConfig({ headers })]);
+    const adminConfigDto = {
+      ...defaults,
+      machineLearning: { ...defaults.machineLearning, enabled: machineLearning.enabled },
+    };
+    await updateConfig({ adminConfigDto }, { headers });
   },
 
   isQueueEmpty: async (accessToken: string, queue: keyof QueuesResponseLegacyDto) => {

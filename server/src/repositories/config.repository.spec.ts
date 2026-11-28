@@ -20,6 +20,13 @@ const resetEnv = () => {
     'IMMICH_MICROSERVICES_METRICS_PORT',
     'IMMICH_TELEMETRY_INCLUDE',
     'IMMICH_TELEMETRY_EXCLUDE',
+    'IMMICH_CONFIG_FILE',
+    'IMMICH_CONFIG_FFMPEG_CRF',
+    'IMMICH_CONFIG_LOGGING_ENABLED',
+    'IMMICH_CONFIG_LOGGING_LEVEL',
+    'IMMICH_LOG_LEVEL',
+    'IMMICH_MACHINE_LEARNING_ENABLED',
+    'IMMICH_MACHINE_LEARNING_URL',
 
     'DB_URL',
     'DB_HOSTNAME',
@@ -81,6 +88,84 @@ describe('getEnv', () => {
 
     expect(config.plugins.external).toEqual({ allow: false });
     expect(config.setup).toEqual({ allow: true });
+  });
+
+  describe('configOverrides', () => {
+    it('collects IMMICH_CONFIG_ variables', () => {
+      process.env.IMMICH_CONFIG_FFMPEG_CRF = '30';
+
+      const { configOverrides } = getEnv();
+
+      expect(configOverrides).toEqual({ IMMICH_CONFIG_FFMPEG_CRF: '30' });
+    });
+
+    it('drops an empty value', () => {
+      process.env.IMMICH_CONFIG_FFMPEG_CRF = '';
+
+      const { configOverrides } = getEnv();
+
+      expect(configOverrides).toEqual({});
+    });
+
+    it('does not treat IMMICH_CONFIG_FILE as an override', () => {
+      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+
+      const { configOverrides } = getEnv();
+
+      expect(configOverrides).toEqual({});
+    });
+
+    it.each([
+      {
+        name: 'IMMICH_MACHINE_LEARNING_ENABLED',
+        replacement: 'IMMICH_CONFIG_MACHINE_LEARNING_ENABLED',
+        value: 'false',
+      },
+      {
+        name: 'IMMICH_MACHINE_LEARNING_URL',
+        replacement: 'IMMICH_CONFIG_MACHINE_LEARNING_URLS',
+        value: 'http://ml:3003',
+      },
+    ])('maps $name to $replacement', ({ name, replacement, value }) => {
+      process.env[name] = value;
+
+      const { configOverrides, deprecatedConfigVariables } = getEnv();
+
+      expect(configOverrides).toEqual({ [replacement]: value });
+      expect(deprecatedConfigVariables).toEqual([{ name, replacement }]);
+    });
+
+    it('maps IMMICH_LOG_LEVEL to IMMICH_CONFIG_LOGGING_LEVEL and enables logging', () => {
+      process.env.IMMICH_LOG_LEVEL = 'debug';
+
+      const { configOverrides, deprecatedConfigVariables, logLevel } = getEnv();
+
+      expect(configOverrides).toEqual({ IMMICH_CONFIG_LOGGING_LEVEL: 'debug', IMMICH_CONFIG_LOGGING_ENABLED: 'true' });
+      expect(deprecatedConfigVariables).toEqual([
+        { name: 'IMMICH_LOG_LEVEL', replacement: 'IMMICH_CONFIG_LOGGING_LEVEL' },
+      ]);
+      expect(logLevel).toBe('debug');
+    });
+
+    it('prefers the new name over a deprecated alias', () => {
+      process.env.IMMICH_LOG_LEVEL = 'debug';
+      process.env.IMMICH_CONFIG_LOGGING_LEVEL = 'verbose';
+      process.env.IMMICH_CONFIG_LOGGING_ENABLED = 'false';
+
+      const { configOverrides, logLevel } = getEnv();
+
+      expect(configOverrides).toEqual({
+        IMMICH_CONFIG_LOGGING_LEVEL: 'verbose',
+        IMMICH_CONFIG_LOGGING_ENABLED: 'false',
+      });
+      expect(logLevel).toBe('verbose');
+    });
+
+    it('does not report unused deprecated variables', () => {
+      const { deprecatedConfigVariables } = getEnv();
+
+      expect(deprecatedConfigVariables).toEqual([]);
+    });
   });
 
   describe('IMMICH_MEDIA_LOCATION', () => {

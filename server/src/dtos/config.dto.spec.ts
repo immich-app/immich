@@ -1,4 +1,5 @@
 import z from 'zod';
+import { CONFIG_SECRET_KEYS } from 'src/constants.js';
 import {
   AdminConfigDto,
   PublicConfigDto,
@@ -26,6 +27,12 @@ const PUBLIC_PROPERTIES = [
 describe('configFields', () => {
   it('should list every property with a default', () => {
     expect(configFields.map(({ key }) => key).sort()).toEqual(getKeysDeep(defaults).sort());
+  });
+
+  it('should list every secret property as a secret', () => {
+    const secrets = configFields.map(({ key }) => key).filter((key) => /(secret|password)$/i.test(key));
+
+    expect(secrets.filter((key) => !CONFIG_SECRET_KEYS.has(key))).toEqual([]);
   });
 });
 

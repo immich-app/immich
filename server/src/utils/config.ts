@@ -1,6 +1,8 @@
 import AsyncLock from 'async-lock';
 import { load as loadYaml } from 'js-yaml';
-import { cloneDeep, get, isEmpty, isEqual, set } from 'lodash-es';
+import { cloneDeep, get, isEmpty, isEqual, set, snakeCase } from 'lodash-es';
+import z from 'zod';
+import { CONFIG_ENV_PREFIX, CONFIG_ERROR_VALUE_MAX_LENGTH, CONFIG_SECRET_KEYS } from 'src/constants.js';
 import { AdminConfigDto, SystemConfig, configFields, defaults } from 'src/dtos/config.dto.js';
 import { ConfigSource, DatabaseLock, SystemMetadataKey } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -100,7 +102,7 @@ const loadFromFile = async ({ metadataRepo, logger }: RepoDeps, filepath: string
 
 const buildConfig = async (repos: RepoDeps) => {
   const { configRepo, metadataRepo, logger } = repos;
-  const { configFile } = configRepo.getEnv();
+  const { configFile, configOverrides } = configRepo.getEnv();
 
   const rawConfig = cloneDeep(defaults);
   const fields = Object.fromEntries(
@@ -110,20 +112,30 @@ const buildConfig = async (repos: RepoDeps) => {
   const databaseConfig = await metadataRepo.get(SystemMetadataKey.SystemConfig);
   const databaseErrors = mergeLayer(repos, rawConfig, fields, databaseConfig, ConfigSource.Database);
   if (databaseErrors.length > 0) {
-    logger.warn(['Ignoring invalid database config: ', ...databaseErrors].join('\n'));
+    logger.warn(['Ignoring invalid database config:', ...databaseErrors].join('\n'));
   }
 
   if (configFile) {
     const fileConfig = await loadFromFile(repos, configFile);
     const fileErrors = mergeLayer(repos, rawConfig, fields, fileConfig, ConfigSource.File);
     if (fileErrors.length > 0) {
-      throw new Error(['Invalid system config: ', ...fileErrors].join('\n'));
+      throw new Error([`Invalid config file ${configFile}:`, ...fileErrors].join('\n'));
     }
   }
 
+  const { envConfig, envErrors } = decodeEnv(repos, configOverrides);
+  if (envErrors.length > 0) {
+    throw new Error(['Invalid config environment variables:', ...envErrors].join('\n'));
+  }
+
+  mergeLayer(repos, rawConfig, fields, envConfig, ConfigSource.Env);
+
   const result = AdminConfigDto.schema.safeParse(rawConfig);
   if (!result.success) {
-    const messages = ['Invalid system config: ', ...formatIssues(result.error.issues)];
+    const messages = [
+      'Invalid config:',
+      ...result.error.issues.map(({ path, message }) => `  ${path.join('.')}: ${message}`),
+    ];
     if (configFile) {
       throw new Error(messages.join('\n'));
     }
@@ -183,12 +195,79 @@ const mergeLayer = (
       set(target, key, result.data);
       fields[key].sources.push({ source: layer, value: result.data });
     } else {
-      errors.push(...formatIssues(result.error.issues, [key]));
+      errors.push(formatError({ name: key, key, value: JSON.stringify(value), issues: result.error.issues }));
     }
   }
 
   return errors;
 };
 
-const formatIssues = (issues: { path: PropertyKey[]; message: string }[], prefix: PropertyKey[] = []) =>
-  issues.map(({ path, message }) => `  - [${[...prefix, ...path].join('.')}] ${message}`);
+const decodeEnv = ({ logger }: RepoDeps, configOverrides: Record<string, string>) => {
+  const envConfig = {};
+  const envErrors: string[] = [];
+  const unknownVariables = new Set(Object.keys(configOverrides));
+
+  for (const { key, schema } of configFields) {
+    const variable = `${CONFIG_ENV_PREFIX}${snakeCase(key).toUpperCase()}`;
+    const value = configOverrides[variable];
+    unknownVariables.delete(variable);
+    if (value === undefined) {
+      continue;
+    }
+
+    const candidates = getEnvCandidates(value);
+    const candidate = candidates.find((candidate) => schema.safeParse(candidate).success);
+    if (candidate === undefined) {
+      envErrors.push(formatError({ name: variable, key, value, issues: getEnvIssues(schema, candidates) }));
+      continue;
+    }
+
+    set(envConfig, key, candidate);
+  }
+
+  for (const variable of unknownVariables) {
+    logger.warn(`Unknown configuration environment variable: ${variable}`);
+  }
+
+  return { envConfig, envErrors };
+};
+
+const getEnvCandidates = (value: string): unknown[] => [
+  value,
+  ...parseJson(value),
+  value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean),
+];
+
+const parseJson = (value: string) => {
+  try {
+    return [JSON.parse(value)];
+  } catch {
+    return [];
+  }
+};
+
+const getEnvIssues = (schema: z.ZodType, candidates: unknown[]) => {
+  const attempts = candidates.map((candidate) => schema.safeParse(candidate).error!.issues);
+  return (
+    attempts.find((issues) => issues.every(({ path, code }) => path.length > 0 || code !== 'invalid_type')) ??
+    attempts[0]
+  );
+};
+
+const formatError = (problem: { name: string; key: string; value: string; issues: z.core.$ZodIssue[] }) => {
+  const reasons = problem.issues.map(({ path, message }) =>
+    path.length > 0 ? `[${path.join('.')}] ${message}` : message,
+  );
+  return `  ${problem.name}=${formatValue(problem.key, problem.value)}: ${reasons.join('; ')}`;
+};
+
+const formatValue = (key: string, value: string) => {
+  if (CONFIG_SECRET_KEYS.has(key)) {
+    return '****';
+  }
+
+  return value.length > CONFIG_ERROR_VALUE_MAX_LENGTH ? `${value.slice(0, CONFIG_ERROR_VALUE_MAX_LENGTH)}…` : value;
+};

@@ -8,6 +8,7 @@ import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.
 import { Resource } from 'src/resource-paths.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
 import { systemConfigStub } from 'test/fixtures/system-config.stub.js';
+import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { mockAdmins } from 'test/repositories/user.repository.mock.js';
 import {
   AutoMocked,
@@ -189,7 +190,8 @@ describe(DatabaseBackupService.name, () => {
       // create a service instance with a URL connection that includes libpqcompat
       const dbUrl = 'postgresql://postgres:pwd@host:5432/immich?sslmode=require&uselibpqcompat=true';
       const configMock = {
-        getEnv: () => ({ database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false } }),
+        getEnv: () =>
+          mockEnvData({ database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false } }),
         getWorker: () => ImmichWorker.Api,
         isDev: () => false,
       } as unknown as any;
