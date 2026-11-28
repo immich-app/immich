@@ -49,6 +49,7 @@ fn bands(image: &Image, first: i32, count: i32) -> Result<Image> {
 }
 
 /// Linear light with 1.0 at reference white.
+#[derive(Clone)]
 pub struct Linear {
     image: Image,
     primaries: ColorProfile,
@@ -137,6 +138,18 @@ impl Linear {
         Ok(Some(Self { image, primaries }))
     }
 
+    pub fn image(&self) -> &Image {
+        &self.image
+    }
+
+    /// The same light after `change`, which must not touch the pixels' values.
+    pub fn map(&self, change: impl FnOnce(&Image) -> Result<Image>) -> Result<Self> {
+        Ok(Self {
+            image: change(&self.image)?,
+            primaries: self.primaries.clone(),
+        })
+    }
+
     pub fn resize(&self, scale: f64) -> Result<Self> {
         let image = if self.image.hasalpha() {
             self.image.premultiply()?.resize(scale)?.unpremultiply()?
@@ -203,16 +216,6 @@ impl Colour {
                 let sdr = linear.to(&profile.colorimetry())?;
                 tag(&sdr.colourspace(Interpretation::Rgb16)?, profile)
             }
-        }
-    }
-
-    pub fn decode(self, image: &Image) -> Result<Linear> {
-        match self {
-            Self::Pq => Linear::new(image),
-            Self::Sdr(profile) => Ok(Linear {
-                image: image.colourspace(Interpretation::Scrgb)?,
-                primaries: profile.colorimetry(),
-            }),
         }
     }
 }

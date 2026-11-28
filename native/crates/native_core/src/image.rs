@@ -88,7 +88,8 @@ impl Transform {
 
 #[derive(Clone)]
 pub struct Bitmap {
-    image: Image,
+    /// Encoding clips what resizing takes below black or above white, so it waits for the output.
+    linear: Linear,
     colour: Colour,
     profile: Profile,
 }
@@ -101,42 +102,42 @@ impl Bitmap {
         if let Some(scale) = Fit::Outside.scale(&image, options.size) {
             linear = linear.resize(scale)?;
         }
-        let mut image = colour.encode(&linear)?;
-        if let Some(orientation) = options.orientation {
-            image = image.copy()?;
-            image.set_int("orientation", orientation)?;
-        }
-        let image = image.autorot()?;
+        let linear = linear.map(|image| {
+            let mut image = image.clone();
+            if let Some(orientation) = options.orientation {
+                image = image.copy()?;
+                image.set_int("orientation", orientation)?;
+            }
+            Ok(image.autorot()?)
+        })?;
         // Reading a pixel decodes the file, so the decoder's memory is released before the
         // copy is allocated.
-        image.getpoint(0, 0)?;
+        linear.image().getpoint(0, 0)?;
         Ok(Self {
-            image: image.copy_memory()?,
+            linear: linear.map(|image| Ok(image.copy_memory()?))?,
             colour,
             profile: options.profile,
         })
     }
 
     pub fn width(&self) -> u32 {
-        self.image.get_width() as u32
+        self.linear.image().get_width() as u32
     }
 
     pub fn height(&self) -> u32 {
-        self.image.get_height() as u32
+        self.linear.image().get_height() as u32
     }
 
     pub fn has_alpha(&self) -> bool {
-        self.image.hasalpha()
+        self.linear.image().hasalpha()
     }
 
     fn output(&self, transform: &Transform, hdr: bool) -> Result<Image> {
-        let mut image = transform.arrange(&self.image)?;
-        // In linear light, since averaging encoded values darkens the result.
-        if let Some(scale) = transform.fit.scale(&image, transform.size) {
-            image = self
-                .colour
-                .encode(&self.colour.decode(&image)?.resize(scale)?)?;
+        let mut linear = self.linear.map(|image| transform.arrange(image))?;
+        if let Some(scale) = transform.fit.scale(linear.image(), transform.size) {
+            linear = linear.resize(scale)?;
         }
+        let mut image = self.colour.encode(&linear)?;
         if self.colour == Colour::Pq {
             if hdr {
                 return Ok(image);

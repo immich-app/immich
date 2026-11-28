@@ -5,7 +5,7 @@ use native_core::image::{Bitmap, Crop, Decode, Fit, Step, Transform};
 use native_core::io::{Effort, Encode, Format, Source};
 use native_core::vips;
 use rs_vips::VipsImage as Image;
-use rs_vips::enums::BandFormat;
+use rs_vips::enums::{BandFormat, Interpretation};
 
 const RED: [u8; 3] = [255, 0, 0];
 const GREEN: [u8; 3] = [0, 255, 0];
@@ -172,6 +172,59 @@ fn sizes_by_the_fit() {
     let (pixels, ..) = decoded.rgba(&transform()).unwrap();
     assert_eq!(pixels[..3], RED);
     assert!(pixels[3].abs_diff(128) <= 1);
+}
+
+#[test]
+fn clips_once_when_resizing_twice() {
+    vips::init().unwrap();
+    // Resizing rings below black beside a thin line, and only the output may clip it.
+    let (width, height) = (240, 160);
+    let line: Vec<u8> = (0..width * height)
+        .flat_map(|i| {
+            if i % width == width / 2 {
+                [255; 3]
+            } else {
+                [0; 3]
+            }
+        })
+        .collect();
+    let png = Image::new_from_memory_copy(&line, width, height, 3, BandFormat::Uchar)
+        .unwrap()
+        .write_to_buffer(".png")
+        .unwrap();
+    let options = Decode {
+        size: Some(120),
+        ..options(Profile::Srgb)
+    };
+    let fit = Transform {
+        size: Some(100),
+        fit: Fit::Inside,
+        ..transform()
+    };
+    let (pixels, ..) = Bitmap::decode(Source::Buffer(&png), &options)
+        .unwrap()
+        .rgba(&fit)
+        .unwrap();
+
+    let linear = Image::new_from_buffer(&png, "")
+        .unwrap()
+        .colourspace(Interpretation::Scrgb)
+        .unwrap()
+        .resize(0.75)
+        .unwrap();
+    let expected = linear
+        .resize(100.0 / f64::from(linear.get_width()))
+        .unwrap()
+        .colourspace(Interpretation::Srgb)
+        .unwrap()
+        .write_to_memory();
+    let worst = pixels
+        .chunks(4)
+        .zip(expected.chunks(3))
+        .flat_map(|(actual, expected)| actual.iter().zip(expected))
+        .map(|(actual, expected)| actual.abs_diff(*expected))
+        .max();
+    assert!(worst <= Some(1), "{worst:?}");
 }
 
 #[test]
