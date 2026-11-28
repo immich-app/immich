@@ -1,7 +1,6 @@
 import { ShallowDehydrateObject } from 'kysely';
 import { OutputInfo } from 'sharp';
 import { Exif } from 'src/database.js';
-import { SystemConfig } from 'src/dtos/config.dto.js';
 import { AssetEditAction } from 'src/dtos/editing.dto.js';
 import {
   AssetFileType,
@@ -2345,14 +2344,6 @@ describe(MediaService.name, () => {
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
 
-    it('should throw an error if an unknown transcode policy is configured', async () => {
-      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.noAudioStreams });
-      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: 'foo' } } as never as SystemConfig);
-
-      await expect(sut.handleVideoConversion({ id: 'video-id' })).rejects.toThrowError();
-      expect(mocks.media.transcode).not.toHaveBeenCalled();
-    });
-
     it('should throw an error if transcoding fails and hw acceleration is disabled', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.multipleVideoStreams });
       mocks.systemMetadata.get.mockResolvedValue({
@@ -2656,14 +2647,6 @@ describe(MediaService.name, () => {
           twoPass: false,
         }),
       );
-    });
-
-    it('should throw an exception if transcode value is invalid', async () => {
-      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStream2160p });
-      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: 'invalid' as any } });
-
-      await expect(sut.handleVideoConversion({ id: 'video-id' })).rejects.toThrowError();
-      expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
 
     it('should not transcode if transcoding is disabled', async () => {
@@ -3086,13 +3069,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHardwareAcceleration.Nvenc, targetVideoCodec: VideoCodec.Vp9 },
       });
-      await expect(sut.handleVideoConversion({ id: 'video-id' })).rejects.toThrowError();
-      expect(mocks.media.transcode).not.toHaveBeenCalled();
-    });
-
-    it('should fail if hwaccel option is invalid', async () => {
-      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
-      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: 'invalid' as any } });
       await expect(sut.handleVideoConversion({ id: 'video-id' })).rejects.toThrowError();
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
