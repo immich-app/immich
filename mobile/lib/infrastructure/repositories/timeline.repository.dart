@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/data/db/main/query/merged_asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/local/asset.dart';
+import 'package:immich_mobile/data/db/main/table/local/asset.drift.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.dart';
 import 'package:immich_mobile/data/db/main/table/remote/asset.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/map.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -33,26 +36,63 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
         .map((users) => users..add(userId));
   }
 
-  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
-    assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
-    origin: TimelineOrigin.main,
-  );
+  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy) =>
+      _merged(userIds, groupBy, localFilter: _isInBackupSelection);
 
-  Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+  TimelineQuery mainWithAllLocalAssets(List<String> userIds, GroupAssetsBy groupBy) =>
+      _merged(userIds, groupBy, localFilter: (_) => const Constant(true));
+
+  TimelineQuery _merged(List<String> userIds, GroupAssetsBy groupBy, {required MergedAsset$localFilter localFilter}) =>
+      (
+        bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy, localFilter: localFilter),
+        assetSource: (offset, count) =>
+            _getMainBucketAssets(userIds, offset: offset, count: count, localFilter: localFilter),
+        origin: .main,
+      );
+
+  Expression<bool> _isInBackupSelection($LocalAssetEntityTable lae) =>
+      existsQuery(_albumMembership(lae, BackupSelection.selected)) &
+      notExistsQuery(_albumMembership(lae, BackupSelection.excluded));
+
+  JoinedSelectStatement _albumMembership($LocalAssetEntityTable lae, BackupSelection selection) =>
+      _db.localAlbumAssetEntity.selectOnly().join([
+          innerJoin(
+            _db.localAlbumEntity,
+            _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
+            useColumns: false,
+          ),
+        ])
+        ..addColumns([_db.localAlbumAssetEntity.assetId])
+        ..where(
+          _db.localAlbumAssetEntity.assetId.equalsExp(lae.id) &
+              _db.localAlbumEntity.backupSelection.equalsValue(selection),
+        );
+
+  Stream<List<Bucket>> _watchMainBucket(
+    List<String> userIds, {
+    required MergedAsset$localFilter localFilter,
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
     if (groupBy == GroupAssetsBy.none || groupBy == GroupAssetsBy.auto) {
       throw UnsupportedError("$groupBy is not supported for watchMainBucket");
     }
 
-    return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
+    return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index, localFilter: localFilter).map((
+      row,
+    ) {
       final date = row.bucketDate!.truncateDate(groupBy);
       return TimeBucket(date: date, assetCount: row.assetCount);
     }).watch();
   }
 
-  Future<List<BaseAsset>> _getMainBucketAssets(List<String> userIds, {required int offset, required int count}) {
+  Future<List<BaseAsset>> _getMainBucketAssets(
+    List<String> userIds, {
+    required int offset,
+    required int count,
+    required MergedAsset$localFilter localFilter,
+  }) {
     return _db.mergedAssetDrift
-        .mergedAsset(userIds: userIds, limit: (_) => Limit(count, offset))
+        .mergedAsset(userIds: userIds, localFilter: localFilter, limit: (_) => Limit(count, offset))
         .map(
           (row) => row.remoteId != null && row.ownerId != null
               ? RemoteAsset(

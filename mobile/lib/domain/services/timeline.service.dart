@@ -52,6 +52,9 @@ class TimelineFactory {
 
   TimelineService main(List<String> timelineUsers) => TimelineService(_timelineRepository.main(timelineUsers, groupBy));
 
+  TimelineService mainWithAllLocalAssets(List<String> timelineUsers) =>
+      TimelineService(_timelineRepository.mainWithAllLocalAssets(timelineUsers, groupBy));
+
   TimelineService localAlbum({required String albumId}) =>
       TimelineService(_timelineRepository.localAlbum(albumId, groupBy));
 
