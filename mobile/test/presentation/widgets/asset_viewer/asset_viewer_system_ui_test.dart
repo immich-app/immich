@@ -69,7 +69,7 @@ void main() {
               localizationsDelegates: context.localizationDelegates,
               supportedLocales: context.supportedLocales,
               locale: context.locale,
-              home: const Material(child: AssetViewer(initialIndex: 0)),
+              home: const Material(child: AssetViewer()),
             ),
           ),
         ),

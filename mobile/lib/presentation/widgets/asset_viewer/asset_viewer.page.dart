@@ -22,24 +22,18 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_b
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 @RoutePage()
 class AssetViewerPage extends StatelessWidget {
-  final int initialIndex;
   final TimelineService timelineService;
   final int? heroOffset;
   final RemoteAlbum? currentAlbum;
 
-  const AssetViewerPage({
-    super.key,
-    required this.initialIndex,
-    required this.timelineService,
-    this.heroOffset,
-    this.currentAlbum,
-  });
+  const AssetViewerPage({super.key, required this.timelineService, this.heroOffset, this.currentAlbum});
 
   @override
   Widget build(BuildContext context) {
@@ -50,26 +44,28 @@ class AssetViewerPage extends StatelessWidget {
         timelineServiceProvider.overrideWithValue(timelineService),
         currentRemoteAlbumScopedProvider.overrideWithValue(currentAlbum),
       ],
-      child: AssetViewer(initialIndex: initialIndex, heroOffset: heroOffset),
+      child: AssetViewer(heroOffset: heroOffset),
     );
   }
 }
 
 class AssetViewer extends ConsumerStatefulWidget {
-  final int initialIndex;
   final int? heroOffset;
 
-  const AssetViewer({super.key, required this.initialIndex, this.heroOffset});
+  const AssetViewer({super.key, this.heroOffset});
+
+  static const scrubSettleDelay = Durations.short3;
 
   @override
   ConsumerState createState() => _AssetViewerState();
 
   /// Sets the asset and thumbnail size before opening the viewer.
-  static void setAsset(WidgetRef ref, BaseAsset asset, {Size? thumbnailSize}) {
+  static void setAsset(WidgetRef ref, BaseAsset asset, {required int initialIndex, Size? thumbnailSize}) {
     ref.read(assetViewerProvider.notifier).reset();
+    ref.read(assetViewerProvider.notifier).setCurrentIndex(initialIndex);
 
-    // Hide controls by default for videos
-    if (asset.isVideo) {
+    final hidesVideoControlsUpFront = !ref.read(appConfigProvider).viewer.filmstripEnabled;
+    if (asset.isVideo && hidesVideoControlsUpFront) {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
 
@@ -85,26 +81,55 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   );
 
   late final _heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
-  late final _pageController = PageController(initialPage: widget.initialIndex);
+  late final _initialIndex = ref.read(assetViewerProvider).currentIndex;
+  late final _pageController = PageController(initialPage: _initialIndex);
   late final _preloader = AssetPreloader(timelineService: ref.read(timelineServiceProvider), mounted: () => mounted);
 
-  late int _currentPage = widget.initialIndex;
+  late int _currentPage = _initialIndex;
   late int _totalAssets = ref.read(timelineServiceProvider).totalAssets;
 
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
+  Timer? _settleTimer;
+  late final _swipePage = ref.read(viewerSwipePageProvider);
+  bool _isSwiping = false;
+
+  void _setCurrentPage(int page) {
+    _currentPage = page;
+    ref.read(assetViewerProvider.notifier).setCurrentIndex(page);
+  }
+
+  bool _showPage(int index) {
+    if (index < 0 || index >= _totalAssets) {
+      return false;
+    }
+    _setCurrentPage(index);
+    _pageController.jumpToPage(index);
+    return true;
+  }
+
+  void _navigateTo(int index) {
+    if (_showPage(index)) {
+      unawaited(_onAssetChanged(index));
+    }
+  }
+
+  void _scrubTo(int index) {
+    if (!_showPage(index)) {
+      return;
+    }
+    ref.read(assetViewerProvider.notifier).setScrubbing(true);
+    unawaited(_showAsset(index));
+    _settleTimer?.cancel();
+    _settleTimer = Timer(AssetViewer.scrubSettleDelay, () => unawaited(_onAssetChanged(index)));
+  }
 
   void _onTapNavigate(int direction) {
     final page = _pageController.page?.toInt();
     if (page == null) {
       return;
     }
-    final target = page + direction;
-    final maxPage = _totalAssets - 1;
-    if (target >= 0 && target <= maxPage) {
-      _pageController.jumpToPage(target);
-      unawaited(_onAssetChanged(target));
-    }
+    _navigateTo(page + direction);
   }
 
   @override
@@ -127,6 +152,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   @override
   void dispose() {
+    _settleTimer?.cancel();
+    if (_isSwiping) {
+      _swipePage.value = null;
+    }
     _pageController.dispose();
     _preloader.dispose();
     unawaited(_reloadSubscription?.cancel());
@@ -146,24 +175,30 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   // the page to be dragged more than half way whilst keeping the current video
   // playing, and preventing the video on the next page from becoming ready
   // unnecessarily.
-  bool _onScrollEnd(ScrollEndNotification notification) {
+  bool _onPageScroll(ScrollNotification notification) {
     if (notification.depth != 0) {
       return false;
     }
 
-    final page = _pageController.page?.round();
-    if (page != null && page != _currentPage) {
-      unawaited(_onAssetChanged(page));
+    switch (notification) {
+      case ScrollStartNotification(:final dragDetails) when dragDetails != null:
+        _isSwiping = true;
+      case ScrollUpdateNotification() when _isSwiping:
+        _swipePage.value = _pageController.page;
+      case ScrollEndNotification():
+        final page = _pageController.page?.round();
+        if (page != null && page != _currentPage) {
+          unawaited(_onAssetChanged(page));
+        }
+        _isSwiping = false;
+        _swipePage.value = null;
+      default:
     }
     return false;
   }
 
   void _onAssetInit(Duration timeStamp) {
-    _preloader.preload(
-      widget.initialIndex,
-      context.sizeData,
-      thumbnailSize: ref.read(assetViewerProvider).thumbnailSize,
-    );
+    _preloader.preload(_initialIndex, context.sizeData, thumbnailSize: ref.read(assetViewerProvider).thumbnailSize);
     _handleCasting();
   }
 
@@ -174,21 +209,32 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  Future<void> _onAssetChanged(int index) async {
-    _currentPage = index;
-
+  Future<BaseAsset?> _showAsset(int index) async {
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
-    if (asset == null) {
-      return;
+    if (asset == null || index != _currentPage) {
+      return null;
     }
 
     // The viewer is closing; don't flip the current asset now. Flipping it swaps
     // the grid tile hero keys mid pop and animates the close on two tiles (#23779).
     if (!mounted || !(ModalRoute.of(context)?.isActive ?? true)) {
-      return;
+      return null;
     }
 
     ref.read(assetViewerProvider.notifier).setAsset(asset);
+    return asset;
+  }
+
+  Future<void> _onAssetChanged(int index) async {
+    _settleTimer?.cancel();
+    ref.read(assetViewerProvider.notifier).setScrubbing(false);
+    _setCurrentPage(index);
+
+    final asset = await _showAsset(index);
+    if (asset == null || !mounted) {
+      return;
+    }
+
     _preloader.preload(index, context.sizeData, thumbnailSize: ref.read(assetViewerProvider).thumbnailSize);
     _handleCasting();
     _stackChildrenKeepAlive?.close();
@@ -292,6 +338,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       unawaited(_setSystemUIMode(controls, details));
     });
 
+    ref.listen(assetViewerProvider.select((s) => s.currentIndex), (_, idx) {
+      if (idx != _currentPage) {
+        _scrubTo(idx);
+      }
+    });
+
     return AnnotatedRegion(
       value: _viewerOverlayStyle,
       child: Scaffold(
@@ -311,8 +363,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         bottomNavigationBar: const ViewerBottomAppBar(),
         body: Stack(
           children: [
-            NotificationListener<ScrollEndNotification>(
-              onNotification: _onScrollEnd,
+            NotificationListener<ScrollNotification>(
+              onNotification: _onPageScroll,
               child: PhotoViewGestureDetectorScope(
                 axis: Axis.horizontal,
                 child: PopScope(

@@ -23,6 +23,8 @@ abstract class AssetViewerState with _$AssetViewerState {
     /// Physical thumbnail size retained while paging through the viewer.
     Size? thumbnailSize,
     @Default(0) int stackIndex,
+    @Default(0) int currentIndex,
+    @Default(false) bool isScrubbing,
   }) = _AssetViewerState;
 }
 
@@ -112,6 +114,26 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
   void toggleOcr() {
     state = state.copyWith(showingOcr: !state.showingOcr);
   }
+
+  void setCurrentIndex(int index) {
+    if (index == state.currentIndex) {
+      return;
+    }
+    state = state.copyWith(currentIndex: index);
+  }
+
+  void setScrubbing(bool isScrubbing) {
+    if (isScrubbing == state.isScrubbing) {
+      return;
+    }
+    state = state.copyWith(isScrubbing: isScrubbing);
+  }
 }
 
 final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);
+
+final viewerSwipePageProvider = Provider<ValueNotifier<double?>>((ref) {
+  final page = ValueNotifier<double?>(null);
+  ref.onDispose(page.dispose);
+  return page;
+});
